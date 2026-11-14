@@ -162,21 +162,9 @@ def fetch_dataset(dataset: dict, cache_root: str, previous: dict | None, network
                 "unverified file (remove it deliberately to re-fetch)"
             )
         verify_file(target, previous["sha256"], previous["bytes"])
-        return {
-            "id": dataset_id,
-            "repo_id": repo_id,
-            "revision": revision,
-            "file": name,
-            "bytes": previous["bytes"],
-            "sha256": previous["sha256"],
-            "verified_source": "cache_rehash",
-            "license": dataset["license"],
-            "license_url": dataset["license_url"],
-            "split": dataset["split"],
-            "text_field": dataset["text_field"],
-            "role": dataset["role"],
-            "cache_relative_path": os.path.relpath(target, cache_root),
-        }
+        entry = dict(previous)
+        entry["cache_relative_path"] = os.path.relpath(target, cache_root)
+        return entry
 
     if not network:
         raise FetchError(

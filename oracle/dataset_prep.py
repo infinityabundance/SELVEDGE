@@ -317,7 +317,6 @@ def main(argv: list[str]) -> int:
 
     derived = {
         "schema": "selvedge/split-inputs/v1",
-        "created_utc": utc_now(),
         "seed": SEED,
         "dataset_lock_sha256": sha256_file(args.dataset_lock),
         "tokenizer": {

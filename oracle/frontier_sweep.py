@@ -200,12 +200,22 @@ def load_split(path: str, expected_sha256: str) -> dict:
 
 
 def split_receipt_for(path: str) -> dict:
-    """Find the tracked split receipt whose derived path matches `path`."""
+    """Find the tracked split receipt whose derived file and hash match `path`."""
+    actual = sha256_file(path)
+    matches = []
     for candidate in sorted(glob.glob("results/splits/split-*.json")):
         receipt = load_json(candidate)
-        if os.path.abspath(receipt["derived"]["path"]) == os.path.abspath(path):
-            return receipt
-    raise SystemExit(f"no split receipt names {path}; run oracle/dataset_prep.py first")
+        if os.path.abspath(receipt["derived"]["path"]) != os.path.abspath(path):
+            continue
+        if receipt["derived"]["sha256"] != actual:
+            continue
+        matches.append((receipt["stamp"], candidate, receipt))
+    if not matches:
+        raise SystemExit(
+            f"no split receipt names {path} with its current sha256 {actual}; "
+            "run oracle/dataset_prep.py first"
+        )
+    return max(matches, key=lambda item: item[0])[2]
 
 
 def selection_hash(selection: list[list[int]]) -> str:
@@ -776,6 +786,10 @@ def command_greedy(args) -> int:
     accounting = accounting_record(args.accounting)
     model_lock = load_json("models/MODELS.lock.json")
     entry = model_cache_relative_dir(model_lock, args.model_id)
+    if entry["revision"] != args.model_revision:
+        raise SystemExit(
+            f"model revision {entry['revision']} != requested {args.model_revision}"
+        )
     plans = plans_for(args.plans, accounting)
     if plans["model_id"] != args.model_id:
         raise SystemExit("plan file belongs to a different model")
@@ -1020,6 +1034,10 @@ def command_exactness(args) -> int:
     accounting = accounting_record(args.accounting)
     model_lock = load_json("models/MODELS.lock.json")
     entry = model_cache_relative_dir(model_lock, args.model_id)
+    if entry["revision"] != args.model_revision:
+        raise SystemExit(
+            f"model revision {entry['revision']} != requested {args.model_revision}"
+        )
     model = load_model(model_directory(entry), device)
     controller = masked_mlp.MaskController(model)
     domains = domains_from_split(split)
@@ -1677,7 +1695,7 @@ def write_svg(frontier: dict, path: str) -> None:
         f'(dense f32 teacher, wikitext-2 held-out)</text>',
     ]
     max_x = 1.85e9
-    max_y = 6.0
+    max_y = 15.0
     for model, top, panel_height in panels:
         plot_left = left
         plot_width = width - left - right
