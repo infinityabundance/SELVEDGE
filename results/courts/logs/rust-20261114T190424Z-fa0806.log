@@ -1,0 +1,13 @@
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+error: this file contains an unclosed delimiter
+   --> crates/selvedge-format/tests/court_d.rs:916:3
+    |
+224 | fn temp_files(dir: &Path) -> Vec<PathBuf> {
+    |                                           - unclosed delimiter
+...
+916 | }
+    |  ^
+
+error: could not compile `selvedge-format` (test "court_d") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

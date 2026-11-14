@@ -1,0 +1,17 @@
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+error[E0428]: the name `temp_files` is defined multiple times
+   --> crates/selvedge-format/tests/court_d.rs:587:1
+    |
+224 | fn temp_files(dir: &Path) -> Vec<PathBuf> {
+    | ----------------------------------------- previous definition of the value `temp_files` here
+...
+587 | fn temp_files(dir: &Path) -> Vec<PathBuf> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `temp_files` redefined here
+    |
+    = note: `temp_files` must be defined only once in the value namespace of this module
+
+For more information about this error, try `rustc --explain E0428`.
+error: could not compile `selvedge-format` (test "court_d") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

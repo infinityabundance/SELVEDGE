@@ -1,0 +1,95 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+error: large size difference between variants
+  --> crates/selvedge-format/src/catalog.rs:55:1
+   |
+55 | /  pub enum ReloadVerdict {
+56 | |      /// A new bundle id was accepted.
+57 | |      AcceptedNew,
+   | |      ----------- the second-largest variant carries no data at all
+58 | |      /// The identical manifest is already known; no change.
+...  |
+61 | |/     RejectedConflict {
+62 | ||         /// Entry already installed.
+63 | ||         existing: CatalogEntry,
+64 | ||         /// Entry that was refused.
+65 | ||         incoming: CatalogEntry,
+66 | ||     },
+   | ||_____- the largest variant contains at least 256 bytes
+67 | |  }
+   | |__^ the entire enum is at least 256 bytes
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_enum_variant
+   = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+   |
+65 -         incoming: CatalogEntry,
+65 +         incoming: Box<CatalogEntry>,
+   |
+
+error: this `if` statement can be collapsed
+   --> crates/selvedge-format/src/manifest.rs:395:5
+    |
+395 | /     if let DType::I4Packed { block_size } | DType::TernaryPacked { block_size } = shard.dtype {
+396 | |         if block_size != spec.block_size {
+397 | |             return Err(FormatError::QuantizationInvalid {
+398 | |                 shard_id: shard.shard_id,
+...   |
+405 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+395 ~     if let DType::I4Packed { block_size } | DType::TernaryPacked { block_size } = shard.dtype
+396 ~         && block_size != spec.block_size {
+397 |             return Err(FormatError::QuantizationInvalid {
+...
+403 |             });
+404 ~         }
+    |
+
+error: this `if` statement can be collapsed
+   --> crates/selvedge-format/src/reader.rs:253:5
+    |
+253 | /     if let Some(flag) = cancel {
+254 | |         if flag.load(std::sync::atomic::Ordering::Relaxed) {
+255 | |             return Err(FormatError::Cancelled);
+256 | |         }
+257 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+253 ~     if let Some(flag) = cancel
+254 ~         && flag.load(std::sync::atomic::Ordering::Relaxed) {
+255 |             return Err(FormatError::Cancelled);
+256 ~         }
+    |
+
+error: this `if` statement can be collapsed
+   --> crates/selvedge-format/src/validation.rs:141:9
+    |
+141 | /         if let Some(flag) = &self.cancel {
+142 | |             if flag.load(Ordering::Relaxed) {
+143 | |                 return Err(FormatError::Cancelled);
+144 | |             }
+145 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+141 ~         if let Some(flag) = &self.cancel
+142 ~             && flag.load(Ordering::Relaxed) {
+143 |                 return Err(FormatError::Cancelled);
+144 ~             }
+    |
+
+error: could not compile `selvedge-format` (lib) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-format` (lib test) due to 4 previous errors

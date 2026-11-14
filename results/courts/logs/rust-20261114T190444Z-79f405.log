@@ -1,0 +1,19 @@
+error: 'cargo-clippy' is not installed for the toolchain '1.98.1-x86_64-unknown-linux-gnu'.
+help: run `rustup component add clippy` to install it
+
+Stack backtrace:
+   0: <anyhow::Error>::msg::<alloc::string::String>
+   1: anyhow::__private::format_err.4378
+   2: <rustup::toolchain::Toolchain>::create_command::<&str>
+   3: <rustup::toolchain::Toolchain>::command
+   4: rustup::cli::proxy_mode::main::{closure#0}::{closure#0}
+   5: rustup_init::run_rustup_inner::{closure#0}::{closure#0}
+   6: rustup_init::run_rustup::{closure#0}::{closure#0}
+   7: rustup_init::main::{closure#0}
+   8: <tokio::runtime::runtime::Runtime>::block_on::<rustup_init::main::{closure#0}>
+   9: rustup_init::main
+  10: std::sys::backtrace::__rust_begin_short_backtrace::<fn() -> core::result::Result<std::process::ExitCode, anyhow::Error>, core::result::Result<std::process::ExitCode, anyhow::Error>>
+  11: main
+  12: <unknown>
+  13: __libc_start_main
+  14: <unknown>

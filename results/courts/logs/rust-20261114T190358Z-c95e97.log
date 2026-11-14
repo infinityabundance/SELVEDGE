@@ -1,0 +1,12 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+error[E0432]: unresolved import `selvedge_core::canonical_json_sha256`
+ --> crates/selvedge-format/src/catalog.rs:9:21
+  |
+9 | use selvedge_core::{canonical_json_sha256, Sha256Digest};
+  |                     ^^^^^^^^^^^^^^^^^^^^^ no `canonical_json_sha256` in the root
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `selvedge-format` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-format` (lib test) due to 1 previous error
