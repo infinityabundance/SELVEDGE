@@ -1,0 +1,43 @@
+[workspace]
+members = [
+    "crates/selvedge-core",
+    "crates/selvedge-format",
+    "crates/selvedge-fixtures",
+    "crates/selvedge-cli",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+license = "Apache-2.0"
+authors = ["infinityabundance <255699974+infinityabundance@users.noreply.github.com>"]
+publish = false
+
+[workspace.dependencies]
+selvedge-core = { path = "crates/selvedge-core" }
+selvedge-format = { path = "crates/selvedge-format" }
+selvedge-fixtures = { path = "crates/selvedge-fixtures" }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+thiserror = "2.0.12"
+sha2 = "0.10.9"
+clap = { version = "4.5.37", features = ["derive"] }
+toml = "0.8.22"
+proptest = "1.6.0"
+
+# Workspace-wide lint policy. `cargo clippy --workspace --all-targets -- -D
+# warnings` (the `rust_clippy` court) turns every warning below into a failure.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+# The mandates requires no unwrap/expect outside tests. Every test module and
+# test file carries an explicit allow, so production code cannot acquire one
+# silently.
+unwrap_used = "warn"
+expect_used = "warn"

@@ -24,6 +24,11 @@ RUN apt-get update \
         util-linux \
     && rm -rf /var/lib/apt/lists/*
 
+# Stable toolchain components required by the verification courts. They are
+# installed into the image so offline `cargo fmt --check` and `cargo clippy`
+# runs work without network access.
+RUN rustup component add rustfmt clippy
+
 # Keep the upstream toolchain and PATH; CARGO_HOME is overridden at run time to
 # the persistent /cargo cache. Record the versions the image was built with.
 RUN rustc --version && cargo --version && cc --version | head -1
