@@ -33,6 +33,10 @@ pub const MAX_TENSORS: u64 = 1_000_000;
 pub const MAX_TENSOR_NAME_BYTES: usize = 4096;
 /// Hard cap on a tensor rank.
 pub const MAX_RANK: usize = 16;
+/// Hard cap on files in one checkpoint directory.
+pub const MAX_CHECKPOINT_FILES: usize = 100_000;
+/// Hard cap on tensor keys across a multi-file checkpoint.
+pub const MAX_TOTAL_TENSORS: u64 = 10_000_000;
 
 /// Positional reading without `unsafe` and without mapping the file.
 pub trait PositionalRead {
@@ -681,10 +685,24 @@ impl MultiSafetensors {
     ///
     /// Rejects duplicate tensor keys across files and every per-file failure.
     pub fn open(files: Vec<(String, PathBuf)>) -> Result<Self> {
+        if files.len() > MAX_CHECKPOINT_FILES {
+            return Err(ConvertError::TooManyFiles {
+                count: files.len(),
+                cap: MAX_CHECKPOINT_FILES,
+            });
+        }
         let mut opened = Vec::with_capacity(files.len());
         let mut index = BTreeMap::new();
+        let mut total_tensors = 0_u64;
         for (relative, path) in files {
             let store = Safetensors::open(&path)?;
+            total_tensors = total_tensors.saturating_add(store.index.tensors.len() as u64);
+            if total_tensors > MAX_TOTAL_TENSORS {
+                return Err(ConvertError::TooManyTensors {
+                    count: total_tensors,
+                    cap: MAX_TOTAL_TENSORS,
+                });
+            }
             for key in store.index.tensors.keys() {
                 if index.insert(key.clone(), opened.len()).is_some() {
                     return Err(ConvertError::DuplicateKey { key: key.clone() });
@@ -861,18 +879,28 @@ impl TensorSource for CheckpointSource {
 
 fn collect_safetensors(root: &Path) -> Result<Vec<(String, PathBuf)>> {
     let mut out = Vec::new();
-    collect_into(root, root, &mut out)?;
+    collect_into(root, root, 0, &mut out)?;
     out.sort_by(|left, right| left.0.cmp(&right.0));
     Ok(out)
 }
 
-fn collect_into(root: &Path, dir: &Path, out: &mut Vec<(String, PathBuf)>) -> Result<()> {
+fn collect_into(
+    root: &Path,
+    dir: &Path,
+    depth: usize,
+    out: &mut Vec<(String, PathBuf)>,
+) -> Result<()> {
+    if depth > 64 {
+        return Err(ConvertError::plan(
+            "checkpoint directory nesting exceeds 64 levels",
+        ));
+    }
     let mut entries: Vec<_> = std::fs::read_dir(dir)?.collect::<core::result::Result<_, _>>()?;
     entries.sort_by_key(std::fs::DirEntry::file_name);
     for entry in entries {
         let file_type = entry.file_type()?;
         if file_type.is_dir() {
-            collect_into(root, &entry.path(), out)?;
+            collect_into(root, &entry.path(), depth + 1, out)?;
         } else if file_type.is_file() {
             let path = entry.path();
             if path.extension().is_some_and(|ext| ext == "safetensors") {
@@ -888,6 +916,12 @@ fn collect_into(root: &Path, dir: &Path, out: &mut Vec<(String, PathBuf)>) -> Re
                     .collect::<Vec<_>>()
                     .join("/");
                 out.push((relative, path));
+                if out.len() > MAX_CHECKPOINT_FILES {
+                    return Err(ConvertError::TooManyFiles {
+                        count: out.len(),
+                        cap: MAX_CHECKPOINT_FILES,
+                    });
+                }
             }
         }
     }

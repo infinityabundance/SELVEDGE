@@ -62,6 +62,14 @@ pub enum ConvertError {
         /// Length cap.
         cap: usize,
     },
+    /// A checkpoint directory contains more files than this build accepts.
+    #[error("checkpoint has {count} files, above the cap of {cap}")]
+    TooManyFiles {
+        /// Observed count.
+        count: usize,
+        /// Hard cap.
+        cap: usize,
+    },
     /// A dtype this build does not decode.
     #[error("unsupported safetensors dtype {dtype:?} for tensor {tensor:?}")]
     UnsupportedDType {
