@@ -37,7 +37,7 @@ run; no result is claimed.
 
 Hardware and toolchain facts are collected by `scripts/probe-hardware.sh`
 through the courts and pinned by stamp and revision in
-`results/hardware/probe-20261114T184814Z.json`; the subset intended for
+`results/hardware/probe-20261114T184849Z.json`; the subset intended for
 quotation is rendered into `docs/PERF-NUMBERS.md` from that receipt. Both are
 regenerable and neither is edited by hand.
 
@@ -92,7 +92,7 @@ Probe evidence chain (all receipts are under `results/courts/`):
 | Memory cap enforced (allocator killed) | `results/courts/python-20261114T184414Z-60a177.json` (`exit_code` 137, `oom_killed` true) |
 | `/tmp` bounded (write stops at the configured tmpfs size) | `results/courts/io-20261114T184414Z-e69e04.json` and its log |
 | Fail-closed refusals for empty/zero/malformed limits | `results/courts/refusals/fail-closed-20261114T184422Z.log` |
-| Hardware probe through the courts (including GPU access) | `results/hardware/probe-20261114T184814Z.json` |
+| Hardware probe through the courts (including GPU access) | `results/hardware/probe-20261114T184849Z.json` |
 | Generated numbers match their receipts | `results/courts/perf_numbers-20261114T184543Z-36310b.json` |
 | Generator fails closed on nine deliberate breakages | `results/courts/python-20261114T184538Z-e0ef83.json` and its log |
 | Commit identity passes for HEAD and for all commits | `results/courts/commit_identity-20261114T184548Z-6cbdd2.json`, `results/courts/commit_identity-20261114T184549Z-1e7389.json` |

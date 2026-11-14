@@ -1,0 +1,42 @@
+{
+  "available": true,
+  "cuda_version": "13.5",
+  "cuda_version_field": "CUDA UMD Version",
+  "cuda_version_source": "parsed from the CUDA version field of nvidia-smi output",
+  "device_nodes": [
+    "nvidia-uvm",
+    "nvidia-uvm-tools",
+    "nvidia0",
+    "nvidiactl"
+  ],
+  "devices": [
+    {
+      "compute_capability": "8.9",
+      "driver_version": "620.70.06",
+      "name": "NVIDIA GeForce RTX 4080 SUPER",
+      "pci_bus_id": "00000000:01:00.0",
+      "uuid": "GPU-2924bd11-5fe7-4e0f-2c3c-7d0e983444e6",
+      "vram_total": "16376 MiB"
+    }
+  ],
+  "libs": [
+    "libcuda.so.1",
+    "libnvidia-cfg.so.1",
+    "libnvidia-ml.so.1",
+    "libnvidia-nvvm.so.1",
+    "libnvidia-ptxjitcompiler.so.1"
+  ],
+  "nvidia_smi_stdout": "Sat Nov 14 18:48:51 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 620.70.06              KMD Version: 620.70.06     CUDA UMD Version: 13.5     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4080 ...    Off |   00000000:01:00.0  On |                  N/A |\n|  0%   41C    P8             12W /  320W |    1614MiB /  16376MiB |     12%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+",
+  "query": {
+    "argv": [
+      "nvidia-smi",
+      "--query-gpu=name,memory.total,driver_version,compute_cap,uuid,pci.bus_id",
+      "--format=csv,noheader"
+    ],
+    "exit_code": 0,
+    "ok": true,
+    "stderr": "",
+    "stdout": "NVIDIA GeForce RTX 4080 SUPER, 16376 MiB, 620.70.06, 8.9, GPU-2924bd11-5fe7-4e0f-2c3c-7d0e983444e6, 00000000:01:00.0"
+  },
+  "source": "nvidia-smi executed inside the court container"
+}
