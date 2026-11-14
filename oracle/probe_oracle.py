@@ -87,10 +87,14 @@ def main(argv: list[str]) -> int:
         help="fail if no CUDA device is usable inside the container",
     )
     parser.add_argument("--out", help="also write the JSON report to this path")
+    parser.add_argument("--stamp", help="receipt stamp recorded verbatim")
+    parser.add_argument("--revision", help="git revision recorded verbatim")
     args = parser.parse_args(argv)
 
     report: dict = {
         "schema": "selvedge/oracle-probe/v1",
+        "stamp": args.stamp,
+        "revision": args.revision,
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         ),
