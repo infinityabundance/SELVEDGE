@@ -1,0 +1,11 @@
+selvedge court d — storage integrity and crash behavior
+PASS valid_bundle_validates: shards=38 verified=38 payload_bytes=26624
+PASS payload_bit_flip_detected: detected HashMismatch for shard 03b998f9edd1
+PASS truncated_bundle_detected: detected length mismatch after removing 16 bytes (50176 -> 50160)
+PASS selected_verification_skips_others: verified=1 skipped=37
+PASS cancelled_read_aborts_and_recovers: cancelled then read 1024 bytes from shard 03b998f9edd1
+PASS concurrent_readers_never_see_torn_bundle: 16 reader validations during 4 concurrent republishes
+PASS hot_reload_rejects_conflicting_bundle_id: identical accepted; conflicting content rejected
+PASS sidecar_matches_bundle: sidecar target/court-d/tiny-synthetic.manifest.json
+workdir: target/court-d (kept)
+overall: pass

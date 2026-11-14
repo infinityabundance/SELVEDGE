@@ -1,0 +1,77 @@
+{
+  "schema": "selvedge/doctor/v1",
+  "ok": true,
+  "checks": [
+    {
+      "name": "config",
+      "status": "ok",
+      "detail": "configuration valid; hash 8c2afda20e1544e6c0e486cfe0cc72a203fa3918065a814f258100459a88b764",
+      "data": {
+        "budget": {
+          "active_unique_limit": 1000000000,
+          "mode": "compliance"
+        },
+        "config_hash": "8c2afda20e1544e6c0e486cfe0cc72a203fa3918065a814f258100459a88b764",
+        "memory": {
+          "resident_cap_bytes": 4294967296,
+          "tmp_budget_bytes": 2147483648
+        },
+        "storage": {
+          "alignment": 4096,
+          "max_bundle_bytes": 8589934592,
+          "max_manifest_bytes": 8388608,
+          "verify_sha256": true
+        }
+      }
+    },
+    {
+      "name": "format_schema",
+      "status": "ok",
+      "detail": "container version 1; manifest selvedge/shard-manifest/v1 v1",
+      "data": {
+        "container_version": 1,
+        "manifest_schema": "selvedge/shard-manifest/v1",
+        "manifest_schema_version": 1
+      }
+    },
+    {
+      "name": "court_images",
+      "status": "ok",
+      "detail": "rust court image selvedge/rust-court:20261114-1.98-slim-f734ce647d5d (sha256:984d82e3bd51a8397317df8f1d6d2ecee904083a4a6f33a6aa75056a7a766508), rustc rustc 1.98.1 (48a229cea 2026-09-01), lock updated 2026-11-14T19:04:56Z",
+      "data": {
+        "lock_updated_utc": "2026-11-14T19:04:56Z",
+        "path": "/work/docker/IMAGES.lock",
+        "rust_image_id": "sha256:984d82e3bd51a8397317df8f1d6d2ecee904083a4a6f33a6aa75056a7a766508",
+        "rust_ref": "selvedge/rust-court:20261114-1.98-slim-f734ce647d5d",
+        "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)"
+      }
+    },
+    {
+      "name": "gpu",
+      "status": "ok",
+      "detail": "CUDA is not compiled into this build; no GPU facts are reported",
+      "data": {
+        "cuda_compiled_in": false,
+        "gpu_facts": "not_probed"
+      }
+    },
+    {
+      "name": "target_dir",
+      "status": "ok",
+      "detail": "writable: /work/target",
+      "data": {
+        "path": "/work/target"
+      }
+    },
+    {
+      "name": "disk",
+      "status": "ok",
+      "detail": "87845117952 bytes available at /work/target (minimum 67108864)",
+      "data": {
+        "available_bytes": 87845117952,
+        "min_free_bytes": 67108864,
+        "path": "/work/target"
+      }
+    }
+  ]
+}

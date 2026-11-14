@@ -137,10 +137,13 @@ test`. Nothing in S1 may quote a number that is not generated from a receipt.
 
 ## 2026-11-14 — S1: workspace, data contracts, shard format, CLI and Courts C/D
 
-Revision: `099e0d815968c1333e15ee4e1f608f2b61fdd7d8`. All receipts below were
+Revision: `5fe73aeef887ab6c7e0c8adc70a1708b7b6ac753`. All receipts below were
 produced with a clean worktree at that revision, offline, in the Rust court with
 the image recorded in `docker/IMAGES.lock`. No performance number was measured
-and none is claimed.
+and none is claimed. (The development receipt set committed just before this
+revision contains the same tests at `099e0d8`; the only later code changes were
+the `AuxiliaryKind` stable-string serialization and the CLI verification-mode
+default documented in this log.)
 
 ### Plan
 
@@ -200,15 +203,17 @@ oracle/selectors (S3) are explicitly out of scope.
 
 | what was verified | evidence |
 | --- | --- |
-| Fixture regenerated and committed deterministically | `results/courts/rust-20261114T190600Z-14db24.json` and its log |
-| `cargo fmt --all --check` | `results/courts/rust-20261114T190640Z-b701f5.json` |
-| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T190643Z-14200a.json` |
-| `cargo test --workspace` (unit, Court C, Court D, fixture reproducibility, CLI end-to-end) | `results/courts/rust-20261114T190647Z-1c906b.json` |
-| `selvedge doctor --json` (all checks pass; CUDA reported not compiled in) | `results/courts/rust-20261114T190651Z-685d81.json` |
-| `selvedge inspect fixtures/tiny-synthetic.slv --json` | `results/courts/rust-20261114T190655Z-dac5bb.json` |
-| `selvedge format validate` with expected model digest and compatibility id | `results/courts/rust-20261114T190658Z-63dc2e.json` |
-| `selvedge court c` | `results/courts/rust-20261114T190701Z-619bb7.json` |
-| `selvedge court d --workdir target/court-d` | `results/courts/rust-20261114T190704Z-c40df8.json` |
+| Fixture regenerated and committed deterministically | `results/courts/rust-20261114T190600Z-14db24.json` and its log (generation at `099e0d8`); `results/courts/rust-20261114T191040Z-188d95.json` (byte-for-byte `--check` at the verified revision) |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T191009Z-013b4c.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T191009Z-75eb72.json` |
+| `cargo test --workspace` (unit, Court C, Court D, fixture reproducibility, CLI end-to-end) | `results/courts/rust-20261114T191010Z-3d0b43.json` |
+| `selvedge doctor --json` (all checks pass; CUDA reported not compiled in) | `results/courts/rust-20261114T191015Z-3cc54e.json` |
+| `selvedge inspect fixtures/tiny-synthetic.slv --json` | `results/courts/rust-20261114T191019Z-b5b3a9.json` |
+| `selvedge format validate` with expected model digest and compatibility id | `results/courts/rust-20261114T191022Z-e04c2f.json` |
+| `selvedge court c` | `results/courts/rust-20261114T191025Z-1738ec.json` |
+| `selvedge court d --workdir target/court-d` | `results/courts/rust-20261114T191028Z-7fe25d.json` |
+| Generated numbers match their receipts | `results/courts/perf_numbers-20261114T191031Z-4033b4.json` |
+| Every commit carries the operator identity | `results/courts/python-20261114T191032Z-e815b8.json` |
 
 Every receipt records the image reference and id, applied limits verified by
 container inspection, network mode (`none`), exit code, duration and toolchain

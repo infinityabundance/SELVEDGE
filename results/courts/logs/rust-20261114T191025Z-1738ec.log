@@ -1,0 +1,14 @@
+selvedge court c — budget accounting
+PASS tied_embeddings_counted_once: active_unique=1000 reads=2000 bytes_nvme=8000 plan_active=1000
+PASS overlapping_slices_deduplicated: active_unique=200 reads=300
+PASS recurrent_reuse_unique_vs_reads: active_unique=400 reads=3200 flops=6400
+PASS adapters_memory_router_verifier_counted: active_unique=112 gpu_bytes=448
+PASS over_budget_rejected_in_compliance: rejected active_unique=1000000001 limit=1000000000 mode=compliance
+PASS over_budget_allowed_and_labelled_in_research_mode: allowed_label=research_noncompliant_teacher active_unique=1000000001 limit=1000000000
+PASS boundary_exactly_at_limit_is_within: within active_unique=1000000000 limit=1000000000
+PASS boundary_one_over_limit_is_rejected: rejected active_unique=1000000001 limit=1000000000
+PASS quantized_metadata_excluded_from_learned_count: active_unique=1000 auxiliary_bytes=48 dequantized=1000
+PASS plan_fallback_within_budget: fallback_applied=true active_unique=100 within=true
+PASS fallback_that_remains_over_budget_is_rejected: rejected active_unique=150 limit=100
+PASS token_accounting_reports_every_required_field: active_unique=200 resident_unique=200 accessible=5000000 reads=200 flops=1010 controller_flops=3 tiers=2 auxiliary_kinds=1
+overall: pass
