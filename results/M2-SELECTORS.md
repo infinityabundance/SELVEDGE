@@ -3,12 +3,14 @@
 Status: **measured, negative result for the inference-only branch**. The M2
 contract was pre-registered before measurement
 (`docs/EXPERIMENT-CONTRACT.md`, M2 section, commit
-`a0b107adc23f23cbda43a09cbd6d229b0ea024a1`). The measurement receipts cited here were
-produced from the clean harness revision `1e623062379239a4bed3337ed2ed91d1a7f5411b`;
-the fixtures and the analysis were regenerated from the reporting revision
-`362d2c7156feff66d55a04d84e2aff548c48e95f` after the table-generation code was
-committed. Every receipt names its revision and the pre-registration commit.
-The reporting revision does not touch any measured quantity. The development run from the uncommitted worktree is
+`a0b107adc23f23cbda43a09cbd6d229b0ea024a1`). The prepare, full-evaluation and interaction
+receipts were produced from the clean harness revision
+`1e623062379239a4bed3337ed2ed91d1a7f5411b`; the fixtures were regenerated from
+the reporting revision `362d2c7156feff66d55a04d84e2aff548c48e95f`; the oracle
+(with the cross-window stability field) and the analysis were regenerated from
+`40f19dbf62de8395cd55ebf27f5685d71769347c`. Every receipt names its revision
+and the pre-registration commit. The later revisions add reporting code and
+tests; they do not touch any measured quantity. The development run from the uncommitted worktree is
 retained under `results/selectors/superseded-dirty-a0b107a/`; its aggregates
 are numerically identical to the clean run on every deterministic arm.
 
@@ -68,11 +70,11 @@ recorded; it is not a runtime.
 
 | oracle | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 | forwards | GPU seconds |
 | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| oracle-local-64 | G64 | 993911808 | 3.665418 | [3.289385, 4.034953] | 25.4515 | 0.2693 | 0.0169 | 0.0550 | 24 | 1.89 |
-| oracle-final-refine | B142 | 998630400 | 5.785897 | [5.159938, 6.411855] | 177.664 | 0.1018 | 0.0000 | 0.0029 | 2982 | 136.29 |
+| oracle-local-64 | G64 | 993911808 | 3.665418 | [3.289385, 4.034953] | 25.4515 | 0.2693 | 0.0169 | 0.0550 | 24 | 1.84 |
+| oracle-final-refine | B142 | 998630400 | 5.785897 | [5.159938, 6.411855] | 177.664 | 0.1018 | 0.0000 | 0.0029 | 2982 | 135.49 |
 | oracle-local-16-B142 | B142 | 998630400 | 5.952733 | [5.644695, 6.224299] | 229.896 | 0.0866 | 0.0005 | 0.0046 | 24 | 1.87 |
-| oracle-local-16-B140 | B140 | 993911808 | 6.273271 | [5.980226, 6.535457] | 327.762 | 0.0697 | 0.0005 | 0.0042 | 24 | 1.86 |
-| oracle-local-4 | G4 | 993911808 | 7.833459 | [7.600261, 8.046133] | 1550.59 | 0.0560 | 0.0000 | 0.0000 | 24 | 1.89 |
+| oracle-local-16-B140 | B140 | 993911808 | 6.273271 | [5.980226, 6.535457] | 327.762 | 0.0697 | 0.0005 | 0.0042 | 24 | 1.85 |
+| oracle-local-4 | G4 | 993911808 | 7.833459 | [7.600261, 8.046133] | 1550.59 | 0.0560 | 0.0000 | 0.0000 | 24 | 1.86 |
 <!-- END M2 ORACLE TABLE -->
 
 The best oracle KL:
@@ -127,21 +129,27 @@ Per-layer selected subsets change almost every token at fine granularity:
 
 <!-- BEGIN M2 CONSISTENCY TABLE -->
 
-| oracle | adjacent equal | distinct subsets / layer | modal fraction | groups / token |
-| --- | ---: | ---: | ---: | --- |
-| oracle-local-64 | 0.0002 | 509.8 | 0.0031 | 560-560 |
-| oracle-final-refine | nan | nan | nan | ?-? |
-| oracle-local-16-B142 | 0.0312 | 387.4 | 0.0439 | 142-142 |
-| oracle-local-16-B140 | 0.0537 | 372.0 | 0.0693 | 140-140 |
-| oracle-local-4 | 0.4224 | 5.0 | 0.4419 | 35-35 |
+| oracle | adjacent equal | distinct subsets / layer | modal fraction | cross-window Jaccard | groups / token |
+| --- | ---: | ---: | ---: | ---: | --- |
+| oracle-local-64 | 0.0002 | 509.8 | 0.0031 | 0.2263 | 560-560 |
+| oracle-final-refine | nan | nan | nan | n/a | ?-? |
+| oracle-local-16-B142 | 0.0312 | 387.4 | 0.0439 | 0.2522 | 142-142 |
+| oracle-local-16-B140 | 0.0537 | 372.0 | 0.0693 | 0.2638 | 140-140 |
+| oracle-local-4 | 0.4224 | 5.0 | 0.4419 | 0.3566 | 35-35 |
 <!-- END M2 CONSISTENCY TABLE -->
 
 At 16 and 64 groups there is almost no adjacent-token persistence and hundreds
-of distinct subsets per layer in a 512-token window. This is the input to the
-M3 execution-envelope question: a stable superset envelope cannot be built
-from subsets that change on every token. Coarse 4-group selection is more
-stable but far worse in quality, so stability and fidelity trade against each
-other at this granularity.
+of distinct subsets per layer in a 512-token window. The cross-window column
+compares the subsets at the same position index in two disjoint articles; the
+mean Jaccard at the 16-group B142 budget is
+<!-- BEGIN GENERATED: m2-cross-window-jaccard -->
+0.2522
+<!-- END GENERATED: m2-cross-window-jaccard -->
+and it is lower at 64 groups. The subsets are not stable within a sequence or
+across samples. This is the input to the M3 execution-envelope question: a
+stable superset envelope cannot be built from subsets that change on every
+token. Coarse 4-group selection is more stable but far worse in quality, so
+stability and fidelity trade against each other at this granularity.
 
 ## Pairwise interaction (calibration only)
 
