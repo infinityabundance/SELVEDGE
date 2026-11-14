@@ -57,58 +57,51 @@ shift
 case "$court" in
   rust)
     if (($# == 0)); then
-      exec "$court_runner" "${flags[@]}" rust
+      exec "$court_runner" rust "${flags[@]}"
     fi
     if [[ "$1" == "--" ]]; then
       shift
-      exec "$court_runner" "${flags[@]}" rust -- "$@"
+      exec "$court_runner" rust "${flags[@]}" -- "$@"
     fi
     case "$1" in
       fmt | clippy | build | check | test | run | bench | doc | update | metadata | tree)
         subcommand="$1"
         shift
-        exec "$court_runner" "${flags[@]}" rust -- cargo "$subcommand" "$@"
+        exec "$court_runner" rust "${flags[@]}" -- cargo "$subcommand" "$@"
         ;;
       *)
-        exec "$court_runner" "${flags[@]}" rust -- "$@"
+        exec "$court_runner" rust "${flags[@]}" -- "$@"
         ;;
     esac
     ;;
   python)
     if (($# == 0)); then
-      exec "$court_runner" "${flags[@]}" python
+      exec "$court_runner" python "${flags[@]}"
     fi
     if [[ "$1" == "--" ]]; then
       shift
-      exec "$court_runner" "${flags[@]}" python -- "$@"
+      exec "$court_runner" python "${flags[@]}" -- "$@"
     fi
-    case "$1" in
-      -m | -c | -V | --version)
-        exec "$court_runner" "${flags[@]}" python -- python3 "$@"
-        ;;
-      *)
-        exec "$court_runner" "${flags[@]}" python -- python3 "$@"
-        ;;
-    esac
+    exec "$court_runner" python "${flags[@]}" -- python3 "$@"
     ;;
   io)
     if (($# == 0)); then
-      exec "$court_runner" "${flags[@]}" io
+      exec "$court_runner" io "${flags[@]}"
     fi
     if [[ "$1" == "--" ]]; then
       shift
-      exec "$court_runner" "${flags[@]}" io -- "$@"
+      exec "$court_runner" io "${flags[@]}" -- "$@"
     fi
-    exec "$court_runner" "${flags[@]}" io -- "$@"
+    exec "$court_runner" io "${flags[@]}" -- "$@"
     ;;
   commit_identity)
-    exec "$court_runner" "${flags[@]}" commit_identity -- "$@"
+    exec "$court_runner" commit_identity "${flags[@]}" -- "$@"
     ;;
   perf_numbers)
     if (($# == 0)); then
-      exec "$court_runner" "${flags[@]}" perf_numbers
+      exec "$court_runner" perf_numbers "${flags[@]}"
     fi
-    exec "$court_runner" "${flags[@]}" perf_numbers -- python3 scripts/perf_numbers.py "$@"
+    exec "$court_runner" perf_numbers "${flags[@]}" -- python3 scripts/perf_numbers.py "$@"
     ;;
   *)
     printf 'court: unknown court %q\n' "$court" >&2
