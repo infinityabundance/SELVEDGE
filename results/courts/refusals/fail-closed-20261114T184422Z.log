@@ -1,0 +1,51 @@
+# SELVEDGE fail-closed refusal probes
+# stamp: 20261114T184422Z
+# revision: ff54b1f3117e3567039c7adc44e2d6fe63e87bcb
+# host: Linux 7.3.3-1-cachyos x86_64
+# Each case sets one limit to an invalid value and expects exit 78 with no container run.
+
+=== CASE: SELVEDGE_MEM empty
+command: env SELVEDGE_MEM= ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_MEM is empty; refusing to run without a hard limit
+exit: 78
+
+=== CASE: SELVEDGE_MEM zero
+command: env SELVEDGE_MEM=0g ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_MEM='0g' is not a valid limit (must match ^[1-9][0-9]*[kKmMgG]$); refusing to run unbounded
+exit: 78
+
+=== CASE: SELVEDGE_MEM no unit suffix
+command: env SELVEDGE_MEM=8192 ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_MEM='8192' is not a valid limit (must match ^[1-9][0-9]*[kKmMgG]$); refusing to run unbounded
+exit: 78
+
+=== CASE: SELVEDGE_MEM non-numeric
+command: env SELVEDGE_MEM=lots ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_MEM='lots' is not a valid limit (must match ^[1-9][0-9]*[kKmMgG]$); refusing to run unbounded
+exit: 78
+
+=== CASE: SELVEDGE_CPUS empty
+command: env SELVEDGE_CPUS= ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_CPUS is empty; refusing to run without a hard limit
+exit: 78
+
+=== CASE: SELVEDGE_CPUS zero
+command: env SELVEDGE_CPUS=0 ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_CPUS='0' is not a valid limit (must match ^[1-9][0-9]*(\.[0-9]+)?$); refusing to run unbounded
+exit: 78
+
+=== CASE: SELVEDGE_PIDS empty
+command: env SELVEDGE_PIDS= ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_PIDS is empty; refusing to run without a hard limit
+exit: 78
+
+=== CASE: SELVEDGE_PIDS zero
+command: env SELVEDGE_PIDS=0 ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_PIDS='0' is not a valid limit (must match ^[1-9][0-9]*$); refusing to run unbounded
+exit: 78
+
+=== CASE: SELVEDGE_TMP zero
+command: env SELVEDGE_TMP=0m ./scripts/docker-court.sh rust -- cargo --version
+court: SELVEDGE_TMP='0m' is not a valid limit (must match ^[1-9][0-9]*[kKmMgG]$); refusing to run unbounded
+exit: 78
+
