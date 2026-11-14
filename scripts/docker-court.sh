@@ -358,6 +358,15 @@ if ((host_root_ro)); then
   extra_mounts+=("/:/hostroot:ro")
 fi
 
+declare -a receipt_mount_args=(
+  --mount "$repo_root:/work"
+  --mount "$cargo_cache:/cargo"
+  --mount "$repo_root/target:/work/target"
+)
+for extra in "${extra_mounts[@]}"; do
+  receipt_mount_args+=(--mount "$extra")
+done
+
 declare -a common=(
   --name "$container_name"
   --init
@@ -458,9 +467,7 @@ python3 "$receipt_writer" \
   --gpu-mode "$gpu_mode" \
   --gpu-detail "$gpu_detail" \
   --user "${host_uid}:${host_gid}" \
-  --mount "$repo_root:/work" \
-  --mount "$cargo_cache:/cargo" \
-  --mount "$repo_root/target:/work/target" \
+  "${receipt_mount_args[@]}" \
   --exit-code "$rc" \
   --duration-ms "$duration_ms" \
   --host-uname "$(uname -srm)" \
