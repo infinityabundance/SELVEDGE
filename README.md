@@ -14,10 +14,11 @@ The scientific question, stated so it can fail:
 
 This repository contains the reproducible execution and evidence
 infrastructure, the Rust data contracts (`selvedge-core`), the versioned shard
-container (`selvedge-format`), the `selvedge` CLI and deterministic fixtures. It
-does **not** yet contain tensor conversion, an oracle, selectors, a runtime or
-any experimental result. Nothing here is a demonstrated new architecture, and
-no performance claim has been measured.
+container (`selvedge-format`), exact SwiGLU conversion (`selvedge-convert`), the
+`selvedge` CLI, deterministic fixtures, a pinned Hugging Face teacher oracle,
+and measured real-checkpoint accounting and reconstruction. It does **not** yet
+contain selectors, a runtime or any quality result. Nothing here is a
+demonstrated new architecture, and no speed or quality claim has been measured.
 
 ## Rules this repository enforces mechanically
 
@@ -70,6 +71,20 @@ scripts/court rust -- target/debug/selvedge format validate fixtures/tiny-synthe
 scripts/court rust -- target/debug/selvedge court c
 scripts/court rust -- target/debug/selvedge court d --workdir target/court-d
 
+# real-model path: build the oracle image, fetch once with network, then stay offline
+scripts/build-courts.sh oracle
+scripts/fetch-models.sh
+scripts/fetch-models.sh --verify-only
+scripts/court --gpu oracle -- python3 oracle/probe_oracle.py --json --require-gpu
+scripts/court rust -- cargo run --release -p selvedge-cli -- inspect-model \
+  /hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca --json
+scripts/court rust -- cargo run --release -p selvedge-cli -- convert \
+  --model /hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca \
+  --out results/artifacts/qwen3-0.6b-ffn-g16 --groups 16 --complete --alignment 4096
+scripts/court rust -- cargo run --release -p selvedge-cli -- convert verify \
+  --bundle results/artifacts/qwen3-0.6b-ffn-g16/<bundle>.slv \
+  --model /hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca --json
+
 # negative self-tests (these must exit zero and print PASS lines)
 scripts/docker-court.sh python -- bash scripts/courts/perf_numbers_negative_cases.sh
 scripts/docker-court.sh python -- bash scripts/courts/commit_identity_negative_cases.sh
@@ -100,12 +115,12 @@ Limit overrides are accepted only as valid non-zero values, e.g.
   and `CARGO_NET_OFFLINE=true` is set, so dependency resolution fails loudly
   instead of hanging. Fetch dependencies with an explicit networked run:
   `scripts/court --net rust -- cargo fetch` and commit `Cargo.lock`.
-- **Python oracle jobs:** `scripts/court python scripts/oracle/<job>.py` (or
-  `-m pytest`). The container has pinned `numpy`/`pytest` from
-  `docker/requirements-court.txt`, `PIP_CACHE_DIR=/pycache/pip`, and
-  `PYTHONPYCACHEPREFIX=/pycache/pycache`; create a venv under `/pycache` if a job
-  needs more packages, and add pins to the requirements file for anything that
-  must be reproducible.
+- **Python oracle jobs:** `scripts/court oracle -- python3 oracle/<job>.py`.
+  The oracle image pins torch, transformers, tokenizers, safetensors and numpy;
+  it mounts `~/.cache/selvedge/hf` read-write at `/hf-cache` and is offline
+  unless `--net` is passed. `trust_remote_code` is never enabled. The plain
+  `python` court remains the lightweight court for `perf_numbers` and helper
+  scripts.
 - **I/O courts:** `scripts/court io -- <argv>` uses the Python court image
   (`fio`, `dd`, `df`) with the same limits.
 - **GPU:** add `--gpu`. On this host that resolves to explicit device
@@ -124,7 +139,9 @@ crates/selvedge-core/          canonical IDs, tensor contracts, ledger, config
 crates/selvedge-format/        manifest v1, validator, atomic publisher, readers
 crates/selvedge-fixtures/      deterministic synthetic bundle generator
 crates/selvedge-cli/           the `selvedge` binary
-fixtures/                      tracked tiny bundle and reproduction instructions
+oracle/                        pinned teacher instrumentation (Python, research-only)
+models/                        tracked model spec, lock and reference configs (no weights)
+fixtures/                      tracked tiny bundle, prompts and reproduction instructions
 docker/                        court Dockerfiles, pinned requirements, image lock
 scripts/docker-court.sh        fail-closed Docker court (receipts, limits)
 scripts/court                  short aliases over the court

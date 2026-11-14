@@ -430,3 +430,214 @@ S3 (oracle and selectors) can consume the group bundles and the measured Court A
 bound. It must not treat a passing full reconstruction as evidence that skipping
 groups preserves model quality; that requires the teacher divergence and
 counterfactual work in H1/Court B.
+
+## 2026-11-14 — S3a: oracle court, real checkpoints, exact accounting, real-activation parity
+
+Revision: `a67671aecf9296a41528cd6a842437d6e3c629dd` for the real-activation
+receipts, `d9bb4ce17c699a8df22c204e890f59c6b970bc35` for the accounting, model
+fetch and oracle-probe receipts. Both are real commits; every receipt names its
+own revision and stamp. No quality or timing number is claimed.
+
+### Plan
+
+Answer two questions before any selector work: is the 1e9 unique-active
+ceiling actually binding for the candidate teachers, and can a real checkpoint
+be converted into group shards that reproduce the teacher's FFN on real
+activations? Deliver: a pinned oracle court; pinned, hash-verified model
+acquisition; exact Rust accounting from real safetensors; real conversion and
+real-activation parity; receipts and generated numbers for each.
+
+### What was built
+
+- `docker/Dockerfile.oracle` plus `docker/requirements-oracle.txt`: digest-pinned
+  Python base, pinned torch CUDA build, transformers, tokenizers, safetensors,
+  numpy and pytest. `docker/IMAGES.lock` gains an `oracle` entry;
+  `scripts/build-courts.sh oracle` builds it.
+- `scripts/docker-court.sh` gains the `oracle` court: persistent HF cache mounted
+  read-write at `/hf-cache`, `HF_HOME`/`HF_HUB_CACHE` set from it, offline by
+  default with `--net` for fetch steps, `--gpu` device passthrough, and the mount
+  plus GPU mode recorded in every receipt. The Rust court mounts the same cache
+  read-only.
+- `oracle/probe_oracle.py`: pinned CPU and GPU matmul/SiLU checks and version
+  report. `oracle/fetch_models.py` + `scripts/fetch-models.sh`: idempotent,
+  LFS-oid/SHA-256 verification, fail-closed on mismatch, prints the resolved
+  revision. `oracle/capture_activations.py`: teacher MLP hooks in bf16 and f32,
+  with TF32 off and bf16 reduced-precision reduction off.
+- `oracle/tokenizer_identity.py`, `scripts/courts/config_projection.py`,
+  `scripts/courts/disk_free.py`.
+- `models/model-spec.json`, `models/MODELS.lock.json` (tracked hashes, no
+  weights), `models/reference-configs/qwen3-4b-config.json`,
+  `fixtures/prompts/qwen3-teacher-prompts.json`, `docs/MODELS.md`,
+  `docs/BUDGET-MATH.md`.
+- `selvedge-convert::accounting` and `selvedge inspect-model`: exact component
+  accounting from real headers, verified embedding/output tie, category totals,
+  backbone/FFN split, ceiling arithmetic and documented FLOP estimates.
+- `selvedge-convert::real_parity`, `selvedge convert verify-real` and
+  `selvedge court a-real`: dense-vs-grouped and grouped-vs-teacher comparisons
+  on real activations, with an explicit bf16-emulation path.
+
+### Hypotheses and results
+
+| hypothesis | result | evidence |
+| --- | --- | --- |
+| CUDA device passthrough works inside the oracle container. | Confirmed with a real GPU matmul and SiLU; the probe and receipt record the device, capability and `--gpus all` fallback reason. | `results/oracle-probe/20261114T201533Z.json`; `results/courts/oracle-20261114T201545Z-58530d.json` |
+| The strict ceiling is not binding for Qwen3-0.6B. | Confirmed: the full dense checkpoint is below the ceiling with substantial headroom. Sparsity there is a cost choice, not compliance. | `results/accounting/20261114T201533Z-qwen3-0.6b.json`; `docs/BUDGET-MATH.md` |
+| The ceiling is binding for Qwen3-1.7B, and the always-on backbone still fits. | Confirmed: dense weights exceed the ceiling, the backbone fits, and only a minority share of FFN channels can run per token. | `results/accounting/20261114T201533Z-qwen3-1.7b.json`; `docs/BUDGET-MATH.md` |
+| Qwen3-4B would make the ceiling binding in a useful way. | **Rejected.** Its always-on backbone alone exceeds the ceiling, so no group selection can make it compliant. It is recorded as not downloaded. | `results/accounting/20261114T205700Z-qwen3-4b-config-projection.json` |
+| Full-group reconstruction from the published bundle is exact on real weights and real activations. | Confirmed: the grouped f32 path and the dense f32 path agreed bitwise for every layer and every activation row. | `results/real-parity/20261114T204209Z/real-parity-qwen3-0.6b.json`, `...-1.7b.json` |
+| The bundle reproduces the teacher's f32-equivalent computation. | Confirmed within the documented f32 bound, with zero violations across both checkpoints. | same receipts |
+| The bundle reproduces the teacher's native bf16 output when the teacher's rounding sequence is emulated. | Confirmed within the documented bf16 bound, with zero violations; plain f32 arithmetic on bf16 inputs does not reproduce it and is reported as informational. | same receipts |
+| bf16 storage would be the honest representation. | **Rejected in favour of f32.** f32 is an exact widening and gives a defined f32-equivalent path; a bf16 copy would still need the explicit rounding sequence, so the two-byte saving is not worth an ambiguous claim. | `docs/ARCHITECTURE.md` storage section; receipt sizes |
+
+### Measured conversion and parity (generated)
+
+Qwen3-0.6B, default grouping of sixteen contiguous groups per layer:
+
+- layers verified:
+  <!-- BEGIN GENERATED: worklog-layers -->
+28
+  <!-- END GENERATED: worklog-layers -->
+- activation rows per layer:
+  <!-- BEGIN GENERATED: worklog-rows -->
+64
+  <!-- END GENERATED: worklog-rows -->
+- manifest shards validated:
+  <!-- BEGIN GENERATED: worklog-06b-shards -->
+1344
+  <!-- END GENERATED: worklog-06b-shards -->
+- payload bytes:
+  <!-- BEGIN GENERATED: worklog-06b-payload -->
+1056964608
+  <!-- END GENERATED: worklog-06b-payload -->
+- whole bundle bytes:
+  <!-- BEGIN GENERATED: worklog-06b-bundle-file -->
+1057882112
+  <!-- END GENERATED: worklog-06b-bundle-file -->
+- grouped-from-bundle vs dense-from-checkpoint max abs:
+  <!-- BEGIN GENERATED: worklog-06b-bundle-dense-max-abs -->
+0.0
+  <!-- END GENERATED: worklog-06b-bundle-dense-max-abs -->
+- grouped f32 vs teacher f32 max abs:
+  <!-- BEGIN GENERATED: worklog-06b-f32-teacher-max-abs -->
+0.005859375
+  <!-- END GENERATED: worklog-06b-f32-teacher-max-abs -->
+- grouped bf16-emulated vs teacher native bf16 max abs:
+  <!-- BEGIN GENERATED: worklog-06b-bf16-teacher-max-abs -->
+0.5
+  <!-- END GENERATED: worklog-06b-bf16-teacher-max-abs -->
+
+Qwen3-1.7B, same grouping:
+
+- manifest shards validated:
+  <!-- BEGIN GENERATED: worklog-17b-shards -->
+1344
+  <!-- END GENERATED: worklog-17b-shards -->
+- payload bytes:
+  <!-- BEGIN GENERATED: worklog-17b-payload -->
+4227858432
+  <!-- END GENERATED: worklog-17b-payload -->
+- whole bundle bytes:
+  <!-- BEGIN GENERATED: worklog-17b-bundle-file -->
+4228780032
+  <!-- END GENERATED: worklog-17b-bundle-file -->
+- grouped-from-bundle vs dense-from-checkpoint max abs:
+  <!-- BEGIN GENERATED: worklog-17b-bundle-dense-max-abs -->
+0.0
+  <!-- END GENERATED: worklog-17b-bundle-dense-max-abs -->
+- grouped f32 vs teacher f32 max abs:
+  <!-- BEGIN GENERATED: worklog-17b-f32-teacher-max-abs -->
+0.021484375
+  <!-- END GENERATED: worklog-17b-f32-teacher-max-abs -->
+- grouped bf16-emulated vs teacher native bf16 max abs:
+  <!-- BEGIN GENERATED: worklog-17b-bf16-teacher-max-abs -->
+4.0
+  <!-- END GENERATED: worklog-17b-bf16-teacher-max-abs -->
+
+Oracle environment:
+
+- torch:
+  <!-- BEGIN GENERATED: worklog-oracle-torch -->
+2.15.0+cu132
+  <!-- END GENERATED: worklog-oracle-torch -->
+- CUDA runtime:
+  <!-- BEGIN GENERATED: worklog-oracle-cuda -->
+13.2
+  <!-- END GENERATED: worklog-oracle-cuda -->
+- transformers:
+  <!-- BEGIN GENERATED: worklog-oracle-transformers -->
+5.23.0
+  <!-- END GENERATED: worklog-oracle-transformers -->
+- GPU name:
+  <!-- BEGIN GENERATED: worklog-gpu-name -->
+NVIDIA GeForce RTX 4080 SUPER
+  <!-- END GENERATED: worklog-gpu-name -->
+- GPU capability:
+  <!-- BEGIN GENERATED: worklog-gpu-capability -->
+8.9
+  <!-- END GENERATED: worklog-gpu-capability -->
+- GPU SiLU maximum absolute error in the probe:
+  <!-- BEGIN GENERATED: worklog-gpu-silu-max-abs -->
+1.1920928955078125e-07
+  <!-- END GENERATED: worklog-gpu-silu-max-abs -->
+
+Qwen3-0.6B checkpoint weight bytes:
+  <!-- BEGIN GENERATED: worklog-fetch-06b-weight-bytes -->
+1503300328
+  <!-- END GENERATED: worklog-fetch-06b-weight-bytes -->
+
+### Verification performed (receipts, not prose)
+
+| what was verified | evidence |
+| --- | --- |
+| Oracle image builds; CPU probe passes | `results/courts/oracle-20261114T201540Z-131c57.json` |
+| GPU probe runs a real CUDA matmul and SiLU inside the container | `results/courts/oracle-20261114T201545Z-58530d.json`; `results/oracle-probe/20261114T201533Z.json` |
+| Model cache verifies offline against the lock | `results/courts/oracle-20261114T201552Z-20d92f.json`; `results/models/fetch-20261114T201604Z.json` |
+| Exact accounting on both real checkpoints | `results/accounting/20261114T201533Z-qwen3-0.6b.json`, `...-1.7b.json` |
+| Tokenizer identity recorded | `results/models/tokenizer-20261114T205700Z-qwen3-0.6b.json`, `...-1.7b.json` |
+| Qwen3-4B backbone projection from its pinned config | `results/accounting/20261114T205700Z-qwen3-4b-config-projection.json` |
+| Disk space measured, not assumed | `results/disk/disk-20261114T205532Z.json` |
+| Real conversion, 0.6B and 1.7B, sixteen groups per layer | `results/courts/rust-20261114T201446Z-ee1d5e.json` (0.6B), `results/courts/rust-20261114T201625Z-305069.json` (1.7B) |
+| Random-input reconstruction at real weight scale | `results/courts/rust-20261114T204213Z-97474e.json` (0.6B), `results/courts/rust-20261114T204359Z-b277f9.json` (1.7B); the earlier 1.7B failure that triggered recalibration is `results/courts/rust-20261114T201929Z-62b121.json` |
+| Real-activation Court A additions, both checkpoints | `results/real-parity/20261114T204209Z/real-parity-qwen3-0.6b.json`, `...-1.7b.json`; court receipts `results/courts/rust-20261114T205417Z-58abb5.json`, `results/courts/rust-20261114T205423Z-124bf4.json` |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T201329Z-582f31.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T201343Z-0566af.json` |
+| `cargo test --workspace` | `results/courts/rust-20261114T201345Z-13332e.json` |
+
+### Decisions and known limitations
+
+1. **f32 bundle storage is deliberate.** It is an exact widening of bf16 and
+   the basis of the f32-equivalent claim. A bf16 bundle would save two bytes per
+   element but would not remove the need for the documented rounding sequence.
+2. **The default grouping is sixteen contiguous groups per layer.** That is a
+   conversion default, not a measured optimum. It keeps shards large enough to
+   be meaningful on NVMe and small enough to exercise partial-group arithmetic.
+3. **Embedding and output projection are counted as whole matrices.** With the
+   verified tie they are counted once. A row-only convention would change the
+   budget arithmetic and is not used.
+4. **The tokenizer vocabulary is smaller than the embedding table.** Unused
+   rows are still counted as learned parameters. This is recorded in
+   `docs/MODELS.md`.
+5. **The real conversations use one prompt set and 64 activation rows.** That
+   is enough to test the FFN identity on real inputs, not enough to support a
+   quality claim. Skipping groups still changes the function; Court B must
+   measure that.
+6. **bf16 emulation is a model of PyTorch's arithmetic, not a proof of its
+   kernels.** It matches the captured outputs within the documented bound on
+   these inputs. A different backend or fused kernel could round differently.
+7. **No measured FLOPs or latency.** All FLOP values are formula estimates.
+8. **`--gpus all` still fails without a CDI specification.** The court uses
+   explicit device passthrough and records the fallback; this is inherited from
+   S0 and remains an operator decision.
+9. **The 1.7B random-input verification needed a recalibrated tolerance.** The
+   original tiny-fixture bound was 1e-5; the real 6144-wide FFN reaches ~4e-5 in
+   f32 against an f64 reference. The compile-time bound is now 1e-4 and the
+   measured maxima are in receipts. This is calibration, not a relaxed claim.
+
+### Next experiment
+
+S3b: capture per-group counterfactual teacher divergence on a calibrated prompt
+set, starting with the 1.7B teacher because it is the checkpoint whose compliant
+budget forces FFN selection. The first measurable question is whether a
+per-token top-k group selection at the affordable share stays closer to the
+teacher than random or magnitude selection, with a pre-registered kill
+condition. The 0.6B model remains the control where the ceiling is not binding.

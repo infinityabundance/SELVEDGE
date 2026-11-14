@@ -216,6 +216,171 @@ battery, byte-and-id determinism, per-shard id/hash recomputation, full-hash
 validation, and reconstruction from bundle bytes rather than from in-memory
 conversion state.
 
+## Oracle boundary and real-model accounting (S3a)
+
+**Python is instrumentation only.** The oracle court exists to run the
+Hugging Face teacher, capture activations and (later) calibration. It never owns
+the shard format, the parameter accounting, the bundle reader or the CLI; those
+remain Rust. The Rust court mounts the same model cache read-only, and the only
+writer of that cache is the explicit, networked fetch step.
+
+```mermaid
+flowchart TD
+    fetch[scripts/fetch-models.sh<br/>oracle court, --net] --> cache[(host HF cache<br/>~/.cache/selvedge/hf)]
+    cache --> teacher[oracle court<br/>HF forward, no trust_remote_code]
+    teacher --> acts[real activations<br/>f32 + bf16 paths]
+    cache -->|read-only| rust[Rust court]
+    rust --> account[inspect-model<br/>exact element counts]
+    rust --> convert[convert<br/>f32 group shards]
+    rust --> parity[court a-real<br/>grouped vs teacher]
+    acts --> parity
+    convert --> parity
+    cache --> config[config.json]
+    config --> account
+```
+
+### Oracle court
+
+- `docker/Dockerfile.oracle` extends the same digest-pinned Python base as the
+  Python court and installs the exact pins from
+  `docker/requirements-oracle.txt`.
+- The build proves the stack imports. The runtime probe proves a pinned matmul
+  and SiLU run, and, with `--gpu`, that a real CUDA tensor op ran in the
+  container. The probe report and the court receipt record the device, the CUDA
+  runtime and the fallback reason when `--gpus all` is unavailable.
+- The court is offline unless `--net` is passed. `HF_HOME` and `HF_HUB_CACHE`
+  point at the mounted cache, and `HF_HUB_OFFLINE`/`TRANSFORMERS_OFFLINE` are set
+  from the network mode. Teacher loads use a local directory path plus
+  `local_files_only=True`.
+- `trust_remote_code` is never enabled. The Qwen3 architecture is implemented by
+  the pinned `transformers` release; no model repository code runs.
+
+### Accounting boundary
+
+`selvedge inspect-model` reads `config.json` and the safetensors headers only.
+Component membership is explicit: an unexpected tensor is a hard error, so no
+learned element silently escapes the totals. Tied embeddings are verified by
+comparing both matrices elementwise after exact widening; a config claim that
+the bytes contradict is rejected. The report carries per-tensor accounts,
+category totals, the tie verdict, budget arithmetic and FLOP estimates. The
+conventions (whole-matrix embedding, tie counted once, always-active backbone)
+are in `docs/BUDGET-MATH.md`.
+
+### Real-activation parity
+
+`selvedge court a-real` reads a validated bundle, the source checkpoint and a
+safetensors activation file produced by `oracle/capture_activations.py`. For
+every layer it computes:
+
+- the dense FFN in f32 from the checkpoint tensors;
+- the grouped FFN in f32 from the bundle's groups;
+- the same grouped FFN with explicit bf16 intermediate rounding, matching the
+  teacher's native arithmetic (f32 accumulation, bf16 rounding after the gate/up
+  projections, after SiLU, after the gate/up product, and once after the down
+  projection).
+
+It then compares four paths: bundle-vs-dense, dense-vs-teacher f32,
+grouped-vs-teacher f32, and grouped-bf16-emulated-vs-teacher-native-bf16. A
+plain f32 computation on bf16 inputs is also reported, labelled informational,
+because it is not the teacher's arithmetic. Rows are independent and split
+across threads; the arithmetic inside a row keeps the documented group and
+channel order.
+
+### Storage choice and tolerance
+
+The bundle stores unquantized f32, an exact widening of the bf16 checkpoint.
+That costs two extra bytes per FFN element versus bf16 storage and buys an
+f32-equivalent path that does not depend on the teacher's internal rounding.
+A bf16-stored bundle is **not** claimed: reproducing native bf16 requires the
+rounding sequence above, not a lower-precision copy of the weights.
+
+The acceptance criterion for the real paths is elementwise
+`|a - b| <= (abs + scale * rms) + rel * |reference|`, where `rms` is the
+reference RMS for that comparison. The scale term is required because FFN
+outputs contain components produced by cancellation of much larger terms, where
+an elementwise relative test alone is meaningless. The constants are:
+
+- f32 absolute:
+  <!-- BEGIN GENERATED: arch-f32-abs -->
+0.0001
+  <!-- END GENERATED: arch-f32-abs -->
+- f32 relative:
+  <!-- BEGIN GENERATED: arch-f32-rel -->
+0.0001
+  <!-- END GENERATED: arch-f32-rel -->
+- f32 scale fraction of RMS:
+  <!-- BEGIN GENERATED: arch-f32-scale -->
+0.001
+  <!-- END GENERATED: arch-f32-scale -->
+- native bf16 absolute:
+  <!-- BEGIN GENERATED: arch-bf16-abs -->
+0.05
+  <!-- END GENERATED: arch-bf16-abs -->
+- native bf16 relative:
+  <!-- BEGIN GENERATED: arch-bf16-rel -->
+0.015625
+  <!-- END GENERATED: arch-bf16-rel -->
+- native bf16 scale fraction of RMS:
+  <!-- BEGIN GENERATED: arch-bf16-scale -->
+0.015625
+  <!-- END GENERATED: arch-bf16-scale -->
+
+Measured maxima, Qwen3-0.6B:
+
+- grouped-from-bundle f32 vs dense-from-checkpoint f32:
+  <!-- BEGIN GENERATED: arch-recon-06b-max-abs -->
+0.0
+  <!-- END GENERATED: arch-recon-06b-max-abs -->
+- grouped f32 vs teacher f32:
+  <!-- BEGIN GENERATED: arch-real-06b-f32-max-abs -->
+0.005859375
+  <!-- END GENERATED: arch-real-06b-f32-max-abs -->
+- grouped bf16-emulated vs teacher native bf16:
+  <!-- BEGIN GENERATED: arch-real-06b-bf16-max-abs -->
+0.5
+  <!-- END GENERATED: arch-real-06b-bf16-max-abs -->
+
+Measured maxima, Qwen3-1.7B:
+
+- grouped-from-bundle f32 vs dense-from-checkpoint f32:
+  <!-- BEGIN GENERATED: arch-recon-17b-max-abs -->
+0.0
+  <!-- END GENERATED: arch-recon-17b-max-abs -->
+- grouped f32 vs teacher f32:
+  <!-- BEGIN GENERATED: arch-real-17b-f32-max-abs -->
+0.021484375
+  <!-- END GENERATED: arch-real-17b-f32-max-abs -->
+- grouped bf16-emulated vs teacher native bf16:
+  <!-- BEGIN GENERATED: arch-real-17b-bf16-max-abs -->
+4.0
+  <!-- END GENERATED: arch-real-17b-bf16-max-abs -->
+
+The random-input reconstruction gate (`convert verify`) keeps its own
+compile-time tolerance in `selvedge-convert`; it was recalibrated on the real
+checkpoints and its measured maxima are in the Court A/verification receipts.
+
+### FLOP formulas
+
+For one output token, with hidden width `H`, intermediate width `I`, head count
+`Nh`, key/value head count `Nkv`, head width `d`, vocabulary `V`, layers `L`,
+and context length `C`:
+
+```text
+matmul                      = 2 * out_features * in_features
+q projection                = 2 * (Nh*d) * H
+k, v projections            = 2 * (Nkv*d) * H each
+o projection                = 2 * H * (Nh*d)
+attention core (QK^T + AV)  = 4 * C * (Nh*d)
+attention softmax estimate  = 5 * C * Nh
+RMSNorm estimate            = 4 * normalised_elements per application
+SwiGLU matmul               = 2*(I*H) + 2*(I*H) + 2*(H*I) = 6*I*H
+SwiGLU elementwise estimate = 6 * I (SiLU, gate multiply, group accumulate)
+lm_head                     = 2 * V * H, once per token, tied or not
+embedding lookup            = gather, no matmul FLOPs
+```
+
+These are estimates. `selvedge` never reports them as measured FLOPs.
+
 ## Configuration
 
 `Config` is deserialized from TOML with unknown fields rejected. It carries:
@@ -247,10 +412,15 @@ the value later benchmark rows must carry.
 | `selvedge format validate` | implemented | all/selected/structural modes |
 | `selvedge convert` | implemented | safetensors f32/f16/bf16, groups, plan, atomic publication |
 | `selvedge convert verify` / `selvedge court a` | implemented | on-disk reconstruction, measured f32/f64 error |
+| `selvedge inspect-model` | implemented | exact real-checkpoint accounting, tie verification, budget and FLOP estimates |
+| oracle court | implemented | pinned torch/transformers image, GPU device passthrough verified, offline cache mount |
+| model fetch | implemented | pinned revisions, LFS-oid/SHA-256 verification, idempotent |
+| real-activation parity (`court a-real`) | implemented | real FFN inputs, f32 and emulated native-bf16 paths |
+| attribution, selectors | **not implemented** | S3b |
 | executable Courts C and D | implemented | named scenarios plus integration tests |
 | synthetic fixtures | implemented | deterministic PRNG, tracked bundle and safetensors checkpoint |
 | GGUF | **not implemented** | later; packed block boundaries must not be sliced as floats |
-| teacher oracle, attribution, selectors | **not implemented** | S3 |
+| teacher oracle, attribution, selectors | **partially implemented** | teacher oracle, accounting and real-activation parity exist; attribution and selectors do not |
 | execution traces, simulator, scheduler | **not implemented** | later |
 | real inference backend, CUDA kernels | **not implemented** | CUDA is not compiled in |
 | quality or latency measurements | **none** | no benchmark has been run |
