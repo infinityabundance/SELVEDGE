@@ -2246,6 +2246,7 @@ def command_oracle(args) -> int:
             "selector_seconds": 0.0,
             "gpu_seconds": 0.0,
             "subset_evaluations": 0,
+            "_selections": {},
         }
         for config in configs
     }
@@ -2311,6 +2312,9 @@ def command_oracle(args) -> int:
                         }
                     current_hidden = [capture.get(layer).clone() for layer in range(LAYERS)]
                 kl_positions = best["kl"]
+                entry_result["_selections"][doc_id] = [
+                    value.clone() for value in best["selection"]
+                ]
                 entry_result["windows"][doc_id] = {
                     "doc_id": doc_id,
                     "window_index": window_record["window_index"],
@@ -2396,6 +2400,33 @@ def command_oracle(args) -> int:
     for config in configs:
         entry_result = config_results[config["id"]]
         windows = list(entry_result["windows"].values())
+        selections = entry_result.pop("_selections", {})
+        cross_values = []
+        cross_layers = []
+        keys = sorted(selections)
+        for left_index in range(len(keys)):
+            for right_index in range(left_index + 1, len(keys)):
+                left = selections[keys[left_index]]
+                right = selections[keys[right_index]]
+                if any(
+                    a.shape != b.shape for a, b in zip(left, right)
+                ):
+                    continue
+                layer_values = [
+                    jaccard_selection(left[layer], right[layer])
+                    for layer in range(LAYERS)
+                ]
+                cross_layers.append(layer_values)
+                cross_values.append(sum(layer_values) / len(layer_values))
+        entry_result["cross_window"] = {
+            "pairs": len(cross_values),
+            "jaccard_mean": float(np.mean(cross_values)) if cross_values else None,
+            "jaccard_per_layer": (
+                np.mean(np.array(cross_layers), axis=0).tolist()
+                if cross_layers
+                else None
+            ),
+        }
         if windows:
             entry_result["aggregate"] = {
                 "items": len(windows),
@@ -2434,6 +2465,9 @@ def command_oracle(args) -> int:
                 "distinct_subsets_per_layer": distinct.mean(axis=0).tolist(),
                 "per_token_groups_min": int(min(item["selection"]["per_token_min"] for item in windows)),
                 "per_token_groups_max": int(max(item["selection"]["per_token_max"] for item in windows)),
+                "cross_window_jaccard_mean": entry_result["cross_window"]["jaccard_mean"],
+                "cross_window_jaccard_per_layer": entry_result["cross_window"]["jaccard_per_layer"],
+                "cross_window_pairs": entry_result["cross_window"]["pairs"],
             }
     stamp = args.stamp or stamp_now()
     receipt = base_receipt(args, "oracle", accounting, entry, device, split_receipt)
@@ -3319,14 +3353,16 @@ def command_analyze(args) -> int:
         if cons_begin in lines and cons_end in lines:
             start = lines.index(cons_begin)
             stop = lines.index(cons_end)
-            block = [cons_begin, "", "| oracle | adjacent equal | distinct subsets / layer | modal fraction | groups / token |", "| --- | ---: | ---: | ---: | --- |"]
+            block = [cons_begin, "", "| oracle | adjacent equal | distinct subsets / layer | modal fraction | cross-window Jaccard | groups / token |", "| --- | ---: | ---: | ---: | ---: | --- |"]
             for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
                 consistency = row.get("consistency") or {}
                 groups = f"{consistency.get('per_token_groups_min', '?')}-{consistency.get('per_token_groups_max', '?')}"
+                cross = consistency.get("cross_window_jaccard_mean")
+                cross_text = f"{cross:.4f}" if isinstance(cross, (int, float)) else "n/a"
                 block.append(
                     f"| {row['id']} | {consistency.get('adjacent_equal_fraction_mean', float('nan')):.4f} | "
                     f"{consistency.get('distinct_subsets_per_layer_mean', float('nan')):.1f} | "
-                    f"{consistency.get('modal_fraction_mean', float('nan')):.4f} | {groups} |"
+                    f"{consistency.get('modal_fraction_mean', float('nan')):.4f} | {cross_text} | {groups} |"
                 )
             block.append(cons_end)
             lines = lines[:start] + block + lines[stop + 1 :]
