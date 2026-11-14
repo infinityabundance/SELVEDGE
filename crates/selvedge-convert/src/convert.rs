@@ -725,7 +725,11 @@ fn report_for(
                 storage_order: order_text(&shard.storage_order),
                 transform_id: shard.transform_id.clone(),
                 bytes: shard.length,
-                sha256: shard.sha256.to_hex(),
+                sha256: if published.is_some() {
+                    shard.sha256.to_hex()
+                } else {
+                    "-".to_owned()
+                },
             })
         })
         .collect::<Result<Vec<_>>>()?;

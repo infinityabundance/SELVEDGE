@@ -136,7 +136,39 @@ pub(crate) fn run(args: &ConvertArgs) -> CliResult {
     }
 }
 
+#[derive(Debug, Serialize)]
+struct ErrorReport<'a> {
+    schema: &'a str,
+    ok: bool,
+    error: String,
+}
+
+fn print_json_error(schema: &str, error: &dyn std::error::Error) {
+    let report = ErrorReport {
+        schema,
+        ok: false,
+        error: error.to_string(),
+    };
+    if let Ok(text) = serde_json::to_string_pretty(&report) {
+        println!("{text}");
+    }
+}
+
 fn run_convert(args: &ConvertOptionsArgs) -> CliResult {
+    match run_convert_inner(args) {
+        Ok(code) => Ok(code),
+        Err(error) => {
+            if args.json {
+                print_json_error("selvedge/convert-error/v1", &*error);
+                Ok(ExitCode::FAILURE)
+            } else {
+                Err(error)
+            }
+        }
+    }
+}
+
+fn run_convert_inner(args: &ConvertOptionsArgs) -> CliResult {
     let model = args
         .model
         .as_ref()
@@ -176,6 +208,20 @@ fn run_convert(args: &ConvertOptionsArgs) -> CliResult {
 }
 
 fn run_verify(args: &VerifyArgs) -> CliResult {
+    match run_verify_inner(args) {
+        Ok(code) => Ok(code),
+        Err(error) => {
+            if args.json {
+                print_json_error("selvedge/verify-error/v1", &*error);
+                Ok(ExitCode::FAILURE)
+            } else {
+                Err(error)
+            }
+        }
+    }
+}
+
+fn run_verify_inner(args: &VerifyArgs) -> CliResult {
     let config = crate::config::load(&args.config)?;
     let mut source = CheckpointSource::open(&args.model)?;
     let maps = discover(&source, &args.map)?;

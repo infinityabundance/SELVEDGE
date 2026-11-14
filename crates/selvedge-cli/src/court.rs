@@ -98,7 +98,21 @@ fn run_a(
     seed: Option<u64>,
 ) -> CliResult {
     let seed = seed.unwrap_or(selvedge_convert::SYNTHETIC_SEED);
-    let report = run_court_a_with_provenance(seed, stamp, revision)?;
+    let report = match run_court_a_with_provenance(seed, stamp, revision) {
+        Ok(report) => report,
+        Err(error) => {
+            if json {
+                let failure = serde_json::json!({
+                    "schema": "selvedge/court-a-error/v1",
+                    "ok": false,
+                    "error": error.to_string(),
+                });
+                println!("{}", serde_json::to_string_pretty(&failure)?);
+                return Ok(ExitCode::FAILURE);
+            }
+            return Err(Box::new(error));
+        }
+    };
     if let Some(path) = report_out {
         crate::convert_cmd::write_report(path, &report)?;
     }

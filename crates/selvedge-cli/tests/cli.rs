@@ -328,7 +328,44 @@ fn convert_plan_writes_nothing() {
     );
     let report = stdout_json(&output);
     assert!(report["bundle_path"].is_null());
+    assert!(report["shards"][0]["sha256"] == "-");
     assert!(!out.exists());
+}
+
+#[test]
+fn convert_json_errors_are_machine_readable() {
+    let output = run(&[
+        "convert",
+        "--model",
+        "/nonexistent/model.safetensors",
+        "--out",
+        "/nonexistent/out",
+        "--json",
+    ]);
+    assert!(!output.status.success());
+    let report = stdout_json(&output);
+    assert_eq!(report["schema"], "selvedge/convert-error/v1");
+    assert_eq!(report["ok"], false);
+    assert!(!report["error"].as_str().unwrap().is_empty());
+}
+
+#[test]
+fn verify_json_errors_are_machine_readable() {
+    let dir = TempDir::new("selvedge-cli-verify-error").unwrap();
+    let model = write_synthetic_checkpoint(&dir);
+    let output = run(&[
+        "convert",
+        "verify",
+        "--bundle",
+        "/nonexistent/bundle.slv",
+        "--model",
+        model.to_str().unwrap(),
+        "--json",
+    ]);
+    assert!(!output.status.success());
+    let report = stdout_json(&output);
+    assert_eq!(report["schema"], "selvedge/verify-error/v1");
+    assert_eq!(report["ok"], false);
 }
 
 #[test]
