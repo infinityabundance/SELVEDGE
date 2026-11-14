@@ -49,12 +49,18 @@ scripts/court python -- python3 --version
 # integrity courts
 scripts/court commit_identity
 scripts/court perf_numbers
+scripts/court perf_numbers --write
+scripts/court perf_numbers --list
+
+# negative self-tests (these must exit zero and print PASS lines)
+scripts/docker-court.sh python -- bash scripts/courts/perf_numbers_negative_cases.sh
+scripts/docker-court.sh python -- bash scripts/courts/commit_identity_negative_cases.sh
 
 # hardware/toolchain probe -> results/hardware/probe-<stamp>.json
 scripts/probe-hardware.sh
 
 # generic court passthrough (no network unless --net is given)
-scripts/docker-court.sh rust -- cargo test
+scripts/docker-court.sh rust -- cargo --version
 scripts/docker-court.sh python -- python3 -c 'print(1)'
 ```
 
@@ -64,6 +70,31 @@ scripts/docker-court.sh python -- python3 -c 'print(1)'
 
 Limit overrides are accepted only as valid non-zero values, e.g.
 `SELVEDGE_MEM=2g SELVEDGE_CPUS=4 scripts/court rust build`.
+
+## Court interface for later work
+
+- **Rust builds and tests:** `scripts/court rust test`, `... build`, `... clippy`,
+  or `scripts/docker-court.sh rust -- cargo <args>`. The container runs as the
+  host user with `CARGO_HOME=/cargo` (persistent registry/git cache) and
+  `CARGO_TARGET_DIR=/work/target` (persistent target dir). Network is disabled,
+  and `CARGO_NET_OFFLINE=true` is set, so dependency resolution fails loudly
+  instead of hanging. Fetch dependencies with an explicit networked run:
+  `scripts/court --net rust -- cargo fetch` and commit `Cargo.lock`.
+- **Python oracle jobs:** `scripts/court python scripts/oracle/<job>.py` (or
+  `-m pytest`). The container has pinned `numpy`/`pytest` from
+  `docker/requirements-court.txt`, `PIP_CACHE_DIR=/pycache/pip`, and
+  `PYTHONPYCACHEPREFIX=/pycache/pycache`; create a venv under `/pycache` if a job
+  needs more packages, and add pins to the requirements file for anything that
+  must be reproducible.
+- **I/O courts:** `scripts/court io -- <argv>` uses the Python court image
+  (`fio`, `dd`, `df`) with the same limits.
+- **GPU:** add `--gpu`. On this host that resolves to explicit device
+  passthrough because `--gpus all` fails without a CDI specification; the
+  receipt records which mode was used and why. A GPU court fails closed rather
+  than falling back to CPU.
+- **Limits:** `SELVEDGE_MEM` (default `8g`), `SELVEDGE_CPUS` (`8`),
+  `SELVEDGE_PIDS` (`1024`), `SELVEDGE_TMP` (`2g`), `SELVEDGE_NOFILE` (`65536`).
+  Empty, zero or malformed values refuse to run.
 
 ## Layout
 
