@@ -1,0 +1,293 @@
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/main.rs (target/debug/deps/selvedge-221b4b69979751dd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cli.rs (target/debug/deps/cli-8035798854ce608a)
+
+running 21 tests
+test convert_json_errors_are_machine_readable ... ok
+test court_c_runs_every_budget_scenario ... ok
+test convert_plan_writes_nothing ... ok
+test doctor_json_reports_all_checks ... ok
+test convert_publishes_a_group_bundle ... ok
+test doctor_human_output_exits_zero ... ok
+test doctor_probe_host_reports_cpu_and_memory ... ok
+test helper_paths_exist ... ok
+test convert_verify_reports_reconstruction_and_tolerance_failure ... ok
+test format_validate_accepts_the_fixture ... ok
+test format_validate_structural_mode_is_explicit ... ok
+test inspect_model_rejects_a_missing_checkpoint_with_json ... ok
+test inspect_model_is_listed_in_help ... ok
+test version_is_reported ... ok
+test verify_json_errors_are_machine_readable ... ok
+test format_validate_rejects_a_corrupted_payload ... ok
+test inspect_bundle_prints_a_shard_table ... ok
+test inspect_accepts_a_bare_manifest ... ok
+test court_d_runs_storage_scenarios_in_a_kept_workdir ... ok
+test court_a_runs_the_reconstruction_matrix ... ok
+test court_a_writes_a_receipt_report ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running unittests src/lib.rs (target/debug/deps/selvedge_convert-3980d48c9ec3364d)
+
+running 20 tests
+test ffn::tests::explicit_groups_reject_overlap_and_incomplete_coverage ... ok
+test ffn::tests::dense_and_grouped_paths_agree_on_a_tiny_case ... ok
+test ffn::tests::group_spec_parses_ranges_and_lists ... ok
+test ffn::tests::grouping_by_count_is_uneven_at_the_end ... ok
+test real_parity::tests::bf16_rounding_is_round_to_nearest_even ... ok
+test real_parity::tests::tolerance_constants_are_the_documented_ones ... ok
+test real_parity::tests::contiguous_groups_reproduce_dense_bitwise ... ok
+test safetensors::tests::non_utf8_and_misaligned_headers_are_rejected ... ok
+test safetensors::tests::byte_length_mismatch_is_rejected ... ok
+test safetensors::tests::parses_a_minimal_header_and_rejects_duplicates ... ok
+test safetensors::tests::unsupported_dtypes_are_rejected ... ok
+test safetensors::tests::zero_size_tensors_are_accepted_and_overlaps_rejected ... ok
+test tensor_source::tests::bf16_round_trip_preserves_exact_values ... ok
+test tensor_source::tests::f16_encoder_rounds_ties_to_even ... ok
+test tensor_source::tests::f16_widening_is_exact_for_representable_values ... ok
+test tensor_source::tests::memory_budget_tracks_peak_and_refuses_overcommit ... ok
+test synthetic::tests::small_fixture_stays_under_two_hundred_kilobytes ... ok
+test tensor_source::tests::physical_index_handles_all_rank_two_orders ... ok
+test synthetic::tests::generation_is_reproducible ... ok
+test synthetic::tests::encoded_checkpoint_round_trips_through_the_reader ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/accounting.rs (target/debug/deps/accounting-87dc521c97a4c5b7)
+
+running 8 tests
+test default_ceiling_matches_the_mandate ... ok
+test a_shape_that_disagrees_with_config_is_rejected ... ok
+test unclassified_tensor_is_rejected ... ok
+test tied_config_with_different_bytes_is_rejected ... ok
+test a_ceiling_below_the_backbone_is_impossible ... ok
+test tiny_qwen3_accounting_is_exact_and_tie_aware ... ok
+test untied_pair_counts_twice_and_ceiling_verdict_tracks_it ... ok
+test a_ceiling_between_backbone_and_dense_is_binding ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/court_a.rs (target/debug/deps/court_a-e49cd0a07e39150f)
+
+running 11 tests
+test court_a_single_group_full_span ... ok
+test court_a_group_permutation_invariance ... ok
+test court_a_empty_subset_is_exact_zero ... ok
+test court_a_group_sizes_one_two_three_and_prime ... ok
+test court_a_all_groups_equal_original ... ok
+test court_a_non_divisible_and_degenerate_dimensions ... ok
+test court_a_reports_every_named_scenario_passing ... ok
+test court_a_determinism_ids_hashes_and_validation ... ok
+test court_a_small_memory_ceiling ... ok
+test court_a_twenty_random_seeds ... ok
+test court_a_storage_orders_and_dtypes ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/decomposition.rs (target/debug/deps/decomposition-a08f0ba8d201e2cb)
+
+running 9 tests
+test disjointness_is_enforced ... ok
+test complete_coverage_is_enforced ... ok
+test group_count_above_intermediate_is_rejected ... ok
+test memory_budget_refuses_overcommit ... ok
+test map_validation_rejects_wrong_orientation_and_dtype ... ok
+test memory_ceiling_is_enforced ... ok
+test non_contiguous_explicit_groups_convert_and_verify ... ok
+test f16_and_bf16_sources_convert ... ok
+test column_major_and_transposed_sources_convert ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/safetensors.rs (target/debug/deps/safetensors-67c59f180a93a722)
+
+running 14 tests
+test malformed_json_and_non_utf8_are_rejected ... ok
+test duplicate_keys_are_rejected ... ok
+test metadata_must_be_a_string_map ... ok
+test read_tensor_bytes_honours_the_cap ... ok
+test file_reader_uses_positional_reads_without_mapping ... ok
+test offset_shape_and_overlap_failures_are_rejected ... ok
+test unknown_tensor_fields_are_rejected ... ok
+test unsupported_and_packed_dtypes_are_rejected ... ok
+test zero_size_tensor_is_accepted ... ok
+test valid_image_parses_and_reads_exact_regions ... ok
+test truncations_and_oversized_headers_are_rejected ... ok
+test writes_are_deterministic_across_runs ... ok
+test single_byte_mutations_never_panic ... ok
+test arbitrary_bytes_never_panic ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/tolerance_docs.rs (target/debug/deps/tolerance_docs-d5baf6c7c03a6dcf)
+
+running 1 test
+test architecture_documents_every_tolerance_constant ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/selvedge_core-5a3ac170074b571a)
+
+running 38 tests
+test canonical::tests::integers_are_little_endian_and_length_prefixed ... ok
+test canonical::tests::canonical_json_matches_expected_shape ... ok
+test config::tests::hard_limits_are_enforced ... ok
+test canonical::tests::struct_field_order_is_canonicalised ... ok
+test canonical::tests::key_order_does_not_change_canonical_json_or_hash ... ok
+test error::tests::display_names_field_and_reason ... ok
+test hash::tests::empty_vector_matches_known_sha256 ... ok
+test config::tests::default_config_is_valid_and_has_stable_hash ... ok
+test hash::tests::rejects_wrong_length_and_non_hex ... ok
+test hash::tests::parse_and_display_round_trip ... ok
+test hash::tests::incremental_matches_one_shot ... ok
+test ids::tests::model_digest_is_order_independent ... ok
+test ids::tests::model_digest_rejects_duplicate_paths ... ok
+test ledger::tests::union_merges_overlaps_and_adjacent_ranges ... ok
+test ids::tests::shard_id_is_stable_and_display_round_trips ... ok
+test ledger::tests::budget_boundary_semantics ... ok
+test ledger::tests::auxiliary_kind_serialises_as_stable_strings ... ok
+test config::tests::unknown_fields_are_rejected ... ok
+test ids::tests::every_identity_field_changes_the_id ... ok
+test residency::tests::residency_validation ... ok
+test residency::tests::transfer_math ... ok
+test selection::tests::approximate_cannot_be_attested_without_reclassification ... ok
+test selection::tests::decision_is_sorted_and_unique ... ok
+test selection::tests::exact_requires_native_set_equality ... ok
+test tensor::tests::channel_set_validation_and_span ... ok
+test selection::tests::realized_mismatch_is_detectable ... ok
+test tensor::tests::dtype_names_round_trip ... ok
+test tensor::tests::param_identity_alias_detection ... ok
+test tensor::tests::role_round_trips_known_and_other ... ok
+test tensor::tests::slice_rejects_invariant_violations ... ok
+test testutil::tests::rejects_bad_prefix ... ok
+test tensor::tests::storage_order_permutations_are_validated ... ok
+test units::tests::addition_and_multiplication_report_overflow ... ok
+test units::tests::alignment_rounds_up ... ok
+test units::tests::dtype_byte_counts ... ok
+test testutil::tests::tempdir_is_created_and_removed ... ok
+test units::tests::element_counts_are_checked ... ok
+test config::tests::toml_round_trip_preserves_hash ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/court_c.rs (target/debug/deps/court_c-f62f66fed3172efb)
+
+running 13 tests
+test a_fallback_that_is_still_over_budget_is_rejected ... ok
+test adapters_memory_router_and_verifier_are_learned ... ok
+test a_within_budget_fallback_can_be_substituted_before_execution ... ok
+test exactly_one_billion_active_unique_params_is_within_budget ... ok
+test one_billion_and_one_active_unique_params_is_rejected ... ok
+test over_budget_decision_is_allowed_only_when_labelled_as_teacher_mode ... ok
+test over_budget_decision_is_rejected_in_compliance_mode ... ok
+test overlapping_and_adjacent_slices_are_deduplicated ... ok
+test quantization_metadata_is_not_counted_as_learned_parameters ... ok
+test recurrent_reuse_counts_unique_params_once_but_reads_every_time ... ok
+test tied_embeddings_are_counted_once ... ok
+test token_accounting_reports_all_required_counters ... ok
+test the_whole_court_c_report_passes_and_is_stable ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/selvedge_fixtures-5e5055d4e9443aa0)
+
+running 3 tests
+test tests::prng_is_deterministic_and_stable ... ok
+test tests::fixture_has_expected_roles_and_one_quantized_shard ... ok
+test tests::generation_is_reproducible ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/main.rs (target/debug/deps/selvedge_fixtures-a61b4bdc4fc78998)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/reproducible.rs (target/debug/deps/reproducible-64424eeae3e2f06f)
+
+running 4 tests
+test committed_artifact_is_small ... ok
+test committed_safetensors_matches_the_generator ... ok
+test committed_sidecar_matches_the_bundle ... ok
+test committed_bundle_matches_the_generator ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/selvedge_format-4bbacbbacfb0d987)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/court_d.rs (target/debug/deps/court_d-dd031d023f2003e9)
+
+running 35 tests
+test corrupted_manifest_bytes_are_rejected ... ok
+test alignment_violation_is_rejected ... ok
+test duplicate_shard_ids_are_rejected ... ok
+test bit_flip_in_payload_fails_hash_verification ... ok
+test header_encoding_round_trips ... ok
+test fixture_helper_types_are_consistent ... ok
+test file_length_mismatch_is_rejected ... ok
+test cancellable_read_aborts_and_the_reader_recovers ... ok
+test interrupted_publication_leaves_no_partial_bundle ... ok
+test length_corruption_is_rejected_with_byte_length_mismatch ... ok
+test failed_forced_publication_preserves_the_existing_bundle ... ok
+test hot_reload_rejects_a_conflicting_bundle_id ... ok
+test atomic_publication_is_immutable_without_force ... ok
+test hostile_corpus_is_rejected_without_panicking ... ok
+test memory_bundle_shares_the_validation_path ... ok
+test offset_outside_payload_is_rejected ... ok
+test oversized_manifest_is_rejected_before_allocation ... ok
+test model_digest_and_compatibility_mismatch_are_rejected ... ok
+test overlapping_extents_are_rejected ... ok
+test selected_verification_verifies_only_selected_shards ... ok
+test truncated_header_is_rejected ... ok
+test short_and_long_payload_streams_are_rejected ... ok
+test truncated_manifest_is_rejected ... ok
+test structural_only_skips_every_hash ... ok
+test stored_id_that_is_not_content_derived_is_rejected ... ok
+test truncated_payload_is_rejected ... ok
+test unknown_selected_shard_is_rejected ... ok
+test unsupported_dtype_is_rejected ... ok
+test valid_bundle_round_trips_and_reports_totals ... ok
+test version_skew_is_rejected ... ok
+test concurrent_readers_never_observe_a_torn_bundle ... ok
+test wrong_endianness_version_is_rejected ... ok
+test stale_sidecar_is_rejected ... ok
+test mutations_of_a_valid_bundle_never_panic ... ok
+test arbitrary_bytes_never_panic ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+   Doc-tests selvedge_convert
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests selvedge_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests selvedge_fixtures
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests selvedge_format
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

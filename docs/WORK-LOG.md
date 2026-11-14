@@ -599,9 +599,9 @@ Qwen3-0.6B checkpoint weight bytes:
 | Real conversion, 0.6B and 1.7B, sixteen groups per layer | `results/courts/rust-20261114T201446Z-ee1d5e.json` (0.6B), `results/courts/rust-20261114T201625Z-305069.json` (1.7B) |
 | Random-input reconstruction at real weight scale | `results/courts/rust-20261114T204213Z-97474e.json` (0.6B), `results/courts/rust-20261114T204359Z-b277f9.json` (1.7B); the earlier 1.7B failure that triggered recalibration is `results/courts/rust-20261114T201929Z-62b121.json` |
 | Real-activation Court A additions, both checkpoints | `results/real-parity/20261114T204209Z/real-parity-qwen3-0.6b.json`, `...-1.7b.json`; court receipts `results/courts/rust-20261114T205417Z-58abb5.json`, `results/courts/rust-20261114T205423Z-124bf4.json` |
-| `cargo fmt --all --check` | `results/courts/rust-20261114T210020Z-7892f7.json` |
-| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T210020Z-cdeb4d.json` |
-| `cargo test --workspace` | `results/courts/rust-20261114T210021Z-720327.json` |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T210129Z-aa00a9.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T210129Z-51235e.json` |
+| `cargo test --workspace` | `results/courts/rust-20261114T210129Z-00b9eb.json` |
 | Generated numbers match their receipts | `results/courts/perf_numbers-20261114T210015Z-3d3fd3.json` |
 | Every scanned commit carries the operator identity | `results/courts/commit_identity-20261114T210016Z-6862c1.json` |
 
