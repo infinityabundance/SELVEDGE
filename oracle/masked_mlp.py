@@ -1,0 +1,407 @@
+#!/usr/bin/env python3
+"""Exact masked-MLP instrument for the M1 group-omission frontier.
+
+The published bundle policy partitions each FFN's intermediate channels into
+`G` contiguous groups. H0 proved that, in exact arithmetic,
+
+    FFN(x) = sum_g W_down[:, G_g] (SiLU(W_gate[G_g] x) * (W_up[G_g] x)).
+
+This module provides two implementations of the masked sum over a selected set
+of groups:
+
+* `grouped_forward` computes each group's contribution explicitly and adds them
+  in ascending group order. This is the reference instrument and the analogue of
+  the Rust `ffn_grouped_f32` path.
+* `MaskedMlp` keeps the original projection modules and multiplies the
+  intermediate activation by a per-channel 0/1 mask before the down projection.
+  Excluded channels contribute exactly zero, so this is the same sum with the
+  down-projection reduction order of the dense model; it is the fast path used
+  by the sweep.
+
+Neither path trains, routes, samples or approximates. With every group selected
+both reproduce the dense MLP; the small f32 differences from reduction order are
+measured, not assumed away.
+
+Everything runs under `torch.inference_mode()` in f32 with TF32 disabled by the
+caller. The module has no CLI and no network access.
+"""
+
+from __future__ import annotations
+
+import torch
+import torch.nn.functional as F
+
+
+def group_bounds(intermediate: int, groups: int) -> list[tuple[int, int]]:
+    """Contiguous group bounds, matching the converter's `ceil` policy."""
+    if intermediate <= 0:
+        raise ValueError("intermediate must be positive")
+    if groups <= 0:
+        raise ValueError("groups must be positive")
+    width = -(-intermediate // groups)
+    bounds = []
+    start = 0
+    for _ in range(groups):
+        end = min(start + width, intermediate)
+        if start >= intermediate:
+            break
+        bounds.append((start, end))
+        start = end
+    if start != intermediate:
+        raise ValueError(f"groups do not cover {intermediate} channels")
+    return bounds
+
+
+def group_widths(intermediate: int, groups: int) -> list[int]:
+    return [end - start for start, end in group_bounds(intermediate, groups)]
+
+
+def selected_mask(
+    intermediate: int, groups: int, selected: list[int], device=None
+) -> torch.Tensor:
+    """A 0/1 f32 mask over intermediate channels for the selected groups."""
+    bounds = group_bounds(intermediate, groups)
+    mask = torch.zeros(intermediate, dtype=torch.float32, device=device)
+    for index in selected:
+        if index < 0 or index >= len(bounds):
+            raise ValueError(f"group {index} is out of range 0..{len(bounds)}")
+        start, end = bounds[index]
+        mask[start:end] = 1.0
+    return mask
+
+
+def masks_from_selection(
+    intermediate: int, groups: int, selection: list[list[int]], device=None
+) -> list[torch.Tensor]:
+    return [selected_mask(intermediate, groups, selected, device=device) for selected in selection]
+
+
+def dense_channels(
+    mlp: torch.nn.Module, hidden_states: torch.Tensor
+) -> torch.Tensor:
+    """The intermediate activation `SiLU(gate x) * (up x)` in f32."""
+    gate = mlp.gate_proj(hidden_states)
+    up = mlp.up_proj(hidden_states)
+    return mlp.act_fn(gate) * up
+
+
+def grouped_forward(
+    mlp: torch.nn.Module,
+    hidden_states: torch.Tensor,
+    groups: int,
+    selected: list[int],
+) -> torch.Tensor:
+    """Sum the selected groups' contributions explicitly, in group order.
+
+    `hidden_states` is any shape ending in the hidden width. The result has the
+    same shape. This is the reference path (the Rust grouped reduction order).
+    """
+    shape = hidden_states.shape
+    if shape[-1] != mlp.gate_proj.in_features:
+        raise ValueError("hidden width does not match the gate projection")
+    flat = hidden_states.reshape(-1, shape[-1])
+    activation = dense_channels(mlp, flat)
+    intermediate = activation.shape[-1]
+    bounds = group_bounds(intermediate, groups)
+    out = torch.zeros(
+        (flat.shape[0], mlp.down_proj.out_features),
+        dtype=torch.float32,
+        device=flat.device,
+    )
+    weight = mlp.down_proj.weight
+    for index in sorted(selected):
+        start, end = bounds[index]
+        out = out + activation[:, start:end] @ weight[:, start:end].transpose(0, 1)
+    return out.reshape(*shape[:-1], mlp.down_proj.out_features)
+
+
+class MaskedMlp(torch.nn.Module):
+    """An FFN wrapper with a mutable per-channel mask.
+
+    The original projection modules are reused, so no weights are copied and no
+    parameter is added. `mask` is a non-persistent buffer of length
+    `intermediate`; setting it to ones reproduces the dense MLP exactly (the
+    multiplication by 1.0 is exact and the reduction order is unchanged).
+    """
+
+    def __init__(self, original: torch.nn.Module) -> None:
+        super().__init__()
+        self.gate_proj = original.gate_proj
+        self.up_proj = original.up_proj
+        self.down_proj = original.down_proj
+        self.act_fn = original.act_fn
+        intermediate = original.down_proj.in_features
+        self.register_buffer(
+            "mask",
+            torch.ones(intermediate, dtype=torch.float32),
+            persistent=False,
+        )
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        gate = self.gate_proj(hidden_states)
+        up = self.up_proj(hidden_states)
+        activation = self.act_fn(gate) * up
+        return self.down_proj(activation * self.mask)
+
+
+class MaskController:
+    """Install `MaskedMlp` on every decoder layer and switch masks in place."""
+
+    def __init__(self, model: torch.nn.Module) -> None:
+        self.model = model
+        self.layers = list(model.model.layers)
+        self.originals = []
+        self.wrappers = []
+        for layer in self.layers:
+            original = layer.mlp
+            wrapper = MaskedMlp(original).to(
+                device=original.down_proj.weight.device,
+                dtype=original.down_proj.weight.dtype,
+            )
+            self.originals.append(original)
+            self.wrappers.append(wrapper)
+            layer.mlp = wrapper
+        self.intermediate = self.wrappers[0].mask.numel()
+        self.layers_count = len(self.wrappers)
+
+    def set_masks(self, masks: list[torch.Tensor]) -> None:
+        if len(masks) != len(self.wrappers):
+            raise ValueError(
+                f"{len(masks)} masks for {len(self.wrappers)} layers"
+            )
+        for wrapper, mask in zip(self.wrappers, masks):
+            if mask.numel() != wrapper.mask.numel():
+                raise ValueError("mask width does not match the layer")
+            wrapper.mask.copy_(mask)
+
+    def set_dense(self) -> None:
+        for wrapper in self.wrappers:
+            wrapper.mask.fill_(1.0)
+
+    def suspend(self) -> None:
+        """Restore the original MLP modules so the unmodified model can run."""
+        for layer, original in zip(self.layers, self.originals):
+            layer.mlp = original
+
+    def resume(self) -> None:
+        """Reinstall the masked wrappers after a `suspend`."""
+        for layer, wrapper in zip(self.layers, self.wrappers):
+            layer.mlp = wrapper
+
+    def restore(self) -> None:
+        self.suspend()
+
+
+def active_parameter_report(
+    selection: list[list[int]],
+    hidden: int,
+    intermediate: int,
+    groups: int,
+    backbone_elements: int,
+) -> dict:
+    """Realized active unique parameters and derived FLOPs for a mask.
+
+    `backbone_elements` is the receipt-sourced always-active count. Each
+    selected group contributes `3 * width * hidden` learned elements; the
+    selected intermediate width drives the derived matmul FLOPs
+    (`6 * width * hidden` per layer, `docs/ARCHITECTURE.md`).
+    """
+    bounds = group_bounds(intermediate, groups)
+    ffn_elements = 0
+    channels = 0
+    ffn_flops = 0
+    for selected in selection:
+        for index in selected:
+            start, end = bounds[index]
+            width = end - start
+            ffn_elements += 3 * width * hidden
+            channels += width
+            ffn_flops += 6 * width * hidden
+    return {
+        "group_count": sum(len(selected) for selected in selection),
+        "active_ffn_elements": ffn_elements,
+        "active_unique_elements": backbone_elements + ffn_elements,
+        "active_intermediate_channels": channels,
+        "ffn_matmul_flops_per_token": ffn_flops,
+    }
+
+
+def selection_from_masks(masks: list[torch.Tensor], groups: int) -> list[list[int]]:
+    """Recover group indices from channel masks (each group is all-or-nothing)."""
+    selection = []
+    for mask in masks:
+        intermediate = mask.numel()
+        bounds = group_bounds(intermediate, groups)
+        selected = []
+        for index, (start, end) in enumerate(bounds):
+            block = mask[start:end]
+            if bool((block > 0.5).all()):
+                selected.append(index)
+            elif bool((block > 0.5).any()):
+                raise ValueError("mask is not a union of whole groups")
+        selection.append(selected)
+    return selection
+
+
+def logits_kl_metrics(
+    teacher_logits: torch.Tensor,
+    masked_logits: torch.Tensor,
+    input_ids: torch.Tensor,
+) -> dict:
+    """Per-position teacher KL, top-1 agreement, entropy and NLLs.
+
+    `teacher_logits` and `masked_logits` are `[1, T, V]`; `input_ids` is
+    `[1, T]`. Returns 1-D f32 CPU tensors over the predicting positions
+    (and, for the NLL pair used by the perplexity ratio, only positions after
+    the first predicting position).
+    """
+    if teacher_logits.shape != masked_logits.shape:
+        raise ValueError("teacher and masked logits differ in shape")
+    if teacher_logits.shape[0] != 1:
+        raise ValueError("metrics expect a single sequence")
+    logits_t = teacher_logits[0, :-1, :].float()
+    logits_m = masked_logits[0, :-1, :].float()
+    target = input_ids[0, 1:]
+    logp_t = F.log_softmax(logits_t, dim=-1)
+    logp_m = F.log_softmax(logits_m, dim=-1)
+    probs_t = logp_t.exp()
+    kl = (probs_t * (logp_t - logp_m)).sum(dim=-1)
+    top1 = (logits_t.argmax(dim=-1) == logits_m.argmax(dim=-1)).to(torch.float32)
+    entropy = -(probs_t * logp_t).sum(dim=-1)
+    nll_t = -logp_t.gather(1, target.unsqueeze(1)).squeeze(1)
+    nll_m = -logp_m.gather(1, target.unsqueeze(1)).squeeze(1)
+    # The perplexity ratio in the contract excludes the first predicting
+    # position of each sequence.
+    if nll_t.numel() > 1:
+        nll_t = nll_t[1:]
+        nll_m = nll_m[1:]
+    return {
+        "kl": kl.detach().to("cpu", torch.float32),
+        "top1": top1.detach().to("cpu", torch.float32),
+        "entropy": entropy.detach().to("cpu", torch.float32),
+        "nll_teacher": nll_t.detach().to("cpu", torch.float32),
+        "nll_masked": nll_m.detach().to("cpu", torch.float32),
+    }
+
+
+def summarize_positions(metrics: dict) -> dict:
+    """Aggregate per-position metrics for one window."""
+    kl = metrics["kl"]
+    nll_t = metrics["nll_teacher"]
+    nll_m = metrics["nll_masked"]
+    positions = int(kl.numel())
+    return {
+        "positions": positions,
+        "kl_mean": float(kl.mean()) if positions else 0.0,
+        "kl_median": float(kl.median()) if positions else 0.0,
+        "kl_p95": float(torch.quantile(kl, 0.95)) if positions else 0.0,
+        "kl_min": float(kl.min()) if positions else 0.0,
+        "kl_max": float(kl.max()) if positions else 0.0,
+        "top1_agreement": float(metrics["top1"].mean()) if positions else 0.0,
+        "teacher_entropy_mean": float(metrics["entropy"].mean()) if positions else 0.0,
+        "nll_teacher_mean": float(nll_t.mean()) if nll_t.numel() else 0.0,
+        "nll_masked_mean": float(nll_m.mean()) if nll_m.numel() else 0.0,
+        "nll_positions": int(nll_t.numel()),
+    }
+
+
+def calibration_group_statistics(
+    model: torch.nn.Module,
+    windows: list[list[int]],
+    groups: int,
+    device: torch.device,
+) -> dict:
+    """Mean group activation norm and activation frequency on calibration text.
+
+    For token `t`, `a_g(t)` is the group's intermediate activation vector and
+    `mass_g(t) = ||a_g(t)|| / sum_j ||a_j(t)||`. The magnitude statistic is the
+    mean of `||a_g(t)||`; the frequency statistic is the fraction of tokens with
+    `mass_g(t) > 2 / groups` (twice the uniform share). Tokens with zero total
+    norm are excluded from the frequency statistic and counted.
+    """
+    layers = list(model.model.layers)
+    layer_count = len(layers)
+    sums = torch.zeros((layer_count, groups), dtype=torch.float64, device=device)
+    frequency = torch.zeros((layer_count, groups), dtype=torch.float64, device=device)
+    tokens = torch.zeros(layer_count, dtype=torch.float64, device=device)
+    skipped = torch.zeros(layer_count, dtype=torch.float64, device=device)
+    bounds = None
+
+    def make_hook(index: int):
+        def hook(module, inputs, output):
+            nonlocal bounds
+            hidden = inputs[0]
+            flat = hidden.detach().reshape(-1, hidden.shape[-1])
+            activation = dense_channels(module, flat)
+            intermediate = activation.shape[-1]
+            if bounds is None:
+                bounds = group_bounds(intermediate, groups)
+            norms = torch.stack(
+                [activation[:, start:end].norm(dim=1) for start, end in bounds],
+                dim=1,
+            )
+            total = norms.sum(dim=1)
+            sums[index] += norms.to(torch.float64).sum(dim=0)
+            valid = total > 0
+            if bool(valid.any()):
+                mass = norms[valid] / total[valid].unsqueeze(1)
+                frequency[index] += (
+                    (mass > 2.0 / groups).sum(dim=0).to(torch.float64)
+                )
+            tokens[index] += float(flat.shape[0])
+            skipped[index] += float((~valid).sum())
+
+        return hook
+
+    handles = [layer.mlp.register_forward_hook(make_hook(i)) for i, layer in enumerate(layers)]
+    try:
+        with torch.inference_mode():
+            for window in windows:
+                input_ids = torch.tensor([window], dtype=torch.long, device=device)
+                model(input_ids=input_ids, use_cache=False)
+    finally:
+        for handle in handles:
+            handle.remove()
+
+    result = {"groups": groups, "layers": layer_count, "bounds": bounds}
+    per_layer = []
+    for index in range(layer_count):
+        count = float(tokens[index])
+        valid_count = float(tokens[index] - skipped[index])
+        mean_norm = (sums[index] / count).tolist() if count else [0.0] * groups
+        freq = (
+            (frequency[index] / valid_count).tolist() if valid_count else [0.0] * groups
+        )
+        per_layer.append(
+            {
+                "layer": index,
+                "tokens": int(count),
+                "skipped_zero_mass": int(skipped[index]),
+                "mean_norm": mean_norm,
+                "frequency": freq,
+            }
+        )
+    result["layers_data"] = per_layer
+    return result
+
+
+def rankings(statistics: dict) -> dict:
+    """Descending group rankings per layer for the magnitude and frequency selectors."""
+    magnitude = []
+    frequency = []
+    for layer in statistics["layers_data"]:
+        groups = statistics["groups"]
+        magnitude.append(
+            sorted(range(groups), key=lambda g: (-layer["mean_norm"][g], g))
+        )
+        frequency.append(
+            sorted(range(groups), key=lambda g: (-layer["frequency"][g], g))
+        )
+    return {"magnitude": magnitude, "frequency": frequency}
+
+
+def random_rankings(layers: int, groups: int, seed: int) -> list[list[int]]:
+    """Deterministic per-layer permutations, generated in layer order."""
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(seed)
+    return [torch.randperm(groups, generator=generator).tolist() for _ in range(layers)]

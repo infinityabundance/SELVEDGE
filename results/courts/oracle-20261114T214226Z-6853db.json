@@ -1,0 +1,148 @@
+{
+  "argv": [
+    "python3",
+    "oracle/frontier_sweep.py",
+    "sweep",
+    "--model-id",
+    "Qwen/Qwen3-1.7B",
+    "--model-revision",
+    "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "--accounting",
+    "results/accounting/20261114T201533Z-qwen3-1.7b.json",
+    "--split",
+    "results/artifacts/split/m1-split.json",
+    "--preregistration-commit",
+    "dad6619c8514cb4a52b3420c007a47fc43e1b47e",
+    "--plans",
+    "results/artifacts/frontier/plans-1.7b.json",
+    "--arms",
+    "layers"
+  ],
+  "container_exit_code": 0,
+  "container_id": "7919a25c753d05f27468eb0f3c1dabeb20c5e396fe0bd6af8bd039c91ceb5351",
+  "container_name": "selvedge-oracle-court-20261114T214226Z-6853db",
+  "court": "oracle",
+  "duration_ms": 296927,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 25769803776,
+        "expected": 25769803776
+      },
+      "memory_swap_bytes": {
+        "actual": 25769803776,
+        "expected": 25769803776
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-14T21:47:23Z",
+  "gpu": {
+    "detail": "--gpus all unavailable: docker: Error response from daemon: failed to discover GPU vendor from CDI: no known GPU vendor found  Run 'docker run --help' for more information",
+    "mode": "device-passthrough"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_ref": "selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "24g",
+    "memory_bytes": 25769803776,
+    "memory_swap": "24g",
+    "memory_swap_bytes": 25769803776,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 4294967296,
+    "tmpfs_size": "4g"
+  },
+  "log_path": "results/courts/logs/oracle-20261114T214226Z-6853db.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "752172bc0f2dae76a7481239b1b2882fb33e20ae",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261114T214226Z",
+  "started_utc": "2026-11-14T21:42:26Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

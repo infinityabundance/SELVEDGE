@@ -1,0 +1,20 @@
+usage: frontier_sweep.py [-h]
+                         {stats,sweep,greedy,exactness,cross-check,analyze}
+                         ...
+
+M1 frontier sweep: exact group omission on real Qwen3 checkpoints.
+Subcommands, each of which writes its own receipt: stats calibration group
+statistics and selector rankings exactness instrument gates G1 on real held-
+out windows, plus the files for the independent Rust cross-check cross-check
+compare the Python and Rust masked partial sums sweep evaluate arms on the
+held-out split (uniform | layers | greedy | control) analyze bootstrap CIs,
+the frontier JSON, the SVG plot and the table The contract is
+`docs/EXPERIMENT-CONTRACT.md`, registered before any of this ran. Nothing here
+trains, samples text or reads held-out text for selection. All arithmetic is
+f32 with TF32 disabled; the teacher is the dense f32 model.
+
+positional arguments:
+  {stats,sweep,greedy,exactness,cross-check,analyze}
+
+options:
+  -h, --help            show this help message and exit

@@ -360,9 +360,37 @@ pub(crate) fn load_bundle_layers(
     bundle: &mut BundleFile,
     options: &VerificationOptions,
 ) -> Result<Vec<BundleLayer>> {
+    load_bundle_layers_filtered(bundle, options, None)
+}
+
+/// Load exactly one layer's groups from a validated bundle.
+///
+/// This is the Court B cross-check path: it reads only the shards of one
+/// layer, so a masked partial sum does not need the whole bundle resident.
+pub(crate) fn load_bundle_layer(
+    bundle: &mut BundleFile,
+    options: &VerificationOptions,
+    layer: u32,
+) -> Result<BundleLayer> {
+    let mut layers = load_bundle_layers_filtered(bundle, options, Some(layer))?;
+    layers.pop().ok_or_else(|| {
+        ConvertError::inconsistent(format!("bundle contains no FFN groups for layer {layer}"))
+    })
+}
+
+fn load_bundle_layers_filtered(
+    bundle: &mut BundleFile,
+    options: &VerificationOptions,
+    layer_filter: Option<u32>,
+) -> Result<Vec<BundleLayer>> {
     let records = bundle.manifest().shards.clone();
     let mut buckets: BTreeMap<(Option<u32>, String), Bucket> = BTreeMap::new();
     for record in records {
+        if let Some(wanted) = layer_filter
+            && record.layer != Some(wanted)
+        {
+            continue;
+        }
         let role = match record.role {
             selvedge_core::TensorRole::MlpGate => Role::Gate,
             selvedge_core::TensorRole::MlpUp => Role::Up,

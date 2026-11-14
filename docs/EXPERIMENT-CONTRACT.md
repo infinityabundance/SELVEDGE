@@ -183,7 +183,7 @@ For each selector, `k = 1..16` groups per layer:
   `k`. Ties break by group index.
 - `frequency`: for a calibration token, let
   `mass_g(t) = ||a_g(t)||_2 / sum_j ||a_j(t)||_2`. Rank groups within each
-  layer by the fraction of calibration tokens with `mass_g(t) > 1/(2*16)`
+  layer by the fraction of calibration tokens with `mass_g(t) > 2/16`
   (twice the uniform share). Select the top `k`. Ties break by group index.
 
 Selectors see calibration text only. They never see held-out text, teacher
@@ -417,3 +417,17 @@ them:
 No threshold, arm definition, selector definition or kill condition was
 changed. The images, arms, selectors, metrics, thresholds and gates of sections
 4-10 stand as registered.
+
+### A2 — 2026-11-14T21:31:50Z, before any sweep
+
+The registered frequency selector had a formula/gloss conflict: it wrote
+`mass_g(t) > 1/(2*16)` but glossed that as "twice the uniform share". Those are
+different thresholds (half and twice the uniform share of `1/16`). The first
+calibration-statistics run (`results/frontier/stats-Qwen-Qwen3-1.7B-20261114T213138Z.json`)
+showed the half-share formula gives a frequency of approximately 1.0 for every
+group in every layer, which makes the selector numerically degenerate. The
+gloss is adopted: the threshold is `mass_g(t) > 2/16`.
+
+No sweep, held-out measurement or quality number existed when this was decided.
+The calibration statistics are a selector sanity check, not a result. The
+receipt for the corrected run supersedes the first one; both are retained.

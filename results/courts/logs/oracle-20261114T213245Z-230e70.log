@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/work/oracle/frontier_sweep.py", line 1805, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier_sweep.py", line 1795, in main
+    return command_exactness(args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier_sweep.py", line 1124, in command_exactness
+    receipt = base_receipt(args, "exactness", accounting, entry, device)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier_sweep.py", line 665, in base_receipt
+    "windows": sum(len(item["windows"]) for item in value),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier_sweep.py", line 665, in <genexpr>
+    "windows": sum(len(item["windows"]) for item in value),
+                       ~~~~^^^^^^^^^^^
+TypeError: string indices must be integers, not 'str'

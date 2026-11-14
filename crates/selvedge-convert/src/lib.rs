@@ -26,6 +26,7 @@ pub mod convert;
 pub mod court_a;
 pub mod error;
 pub mod ffn;
+pub mod masked;
 pub mod real_parity;
 pub mod safetensors;
 pub mod synthetic;
@@ -46,6 +47,9 @@ pub use ffn::{
     DiscoveredFfn, FfnDims, FfnOrientation, FfnTensorMap, Group, GroupMatrices, GroupSpec,
     discover_ffn_maps, ffn_dense_f32, ffn_dense_f64, ffn_grouped_f32, ffn_grouped_f64,
     resolve_groups, validate_ffn_map,
+};
+pub use masked::{
+    MAX_INPUT_BYTES, MaskedOptions, MaskedReport, MaskedRequest, masked_grouped_from_bundle,
 };
 pub use real_parity::{
     BF16_PARITY_ABS, BF16_PARITY_REL, BF16_PARITY_SCALE, F32_PARITY_ABS, F32_PARITY_REL,

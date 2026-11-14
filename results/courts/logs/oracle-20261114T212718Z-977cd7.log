@@ -1,0 +1,205 @@
+..F...FFF.......                                                         [100%]
+=================================== FAILURES ===================================
+____________ test_court_b_grouped_forward_matches_hand_computation _____________
+
+    def test_court_b_grouped_forward_matches_hand_computation() -> None:
+        torch.manual_seed(0)
+        mlp = TinyMlp(hidden=8, intermediate=12, seed=7)
+        x = torch.randn(3, 5, 8)
+        for selected in ([0, 3], [1, 2, 3], [0, 1, 2, 3]):
+>           got = masked_mlp.grouped_forward(mlp, x, 4, selected)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_masked_mlp.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mlp = TinyMlp(
+  (gate_proj): Linear(in_features=8, out_features=12, bias=False)
+  (up_proj): Linear(in_features=8, out_features=12, bias=False)
+  (down_proj): Linear(in_features=12, out_features=8, bias=False)
+)
+hidden_states = tensor([[[ 0.5588,  0.7918, -0.1847, -0.7318, -0.0807, -0.9801,  0.0605,
+          -0.4890],
+         [-0.8137,  0.820...554,
+          -0.0579],
+         [ 0.6586,  0.9929, -0.2065, -0.2448, -0.3806,  1.1311, -0.0902,
+          -0.8979]]])
+groups = 4, selected = [0, 3]
+
+    def grouped_forward(
+        mlp: torch.nn.Module,
+        hidden_states: torch.Tensor,
+        groups: int,
+        selected: list[int],
+    ) -> torch.Tensor:
+        """Sum the selected groups' contributions explicitly, in group order.
+    
+        `hidden_states` is any shape ending in the hidden width. The result has the
+        same shape. This is the reference path (the Rust grouped reduction order).
+        """
+        shape = hidden_states.shape
+        if shape[-1] != mlp.down_proj.in_features:
+>           raise ValueError("hidden width does not match the down projection")
+E           ValueError: hidden width does not match the down projection
+
+oracle/masked_mlp.py:101: ValueError
+________ test_court_b_mask_controller_subset_matches_grouped_reference _________
+
+    def test_court_b_mask_controller_subset_matches_grouped_reference() -> None:
+        mlp = TinyMlp(8, 12, 5)
+        controller_mlp = TinyMlp(8, 12, 5)
+        controller_mlp.load_state_dict(mlp.state_dict())
+    
+        class Layer(torch.nn.Module):
+            def __init__(self, module: TinyMlp) -> None:
+                super().__init__()
+                self.mlp = module
+    
+        class Model(torch.nn.Module):
+            def __init__(self, module: TinyMlp) -> None:
+                super().__init__()
+                self.model = torch.nn.Module()
+                self.model.layers = torch.nn.ModuleList([Layer(module)])
+    
+        model = Model(controller_mlp)
+        controller = masked_mlp.MaskController(model)
+        x = torch.randn(2, 6, 8)
+        try:
+            controller.set_masks([masked_mlp.selected_mask(12, 4, [0, 2])])
+            with torch.inference_mode():
+                fast = model.model.layers[0].mlp(x)
+        finally:
+            controller.restore()
+>       reference = masked_mlp.grouped_forward(mlp, x, 4, [0, 2])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_masked_mlp.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mlp = TinyMlp(
+  (gate_proj): Linear(in_features=8, out_features=12, bias=False)
+  (up_proj): Linear(in_features=8, out_features=12, bias=False)
+  (down_proj): Linear(in_features=12, out_features=8, bias=False)
+)
+hidden_states = tensor([[[ 1.2626e+00, -1.7326e+00,  8.8246e-01,  1.1690e+00,  3.2286e-01,
+           1.6184e+00,  7.5075e-01, -9.2790...  [ 8.0802e-01,  4.5725e-01, -1.5324e+00, -2.9784e-01, -4.7712e-01,
+          -1.4816e+00, -1.1734e+00,  7.8951e-01]]])
+groups = 4, selected = [0, 2]
+
+    def grouped_forward(
+        mlp: torch.nn.Module,
+        hidden_states: torch.Tensor,
+        groups: int,
+        selected: list[int],
+    ) -> torch.Tensor:
+        """Sum the selected groups' contributions explicitly, in group order.
+    
+        `hidden_states` is any shape ending in the hidden width. The result has the
+        same shape. This is the reference path (the Rust grouped reduction order).
+        """
+        shape = hidden_states.shape
+        if shape[-1] != mlp.down_proj.in_features:
+>           raise ValueError("hidden width does not match the down projection")
+E           ValueError: hidden width does not match the down projection
+
+oracle/masked_mlp.py:101: ValueError
+_________________ test_court_b_empty_selection_is_exactly_zero _________________
+
+    def test_court_b_empty_selection_is_exactly_zero() -> None:
+        mlp = TinyMlp(8, 12, 13)
+        x = torch.randn(2, 5, 8)
+>       out = masked_mlp.grouped_forward(mlp, x, 4, [])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_masked_mlp.py:159: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mlp = TinyMlp(
+  (gate_proj): Linear(in_features=8, out_features=12, bias=False)
+  (up_proj): Linear(in_features=8, out_features=12, bias=False)
+  (down_proj): Linear(in_features=12, out_features=8, bias=False)
+)
+hidden_states = tensor([[[-0.7341,  1.0842,  0.3704,  0.8449,  0.4927,  0.5220, -1.9388,
+          -0.1868],
+         [ 0.2391, -2.383...100,
+           0.4584],
+         [ 0.4795,  1.6093,  1.1139, -0.4534,  0.5141,  0.0650,  1.3668,
+          -0.6437]]])
+groups = 4, selected = []
+
+    def grouped_forward(
+        mlp: torch.nn.Module,
+        hidden_states: torch.Tensor,
+        groups: int,
+        selected: list[int],
+    ) -> torch.Tensor:
+        """Sum the selected groups' contributions explicitly, in group order.
+    
+        `hidden_states` is any shape ending in the hidden width. The result has the
+        same shape. This is the reference path (the Rust grouped reduction order).
+        """
+        shape = hidden_states.shape
+        if shape[-1] != mlp.down_proj.in_features:
+>           raise ValueError("hidden width does not match the down projection")
+E           ValueError: hidden width does not match the down projection
+
+oracle/masked_mlp.py:101: ValueError
+_____________ test_court_b_error_propagates_through_a_second_layer _____________
+
+    def test_court_b_error_propagates_through_a_second_layer() -> None:
+        """A masked first layer feeds a second layer; both are hand-checked.
+    
+        The test asserts the composition equals the hand-computed masked
+        composition, not the dense one, so a silently "corrected" error would fail.
+        """
+        torch.manual_seed(2)
+        hidden = 8
+        mlp1 = TinyMlp(hidden, 12, 21)
+        mlp2 = TinyMlp(hidden, 12, 22)
+        x = torch.randn(1, 4, hidden)
+        selection1 = [0, 1]
+        selection2 = [2, 3]
+        with torch.inference_mode():
+            h1_dense = x + mlp1(x)
+>           h1_masked = x + masked_mlp.grouped_forward(mlp1, x, 4, selection1)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_masked_mlp.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mlp = TinyMlp(
+  (gate_proj): Linear(in_features=8, out_features=12, bias=False)
+  (up_proj): Linear(in_features=8, out_features=12, bias=False)
+  (down_proj): Linear(in_features=12, out_features=8, bias=False)
+)
+hidden_states = tensor([[[ 0.4430,  1.1260, -0.3963, -0.2712, -0.1013,  0.6162, -0.0219,
+           0.7680],
+         [-0.9501,  1.047...718,
+           1.7656],
+         [ 0.0930, -1.7284,  0.4315, -0.5671, -0.5307,  1.2497,  0.6170,
+           0.6769]]])
+groups = 4, selected = [0, 1]
+
+    def grouped_forward(
+        mlp: torch.nn.Module,
+        hidden_states: torch.Tensor,
+        groups: int,
+        selected: list[int],
+    ) -> torch.Tensor:
+        """Sum the selected groups' contributions explicitly, in group order.
+    
+        `hidden_states` is any shape ending in the hidden width. The result has the
+        same shape. This is the reference path (the Rust grouped reduction order).
+        """
+        shape = hidden_states.shape
+        if shape[-1] != mlp.down_proj.in_features:
+>           raise ValueError("hidden width does not match the down projection")
+E           ValueError: hidden width does not match the down projection
+
+oracle/masked_mlp.py:101: ValueError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_masked_mlp.py::test_court_b_grouped_forward_matches_hand_computation
+FAILED oracle/tests/test_masked_mlp.py::test_court_b_mask_controller_subset_matches_grouped_reference
+FAILED oracle/tests/test_masked_mlp.py::test_court_b_empty_selection_is_exactly_zero
+FAILED oracle/tests/test_masked_mlp.py::test_court_b_error_propagates_through_a_second_layer
+4 failed, 12 passed in 1.65s

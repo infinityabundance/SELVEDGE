@@ -52,10 +52,41 @@ pub(crate) enum CourtCommand {
     A,
     /// Court A additions: grouped reconstruction on real teacher activations.
     AReal(RealCourtArgs),
+    /// Court B cross-check: masked group partial sums from a real bundle.
+    BReal(MaskedCourtArgs),
     /// Court C: learned-parameter budget accounting.
     C,
     /// Court D: storage integrity, atomic publication and crash behavior.
     D,
+}
+
+/// Arguments for the Court B real-bundle masked partial sum.
+#[derive(Debug, Args)]
+pub(crate) struct MaskedCourtArgs {
+    /// Bundle to read.
+    #[arg(long)]
+    pub(crate) bundle: PathBuf,
+    /// Layer index to read.
+    #[arg(long)]
+    pub(crate) layer: u32,
+    /// Selected group indices, comma separated, ascending.
+    #[arg(long, value_delimiter = ',')]
+    pub(crate) groups: Vec<usize>,
+    /// Raw little-endian f32 input of exactly rows*hidden values.
+    #[arg(long)]
+    pub(crate) input: PathBuf,
+    /// Activation rows.
+    #[arg(long)]
+    pub(crate) rows: u64,
+    /// Hidden width.
+    #[arg(long)]
+    pub(crate) hidden: u64,
+    /// Where to write the raw little-endian f32 output.
+    #[arg(long)]
+    pub(crate) out_raw: PathBuf,
+    /// Per-shard and per-tensor read cap in bytes.
+    #[arg(long)]
+    pub(crate) max_shard_bytes: Option<u64>,
 }
 
 /// Arguments for the real-activation Court A additions.
@@ -96,6 +127,13 @@ pub(crate) fn run(args: &CourtArgs) -> CliResult {
         ),
         CourtCommand::AReal(real) => run_a_real(
             real,
+            args.json,
+            args.report_out.as_deref(),
+            args.stamp.clone(),
+            args.revision.clone(),
+        ),
+        CourtCommand::BReal(masked) => run_b_real(
+            masked,
             args.json,
             args.report_out.as_deref(),
             args.stamp.clone(),
@@ -194,6 +232,68 @@ fn run_a_real(
     } else {
         ExitCode::FAILURE
     })
+}
+
+fn run_b_real(
+    args: &MaskedCourtArgs,
+    json: bool,
+    report_out: Option<&Path>,
+    stamp: Option<String>,
+    revision: Option<String>,
+) -> CliResult {
+    let options = selvedge_convert::MaskedOptions {
+        max_shard_bytes: args.max_shard_bytes.unwrap_or(4 * 1024 * 1024 * 1024),
+        stamp,
+        revision,
+    };
+    let report = match selvedge_convert::masked_grouped_from_bundle(
+        &selvedge_convert::MaskedRequest {
+            bundle: &args.bundle,
+            layer: args.layer,
+            selected_groups: &args.groups,
+            input: &args.input,
+            rows: args.rows,
+            hidden: args.hidden,
+            output: &args.out_raw,
+        },
+        &options,
+    ) {
+        Ok(report) => report,
+        Err(error) => {
+            if json {
+                let failure = serde_json::json!({
+                    "schema": "selvedge/court-b-real-error/v1",
+                    "ok": false,
+                    "error": error.to_string(),
+                });
+                println!("{}", serde_json::to_string_pretty(&failure)?);
+                return Ok(ExitCode::FAILURE);
+            }
+            return Err(Box::new(error));
+        }
+    };
+    if let Some(path) = report_out {
+        crate::convert_cmd::write_report(path, &report)?;
+    }
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        println!("selvedge court b-real — masked grouped FFN from a real bundle");
+        println!(
+            "layer {} selected {}/{} groups ({} channels)",
+            report.layer,
+            report.selected_groups.len(),
+            report.groups_total,
+            report.selected_channels
+        );
+        println!("input  {} sha256={}", report.input, report.input_sha256);
+        println!("output {} sha256={}", report.output, report.output_sha256);
+        println!(
+            "sum={:.9} abs_max={:.9}",
+            report.output_sum_f64, report.output_abs_max
+        );
+    }
+    Ok(ExitCode::SUCCESS)
 }
 
 fn run_c(json: bool) -> CliResult {

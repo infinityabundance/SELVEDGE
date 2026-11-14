@@ -1,0 +1,35 @@
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+   Compiling selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+   Compiling selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+    Finished `release` profile [optimized] target(s) in 7.48s
+     Running `target/release/selvedge court b-real --bundle results/artifacts/qwen3-1.7b-ffn-g16/swiglu-c4de86a90d4a-fe4c159deaf6.slv --layer 14 --groups 0,3,5,9 --input results/artifacts/frontier/rust-input-layer14.f32 --rows 64 --hidden 2048 --out-raw results/artifacts/frontier/rust-output-layer14.f32 --json --report-out results/frontier/rust-b-real-20261114T213333Z.json --stamp 20261114T213333Z --revision 752172bc0f2dae76a7481239b1b2882fb33e20ae`
+{
+  "schema": "selvedge/court-b-real/v1",
+  "ok": true,
+  "stamp": "20261114T213333Z",
+  "revision": "752172bc0f2dae76a7481239b1b2882fb33e20ae",
+  "generated_by": "selvedge-convert 0.1.0",
+  "bundle": "results/artifacts/qwen3-1.7b-ffn-g16/swiglu-c4de86a90d4a-fe4c159deaf6.slv",
+  "bundle_id": "swiglu-c4de86a90d4a-fe4c159deaf6",
+  "layer": 14,
+  "rows": 64,
+  "hidden": 2048,
+  "groups_total": 16,
+  "selected_groups": [
+    0,
+    3,
+    5,
+    9
+  ],
+  "selected_channels": 1536,
+  "intermediate_total": 6144,
+  "input": "results/artifacts/frontier/rust-input-layer14.f32",
+  "input_bytes": 524288,
+  "input_sha256": "c046a5f432da3a5985edc1168996a282cbfee26fd196deb7d4a326d958712310",
+  "output": "results/artifacts/frontier/rust-output-layer14.f32",
+  "output_bytes": 524288,
+  "output_sha256": "323cb2226550078325fe6e34e8b81ebcb5b87bf89730135ef585efeedbeff4ac",
+  "output_sum_f64": 714.2709836213398,
+  "output_abs_max": 11.526346206665039,
+  "reduction_order": "groups in ascending index order, channels ascending inside each group; f32 accumulation"
+}
