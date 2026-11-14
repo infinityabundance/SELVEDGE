@@ -35,7 +35,7 @@ trap cleanup EXIT
 
 revision=$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo unborn)
 dirty=false
-if [[ -n "$(git -C "$repo_root" status --porcelain 2>/dev/null || true)" ]]; then
+if [[ -n "$(git -C "$repo_root" status --porcelain -- . ':(exclude)results' ':(exclude)target' 2>/dev/null || true)" ]]; then
   dirty=true
 fi
 
