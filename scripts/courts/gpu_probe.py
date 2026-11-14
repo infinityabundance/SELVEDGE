@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -55,12 +56,27 @@ def main() -> int:
                     }
                 )
 
-    cuda_driver = run(["nvidia-smi", "--query-gpu=cuda_version", "--format=csv,noheader"])
+    cuda_driver = run(["nvidia-smi"])
+    cuda_version = None
+    cuda_version_field = None
+    if cuda_driver.get("ok"):
+        # Driver output has used both "CUDA Version:" and "CUDA UMD Version:".
+        match = re.search(
+            r"(CUDA (?:UMD )?Version):\s*([0-9]+(?:\.[0-9]+)*)",
+            cuda_driver.get("stdout", ""),
+        )
+        if match:
+            cuda_version_field = match.group(1)
+            cuda_version = match.group(2)
+
     payload = {
         "available": bool(devices),
         "devices": devices,
         "query": smi,
-        "cuda_version": cuda_driver.get("stdout") if cuda_driver.get("ok") else None,
+        "cuda_version": cuda_version,
+        "cuda_version_field": cuda_version_field,
+        "cuda_version_source": "parsed from the CUDA version field of nvidia-smi output",
+        "nvidia_smi_stdout": cuda_driver.get("stdout", "") if cuda_driver.get("ok") else None,
         "device_nodes": sorted(
             name for name in os.listdir("/dev") if name.startswith("nvidia")
         ),

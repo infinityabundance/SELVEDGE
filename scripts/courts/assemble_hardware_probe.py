@@ -53,6 +53,7 @@ def main(argv: list[str]) -> int:
 
     host = load_json(args.host)
     gpu = load_optional(args.gpu)
+    gpu_receipt = load_optional(args.gpu_court_receipt)
     rust_receipt = load_json(args.rust_receipt)
     python_receipt = load_json(args.python_receipt)
 
@@ -94,6 +95,8 @@ def main(argv: list[str]) -> int:
         "gpu": {
             "court_status": args.gpu_status,
             "container_access": bool(gpu.get("available")),
+            "access_mode": (gpu_receipt.get("gpu") or {}).get("mode"),
+            "gpus_all_error": (gpu_receipt.get("gpu") or {}).get("detail"),
             "devices": gpu.get("devices", []),
             "cuda_version": gpu.get("cuda_version"),
             "result": gpu or None,
