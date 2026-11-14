@@ -34,12 +34,13 @@ RUN apt-get update \
 # Fail the build if the pinned stack does not import. The versions are printed
 # into the build log; the runtime probe writes them into a receipt.
 RUN python3 - <<'PY'
-import numpy, safetensors, tokenizers, torch, transformers
+import numpy, pyarrow, safetensors, tokenizers, torch, transformers
 print("torch", torch.__version__, "cuda_runtime", torch.version.cuda)
 print("transformers", transformers.__version__)
 print("tokenizers", tokenizers.__version__)
 print("safetensors", safetensors.__version__)
 print("numpy", numpy.__version__)
+print("pyarrow", pyarrow.__version__)
 PY
 
 ENV HF_HUB_DISABLE_TELEMETRY=1 \

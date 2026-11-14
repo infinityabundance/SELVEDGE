@@ -1,0 +1,48 @@
+{
+  "schema": "selvedge/dataset-spec/v1",
+  "note": "Pinned evaluation datasets for the M1 frontier experiment. Only the files named here are downloaded, into the gitignored results/artifacts/datasets cache. No corpus text is committed; the lock records every file's SHA-256 and size, and the split receipt records every document's SHA-256 and token count.",
+  "datasets": [
+    {
+      "id": "wikitext-2-raw-v1-validation",
+      "repo_id": "Salesforce/wikitext",
+      "repo_type": "dataset",
+      "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "file": "wikitext-2-raw-v1/validation-00000-of-00001.parquet",
+      "license": "CC-BY-SA-3.0 AND GFDL",
+      "license_url": "https://huggingface.co/datasets/Salesforce/wikitext",
+      "license_note": "The dataset card tags license:cc-by-sa-3.0 and license:gfdl and states the set is available under the Creative Commons Attribution-ShareAlike License. Attribution and share-alike apply to redistributed text; this repository does not redistribute the corpus.",
+      "split": "validation",
+      "text_field": "text",
+      "role": "calibration and held-out general/factual text",
+      "contamination_note": "Public Wikipedia text; plausibly in Qwen3 pretraining. No local membership test exists. Recorded as residual risk in docs/EXPERIMENT-CONTRACT.md section 8."
+    },
+    {
+      "id": "humaneval-test",
+      "repo_id": "openai/openai_humaneval",
+      "repo_type": "dataset",
+      "revision": "7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544",
+      "file": "openai_humaneval/test-00000-of-00001.parquet",
+      "license": "MIT",
+      "license_url": "https://huggingface.co/datasets/openai/openai_humaneval",
+      "license_note": "The dataset card tags license:mit. Only the prompt field (the function signature and docstring) is used; the canonical solution is never fed to the model.",
+      "split": "test",
+      "text_field": "prompt",
+      "role": "held-out code domain slice",
+      "contamination_note": "HumanEval is widely published and may be in pretraining; used only as a relative KL domain slice, not as a capability benchmark."
+    },
+    {
+      "id": "gsm8k-test",
+      "repo_id": "openai/gsm8k",
+      "repo_type": "dataset",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "file": "main/test-00000-of-00001.parquet",
+      "license": "MIT",
+      "license_url": "https://huggingface.co/datasets/openai/gsm8k",
+      "license_note": "The dataset card tags license:mit. Only the question field is used; the answer is never fed to the model.",
+      "split": "test",
+      "text_field": "question",
+      "role": "held-out math domain slice",
+      "contamination_note": "GSM8K is widely published and may be in pretraining; used only as a relative KL domain slice, not as a capability benchmark."
+    }
+  ]
+}

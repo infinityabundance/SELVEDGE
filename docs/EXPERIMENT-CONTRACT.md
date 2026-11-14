@@ -121,8 +121,9 @@ Qwen3-1.7B forward (`model.float()`, TF32 disabled, `torch.inference_mode`).
 
 1. **Teacher KL (primary).** For a position with teacher distribution `p` and
    masked distribution `q`, `KL(p||q) = sum_v p(v) (log p(v) - log q(v))`,
-   in nats per token. Reported as the sequence-mean over positions, then
-   averaged over sequences, with a paired bootstrap CI.
+   in nats per token. Reported as the position mean within a window, then the
+   window mean within an article, then the article mean. The CI resamples
+   articles, not windows.
 2. **Top-1 agreement.** Fraction of positions where `argmax q = argmax p`.
 3. **Held-out perplexity ratio.** `PPL_ratio = exp(mean_nll_masked -
    mean_nll_teacher)` over the same positions, excluding position 0 of each
@@ -134,7 +135,7 @@ configuration is "acceptable" only if all three thresholds of section 9 hold.
 
 ## 5. Secondary metrics
 
-- KL median and p95 over positions, with a sequence-level bootstrap CI.
+- KL median and p95 over positions, with an article-level bootstrap CI.
 - Mean teacher entropy (nats/token) on the same positions; reported so a KL
   number can be read against the entropy it is a fraction of.
 - Per-domain KL, PPL ratio and top-1 (general/factual wikitext, code, math).
@@ -196,9 +197,9 @@ logits, token labels, or task answers.
   mask). Add groups one at a time, up to the largest number of whole groups
   whose realized active count stays at or below the ceiling. At each step,
   evaluate every unselected group in every layer by exact teacher KL on a fixed
-  calibration probe of six calibration sequences truncated to 128 tokens
-  (768 positions), and add the group with the largest KL reduction. Ties break
-  by (layer, group index). This is explicitly **non-deployable**: it uses
+  calibration probe (six calibration articles, first 128 positions of their
+  first window; 768 positions), and add the group with the largest KL
+  reduction. Ties break by (layer, group index). This is explicitly **non-deployable**: it uses
   teacher logits and held-out-free calibration text, and is an offline oracle.
 - `greedy-swap4`: start from `uniform k = 4` of the `magnitude` ranking. For up
   to three iterations, evaluate all `(layer_remove, layer_add)` swaps where the
@@ -233,36 +234,43 @@ dense FFN is smaller than the 1.7B compliant FFN share.
 
 - `wikitext-2-raw-v1` validation split, pinned dataset revision and file
   SHA-256 in `docs/DATASETS.md` and the committed manifest. License: the
-  dataset card's CC BY-SA 4.0 terms are recorded verbatim with the pin.
+  dataset card's CC BY-SA 3.0 and GFDL tags are recorded with the pin.
 - Domain slices: HumanEval prompts (code, MIT) and GSM8K test questions
   (math, MIT), pinned revisions and hashes, short excerpts only.
 
 ### 7.2 Design sizes (not measured results)
 
-- Wikitext held-out: target 48 sequences of up to 512 tokens from distinct
-  documents; minimum 12 sequences. Calibration: target 16 sequences from
-  distinct documents; minimum 6. The calibration and held-out sequence sets
-  are disjoint by document.
-- Code: target 40 HumanEval prompts; minimum 20.
-- Math: target 40 GSM8K questions; minimum 20.
-- Greedy probe: 6 calibration sequences, first 128 positions each.
+- Wikitext held-out: 40 article documents, each contributing up to two
+  non-overlapping 512-token windows; minimum 30 articles. Calibration: 16
+  article documents, each contributing up to four non-overlapping 512-token
+  windows; minimum 10 articles. The calibration and held-out article sets are
+  disjoint.
+- Code: 40 HumanEval prompts; minimum 20.
+- Math: 40 GSM8K questions; minimum 20.
+- Greedy probe: 6 calibration articles, first 128 positions of their first
+  window.
 - If a minimum cannot be met after the near-duplicate filter, the run is
   invalid and reported as invalid; sample sizes are not silently reduced.
 
 ### 7.3 Split rule
 
-A wikitext "document" is the text of one line of the raw validation split,
-excluding empty lines, section-header-only lines and lines shorter than 200
-characters. Documents are ranked by the hex SHA-256 of their normalized text
-(lowercase, whitespace collapsed). The first `N_calibration` ranked documents
-form calibration; the next `N_heldout` form held-out. The split is therefore by
-document hash, deterministic, and content-independent.
+A wikitext "document" is one article: a level-1 header line (` = Title = `)
+plus every following line until the next such header. Documents are ranked by
+the hex SHA-256 of their normalized text (lowercase, whitespace collapsed).
+The 16 lowest-hash articles form calibration; of the next 44 by hash, the first
+40 that pass the near-duplicate filter of section 8 form held-out. Remaining
+articles are unused. The split is therefore by document hash, deterministic,
+and content-independent.
 
-Chunking: a document longer than 512 tokens contributes the first 512 tokens as
-one sequence; a shorter document contributes all its tokens (the sequence is
-left-padded nowhere and right-truncated nowhere). No sequence crosses a
-document boundary. Tokenization is the pinned Qwen3 tokenizer with
-`add_special_tokens=True`.
+Chunking: a document's body is tokenized once (pinned Qwen3 tokenizer,
+`add_special_tokens=True`, no padding). Non-overlapping windows of 512 tokens
+are taken from the start: calibration documents contribute up to 4 windows,
+held-out documents up to 2. A trailing window shorter than 512 tokens is kept
+only if it has at least 64 tokens. No window crosses a document boundary.
+Code prompts and math questions are each one sequence per item, truncated to
+512 tokens if longer. Code prompts are chosen as the 40 lowest numeric
+`task_id`s; math questions are chosen as the 40 lowest SHA-256 hashes of their
+normalized text.
 
 ## 8. Leakage prevention and contamination
 
@@ -324,7 +332,7 @@ Non-uniform value (H1b/H1c):
 ## 10. Instrument gates and kill conditions
 
 - **G1 (harness exactness).** `masked-all` versus `teacher-dense` on every
-  evaluated sequence: max absolute logit difference `<= 0.01` and mean KL
+  evaluated window: max absolute logit difference `<= 0.01` and mean KL
   `<= 1e-4` nats/token. Cross-check: for one real layer and one real subset,
   the Python masked partial sum and the Rust grouped partial sum agree
   elementwise within `|a-b| <= 1e-3 * max(1, |b|)` (both f32; reduction order
@@ -348,20 +356,21 @@ Non-uniform value (H1b/H1c):
 
 ## 11. Statistical method
 
-- Unit of analysis: sequence (document). Metrics are first averaged over
-  positions within a sequence, then over sequences. All arms see the same
-  sequences (paired).
-- CIs: paired percentile bootstrap over sequences, 10,000 resamples, RNG seed
-  `20261114`, implemented with `numpy.random.Generator(PCG64(seed))` and the
-  same resampled index matrix for every arm of a comparison. 2.5th and 97.5th
-  percentiles.
-- Effect size: for a paired comparison, the mean per-sequence difference, its
+- Unit of analysis: article for wikitext (windows within an article are
+  averaged first), item for a code prompt or math question. All arms see the
+  same inputs (paired). This clusters the bootstrap by document, so the
+  dependence between windows of one article cannot shrink the CI.
+- CIs: paired percentile bootstrap over articles/items, 10,000 resamples, RNG
+  seed `20261114`, implemented with `numpy.random.Generator(PCG64(seed))` and
+  the same resampled index matrix for every arm of a comparison. 2.5th and
+  97.5th percentiles.
+- Effect size: for a paired comparison, the mean per-article difference, its
   CI, and the relative reduction `(KL_baseline - KL_arm) / KL_baseline`.
 - Confirmatory comparisons: K2 (best compliant arm vs acceptable tier), K3
   (non-uniform vs matched-budget uniform), K4 (transfer). The rest of the
   frontier is descriptive; its CIs are reported but no multiplicity-adjusted
   significance claim is made.
-- Locale and platform: bootstrap uses only integer sequence indices and float
+- Locale and platform: bootstrap uses only integer article/item indices and float
   accumulation; it does not depend on BLAS or GPU arithmetic.
 
 ## 12. What a negative result means
@@ -391,4 +400,20 @@ against the original contract.
 
 ## Amendments
 
-None at registration.
+### A1 — 2026-11-14T21:22Z, before any measurement
+
+The dataset was fetched and its structure inspected. Two corrections were made
+before any frontier run, so no result has been seen or can have influenced
+them:
+
+1. The wikitext-2 card tags `license:cc-by-sa-3.0` and `license:gfdl`; the
+   original text said CC BY-SA 4.0. Corrected.
+2. The validation split contains 60 articles, not enough to give 64 distinct
+   one-sequence documents. The unit of analysis and the chunking rule were
+   therefore changed to article-level documents with multiple non-overlapping
+   windows, and the bootstrap clusters by article. Sample-size minima were
+   restated accordingly.
+
+No threshold, arm definition, selector definition or kill condition was
+changed. The images, arms, selectors, metrics, thresholds and gates of sections
+4-10 stand as registered.

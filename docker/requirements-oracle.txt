@@ -16,4 +16,8 @@ tokenizers==0.23.3
 safetensors==0.8.0
 huggingface_hub==2.4.0
 numpy==2.5.4
+# Parquet reader for the pinned, hash-verified evaluation datasets. The
+# datasets are read from an explicitly fetched local cache; no dataset is
+# downloaded by a court that is not run with --net.
+pyarrow==26.0.1
 pytest==9.2.0
