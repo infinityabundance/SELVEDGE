@@ -888,6 +888,7 @@ graph and the realized-budget accounting are executable, not prose.
 | Rust parity fixtures | `results/selectors/fixtures/selector-inputs.json` |
 | Rust fit / cost / compare | `results/selectors/atlas-fit-weights.json`, `rust-selector-cost.json`, `atlas-compare.json` |
 | Rust fmt / clippy / test | the `rust` court receipts in `results/courts/` |
+| Python M2 helper tests (24 passed) | `results/courts/oracle-20261114T233225Z-fe70cb.json` |
 | Generated numbers match their receipts | the `perf_numbers` court receipt |
 | Every scanned commit carries the operator identity | the `commit_identity` court receipt |
 

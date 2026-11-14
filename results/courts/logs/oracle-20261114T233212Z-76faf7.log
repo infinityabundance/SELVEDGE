@@ -1,0 +1,27 @@
+..F.....................                                                 [100%]
+=================================== FAILURES ===================================
+_________________ test_extra_group_allocation_is_deterministic _________________
+
+    def test_extra_group_allocation_is_deterministic() -> None:
+        groups = 8
+        tokens = 6
+        scores = [
+            torch.rand((tokens, groups), generator=torch.Generator().manual_seed(layer))
+            for layer in range(4)
+        ]
+        selection = [
+            m2_selectors.topk_mask(score, 2) for score in scores
+        ]
+        first = m2_selectors.best_extra_pairs(scores, selection, 2, largest=True)
+        second = m2_selectors.best_extra_pairs(scores, selection, 2, largest=True)
+        assert all(torch.equal(a, b) for a, b in zip(first, second))
+        totals = torch.stack([row.sum(dim=1) for row in first], dim=1).sum(dim=1)
+        assert torch.equal(totals, torch.full((tokens,), 2 * len(first) + 2))
+>       assert all(int(row.sum()) == 2 for layer in first for row in layer)
+E       assert False
+E        +  where False = all(<generator object test_extra_group_allocation_is_deterministic.<locals>.<genexpr> at 0x7f0b7b2fff10>)
+
+oracle/tests/test_m2_selectors.py:93: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_m2_selectors.py::test_extra_group_allocation_is_deterministic
+1 failed, 23 passed in 2.35s

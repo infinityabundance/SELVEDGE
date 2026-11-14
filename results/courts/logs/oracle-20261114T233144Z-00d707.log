@@ -1,0 +1,77 @@
+FFF..F..................                                                 [100%]
+=================================== FAILURES ===================================
+________________ test_local_error_identity_matches_explicit_sum ________________
+
+    def test_local_error_identity_matches_explicit_sum() -> None:
+        groups = 4
+        stats = small_stats(groups)
+        for size in (1, 2, 3):
+            for subset in itertools.combinations(range(groups), size):
+                selected = torch.zeros((5, groups), dtype=torch.bool)
+                for index in subset:
+                    selected[:, index] = True
+                error = masked_mlp.subset_local_error(stats, selected)
+                explicit = (
+                    (
+                        stats["dense"]
+                        - stats["contributions"][:, list(subset), :].sum(dim=1)
+                    )
+                    ** 2
+                ).sum(dim=1)
+>               assert torch.allclose(error, explicit, atol=1e-5, rtol=1e-5)
+E               assert False
+E                +  where False = <built-in method allclose of type object at 0x7f37abb572e0>(tensor([ 514.9224,    5.4600,   48.0508, 1827.0117,    4.1692],\n       grad_fn=<AddBackward0>), tensor([ 514.9232,    5.4600,   48.0510, 1827.0143,    4.1691],\n       grad_fn=<SumBackward1>), atol=1e-05, rtol=1e-05)
+E                +    where <built-in method allclose of type object at 0x7f37abb572e0> = torch.allclose
+
+oracle/tests/test_m2_selectors.py:59: AssertionError
+__________________ test_best_k_selection_matches_brute_force ___________________
+
+    def test_best_k_selection_matches_brute_force() -> None:
+        groups = 4
+        stats = small_stats(groups)
+>       selected, error = masked_mlp.best_k_selection(stats, 2)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'masked_mlp' has no attribute 'best_k_selection'
+
+oracle/tests/test_m2_selectors.py:65: AttributeError
+_________________ test_extra_group_allocation_is_deterministic _________________
+
+    def test_extra_group_allocation_is_deterministic() -> None:
+        groups = 8
+        tokens = 6
+        scores = [
+            torch.rand((tokens, groups), generator=torch.Generator().manual_seed(layer))
+            for layer in range(4)
+        ]
+        selection = [
+            m2_selectors.topk_mask(score, 2) for score in scores
+        ]
+        first = m2_selectors.best_extra_pairs(scores, selection, 2, largest=True)
+        second = m2_selectors.best_extra_pairs(scores, selection, 2, largest=True)
+        assert all(torch.equal(a, b) for a, b in zip(first, second))
+>       assert all(int(row.sum()) == 4 for layer in first for row in layer)
+E       assert False
+E        +  where False = all(<generator object test_extra_group_allocation_is_deterministic.<locals>.<genexpr> at 0x7f374b03e5c0>)
+
+oracle/tests/test_m2_selectors.py:91: AssertionError
+_______________ test_random_selection_has_the_registered_budget ________________
+
+    def test_random_selection_has_the_registered_budget() -> None:
+        accounting = {"group_count": 16}
+        input_ids = torch.tensor([[11, 12, 13, 14, 15]])
+        selection = m2_selectors.random_selection(input_ids, accounting, 2, torch.device("cpu"))
+        counts = torch.stack([row.sum(dim=1) for row in selection], dim=1).sum(dim=1)
+>       assert torch.equal(counts, torch.full((5,), 7))
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7f37abb572e0>(tensor([142, 142, 142, 142, 142]), tensor([7, 7, 7, 7, 7]))
+E        +    where <built-in method equal of type object at 0x7f37abb572e0> = torch.equal
+E        +    and   tensor([7, 7, 7, 7, 7]) = <built-in method full of type object at 0x7f37abb572e0>((5,), 7)
+E        +      where <built-in method full of type object at 0x7f37abb572e0> = torch.full
+
+oracle/tests/test_m2_selectors.py:118: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_m2_selectors.py::test_local_error_identity_matches_explicit_sum
+FAILED oracle/tests/test_m2_selectors.py::test_best_k_selection_matches_brute_force
+FAILED oracle/tests/test_m2_selectors.py::test_extra_group_allocation_is_deterministic
+FAILED oracle/tests/test_m2_selectors.py::test_random_selection_has_the_registered_budget
+4 failed, 20 passed in 2.45s

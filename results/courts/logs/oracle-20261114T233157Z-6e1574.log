@@ -1,0 +1,40 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________________ test_local_error_identity_matches_explicit_sum ________________
+
+    def test_local_error_identity_matches_explicit_sum() -> None:
+        groups = 4
+        stats = small_stats(groups)
+        for size in (1, 2, 3):
+            for subset in itertools.combinations(range(groups), size):
+                selected = torch.zeros((5, groups), dtype=torch.bool)
+                for index in subset:
+                    selected[:, index] = True
+                error = masked_mlp.subset_local_error(stats, selected)
+                explicit = (
+                    (
+                        stats["dense"]
+                        - stats["contributions"][:, list(subset), :].sum(dim=1)
+                    )
+                    ** 2
+                ).sum(dim=1)
+>               assert torch.allclose(error, explicit, atol=1e-5, rtol=1e-5)
+E               assert False
+E                +  where False = <built-in method allclose of type object at 0x7f7be47572e0>(tensor([ 514.9224,    5.4600,   48.0508, 1827.0117,    4.1692],\n       grad_fn=<AddBackward0>), tensor([ 514.9232,    5.4600,   48.0510, 1827.0143,    4.1691],\n       grad_fn=<SumBackward1>), atol=1e-05, rtol=1e-05)
+E                +    where <built-in method allclose of type object at 0x7f7be47572e0> = torch.allclose
+
+oracle/tests/test_m2_selectors.py:59: AssertionError
+__________________ test_best_k_selection_matches_brute_force ___________________
+
+    def test_best_k_selection_matches_brute_force() -> None:
+        groups = 4
+        stats = small_stats(groups)
+>       selected, error = masked_mlp.best_k_selection(stats, 2)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'masked_mlp' has no attribute 'best_k_selection'
+
+oracle/tests/test_m2_selectors.py:65: AttributeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_m2_selectors.py::test_local_error_identity_matches_explicit_sum
+FAILED oracle/tests/test_m2_selectors.py::test_best_k_selection_matches_brute_force
+2 failed, 5 deselected in 2.62s
