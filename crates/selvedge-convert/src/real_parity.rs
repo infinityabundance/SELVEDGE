@@ -323,6 +323,18 @@ pub struct RealParityReport {
     pub bf16_scale: f64,
     /// Shards verified by the format validator.
     pub validated_shards: u64,
+    /// Manifest payload length in bytes.
+    pub bundle_payload_bytes: u64,
+    /// Whole bundle file length in bytes.
+    pub bundle_file_bytes: u64,
+    /// Shard records in the manifest.
+    pub bundle_shard_count: u64,
+    /// Manifest alignment.
+    pub bundle_alignment: u64,
+    /// Bundle id.
+    pub bundle_id: String,
+    /// Group count per layer as emitted by the converter.
+    pub bundle_groups_per_layer: Vec<usize>,
     /// Per-layer measurements.
     pub layer_results: Vec<LayerParity>,
     /// Aggregate `bundle_vs_dense_f32`.
@@ -759,6 +771,11 @@ pub fn verify_real_parity(
     let maps = discover_ffn_maps(&source.tensor_keys())?;
     let store = Safetensors::open(activations_path)?;
     let (activations_sha256, activations_bytes) = hash_file(activations_path)?;
+    let bundle_payload_bytes = bundle.manifest().payload_len;
+    let bundle_shard_count = bundle.manifest().shards.len() as u64;
+    let bundle_alignment = bundle.manifest().alignment;
+    let bundle_id = bundle.manifest().bundle_id.clone();
+    let bundle_file_bytes = std::fs::metadata(bundle_path)?.len();
 
     let mut layer_results = Vec::with_capacity(bundle_layers.len());
     let mut agg_bundle_dense = ParityErrors::new();
@@ -1016,6 +1033,12 @@ pub fn verify_real_parity(
         bf16_rel: options.bf16_rel,
         bf16_scale: options.bf16_scale,
         validated_shards: validation.verified_shards.len() as u64,
+        bundle_payload_bytes,
+        bundle_file_bytes,
+        bundle_shard_count,
+        bundle_alignment,
+        bundle_id,
+        bundle_groups_per_layer: layer_results.iter().map(|layer| layer.groups).collect(),
         layer_results,
         aggregate_bundle_vs_dense_f32: agg_bundle_dense,
         aggregate_dense_f32_vs_teacher_f32: agg_dense_teacher,
