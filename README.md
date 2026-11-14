@@ -21,20 +21,24 @@ receipted measurement of the quality-versus-active-parameter frontier under
 exact FFN group omission. Nothing here is a demonstrated new architecture, and
 no capability, speed or latency claim has been measured.
 
-## Current result (M1 part 2)
+## Current result (M2)
 
-The registered experiment (`docs/EXPERIMENT-CONTRACT.md`) asked whether a
-static selection of whole FFN channel groups can keep Qwen3-1.7B within the
-`<=1e9` unique-active-parameter ceiling without changing its next-token
-distribution. **It cannot, in the measured family.** Every configuration at or
-below the ceiling is far outside the pre-registered acceptable tier; the
-quality/parameter curve is a cliff near the fully dense model, above the
-ceiling. The 0.6B control is already dense-compliant and needs no sparsity.
+The registered experiments (`docs/EXPERIMENT-CONTRACT.md`) asked whether static
+whole-group omission, and then a per-token causal selector, can keep
+Qwen3-1.7B within the `<=1e9` unique-active-parameter ceiling without changing
+its next-token distribution. **Neither can, in the measured family.** Static
+masks are a cliff near the dense model. Per-token selection helps: activation
+magnitude at matched realized parameters beats the best static M1 arm. But
+every deployable per-token arm is still orders of magnitude outside the
+acceptable tier, and **even a non-deployable per-token oracle at the compliant
+budget cannot reach the usable tier**. The 64-group oracle is the best and is
+still far outside it. The inference-only, post-hoc selection branch is dead for
+this teacher at this granularity.
 
-The result is bounded and honest: it covers static, token-independent masks at
-the sixteen-group granularity, with no retraining and no learned routing. It
-does not bound dynamic or trained selectors. The full report, frontier table,
-plot and receipts are in `results/M1-FRONTIER.md`; limitations are in
+The result is bounded and honest: it covers post-hoc selection on a dense
+checkpoint, at 16-64 equal contiguous groups, with no retraining. It does not
+bound trained or upcycled sparse models. The reports are
+`results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; limitations are in
 `docs/LIMITATIONS.md`.
 
 ## Rules this repository enforces mechanically
@@ -116,6 +120,35 @@ scripts/court --gpu oracle -- python3 oracle/frontier_sweep.py sweep \
 scripts/court oracle -- python3 oracle/frontier_sweep.py analyze \
   --preregistration-commit dad6619c8514cb4a52b3420c007a47fc43e1b47e
 
+# M2 selectors: prepare, oracle potential, held-out table, interactions, fixtures
+scripts/court --gpu oracle -- python3 oracle/m2_selectors.py prepare
+scripts/court --gpu oracle -- python3 oracle/m2_selectors.py oracle
+scripts/court --gpu oracle -- python3 oracle/m2_selectors.py evaluate --sample full \
+  --prepare results/selectors/prepare-Qwen-Qwen3-1.7B-<stamp>.json
+scripts/court --gpu oracle -- python3 oracle/m2_selectors.py interactions \
+  --prepare results/selectors/prepare-Qwen-Qwen3-1.7B-<stamp>.json
+scripts/court oracle -- python3 oracle/m2_selectors.py analyze \
+  --prepare results/selectors/prepare-Qwen-Qwen3-1.7B-<stamp>.json \
+  --eval results/selectors/eval-full-<stamp>.json \
+  --oracle results/selectors/oracle-<stamp>.json
+scripts/court --gpu oracle -- python3 oracle/m2_selectors.py fixtures \
+  --prepare results/selectors/prepare-Qwen-Qwen3-1.7B-<stamp>.json \
+  --weights results/selectors/m2-weights.json
+
+# Rust Atlas: fit, parity select, independent budget compare, controller cost
+scripts/court rust -- cargo run --release -p selvedge-cli -- atlas fit \
+  --fit-data results/selectors/m2-fit-data.json \
+  --out results/selectors/atlas-fit-weights.json --lambda-mix 0.25
+scripts/court rust -- cargo run --release -p selvedge-cli -- atlas select \
+  --weights results/selectors/m2-weights.json \
+  --inputs results/selectors/fixtures/selector-inputs.json \
+  --selector learned-interaction --check-expected
+scripts/court rust -- cargo run --release -p selvedge-cli -- atlas compare \
+  --input results/selectors/compare-input.json --resamples 10000 --json
+scripts/court rust -- cargo run --release -p selvedge-cli -- atlas cost \
+  --weights results/selectors/m2-weights.json \
+  --inputs results/selectors/fixtures/selector-inputs.json --repeat 100000 --json
+
 # Court B unit tests for the masked-MLP instrument (CPU, synthetic)
 scripts/court oracle -- python3 -m pytest oracle/tests -q
 scripts/court rust -- cargo run --release -p selvedge-cli -- convert \
@@ -178,6 +211,7 @@ Cargo.toml                     Rust workspace (resolver 3, edition 2024)
 crates/selvedge-core/          canonical IDs, tensor contracts, ledger, config
 crates/selvedge-format/        manifest v1, validator, atomic publisher, readers
 crates/selvedge-fixtures/      deterministic synthetic bundle generator
+crates/selvedge-atlas/         quality observations, interaction graph, selectors
 crates/selvedge-cli/           the `selvedge` binary
 oracle/                        pinned teacher instrumentation (Python, research-only)
 models/                        tracked model spec, lock and reference configs (no weights)

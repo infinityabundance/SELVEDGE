@@ -512,3 +512,53 @@ versions, precision flags, seed, realized active count and per-article metrics.
 - `BundleFile` refuses a shard larger than the caller's byte cap.
 - Test temporary directories live under `SELVEDGE_TEST_TMP`/`TMPDIR` and are
   removed on drop; the Docker court bounds `/tmp` independently.
+
+## Atlas boundary (M2)
+
+`selvedge-atlas` is the causal-selection boundary. It owns five contracts and
+nothing else:
+
+| contract | invariant |
+| --- | --- |
+| `QualityObservation` | one measured intervention, with model digest, layer, group, context, base set, metric, delta, uncertainty, source receipt and stamp; out-of-range indices, non-finite values, unsorted base sets and a base set containing the measured group are rejected |
+| `InteractionGraph` | ordered unary nodes plus canonical `low < high` pairwise edges with Welford statistics; no self-loops, no missing endpoints, no non-finite statistics; hyperedges carry a measured base set and require strictly ascending group ids |
+| `SelectorInput` | the only record a deployed selector may read: pre-MLP hidden state, the layer's own group features, layer, position, a sequence key derived from the prefix, and an optional raw hidden vector; `deny_unknown_fields` means a record carrying future tokens, teacher logits or gold labels fails to deserialize |
+| `Selector` | a deterministic map from a validated `SelectorInput` and `k` to a sorted group set; the implemented selectors are magnitude, frequency, deterministic random, static magnitude/frequency, learned unary and learned interaction-aware |
+| `TwoViewDecision` | independent `ValueEstimate` (value if executed) and `CostEstimate` (cost to materialise now), combined only when both are available; a missing cost model is `DecisionStatus::CostUnavailable`, never a measured zero |
+
+```mermaid
+flowchart LR
+    cal[calibration interventions] --> obs[QualityObservation]
+    obs --> graph[InteractionGraph]
+    obs --> fit[atlas fit]
+    fit --> weights[weights JSON]
+    input[SelectorInput<br/>pre-decision only] --> sel[Selector]
+    weights --> sel
+    sel --> decision[SelectionDecision<br/>approximate]
+    sel --> two[TwoViewDecision]
+    cost[CostHead<br/>M3 scheduler] --> two
+```
+
+Dataflow for the measured M2 experiment:
+
+```text
+oracle/m2_selectors.py prepare
+  -> calibration per-document statistics
+  -> intervention labels (one-layer local squared error)
+  -> m2-weights.json + m2-fit-data.json
+oracle/m2_selectors.py evaluate / oracle / interactions
+  -> Python arm decisions and held-out metrics
+oracle/m2_selectors.py fixtures
+  -> selector-inputs.json (real contexts + Python expected decisions)
+selvedge atlas select
+  -> Rust decisions, parity-tested against the fixtures
+selvedge atlas compare
+  -> independent realized-budget accounting and paired comparison
+```
+
+The selectors are **approximate** by construction: they predict a subset, so
+they cannot produce an exact `SelectionDecision`. The oracle is not part of the
+crate; it needs the per-layer group contributions and repeated forwards, and it
+is labelled non-deployable in every receipt. The value head is trained on
+interventions; the cost head is deliberately unfilled until the M3 trace
+scheduler has real traces, so no M2 result silently assumes a transfer time.

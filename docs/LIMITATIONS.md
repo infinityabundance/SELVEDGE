@@ -121,3 +121,49 @@ teacher KL, PPL ratio and top-1 agreement on pinned held-out text.
   performance.
 - Treating the two-group additive-greedy observation as the registered
   matched-budget result; it is not (see `results/M1-FRONTIER.md`).
+
+## M2 selectors: what the per-token result does not establish
+
+The M2 report is `results/M2-SELECTORS.md`; the registered contract is the M2
+section of `docs/EXPERIMENT-CONTRACT.md`. The measured result is negative for
+the inference-only, post-hoc selection family.
+
+- **The oracle is local, not globally optimal.** It exactly minimises a
+  one-layer squared-output error per token and then applies the map; it does
+  not solve the joint per-token combinatorial problem over all layers and
+  positions. A stronger search could do better. The gap to the usable tier is
+  so large that a better local search is unlikely to close it at this budget,
+  but that is an inference, not a theorem.
+- **The 64-group oracle uses bounded greedy, not exact enumeration.** Exact
+  `C(64,20)` enumeration is infeasible; each greedy step is exact under the
+  incremental local objective, but the beam is not widened. A different
+  ordering could produce a better subset.
+- **The final refinement is a 2-window subset.** It uses 32 token positions
+  and one pass, not all eight windows and two passes. It is an exploratory
+  upper-bound probe, not the registered eight-window comparison.
+- **The oracle sample is eight articles.** Its CIs are article-level and
+  coarse. The qualitative gap to the usable tier is far larger than the CI
+  width, but the exact mean is sample-specific.
+- **The learned selectors use one label definition.** The registered label is
+  the marginal local value given a four-group magnitude base. A standalone or
+  greedy-path label, a larger model, or a different feature set could learn
+  more. The M2 result shows that this label and these features do not transfer
+  to final-KL quality; it does not show that no learned selector can.
+- **The learned interaction-aware arm is a linear bilinear surrogate.** The
+  interaction measurement shows the pairwise term is context-dependent and not
+  predicted by the tested graph features. A richer interaction model is
+  untested.
+- **Gradient x activation and corrected gradient x activation are
+  non-deployable here.** Their backward target uses teacher-forced tokens and a
+  summed loss. They are attribution baselines, not online selectors. The
+  corrected term is a reproduction of the stated corrective term in the 2026
+  paper, not of its full experimental pipeline.
+- **The 868-element controller mismatch is real.** Amendment A3 explains why
+  exact element equality is impossible at whole-group granularity. The learned
+  arms are 868 elements above the baseline, never below it.
+- **KL is not capability.** The measured numbers are next-token distributional
+  fidelity on pinned Wikipedia, code-prompt and math-question slices. No task
+  accuracy, generation quality, latency or throughput claim is made.
+- **The Rust selector latency is CPU, release-mode, fixture-cycled.** It is a
+  controller-cost measurement, not an end-to-end serving benchmark. It excludes
+  the FFN forward, memory pressure and concurrency.

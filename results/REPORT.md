@@ -1,11 +1,13 @@
 # SELVEDGE results — honest current state
 
-Status: **S3b complete**. The pre-registered M1 quality/active-parameter
-frontier has been measured. H1 is rejected for static whole-group omission on
-Qwen3-1.7B: no configuration at or below the ceiling preserved the dense
-teacher's next-token distribution on held-out wikitext. The full report is
-`results/M1-FRONTIER.md`; the registered contract is
-`docs/EXPERIMENT-CONTRACT.md`.
+Status: **M2 complete**. The pre-registered M1 frontier and the M2 per-token
+selector/oracle experiment have been measured. M1 rejected static whole-group
+omission. M2 rejects the inference-only, post-hoc per-token selection branch:
+even a non-deployable per-token oracle at the compliant budget is far outside
+the registered usable tier, and no deployable selector beats activation
+magnitude at matched realized active parameters. The reports are
+`results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; the registered contract
+is `docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendment A3).
 
 This file states what is established, with the receipt that establishes it, and
 what is not. It is not a benchmark report: no latency, throughput or quality
@@ -47,9 +49,25 @@ number has been measured, and none is claimed.
    were evaluated on a pinned, hash-split held-out set with paired bootstrap
    CIs. Every arm at or below the ceiling is far outside the registered
    acceptable and usable tiers. The curve is a cliff near the fully dense end.
-9. **The result is negative and reproducible.** Two independent complete runs
-   produced bitwise-identical per-arm aggregates. Failed attempts, amendments
-   and the dirty-worktree superseded receipts are retained.
+9. **The static result is negative and reproducible.** Two independent complete
+   runs produced bitwise-identical per-arm aggregates. Failed attempts,
+   amendments and the dirty-worktree superseded receipts are retained.
+10. **The per-token oracle potential is measured and negative.** A
+    non-deployable oracle that chooses an exact local subset per token and per
+    layer, at the same realized budget, was evaluated at 16, 64 and 4 groups.
+    The 64-group oracle is the best and is still far outside the registered
+    usable tier. A bounded exact-KL refinement does not rescue it.
+11. **Per-token selection helps but cannot escape the cliff.** At matched
+    realized active parameters, per-token activation magnitude beats the best
+    static M1 arm, and every other deployable per-token arm is worse than
+    per-token magnitude. The learned unary, learned interaction-aware,
+    gradient-attribution and corrected-attribution arms are all worse.
+12. **The Rust Atlas boundary is implemented and parity-tested.**
+    `selvedge-atlas` owns the quality-observation record, the interaction
+    graph, the leakage-bounded selector input, seven selectors, the two-view
+    head contract and independent matched-budget accounting. `selvedge atlas
+    fit|select|compare|cost` run; the Python/Rust parity, leakage, graph and
+    calibration tests pass on exported real fixtures.
 
 ## Numbers (generated from receipts)
 
@@ -111,15 +129,17 @@ number has been measured, and none is claimed.
 - **No capability claim.** The frontier measures next-token distributions on
   pinned text. KL on Wikipedia is not a code, math, reasoning or factuality
   benchmark. See `docs/LIMITATIONS.md`.
-- **No dynamic or trained selector.** The measured masks are static over
-  tokens. Per-token causal selection, gradient attribution, interaction-aware
-  selection and retraining/upcycling are untested. The negative result bounds
-  the static family, not sparsity in general.
+- **No trained or upcycled model.** Post-hoc per-token selection is measured
+  and negative. A model trained or upcycled to tolerate the sparse FFN, a
+  distilled smaller teacher, quantization and a learned memory layer are
+  untested. The negative result bounds post-hoc inference-only selection, not
+  sparsity in general.
 - **No measured speed, latency, storage bandwidth or FLOPs.** FLOP values are
   derived from realized channel counts, not hardware counters. Arm wall clock
   is a cost observation, not a benchmark.
-- **No selector, scheduler or runtime.** `selvedge-atlas`, `selvedge-store`,
-  `selvedge-sim` and `selvedge-runtime` do not exist yet.
+- **No scheduler or runtime.** `selvedge-atlas` exists; `selvedge-store`,
+  `selvedge-sim` and `selvedge-runtime` do not. The Atlas cost head is
+  explicitly unavailable until M3, and no transfer time is assumed.
 - **The native-bf16 match is a model of PyTorch's arithmetic on these inputs.**
   A different kernel or backend may round differently.
 
@@ -132,9 +152,11 @@ hashes, sizes and measurements. Rebuilding is documented in
 
 ## Next
 
-Measure the oracle per-token potential at the same real-budget: for a small
-held-out sample, find the best achievable KL per token with the affordable
-number of groups using bounded search. If that oracle is also far outside the
-tier, no selector can rescue this teacher at this granularity and the
-retraining/upcycling branch becomes primary. Pre-register that experiment
-before running it.
+Move to the trained/upcycled branch with a fresh pre-registration: a dense
+compliant Qwen3-0.6B base plus external capacity, an UpIT/SIMoE-style
+dense-to-sparse upcycle of Qwen3-1.7B trained to tolerate the compliant group
+budget, and a distilled smaller teacher, matched for active parameters, FLOPs
+and training tokens. The M2 oracle bound says post-hoc selection cannot close
+the gap; the next question is whether training can change the model so the same
+budget is usable. Do not resume inference-only selector tuning without a new
+oracle bound.

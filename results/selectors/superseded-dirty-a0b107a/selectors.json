@@ -1,0 +1,2832 @@
+{
+  "budget": {
+    "B140": {
+      "active_unique_elements": 993911808,
+      "ceiling": 1000000000,
+      "extra_groups": 0,
+      "ffn_elements": 330301440,
+      "group_width": 384,
+      "groups": 140,
+      "groups_per_layer": 5,
+      "name": "B140"
+    },
+    "B142": {
+      "active_unique_elements": 998630400,
+      "ceiling": 1000000000,
+      "extra_groups": 2,
+      "ffn_elements": 335020032,
+      "group_width": 384,
+      "groups": 142,
+      "groups_per_layer": 5,
+      "name": "B142"
+    },
+    "granularity": {
+      "16": {
+        "active_unique_elements": 993911808,
+        "ceiling": 1000000000,
+        "ffn_elements": 330301440,
+        "group_width": 384,
+        "groups": 16,
+        "name": "G16",
+        "shape": {
+          "per_layer": 5
+        },
+        "total_groups": 140
+      },
+      "4": {
+        "active_unique_elements": 993911808,
+        "ceiling": 1000000000,
+        "ffn_elements": 330301440,
+        "group_width": 1536,
+        "groups": 4,
+        "name": "G4",
+        "shape": {
+          "one_per_layer": 21,
+          "per_layer": null,
+          "two_per_layer": 7
+        },
+        "total_groups": 35
+      },
+      "64": {
+        "active_unique_elements": 993911808,
+        "ceiling": 1000000000,
+        "ffn_elements": 330301440,
+        "group_width": 96,
+        "groups": 64,
+        "name": "G64",
+        "shape": {
+          "per_layer": 20
+        },
+        "total_groups": 560
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "absolute_reduction": {
+        "ci_high": -3.122740950584412,
+        "ci_low": -3.5679371957480908,
+        "mean": -3.3422297580432887,
+        "resamples": 10000
+      },
+      "active_delta": -4718592,
+      "arm": "static-magnitude-k5",
+      "arm_kl": 10.019481533765793,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.4682489344379888,
+        "ci_low": -0.5404317535189321,
+        "mean": -0.5035847047068569,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -3.396110678166151,
+        "ci_low": -3.884220606982708,
+        "mean": -3.6320500905424358,
+        "resamples": 10000
+      },
+      "active_delta": -4718592,
+      "arm": "static-frequency-k5",
+      "arm_kl": 10.309631246328355,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.5084496761904255,
+        "ci_low": -0.590238916202929,
+        "mean": -0.5476413462034451,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -4.834892914295197,
+        "ci_low": -5.388335849046706,
+        "mean": -5.105625327957869,
+        "resamples": 10000
+      },
+      "active_delta": -4718592,
+      "arm": "static-random-k5",
+      "arm_kl": 11.782510292530059,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.7232778342340062,
+        "ci_low": -0.8169396336789123,
+        "mean": -0.7693659424038432,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -0.860681528300047,
+        "ci_low": -1.2199669152498245,
+        "mean": -1.028374459205866,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "static-greedy-uniform5",
+      "arm_kl": 7.7066572368144985,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.12988650445668587,
+        "ci_low": -0.18446026861820256,
+        "mean": -0.15561526878451742,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -2.9972640745341774,
+        "ci_low": -3.447891817092896,
+        "mean": -3.216714280720949,
+        "resamples": 10000
+      },
+      "active_delta": -70778880,
+      "arm": "static-greedy-swap4",
+      "arm_kl": 9.895817911624908,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.44882208007073404,
+        "ci_low": -0.5222061578815589,
+        "mean": -0.4846220717395323,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -3.7741308335959913,
+        "ci_low": -4.3450894032418725,
+        "mean": -4.0646425845778,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "token-random",
+      "arm_kl": 10.745493376255036,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.5660010783537518,
+        "ci_low": -0.6590344049460133,
+        "mean": -0.6132664216683749,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -0.33204406544566156,
+        "ci_low": -0.3840097342431545,
+        "mean": -0.357683155426383,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "token-frequency",
+      "arm_kl": 7.034329384565353,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.049932463459567235,
+        "ci_low": -0.05737075470676092,
+        "mean": -0.05356321771136643,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -2.647271389812231,
+        "ci_low": -3.1681488755345346,
+        "mean": -2.905310493913889,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "token-task-static-nn",
+      "arm_kl": 9.58013653755188,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.3976985036326602,
+        "ci_low": -0.4744938032365117,
+        "mean": -0.43618940763354186,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -3.509743150919676,
+        "ci_low": -4.104866778701544,
+        "mean": -3.796844057195187,
+        "resamples": 10000
+      },
+      "active_delta": 868,
+      "arm": "token-learned-unary",
+      "arm_kl": 10.474508666992188,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.5266415286914508,
+        "ci_low": -0.6230747183670345,
+        "mean": -0.5731714746412916,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -3.5792728336155415,
+        "ci_low": -4.029401954114437,
+        "mean": -3.805217142922878,
+        "resamples": 10000
+      },
+      "active_delta": 868,
+      "arm": "token-learned-interaction",
+      "arm_kl": 10.482465362548828,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.5364482087109562,
+        "ci_low": -0.6099658394096256,
+        "mean": -0.5734499991596876,
+        "resamples": 10000
+      }
+    }
+  ],
+  "created_utc": "2026-11-14T23:10:35Z",
+  "granularity": {
+    "coarser_is_worse": true,
+    "finer_is_better": true,
+    "oracle_16_best": {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.03125,
+        "adjacent_equal_fraction_per_layer": [
+          0.0009784735812133072,
+          0.0007338551859099804,
+          0.0014677103718199608,
+          0.001223091976516634,
+          0.0014677103718199608,
+          0.0017123287671232876,
+          0.0026908023483365948,
+          0.0029354207436399216,
+          0.0029354207436399216,
+          0.003669275929549902,
+          0.003913894324853229,
+          0.0041585127201565555,
+          0.003913894324853229,
+          0.004892367906066536,
+          0.004647749510763209,
+          0.00611545988258317,
+          0.0026908023483365948,
+          0.02128180039138943,
+          0.007338551859099804,
+          0.007093933463796477,
+          0.020058708414872797,
+          0.038649706457925634,
+          0.03571428571428571,
+          0.03424657534246575,
+          0.22137964774951074,
+          0.07265166340508805,
+          0.20914872798434442,
+          0.15728962818003916
+        ],
+        "distinct_subsets_per_layer": [
+          372.875,
+          417.625,
+          443.25,
+          436.875,
+          453.75,
+          457.25,
+          465.0,
+          467.0,
+          467.75,
+          455.875,
+          414.5,
+          449.875,
+          463.875,
+          443.625,
+          440.625,
+          434.125,
+          427.0,
+          389.875,
+          421.0,
+          419.375,
+          355.25,
+          335.25,
+          331.125,
+          321.5,
+          231.875,
+          258.5,
+          168.25,
+          103.375
+        ],
+        "distinct_subsets_per_layer_mean": 387.36607142857144,
+        "modal_fraction_mean": 0.04389299665178571,
+        "per_token_groups_max": 142,
+        "per_token_groups_min": 142
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.0004892367906066536,
+      "fraction_kl_le_025": 0.004647749510763209,
+      "gpu_seconds": 1.9077692947387697,
+      "groups": 16,
+      "id": "oracle-local-16-B142",
+      "kl_ci_high": 6.224298715591431,
+      "kl_ci_low": 5.64469546675682,
+      "kl_mean": 5.952733099460602,
+      "kl_p95": 12.804016709327698,
+      "non_deployable": true,
+      "ppl_ratio": 229.89561966533446,
+      "selector_seconds": 2.4398647719062865,
+      "top1": 0.0865949122235179
+    },
+    "oracle_4": {
+      "active_unique_elements": 993911808,
+      "budget": "G4",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.42242102320380204,
+        "adjacent_equal_fraction_per_layer": [
+          0.2967221135029354,
+          0.271771037181996,
+          0.29892367906066536,
+          0.3145792563600783,
+          0.3040606653620352,
+          0.3202054794520548,
+          0.3211839530332681,
+          0.399706457925636,
+          0.34662426614481406,
+          0.33977495107632094,
+          0.3688845401174168,
+          0.34173189823874756,
+          0.36863992172211346,
+          0.4493639921722113,
+          0.39138943248532293,
+          0.4943737769080235,
+          0.39114481409001955,
+          0.5633561643835616,
+          0.49143835616438347,
+          0.45596868884540115,
+          0.39505870841487273,
+          0.3789138943248532,
+          0.3710861056751467,
+          0.46330724070450097,
+          0.5359589041095891,
+          0.6191291585127201,
+          0.6599804305283756,
+          0.8745107632093934
+        ],
+        "distinct_subsets_per_layer": [
+          4.0,
+          5.0,
+          5.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.25,
+          4.125,
+          3.75,
+          5.0,
+          8.125,
+          7.875,
+          8.125,
+          9.875,
+          6.875,
+          6.125,
+          5.375,
+          4.125,
+          4.0
+        ],
+        "distinct_subsets_per_layer_mean": 4.986607142857143,
+        "modal_fraction_mean": 0.44189453125,
+        "per_token_groups_max": 35,
+        "per_token_groups_min": 35
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.0,
+      "fraction_kl_le_025": 0.0,
+      "gpu_seconds": 1.9262595748901372,
+      "groups": 4,
+      "id": "oracle-local-4",
+      "kl_ci_high": 8.046133309602737,
+      "kl_ci_low": 7.6002609297633175,
+      "kl_mean": 7.833459138870239,
+      "kl_p95": 15.181752324104309,
+      "non_deployable": true,
+      "ppl_ratio": 1550.588291953571,
+      "selector_seconds": 1.5944920008769259,
+      "top1": 0.0560176121070981
+    },
+    "oracle_64": {
+      "active_unique_elements": 993911808,
+      "budget": "G64",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.0002358820240424937,
+        "adjacent_equal_fraction_per_layer": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0002446183953033268,
+          0.006360078277886497
+        ],
+        "distinct_subsets_per_layer": [
+          500.875,
+          508.75,
+          510.75,
+          511.625,
+          511.875,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          511.75,
+          511.875,
+          511.75,
+          511.875,
+          511.5,
+          511.75,
+          505.375,
+          473.875
+        ],
+        "distinct_subsets_per_layer_mean": 509.77232142857144,
+        "modal_fraction_mean": 0.003086635044642857,
+        "per_token_groups_max": 560,
+        "per_token_groups_min": 560
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.01687866927592955,
+      "fraction_kl_le_025": 0.05503913894324853,
+      "gpu_seconds": 1.9038550872802735,
+      "groups": 64,
+      "id": "oracle-local-64",
+      "kl_ci_high": 4.034952542930841,
+      "kl_ci_low": 3.289384909719229,
+      "kl_mean": 3.6654182374477386,
+      "kl_p95": 9.718961238861084,
+      "non_deployable": true,
+      "ppl_ratio": 25.451485655502328,
+      "selector_seconds": 4.0705456788418815,
+      "top1": 0.269324854016304
+    }
+  },
+  "learned_comparison": {
+    "absolute_reduction": {
+      "ci_high": 0.2760359081625938,
+      "ci_low": -0.2763647019863129,
+      "mean": -0.00837308572769165,
+      "resamples": 10000
+    },
+    "arm": "token-learned-interaction",
+    "arm_kl": 10.482465362548828,
+    "available": true,
+    "base_kl": 10.474508666992188,
+    "baseline": "token-learned-unary",
+    "items": 40,
+    "passes_five_percent": false,
+    "relative_reduction": {
+      "ci_high": 0.0186156988756698,
+      "ci_low": -0.02919407334195862,
+      "mean": -0.005332587497325924,
+      "resamples": 10000
+    }
+  },
+  "oracle": [
+    {
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.05367626502655857,
+        "adjacent_equal_fraction_per_layer": [
+          0.0009784735812133072,
+          0.0007338551859099804,
+          0.0009784735812133072,
+          0.001223091976516634,
+          0.001223091976516634,
+          0.001223091976516634,
+          0.002446183953033268,
+          0.003424657534246575,
+          0.002446183953033268,
+          0.003669275929549902,
+          0.003669275929549902,
+          0.004403131115459882,
+          0.0031800391389432484,
+          0.004647749510763209,
+          0.004403131115459882,
+          0.007338551859099804,
+          0.0029354207436399216,
+          0.0237279843444227,
+          0.007827788649706457,
+          0.008072407045009784,
+          0.027152641878669274,
+          0.05210371819960861,
+          0.053816046966731895,
+          0.04941291585127201,
+          0.33463796477495106,
+          0.10445205479452055,
+          0.28449119373776904,
+          0.5083170254403131
+        ],
+        "distinct_subsets_per_layer": [
+          372.875,
+          417.5,
+          439.625,
+          439.625,
+          456.75,
+          460.25,
+          466.75,
+          464.75,
+          468.0,
+          452.5,
+          415.875,
+          447.0,
+          456.75,
+          432.75,
+          430.25,
+          418.625,
+          425.125,
+          363.875,
+          404.5,
+          401.625,
+          321.5,
+          288.75,
+          289.875,
+          277.5,
+          194.5,
+          219.875,
+          136.0,
+          53.125
+        ],
+        "distinct_subsets_per_layer_mean": 372.0044642857143,
+        "modal_fraction_mean": 0.06928362165178571,
+        "per_token_groups_max": 140,
+        "per_token_groups_min": 140
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.0004892367906066536,
+      "fraction_kl_le_025": 0.0041585127201565555,
+      "gpu_seconds": 1.9116709365844728,
+      "groups": 16,
+      "id": "oracle-local-16-B140",
+      "kl_ci_high": 6.535456910729408,
+      "kl_ci_low": 5.9802263379096985,
+      "kl_mean": 6.273271381855011,
+      "kl_p95": 13.221420526504517,
+      "non_deployable": true,
+      "ppl_ratio": 327.7615708231668,
+      "selector_seconds": 2.853908362216316,
+      "top1": 0.06971624214202166
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.03125,
+        "adjacent_equal_fraction_per_layer": [
+          0.0009784735812133072,
+          0.0007338551859099804,
+          0.0014677103718199608,
+          0.001223091976516634,
+          0.0014677103718199608,
+          0.0017123287671232876,
+          0.0026908023483365948,
+          0.0029354207436399216,
+          0.0029354207436399216,
+          0.003669275929549902,
+          0.003913894324853229,
+          0.0041585127201565555,
+          0.003913894324853229,
+          0.004892367906066536,
+          0.004647749510763209,
+          0.00611545988258317,
+          0.0026908023483365948,
+          0.02128180039138943,
+          0.007338551859099804,
+          0.007093933463796477,
+          0.020058708414872797,
+          0.038649706457925634,
+          0.03571428571428571,
+          0.03424657534246575,
+          0.22137964774951074,
+          0.07265166340508805,
+          0.20914872798434442,
+          0.15728962818003916
+        ],
+        "distinct_subsets_per_layer": [
+          372.875,
+          417.625,
+          443.25,
+          436.875,
+          453.75,
+          457.25,
+          465.0,
+          467.0,
+          467.75,
+          455.875,
+          414.5,
+          449.875,
+          463.875,
+          443.625,
+          440.625,
+          434.125,
+          427.0,
+          389.875,
+          421.0,
+          419.375,
+          355.25,
+          335.25,
+          331.125,
+          321.5,
+          231.875,
+          258.5,
+          168.25,
+          103.375
+        ],
+        "distinct_subsets_per_layer_mean": 387.36607142857144,
+        "modal_fraction_mean": 0.04389299665178571,
+        "per_token_groups_max": 142,
+        "per_token_groups_min": 142
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.0004892367906066536,
+      "fraction_kl_le_025": 0.004647749510763209,
+      "gpu_seconds": 1.9077692947387697,
+      "groups": 16,
+      "id": "oracle-local-16-B142",
+      "kl_ci_high": 6.224298715591431,
+      "kl_ci_low": 5.64469546675682,
+      "kl_mean": 5.952733099460602,
+      "kl_p95": 12.804016709327698,
+      "non_deployable": true,
+      "ppl_ratio": 229.89561966533446,
+      "selector_seconds": 2.4398647719062865,
+      "top1": 0.0865949122235179
+    },
+    {
+      "active_unique_elements": 993911808,
+      "budget": "G64",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.0002358820240424937,
+        "adjacent_equal_fraction_per_layer": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0002446183953033268,
+          0.006360078277886497
+        ],
+        "distinct_subsets_per_layer": [
+          500.875,
+          508.75,
+          510.75,
+          511.625,
+          511.875,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          512.0,
+          511.75,
+          511.875,
+          511.75,
+          511.875,
+          511.5,
+          511.75,
+          505.375,
+          473.875
+        ],
+        "distinct_subsets_per_layer_mean": 509.77232142857144,
+        "modal_fraction_mean": 0.003086635044642857,
+        "per_token_groups_max": 560,
+        "per_token_groups_min": 560
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.01687866927592955,
+      "fraction_kl_le_025": 0.05503913894324853,
+      "gpu_seconds": 1.9038550872802735,
+      "groups": 64,
+      "id": "oracle-local-64",
+      "kl_ci_high": 4.034952542930841,
+      "kl_ci_low": 3.289384909719229,
+      "kl_mean": 3.6654182374477386,
+      "kl_p95": 9.718961238861084,
+      "non_deployable": true,
+      "ppl_ratio": 25.451485655502328,
+      "selector_seconds": 4.0705456788418815,
+      "top1": 0.269324854016304
+    },
+    {
+      "active_unique_elements": 993911808,
+      "budget": "G4",
+      "consistency": {
+        "adjacent_equal_fraction_mean": 0.42242102320380204,
+        "adjacent_equal_fraction_per_layer": [
+          0.2967221135029354,
+          0.271771037181996,
+          0.29892367906066536,
+          0.3145792563600783,
+          0.3040606653620352,
+          0.3202054794520548,
+          0.3211839530332681,
+          0.399706457925636,
+          0.34662426614481406,
+          0.33977495107632094,
+          0.3688845401174168,
+          0.34173189823874756,
+          0.36863992172211346,
+          0.4493639921722113,
+          0.39138943248532293,
+          0.4943737769080235,
+          0.39114481409001955,
+          0.5633561643835616,
+          0.49143835616438347,
+          0.45596868884540115,
+          0.39505870841487273,
+          0.3789138943248532,
+          0.3710861056751467,
+          0.46330724070450097,
+          0.5359589041095891,
+          0.6191291585127201,
+          0.6599804305283756,
+          0.8745107632093934
+        ],
+        "distinct_subsets_per_layer": [
+          4.0,
+          5.0,
+          5.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.25,
+          4.125,
+          3.75,
+          5.0,
+          8.125,
+          7.875,
+          8.125,
+          9.875,
+          6.875,
+          6.125,
+          5.375,
+          4.125,
+          4.0
+        ],
+        "distinct_subsets_per_layer_mean": 4.986607142857143,
+        "modal_fraction_mean": 0.44189453125,
+        "per_token_groups_max": 35,
+        "per_token_groups_min": 35
+      },
+      "forwards": 24,
+      "fraction_kl_le_005": 0.0,
+      "fraction_kl_le_025": 0.0,
+      "gpu_seconds": 1.9262595748901372,
+      "groups": 4,
+      "id": "oracle-local-4",
+      "kl_ci_high": 8.046133309602737,
+      "kl_ci_low": 7.6002609297633175,
+      "kl_mean": 7.833459138870239,
+      "kl_p95": 15.181752324104309,
+      "non_deployable": true,
+      "ppl_ratio": 1550.588291953571,
+      "selector_seconds": 1.5944920008769259,
+      "top1": 0.0560176121070981
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "consistency": null,
+      "forwards": 2982,
+      "fraction_kl_le_005": 0.0,
+      "fraction_kl_le_025": 0.0029354207436399216,
+      "gpu_seconds": 138.5311002502442,
+      "groups": 16,
+      "id": "oracle-final-refine",
+      "kl_ci_high": 6.411855220794678,
+      "kl_ci_low": 5.159938335418701,
+      "kl_mean": 5.7858967781066895,
+      "kl_p95": 12.633551120758057,
+      "non_deployable": true,
+      "ppl_ratio": 177.6635276080758,
+      "selector_seconds": 0.0,
+      "top1": 0.10176125541329384
+    }
+  ],
+  "preregistration_commit": "a0b107adc23f23cbda43a09cbd6d229b0ea024a1",
+  "receipts": {
+    "eval": {
+      "path": "results/selectors/eval-full-20261114T230320Z.json",
+      "sha256": "649da79e3a5f96de794be9d9261ea5ee5aa10c450bf3ac4034b3d04987d40994"
+    },
+    "oracle": {
+      "path": "results/selectors/oracle-20261114T225646Z.json",
+      "sha256": "9609665a4c55992edb2cf598e4d3c03c6a587819e17a39b5864e9f9017c309fb"
+    },
+    "prepare": {
+      "path": "results/selectors/prepare-Qwen-Qwen3-1.7B-20261114T225327Z.json",
+      "sha256": "f0e5acdfd48fe6f87bd6864bfeb1cb5b2e67f43c460c5e6002c04a745a2b7137"
+    }
+  },
+  "resamples": 10000,
+  "revision": "a0b107adc23f23cbda43a09cbd6d229b0ea024a1",
+  "schema": "selvedge/selectors/analysis-v1",
+  "seed": 20261114,
+  "stamp": "20261114T231035Z",
+  "table": [
+    {
+      "active_unique_elements": 1720574976,
+      "budget": "noncompliant-dense",
+      "budget_matched": true,
+      "compliant": false,
+      "controller_elements": 0,
+      "deployable": false,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 0.0,
+          "kl_mean_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 0.0,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "point": 1.0,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 1.0,
+          "top1_ci": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 0.0,
+          "kl_mean_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 0.0,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "point": 1.0,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 1.0,
+          "top1_ci": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 0.0,
+          "kl_mean_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 0.0,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "point": 1.0,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 1.0,
+          "top1_ci": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "teacher-dense",
+      "kl_ci_high": 0.0,
+      "kl_ci_low": 0.0,
+      "kl_mean": 0.0,
+      "kl_p95": 0.0,
+      "ppl_ci_high": 1.0,
+      "ppl_ci_low": 1.0,
+      "ppl_ratio": 1.0,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 1.0,
+      "top1_ci_high": 1.0,
+      "top1_ci_low": 1.0
+    },
+    {
+      "active_unique_elements": 1720574976,
+      "budget": "noncompliant-all-groups",
+      "budget_matched": true,
+      "compliant": false,
+      "controller_elements": 0,
+      "deployable": false,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 0.0,
+          "kl_mean_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 0.0,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "point": 1.0,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 1.0,
+          "top1_ci": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 0.0,
+          "kl_mean_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 0.0,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "point": 1.0,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 1.0,
+          "top1_ci": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 0.0,
+          "kl_mean_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 0.0,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "point": 1.0,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 1.0,
+          "top1_ci": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "masked-all",
+      "kl_ci_high": 0.0,
+      "kl_ci_low": 0.0,
+      "kl_mean": 0.0,
+      "kl_p95": 0.0,
+      "ppl_ci_high": 1.0,
+      "ppl_ci_low": 1.0,
+      "ppl_ratio": 1.0,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 1.0,
+      "top1_ci_high": 1.0,
+      "top1_ci_low": 1.0
+    },
+    {
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.153139555454255,
+          "kl_mean_ci": {
+            "ci_high": 9.639813330471515,
+            "ci_low": 8.6416663056612,
+            "mean": 9.151297301905155,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.17431519508362,
+            "ci_low": 16.798438990116118,
+            "mean": 17.4930855727458,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 17.49177758693695,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 8622.863981759778,
+            "ci_low": 3096.1793964989242,
+            "mean": 5323.226671988748,
+            "point": 5111.872600807927,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.07417389140464366,
+          "top1_ci": {
+            "ci_high": 0.10259984389995223,
+            "ci_low": 0.04946990361670032,
+            "mean": 0.07432505771199707,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.019481533765793,
+          "kl_mean_ci": {
+            "ci_high": 10.27083489984274,
+            "ci_low": 9.779429759383202,
+            "mean": 10.020021669629813,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.637028638124466,
+            "ci_low": 17.883539177179337,
+            "mean": 18.25002536511898,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.251940536499024,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 15400.810466908304,
+            "ci_low": 9097.324821456312,
+            "mean": 11883.37746491476,
+            "point": 11772.884157537612,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.008026652224361896,
+          "top1_ci": {
+            "ci_high": 0.010427081398665905,
+            "ci_low": 0.005922934040427208,
+            "mean": 0.008006969844838603,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 9.306485462188721,
+          "kl_mean_ci": {
+            "ci_high": 9.817726846635342,
+            "ci_low": 8.79051288574934,
+            "mean": 9.305098953174353,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.009489258527758,
+            "ci_low": 16.314199927449227,
+            "mean": 17.15021716066122,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 17.15312514305115,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 9297.299423984508,
+            "ci_low": 3035.174385400647,
+            "mean": 5431.896495752118,
+            "point": 5205.14793670413,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.035282622720114884,
+          "top1_ci": {
+            "ci_high": 0.04503621626703534,
+            "ci_low": 0.02672472375968937,
+            "mean": 0.035360857415015344,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "static-magnitude-k5",
+      "kl_ci_high": 10.27083489984274,
+      "kl_ci_low": 9.779429759383202,
+      "kl_mean": 10.019481533765793,
+      "kl_p95": 18.251940536499024,
+      "ppl_ci_high": 15400.810466908304,
+      "ppl_ci_low": 9097.324821456312,
+      "ppl_ratio": 11772.884157537612,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.008026652224361896,
+      "top1_ci_high": 0.010427081398665905,
+      "top1_ci_low": 0.005922934040427208
+    },
+    {
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.52061049938202,
+          "kl_mean_ci": {
+            "ci_high": 10.003102596402169,
+            "ci_low": 9.039888449907302,
+            "mean": 9.51929074308157,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.939657282829288,
+            "ci_low": 17.415837247371673,
+            "mean": 18.160735386645793,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.157757806777955,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 12373.053321984575,
+            "ci_low": 4868.404470635979,
+            "mean": 7970.408909647441,
+            "point": 7738.069151262331,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.0554887002101168,
+          "top1_ci": {
+            "ci_high": 0.07422382658231069,
+            "ci_low": 0.03882669758924749,
+            "mean": 0.05559881741003832,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.309631246328355,
+          "kl_mean_ci": {
+            "ci_high": 10.574238388091326,
+            "ci_low": 10.053808543384076,
+            "mean": 10.309842002128958,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.06176323056221,
+            "ci_low": 18.29774363160133,
+            "mean": 18.673959062724116,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.674735689163207,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 21899.816551802196,
+            "ci_low": 12731.595064066063,
+            "mean": 16740.793435632448,
+            "point": 16580.0167664518,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.008463018084876239,
+          "top1_ci": {
+            "ci_high": 0.010859519469668157,
+            "ci_low": 0.006285136053338647,
+            "mean": 0.008448565351909493,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 10.070199120044709,
+          "kl_mean_ci": {
+            "ci_high": 10.59149994701147,
+            "ci_low": 9.580956525206565,
+            "mean": 10.07041518507123,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.47469045639038,
+            "ci_low": 17.570878571867944,
+            "mean": 18.486367252614496,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.48823199272156,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 25270.62300893169,
+            "ci_low": 7506.465637205331,
+            "mean": 14185.752196423244,
+            "point": 13505.778873938905,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.03356873265001923,
+          "top1_ci": {
+            "ci_high": 0.04197677310730796,
+            "ci_low": 0.02607282578072045,
+            "mean": 0.0335529117527185,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "static-frequency-k5",
+      "kl_ci_high": 10.574238388091326,
+      "kl_ci_low": 10.053808543384076,
+      "kl_mean": 10.309631246328355,
+      "kl_p95": 18.674735689163207,
+      "ppl_ci_high": 21899.816551802196,
+      "ppl_ci_low": 12731.595064066063,
+      "ppl_ratio": 16580.0167664518,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.008463018084876239,
+      "top1_ci_high": 0.010859519469668157,
+      "top1_ci_low": 0.006285136053338647
+    },
+    {
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 11.73893382549286,
+          "kl_mean_ci": {
+            "ci_high": 12.332486370205878,
+            "ci_low": 11.182158259153365,
+            "mean": 11.7401472777915,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.13434176087379,
+            "ci_low": 18.167884122133255,
+            "mean": 18.64801852379799,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.646371173858643,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 120039.47062665354,
+            "ci_low": 34528.61262598544,
+            "mean": 66004.14203374296,
+            "point": 62355.203254699656,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.01802066306117922,
+          "top1_ci": {
+            "ci_high": 0.028476079168613066,
+            "ci_low": 0.009253298380644991,
+            "mean": 0.018086393186689823,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 11.782510292530059,
+          "kl_mean_ci": {
+            "ci_high": 12.071168467998504,
+            "ci_low": 11.507478525042533,
+            "mean": 11.783417239544391,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.99295607328415,
+            "ci_low": 18.295741245746612,
+            "mean": 18.6447369399786,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.64437017440796,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 75695.03515934802,
+            "ci_low": 44218.71344479858,
+            "mean": 57997.35634520932,
+            "point": 57418.114493585104,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.0014677103608846664,
+          "top1_ci": {
+            "ci_high": 0.002079256344586611,
+            "ci_low": 0.0009050880558788777,
+            "mean": 0.0014650122200045735,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 11.278002548217774,
+          "kl_mean_ci": {
+            "ci_high": 11.703924456834793,
+            "ci_low": 10.858561131954193,
+            "mean": 11.276384170012474,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.18152592480183,
+            "ci_low": 17.01145192146301,
+            "mean": 17.591696908776758,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 17.59295666217804,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 48100.23198255224,
+            "ci_low": 19939.772982049653,
+            "mean": 31292.410443394434,
+            "point": 30534.4371801355,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.01202976128552109,
+          "top1_ci": {
+            "ci_high": 0.01849921714805532,
+            "ci_low": 0.006367250880575739,
+            "mean": 0.012041323304290419,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "static-random-k5",
+      "kl_ci_high": 12.071168467998504,
+      "kl_ci_low": 11.507478525042533,
+      "kl_mean": 11.782510292530059,
+      "kl_p95": 18.64437017440796,
+      "ppl_ci_high": 75695.03515934802,
+      "ppl_ci_low": 44218.71344479858,
+      "ppl_ratio": 57418.114493585104,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.0014677103608846664,
+      "top1_ci_high": 0.002079256344586611,
+      "top1_ci_low": 0.0009050880558788777
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 8.025311887264252,
+          "kl_mean_ci": {
+            "ci_high": 8.396985521912574,
+            "ci_low": 7.625988799333572,
+            "mean": 8.022565435239075,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.659041630029678,
+            "ci_low": 14.643889330029488,
+            "mean": 15.165190769810678,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.163721299171447,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 2312.9342952850257,
+            "ci_low": 1040.3431544346122,
+            "mean": 1584.3487015940007,
+            "point": 1545.9397322431926,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.08083287212066352,
+          "top1_ci": {
+            "ci_high": 0.11111400127410888,
+            "ci_low": 0.05473569672787562,
+            "mean": 0.0810442936829757,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 7.7066572368144985,
+          "kl_mean_ci": {
+            "ci_high": 7.922954763770104,
+            "ci_low": 7.5123589064180845,
+            "mean": 7.706166370792388,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.62330971300602,
+            "ci_low": 14.879487538933754,
+            "mean": 15.235857339470389,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.237969660758973,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 1488.5612889081021,
+            "ci_low": 974.0993467267458,
+            "mean": 1203.1463415753296,
+            "point": 1196.792422842998,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.023897660383954644,
+          "top1_ci": {
+            "ci_high": 0.028082191571593286,
+            "ci_low": 0.020006671268492936,
+            "mean": 0.02390038652248215,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 8.174587070941925,
+          "kl_mean_ci": {
+            "ci_high": 8.525331208407877,
+            "ci_low": 7.840447652339935,
+            "mean": 8.17653898319602,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.795642630457877,
+            "ci_low": 14.530192399024962,
+            "mean": 15.14530028274536,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.145061421394349,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 2476.979232421485,
+            "ci_low": 1111.6168169799191,
+            "mean": 1684.3548095052586,
+            "point": 1641.2381615051854,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.03142867761198431,
+          "top1_ci": {
+            "ci_high": 0.039097635978250764,
+            "ci_low": 0.024288295597070828,
+            "mean": 0.03137052984666312,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "static-greedy-uniform5",
+      "kl_ci_high": 7.922954763770104,
+      "kl_ci_low": 7.5123589064180845,
+      "kl_mean": 7.7066572368144985,
+      "kl_p95": 15.237969660758973,
+      "ppl_ci_high": 1488.5612889081021,
+      "ppl_ci_low": 974.0993467267458,
+      "ppl_ratio": 1196.792422842998,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.023897660383954644,
+      "top1_ci_high": 0.028082191571593286,
+      "top1_ci_low": 0.020006671268492936
+    },
+    {
+      "active_unique_elements": 927851520,
+      "budget": "M1-K3-112",
+      "budget_matched": false,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.770719897747039,
+          "kl_mean_ci": {
+            "ci_high": 10.246624889969826,
+            "ci_low": 9.278185042738915,
+            "mean": 9.76847119580388,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.955949104428292,
+            "ci_low": 17.691209096312523,
+            "mean": 18.333306696469784,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.332949256896974,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 16315.129592971276,
+            "ci_low": 6363.848511906234,
+            "mean": 10556.15863481242,
+            "point": 10249.648603590855,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.05028220703825355,
+          "top1_ci": {
+            "ci_high": 0.07200559542223346,
+            "ci_low": 0.03176791095698718,
+            "mean": 0.05037557322968263,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 9.895817911624908,
+          "kl_mean_ci": {
+            "ci_high": 10.153093553334475,
+            "ci_low": 9.643579446524381,
+            "mean": 9.894506192307473,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.608311905264856,
+            "ci_low": 17.83155750691891,
+            "mean": 18.204879371817114,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.20951364040375,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 14493.974252326418,
+            "ci_low": 8423.587998286563,
+            "mean": 11117.362316682436,
+            "point": 11033.683703235876,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.008088195987511426,
+          "top1_ci": {
+            "ci_high": 0.009727139223832637,
+            "ci_low": 0.006644947465974838,
+            "mean": 0.008086597361866153,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 9.249645149707794,
+          "kl_mean_ci": {
+            "ci_high": 9.721235624253751,
+            "ci_low": 8.80403451025486,
+            "mean": 9.249734374281168,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 17.75719568967819,
+            "ci_low": 16.143064500689505,
+            "mean": 16.939384656434058,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 16.9414311170578,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 8069.895839433673,
+            "ci_low": 3148.2348494310727,
+            "mean": 5104.026428334225,
+            "point": 4945.4340421288325,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.021187086822465062,
+          "top1_ci": {
+            "ci_high": 0.029508185830782168,
+            "ci_low": 0.014001205730019138,
+            "mean": 0.021205226070396602,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "static-greedy-swap4",
+      "kl_ci_high": 10.153093553334475,
+      "kl_ci_low": 9.643579446524381,
+      "kl_mean": 9.895817911624908,
+      "kl_p95": 18.20951364040375,
+      "ppl_ci_high": 14493.974252326418,
+      "ppl_ci_low": 8423.587998286563,
+      "ppl_ratio": 11033.683703235876,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.008088195987511426,
+      "top1_ci_high": 0.009727139223832637,
+      "top1_ci_low": 0.006644947465974838
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 10.274002957344056,
+          "kl_mean_ci": {
+            "ci_high": 10.794458836317062,
+            "ci_low": 9.724614216685294,
+            "mean": 10.2722818860507,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.164703224301338,
+            "ci_low": 19.716909754276276,
+            "mean": 20.420717181081773,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.41757950782776,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 26112.450014336184,
+            "ci_low": 7336.410684932227,
+            "mean": 14520.329070365706,
+            "point": 13639.763123293611,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.04073421864304692,
+          "top1_ci": {
+            "ci_high": 0.0523851950088283,
+            "ci_low": 0.0299073560803663,
+            "mean": 0.04081089308908209,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.745493376255036,
+          "kl_mean_ci": {
+            "ci_high": 11.02508624523878,
+            "ci_low": 10.447649697065355,
+            "mean": 10.74243449616432,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 20.86343061208725,
+            "ci_low": 19.81116139769554,
+            "mean": 20.33194154788017,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.339777040481568,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 37074.22745447241,
+            "ci_low": 20609.018298064453,
+            "mean": 28122.498511188292,
+            "point": 27897.584982758548,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.011084382142871618,
+          "top1_ci": {
+            "ci_high": 0.013145593707449733,
+            "ci_low": 0.009151896834373474,
+            "mean": 0.011100609743511305,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 9.706125068664551,
+          "kl_mean_ci": {
+            "ci_high": 10.098801347613334,
+            "ci_low": 9.308096573352813,
+            "mean": 9.703715636639593,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.258583672642708,
+            "ci_low": 17.774389388561247,
+            "mean": 18.51839495375633,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.521964526176454,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 11670.332683311874,
+            "ci_low": 4962.794561978002,
+            "mean": 7739.106155238509,
+            "point": 7534.015912926155,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.027801125519908966,
+          "top1_ci": {
+            "ci_high": 0.03574455971189308,
+            "ci_low": 0.020376343163079583,
+            "mean": 0.027830412563399874,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-random",
+      "kl_ci_high": 11.02508624523878,
+      "kl_ci_low": 10.447649697065355,
+      "kl_mean": 10.745493376255036,
+      "kl_p95": 20.339777040481568,
+      "ppl_ci_high": 37074.22745447241,
+      "ppl_ci_low": 20609.018298064453,
+      "ppl_ratio": 27897.584982758548,
+      "selector_flops_per_token": 128,
+      "selector_seconds": 74.24941693537403,
+      "top1": 0.011084382142871618,
+      "top1_ci_high": 0.013145593707449733,
+      "top1_ci_low": 0.009151896834373474
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 6.006223732233048,
+          "kl_mean_ci": {
+            "ci_high": 6.278358119130134,
+            "ci_low": 5.719781026691198,
+            "mean": 6.005218219243289,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.297815988063812,
+            "ci_low": 12.966111168265343,
+            "mean": 13.637098288123607,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 13.633287858963012,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 314.50877795706634,
+            "ci_low": 181.37480437919498,
+            "mean": 240.7859071197181,
+            "point": 238.07214761929447,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.15049818074330687,
+          "top1_ci": {
+            "ci_high": 0.17336662761867047,
+            "ci_low": 0.12935017670504748,
+            "mean": 0.15069766871137544,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 6.6767719984054565,
+          "kl_mean_ci": {
+            "ci_high": 6.813144903182983,
+            "ci_low": 6.5412690743803985,
+            "mean": 6.677791911586523,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.186734159588815,
+            "ci_low": 13.614349454641342,
+            "mean": 13.903165980985166,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 13.901721405982972,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 529.0013716802952,
+            "ci_low": 396.0993956921722,
+            "mean": 458.93069494213705,
+            "point": 457.21152382829627,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.0706497948616743,
+          "top1_ci": {
+            "ci_high": 0.07640674416208638,
+            "ci_low": 0.06487279795110226,
+            "mean": 0.07062720155130141,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 6.926550328731537,
+          "kl_mean_ci": {
+            "ci_high": 7.300243220627308,
+            "ci_low": 6.596794242858887,
+            "mean": 6.926925176898242,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.017820662856101,
+            "ci_low": 13.561191283464431,
+            "mean": 14.25807573462248,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 14.258312654495239,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 683.7841181706261,
+            "ci_low": 393.6131286309287,
+            "mean": 516.9376613502136,
+            "point": 510.9089084942095,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.053280556853860614,
+          "top1_ci": {
+            "ci_high": 0.0639883236726746,
+            "ci_low": 0.04301780793175567,
+            "mean": 0.05324837515188149,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-magnitude",
+      "kl_ci_high": 6.813144903182983,
+      "kl_ci_low": 6.5412690743803985,
+      "kl_mean": 6.6767719984054565,
+      "kl_p95": 13.901721405982972,
+      "ppl_ci_high": 529.0013716802952,
+      "ppl_ci_low": 396.0993956921722,
+      "ppl_ratio": 457.21152382829627,
+      "selector_flops_per_token": 32,
+      "selector_seconds": 6.749464157270268,
+      "top1": 0.0706497948616743,
+      "top1_ci_high": 0.07640674416208638,
+      "top1_ci_low": 0.06487279795110226
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 6.194939589500427,
+          "kl_mean_ci": {
+            "ci_high": 6.481835848987102,
+            "ci_low": 5.892886116206646,
+            "mean": 6.193478310210705,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.548623719215392,
+            "ci_low": 13.32557605445385,
+            "mean": 13.942964032058715,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 13.939090538024903,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 392.5453639608694,
+            "ci_low": 216.15110764293797,
+            "mean": 294.295579103885,
+            "point": 290.4865608421852,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.1452121631242335,
+          "top1_ci": {
+            "ci_high": 0.1677383384038694,
+            "ci_low": 0.12416986013529822,
+            "mean": 0.14541397080364638,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 7.034329384565353,
+          "kl_mean_ci": {
+            "ci_high": 7.182299358099699,
+            "ci_low": 6.889674448370934,
+            "mean": 7.035475067012905,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.925213736891747,
+            "ci_low": 14.358294132947922,
+            "mean": 14.643270321178436,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 14.642135167121888,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 813.1471582329104,
+            "ci_low": 600.3155202732225,
+            "mean": 699.5853831845552,
+            "point": 696.7203689409063,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.06155944182537496,
+          "top1_ci": {
+            "ci_high": 0.06761252395808696,
+            "ci_low": 0.05572617989615537,
+            "mean": 0.061524406722732815,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 7.141510212421418,
+          "kl_mean_ci": {
+            "ci_high": 7.445458609163761,
+            "ci_low": 6.848017475605011,
+            "mean": 7.141740677593947,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.145967113375663,
+            "ci_low": 13.948761141300201,
+            "mean": 14.546869616055488,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 14.549316573143006,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 856.9642226576823,
+            "ci_low": 459.0370088091081,
+            "mean": 635.2726977492556,
+            "point": 625.4458686709609,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.049464734620414674,
+          "top1_ci": {
+            "ci_high": 0.05883443939965218,
+            "ci_low": 0.04063174614973832,
+            "mean": 0.04951297814168967,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-frequency",
+      "kl_ci_high": 7.182299358099699,
+      "kl_ci_low": 6.889674448370934,
+      "kl_mean": 7.034329384565353,
+      "kl_p95": 14.642135167121888,
+      "ppl_ci_high": 813.1471582329104,
+      "ppl_ci_low": 600.3155202732225,
+      "ppl_ratio": 696.7203689409063,
+      "selector_flops_per_token": 32,
+      "selector_seconds": 7.215091256657615,
+      "top1": 0.06155944182537496,
+      "top1_ci_high": 0.06761252395808696,
+      "top1_ci_low": 0.05572617989615537
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.817781615257264,
+          "kl_mean_ci": {
+            "ci_high": 10.351535407006741,
+            "ci_low": 9.268390691876412,
+            "mean": 9.814611767401695,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.89194911301136,
+            "ci_low": 18.306685165166854,
+            "mean": 19.078749046785834,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 19.078318572044374,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 18153.86359333824,
+            "ci_low": 5325.513483507052,
+            "mean": 10077.77503938194,
+            "point": 9541.868276125682,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.06468258404638619,
+          "top1_ci": {
+            "ci_high": 0.08344677339831831,
+            "ci_low": 0.04785867381840944,
+            "mean": 0.0648171053031762,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 9.58013653755188,
+          "kl_mean_ci": {
+            "ci_high": 9.89737444460392,
+            "ci_low": 9.284461185634136,
+            "mean": 9.583102405500412,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.74879298746586,
+            "ci_low": 17.375585321187973,
+            "mean": 18.026814755442143,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.02499589920044,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 11114.225332310481,
+            "ci_low": 5798.417128499748,
+            "mean": 8032.386901703152,
+            "point": 7896.432228896316,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.009470679078367539,
+          "top1_ci": {
+            "ci_high": 0.011916961694441851,
+            "ci_low": 0.007248598948353902,
+            "mean": 0.009461714108908491,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 8.202987706661224,
+          "kl_mean_ci": {
+            "ci_high": 8.613305776417256,
+            "ci_low": 7.809766668379306,
+            "mean": 8.20350052488327,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 16.02263491511345,
+            "ci_low": 14.55902800142765,
+            "mean": 15.267407934412956,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.26975929737091,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 2794.733586436929,
+            "ci_low": 1170.272904860567,
+            "mean": 1837.6773775159716,
+            "point": 1786.690695596536,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.03193803594913334,
+          "top1_ci": {
+            "ci_high": 0.04049402960401494,
+            "ci_low": 0.023910376420244576,
+            "mean": 0.03198845919639338,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-task-static-nn",
+      "kl_ci_high": 9.89737444460392,
+      "kl_ci_low": 9.284461185634136,
+      "kl_mean": 9.58013653755188,
+      "kl_p95": 18.02499589920044,
+      "ppl_ci_high": 11114.225332310481,
+      "ppl_ci_low": 5798.417128499748,
+      "ppl_ratio": 7896.432228896316,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.009470679078367539,
+      "top1_ci_high": 0.011916961694441851,
+      "top1_ci_low": 0.007248598948353902
+    },
+    {
+      "active_unique_elements": 998631268,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 868,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 11.147246551513671,
+          "kl_mean_ci": {
+            "ci_high": 11.671087735891343,
+            "ci_low": 10.59765840381384,
+            "mean": 11.144322210861446,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.950384958982468,
+            "ci_low": 20.428389452695846,
+            "mean": 21.177960424180032,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 21.175578308105468,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 69540.77094058866,
+            "ci_low": 20531.975299854148,
+            "mean": 39833.55686856413,
+            "point": 38009.03538586852,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.0487444216851145,
+          "top1_ci": {
+            "ci_high": 0.06508129969413858,
+            "ci_low": 0.034273815349442883,
+            "mean": 0.048833968677774536,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.474508666992188,
+          "kl_mean_ci": {
+            "ci_high": 10.792108702361583,
+            "ci_low": 10.180009666979313,
+            "mean": 10.47463596878171,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.757204220294952,
+            "ci_low": 18.482341197133067,
+            "mean": 19.120903011138438,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 19.11923494338989,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 26662.755621394543,
+            "ci_low": 13052.932144005532,
+            "mean": 18622.56979705084,
+            "point": 18318.277475115683,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.007354340807069093,
+          "top1_ci": {
+            "ci_high": 0.009148727916181088,
+            "ci_low": 0.005772994086146355,
+            "mean": 0.0073462451168929705,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 10.427731537818909,
+          "kl_mean_ci": {
+            "ci_high": 10.740013499855996,
+            "ci_low": 10.121546769142151,
+            "mean": 10.42641966192007,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.655189694762228,
+            "ci_low": 17.990402730107306,
+            "mean": 18.820565284700393,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.825738430023193,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 18413.57194624462,
+            "ci_low": 10282.802527842246,
+            "mean": 13827.55616735717,
+            "point": 13688.049380812958,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.028708191774785518,
+          "top1_ci": {
+            "ci_high": 0.03536384217906743,
+            "ci_low": 0.022737874679733067,
+            "mean": 0.02868880762298824,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-learned-unary",
+      "kl_ci_high": 10.792108702361583,
+      "kl_ci_low": 10.180009666979313,
+      "kl_mean": 10.474508666992188,
+      "kl_p95": 19.11923494338989,
+      "ppl_ci_high": 26662.755621394543,
+      "ppl_ci_low": 13052.932144005532,
+      "ppl_ratio": 18318.277475115683,
+      "selector_flops_per_token": 192,
+      "selector_seconds": 10.312739379005507,
+      "top1": 0.007354340807069093,
+      "top1_ci_high": 0.009148727916181088,
+      "top1_ci_low": 0.005772994086146355
+    },
+    {
+      "active_unique_elements": 998631268,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 868,
+      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 11.112509846687317,
+          "kl_mean_ci": {
+            "ci_high": 11.65060919046402,
+            "ci_low": 10.5637835419178,
+            "mean": 11.109581618630886,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.555263261795044,
+            "ci_low": 20.111376597881318,
+            "mean": 20.823485351519583,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.822566318511964,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 66167.782347359,
+            "ci_low": 19745.201208395127,
+            "mean": 37723.94455895805,
+            "point": 35870.789370493585,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.04412231547757983,
+          "top1_ci": {
+            "ci_high": 0.05936036952596624,
+            "ci_low": 0.030475040787714534,
+            "mean": 0.044207157747501044,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.482465362548828,
+          "kl_mean_ci": {
+            "ci_high": 10.734216721057892,
+            "ci_low": 10.240314671695232,
+            "mean": 10.483009054509402,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.508235589265823,
+            "ci_low": 18.438008581399917,
+            "mean": 18.97450263733387,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.973442792892456,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 23905.814722058563,
+            "ci_low": 13889.186782262055,
+            "mean": 18247.34670460096,
+            "point": 18070.659350349604,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.00721941152587533,
+          "top1_ci": {
+            "ci_high": 0.009833738640882075,
+            "ci_low": 0.0053603117354214195,
+            "mean": 0.007203077972158789,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 10.4179372549057,
+          "kl_mean_ci": {
+            "ci_high": 10.862445801496506,
+            "ci_low": 10.0391586714983,
+            "mean": 10.416892130348684,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.192299137115477,
+            "ci_low": 17.600801075100897,
+            "mean": 18.360518532943725,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.36288800239563,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 20170.05463555097,
+            "ci_low": 9595.126956730805,
+            "mean": 13685.106624427766,
+            "point": 13417.905655517108,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.02647953643463552,
+          "top1_ci": {
+            "ci_high": 0.03426163446216377,
+            "ci_low": 0.0192827290709829,
+            "mean": 0.026510834669910832,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-learned-interaction",
+      "kl_ci_high": 10.734216721057892,
+      "kl_ci_low": 10.240314671695232,
+      "kl_mean": 10.482465362548828,
+      "kl_p95": 18.973442792892456,
+      "ppl_ci_high": 23905.814722058563,
+      "ppl_ci_low": 13889.186782262055,
+      "ppl_ratio": 18070.659350349604,
+      "selector_flops_per_token": 4192,
+      "selector_seconds": 13.05477543734014,
+      "top1": 0.00721941152587533,
+      "top1_ci_high": 0.009833738640882075,
+      "top1_ci_low": 0.0053603117354214195
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": false,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.610636806488037,
+          "kl_mean_ci": {
+            "ci_high": 10.315072033405304,
+            "ci_low": 8.952575786709787,
+            "mean": 9.609449417928458,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 20.981574373841287,
+            "ci_low": 18.31292817234993,
+            "mean": 19.590426188259123,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 19.588068461418153,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 25474.28675599913,
+            "ci_low": 6566.584921146158,
+            "mean": 13363.83288077949,
+            "point": 12478.49318988625,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.06271791136823594,
+          "top1_ci": {
+            "ci_high": 0.07873510735633317,
+            "ci_low": 0.04836551556596532,
+            "mean": 0.06282180042304099,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 11.137839961051942,
+          "kl_mean_ci": {
+            "ci_high": 11.377161757946014,
+            "ci_low": 10.90297292202711,
+            "mean": 11.137369245859386,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.18686252236366,
+            "ci_low": 20.32562672972679,
+            "mean": 20.769489733643532,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.772748708724976,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 77600.36430297927,
+            "ci_low": 44173.605265319406,
+            "mean": 59118.7263465902,
+            "point": 58563.89219631336,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.010098014073446394,
+          "top1_ci": {
+            "ci_high": 0.012099277462111785,
+            "ci_low": 0.0081852650269866,
+            "mean": 0.010091535605411045,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 10.257011461257935,
+          "kl_mean_ci": {
+            "ci_high": 10.740153329372406,
+            "ci_low": 9.773441601097584,
+            "mean": 10.256181213926075,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.665529890060423,
+            "ci_low": 19.428650888204572,
+            "mean": 20.505750217514038,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.50580425262451,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 41737.41393934608,
+            "ci_low": 16220.16658572036,
+            "mean": 26353.647683667274,
+            "point": 25598.766942442522,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.034147836896590886,
+          "top1_ci": {
+            "ci_high": 0.04441705682547763,
+            "ci_low": 0.025602182659204116,
+            "mean": 0.034235358601398765,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-gxo",
+      "kl_ci_high": 11.377161757946014,
+      "kl_ci_low": 10.90297292202711,
+      "kl_mean": 11.137839961051942,
+      "kl_p95": 20.772748708724976,
+      "ppl_ci_high": 77600.36430297927,
+      "ppl_ci_low": 44173.605265319406,
+      "ppl_ratio": 58563.89219631336,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 16.135886371484958,
+      "top1": 0.010098014073446394,
+      "top1_ci_high": 0.012099277462111785,
+      "top1_ci_low": 0.0081852650269866
+    },
+    {
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "compliant": true,
+      "controller_elements": 0,
+      "deployable": false,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 10.358734619617461,
+          "kl_mean_ci": {
+            "ci_high": 10.872787809073925,
+            "ci_low": 9.816358742415906,
+            "mean": 10.357961332310438,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 20.99942272543907,
+            "ci_low": 19.42318946123123,
+            "mean": 20.203712856435775,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.195662879943846,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 43760.34690255322,
+            "ci_low": 13771.181368147913,
+            "mean": 25724.49233291697,
+            "point": 24528.39048849751,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.051814501127228144,
+          "top1_ci": {
+            "ci_high": 0.06834075879596639,
+            "ci_low": 0.03772144720656797,
+            "mean": 0.05194212654503294,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 11.322908234596252,
+          "kl_mean_ci": {
+            "ci_high": 11.641601344048977,
+            "ci_low": 11.028463669419288,
+            "mean": 11.322815066472293,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.687344942092896,
+            "ci_low": 20.621782155036925,
+            "mean": 21.14241086174965,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 21.143813037872313,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 108659.8139497025,
+            "ci_low": 53802.92964544389,
+            "mean": 76942.37986931199,
+            "point": 75720.85627340277,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.011084382142871618,
+          "top1_ci": {
+            "ci_high": 0.012698863539844752,
+            "ci_low": 0.009466731827706099,
+            "mean": 0.011072402796559036,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 10.576109278202058,
+          "kl_mean_ci": {
+            "ci_high": 10.934074116349219,
+            "ci_low": 10.2087804338336,
+            "mean": 10.578040908248425,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 20.250120151042935,
+            "ci_low": 18.87861996412277,
+            "mean": 19.55971673145771,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 19.55195426940918,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 34176.441905249,
+            "ci_low": 18346.197886508253,
+            "mean": 25176.35720442088,
+            "point": 24802.298015607143,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.028924749605357646,
+          "top1_ci": {
+            "ci_high": 0.03905164127529132,
+            "ci_low": 0.020346601526252926,
+            "mean": 0.02902422809439479,
+            "resamples": 10000
+          }
+        }
+      },
+      "id": "token-cor-gxo",
+      "kl_ci_high": 11.641601344048977,
+      "kl_ci_low": 11.028463669419288,
+      "kl_mean": 11.322908234596252,
+      "kl_p95": 21.143813037872313,
+      "ppl_ci_high": 108659.8139497025,
+      "ppl_ci_low": 53802.92964544389,
+      "ppl_ratio": 75720.85627340277,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 16.590122217312455,
+      "top1": 0.011084382142871618,
+      "top1_ci_high": 0.012698863539844752,
+      "top1_ci_low": 0.009466731827706099
+    }
+  ],
+  "thresholds": {
+    "acceptable": {
+      "kl_mean": 0.05,
+      "ppl_ratio": 1.02,
+      "top1_agreement": 0.95
+    },
+    "usable": {
+      "kl_mean": 0.25,
+      "ppl_ratio": 1.1,
+      "top1_agreement": 0.85
+    }
+  },
+  "verdicts": {
+    "K6": {
+      "best_relative_reduction": -0.05356321771136643,
+      "passed": false,
+      "rule": "a deployable arm at matched active unique parameters reduces general mean KL by at least 5% versus token-magnitude with a paired 95% CI lower bound above zero"
+    },
+    "K7": {
+      "best_oracle": "oracle-local-64",
+      "best_oracle_kl": 3.6654182374477386,
+      "best_oracle_ppl": 25.451485655502328,
+      "best_oracle_top1": 0.269324854016304,
+      "passed": false,
+      "rule": "the best oracle is within the registered usable tier",
+      "usable_tier": {
+        "kl_mean": 0.25,
+        "ppl_ratio": 1.1,
+        "top1_agreement": 0.85
+      }
+    },
+    "K8": {
+      "coarser_is_worse": true,
+      "finer_is_better": true,
+      "passed": false,
+      "rule": "the 64-group oracle reaches the usable tier while the 16-group oracle does not"
+    },
+    "K9": {
+      "passed": true,
+      "rule": "no leakage, non-finite value, over-ceiling arm, or parity failure"
+    }
+  }
+}

@@ -801,3 +801,147 @@ budget using exhaustive or bounded search. If the oracle per-token potential is
 also catastrophically far from the teacher, no selector can rescue this teacher
 at this granularity, and the retraining/upcycling branch becomes the primary
 path. Either outcome is informative and should be pre-registered next.
+
+## 2026-11-14 — M2: per-token causal selection, oracle potential and the Rust Atlas crate
+
+Revisions: `a0b107adc23f23cbda43a09cbd6d229b0ea024a1` (M2
+pre-registration, committed before measurement), `1e623062379239a4bed3337ed2ed91d1a7f5411b`
+(the selector harness, oracle search, Rust Atlas crate and Court B tests used
+for the clean measurements). The clean receipts name `1e62306`; the development
+run from the uncommitted worktree is retained under
+`results/selectors/superseded-dirty-a0b107a/` and is numerically identical on
+every deterministic arm.
+
+The report is `results/M2-SELECTORS.md`; the registered contract is the M2
+section of `docs/EXPERIMENT-CONTRACT.md`, including amendment A3. No measured
+number is repeated here.
+
+### Plan
+
+Pre-register the per-token question, the oracle protocol and the
+matched-budget arms; build an exact per-token masked-MLP instrument; measure
+the oracle-potential ceiling and the 16/64/4-group granularity comparison
+before training any predictor; then measure every deployable arm at matched
+realized active parameters on the held-out split and the OOD slices. Build the
+Rust Atlas boundary in parallel so the selector decisions, the interaction
+graph and the realized-budget accounting are executable, not prose.
+
+### What was built
+
+- `docs/EXPERIMENT-CONTRACT.md` M2 section: budgets B140/B142/G, oracle
+  protocol, granularity study, interaction protocol, learned-selector
+  protocol, leakage rule, metrics, sample sizes, seeds, CIs, K6-K9, and the
+  explicit continuation criterion. Amendment A3 records the unattainable
+  exact-element match for a learned controller.
+- `oracle/masked_mlp.py`: per-token masks, hidden-state capture, exact
+  per-group contributions, the Gram-matrix local error identity, and the
+  gradient-capture flag. The M1 paths and their exactness are unchanged.
+- `oracle/m2_selectors.py`: calibration per-document statistics; exact
+  intervention labels; ridge-fitted learned unary and interaction models;
+  `prepare`, `interactions`, `oracle`, `evaluate`, `analyze` and `fixtures`
+  subcommands. Every subcommand writes a receipt with stamp, revision,
+  pre-registration commit, environment, data hashes, per-item metrics and
+  non-finite accounting.
+- `crates/selvedge-atlas`: `QualityObservation`, `InteractionGraph` with typed
+  invariants, the leakage-bounded `SelectorInput`, the `Selector` trait and
+  seven selectors, ridge `fit`, independent `compare` with a Rust paired
+  bootstrap, reliability/calibration helpers, and the two-view
+  `value_if_executed` / `cost_to_materialize_now` contract with an explicit
+  unavailable cost head.
+- `selvedge atlas fit|select|compare|cost`: CLI subcommands with `--json`.
+  `select --check-expected` fails closed on a parity mismatch.
+- `crates/selvedge-atlas/tests/court_b.rs`: parity on the exported real
+  fixtures, determinism, graph invariants, no-leakage deserialization, fit
+  parity, calibration monotonicity, matched-budget accounting and the two-view
+  contract.
+- `results/M2-SELECTORS.md`, the generated table/plot/JSON under
+  `results/selectors/`, and the updated architecture, limitations and report.
+
+### Hypotheses and results
+
+| hypothesis | result | evidence |
+| --- | --- | --- |
+| H2.1/K7: a per-token oracle at the compliant budget reaches the usable tier. | **Rejected, decisively.** The best oracle (64 groups at matched elements) is far outside the KL, PPL-ratio and top-1 bounds. | `results/selectors/oracle-20261114T231601Z.json`; `results/M2-SELECTORS.md` |
+| H2.2/K8: finer fragments at matched elements rescue the tier. | **Partially: granularity matters but is not binding.** 64 groups is better than 16; 4 is worse; 64 is still far outside the usable tier. | same |
+| H2.3/K6: a deployable per-token selector beats activation magnitude by 5% at matched budget. | **Rejected.** Every matched deployable arm is worse than `token-magnitude`; the best is about 5% worse, the learned arms about 57% worse. | `results/selectors/eval-full-20261114T232206Z.json`; `results/selectors/selectors.json` |
+| H2.4: the learned interaction-aware predictor beats the unary predictor. | **Rejected.** The relative change is negative with a CI that includes zero. | `results/selectors/selectors.json` `/learned_comparison` |
+| H2.5: a low-rank/graph surrogate predicts held-out pairwise interaction. | **Rejected.** The leave-one-window-out Spearman is negative; the co-activation/mean-norm surrogate anti-predicts. | `results/selectors/interactions-20261114T232338Z.json` |
+| The per-token direction is at least positive. | **Supported but insufficient.** Per-token magnitude beats the best static M1 arm at the same B142 budget; it remains two orders of magnitude outside the acceptable tier. | `results/selectors/eval-full-20261114T232206Z.json` |
+| The Rust selectors reproduce the Python arms. | **Confirmed exactly** on the exported real fixtures for all seven selectors and on the fitted learned models. | `cargo test -p selvedge-atlas`; `results/courts/rust-20261114T232455Z-7dbe87.json` |
+| The Rust accounting reproduces the Python matched-budget table. | **Confirmed.** Thirteen arms, twelve paired comparisons, the same relative directions and CIs. | `results/selectors/atlas-compare.json`; the `atlas compare` court receipt |
+
+### Verification performed (receipts, not prose)
+
+| what was verified | evidence |
+| --- | --- |
+| Pre-registration committed before any M2 measurement | `a0b107a`; every receipt carries `preregistration_commit` |
+| Clean harness revision | `1e62306`; every clean receipt carries it |
+| Prepare: calibration statistics, labels, fitted weights, fit data | `results/selectors/prepare-Qwen-Qwen3-1.7B-20261114T231248Z.json` |
+| Oracle potential, three passes, four granularities, bounded refinement | `results/selectors/oracle-20261114T231601Z.json` |
+| Full held-out selector table | `results/selectors/eval-full-20261114T232206Z.json` |
+| Oracle-sample deployable comparison | `results/selectors/eval-oracle-20261114T232422Z.json` |
+| Pairwise interaction and surrogate | `results/selectors/interactions-20261114T232338Z.json` |
+| Bootstrap, table, plot, JSON | `results/selectors/selectors.json`, `table.md`, `selectors.svg` |
+| Rust parity fixtures | `results/selectors/fixtures/selector-inputs.json` |
+| Rust fit / cost / compare | `results/selectors/atlas-fit-weights.json`, `rust-selector-cost.json`, `atlas-compare.json` |
+| Rust fmt / clippy / test | the `rust` court receipts in `results/courts/` |
+| Generated numbers match their receipts | the `perf_numbers` court receipt |
+| Every scanned commit carries the operator identity | the `commit_identity` court receipt |
+
+### Failures and deviations, verbatim
+
+1. Amendment A3: exact element equality is impossible for a learned controller
+   at whole-group granularity. The learned arms are 868 elements above the
+   baseline; the rule and the direction are recorded. No threshold changed.
+2. The 64-group oracle uses bounded greedy (beam width 1), not a wider beam;
+   exact `C(64,20)` enumeration is infeasible. Each greedy step is exact under
+   the incremental local objective.
+3. The final refinement is a 2-window, 32-position, one-pass probe, not the
+   full eight-window, two-pass search.
+4. A development `fixtures` run failed with a CPU/CUDA device mismatch when
+   constructing the interaction weights; the fix moves the weight tensors to
+   the feature device. The failed court receipt and log are retained.
+5. A development `analyze` run failed with `KeyError: 'positions'` because the
+   final-refinement window record omitted the field; the analysis now derives
+   it from `nll_positions` and the oracle writes it explicitly. The failed
+   receipt is retained.
+6. The gradient arms are not bitwise reproducible in the last printed digit
+   across runs; the effect is far below any conclusion. The deterministic arms
+   are bitwise identical between the clean and development runs.
+7. No NaN, Inf, OOM or timeout occurred in the clean M2 runs; every evaluated
+   arm records `nonfinite: 0`.
+
+### Decisions and known limitations
+
+1. **The inference-only post-hoc selection branch is dead for this teacher.**
+   The oracle bound, not the deployable selector ranking, is the decisive
+   evidence. The next branch is training or upcycling: teach the model to work
+   with the sparse FFN, or move to a compliant dense base plus external
+   capacity.
+2. **Per-token magnitude is the strongest implementable baseline in this
+   family.** Future selectors must beat it, not the static M1 arm.
+3. **Granularity is real but insufficient.** A fine-grained deployable selector
+   is worth one more experiment only if a trained branch needs it; it is not a
+   path to compliance on the dense checkpoint.
+4. **The interaction-aware hypothesis is not supported at group granularity.**
+   The pairwise term is context-dependent, and the tested graph surrogate does
+   not predict it. The Atlas graph remains the right container for a richer
+   measurement, not a demonstrated selector.
+5. **The learned label does not transfer.** A one-layer local intervention
+   label trains a model that predicts the local objective but not final-KL
+   quality. Any future learned selector needs a final-KL or multi-layer label.
+6. **The Rust boundary is real.** The Atlas crate, CLI, accounting, leakage
+   boundary and parity tests are implemented and pass; the cost head is
+   explicitly unfilled until M3.
+
+### Next experiment
+
+The trained/upcycled branch, with a fresh pre-registration: compare (i) a dense
+compliant Qwen3-0.6B base plus external capacity, (ii) an UpIT/SIMoE-style
+dense-to-sparse upcycle of Qwen3-1.7B with the FFN trained to tolerate the
+compliant group budget, and (iii) a distilled smaller teacher, all matched for
+active parameters, FLOPs and training tokens. The M2 oracle bound says a
+post-hoc selector cannot close the gap; the next test is whether training can
+change the model so the same budget is usable. Keep the Atlas graph and the
+two-view head for the eventual scheduler, and do not resume inference-only
+selector tuning without a new oracle bound.

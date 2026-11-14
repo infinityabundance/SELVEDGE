@@ -3263,6 +3263,76 @@ def command_analyze(args) -> int:
                 )
     svg_path = os.path.join(args.out_dir, "selectors.svg")
     svg_bar_chart(table, svg_path, "M2 selectors at matched budget — general held-out")
+    report_path = args.report
+    if report_path and os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+        begin = "<!-- BEGIN M2 TABLE -->"
+        end = "<!-- END M2 TABLE -->"
+        if begin in lines and end in lines:
+            start = lines.index(begin)
+            stop = lines.index(end)
+            block = [begin, "", "| arm | deployable | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |", "| --- | :---: | --- | ---: | ---: | --- | ---: | ---: |"]
+            for row in sorted(table, key=lambda item: item["kl_mean"]):
+                block.append(
+                    f"| {row['id']} | {'yes' if row['deployable'] else 'no'} | {row['budget']} | "
+                    f"{row['active_unique_elements']} | {row['kl_mean']:.6f} | "
+                    f"[{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
+                    f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} |"
+                )
+            if oracle_rows:
+                block.extend(
+                    [
+                        "",
+                        "Oracle (non-deployable):",
+                        "",
+                        "| arm | budget | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 |",
+                        "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: |",
+                    ]
+                )
+                for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
+                    block.append(
+                        f"| {row['id']} | {row['budget']} | {row['kl_mean']:.6f} | "
+                        f"[{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
+                        f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} | "
+                        f"{row['fraction_kl_le_005']:.4f} | {row['fraction_kl_le_025']:.4f} |"
+                    )
+            block.append(end)
+            lines = lines[:start] + block + lines[stop + 1 :]
+        oracle_begin = "<!-- BEGIN M2 ORACLE TABLE -->"
+        oracle_end = "<!-- END M2 ORACLE TABLE -->"
+        if oracle_begin in lines and oracle_end in lines:
+            start = lines.index(oracle_begin)
+            stop = lines.index(oracle_end)
+            block = [oracle_begin, "", "| oracle | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 | forwards | GPU seconds |", "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
+            for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
+                block.append(
+                    f"| {row['id']} | {row['budget']} | {row['active_unique_elements']} | "
+                    f"{row['kl_mean']:.6f} | [{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
+                    f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} | {row['fraction_kl_le_005']:.4f} | "
+                    f"{row['fraction_kl_le_025']:.4f} | {row['forwards']} | {row['gpu_seconds']:.2f} |"
+                )
+            block.append(oracle_end)
+            lines = lines[:start] + block + lines[stop + 1 :]
+        cons_begin = "<!-- BEGIN M2 CONSISTENCY TABLE -->"
+        cons_end = "<!-- END M2 CONSISTENCY TABLE -->"
+        if cons_begin in lines and cons_end in lines:
+            start = lines.index(cons_begin)
+            stop = lines.index(cons_end)
+            block = [cons_begin, "", "| oracle | adjacent equal | distinct subsets / layer | modal fraction | groups / token |", "| --- | ---: | ---: | ---: | --- |"]
+            for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
+                consistency = row.get("consistency") or {}
+                groups = f"{consistency.get('per_token_groups_min', '?')}-{consistency.get('per_token_groups_max', '?')}"
+                block.append(
+                    f"| {row['id']} | {consistency.get('adjacent_equal_fraction_mean', float('nan')):.4f} | "
+                    f"{consistency.get('distinct_subsets_per_layer_mean', float('nan')):.1f} | "
+                    f"{consistency.get('modal_fraction_mean', float('nan')):.4f} | {groups} |"
+                )
+            block.append(cons_end)
+            lines = lines[:start] + block + lines[stop + 1 :]
+        if report_path and os.path.exists(report_path):
+            with open(report_path, "w", encoding="utf-8") as handle:
+                handle.write("\n".join(lines) + "\n")
     print(f"analyze: table {table_path}")
     print(f"analyze: json {json_path}")
     print(f"analyze: plot {svg_path}")
@@ -3412,6 +3482,7 @@ def command_fixtures(args) -> int:
             "expected decisions are the Python per-layer top-5; the two global B142 "
             "extras are a second-stage allocation and are not part of the per-layer contract"
         ),
+        "record_count": len(records),
         "records": records,
     }
     os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)
@@ -3480,6 +3551,7 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--oracle", default=None)
     analyze.add_argument("--resamples", type=int, default=10000)
     analyze.add_argument("--out-dir", default="results/selectors")
+    analyze.add_argument("--report", default="results/M2-SELECTORS.md")
     analyze.add_argument("--stamp", default=None)
 
     fixtures = sub.add_parser("fixtures")

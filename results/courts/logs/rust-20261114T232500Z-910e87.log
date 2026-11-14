@@ -1,0 +1,57 @@
+{
+  "k": 5,
+  "records": 256,
+  "rows": [
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 10,
+      "nanoseconds_per_decision": 98.36872,
+      "selector": "magnitude",
+      "total_seconds": 0.009836872
+    },
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 10,
+      "nanoseconds_per_decision": 88.27556,
+      "selector": "frequency",
+      "total_seconds": 0.008827556
+    },
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 40,
+      "nanoseconds_per_decision": 104.17666,
+      "selector": "random",
+      "total_seconds": 0.010417666
+    },
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 0,
+      "nanoseconds_per_decision": 15.68509,
+      "selector": "static-magnitude",
+      "total_seconds": 0.001568509
+    },
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 0,
+      "nanoseconds_per_decision": 15.73539,
+      "selector": "static-frequency",
+      "total_seconds": 0.001573539
+    },
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 60,
+      "nanoseconds_per_decision": 176.11702,
+      "selector": "learned-unary",
+      "total_seconds": 0.017611702
+    },
+    {
+      "decisions": 100000,
+      "derived_flops_per_decision": 1310,
+      "nanoseconds_per_decision": 845.30708,
+      "selector": "learned-interaction",
+      "total_seconds": 0.084530708
+    }
+  ],
+  "schema": "selvedge/atlas/cost-v1",
+  "weights": "results/selectors/m2-weights.json"
+}
