@@ -1,0 +1,26 @@
+usage: frontier_sweep.py sweep [-h] [--model-id MODEL_ID] --model-revision
+                               MODEL_REVISION --accounting ACCOUNTING
+                               [--split SPLIT] [--split-receipt SPLIT_RECEIPT]
+                               --preregistration-commit PREREGISTRATION_COMMIT
+                               [--receipt-dir RECEIPT_DIR]
+                               [--device {auto,cuda,cpu}] [--stamp STAMP]
+                               [--json] [--limit-items LIMIT_ITEMS] --plans
+                               PLANS --arms {uniform,layers,control}
+
+options:
+  -h, --help            show this help message and exit
+  --model-id MODEL_ID
+  --model-revision MODEL_REVISION
+  --accounting ACCOUNTING
+  --split SPLIT
+  --split-receipt SPLIT_RECEIPT
+  --preregistration-commit PREREGISTRATION_COMMIT
+  --receipt-dir RECEIPT_DIR
+  --device {auto,cuda,cpu}
+  --stamp STAMP
+  --json
+  --limit-items LIMIT_ITEMS
+                        debug only: cap items per domain; recorded in the
+                        receipt
+  --plans PLANS
+  --arms {uniform,layers,control}

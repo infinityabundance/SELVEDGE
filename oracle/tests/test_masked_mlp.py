@@ -153,6 +153,35 @@ def test_court_b_mask_controller_subset_matches_grouped_reference() -> None:
     assert torch.allclose(fast, reference, atol=1e-5, rtol=1e-5)
 
 
+def test_court_b_controller_suspend_restores_the_dense_module() -> None:
+    class Layer(torch.nn.Module):
+        def __init__(self, mlp: TinyMlp) -> None:
+            super().__init__()
+            self.mlp = mlp
+
+    class Model(torch.nn.Module):
+        def __init__(self, mlp: TinyMlp) -> None:
+            super().__init__()
+            self.model = torch.nn.Module()
+            self.model.layers = torch.nn.ModuleList([Layer(mlp)])
+
+    mlp = TinyMlp(8, 12, 41)
+    model = Model(mlp)
+    x = torch.randn(1, 4, 8)
+    controller = masked_mlp.MaskController(model)
+    assert model.model.layers[0].mlp is not mlp
+    controller.suspend()
+    assert model.model.layers[0].mlp is mlp
+    with torch.inference_mode():
+        dense = model.model.layers[0].mlp(x)
+    controller.resume()
+    assert isinstance(model.model.layers[0].mlp, masked_mlp.MaskedMlp)
+    controller.set_dense()
+    with torch.inference_mode():
+        wrapped = model.model.layers[0].mlp(x)
+    assert torch.equal(dense, wrapped)
+
+
 def test_court_b_empty_selection_is_exactly_zero() -> None:
     mlp = TinyMlp(8, 12, 13)
     x = torch.randn(2, 5, 8)

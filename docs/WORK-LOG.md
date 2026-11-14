@@ -647,3 +647,157 @@ budget forces FFN selection. The first measurable question is whether a
 per-token top-k group selection at the affordable share stays closer to the
 teacher than random or magnitude selection, with a pre-registered kill
 condition. The 0.6B model remains the control where the ceiling is not binding.
+
+## 2026-11-14 — S3b: pre-registered quality/active-parameter frontier under exact group omission
+
+Revisions: `dad6619c8514cb4a52b3420c007a47fc43e1b47e` (pre-registration and
+dataset pins), `d66c6e3b44ab3a1084971c71844f514d4dce1bb7` (instrument, sweep and
+Rust cross-check code), `9ea017fd6071a8fb75e88f4254a9f6cf83b23c30` (hash-checked
+split receipt and stable dataset lock). Every measurement receipt in this
+section names `9ea017f` and was produced from a clean worktree; an earlier set
+of receipts from a dirty worktree is retained under
+`results/frontier/superseded-dirty-752172b/` and is bitwise identical to the
+clean set on every per-arm aggregate (checked for the uniform sweep; the same
+determinism is visible in the greedy and control receipts).
+
+No measured number is repeated in this log. The frontier report is the source:
+`results/M1-FRONTIER.md`, generated from `results/frontier/frontier.json` and
+the receipts it names.
+
+### Plan
+
+Register the experiment before measuring it, pin the evaluation data, build an
+exact masked-MLP instrument and validate it against the dense teacher and the
+Rust grouped path, then measure the quality-versus-active-parameter frontier of
+Qwen3-1.7B under the strict ceiling with Qwen3-0.6B as a control. The registered
+thresholds and kill conditions are in `docs/EXPERIMENT-CONTRACT.md`.
+
+### What was built
+
+- `docs/EXPERIMENT-CONTRACT.md`: the first real contract. Hypotheses H0/H1/H1a-c,
+  primary and secondary metrics, arms, sample sizes, split rule, leakage
+  prevention, bootstrap method, numeric thresholds, kill conditions K1-K5, and
+  two dated amendments (A1: article-level documents and license correction,
+  before measurement; A2: frequency-selector formula/gloss conflict, before any
+  sweep).
+- `data/dataset-spec.json`, `data/datasets.lock.json`,
+  `oracle/fetch_datasets.py`, `scripts/fetch-datasets.sh`: pinned parquet files
+  with HF LFS object ids verified as SHA-256. `docs/DATASETS.md` records
+  revisions, licenses, roles and contamination caveats.
+- `oracle/dataset_prep.py`: article parsing, per-document hash ranking,
+  5-shingle near-duplicate check, windowing, code/math selection, and a split
+  receipt with per-document hashes and counts. The derived token file is
+  gitignored and its SHA-256 is recorded; the file is content-only so
+  re-derivation is hash-stable.
+- `oracle/masked_mlp.py`: the exact instrument. `grouped_forward` computes each
+  group's contribution explicitly; `MaskedMlp` applies a per-channel 0/1 mask
+  and reuses the original projection modules; `MaskController` suspends and
+  resumes the wrappers so the dense teacher can run unmodified; calibration
+  statistics and active-parameter counting live here.
+- `oracle/frontier_sweep.py`: `stats`, `exactness`, `cross-check`, `sweep`
+  (uniform/layers/control), `greedy` and `analyze`. Every subcommand writes a
+  receipt with stamp, revision, environment, model revision, data hashes,
+  per-article metrics and timings. `analyze` performs the paired bootstrap,
+  applies the registered thresholds, and writes the JSON, SVG and table.
+- `oracle/tests/test_masked_mlp.py`: Court B unit tests with hand-computed
+  ground truth: group bounds, group sums, a partial sum that must differ from
+  dense, mask/dense equality, mask/grouped equality, empty selection, error
+  propagation through a second layer, and the KL/NLL definitions.
+- Rust: `selvedge-convert::masked` and `selvedge court b-real` read the real f32
+  bundle one layer at a time and compute the grouped sum for an arbitrary group
+  subset. `load_bundle_layer` reads only the requested layer. The input/output
+  are raw little-endian f32 with a bounded read and a SHA-256 in the report.
+- `results/M1-FRONTIER.md`, `results/frontier/frontier.{json,svg,md}` and
+  `docs/LIMITATIONS.md`.
+
+### Hypotheses and results
+
+| hypothesis | result | evidence |
+| --- | --- | --- |
+| G1: the masked-all path equals the unmodified dense teacher. | **Confirmed bitwise** on real held-out windows; fast path versus explicit group sum is within the registered f32 bound; the Rust grouped subset agrees with the Python grouped reference with zero violations. | `results/frontier/exactness-Qwen-Qwen3-1.7B-20261114T220536Z.json`, `results/frontier/cross-check-20261114T220555Z.json`, `results/frontier/rust-b-real-20261114T220539Z.json` |
+| H1: some `<=1e9` static group selection preserves the teacher distribution within the registered threshold. | **Rejected.** The best compliant arm is orders of magnitude outside both the acceptable and usable tiers. | `results/frontier/frontier.json`; `results/M1-FRONTIER.md` |
+| H1a: calibration statistics beat random at equal sparsity. | **Directionally supported but practically irrelevant.** Magnitude and frequency rank better than random on mean KL at the affordable share; all are catastrophic. | same |
+| H1b/K3: non-uniform allocation beats matched-budget uniform. | **Registered test fails.** The exactly matched greedy-swap arm improves by a small amount whose CI includes zero. A near-matched additive greedy improves substantially, but with two extra groups; reported as exploratory, not a K3 pass. | `results/frontier/sweep-greedy-*.json` |
+| H1c/K4: the non-uniform gain survives domain shift. | **Partially.** For the additive greedy the gain does not collapse on code or math (CIs exclude zero), retaining roughly half; for the registered swap arm the code CI includes zero. | same |
+| The control model behaves qualitatively differently. | **No.** The 0.6B also collapses under static group omission at comparable relative sparsity, but it is dense-compliant and needs no sparsity. | `results/frontier/sweep-control-*.json` |
+| Whole-layer omission is a useful coarse fallback. | **Rejected at the compliant budget.** Single-layer omission cost ranges over an order of magnitude by layer; the affordable whole-layer allocations are catastrophic. | `results/frontier/sweep-layers-*.json` |
+
+### Verification performed (receipts, not prose)
+
+| what was verified | evidence |
+| --- | --- |
+| Pre-registration committed before any sweep | `dad6619`; receipts carry it as `preregistration_commit` |
+| Datasets fetched, LFS-object hashes verified | `results/datasets/fetch-20261114T223120Z.json` |
+| Split built, near-duplicate check, per-document hashes | `results/splits/split-20261114T223127Z.json`; derived file SHA-256 is content-only and stable across re-derivation |
+| Instrument exactness (G1) | `results/frontier/exactness-Qwen-Qwen3-1.7B-20261114T220536Z.json` |
+| Independent Rust grouped sum | `results/frontier/rust-b-real-20261114T220539Z.json`; `results/frontier/cross-check-20261114T220555Z.json` |
+| Court B unit tests | oracle court receipt in `results/courts/` for `python3 -m pytest oracle/tests` |
+| Calibration statistics and selector rankings, both models | `results/frontier/stats-*-20261114T2205*.json` |
+| Uniform frontier, 1.7B | `results/frontier/sweep-uniform-Qwen-Qwen3-1.7B-20261114T221355Z.json` |
+| Whole-layer omission, 1.7B | `results/frontier/sweep-layers-Qwen-Qwen3-1.7B-20261114T221904Z.json` |
+| Greedy allocations, 1.7B | `results/frontier/sweep-greedy-Qwen-Qwen3-1.7B-20261114T222628Z.json` |
+| Control, 0.6B | `results/frontier/sweep-control-Qwen-Qwen3-0.6B-20261114T223054Z.json` |
+| Bootstrap, thresholds, JSON/SVG/table | `results/frontier/frontier.json`, `results/frontier/frontier.svg`, `results/frontier/frontier.md` |
+| Two independent complete runs agree bitwise | clean receipts versus `results/frontier/superseded-dirty-752172b/`; max per-arm KL difference zero |
+
+### Failures and deviations, verbatim
+
+1. The oracle image rebuild with the new `pyarrow` pin failed once under the
+   default build limit:
+   `ERROR: failed to build: failed to solve: process "/bin/sh -c apt-get update ..." did not complete successfully: exit code: 137`
+   with `Killed` in the pip layer. It succeeded with
+   `SELVEDGE_BUILD_MEM=12g`. Builds are not courts, so no court receipt exists
+   for the failed attempt; the successful image id is in `docker/IMAGES.lock`.
+2. The first `exactness` run failed with
+   `TypeError: string indices must be integers, not 'str'` in `base_receipt`
+   (split counts were treated as lists). The court receipt and log are retained
+   (`results/courts/oracle-20261114T213245Z-230e70.json`); the fixed rerun is
+   the receipt cited above.
+3. A `python3 -m py_compile` attempt in the oracle court failed with
+   `[Errno 13] Permission denied: '/pycache'` because the oracle court does not
+   mount the Python bytecode cache. It was a syntax check, not a test; imports
+   and the program run correctly (bytecode writing is disabled in the image).
+4. Amendment A2: the frequency selector's formula and gloss disagreed. The
+   degenerate first calibration receipt
+   (`results/frontier/stats-Qwen-Qwen3-1.7B-20261114T213138Z.json`) is retained.
+   The corrected definition is in the contract; no held-out measurement existed
+   at the time of the amendment.
+5. A dataset re-fetch from cache initially rewrote the lock's
+   `verified_source` to `cache_rehash` and changed the lock hash. The fetcher
+   now preserves the previous verified entry, and the lock is byte-identical
+   after offline re-verification.
+6. No NaN, Inf, OOM or timeout occurred in any sweep; every arm records
+   `nonfinite: 0`.
+
+### Decisions and known limitations
+
+1. **The result is a negative result for a family, not for sparsity in
+   general.** Static, token-independent, sixteen-group masks with no retraining
+   and no routing are bounded. Dynamic, causal, trained or interaction-aware
+   selectors are untested.
+2. **The teacher is f32-equivalent, not native bf16.** The f32 path is the
+   registered reference; native bf16 can differ within the S3a bound.
+3. **The greedy oracle is deliberately non-deployable.** It uses teacher KL on
+   calibration text and pruned candidate sets. Its receipts say so.
+4. **K3 failed as registered.** The additive greedy observation is reported
+   separately with its budget caveat. It must not be merged into a K3 pass.
+5. **The control sharpens the conclusion.** The 1e9 ceiling makes the 1.7B
+   teacher infeasible under this intervention; the 0.6B is already compliant
+   and needs no sparsity. A smaller compliant base plus external capacity, or
+   retraining, is the remaining path.
+6. **No capability, latency or I/O claim is made.** See
+   `docs/LIMITATIONS.md`.
+
+### Next experiment
+
+M2, but not as originally scoped: the static-mask frontier shows that uniform
+and near-uniform omission cannot buy compliance. The highest-information next
+step is a per-token, causal selector at the same realized budget, because the
+registered H1a ordering is the only part of the static result that points in a
+useful direction, and it is swamped by the collapse. Before training a
+predictor, measure the oracle per-token potential: for a small held-out sample,
+compute the best achievable KL for each token with the same per-token group
+budget using exhaustive or bounded search. If the oracle per-token potential is
+also catastrophically far from the teacher, no selector can rescue this teacher
+at this granularity, and the retraining/upcycling branch becomes the primary
+path. Either outcome is informative and should be pre-registered next.

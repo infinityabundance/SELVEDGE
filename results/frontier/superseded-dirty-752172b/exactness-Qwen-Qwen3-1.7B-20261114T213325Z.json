@@ -1,0 +1,125 @@
+{
+  "accounting": {
+    "always_active_backbone_elements": 663610368,
+    "ceiling": 1000000000,
+    "group_count": 16,
+    "group_width": 384,
+    "hidden": 2048,
+    "intermediate_per_layer": 6144,
+    "max_compliant_ffn_elements": 336389632,
+    "receipt": "results/accounting/20261114T201533Z-qwen3-1.7b.json",
+    "removable_ffn_elements": 1056964608,
+    "revision": "d9bb4ce17c699a8df22c204e890f59c6b970bc35",
+    "sha256": "84e54c473c428b2a3d382a469923a5941abce7449dac74faae9894914e272338",
+    "stamp": "20261114T201533Z",
+    "unique_learned_elements": 1720574976
+  },
+  "checks": {
+    "dense_vs_masked_all": {
+      "bitwise_equal": true,
+      "max_abs_logit_difference": 0.0,
+      "mean_kl": 0.0,
+      "passed": true,
+      "tolerance_max_abs": 0.01,
+      "tolerance_mean_kl": 0.0001,
+      "windows": 2
+    },
+    "fast_path_vs_grouped_reference": {
+      "layer": 14,
+      "max_abs_difference": 3.337860107421875e-06,
+      "mean_abs_difference": 1.495241122029256e-07,
+      "passed": true,
+      "rows": 64,
+      "selected_groups": [
+        0,
+        3,
+        5,
+        9
+      ],
+      "tolerance": 0.001
+    }
+  },
+  "created_utc": "2026-11-14T21:33:25Z",
+  "data": {
+    "heldout_counts": {
+      "calibration": {
+        "documents": 16,
+        "tokens": 31841,
+        "windows": 63
+      },
+      "heldout_code": {
+        "documents": 40,
+        "tokens": 3953,
+        "windows": 40
+      },
+      "heldout_general": {
+        "documents": 40,
+        "tokens": 40889,
+        "windows": 80
+      },
+      "heldout_math": {
+        "documents": 40,
+        "tokens": 2626,
+        "windows": 40
+      }
+    },
+    "split": "results/artifacts/split/m1-split.json",
+    "split_receipt": null,
+    "split_sha256": "47f4558e569045290eeb8429ecaed25a2eddd8ff67cbfb754fa9ed0ade76da43"
+  },
+  "deviations": [],
+  "environment": {
+    "arithmetic": {
+      "allow_bf16_reduced_precision_reduction": false,
+      "allow_tf32_cudnn": false,
+      "allow_tf32_matmul": false,
+      "dtype": "float32",
+      "float32_matmul_precision": "highest"
+    },
+    "cudnn_deterministic": false,
+    "device": "cuda",
+    "device_capability": "8.9",
+    "device_name": "NVIDIA GeForce RTX 4080 SUPER",
+    "device_total_memory_bytes": 16765091840,
+    "driver": "620.70.06",
+    "numpy": "2.5.4",
+    "platform": "Linux-7.3.3-1-cachyos-x86_64-with-glibc2.41",
+    "python": "3.12.16",
+    "seed": 20261114,
+    "torch": "2.15.0+cu132",
+    "torch_cuda_runtime": "13.2",
+    "transformers": "5.23.0"
+  },
+  "kind": "exactness",
+  "model": {
+    "directory": "/hf-cache/models/Qwen/Qwen3-1.7B/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "groups": 16,
+    "hidden": 2048,
+    "id": "Qwen/Qwen3-1.7B",
+    "intermediate": 6144,
+    "layers": 28,
+    "loaded_dtype": "float32",
+    "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "nonfinite": [],
+  "notes": [
+    "teacher is the dense float32 model with TF32 disabled",
+    "metrics are teacher-forced next-token distributions, not sampled text",
+    "active parameter counts are computed from the realized mask and the accounting receipt",
+    "FLOPs are derived from realized channel counts, not hardware counters"
+  ],
+  "preregistration_commit": "dad6619c8514cb4a52b3420c007a47fc43e1b47e",
+  "revision": "752172bc0f2dae76a7481239b1b2882fb33e20ae",
+  "rust_cross_check": {
+    "command_hint": "scripts/court rust -- cargo run --release -p selvedge-cli -- court b-real --bundle results/artifacts/qwen3-1.7b-ffn-g16/swiglu-c4de86a90d4a-fe4c159deaf6.slv --layer 14 --groups 0,3,5,9 --input results/artifacts/frontier/rust-input-layer14.f32 --rows 64 --hidden 2048 --out-raw results/artifacts/frontier/rust-output-layer14.f32",
+    "input": "results/artifacts/frontier/rust-input-layer14.f32",
+    "input_sha256": "c046a5f432da3a5985edc1168996a282cbfee26fd196deb7d4a326d958712310",
+    "python_output": "results/artifacts/frontier/python-output-layer14.f32",
+    "python_output_sha256": "9dcb993799e9725442aac10580662b0da2abff279d576971c12550bc99c337ff",
+    "request": "results/artifacts/frontier/rust-request-layer14.json",
+    "request_sha256": "7ab5323460202d958a046eafc6c26c5568676db9e65dfb3931150c7e22506259",
+    "status": "pending: run the Rust court b-real command and then `cross-check`"
+  },
+  "schema": "selvedge/frontier/sweep-v1",
+  "stamp": "20261114T213325Z"
+}

@@ -418,17 +418,33 @@ the value later benchmark rows must carry.
 | oracle court | implemented | pinned torch/transformers image, GPU device passthrough verified, offline cache mount |
 | model fetch | implemented | pinned revisions, LFS-oid/SHA-256 verification, idempotent |
 | real-activation parity (`court a-real`) | implemented | real FFN inputs, f32 and emulated native-bf16 paths |
-| attribution, selectors | **not implemented** | S3b |
+| masked group sums (`court b-real`) | implemented | arbitrary real group subset from a validated bundle, raw f32 cross-check |
+| group-omission frontier instrument | implemented | exact masked MLP, dense and grouped parity gates, per-token KL metrics, public receipted sweeps |
+| attribution, selectors | **not implemented** | S3b measured static masks; per-token causal and trained selectors are M2 |
 | executable Courts C and D | implemented | named scenarios plus integration tests |
 | synthetic fixtures | implemented | deterministic PRNG, tracked bundle and safetensors checkpoint |
 | GGUF | **not implemented** | later; packed block boundaries must not be sliced as floats |
-| teacher oracle, attribution, selectors | **partially implemented** | teacher oracle, accounting and real-activation parity exist; attribution and selectors do not |
+| teacher oracle, attribution, selectors | **partially implemented** | teacher oracle, accounting, real-activation parity and the static group-omission frontier exist; per-token attribution and selectors do not |
 | execution traces, simulator, scheduler | **not implemented** | later |
 | real inference backend, CUDA kernels | **not implemented** | the Rust build compiles no CUDA; the oracle image only uses the pinned CUDA torch for teacher instrumentation |
-| quality or latency measurements | **none** | no benchmark has been run |
+| quality measurements | **partially implemented** | the KL/PPL/top-1 frontier in `results/M1-FRONTIER.md` is measured and receipted; no capability benchmark exists, and no latency or I/O measurement exists |
 
-No claim of model quality, speed, memory savings or novelty is made in this
-increment.
+No capability, speed, memory-savings or novelty claim is made. The M1 frontier
+is a distributional-fidelity result on pinned text; its scope and limits are in
+`docs/LIMITATIONS.md`.
+
+### M1 frontier instrument (S3b)
+
+Python is instrumentation here too. `oracle/masked_mlp.py` owns the masked-MLP
+arithmetic and the metric definitions; `oracle/frontier_sweep.py` owns the
+sweeps and receipts. The Rust side does not serve the model; it recomputes one
+layer's masked group sum from a validated bundle through
+`selvedge-convert::masked`, so the Python instrument is not trusted on its own.
+The exactness gates, the registered contract and the frontier report are
+`results/frontier/exactness-*.json`, `docs/EXPERIMENT-CONTRACT.md` and
+`results/M1-FRONTIER.md`. Every sweep receipt records the model revision,
+tokenizer identity, dataset hashes, split hash, device, driver, torch/CUDA
+versions, precision flags, seed, realized active count and per-article metrics.
 
 ## Interfaces for the next phases
 

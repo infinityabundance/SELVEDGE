@@ -16,9 +16,26 @@ This repository contains the reproducible execution and evidence
 infrastructure, the Rust data contracts (`selvedge-core`), the versioned shard
 container (`selvedge-format`), exact SwiGLU conversion (`selvedge-convert`), the
 `selvedge` CLI, deterministic fixtures, a pinned Hugging Face teacher oracle,
-and measured real-checkpoint accounting and reconstruction. It does **not** yet
-contain selectors, a runtime or any quality result. Nothing here is a
-demonstrated new architecture, and no speed or quality claim has been measured.
+measured real-checkpoint accounting and reconstruction, and a pre-registered,
+receipted measurement of the quality-versus-active-parameter frontier under
+exact FFN group omission. Nothing here is a demonstrated new architecture, and
+no capability, speed or latency claim has been measured.
+
+## Current result (M1 part 2)
+
+The registered experiment (`docs/EXPERIMENT-CONTRACT.md`) asked whether a
+static selection of whole FFN channel groups can keep Qwen3-1.7B within the
+`<=1e9` unique-active-parameter ceiling without changing its next-token
+distribution. **It cannot, in the measured family.** Every configuration at or
+below the ceiling is far outside the pre-registered acceptable tier; the
+quality/parameter curve is a cliff near the fully dense model, above the
+ceiling. The 0.6B control is already dense-compliant and needs no sparsity.
+
+The result is bounded and honest: it covers static, token-independent masks at
+the sixteen-group granularity, with no retraining and no learned routing. It
+does not bound dynamic or trained selectors. The full report, frontier table,
+plot and receipts are in `results/M1-FRONTIER.md`; limitations are in
+`docs/LIMITATIONS.md`.
 
 ## Rules this repository enforces mechanically
 
@@ -75,9 +92,32 @@ scripts/court rust -- target/debug/selvedge court d --workdir target/court-d
 scripts/build-courts.sh oracle
 scripts/fetch-models.sh
 scripts/fetch-models.sh --verify-only
+scripts/fetch-datasets.sh
+scripts/fetch-datasets.sh --verify-only
+scripts/court oracle -- python3 oracle/dataset_prep.py --preregistration-commit \
+  dad6619c8514cb4a52b3420c007a47fc43e1b47e
 scripts/court --gpu oracle -- python3 oracle/probe_oracle.py --json --require-gpu
 scripts/court rust -- cargo run --release -p selvedge-cli -- inspect-model \
   /hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca --json
+
+# M1 frontier: statistics, exactness gates, sweeps, bootstrap and plot
+scripts/court --gpu oracle -- python3 oracle/frontier_sweep.py stats \
+  --model-id Qwen/Qwen3-1.7B \
+  --model-revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e \
+  --accounting results/accounting/20261114T201533Z-qwen3-1.7b.json \
+  --preregistration-commit dad6619c8514cb4a52b3420c007a47fc43e1b47e \
+  --out results/artifacts/frontier/plans-1.7b.json
+scripts/court --gpu oracle -- python3 oracle/frontier_sweep.py sweep \
+  --model-id Qwen/Qwen3-1.7B \
+  --model-revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e \
+  --accounting results/accounting/20261114T201533Z-qwen3-1.7b.json \
+  --preregistration-commit dad6619c8514cb4a52b3420c007a47fc43e1b47e \
+  --plans results/artifacts/frontier/plans-1.7b.json --arms uniform
+scripts/court oracle -- python3 oracle/frontier_sweep.py analyze \
+  --preregistration-commit dad6619c8514cb4a52b3420c007a47fc43e1b47e
+
+# Court B unit tests for the masked-MLP instrument (CPU, synthetic)
+scripts/court oracle -- python3 -m pytest oracle/tests -q
 scripts/court rust -- cargo run --release -p selvedge-cli -- convert \
   --model /hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca \
   --out results/artifacts/qwen3-0.6b-ffn-g16 --groups 16 --complete --alignment 4096

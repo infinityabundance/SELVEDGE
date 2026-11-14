@@ -1,6 +1,11 @@
 # SELVEDGE results — honest current state
 
-Status: **S3a complete**, S3b (causal group utility) not started.
+Status: **S3b complete**. The pre-registered M1 quality/active-parameter
+frontier has been measured. H1 is rejected for static whole-group omission on
+Qwen3-1.7B: no configuration at or below the ceiling preserved the dense
+teacher's next-token distribution on held-out wikitext. The full report is
+`results/M1-FRONTIER.md`; the registered contract is
+`docs/EXPERIMENT-CONTRACT.md`.
 
 This file states what is established, with the receipt that establishes it, and
 what is not. It is not a benchmark report: no latency, throughput or quality
@@ -32,6 +37,19 @@ number has been measured, and none is claimed.
 6. **The f32-equivalent teacher computation is reproduced within a documented
    bound**, and the native bf16 output is reproduced when the teacher's rounding
    sequence is emulated explicitly. Both checks pass with zero violations.
+7. **The masked-MLP instrument is exact on the measured paths.** With every
+   group selected it is bitwise equal to the unmodified dense f32 teacher on
+   real held-out windows. An independent Rust grouped sum over the published
+   bundle agrees with the Python grouped reference on a real layer and a real
+   four-group subset within the registered f32 bound.
+8. **The quality-versus-active-parameter frontier is measured, with receipts.**
+   Static uniform, magnitude, frequency, whole-layer and greedy allocations
+   were evaluated on a pinned, hash-split held-out set with paired bootstrap
+   CIs. Every arm at or below the ceiling is far outside the registered
+   acceptable and usable tiers. The curve is a cliff near the fully dense end.
+9. **The result is negative and reproducible.** Two independent complete runs
+   produced bitwise-identical per-arm aggregates. Failed attempts, amendments
+   and the dirty-worktree superseded receipts are retained.
 
 ## Numbers (generated from receipts)
 
@@ -67,31 +85,56 @@ number has been measured, and none is claimed.
   <!-- BEGIN GENERATED: report-17b-payload -->
 4227858432
   <!-- END GENERATED: report-17b-payload -->
+- Best compliant arm (greedy-uniform5) active unique parameters:
+  <!-- BEGIN GENERATED: report-best-active -->
+998630400
+  <!-- END GENERATED: report-best-active -->
+- Best compliant arm mean teacher KL, nats/token:
+  <!-- BEGIN GENERATED: report-best-kl -->
+7.706657
+  <!-- END GENERATED: report-best-kl -->
+- Best compliant arm PPL ratio:
+  <!-- BEGIN GENERATED: report-best-ppl -->
+1196.792
+  <!-- END GENERATED: report-best-ppl -->
+- Uniform magnitude k15 (noncompliant) mean teacher KL:
+  <!-- BEGIN GENERATED: report-k15-kl -->
+0.279397
+  <!-- END GENERATED: report-k15-kl -->
+- Registered acceptable tier KL bound (nats/token):
+  <!-- BEGIN GENERATED: report-acceptable-kl -->
+0.05
+  <!-- END GENERATED: report-acceptable-kl -->
 
 ## Not established
 
-- **No quality claim under group selection.** Full-group reconstruction is not
-  evidence that skipping groups preserves the model's behaviour. That is Court B
-  and H1 work.
-- **No selector, no scheduler, no runtime.** `selvedge-atlas`, `selvedge-store`,
-  `selvedge-sim` and `selvedge-runtime` do not exist yet.
+- **No capability claim.** The frontier measures next-token distributions on
+  pinned text. KL on Wikipedia is not a code, math, reasoning or factuality
+  benchmark. See `docs/LIMITATIONS.md`.
+- **No dynamic or trained selector.** The measured masks are static over
+  tokens. Per-token causal selection, gradient attribution, interaction-aware
+  selection and retraining/upcycling are untested. The negative result bounds
+  the static family, not sparsity in general.
 - **No measured speed, latency, storage bandwidth or FLOPs.** FLOP values are
-  formula estimates. Bundle sizes are file sizes, not I/O measurements.
-- **No evaluation dataset.** No benchmark was run, so no contamination claim is
-  needed yet; any dataset introduced later must carry its own revision, license
-  and overlap check.
+  derived from realized channel counts, not hardware counters. Arm wall clock
+  is a cost observation, not a benchmark.
+- **No selector, scheduler or runtime.** `selvedge-atlas`, `selvedge-store`,
+  `selvedge-sim` and `selvedge-runtime` do not exist yet.
 - **The native-bf16 match is a model of PyTorch's arithmetic on these inputs.**
   A different kernel or backend may round differently.
 
 ## Artifacts
 
-The activation files and bundles live under the gitignored
-`results/artifacts/` directory; the tracked receipts carry their hashes, sizes
-and measurements. Rebuilding is documented in `docs/BUDGET-MATH.md` and
-`docs/WORK-LOG.md`.
+The activation files, bundles, dataset cache and derived split live under the
+gitignored `results/artifacts/` directory; the tracked receipts carry their
+hashes, sizes and measurements. Rebuilding is documented in
+`docs/BUDGET-MATH.md`, `docs/DATASETS.md` and `docs/WORK-LOG.md`.
 
 ## Next
 
-S3b: per-group counterfactual teacher divergence at the affordable FFN share on
-the 1.7B teacher, with a pre-registered kill condition. The 0.6B model remains
-the non-binding control.
+Measure the oracle per-token potential at the same real-budget: for a small
+held-out sample, find the best achievable KL per token with the affordable
+number of groups using bounded search. If that oracle is also far outside the
+tier, no selector can rescue this teacher at this granularity and the
+retraining/upcycling branch becomes primary. Pre-register that experiment
+before running it.
