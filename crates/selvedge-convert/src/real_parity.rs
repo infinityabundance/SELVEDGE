@@ -1069,7 +1069,7 @@ mod tests {
         let gate = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
         let up = vec![6.0, 5.0, 4.0, 3.0, 2.0, 1.0];
         // down is [hidden, intermediate]; transpose to [intermediate, hidden].
-        let down = vec![0.5, -0.5, 1.5, -1.5, 2.5, -2.5];
+        let down = [0.5, -0.5, 1.5, -1.5, 2.5, -2.5];
         let mut down_t = vec![0.0_f32; hidden * 3];
         for channel in 0..3 {
             for index in 0..hidden {
