@@ -46,6 +46,7 @@ usage() {
 usage: scripts/docker-court.sh <court> [flags] [-- argv...]
 
   courts : rust | python | io | commit_identity | perf_numbers
+           (or start with -- for a generic Python-court passthrough)
   flags  : --net            enable network (default: --network none)
            --gpu            pass the NVIDIA GPU (fails closed if unavailable)
            --host-root-ro   expose the host root read-only at /hostroot
@@ -96,17 +97,29 @@ case "$1" in
     ;;
 esac
 
-court="$1"
-shift
-case "$court" in
-  rust | python | io | commit_identity | perf_numbers) ;;
-  *) die "unknown court '$court' (expected rust|python|io|commit_identity|perf_numbers)" 64 ;;
-esac
-
+court=""
 net=0
 gpu=0
 host_root_ro=0
 declare -a argv=()
+
+if [[ "$1" == "--" ]]; then
+  # Generic passthrough: the Python court image, no court-specific argv.
+  shift
+  court="io"
+  argv=("$@")
+  set --
+else
+  court="$1"
+  shift
+fi
+
+case "$court" in
+  rust | python | io | commit_identity | perf_numbers) ;;
+  *) die "unknown court '$court' (expected rust|python|io|commit_identity|perf_numbers, or -- <argv>)" 64 ;;
+
+esac
+
 while (($#)); do
   case "$1" in
     --)

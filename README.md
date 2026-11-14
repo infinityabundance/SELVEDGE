@@ -62,6 +62,7 @@ scripts/probe-hardware.sh
 # generic court passthrough (no network unless --net is given)
 scripts/docker-court.sh rust -- cargo --version
 scripts/docker-court.sh python -- python3 -c 'print(1)'
+scripts/docker-court.sh -- python3 -c 'print("generic passthrough")'
 ```
 
 `scripts/court` is a thin alias over `scripts/docker-court.sh`:
