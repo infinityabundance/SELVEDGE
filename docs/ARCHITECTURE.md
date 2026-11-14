@@ -209,12 +209,12 @@ bitwise equality:
 - the empty group set is mathematically zero and is tested as exactly `+0.0`;
   that is not a proof that skipping a group preserves model quality.
 
-Court A also checks group permutations, single-group span, sizes 1/2/3/prime,
+Court A also checks group permutations, single-group span, sizes one/two/three/prime,
 non-divisible grouping, `intermediate=1`, `hidden=1`, flattened input shapes
-`[1,1]`, `[4,17]`, `[2,3,5]`, column-major and transposed sources, 20 seeds,
-byte-and-id determinism, per-shard id/hash recomputation, full-hash validation,
-and reconstruction from bundle bytes rather than from in-memory conversion
-state.
+`[1,1]`, `[4,17]`, `[2,3,5]`, column-major and transposed sources, a seed
+battery, byte-and-id determinism, per-shard id/hash recomputation, full-hash
+validation, and reconstruction from bundle bytes rather than from in-memory
+conversion state.
 
 ## Configuration
 

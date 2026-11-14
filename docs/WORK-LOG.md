@@ -313,12 +313,12 @@ transpose and tolerance policy.
 
 | hypothesis | result | evidence |
 | --- | --- | --- |
-| H0: the full group sum reconstructs the dense FFN in f32 within a stated bound. | Confirmed on the synthetic SwiGLU for 21 named scenarios; the measured maxima are printed below from the receipt. | Court A receipt `results/court-a/20261114T192745Z.json`; `court_a` tests. |
-| The decomposition survives group permutation, sizes 1/2/3/prime, non-divisible grouping and the empty subset. | Confirmed within the same measured bound. The empty subset is exactly `+0.0`; this is a mathematical zero, not a skip-quality proof. | Named scenarios `group_permutation_invariance`, `group_size_*`, `non_divisible_grouping`, `empty_subset_is_exact_zero`. |
+| H0: the full group sum reconstructs the dense FFN in f32 within a stated bound. | Confirmed on the synthetic SwiGLU for the full named scenario matrix; the measured maxima are printed below from the receipt. | Court A receipt `results/court-a/20261114T192745Z.json`; `court_a` tests. |
+| The decomposition survives group permutation, sizes one/two/three/prime, non-divisible grouping and the empty subset. | Confirmed within the same measured bound. The empty subset is exactly `+0.0`; this is a mathematical zero, not a skip-quality proof. | Named scenarios `group_permutation_invariance`, `group_size_*`, `non_divisible_grouping`, `empty_subset_is_exact_zero`. |
 | Repacking is orientation-independent for column-major and explicitly transposed sources. | Confirmed for both storage orders. | Named scenarios `column_major_source`, `transposed_source`. |
 | The down shard can be a contiguous transposed copy without a gather-heavy fragment. | Confirmed by decoding the manifest-declared `transposed[1,0]` order and matching the source. | `swiglu.down.transpose.v1` shards; `shard_ids_and_hashes_match_manifest`. |
 | f16/bf16 sources preserve the same f32 arithmetic bound after exact widening. | Confirmed on the synthetic fixtures. | Named scenarios `f16_source`, `bf16_source`. |
-| Conversion is deterministic and memory-bounded. | Two identical runs produce byte-identical bundles and ids; a 128-byte ceiling succeeds with peak 128 bytes. | `determinism_same_bytes_and_ids`, `small_memory_ceiling`. |
+| Conversion is deterministic and memory-bounded. | Repeated identical runs produce byte-identical bundles and ids; a tight ceiling succeeds without exceeding it. | `determinism_same_bytes_and_ids`, `small_memory_ceiling`. |
 
 ### Measured reconstruction (generated)
 
