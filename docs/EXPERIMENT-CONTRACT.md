@@ -431,3 +431,455 @@ gloss is adopted: the threshold is `mass_g(t) > 2/16`.
 No sweep, held-out measurement or quality number existed when this was decided.
 The calibration statistics are a selector sanity check, not a result. The
 receipt for the corrected run supersedes the first one; both are retained.
+
+# Experiment contract — M2: per-token causal selection, oracle potential, and matched-budget selectors
+
+Status: **pre-registered**. Appended after the M1 frontier was measured and
+reported (`results/M1-FRONTIER.md`). It does not change any M1 threshold, arm or
+kill condition; the M1 result stands as registered and reported. M2 tests the
+hypothesis that M1 explicitly did **not** test: token-dependent, causal
+selection at the same realized budget, together with the oracle-potential
+ceiling that decides whether the inference-only branch is viable at all.
+
+- Registered (UTC): 2026-11-14T22:38:44Z
+- Predecessor facts (not re-tested here): `results/M1-FRONTIER.md`,
+  `docs/BUDGET-MATH.md`, `data/dataset-spec.json`,
+  `results/splits/split-20261114T223127Z.json`,
+  `models/MODELS.lock.json`, `results/accounting/20261114T201402Z-qwen3-1.7b.json`.
+- The registration commit is the commit that introduces this section. It cannot
+  contain its own SHA, so every M2 receipt carries
+  `preregistration_commit` set to that SHA.
+
+## M2.1 Question
+
+M1 measured **static, token-independent** whole-group omission: one mask per
+layer for every token. It rejected H1 at the ceiling for Qwen3-1.7B. The
+measured masks used calibration statistics only; no per-token, causal,
+gradient, interaction-aware or learned selector was tested.
+
+M2 asks three questions, in order of information value:
+
+1. **Oracle potential.** If a non-deployable per-token oracle could choose a
+   different group subset for every token position at the same realized budget,
+   how close could the masked model get to the dense f32 teacher? If even that
+   oracle is outside the registered usable tier, no selector of this family can
+   rescue inference-only sparsification of this teacher, and the program must
+   move to the trained/upcycled branch.
+2. **Granularity.** Is the failure caused by the budget, or by the granularity
+   of sixteen equal contiguous groups per layer? Repeat the oracle at 64 and 4
+   groups per layer with the total active element count held fixed.
+3. **Deployable selection.** At exactly matched realized active unique
+   parameters, does any deployable per-token selector beat the strongest
+   implementable baseline (activation magnitude) with a paired-bootstrap CI
+   that excludes zero, and does any approach the oracle?
+
+These are distributional-fidelity questions, as in M1. KL to the teacher is not
+a capability benchmark.
+
+## M2.2 Registered budgets (fixed before measurement)
+
+The accounting receipt is
+`results/accounting/20261114T201402Z-qwen3-1.7b.json` (revision
+`9bccaffe8b4f3e11113e0c389d8fb3418ab779a4`). Its registered fields:
+
+- ceiling: 1,000,000,000 active unique learned elements per output token;
+- always-active backbone: 663,610,368 elements;
+- removable FFN: 1,056,964,608 elements;
+- maximum compliant FFN elements per token: 336,389,632;
+- one of the sixteen contiguous groups: 2,359,296 elements
+  (`3 * 384 * 2048`, where 384 is the group width and 2048 the hidden width);
+- full FFN per layer: 37,748,736 elements; intermediate channels: 6144;
+  layers: 28; hidden: 2048.
+
+Three budgets are registered. Every arm's realized selection is written to a
+fixture and `selvedge atlas compare` recomputes the realized active unique
+element count in Rust from that selection and the receipt-sourced component
+counts. A comparison is valid only if every arm in it has the **same** realized
+count and that count is `<= 1e9`.
+
+- **B140 — the 5/16-per-layer-equivalent budget (primary for the granularity
+  study and the 5/16 baseline).** Exactly five of the sixteen groups in every
+  layer: 140 groups, `140 * 2,359,296 = 330,301,440` FFN elements,
+  `663,610,368 + 330,301,440 = 993,911,808` active unique elements. This is the
+  budget M1 called `uniform-magnitude-k5`, and it is 6,088,192 FFN elements
+  below the ceiling's FFN affordability because the ceiling cannot add a whole
+  group to every layer.
+- **B142 — the ceiling-maximum whole-group budget (primary for the decisive
+  matched-budget selector table).** The largest whole-group allocation at or
+  below the ceiling: 142 groups, `142 * 2,359,296 = 335,020,032` FFN elements,
+  `663,610,368 + 335,020,032 = 998,630,400` active unique elements. The
+  unspent headroom is 1,369,600 elements, less than one group. This is the same
+  realized count as M1's `greedy-uniform5`, so the M1 best static arm is
+  exactly matched here. Arms allocate the 142 groups globally (five per layer
+  plus two extras chosen by the arm's own score), not uniformly.
+- **Granularity budget G = 330,301,440 FFN elements** (equal to B140's FFN
+  share), used to compare 16, 64 and 4 groups per layer at identical active
+  elements:
+  - 16 groups: width 384; 5 per layer = 140 groups, 53,760 channels.
+  - 64 groups: width 96; 20 per layer = 560 groups, 53,760 channels.
+  - 4 groups: width 1536; 35 groups total = 53,760 channels, allocated as 21
+    layers with one group and 7 layers with two groups (the oracle chooses
+    which seven).
+
+**Controller parameters count.** Every learned selector weight (unary and
+interaction matrices, feature scaling constants fitted from data) is added to
+the arm's active unique element count. Static calibration ranking tables and
+realized masks are controller state, not learned weights, and are not counted;
+this is the same convention as M1 and is stated in every receipt. The learned
+controller must fit the B142 headroom of 1,369,600 elements. The registered
+model sizes are far below it (unary: 16 groups x 6 features plus a layer term;
+interaction: a 6 x 6 matrix), and the receipt prints the exact count.
+
+## M2.3 Hypotheses
+
+- **H2.1 (oracle potential).** A per-token oracle at B142 can reach the
+  registered usable tier (`KL <= 0.25`, PPL ratio `<= 1.10`, top-1 `>= 0.85`)
+  on the oracle sample. If false, the inference-only branch is dead at this
+  granularity and budget.
+- **H2.2 (granularity).** Finer fragments at the same active element count
+  (64 groups per layer, 20 per layer) bring the oracle closer to the teacher
+  than 16 groups, and 4 groups is worse. This distinguishes a budget
+  constraint from a granularity constraint.
+- **H2.3 (deployable selection).** At least one deployable per-token selector
+  beats `token-magnitude` by at least 5% relative mean KL on held-out general
+  text, with a paired-bootstrap 95% CI lower bound above zero, at exactly
+  matched realized active unique parameters.
+- **H2.4 (attribution and interaction).** A learned predictor trained on
+  intervention-labeled local utilities beats activation magnitude, and the
+  interaction-aware predictor beats the unary predictor by at least 5%
+  relative KL with a CI excluding zero. This is the M2 version of H1.
+- **H2.5 (interaction structure).** A low-rank or ridge surrogate fitted on
+  calibration pairs predicts held-out pairwise interaction with a Spearman
+  correlation at least 0.2 and a sign accuracy above 0.5 + its own 95% CI
+  lower bound.
+
+## M2.4 Arms (all at B142 unless stated; every arm has a `deployable` flag)
+
+Reference and M1 baselines:
+
+- `teacher-dense`: unmodified dense f32 model. Noncompliant by construction;
+  the reference for every metric.
+- `masked-all`: every group selected through the masked path; must equal the
+  teacher within the M1 G1 tolerance. Instrument gate.
+- `static-magnitude-k5` (B140): M1's per-layer top-5 magnitude mask, exactly
+  matched at B140.
+- `static-frequency-k5` (B140): M1's per-layer top-5 frequency mask.
+- `static-random-k5` (B140): M1's seeded per-layer random top-5.
+- `static-greedy-swap4` (112 groups, `927,851,520`): M1's registered K3 arm.
+  Not budget-matched; included as a baseline and flagged.
+- `static-greedy-uniform5` (142 groups, `998,630,400`): M1's best compliant
+  static arm, exactly matched at B142.
+
+Deployable per-token arms at B142:
+
+- `token-random`: for every token and layer, five groups from a deterministic
+  hash of `(seed, layer, position, token id prefix hash)`. No calibration
+  information. This is the chance baseline.
+- `token-magnitude`: per token, per layer, the five groups with the largest
+  `||a_g(t)||_2`, where `a_g(t)` is the group's intermediate activation from
+  the token's pre-decision hidden state. This is the **strongest implementable
+  baseline** for K6.
+- `token-frequency`: per token, per layer, the five groups with the largest
+  `mass_g(t) = ||a_g(t)|| / sum_j ||a_j(t)||`. The static frequency statistic
+  is replaced by its per-token value. This is a deployable per-token control,
+  not the M1 static frequency arm.
+- `token-task-static-nn`: a per-document static mask. Each calibration
+  document gets a top-5-per-layer magnitude mask from its own activation
+  statistics; at inference the arm computes the word 5-shingle Jaccard between
+  the input document's token text and each calibration document, picks the
+  nearest calibration document, and uses its mask for the whole document. The
+  assignment uses only the input text, never a gold task label. This is the
+  SEAP/DoMoE-adjacent "task-static" hypothesis at our data scale.
+- `token-learned-unary`: a linear model on pre-decision group features
+  (section M2.7), trained on calibration intervention labels, selecting five
+  groups per layer by predicted score.
+- `token-learned-interaction`: the same unary model plus a bilinear pairwise
+  term, with the interaction weight chosen on the calibration validation split,
+  selecting five groups per layer by greedy maximization of the surrogate.
+
+Attribution arms at B142 (labelled `deployable: false` where stated):
+
+- `token-gxo`: per token, per layer, the five groups with the largest signed
+  sum `sum_{i in g} x_i * grad_i`, where `x` is the intermediate activation and
+  `grad` is the gradient of the teacher-forced next-token log-probability. The
+  gradient target uses the gold next token and a summed loss, so this arm is
+  **non-deployable**; it is an attribution baseline, not an online selector.
+  Its runtime cost includes a backward pass.
+- `token-cor-gxo`: the published corrected GxO metric of Song et al.,
+  *Attribution-based Sparse Activation in Large Language Models* (Proc. MLSys
+  2026, PMCID PMC13570667), section 5.2 and Theorem 5.3, implemented as the
+  paper states: the per-neuron score is
+  `x_i * grad_i + 0.5 * x_i * (sum_k grad_k)^2`, where the sum is over all
+  intermediate channels of the layer. The group score is the sum over its
+  channels. The same non-deployable label applies. This is a reproduction of
+  the stated corrective term, not of the paper's full experimental pipeline.
+- `token-gxo-causal`: on the 8-window oracle sample only, a causal variant that
+  backpropagates each position's own loss separately so no future token target
+  enters a decision at an earlier position. Labelled experimental and reported
+  separately; it is included to check whether the non-causal summed-loss GxO
+  ranking is materially different.
+
+Non-deployable oracle arms (section M2.5):
+
+- `oracle-local-16` at B140 and B142;
+- `oracle-local-64` at G;
+- `oracle-local-4` at G;
+- `oracle-final-refine` on a 32-position sample (bounded exact-KL swaps).
+
+The oracle arms use the teacher only through the measured KL of a candidate
+map; they never feed teacher logits into a deployable selector. They are
+explicitly non-deployable and their search cost is recorded.
+
+## M2.5 Oracle protocol (registered before measurement)
+
+For a window of `T` predicting positions:
+
+1. Run a forward with the current per-token mask map and capture the pre-MLP
+   hidden state `h_{l,t}` for every layer `l` and position `t`.
+2. For every `(l,t)`, compute the layer's intermediate activation
+   `a = SiLU(W_gate h) * (W_up h)` and each group's output contribution
+   `c_g = a[G_g] W_down[:, G_g]^T` (2048 floats). Let
+   `r0 = sum_g c_g` (the dense layer output). Define the exact local squared
+   error of a subset `S` as `L(S) = ||r0 - sum_{g in S} c_g||^2`. It is computed
+   from the Gram matrix `G_{gj} = c_g . c_j` and `b_g = r0 . c_g`:
+   `L(S) = ||r0||^2 - 2 sum_{g in S} b_g + sum_{g,j in S} G_{gj}`.
+3. B140: enumerate all `C(16,5) = 4368` five-subsets per `(l,t)` and choose an
+   exact minimizer of `L(S)`. B142: choose the exact five-subset per `(l,t)`,
+   then add two extra groups per token, greedily over all `(layer, group)`
+   pairs by the largest reduction in `L(S)` (the layer-local objectives are
+   additive across layers, so this is exact given the five-subsets).
+4. Apply the resulting per-token mask map in a model forward and measure the
+   exact per-position KL, top-1 and NLL against the dense teacher.
+5. Repeat steps 1-4 for up to three passes, so that the local decisions see
+   hidden states produced by the arm's own masks. Keep the map with the lowest
+   measured mean KL on the sample; record every pass.
+6. The granularity arms replace step 3:
+   - 64 groups, 20 per layer: beam search of width 8 over the 20 additions,
+     scored by the exact local `L(S)` (incremental Gram updates);
+   - 4 groups, 35 total: exact enumeration of all one-group and two-group
+     subsets per layer, then add the second group to the seven layers with the
+     largest local reduction (exact for the additive local objective).
+7. `oracle-final-refine` starts from the best `oracle-local-16` map and, for a
+   sample of 32 token positions, tries the four single-swap candidates per
+   layer with the largest local `L(S)` improvement (4 candidates x 28 layers x
+   2 passes), measuring the token's own exact final KL with a prefix forward
+   (the prefix contains only positions `<= t`, so no future token enters the
+   decision). The map is accepted only if the token's exact KL improves.
+8. The oracle is non-deployable: it needs the per-token subset search, several
+   full forwards per pass and, for the final refinement, prefix forwards. The
+   receipt records forwards, subset evaluations, selector seconds and GPU
+   seconds. Those are not part of any compliant runtime claim.
+
+Oracle sample: the first 512-token window of each of the first eight held-out
+general articles, in the order of `results/splits/split-20261114T223127Z.json`
+(8 windows, 4,096 predicting positions). The eight articles are held out from
+every calibration and from every selector. No held-out text is used to choose
+a deployable selector; it is used only to measure the oracle and the arms.
+
+Reported oracle quantities:
+
+- mean, median, p95 and max per-position KL of the best map;
+- top-1 agreement and PPL ratio;
+- fraction of positions with KL `<= 0.05` (the acceptable per-position bound),
+  `<= 0.25` (usable), and with correct top-1;
+- the same quantities for the per-position minimum over the three passes,
+  labelled "oracle over passes, upper bound" (it is not a single execution);
+- the number of distinct subsets used per layer, the fraction of adjacent token
+  pairs with an identical subset, and the mean Jaccard between the subset
+  distributions of two disjoint oracle windows.
+
+## M2.6 Cross-token consistency
+
+For each layer, on the oracle sample: (a) the fraction of adjacent positions
+with the same selected subset; (b) the number of distinct subsets used; (c) the
+fraction of positions whose subset equals the window's modal subset; (d) the
+mean pairwise Jaccard between the per-position subset sets of two disjoint
+windows from different articles. These seed the M3 execution-envelope design:
+if the subset changes on nearly every token, no envelope can cover it.
+
+## M2.7 Attribution, interaction and learned-selector protocol
+
+**Feature vector (pre-decision only).** For a token at layer `l`, the allowed
+inputs are the pre-MLP hidden state `h`, the layer index, the position index,
+and quantities computed from `h` and the layer's own gate/up/down weights with
+no backward pass and no teacher: for each group `g`,
+`[log1p(||a_g||), ||a_g||/sum_j||a_j||, mean(a_g), max(a_g), min(a_g)]`, plus a
+global `l/L` term and a bias. Raw `h` is allowed but is not used by the
+registered learned arms; the atlas input record carries it for auditability.
+
+**Training labels (intervention-measured, calibration only).** For a
+calibration context `(window, layer, token)`, fix the base set
+`S0` = the four `token-magnitude` groups of that layer at that token. Compute
+`L(S)` exactly by the Gram method. The unary label is
+`delta_g = L(S0) - L(S0 union {g})` for all 16 groups. The pairwise label is
+`I_local(g,j) = L(S0 union {g}) + L(S0 union {j}) - L(S0) - L(S0 union {g,j})`
+for sampled pairs `g,j not in S0`. Both are exact one-layer interventions on
+the layer output, not final-KL labels; they are labelled as such.
+
+**Sampling for training.** 4,000 `(window, layer, token)` contexts sampled
+uniformly without replacement from the 63 calibration windows and 28 layers;
+8,000 pairs from the same contexts. Training/validation split by calibration
+article: the 12 lowest-hash calibration articles train, the 4 highest-hash
+articles validate. The held-out split and the code/math slices are never used.
+Standardise features on the training split; store the constants in the
+weights JSON.
+
+**Models.**
+- Unary: `score_g = w . phi_g + v * (l/L) + b`. Fit by ridge regression
+  (closed form, f64) on the unary labels; the ridge coefficient is chosen from
+  the pre-registered grid `{1e-4, 1e-3, 1e-2, 1e-1}` on the validation local
+  objective.
+- Interaction: `score(S) = sum_{g in S} score_g + sum_{g<j in S} phi_g^T M phi_j`,
+  with `M` a 6x6 matrix fitted by ridge on the pairwise labels. The mixing
+  weight `lambda` on the pairwise term is chosen from `{0.25, 0.5, 1.0, 2.0}`
+  on the validation local objective. Selection is greedy: start from the empty
+  set, add five groups per layer, each time maximizing the surrogate.
+- The weights are exported to `results/selectors/atlas-weights.json` with a
+  documented schema, feature names, per-layer/global parameters, the exact
+  training receipt hashes and the exact parameter count.
+
+**Attachment/interaction measurement.** On the calibration interaction sample
+(8 calibration windows x layers {0,7,14,21,27} x 2 stratified pairs), with the
+static `static-magnitude-k5` map in every layer except the probed layer `L`,
+measure the exact sequence-mean KL for the four masks `S0`, `S0+g`, `S0+j`,
+`S0+g+j`. The pair is positive (synergy) if
+`I = KL(S0+g) + KL(S0+j) - KL(S0) - KL(S0+g+j)` is positive, negative
+(antagonism) otherwise. Because `I` is algebraically symmetric in `g,j`, the
+"sign asymmetry" reported is the asymmetry that is actually measurable:
+(a) the fraction of pairs whose sign changes between contexts (base-set
+dependence), (b) the distribution of the sequential marginal gains
+`Delta(g|S0)` and `Delta(j|S0)`, which need not have equal magnitude, and
+(c) the numerical difference between the two orderings, which should be zero
+and is reported as a correctness check. Report the mean, median, IQR, sign
+fractions, the five largest positive and five largest negative contexts, and
+a ridge/low-rank surrogate predicting `I` on held-out calibration articles
+(Spearman, sign accuracy, CI by article bootstrap).
+
+## M2.8 Metrics (fixed before measurement)
+
+Primary metrics are the M1 definitions: teacher KL in nats/token, top-1
+agreement, PPL ratio, per domain (general/code/math), paired by item. Added for
+M2:
+
+- per-position KL distribution: median, p95, fraction `<= 0.05`, fraction
+  `<= 0.25`, fraction with correct top-1;
+- realized active unique elements and compliance, recomputed in Rust from the
+  realized selection plus the learned controller parameter count;
+- selector cost: selector seconds per window, selector FLOPs per token
+  (formula, explicitly derived), controller parameter count, and, for the
+  attribution arms, backward-pass cost. The controller cost is part of the
+  comparison and is reported next to every arm.
+- oracle cost: forwards, subset evaluations, prefix forwards, GPU seconds.
+
+## M2.9 Data, splits and sample sizes
+
+The M1 split is reused unchanged and hash-checked:
+`results/splits/split-20261114T223127Z.json` (derived
+`results/artifacts/split/m1-split.json`, SHA-256 in the split receipt). The
+calibration and held-out sets are disjoint. The code and math slices remain
+held out from every selector and every training label.
+
+- Held-out evaluation: all 40 general articles (80 windows), 40 code items, 40
+  math items. If the split receipt's counts differ, the run is invalid.
+- Oracle sample: 8 general articles x first 512-token window (4,096 positions).
+- Granularity: the same 8 windows.
+- Interaction: 8 calibration windows x 5 layers x 2 pairs = 80 contexts, 320
+  model forwards.
+- Learned training: 12 calibration articles; validation 4 calibration articles;
+  4,000 contexts and 8,000 pairs. Every sampled context is identified by
+  `(doc_id, window_index, position, layer)` in the receipt.
+- Seeds: 20261114 for token permutations, sampling, ridge and bootstrap. The
+  deterministic permutation is `SplitMix64(seed ^ layer ^ position ^ prefix)`.
+
+## M2.10 Leakage rule (non-negotiable)
+
+A deployable selector may read only: the pre-MLP hidden state `h_{l,t}` at the
+layer where it decides, the current layer's gate/up activations computed from
+`h_{l,t}` and that layer's weights, the layer index, the current position
+index, the token prefix strictly before the decision, and static constants
+fitted on calibration data. It may **never** read: teacher logits, the dense
+teacher's intermediate activations, future token ids, the gold next token, any
+held-out text, any code/math evaluation item, or the realized mask/KL outcome
+it is being scored on. `token-gxo`, `token-cor-gxo`, `token-gxo-causal` and all
+oracle arms are labelled non-deployable precisely because their target uses
+teacher-forced tokens or held-out measurements. The Rust `SelectorInput` record
+has no field for future state; a Court B test rejects serialized inputs that
+carry one.
+
+## M2.11 Statistical method
+
+The M1 method is reused: unit of analysis is the article for general text and
+the item for code/math; windows within an article are averaged first; paired
+percentile bootstrap over articles/items with 10,000 resamples, seed 20261114,
+the same resampled index matrix for every arm in a comparison, and 2.5/97.5
+percentiles. The bootstrap uses only integer indices and float accumulation.
+CIs are reported for mean KL, PPL ratio, top-1, per-domain metrics, and for
+every paired relative reduction. Interaction CIs resample calibration articles.
+
+## M2.12 Kill conditions (fixed now)
+
+- **K6 (deployable selector).** If no deployable arm achieves at least a 5%
+  relative reduction in held-out general mean KL versus `token-magnitude` at
+  the same realized active unique parameters, with a paired-bootstrap 95% CI
+  lower bound above zero, then no deployable per-token selector is demonstrated
+  to beat activation magnitude. Record K6 as failed in `docs/WORK-LOG.md` and
+  recommend the pivot to the trained/upcycled branch, with the evidence.
+- **K7 (oracle ceiling).** If the best per-token oracle at B140 or B142 has
+  mean KL above 0.25, or PPL ratio above 1.10, or top-1 below 0.85, on the
+  oracle sample, then per-token selection at this granularity and budget cannot
+  reach even the registered usable tier. The inference-only branch is dead for
+  this teacher; record K7 as failed and pivot. This is the decisive condition.
+- **K8 (granularity).** If the 64-group oracle is also above the usable tier
+  and the 4-group oracle is worse than the 16-group oracle, granularity is not
+  the binding constraint. If the 64-group oracle reaches the usable tier while
+  16 does not, granularity is binding and the next experiment is a
+  fine-grained deployable selector. Report the exact comparison; do not
+  generalise beyond the three measured granularities.
+- **K9 (integrity and leakage).** Any selector that reads a forbidden input,
+  any NaN/Inf, any realized active count above the ceiling, any mismatch
+  between the Python arm decision and the Rust selector on the exported
+  fixtures, or any failure of the instrument gate G1. Stop; publish the
+  failure; do not report a quality number from the affected run.
+
+## M2.13 What would justify continuing the inference-only branch
+
+Continuation requires **both**:
+
+1. the oracle (best of 16/64/4 groups at the matched element budget) reaches
+   at least the usable tier on the oracle sample (`KL <= 0.25`, PPL ratio
+   `<= 1.10`, top-1 `>= 0.85`); and
+2. a deployable arm at exactly matched active unique parameters beats
+   `token-magnitude` by at least 5% relative mean KL with a paired 95% CI lower
+   bound above zero, and captures at least half of the oracle's relative
+   improvement over the best static M1 arm.
+
+If (1) holds but (2) does not, the branch is scientifically alive but not
+deployable; the next step is a stronger learned approximation of the oracle,
+not a runtime. If (1) fails, the branch is dead at this granularity and budget,
+regardless of (2), and the trained/upcycled branch becomes the primary path.
+
+## M2.14 What a negative result means
+
+If K7 fails, the reading is: with this teacher, this grouping granularity (or
+even 64 fragments per layer at the same elements), this budget, exact group
+omission and no retraining, even an oracle that chooses a different subset per
+token cannot preserve the teacher's next-token distribution within the usable
+tier. That bounds the inference-only, post-hoc selection family for this
+teacher. It does not bound trained sparse models, upcycling, MoE conversion,
+quantization or a different teacher. It also does not show that the selectors
+are useless for a model trained to tolerate sparsity; that is the branch the
+result would recommend.
+
+If K7 passes but K6 fails, the reading is: the potential exists but our
+deployable predictors do not capture it. The next experiment is a better
+predictor, and the Rust selector infrastructure is still the right place to
+measure it.
+
+## M2.15 Deviations and amendments
+
+As in M1: no planned deviations; unplanned ones are recorded in
+`docs/WORK-LOG.md` and in the affected receipt with reason and timestamp. A
+change to a budget, arm, selector definition, sample size, threshold or kill
+condition after the first measurement is an amendment appended here with its
+own timestamp, and the pre-amendment results are reported against the original
+text.
