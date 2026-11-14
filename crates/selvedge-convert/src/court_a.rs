@@ -629,7 +629,8 @@ pub fn run_court_a_with_provenance(
     scenarios.push(scenario("small_memory_ceiling", || {
         let model = swiglu_model(8, 10, seed ^ 18)?;
         // The largest contiguous group extent is ceil(10/3)=4 rows of 8 f32
-        // values, i.e. 128 bytes; both rows and down use the same size.
+        // values (128 bytes); the reader also holds one 8-value row scratch
+        // (32 bytes), so the honest ceiling is 160 bytes.
         let outcome = convert_case_with_budget(
             &model,
             SyntheticDType::F32,
@@ -637,17 +638,17 @@ pub fn run_court_a_with_provenance(
             &GroupSpec::ByCount(3),
             tolerance,
             vec![1],
-            128,
+            160,
         )?;
-        if outcome.peak_inflight_bytes > 128 {
+        if outcome.peak_inflight_bytes > 160 {
             return Err(ConvertError::MemoryBudgetExceeded {
                 requested: outcome.peak_inflight_bytes,
                 used: 0,
-                limit: 128,
+                limit: 160,
             });
         }
         Ok(format!(
-            "converted with a 128-byte ceiling; peak {} bytes",
+            "converted with a 160-byte ceiling; peak {} bytes",
             outcome.peak_inflight_bytes
         ))
     }));

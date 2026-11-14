@@ -591,21 +591,29 @@ pub(crate) fn read_rows(
         .and_then(|value| value.checked_mul(4))
         .ok_or_else(|| ConvertError::plan("row group byte length overflows"))?;
     budget.reserve(out_bytes)?;
+    let row_bytes = hidden
+        .checked_mul(4)
+        .ok_or_else(|| ConvertError::plan("row byte length overflows"))?;
     let contiguous = is_contiguous(channels);
     if contiguous {
         let start = channels.first().copied().unwrap_or(0);
         let end = start + width;
-        return source.read_region_f32(key, start..end, 0..hidden);
+        // The reader holds the output plus one row-sized scratch buffer.
+        budget.reserve(row_bytes)?;
+        let result = source.read_region_f32(key, start..end, 0..hidden);
+        budget.release(row_bytes)?;
+        return result;
     }
-    let row_bytes = hidden
-        .checked_mul(4)
-        .ok_or_else(|| ConvertError::plan("row byte length overflows"))?;
     let mut out: Vec<f32> = Vec::new();
     crate::tensor_source::reserve_elements(&mut out, width * hidden)?;
     for channel in channels {
-        budget.reserve(row_bytes)?;
+        // A gathered row read allocates its own output and scratch row.
+        let double_row = row_bytes
+            .checked_mul(2)
+            .ok_or_else(|| ConvertError::plan("row reservation overflows"))?;
+        budget.reserve(double_row)?;
         let row = source.read_region_f32(key, *channel..(*channel + 1), 0..hidden)?;
-        budget.release(row_bytes)?;
+        budget.release(double_row)?;
         if row.len() as u64 != hidden {
             return Err(ConvertError::inconsistent(
                 "row read returned the wrong length",
@@ -629,11 +637,18 @@ pub(crate) fn read_down_physical(
         .and_then(|value| value.checked_mul(4))
         .ok_or_else(|| ConvertError::plan("down group byte length overflows"))?;
     budget.reserve(out_bytes)?;
+    let row_bytes = width
+        .checked_mul(4)
+        .ok_or_else(|| ConvertError::plan("down row byte length overflows"))?;
     let contiguous = is_contiguous(channels);
     if contiguous {
         let start = channels.first().copied().unwrap_or(0);
         let end = start + width;
-        return source.read_region_f32(key, 0..hidden, start..end);
+        // The reader holds the output plus one row-sized scratch buffer.
+        budget.reserve(row_bytes)?;
+        let result = source.read_region_f32(key, 0..hidden, start..end);
+        budget.release(row_bytes)?;
+        return result;
     }
     let column_bytes = hidden
         .checked_mul(4)
@@ -645,9 +660,12 @@ pub(crate) fn read_down_physical(
         0.0,
     );
     for (j, channel) in channels.iter().enumerate() {
-        budget.reserve(column_bytes)?;
+        let double_column = column_bytes
+            .checked_mul(2)
+            .ok_or_else(|| ConvertError::plan("column reservation overflows"))?;
+        budget.reserve(double_column)?;
         let column = source.read_region_f32(key, 0..hidden, *channel..(*channel + 1))?;
-        budget.release(column_bytes)?;
+        budget.release(double_column)?;
         if column.len() as u64 != hidden {
             return Err(ConvertError::inconsistent(
                 "column read returned the wrong length",
