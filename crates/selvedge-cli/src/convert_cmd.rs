@@ -243,7 +243,13 @@ fn discover(
             }])
         }
         (None, None, None) => {
-            let maps = discover_ffn_maps(&source.tensor_keys())?;
+            let mut maps = discover_ffn_maps(&source.tensor_keys())?;
+            // Auto-discovery finds the key triples; the caller still declares
+            // which axis order the checkpoint uses.
+            let orientation = FfnOrientation::parse(&args.orientation)?;
+            for item in &mut maps {
+                item.map.orientation = orientation;
+            }
             Ok(maps)
         }
         _ => Err("--gate-key, --up-key and --down-key must be given together".into()),

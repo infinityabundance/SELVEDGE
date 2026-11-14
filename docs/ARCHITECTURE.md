@@ -182,6 +182,11 @@ held in memory. An explicit channel list pays one extra temporary row/column
 reservation, which is also counted. Exceeding the budget returns
 `MemoryBudgetExceeded`; it never falls back to a larger allocation.
 
+Verification is a different path: `convert verify` and Court A must hold one
+layer's full source FFN tensors and its group copies to compute the dense
+reference. That is bounded by the layer size, not by the checkpoint, and is not
+the streaming conversion path. The synthetic Court A layers are tiny.
+
 ### Exactness and tolerance policy
 
 The grouped identity is exact in real arithmetic when the groups cover the
