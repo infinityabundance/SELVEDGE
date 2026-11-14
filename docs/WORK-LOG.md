@@ -263,3 +263,170 @@ whether full-group reconstruction is exact in F32 within a stated tolerance and
 whether grouped slices survive permutation and axis-orientation changes. No
 timings or model-quality numbers should be published from that increment until
 they come from a receipt.
+
+## 2026-11-14 — S2: safetensors, exact SwiGLU groups, Court A
+
+Revision: `c0c68a454f936b0979f4a7afc7754f68c445328b`. The Court A receipt is
+`results/court-a/20261114T192745Z.json` (stamp `20261114T192745Z`, revision
+`c0c68a454f936b0979f4a7afc7754f68c445328b`). Every command below ran offline
+(`--network none`) in the Rust court with the image and limits recorded in its
+receipt. No model-quality or timing number is claimed.
+
+### Plan
+
+Deliver the exact SwiGLU decomposition in dependency order: a safe streaming
+safetensors reader; the typed `FfnTensorMap` and deterministic grouping rules; a
+memory-bounded converter that repacks contiguous group extents through the S1
+writer; a real reconstruction proof from published bytes (Court A); the CLI
+surface (`convert`, `convert verify`, `court a`); a committed synthetic
+safetensors fixture and offline demo; and documentation of the down-projection
+transpose and tolerance policy.
+
+### What was built
+
+- `selvedge-convert` with modules `safetensors`, `tensor_source`, `ffn`,
+  `convert`, `verify`, `synthetic`, `court_a` and `error`.
+- Safe safetensors reader: 8-byte LE header length, JSON header with duplicate-key
+  detection and `__metadata__`, F32/F16/BF16/I8/U8, typed rejection of every
+  other dtype, header and offset caps, overlap/byte-length/shape checks, f16 and
+  bf16 exact widening to f32, positional `read_at` reads, and no `unsafe` or
+  memory mapping.
+- Typed `FfnTensorMap { gate, up, down, orientation }`; `intermediate_first` and
+  `hidden_first`; deterministic contiguous groups (`size = ceil(I/n)`) and
+  explicit channel lists; disjointness/in-range/completeness validation.
+- Repacking: one shard per `(group, role)`. Gate/up are `[|G|, hidden]` row-major.
+  Down is a logical `[|G|, hidden]` shard with
+  `StorageOrder::Transposed { axes: [1, 0] }` and transform
+  `swiglu.down.transpose.v1`, so its physical bytes are the contiguous
+  `[hidden, |G|]` copy. Every extent is aligned, hashed and listed in `co_access`.
+- Streaming conversion through a spool file: one group at a time, an explicit
+  in-flight byte budget, checked arithmetic, no whole-matrix residency.
+- `selvedge convert`, `selvedge convert verify` and `selvedge court a`, all with
+  `--json`; `--plan` prints the shard plan without writing.
+- `tiny-swiglu.safetensors` (one layer, hidden 8, intermediate 10, seed
+  `0x5E1AED6E51E12026`), `tiny-swiglu` generation in `selvedge-fixtures`, and
+  `scripts/demo-offline.sh`.
+- `docs/SHARD-FORMAT.md` layout section and `docs/ARCHITECTURE.md` conversion
+  dataflow, memory rule and tolerance policy.
+
+### Hypotheses and results
+
+| hypothesis | result | evidence |
+| --- | --- | --- |
+| H0: the full group sum reconstructs the dense FFN in f32 within a stated bound. | Confirmed on the synthetic SwiGLU for 21 named scenarios; the measured maxima are printed below from the receipt. | Court A receipt `results/court-a/20261114T192745Z.json`; `court_a` tests. |
+| The decomposition survives group permutation, sizes 1/2/3/prime, non-divisible grouping and the empty subset. | Confirmed within the same measured bound. The empty subset is exactly `+0.0`; this is a mathematical zero, not a skip-quality proof. | Named scenarios `group_permutation_invariance`, `group_size_*`, `non_divisible_grouping`, `empty_subset_is_exact_zero`. |
+| Repacking is orientation-independent for column-major and explicitly transposed sources. | Confirmed for both storage orders. | Named scenarios `column_major_source`, `transposed_source`. |
+| The down shard can be a contiguous transposed copy without a gather-heavy fragment. | Confirmed by decoding the manifest-declared `transposed[1,0]` order and matching the source. | `swiglu.down.transpose.v1` shards; `shard_ids_and_hashes_match_manifest`. |
+| f16/bf16 sources preserve the same f32 arithmetic bound after exact widening. | Confirmed on the synthetic fixtures. | Named scenarios `f16_source`, `bf16_source`. |
+| Conversion is deterministic and memory-bounded. | Two identical runs produce byte-identical bundles and ids; a 128-byte ceiling succeeds with peak 128 bytes. | `determinism_same_bytes_and_ids`, `small_memory_ceiling`. |
+
+### Measured reconstruction (generated)
+
+Every value below is emitted from the Court A receipt by
+`scripts/perf_numbers.py`; it is not hand-written.
+
+- all-groups f32 maximum absolute error:
+<!-- BEGIN GENERATED: court-a-all-groups-max-abs-f32 -->
+9.336e-07
+<!-- END GENERATED: court-a-all-groups-max-abs-f32 -->
+- all-groups f32 maximum relative error:
+<!-- BEGIN GENERATED: court-a-all-groups-max-rel-f32 -->
+2.100e-05
+<!-- END GENERATED: court-a-all-groups-max-rel-f32 -->
+- all-groups f64 maximum absolute error:
+<!-- BEGIN GENERATED: court-a-all-groups-max-abs-f64 -->
+4.441e-16
+<!-- END GENERATED: court-a-all-groups-max-abs-f64 -->
+- all-groups f64 maximum relative error:
+<!-- BEGIN GENERATED: court-a-all-groups-max-rel-f64 -->
+1.760e-14
+<!-- END GENERATED: court-a-all-groups-max-rel-f64 -->
+- f16-source f32 maximum absolute error:
+<!-- BEGIN GENERATED: court-a-f16-max-abs-f32 -->
+2.696e-07
+<!-- END GENERATED: court-a-f16-max-abs-f32 -->
+- bf16-source f32 maximum absolute error:
+<!-- BEGIN GENERATED: court-a-bf16-max-abs-f32 -->
+2.141e-07
+<!-- END GENERATED: court-a-bf16-max-abs-f32 -->
+- acceptance absolute tolerance:
+<!-- BEGIN GENERATED: court-a-tolerance-abs -->
+1.0e-05
+<!-- END GENERATED: court-a-tolerance-abs -->
+- acceptance relative tolerance:
+<!-- BEGIN GENERATED: court-a-tolerance-rel -->
+1.0e-05
+<!-- END GENERATED: court-a-tolerance-rel -->
+- named scenarios:
+<!-- BEGIN GENERATED: court-a-scenario-count -->
+21
+<!-- END GENERATED: court-a-scenario-count -->
+- compared f32 components in the all-groups case:
+<!-- BEGIN GENERATED: court-a-compared-components -->
+176
+<!-- END GENERATED: court-a-compared-components -->
+- shards in the all-groups bundle:
+<!-- BEGIN GENERATED: court-a-shard-count -->
+12
+<!-- END GENERATED: court-a-shard-count -->
+- all-groups payload bytes:
+<!-- BEGIN GENERATED: court-a-payload-bytes -->
+6144
+<!-- END GENERATED: court-a-payload-bytes -->
+- peak in-flight bytes during the all-groups conversion:
+<!-- BEGIN GENERATED: court-a-peak-inflight-bytes -->
+96
+<!-- END GENERATED: court-a-peak-inflight-bytes -->
+
+The pass gate is elementwise `|a - b| <= abs_tol + rel_tol * |b|`. The printed
+maximum relative error can exceed `rel_tol` when an individual reference
+component is near zero; the absolute term is then the binding part. No bitwise
+equality is claimed, and the f64 path confirms the identity holds to f64
+rounding.
+
+### Verification performed (receipts, not prose)
+
+| what was verified | evidence |
+| --- | --- |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T192803Z-9a04be.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T192804Z-2bc9f5.json` |
+| `cargo test --workspace` (unit, safetensors hostile/proptest, decomposition, named Court A, CLI) | `results/courts/rust-20261114T192804Z-bfd748.json` |
+| `selvedge court a` | `results/courts/rust-20261114T192808Z-58ccc8.json`; report `results/court-a/20261114T192745Z.json` |
+| `scripts/demo-offline.sh` (generate, convert, validate, verify, court a) | `results/courts/rust-20261114T192809Z-d2af65.json`, `...192810Z-8813b1.json`, `...192811Z-490a12.json`, `...192811Z-80757b.json`, `...192812Z-d2c0de.json`; report `results/demo-offline/20261114T192809Z.json` |
+| Every commit carries the operator identity | `results/courts/commit_identity-20261114T192812Z-fe8b25.json` |
+| Generated numbers match their receipts | `results/courts/perf_numbers-20261114T192852Z-fd0571.json` (write), `...192857Z-ed9bc8.json` and `...192909Z-901902.json` (checks) |
+
+### Decisions and known limitations
+
+1. **The converter writes unquantized f32.** f16/bf16 sources are widened exactly
+   before the f32 reference math; quantization is not part of S2.
+2. **The down shard is logically transposed.** Its manifest shape is
+   `[|G|, hidden]` and its storage order is `transposed[1,0]`; the bytes are the
+   contiguous `[hidden, |G|]` copy. A reader must use the declared order, not the
+   shape alone.
+3. **Groups are disjoint but completeness is optional.** `--complete` enforces
+   exact coverage; without it a partial group set is recorded and the
+   compatibility id says `partial`. A partial bundle is not a full FFN
+   decomposition.
+4. **Orientation is a caller declaration.** Shape inspection cannot distinguish
+   `intermediate_first` from `hidden_first` when the two dimensions are swapped,
+   so the converter records the declared orientation and validates shapes
+   against it.
+5. **Tolerance is measured, not proved.** The acceptance constant lives in code;
+   the measured maxima and the constant itself are generated from the receipt.
+   The relative maximum can be large for near-zero reference components; the
+   gate includes the absolute term.
+6. **Court A is synthetic and CPU-only.** It proves algebra and byte handling,
+   not quality under group skipping. No real checkpoint has been converted yet.
+7. **The safetensors reader is not a fuzzer target.** Proptest covers arbitrary
+   bytes and random mutations offline; a checked-in `cargo-fuzz` target remains
+   future work.
+8. **GGUF is not implemented.** Packed block boundaries must not be sliced as
+   unquantized floats; that path is deliberately absent.
+
+### Next experiment
+
+S3 (oracle and selectors) can consume the group bundles and the measured Court A
+bound. It must not treat a passing full reconstruction as evidence that skipping
+groups preserves model quality; that requires the teacher divergence and
+counterfactual work in H1/Court B.

@@ -1,0 +1,133 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/selvedge convert verify --bundle results/artifacts/demo-20261114T192809Z/bundle/swiglu-2915edd4ccef-db0421ba987c.slv --model results/artifacts/demo-20261114T192809Z/model/tiny-swiglu.safetensors --json`
+{
+  "schema": "selvedge/verification-report/v1",
+  "ok": true,
+  "bundle": "results/artifacts/demo-20261114T192809Z/bundle/swiglu-2915edd4ccef-db0421ba987c.slv",
+  "model_digest": "2915edd4cceff674826e461d73ee3e9d1494ab2303fc93bbda62b485ec60c216",
+  "batch_sizes": [
+    1,
+    4,
+    17,
+    64
+  ],
+  "seed": 6780993248894099457,
+  "layers": [
+    {
+      "layer": 0,
+      "source_dtype": "f32",
+      "hidden": 8,
+      "intermediate": 10,
+      "groups": [
+        {
+          "group": 0,
+          "channels": "[0,1,2]",
+          "f32_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          },
+          "f64_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          }
+        },
+        {
+          "group": 1,
+          "channels": "[3,4,5]",
+          "f32_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          },
+          "f64_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          }
+        },
+        {
+          "group": 2,
+          "channels": "[6,7,8]",
+          "f32_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          },
+          "f64_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          }
+        },
+        {
+          "group": 3,
+          "channels": "[9]",
+          "f32_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          },
+          "f64_error": {
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "count": 688,
+            "tolerance_abs": 0.00001,
+            "tolerance_rel": 0.00001,
+            "passed": true
+          }
+        }
+      ],
+      "full_f32": {
+        "max_abs": 7.441238532024386e-7,
+        "max_rel": 0.00003786060483657776,
+        "mean_abs": 7.052743840450548e-8,
+        "count": 688,
+        "tolerance_abs": 0.00001,
+        "tolerance_rel": 0.00001,
+        "passed": true
+      },
+      "full_f64": {
+        "max_abs": 8.881784197001252e-16,
+        "max_rel": 2.606931891274667e-14,
+        "mean_abs": 5.575320566976621e-17,
+        "count": 688,
+        "tolerance_abs": 0.00001,
+        "tolerance_rel": 0.00001,
+        "passed": true
+      },
+      "passed": true
+    }
+  ],
+  "validated_shards": 12
+}
