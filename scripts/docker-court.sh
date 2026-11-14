@@ -263,7 +263,7 @@ else
   revision="unborn"
 fi
 worktree_dirty=false
-if [[ -n "$(git -C "$repo_root" status --porcelain 2>/dev/null || true)" ]]; then
+if [[ -n "$(git -C "$repo_root" status --porcelain -- . ':(exclude)results' ':(exclude)target' 2>/dev/null || true)" ]]; then
   worktree_dirty=true
 fi
 

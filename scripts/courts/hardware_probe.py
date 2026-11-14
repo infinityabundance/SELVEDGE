@@ -164,12 +164,20 @@ def probe_storage() -> dict:
         fstype = parts[2]
         if not source.startswith("/dev/"):
             continue
-        if target in seen:
+        # Inside the court the host's mount table appears under /hostroot. The
+        # container's own bind mounts appear unprefixed (e.g. /work, /cargo) and
+        # the host's docker overlay paths are court plumbing, not storage facts.
+        if not target.startswith(HOSTROOT + "/"):
             continue
-        seen.add(target)
-        entry = {"source": source, "target": target, "fstype": fstype}
+        host_target = target[len(HOSTROOT) :]
+        if "/docker/overlay2/" in host_target:
+            continue
+        if host_target in seen:
+            continue
+        seen.add(host_target)
+        entry = {"source": source, "target": host_target, "fstype": fstype}
         try:
-            stats = os.statvfs(host_path(target))
+            stats = os.statvfs(host_path(host_target))
             total = stats.f_blocks * stats.f_frsize
             free = stats.f_bavail * stats.f_frsize
             entry["total_bytes"] = total
@@ -179,6 +187,7 @@ def probe_storage() -> dict:
         except OSError:
             pass
         mounts.append(entry)
+    mounts.sort(key=lambda item: item["target"])
 
     return {
         "devices": devices,
