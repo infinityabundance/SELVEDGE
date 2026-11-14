@@ -481,3 +481,24 @@ fn helper_paths_exist() {
     let (_dir, bundle) = publish_fixture();
     assert_paths_exist(&[&bundle]);
 }
+
+#[test]
+fn inspect_model_rejects_a_missing_checkpoint_with_json() {
+    let output = run(&[
+        "inspect-model",
+        "/definitely/missing/selvedge-checkpoint",
+        "--json",
+    ]);
+    assert!(!output.status.success());
+    let report = stdout_json(&output);
+    assert_eq!(report["schema"], "selvedge/inspect-model-error/v1");
+    assert_eq!(report["ok"], false);
+}
+
+#[test]
+fn inspect_model_is_listed_in_help() {
+    let output = run(&["--help"]);
+    assert!(output.status.success());
+    let text = String::from_utf8_lossy(&output.stdout);
+    assert!(text.contains("inspect-model"));
+}

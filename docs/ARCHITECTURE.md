@@ -1,8 +1,10 @@
-# SELVEDGE architecture — foundation and conversion (S2)
+# SELVEDGE architecture — foundation, conversion and the real-model path (S2/S3a)
 
-Status: **implemented foundation plus exact SwiGLU conversion and Court A**.
-No model-quality or performance claim is made. Numbers that do appear about
-reconstruction come from a Court A receipt referenced in `docs/WORK-LOG.md`.
+Status: **implemented foundation, exact SwiGLU conversion, pinned oracle court,
+real-checkpoint accounting and real-activation parity**. No model-quality claim
+is made. Numbers about reconstruction, parameters and tolerances come from
+receipts referenced in `docs/WORK-LOG.md`, `docs/BUDGET-MATH.md` and
+`docs/MODELS.md`.
 
 ## Crate boundaries
 
@@ -422,7 +424,7 @@ the value later benchmark rows must carry.
 | GGUF | **not implemented** | later; packed block boundaries must not be sliced as floats |
 | teacher oracle, attribution, selectors | **partially implemented** | teacher oracle, accounting and real-activation parity exist; attribution and selectors do not |
 | execution traces, simulator, scheduler | **not implemented** | later |
-| real inference backend, CUDA kernels | **not implemented** | CUDA is not compiled in |
+| real inference backend, CUDA kernels | **not implemented** | the Rust build compiles no CUDA; the oracle image only uses the pinned CUDA torch for teacher instrumentation |
 | quality or latency measurements | **none** | no benchmark has been run |
 
 No claim of model quality, speed, memory savings or novelty is made in this
