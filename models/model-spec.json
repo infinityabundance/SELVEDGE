@@ -1,0 +1,48 @@
+{
+  "schema": "selvedge/model-spec/v1",
+  "note": "Pinned teacher candidates. Revisions are Hugging Face commit SHAs resolved from /api/models/<id>. Files are fetched verbatim; no file is generated or transformed. Weights live in the persistent HF cache and are never committed.",
+  "models": [
+    {
+      "id": "Qwen/Qwen3-0.6B",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "license": "Apache-2.0",
+      "role": "non-binding control: the full dense model is below the 1e9 unique-active ceiling",
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ]
+    },
+    {
+      "id": "Qwen/Qwen3-1.7B",
+      "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+      "license": "Apache-2.0",
+      "role": "ceiling-binding teacher: dense weights exceed 1e9 while the always-on backbone remains below it",
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+        "model.safetensors.index.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ]
+    }
+  ],
+  "reference_models_not_downloaded": [
+    {
+      "id": "Qwen/Qwen3-4B",
+      "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+      "license": "Apache-2.0",
+      "reason": "Accounting on the real configs shows its always-active backbone exceeds the 1e9 ceiling, so it cannot be a compliant teacher even with zero FFN groups. Downloading it would not answer a compliance question; see docs/BUDGET-MATH.md."
+    }
+  ]
+}

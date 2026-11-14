@@ -21,15 +21,21 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+pub mod accounting;
 pub mod convert;
 pub mod court_a;
 pub mod error;
 pub mod ffn;
+pub mod real_parity;
 pub mod safetensors;
 pub mod synthetic;
 pub mod tensor_source;
 pub mod verify;
 
+pub use accounting::{
+    AccountingOptions, BudgetReport, CategoryTotals, DEFAULT_ACTIVE_CEILING, DEFAULT_GROUP_COUNT,
+    ModelAccountingReport, ModelIdentity, TensorAccount, TieReport, account_model, category_totals,
+};
 pub use convert::{
     ConversionOptions, ConversionPlan, ConversionReport, LayerPlan, PlannedShard, ShardReport,
     TRANSFORM_DOWN, TRANSFORM_GATE, TRANSFORM_UP, convert, model_digest_for_path, plan_conversion,
@@ -40,6 +46,11 @@ pub use ffn::{
     DiscoveredFfn, FfnDims, FfnOrientation, FfnTensorMap, Group, GroupMatrices, GroupSpec,
     discover_ffn_maps, ffn_dense_f32, ffn_dense_f64, ffn_grouped_f32, ffn_grouped_f64,
     resolve_groups, validate_ffn_map,
+};
+pub use real_parity::{
+    BF16_PARITY_ABS, BF16_PARITY_REL, BF16_PARITY_SCALE, F32_PARITY_ABS, F32_PARITY_REL,
+    F32_PARITY_SCALE, LayerParity, ParityErrors, RealParityOptions, RealParityReport,
+    TOLERANCE_POLICY, verify_real_parity,
 };
 pub use safetensors::{
     CheckpointSource, HeaderIndex, MAX_HEADER_BYTES, MultiSafetensors, PositionalRead, Safetensors,

@@ -53,3 +53,20 @@ fi
 emit nproc "$(nproc 2>/dev/null || echo unknown)"
 emit kernel_release "$(uname -r 2>/dev/null || echo unknown)"
 emit machine "$(uname -m 2>/dev/null || echo unknown)"
+
+# Oracle-only toolchain facts. Absence is reported, never hidden.
+if command -v python3 >/dev/null 2>&1; then
+  oracle_versions=$(python3 - <<'PY' 2>/dev/null || true
+import importlib.util
+for name in ("torch", "transformers", "tokenizers", "safetensors", "numpy"):
+    if importlib.util.find_spec(name) is None:
+        print(f"{name}\tabsent")
+        continue
+    module = __import__(name)
+    print(f"{name}\t{getattr(module, '__version__', 'unknown')}")
+PY
+  )
+  if [ -n "$oracle_versions" ]; then
+    printf '%s\n' "$oracle_versions"
+  fi
+fi

@@ -5,6 +5,7 @@
 //! - `selvedge doctor [--json] [--probe-host]`: environment and schema probe;
 //!   exits non-zero on any failed check;
 //! - `selvedge inspect <bundle|manifest> [--json]`: read-only shard table;
+//! - `selvedge inspect-model <dir> [--json]`: exact parameter/FLOP accounting;
 //! - `selvedge format validate <bundle> [--json]`: full validator;
 //! - `selvedge court c|d`: executable Court C (budget accounting) and Court D
 //!   (storage integrity/crash) scenarios.
@@ -20,6 +21,7 @@ mod convert_cmd;
 mod court;
 mod doctor;
 mod inspect;
+mod inspect_model_cmd;
 mod validate_cmd;
 
 #[derive(Debug, Parser)]
@@ -45,6 +47,8 @@ enum Commands {
     Doctor(doctor::DoctorArgs),
     /// Print a shard table for a bundle or a bare manifest. Read-only.
     Inspect(inspect::InspectArgs),
+    /// Account the exact learned parameters and FLOPs of a real checkpoint.
+    InspectModel(inspect_model_cmd::InspectModelArgs),
     /// Versioned bundle format commands.
     Format(FormatArgs),
     /// Convert a safetensors SwiGLU checkpoint into repacked group bundles.
@@ -72,6 +76,7 @@ fn main() -> ExitCode {
     let result: CliResult = match cli.command {
         Commands::Doctor(args) => doctor::run(&args),
         Commands::Inspect(args) => inspect::run(&args),
+        Commands::InspectModel(args) => inspect_model_cmd::run(&args),
         Commands::Format(args) => match args.command {
             FormatCommand::Validate(args) => validate_cmd::run(&args),
         },

@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Build the SELVEDGE court images and update docker/IMAGES.lock.
 #
-#   scripts/build-courts.sh              # build both, rewrite the lock
-#   scripts/build-courts.sh rust         # build one, update only its lock entry
+#   scripts/build-courts.sh                      # build rust and python, rewrite the lock
+#   scripts/build-courts.sh rust                 # build one, update only its lock entry
 #   scripts/build-courts.sh python
+#   scripts/build-courts.sh oracle               # torch/transformers teacher image
+#
+# The oracle image is not part of the default build set: it is several
+# gigabytes and only the real-model path needs it.
 #
 # Tags are content-addressed: <date>-<base-tag>-<sha256(inputs)[:12]>, where the
 # inputs are the Dockerfile, the pinned requirements and the resolved base image
@@ -45,8 +49,8 @@ if ((${#targets[@]} == 0)); then
 fi
 for target in "${targets[@]}"; do
   case "$target" in
-    rust | python) ;;
-    *) die "unknown target '$target' (expected rust|python)" 64 ;;
+    rust | python | oracle) ;;
+    *) die "unknown target '$target' (expected rust|python|oracle)" 64 ;;
   esac
 done
 
@@ -65,8 +69,17 @@ build_one() {
       dockerfile="docker/Dockerfile.python-court"
       base_ref="${SELVEDGE_PYTHON_BASE:-python:3.12-slim}"
       ;;
+    oracle)
+      dockerfile="docker/Dockerfile.oracle"
+      # Digest-pinned by default: a tag alone is not a reproducible base.
+      base_ref="${SELVEDGE_ORACLE_BASE:-python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b}"
+      ;;
   esac
-  base_tag="${base_ref##*:}"
+  if [[ "$key" == "oracle" ]]; then
+    base_tag="3.12-slim-cu132"
+  else
+    base_tag="${base_ref##*:}"
+  fi
 
   printf 'build-courts: pulling base %s\n' "$base_ref" >&2
   docker pull --quiet "$base_ref" >/dev/null || die "cannot pull base image $base_ref"
@@ -76,7 +89,11 @@ build_one() {
   inputs_hash=$(
     {
       cat "$repo_root/$dockerfile"
-      [[ -f "$repo_root/docker/requirements-court.txt" ]] && cat "$repo_root/docker/requirements-court.txt"
+      if [[ "$key" == "oracle" ]]; then
+        [[ -f "$repo_root/docker/requirements-oracle.txt" ]] && cat "$repo_root/docker/requirements-oracle.txt"
+      else
+        [[ -f "$repo_root/docker/requirements-court.txt" ]] && cat "$repo_root/docker/requirements-court.txt"
+      fi
       printf '%s\n' "$base_digest"
     } | sha256sum | cut -c1-12
   ) || die "cannot hash build inputs"
@@ -84,6 +101,7 @@ build_one() {
   tag="selvedge/${key}-court:${date_tag}-${base_tag}-${inputs_hash}"
   local build_arg="RUST_BASE"
   [[ "$key" == "python" ]] && build_arg="PYTHON_BASE"
+  [[ "$key" == "oracle" ]] && build_arg="ORACLE_BASE"
   printf 'build-courts: building %s\n' "$tag" >&2
   docker build \
     --memory "$BUILD_MEM" \

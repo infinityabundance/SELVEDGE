@@ -8,6 +8,8 @@
 #   scripts/court rust -- cargo test -p selvedge-core
 #   scripts/court python scripts/perf_numbers.py --check
 #   scripts/court python -m pytest tests
+#   scripts/court --net oracle -- python3 scripts/oracle/fetch_models.py
+#   scripts/court --gpu oracle -- python3 oracle/probe_oracle.py --json
 #   scripts/court io -- fio --name=seq --filename=/work/target/io.bin ...
 #   scripts/court commit_identity
 #   scripts/court perf_numbers
@@ -83,6 +85,16 @@ case "$court" in
       exec "$court_runner" python "${flags[@]}" -- "$@"
     fi
     exec "$court_runner" python "${flags[@]}" -- python3 "$@"
+    ;;
+  oracle)
+    if (($# == 0)); then
+      exec "$court_runner" oracle "${flags[@]}"
+    fi
+    if [[ "$1" == "--" ]]; then
+      shift
+      exec "$court_runner" oracle "${flags[@]}" -- "$@"
+    fi
+    exec "$court_runner" oracle "${flags[@]}" -- python3 "$@"
     ;;
   io)
     if (($# == 0)); then

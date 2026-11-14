@@ -4,11 +4,16 @@
 # Usage:
 #   scripts/docker-court.sh <court> [flags] [-- argv...]
 #
-#   courts: rust | python | io | commit_identity | perf_numbers
+#   courts: rust | python | oracle | io | commit_identity | perf_numbers
 #   flags:  --net            enable network (default: --network none)
 #           --gpu            pass the NVIDIA GPU (fails closed if unavailable)
 #           --host-root-ro   expose the host root read-only at /hostroot
 #           --               everything after this is the container argv
+#
+# The `oracle` court mounts the persistent Hugging Face cache read-write at
+# /hf-cache and exports HF_HOME/HF_HUB_CACHE. The mount is recorded in every
+# receipt, together with the GPU mode. The court is offline unless --net is
+# passed, so model fetching is always an explicit, receipted step.
 #
 # Environment limits (all required to be non-empty, non-zero, well formed):
 #   SELVEDGE_MEM    memory limit, swap limit is forced equal   (default 8g)
@@ -45,7 +50,7 @@ usage() {
   cat <<'EOF'
 usage: scripts/docker-court.sh <court> [flags] [-- argv...]
 
-  courts : rust | python | io | commit_identity | perf_numbers
+  courts : rust | python | oracle | io | commit_identity | perf_numbers
            (or start with -- for a generic Python-court passthrough)
   flags  : --net            enable network (default: --network none)
            --gpu            pass the NVIDIA GPU (fails closed if unavailable)
@@ -115,8 +120,8 @@ else
 fi
 
 case "$court" in
-  rust | python | io | commit_identity | perf_numbers) ;;
-  *) die "unknown court '$court' (expected rust|python|io|commit_identity|perf_numbers, or -- <argv>)" 64 ;;
+  rust | python | oracle | io | commit_identity | perf_numbers) ;;
+  *) die "unknown court '$court' (expected rust|python|oracle|io|commit_identity|perf_numbers, or -- <argv>)" 64 ;;
 
 esac
 
@@ -197,6 +202,7 @@ lock_file="$repo_root/docker/IMAGES.lock"
 
 case "$court" in
   rust) image_key="rust" ;;
+  oracle) image_key="oracle" ;;
   *) image_key="python" ;;
 esac
 
@@ -235,6 +241,7 @@ if ((${#argv[@]} == 0)); then
   case "$court" in
     rust) argv=(cargo --version) ;;
     python) argv=(python3 --version) ;;
+    oracle) argv=(python3 /work/oracle/probe_oracle.py) ;;
     io) argv=(df -h /tmp) ;;
     commit_identity) argv=(scripts/check-commit-identity.sh) ;;
     perf_numbers) argv=(python3 scripts/perf_numbers.py --check) ;;
@@ -247,8 +254,9 @@ fi
 [[ -n "${HOME:-}" ]] || die "HOME is unset; cannot locate the persistent caches" 78
 cargo_cache="${SELVEDGE_CARGO_CACHE:-$HOME/.cache/selvedge/cargo}"
 pycache="${SELVEDGE_PYCACHE:-$HOME/.cache/selvedge/pycache}"
-mkdir -p "$cargo_cache/registry" "$cargo_cache/git" "$pycache/pip" "$pycache/pycache" "$repo_root/target" ||
-  die "cannot create cache directories under $cargo_cache / $pycache" 73
+hf_cache="${SELVEDGE_HF_CACHE:-$HOME/.cache/selvedge/hf}"
+mkdir -p "$cargo_cache/registry" "$cargo_cache/git" "$pycache/pip" "$pycache/pycache" "$hf_cache" "$repo_root/target" ||
+  die "cannot create cache directories under $cargo_cache / $pycache / $hf_cache" 73
 mkdir -p "$repo_root/results/courts/logs" "$repo_root/results/courts/.tmp" ||
   die "cannot create results/courts directories" 73
 
@@ -350,8 +358,21 @@ host_uid=$(id -u)
 host_gid=$(id -g)
 declare -a mounts=("$repo_root:/work" "$cargo_cache:/cargo" "$repo_root/target:/work/target")
 declare -a extra_mounts=()
+declare -a recorded_mounts=()
 if [[ "$court" == "python" || "$court" == "io" || "$court" == "perf_numbers" ]]; then
   mounts+=("$pycache:/pycache")
+fi
+if [[ "$court" == "oracle" ]]; then
+  # Persistent model cache, read-write. Recorded so a receipt always names the
+  # exact host path a teacher is read from.
+  mounts+=("$hf_cache:/hf-cache")
+  recorded_mounts+=("$hf_cache:/hf-cache")
+fi
+if [[ "$court" == "rust" ]]; then
+  # Rust accounting/conversion read real checkpoints from the same cache but
+  # never write to it. Read-only is enforced by the mount.
+  mounts+=("$hf_cache:/hf-cache:ro")
+  recorded_mounts+=("$hf_cache:/hf-cache:ro")
 fi
 if ((host_root_ro)); then
   mounts+=("/:/hostroot:ro")
@@ -363,6 +384,9 @@ declare -a receipt_mount_args=(
   --mount "$cargo_cache:/cargo"
   --mount "$repo_root/target:/work/target"
 )
+for mounted in "${recorded_mounts[@]}"; do
+  receipt_mount_args+=(--mount "$mounted")
+done
 for extra in "${extra_mounts[@]}"; do
   receipt_mount_args+=(--mount "$extra")
 done
@@ -403,7 +427,18 @@ declare -a common=(
   -e "PYTHONPYCACHEPREFIX=/pycache/pycache"
   -e "PIP_CACHE_DIR=/pycache/pip"
   -e "PYTHONDONTWRITEBYTECODE=1"
+  -e "HF_HOME=/hf-cache"
+  -e "HF_HUB_CACHE=/hf-cache/hub"
+  -e "TOKENIZERS_PARALLELISM=false"
+  -e "HF_HUB_DISABLE_TELEMETRY=1"
+  -e "HF_HUB_DISABLE_PROGRESS_BARS=1"
 )
+if ((net)); then
+  common+=(-e "HF_HUB_OFFLINE=0" -e "TRANSFORMERS_OFFLINE=0")
+else
+  common+=(-e "HF_HUB_OFFLINE=1" -e "TRANSFORMERS_OFFLINE=1")
+fi
+
 for mount in "${mounts[@]}"; do
   common+=(-v "$mount")
 done

@@ -50,10 +50,19 @@ pub(crate) struct CourtArgs {
 pub(crate) enum CourtCommand {
     /// Court A: exact SwiGLU decomposition and reconstruction from bundles.
     A,
+    /// Court A additions: grouped reconstruction on real teacher activations.
+    AReal(RealCourtArgs),
     /// Court C: learned-parameter budget accounting.
     C,
     /// Court D: storage integrity, atomic publication and crash behavior.
     D,
+}
+
+/// Arguments for the real-activation Court A additions.
+#[derive(Debug, Args)]
+pub(crate) struct RealCourtArgs {
+    #[command(flatten)]
+    pub(crate) parity: crate::convert_cmd::RealParityCliArgs,
 }
 
 #[derive(Debug, Serialize)]
@@ -77,13 +86,20 @@ struct CourtDReport {
 ///
 /// Propagates fixture generation, publication and serialization failures.
 pub(crate) fn run(args: &CourtArgs) -> CliResult {
-    match args.command {
+    match &args.command {
         CourtCommand::A => run_a(
             args.json,
             args.report_out.as_deref(),
             args.stamp.clone(),
             args.revision.clone(),
             args.seed,
+        ),
+        CourtCommand::AReal(real) => run_a_real(
+            real,
+            args.json,
+            args.report_out.as_deref(),
+            args.stamp.clone(),
+            args.revision.clone(),
         ),
         CourtCommand::C => run_c(args.json),
         CourtCommand::D => run_d(args.json, args.workdir.as_deref()),
@@ -131,6 +147,49 @@ fn run_a(
         println!("overall: {}", if report.passed { "pass" } else { "fail" });
     }
     Ok(if report.passed {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    })
+}
+
+fn run_a_real(
+    args: &RealCourtArgs,
+    json: bool,
+    report_out: Option<&Path>,
+    stamp: Option<String>,
+    revision: Option<String>,
+) -> CliResult {
+    let options = args.parity.options(stamp, revision);
+    let report = match selvedge_convert::verify_real_parity(
+        &args.parity.bundle,
+        &args.parity.model,
+        &args.parity.activations,
+        &options,
+    ) {
+        Ok(report) => report,
+        Err(error) => {
+            if json {
+                let failure = serde_json::json!({
+                    "schema": "selvedge/court-a-real-error/v1",
+                    "ok": false,
+                    "error": error.to_string(),
+                });
+                println!("{}", serde_json::to_string_pretty(&failure)?);
+                return Ok(ExitCode::FAILURE);
+            }
+            return Err(Box::new(error));
+        }
+    };
+    if let Some(path) = report_out {
+        crate::convert_cmd::write_report(path, &report)?;
+    }
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        crate::convert_cmd::print_real_parity(&report);
+    }
+    Ok(if report.ok {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE

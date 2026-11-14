@@ -1,0 +1,19 @@
+# Pinned Python dependencies for the SELVEDGE oracle court.
+#
+# The oracle court is offline at test time (--network none). Everything the
+# teacher instrumentation needs is installed here, and models are fetched into
+# the persistent cache by an explicit `--net` step (`scripts/fetch-models.sh`).
+# Never add an unpinned dependency: rebuild the image and let
+# docker/IMAGES.lock record the resulting image id.
+#
+# torch 2.15.0 is the PyPI unified CUDA 13.2 build (cuda-toolkit==13.2.2 and
+# the nvidia-* 13.x runtime wheels are pulled transitively). It is used only
+# when `--gpu` device passthrough is verified with a real CUDA tensor op; the
+# probe receipt records whether the GPU path actually ran.
+torch==2.15.0
+transformers==5.23.0
+tokenizers==0.23.3
+safetensors==0.8.0
+huggingface_hub==2.4.0
+numpy==2.5.4
+pytest==9.2.0

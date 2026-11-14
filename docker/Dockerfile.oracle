@@ -1,0 +1,50 @@
+# SELVEDGE oracle court.
+#
+# Research-only Python boundary: Hugging Face / PyTorch teacher instrumentation,
+# activation capture and (later) calibration. It never owns the shard format,
+# the accounting or the CLI; those stay in Rust.
+#
+# The base image is pinned by digest, not by tag. The digest is the one already
+# recorded for the Python court in docker/IMAGES.lock; scripts/build-courts.sh
+# re-resolves the digest before building and refuses to build from a tag alone.
+#
+# The image installs the exact pins from docker/requirements-oracle.txt and then
+# imports every library once, so a broken wheel fails at build time rather than
+# at test time. `trust_remote_code` is never enabled in any SELVEDGE script; the
+# image is not given a mechanism to opt in.
+ARG ORACLE_BASE=python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+FROM ${ORACLE_BASE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+COPY docker/requirements-oracle.txt /tmp/requirements-oracle.txt
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        jq \
+        procps \
+        util-linux \
+    && pip install --no-cache-dir --no-compile -r /tmp/requirements-oracle.txt \
+    && rm -f /tmp/requirements-oracle.txt \
+    && rm -rf /var/lib/apt/lists/*
+
+# Fail the build if the pinned stack does not import. The versions are printed
+# into the build log; the runtime probe writes them into a receipt.
+RUN python3 - <<'PY'
+import numpy, safetensors, tokenizers, torch, transformers
+print("torch", torch.__version__, "cuda_runtime", torch.version.cuda)
+print("transformers", transformers.__version__)
+print("tokenizers", tokenizers.__version__)
+print("safetensors", safetensors.__version__)
+print("numpy", numpy.__version__)
+PY
+
+ENV HF_HUB_DISABLE_TELEMETRY=1 \
+    HF_HUB_DISABLE_PROGRESS_BARS=1 \
+    TOKENIZERS_PARALLELISM=false \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /work

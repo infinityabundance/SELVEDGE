@@ -158,17 +158,17 @@ pub struct VerificationReport {
 }
 
 #[derive(Clone, Debug)]
-struct BundleGroup {
-    channels: Vec<u64>,
-    matrices: GroupMatrices,
+pub(crate) struct BundleGroup {
+    pub(crate) channels: Vec<u64>,
+    pub(crate) matrices: GroupMatrices,
 }
 
 #[derive(Clone, Debug)]
-struct BundleLayer {
-    layer: Option<u32>,
-    hidden: u64,
-    intermediate: u64,
-    groups: Vec<BundleGroup>,
+pub(crate) struct BundleLayer {
+    pub(crate) layer: Option<u32>,
+    pub(crate) hidden: u64,
+    pub(crate) intermediate: u64,
+    pub(crate) groups: Vec<BundleGroup>,
 }
 
 /// Verify a published bundle against the source checkpoint.
@@ -329,7 +329,7 @@ pub fn verify_bundle(
     })
 }
 
-fn match_layer(
+pub(crate) fn match_layer(
     discovered: &[DiscoveredFfn],
     layer: Option<u32>,
 ) -> Result<&crate::ffn::FfnTensorMap> {
@@ -352,7 +352,7 @@ fn descriptor_dtype(source: &impl TensorSource, key: &str) -> Result<String> {
     Ok(source.descriptor(key)?.dtype.stable_name())
 }
 
-fn load_bundle_layers(
+pub(crate) fn load_bundle_layers(
     bundle: &mut BundleFile,
     options: &VerificationOptions,
 ) -> Result<Vec<BundleLayer>> {
@@ -545,7 +545,7 @@ fn channels_key(channels: &ChannelSet) -> String {
     }
 }
 
-fn channels_text(channels: &[u64]) -> String {
+pub(crate) fn channels_text(channels: &[u64]) -> String {
     format!(
         "[{}]",
         channels

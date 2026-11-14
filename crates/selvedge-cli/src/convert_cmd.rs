@@ -25,6 +25,86 @@ pub(crate) struct ConvertArgs {
 pub(crate) enum ConvertCommand {
     /// Verify a bundle's groups against the source checkpoint.
     Verify(VerifyArgs),
+    /// Verify a bundle against real teacher activations, layer by layer.
+    VerifyReal(VerifyRealArgs),
+}
+
+/// Shared arguments for real-activation parity.
+#[derive(Clone, Debug, Args)]
+pub(crate) struct RealParityCliArgs {
+    /// Bundle to verify.
+    #[arg(long)]
+    pub(crate) bundle: PathBuf,
+    /// Source safetensors file or directory.
+    #[arg(long)]
+    pub(crate) model: PathBuf,
+    /// Activation safetensors file produced by oracle/capture_activations.py.
+    #[arg(long)]
+    pub(crate) activations: PathBuf,
+    /// Absolute tolerance for the f32 paths.
+    #[arg(long)]
+    pub(crate) f32_abs: Option<f64>,
+    /// Relative tolerance for the f32 paths.
+    #[arg(long)]
+    pub(crate) f32_rel: Option<f64>,
+    /// Absolute tolerance for the native bf16 path.
+    #[arg(long)]
+    pub(crate) bf16_abs: Option<f64>,
+    /// Relative tolerance for the native bf16 path.
+    #[arg(long)]
+    pub(crate) bf16_rel: Option<f64>,
+    /// Per-shard and per-tensor read cap in bytes.
+    #[arg(long)]
+    pub(crate) max_shard_bytes: Option<u64>,
+}
+
+impl RealParityCliArgs {
+    /// Build options, applying overrides.
+    pub(crate) fn options(
+        &self,
+        stamp: Option<String>,
+        revision: Option<String>,
+    ) -> selvedge_convert::RealParityOptions {
+        let mut options = selvedge_convert::RealParityOptions {
+            stamp,
+            revision,
+            ..selvedge_convert::RealParityOptions::default()
+        };
+        if let Some(value) = self.f32_abs {
+            options.f32_abs = value;
+        }
+        if let Some(value) = self.f32_rel {
+            options.f32_rel = value;
+        }
+        if let Some(value) = self.bf16_abs {
+            options.bf16_abs = value;
+        }
+        if let Some(value) = self.bf16_rel {
+            options.bf16_rel = value;
+        }
+        if let Some(value) = self.max_shard_bytes {
+            options.max_shard_bytes = value;
+        }
+        options
+    }
+}
+
+#[derive(Debug, Args)]
+pub(crate) struct VerifyRealArgs {
+    #[command(flatten)]
+    pub(crate) parity: RealParityCliArgs,
+    /// Emit machine-readable JSON.
+    #[arg(long)]
+    pub(crate) json: bool,
+    /// Write the report JSON to this path (receipt-shaped).
+    #[arg(long)]
+    pub(crate) report_out: Option<PathBuf>,
+    /// Receipt stamp recorded verbatim.
+    #[arg(long)]
+    pub(crate) stamp: Option<String>,
+    /// Git revision recorded verbatim.
+    #[arg(long)]
+    pub(crate) revision: Option<String>,
 }
 
 /// Tensor-map selection shared by convert and verify.
@@ -132,6 +212,7 @@ pub(crate) struct VerifyArgs {
 pub(crate) fn run(args: &ConvertArgs) -> CliResult {
     match &args.command {
         Some(ConvertCommand::Verify(verify)) => run_verify(verify),
+        Some(ConvertCommand::VerifyReal(verify)) => run_verify_real(verify),
         None => run_convert(&args.convert),
     }
 }
@@ -272,6 +353,104 @@ fn run_verify_inner(args: &VerifyArgs) -> CliResult {
     } else {
         ExitCode::FAILURE
     })
+}
+
+fn run_verify_real(args: &VerifyRealArgs) -> CliResult {
+    match run_verify_real_inner(args) {
+        Ok(code) => Ok(code),
+        Err(error) => {
+            if args.json {
+                print_json_error("selvedge/verify-real-error/v1", &*error);
+                Ok(ExitCode::FAILURE)
+            } else {
+                Err(error)
+            }
+        }
+    }
+}
+
+fn run_verify_real_inner(args: &VerifyRealArgs) -> CliResult {
+    let options = args
+        .parity
+        .options(args.stamp.clone(), args.revision.clone());
+    let report = selvedge_convert::verify_real_parity(
+        &args.parity.bundle,
+        &args.parity.model,
+        &args.parity.activations,
+        &options,
+    )?;
+    if let Some(path) = &args.report_out {
+        write_report(path, &report)?;
+    }
+    if args.json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        print_real_parity(&report);
+    }
+    Ok(if report.ok {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    })
+}
+
+/// Print a real-parity report in human form.
+pub(crate) fn print_real_parity(report: &selvedge_convert::RealParityReport) {
+    println!(
+        "bundle={} model={} activations={} ok={} layers={} rows={} validated_shards={}",
+        report.bundle,
+        report.model,
+        report.activations,
+        report.ok,
+        report.layers,
+        report.rows,
+        report.validated_shards,
+    );
+    println!(
+        "aggregate bundle_vs_dense f32 max_abs={:.6e} max_rel={:.6e} violations={}",
+        report.aggregate_bundle_vs_dense_f32.max_abs,
+        report.aggregate_bundle_vs_dense_f32.max_rel,
+        report.aggregate_bundle_vs_dense_f32.violations,
+    );
+    println!(
+        "aggregate dense_f32_vs_teacher_f32 max_abs={:.6e} max_rel={:.6e} violations={}",
+        report.aggregate_dense_f32_vs_teacher_f32.max_abs,
+        report.aggregate_dense_f32_vs_teacher_f32.max_rel,
+        report.aggregate_dense_f32_vs_teacher_f32.violations,
+    );
+    println!(
+        "aggregate grouped_f32_vs_teacher_f32 max_abs={:.6e} max_rel={:.6e} violations={}",
+        report.aggregate_grouped_f32_vs_teacher_f32.max_abs,
+        report.aggregate_grouped_f32_vs_teacher_f32.max_rel,
+        report.aggregate_grouped_f32_vs_teacher_f32.violations,
+    );
+    println!(
+        "aggregate grouped_bf16_emulated_vs_teacher_bf16 max_abs={:.6e} max_rel={:.6e} violations={}",
+        report
+            .aggregate_grouped_bf16_emulated_vs_teacher_bf16
+            .max_abs,
+        report
+            .aggregate_grouped_bf16_emulated_vs_teacher_bf16
+            .max_rel,
+        report
+            .aggregate_grouped_bf16_emulated_vs_teacher_bf16
+            .violations,
+    );
+    println!(
+        "aggregate grouped_f32_on_bf16_inputs_vs_teacher_bf16 (informational) max_abs={:.6e} violations={}",
+        report
+            .aggregate_grouped_f32_on_bf16_inputs_vs_teacher_bf16
+            .max_abs,
+        report
+            .aggregate_grouped_f32_on_bf16_inputs_vs_teacher_bf16
+            .violations,
+    );
+    for scenario in &report.scenarios {
+        println!(
+            "scenario {} passed={} {}",
+            scenario.name, scenario.passed, scenario.detail
+        );
+    }
 }
 
 fn discover(
