@@ -132,7 +132,6 @@ Per-layer selected subsets change almost every token at fine granularity:
 | oracle | adjacent equal | distinct subsets / layer | modal fraction | cross-window Jaccard | groups / token |
 | --- | ---: | ---: | ---: | ---: | --- |
 | oracle-local-64 | 0.0002 | 509.8 | 0.0031 | 0.2263 | 560-560 |
-| oracle-final-refine | nan | nan | nan | n/a | ?-? |
 | oracle-local-16-B142 | 0.0312 | 387.4 | 0.0439 | 0.2522 | 142-142 |
 | oracle-local-16-B140 | 0.0537 | 372.0 | 0.0693 | 0.2638 | 140-140 |
 | oracle-local-4 | 0.4224 | 5.0 | 0.4419 | 0.3566 | 35-35 |

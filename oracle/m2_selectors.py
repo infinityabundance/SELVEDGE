@@ -3355,7 +3355,9 @@ def command_analyze(args) -> int:
             stop = lines.index(cons_end)
             block = [cons_begin, "", "| oracle | adjacent equal | distinct subsets / layer | modal fraction | cross-window Jaccard | groups / token |", "| --- | ---: | ---: | ---: | ---: | --- |"]
             for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
-                consistency = row.get("consistency") or {}
+                consistency = row.get("consistency")
+                if not consistency:
+                    continue
                 groups = f"{consistency.get('per_token_groups_min', '?')}-{consistency.get('per_token_groups_max', '?')}"
                 cross = consistency.get("cross_window_jaccard_mean")
                 cross_text = f"{cross:.4f}" if isinstance(cross, (int, float)) else "n/a"
