@@ -3,10 +3,12 @@
 Status: **measured, negative result for the inference-only branch**. The M2
 contract was pre-registered before measurement
 (`docs/EXPERIMENT-CONTRACT.md`, M2 section, commit
-`a0b107adc23f23cbda43a09cbd6d229b0ea024a1`). The measurements cited here were
-produced from the clean code revision `1e623062379239a4bed3337ed2ed91d1a7f5411b`
-(the harness commit); every receipt names that revision and the
-pre-registration commit. The development run from the uncommitted worktree is
+`a0b107adc23f23cbda43a09cbd6d229b0ea024a1`). The measurement receipts cited here were
+produced from the clean harness revision `1e623062379239a4bed3337ed2ed91d1a7f5411b`;
+the fixtures and the analysis were regenerated from the reporting revision
+`362d2c7156feff66d55a04d84e2aff548c48e95f` after the table-generation code was
+committed. Every receipt names its revision and the pre-registration commit.
+The reporting revision does not touch any measured quantity. The development run from the uncommitted worktree is
 retained under `results/selectors/superseded-dirty-a0b107a/`; its aggregates
 are numerically identical to the clean run on every deterministic arm.
 

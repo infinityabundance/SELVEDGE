@@ -807,8 +807,11 @@ path. Either outcome is informative and should be pre-registered next.
 Revisions: `a0b107adc23f23cbda43a09cbd6d229b0ea024a1` (M2
 pre-registration, committed before measurement), `1e623062379239a4bed3337ed2ed91d1a7f5411b`
 (the selector harness, oracle search, Rust Atlas crate and Court B tests used
-for the clean measurements). The clean receipts name `1e62306`; the development
-run from the uncommitted worktree is retained under
+for the clean measurements), and `362d2c7156feff66d55a04d84e2aff548c48e95f`
+(the reporting revision that emits the generated tables; the fixtures and
+analysis were regenerated from it, without changing any measured quantity).
+The clean measurement receipts name `1e62306`; the development run from the
+uncommitted worktree is retained under
 `results/selectors/superseded-dirty-a0b107a/` and is numerically identical on
 every deterministic arm.
 
