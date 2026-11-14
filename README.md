@@ -92,8 +92,9 @@ Limit overrides are accepted only as valid non-zero values, e.g.
 
 ## Court interface for later work
 
-- **Rust builds and tests:** `scripts/court rust test`, `... build`, `... clippy`,
-  or `scripts/docker-court.sh rust -- cargo <args>`. The container runs as the
+- **Rust builds and tests:** `scripts/court rust test`, `... build`, `... fmt --all
+  --check`, `... clippy --workspace --all-targets -- -D warnings`, or
+  `scripts/docker-court.sh rust -- cargo <args>`. The container runs as the
   host user with `CARGO_HOME=/cargo` (persistent registry/git cache) and
   `CARGO_TARGET_DIR=/work/target` (persistent target dir). Network is disabled,
   and `CARGO_NET_OFFLINE=true` is set, so dependency resolution fails loudly
