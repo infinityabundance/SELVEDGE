@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------------
+# Local research inputs. These are program memory, not repository content.
+# AGENTS.md and research/ MUST NOT be committed.
+# ---------------------------------------------------------------------------
+/research/
+/AGENTS.md
+
+# ---------------------------------------------------------------------------
+# Build outputs and tool caches
+# ---------------------------------------------------------------------------
+/target/
+/.cache/
+/docker/.build/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+/oracle/.venv/
+/pycache/
+
+# ---------------------------------------------------------------------------
+# Results: receipts and logs are tracked evidence; large artifacts are not.
+# ---------------------------------------------------------------------------
+results/artifacts/
+results/**/*.bin
+results/**/*.gguf
+*.log.gz
+
+# ---------------------------------------------------------------------------
+# Model weights. Tiny generated fixtures may be committed.
+# ---------------------------------------------------------------------------
+*.safetensors
+*.gguf
+*.pt
+*.pth
+!fixtures/**/*.safetensors
+!fixtures/**/*.gguf
+
+# ---------------------------------------------------------------------------
+# Editor / OS / local junk
+# ---------------------------------------------------------------------------
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
