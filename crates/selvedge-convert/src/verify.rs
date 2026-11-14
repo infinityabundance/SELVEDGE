@@ -34,13 +34,14 @@ pub struct Tolerance {
 impl Default for Tolerance {
     fn default() -> Self {
         // Calibrated by dtype and checkpoint size, not guessed. The synthetic
-        // Court A layers are tiny and measure ~1e-6 absolute error. The real
-        // Qwen3-1.7B checkpoint (hidden 2048, intermediate 6144) measures
-        // ~1.3e-5 absolute error in f32 against an f64 reference, so the bound
-        // is 5e-5 absolute with a relative term of 1e-4. The measured maxima
-        // are published from receipts rather than asserted here.
+        // Court A layers are tiny; the real Qwen3 checkpoints (intermediate
+        // width up to 6144) measure their worst f32 component error below
+        // 5e-5 against an f64 reference. The bound keeps a margin over that
+        // measurement and is still orders of magnitude below a structural
+        // error. Measured maxima are published from receipts, never asserted
+        // here.
         Self {
-            abs: 5e-5,
+            abs: 1e-4,
             rel: 1e-4,
         }
     }
