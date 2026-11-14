@@ -230,6 +230,19 @@ resamples, seed `20261114`.
 
 The plot is `results/frontier/frontier.svg`, generated from the same JSON.
 
+## Cost of the intervention
+
+Every arm's receipt records the realized group mask, the active parameter
+count, the derived FFN matmul FLOPs per token (`6 * active_intermediate *
+hidden` per layer), and CUDA-event forward seconds with the forward count. The
+mask application is included in the timed region. These are cost observations
+for this Python harness, not a latency benchmark: there is no warm/cold
+control, no interleaved schedule, no concurrency and no hardware-counter FLOP
+measurement. They are in `frontier.json` under `arms[].timing` and
+`arms[].active`, and in the raw sweep receipts. The greedy receipts also record
+the selection cost and every candidate evaluation, because the offline oracle
+is not deployable and its cost must not be confused with a runtime cost.
+
 ## Verdict against the registered threshold
 
 **H1 is rejected.** The best compliant arm on the primary held-out domain is
