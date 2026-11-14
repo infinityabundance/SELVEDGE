@@ -39,7 +39,11 @@ Hardware and toolchain facts are collected by `scripts/probe-hardware.sh`
 through the courts and pinned by stamp and revision in
 `results/hardware/probe-20261114T184849Z.json`; the subset intended for
 quotation is rendered into `docs/PERF-NUMBERS.md` from that receipt. Both are
-regenerable and neither is edited by hand.
+regenerable and neither is edited by hand. Rebuilding the manifest after a
+re-probe is `python3 scripts/courts/build_manifest_from_probe.py --probe <receipt>`
+followed by `scripts/court perf_numbers --write`. Earlier probe files in the
+same directory are retained as history; this log and the manifest name the
+current one.
 
 Probe evidence chain (all receipts are under `results/courts/`):
 
