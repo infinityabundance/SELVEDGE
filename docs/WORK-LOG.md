@@ -434,9 +434,11 @@ counterfactual work in H1/Court B.
 ## 2026-11-14 — S3a: oracle court, real checkpoints, exact accounting, real-activation parity
 
 Revision: `a67671aecf9296a41528cd6a842437d6e3c629dd` for the real-activation
-receipts, `d9bb4ce17c699a8df22c204e890f59c6b970bc35` for the accounting, model
-fetch and oracle-probe receipts. Both are real commits; every receipt names its
-own revision and stamp. No quality or timing number is claimed.
+and real-checkpoint verification receipts, `d9bb4ce17c699a8df22c204e890f59c6b970bc35`
+for the accounting, model-fetch and oracle-probe receipts, `9bccaffe8b4f3e11113e0c389d8fb3418ab779a4`
+for the 0.6B conversion receipt, and `8b94ad5b...` for the final lint/test
+receipts. All are real commits; every receipt names its own revision and stamp.
+No quality or timing number is claimed.
 
 ### Plan
 
