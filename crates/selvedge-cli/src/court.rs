@@ -10,6 +10,7 @@ use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use clap::{Args, Subcommand};
+use selvedge_convert::court_a::run_court_a_with_provenance;
 use selvedge_core::courts::run_budget_court;
 use selvedge_core::testutil::TempDir;
 use selvedge_fixtures::tiny_bundle;
@@ -31,10 +32,24 @@ pub(crate) struct CourtArgs {
     /// Keep Court D artifacts in this directory instead of a temporary one.
     #[arg(long, global = true)]
     pub(crate) workdir: Option<PathBuf>,
+    /// Write the Court A report JSON to this path.
+    #[arg(long, global = true)]
+    pub(crate) report_out: Option<PathBuf>,
+    /// Receipt stamp recorded in the Court A report.
+    #[arg(long, global = true)]
+    pub(crate) stamp: Option<String>,
+    /// Git revision recorded in the Court A report.
+    #[arg(long, global = true)]
+    pub(crate) revision: Option<String>,
+    /// Court A seed.
+    #[arg(long, global = true)]
+    pub(crate) seed: Option<u64>,
 }
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum CourtCommand {
+    /// Court A: exact SwiGLU decomposition and reconstruction from bundles.
+    A,
     /// Court C: learned-parameter budget accounting.
     C,
     /// Court D: storage integrity, atomic publication and crash behavior.
@@ -63,9 +78,49 @@ struct CourtDReport {
 /// Propagates fixture generation, publication and serialization failures.
 pub(crate) fn run(args: &CourtArgs) -> CliResult {
     match args.command {
+        CourtCommand::A => run_a(
+            args.json,
+            args.report_out.as_deref(),
+            args.stamp.clone(),
+            args.revision.clone(),
+            args.seed,
+        ),
         CourtCommand::C => run_c(args.json),
         CourtCommand::D => run_d(args.json, args.workdir.as_deref()),
     }
+}
+
+fn run_a(
+    json: bool,
+    report_out: Option<&Path>,
+    stamp: Option<String>,
+    revision: Option<String>,
+    seed: Option<u64>,
+) -> CliResult {
+    let seed = seed.unwrap_or(selvedge_convert::SYNTHETIC_SEED);
+    let report = run_court_a_with_provenance(seed, stamp, revision)?;
+    if let Some(path) = report_out {
+        crate::convert_cmd::write_report(path, &report)?;
+    }
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        println!("selvedge court a — SwiGLU decomposition and reconstruction");
+        for scenario in &report.scenarios {
+            let label = if scenario.passed { "PASS" } else { "FAIL" };
+            println!("{} {}: {}", label, scenario.name, scenario.detail);
+        }
+        println!(
+            "tolerance abs={:.3e} rel={:.3e}; scenarios={}",
+            report.tolerance_abs, report.tolerance_rel, report.scenario_count
+        );
+        println!("overall: {}", if report.passed { "pass" } else { "fail" });
+    }
+    Ok(if report.passed {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    })
 }
 
 fn run_c(json: bool) -> CliResult {

@@ -16,6 +16,7 @@ use std::process::ExitCode;
 use clap::{Args, Parser, Subcommand};
 
 mod config;
+mod convert_cmd;
 mod court;
 mod doctor;
 mod inspect;
@@ -36,6 +37,9 @@ struct Cli {
 }
 
 #[derive(Debug, Subcommand)]
+// The CLI variant carries all conversion options by value; boxing it would only
+// move the allocation without changing argument handling.
+#[allow(clippy::large_enum_variant)]
 enum Commands {
     /// Probe the environment, config, schema versions and toolchain identity.
     Doctor(doctor::DoctorArgs),
@@ -43,6 +47,8 @@ enum Commands {
     Inspect(inspect::InspectArgs),
     /// Versioned bundle format commands.
     Format(FormatArgs),
+    /// Convert a safetensors SwiGLU checkpoint into repacked group bundles.
+    Convert(convert_cmd::ConvertArgs),
     /// Run the executable verification courts.
     Court(court::CourtArgs),
 }
@@ -69,6 +75,7 @@ fn main() -> ExitCode {
         Commands::Format(args) => match args.command {
             FormatCommand::Validate(args) => validate_cmd::run(&args),
         },
+        Commands::Convert(args) => convert_cmd::run(&args),
         Commands::Court(args) => court::run(&args),
     };
     match result {

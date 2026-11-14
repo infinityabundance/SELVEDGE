@@ -129,6 +129,75 @@ ledger.
 The fixture's `i4_packed` and `ternary_packed` naming follows the core dtype
 rules: 4 bits and 2 bits per logical element respectively, block-aligned.
 
+## SwiGLU group decomposition and repacking (S2 converter policy)
+
+This section is the converter's normative layout policy. It does not change the
+container format above; it defines how `selvedge-convert` fills v1 shards for a
+SwiGLU FFN.
+
+### Source orientation
+
+The converter maps an operation's roles to checkpoint names through a typed
+`FfnTensorMap { gate, up, down, orientation }`. The default orientation is
+`intermediate_first`, the Qwen3/OLMoE-style `nn.Linear` layout:
+
+```text
+ gate.weight : [intermediate, hidden]
+ up.weight   : [intermediate, hidden]
+ down.weight : [hidden, intermediate]
+```
+
+`hidden_first` is also supported and declares the transposed shapes. Shape
+inspection alone cannot disambiguate the two orientations, so the orientation is
+an explicit caller declaration and is never inferred from a shape.
+
+### Groups
+
+Let `G_1..G_m` be pairwise-disjoint, non-empty subsets of `0..intermediate`.
+`--complete` additionally requires their union to be exactly `0..intermediate`.
+Group order is the order supplied by the caller. `--groups <n>` uses contiguous
+groups with `size = ceil(intermediate / n)` and a possibly smaller final group;
+explicit lists (`0-3,5;6-9`) are used verbatim after sorting and duplicate
+checks. The manifest records each group as a `ChannelSet` on `channel_axis = 0`.
+
+### Repacked extents
+
+Every group emits exactly three shards:
+
+| role | logical shape | storage order | transform id | physical bytes |
+| --- | --- | --- | --- | --- |
+| `mlp.gate` | `[|G|, hidden]` | `row_major` | `swiglu.gate.rowmajor.v1` | `|G|` rows of `hidden` f32 values |
+| `mlp.up` | `[|G|, hidden]` | `row_major` | `swiglu.up.rowmajor.v1` | `|G|` rows of `hidden` f32 values |
+| `mlp.down` | `[|G|, hidden]` | `transposed[1,0]` | `swiglu.down.transpose.v1` | `hidden` rows of `|G|` contiguous f32 values |
+
+The down shard is the explicitly transposed contiguous copy of
+`down[:, G]`. Its identity says the logical shape is `[|G|, hidden]` and the
+physical axis order is `[1, 0]`, so the bytes are checkable without a gather at
+inference time. Gate, up and down rows/columns that belong to a group are copied
+from the source into one contiguous extent; non-contiguous explicit channel
+lists are materialized in ascending channel order.
+
+Each extent starts at the bundle alignment and has exactly
+`|G| * hidden * 4` bytes, because the converter writes unquantized f32 (the
+`QuantizationSpec` is `None`). Shards of the same `(layer, group)` list each
+other in `co_access`; no `depends_on` edge is implied. The compatibility id is
+`swiglu-f32-complete-v1` or `swiglu-f32-partial-v1`, so a reader can tell
+whether the group set is a full decomposition. Calibration provenance is absent:
+no calibration set is used.
+
+### Exactness
+
+In real arithmetic,
+
+```text
+FFN(x) = sum_g down[:, G_g] ( silu(gate[G_g, :] x) * (up[G_g, :] x) )
+```
+
+when the groups cover `0..intermediate`. The container proves that the bytes are
+the bytes the manifest describes; it does not by itself prove this algebra. That
+is Court A's job (`selvedge court a`, `selvedge convert verify`), and it reports
+measured f32 and f64 errors instead of claiming bitwise equality.
+
 ## Shard identity
 
 `ShardId` is a SHA-256 digest over this canonical encoding, in the domain

@@ -12,7 +12,9 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use selvedge_fixtures::{FIXTURE_BUNDLE_ID, tiny_bundle};
+use selvedge_fixtures::{
+    FIXTURE_BUNDLE_ID, FIXTURE_SAFETENSORS_ID, tiny_bundle, tiny_swiglu_safetensors,
+};
 use selvedge_format::sidecar::hash_file;
 use selvedge_format::{FormatError, WriteOptions, publish_bundle, validate_sidecar};
 
@@ -92,11 +94,16 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let fixture = tiny_bundle()?;
     let encoded = fixture.encoded()?;
     let expected_sha256 = selvedge_core::Sha256Digest::of(&encoded);
+    let swiglu_bytes = tiny_swiglu_safetensors()?;
+    let swiglu_sha256 = selvedge_core::Sha256Digest::of(&swiglu_bytes);
     std::fs::create_dir_all(&options.out_dir)?;
     let bundle_path = options.out_dir.join(format!("{FIXTURE_BUNDLE_ID}.slv"));
     let sidecar_path = options
         .out_dir
         .join(format!("{FIXTURE_BUNDLE_ID}.manifest.json"));
+    let safetensors_path = options
+        .out_dir
+        .join(format!("{FIXTURE_SAFETENSORS_ID}.safetensors"));
     let sums_path = options.out_dir.join("SHA256SUMS");
 
     if options.check {
@@ -107,36 +114,60 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 "committed fixture bytes differ from the generator; run without --check to regenerate",
             ));
         }
+        let committed_swiglu = std::fs::read(&safetensors_path).map_err(|err| {
+            usage_error(format!("cannot read {}: {err}", safetensors_path.display()))
+        })?;
+        if committed_swiglu != swiglu_bytes {
+            return Err(usage_error(
+                "committed SwiGLU checkpoint differs from the generator; run without --check to regenerate",
+            ));
+        }
         validate_sidecar(&bundle_path, &sidecar_path)?;
         println!(
-            "check bundle={} sha256={} shards={} payload_bytes={}",
+            "check bundle={} sha256={} shards={} payload_bytes={} swiglu={} swiglu_sha256={} swiglu_bytes={}",
             bundle_path.display(),
             expected_sha256.to_hex(),
             fixture.manifest.shards.len(),
-            fixture.manifest.payload_len
+            fixture.manifest.payload_len,
+            safetensors_path.display(),
+            swiglu_sha256.to_hex(),
+            swiglu_bytes.len()
         );
         return Ok(());
     }
 
     let existing = std::fs::read(&bundle_path).ok();
-    if let Some(existing) = &existing {
-        if existing == &encoded {
-            validate_sidecar(&bundle_path, &sidecar_path)?;
-            write_sums(&sums_path, &[&bundle_path, &sidecar_path])?;
-            println!(
-                "unchanged bundle={} sha256={} shards={} payload_bytes={}",
-                bundle_path.display(),
-                expected_sha256.to_hex(),
-                fixture.manifest.shards.len(),
-                fixture.manifest.payload_len
-            );
-            return Ok(());
-        }
-        if !options.force {
-            return Err(usage_error(
-                "existing fixture differs from the generator; pass --force to replace it",
-            ));
-        }
+    let existing_swiglu = std::fs::read(&safetensors_path).ok();
+    let unchanged = existing.as_ref().is_some_and(|bytes| bytes == &encoded)
+        && existing_swiglu
+            .as_ref()
+            .is_some_and(|bytes| bytes == &swiglu_bytes);
+    if unchanged {
+        validate_sidecar(&bundle_path, &sidecar_path)?;
+        write_sums(
+            &sums_path,
+            &[&bundle_path, &sidecar_path, &safetensors_path],
+        )?;
+        println!(
+            "unchanged bundle={} sha256={} shards={} payload_bytes={} swiglu={} swiglu_sha256={} swiglu_bytes={}",
+            bundle_path.display(),
+            expected_sha256.to_hex(),
+            fixture.manifest.shards.len(),
+            fixture.manifest.payload_len,
+            safetensors_path.display(),
+            swiglu_sha256.to_hex(),
+            swiglu_bytes.len()
+        );
+        return Ok(());
+    }
+    let bundle_changed = existing.as_ref().is_some_and(|bytes| bytes != &encoded);
+    let swiglu_changed = existing_swiglu
+        .as_ref()
+        .is_some_and(|bytes| bytes != &swiglu_bytes);
+    if (bundle_changed || swiglu_changed) && !options.force {
+        return Err(usage_error(
+            "existing fixture differs from the generator; pass --force to replace it",
+        ));
     }
 
     let options_write = WriteOptions {
@@ -151,17 +182,25 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &fixture.payload,
         &options_write,
     )?;
+    std::fs::write(&safetensors_path, &swiglu_bytes)?;
     write_sums(
         &sums_path,
-        &[published.path.as_path(), sidecar_path.as_path()],
+        &[
+            published.path.as_path(),
+            sidecar_path.as_path(),
+            safetensors_path.as_path(),
+        ],
     )?;
     println!(
-        "wrote bundle={} sha256={} shards={} payload_bytes={} sidecar={}",
+        "wrote bundle={} sha256={} shards={} payload_bytes={} sidecar={} swiglu={} swiglu_sha256={} swiglu_bytes={}",
         published.path.display(),
         published.bundle_sha256.to_hex(),
         fixture.manifest.shards.len(),
         fixture.manifest.payload_len,
-        sidecar_path.display()
+        sidecar_path.display(),
+        safetensors_path.display(),
+        swiglu_sha256.to_hex(),
+        swiglu_bytes.len()
     );
     Ok(())
 }

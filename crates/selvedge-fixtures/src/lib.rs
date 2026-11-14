@@ -27,6 +27,8 @@ use selvedge_format::{
 
 /// Fixture bundle id.
 pub const FIXTURE_BUNDLE_ID: &str = "tiny-synthetic";
+/// File stem of the committed synthetic SwiGLU checkpoint.
+pub const FIXTURE_SAFETENSORS_ID: &str = "tiny-swiglu";
 
 /// Fixture alignment. Smaller than the 4096 default so the committed artifact
 /// stays far below the 100 KiB budget; this is a fixture choice, not a claim
@@ -529,6 +531,42 @@ pub fn publish_tiny_bundle(dir: &Path, force: bool) -> Result<PublishedBundle, F
 /// Rejects overflow.
 pub fn aligned(value: u64) -> Result<u64, FormatError> {
     Ok(align_up(value, FIXTURE_ALIGNMENT)?)
+}
+
+/// Build the deterministic synthetic SwiGLU checkpoint used by the converter
+/// fixture and the offline demo.
+///
+/// # Errors
+///
+/// Propagates generator failures.
+pub fn tiny_swiglu_model()
+-> Result<selvedge_convert::SyntheticModel, selvedge_convert::ConvertError> {
+    selvedge_convert::swiglu_model(
+        selvedge_convert::SYNTHETIC_HIDDEN,
+        selvedge_convert::SYNTHETIC_INTERMEDIATE,
+        selvedge_convert::SYNTHETIC_SEED,
+    )
+}
+
+/// Encode the deterministic synthetic SwiGLU checkpoint as safetensors bytes.
+///
+/// # Errors
+///
+/// Propagates generation and encoding failures.
+pub fn tiny_swiglu_safetensors() -> Result<Vec<u8>, selvedge_convert::ConvertError> {
+    let model = tiny_swiglu_model()?;
+    selvedge_convert::encode_safetensors(&model, selvedge_convert::SyntheticDType::F32)
+}
+
+/// Write the deterministic synthetic SwiGLU checkpoint.
+///
+/// # Errors
+///
+/// Propagates generation, encoding and filesystem failures.
+pub fn write_tiny_swiglu_safetensors(path: &Path) -> Result<(), selvedge_convert::ConvertError> {
+    let bytes = tiny_swiglu_safetensors()?;
+    std::fs::write(path, bytes)?;
+    Ok(())
 }
 
 #[cfg(test)]

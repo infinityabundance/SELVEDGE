@@ -1,8 +1,8 @@
-# SELVEDGE architecture — foundation increment (S1)
+# SELVEDGE architecture — foundation and conversion (S2)
 
-Status: **implemented foundation, no model and no measured performance**.
-This document describes the crates that exist, the contracts they enforce, and
-what is deliberately not built yet. Nothing here is a benchmark result.
+Status: **implemented foundation plus exact SwiGLU conversion and Court A**.
+No model-quality or performance claim is made. Numbers that do appear about
+reconstruction come from a Court A receipt referenced in `docs/WORK-LOG.md`.
 
 ## Crate boundaries
 
@@ -10,27 +10,34 @@ what is deliberately not built yet. Nothing here is a benchmark result.
 flowchart TD
     core[selvedge-core<br/>IDs, tensors, ledger, config]
     format[selvedge-format<br/>manifest, validator, publisher]
+    convert[selvedge-convert<br/>safetensors, SwiGLU groups, Court A]
     fixtures[selvedge-fixtures<br/>deterministic synthetic bundle]
-    cli[selvedge-cli<br/>doctor, inspect, validate, courts]
+    cli[selvedge-cli<br/>doctor, inspect, convert, validate, courts]
 
     core --> format
+    core --> convert
+    format --> convert
     core --> fixtures
     format --> fixtures
+    convert --> fixtures
     core --> cli
     format --> cli
+    convert --> cli
     fixtures --> cli
 ```
 
 `selvedge-core` has no dependency on the filesystem format, the CLI or a model
 backend. `selvedge-format` depends only on `selvedge-core` plus serde, serde_json
-and thiserror. `selvedge-fixtures` uses both to produce a tracked artifact.
+and thiserror. `selvedge-convert` depends on core and format; it owns the
+safetensors reader, the SwiGLU grouping math and the reconstruction verifier.
+`selvedge-fixtures` uses core, format and convert to produce tracked artifacts.
 `selvedge-cli` is the only crate that reads command-line arguments and spawns
 processes (`df` in `doctor`).
 
 Later phases slot in on the right:
 
 ```text
-selvedge-convert  -> produces Manifest + payload (S2)
+selvedge-convert  -> produces Manifest + payload (S2, implemented)
 selvedge-atlas    -> consumes SelectionDecision / produces selectors (S3)
 selvedge-store    -> implements CostModel / Backend / residency (S4+)
 selvedge-sim      -> replays ExecutionTrace against CostModel (S4+)
@@ -137,6 +144,73 @@ encoder and validator, so toy courts do not bypass integrity checks.
 Full byte layout, versioning, alignment rules and the untrusted-artifact threat
 model are in `docs/SHARD-FORMAT.md`.
 
+## Conversion dataflow (S2)
+
+```mermaid
+flowchart TD
+    ckpt[safetensors file or directory] --> reader[safe positional reader<br/>header caps, dtype gate, extent checks]
+    reader --> map[FfnTensorMap<br/>gate/up/down + orientation]
+    map --> groups[deterministic groups<br/>contiguous or explicit]
+    groups --> plan[ConversionPlan<br/>one extent per group/role]
+    plan -->|--plan| report[shard plan JSON]
+    plan --> stream[one group at a time<br/>gate, up, down]
+    stream --> spool[spool file<br/>per-extent SHA-256]
+    spool --> manifest[Manifest v1<br/>aligned offsets, ids, links]
+    manifest --> publish[atomic writer<br/>validate temp, link/rename]
+    publish --> bundle[(bundle)]
+    bundle --> validate[format validate --verify all]
+    validate --> reconstruct[Court A / convert verify<br/>f32 and f64 error table]
+```
+
+The reader streams from the checkpoint with
+`std::os::unix::fs::FileExt::read_at`, never maps the file and never performs an
+unchecked cast. It supports f32, f16, bf16, i8 and u8 and rejects every other
+dtype, including packed four-bit types, with a typed error. Header length is
+capped at 64 MiB and checked against the physical file before allocation;
+offsets, overlaps, shapes, byte lengths, duplicate keys and UTF-8 are all
+validated before a read. f16 and bf16 widen exactly to f32; the conversion writes
+unquantized f32 shards.
+
+### Memory-bounding rule
+
+The converter reads exactly one group's gate, up or down region at a time. Before
+it allocates a region it reserves that region's byte count in an in-flight
+budget (`--max-inflight-bytes`, defaulting to the configured resident cap); the
+reservation is released after the extent has been written to the spool. The
+spool file holds the payload on disk, so no whole checkpoint, matrix or bundle is
+held in memory. An explicit channel list pays one extra temporary row/column
+reservation, which is also counted. Exceeding the budget returns
+`MemoryBudgetExceeded`; it never falls back to a larger allocation.
+
+### Exactness and tolerance policy
+
+The grouped identity is exact in real arithmetic when the groups cover the
+intermediate channels. The implementation measures error instead of claiming
+bitwise equality:
+
+- the dense reference computes in both f32 and f64 with a fixed reduction order;
+- the grouped path iterates groups in bundle order and channels ascending inside
+  each group, with no Kahan compensation;
+- f32 and f64 group contributions are compared separately against the source
+  restricted to the same channels;
+- a component passes when `|a - b| <= abs_tol + rel_tol * |b|`; the report also
+  prints the maximum absolute and relative errors, the mean absolute error and
+  the component count;
+- the default bound is a compile-time constant in `selvedge-convert`; the
+  measured maxima and the bound itself are published from a Court A receipt in
+  `docs/WORK-LOG.md`, never hand-written;
+- f16 and bf16 sources are decoded exactly and then computed in f32, so the same
+  bound applies; the report records the source dtype;
+- the empty group set is mathematically zero and is tested as exactly `+0.0`;
+  that is not a proof that skipping a group preserves model quality.
+
+Court A also checks group permutations, single-group span, sizes 1/2/3/prime,
+non-divisible grouping, `intermediate=1`, `hidden=1`, flattened input shapes
+`[1,1]`, `[4,17]`, `[2,3,5]`, column-major and transposed sources, 20 seeds,
+byte-and-id determinism, per-shard id/hash recomputation, full-hash validation,
+and reconstruction from bundle bytes rather than from in-memory conversion
+state.
+
 ## Configuration
 
 `Config` is deserialized from TOML with unknown fields rejected. It carries:
@@ -166,9 +240,11 @@ the value later benchmark rows must carry.
 | `selvedge doctor` | implemented | host probes only under `--probe-host`; CUDA reported absent |
 | `selvedge inspect` | implemented | bundle or bare manifest, read-only |
 | `selvedge format validate` | implemented | all/selected/structural modes |
+| `selvedge convert` | implemented | safetensors f32/f16/bf16, groups, plan, atomic publication |
+| `selvedge convert verify` / `selvedge court a` | implemented | on-disk reconstruction, measured f32/f64 error |
 | executable Courts C and D | implemented | named scenarios plus integration tests |
-| synthetic fixtures | implemented | deterministic PRNG, tracked artifact |
-| tensor conversion / safetensors / GGUF | **not implemented** | S2 |
+| synthetic fixtures | implemented | deterministic PRNG, tracked bundle and safetensors checkpoint |
+| GGUF | **not implemented** | later; packed block boundaries must not be sliced as floats |
 | teacher oracle, attribution, selectors | **not implemented** | S3 |
 | execution traces, simulator, scheduler | **not implemented** | later |
 | real inference backend, CUDA kernels | **not implemented** | CUDA is not compiled in |

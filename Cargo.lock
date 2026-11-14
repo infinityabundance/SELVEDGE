@@ -478,11 +478,24 @@ name = "selvedge-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "selvedge-convert",
  "selvedge-core",
  "selvedge-fixtures",
  "selvedge-format",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "selvedge-convert"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "selvedge-core",
+ "selvedge-format",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -500,6 +513,7 @@ dependencies = [
 name = "selvedge-fixtures"
 version = "0.1.0"
 dependencies = [
+ "selvedge-convert",
  "selvedge-core",
  "selvedge-format",
 ]

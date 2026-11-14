@@ -4,7 +4,9 @@
 
 use std::path::PathBuf;
 
-use selvedge_fixtures::{FIXTURE_BUNDLE_ID, tiny_bundle};
+use selvedge_fixtures::{
+    FIXTURE_BUNDLE_ID, FIXTURE_SAFETENSORS_ID, tiny_bundle, tiny_swiglu_safetensors,
+};
 use selvedge_format::sidecar::validate_sidecar;
 use selvedge_format::{ValidationOptions, validate_bundle};
 
@@ -56,5 +58,26 @@ fn committed_artifact_is_small() {
     assert!(
         length < 100 * 1024,
         "committed fixture is {length} bytes, above the 100 KiB budget"
+    );
+}
+
+#[test]
+fn committed_safetensors_matches_the_generator() {
+    let root = repo_root();
+    let path = root
+        .join("fixtures")
+        .join(format!("{FIXTURE_SAFETENSORS_ID}.safetensors"));
+    let committed = std::fs::read(&path).unwrap();
+    let generated = tiny_swiglu_safetensors().unwrap();
+    assert_eq!(
+        committed,
+        generated,
+        "fixtures/{} is stale; run the fixture generator",
+        path.file_name().unwrap().to_string_lossy()
+    );
+    assert!(
+        committed.len() < 200 * 1024,
+        "committed SwiGLU checkpoint is {} bytes, above the 200 KiB budget",
+        committed.len()
     );
 }

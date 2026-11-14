@@ -260,6 +260,185 @@ fn assert_paths_exist(paths: &[&Path]) {
     }
 }
 
+fn write_synthetic_checkpoint(dir: &TempDir) -> PathBuf {
+    let path = dir.join("tiny-swiglu.safetensors");
+    std::fs::write(&path, selvedge_fixtures::tiny_swiglu_safetensors().unwrap()).unwrap();
+    path
+}
+
+#[test]
+fn convert_publishes_a_group_bundle() {
+    let dir = TempDir::new("selvedge-cli-convert").unwrap();
+    let model = write_synthetic_checkpoint(&dir);
+    let out = dir.join("bundle");
+    let output = run(&[
+        "convert",
+        "--model",
+        model.to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+        "--groups",
+        "4",
+        "--complete",
+        "--alignment",
+        "512",
+        "--json",
+    ]);
+    assert!(
+        output.status.success(),
+        "convert failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = stdout_json(&output);
+    assert_eq!(report["schema"], "selvedge/convert-report/v1");
+    assert_eq!(report["complete"], true);
+    assert!(report["shard_count"].as_u64().unwrap() > 0);
+    assert!(report["config_hash"].as_str().unwrap().len() == 64);
+    let bundle = PathBuf::from(report["bundle_path"].as_str().unwrap());
+    assert!(bundle.is_file());
+    let validate = run(&["format", "validate", bundle.to_str().unwrap(), "--json"]);
+    assert!(
+        validate.status.success(),
+        "validate failed: {}",
+        String::from_utf8_lossy(&validate.stderr)
+    );
+}
+
+#[test]
+fn convert_plan_writes_nothing() {
+    let dir = TempDir::new("selvedge-cli-plan").unwrap();
+    let model = write_synthetic_checkpoint(&dir);
+    let out = dir.join("not-written");
+    let output = run(&[
+        "convert",
+        "--model",
+        model.to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+        "--groups",
+        "3",
+        "--complete",
+        "--plan",
+        "--json",
+    ]);
+    assert!(
+        output.status.success(),
+        "plan failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = stdout_json(&output);
+    assert!(report["bundle_path"].is_null());
+    assert!(!out.exists());
+}
+
+#[test]
+fn convert_verify_reports_reconstruction_and_tolerance_failure() {
+    let dir = TempDir::new("selvedge-cli-verify").unwrap();
+    let model = write_synthetic_checkpoint(&dir);
+    let out = dir.join("bundle");
+    let convert = run(&[
+        "convert",
+        "--model",
+        model.to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+        "--groups",
+        "3",
+        "--complete",
+        "--alignment",
+        "512",
+        "--json",
+    ]);
+    assert!(convert.status.success());
+    let report = stdout_json(&convert);
+    let bundle = report["bundle_path"].as_str().unwrap().to_owned();
+
+    let verify = run(&[
+        "convert",
+        "verify",
+        "--bundle",
+        &bundle,
+        "--model",
+        model.to_str().unwrap(),
+        "--json",
+    ]);
+    assert!(
+        verify.status.success(),
+        "verify failed: {}",
+        String::from_utf8_lossy(&verify.stdout)
+    );
+    let report = stdout_json(&verify);
+    assert_eq!(report["ok"], true);
+    assert!(report["validated_shards"].as_u64().unwrap() > 0);
+    assert!(report["layers"][0]["full_f32"]["max_abs"].as_f64().unwrap() < 1e-4);
+
+    let strict = run(&[
+        "convert",
+        "verify",
+        "--bundle",
+        &bundle,
+        "--model",
+        model.to_str().unwrap(),
+        "--abs-tol",
+        "0",
+        "--rel-tol",
+        "0",
+        "--json",
+    ]);
+    assert!(!strict.status.success(), "zero tolerance was accepted");
+    let report = stdout_json(&strict);
+    assert_eq!(report["ok"], false);
+}
+
+#[test]
+fn court_a_runs_the_reconstruction_matrix() {
+    let output = run(&["court", "a", "--json"]);
+    assert!(
+        output.status.success(),
+        "court a failed: {}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let report = stdout_json(&output);
+    assert_eq!(report["schema"], "selvedge/court-a/v1");
+    assert_eq!(report["passed"], true);
+    let names: Vec<&str> = report["scenarios"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|scenario| scenario["name"].as_str())
+        .collect();
+    for required in [
+        "all_groups_equal_original",
+        "group_permutation_invariance",
+        "empty_subset_is_exact_zero",
+        "determinism_same_bytes_and_ids",
+        "small_memory_ceiling",
+    ] {
+        assert!(names.contains(&required), "missing {required}: {names:?}");
+    }
+}
+
+#[test]
+fn court_a_writes_a_receipt_report() {
+    let dir = TempDir::new("selvedge-cli-court-a").unwrap();
+    let path = dir.join("court-a.json");
+    let output = run(&[
+        "court",
+        "a",
+        "--json",
+        "--report-out",
+        path.to_str().unwrap(),
+        "--stamp",
+        "20260101T000000Z",
+        "--revision",
+        "0123456789abcdef",
+    ]);
+    assert!(output.status.success());
+    let written: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    assert_eq!(written["stamp"], "20260101T000000Z");
+    assert_eq!(written["revision"], "0123456789abcdef");
+}
+
 #[test]
 fn helper_paths_exist() {
     let (_dir, bundle) = publish_fixture();
