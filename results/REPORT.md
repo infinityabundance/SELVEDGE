@@ -25,9 +25,10 @@ number has been measured, and none is claimed.
    Qwen3-1.7B.** Qwen3-4B's backbone alone exceeds the ceiling, so it cannot be
    a compliant teacher; it is deliberately not downloaded.
 5. **A real checkpoint converts to group shards and reconstructs exactly on real
-   activations.** Sixteen contiguous groups per layer, f32 storage, 1344 shards
-   per model. The grouped-from-bundle path and the dense-from-checkpoint path
-   agree bitwise on every compared component.
+   activations.** The default grouping is sixteen contiguous groups per layer,
+   stored as f32; the shard count and payload bytes are in each receipt. The
+   grouped-from-bundle path and the dense-from-checkpoint path agree bitwise on
+   every compared component.
 6. **The f32-equivalent teacher computation is reproduced within a documented
    bound**, and the native bf16 output is reproduced when the teacher's rounding
    sequence is emulated explicitly. Both checks pass with zero violations.

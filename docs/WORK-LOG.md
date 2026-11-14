@@ -599,9 +599,11 @@ Qwen3-0.6B checkpoint weight bytes:
 | Real conversion, 0.6B and 1.7B, sixteen groups per layer | `results/courts/rust-20261114T201446Z-ee1d5e.json` (0.6B), `results/courts/rust-20261114T201625Z-305069.json` (1.7B) |
 | Random-input reconstruction at real weight scale | `results/courts/rust-20261114T204213Z-97474e.json` (0.6B), `results/courts/rust-20261114T204359Z-b277f9.json` (1.7B); the earlier 1.7B failure that triggered recalibration is `results/courts/rust-20261114T201929Z-62b121.json` |
 | Real-activation Court A additions, both checkpoints | `results/real-parity/20261114T204209Z/real-parity-qwen3-0.6b.json`, `...-1.7b.json`; court receipts `results/courts/rust-20261114T205417Z-58abb5.json`, `results/courts/rust-20261114T205423Z-124bf4.json` |
-| `cargo fmt --all --check` | `results/courts/rust-20261114T201329Z-582f31.json` |
-| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T201343Z-0566af.json` |
-| `cargo test --workspace` | `results/courts/rust-20261114T201345Z-13332e.json` |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T210020Z-7892f7.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T210020Z-cdeb4d.json` |
+| `cargo test --workspace` | `results/courts/rust-20261114T210021Z-720327.json` |
+| Generated numbers match their receipts | `results/courts/perf_numbers-20261114T210015Z-3d3fd3.json` |
+| Every scanned commit carries the operator identity | `results/courts/commit_identity-20261114T210016Z-6862c1.json` |
 
 ### Decisions and known limitations
 
@@ -628,10 +630,12 @@ Qwen3-0.6B checkpoint weight bytes:
 8. **`--gpus all` still fails without a CDI specification.** The court uses
    explicit device passthrough and records the fallback; this is inherited from
    S0 and remains an operator decision.
-9. **The 1.7B random-input verification needed a recalibrated tolerance.** The
-   original tiny-fixture bound was 1e-5; the real 6144-wide FFN reaches ~4e-5 in
-   f32 against an f64 reference. The compile-time bound is now 1e-4 and the
-   measured maxima are in receipts. This is calibration, not a relaxed claim.
+9. **The 1.7B random-input verification needed recalibration.** The
+   tiny-fixture bound was tighter than the f32 error of a real wide FFN. The
+   compile-time bound is documented in `selvedge-convert`, its measured maxima
+   are in receipts, and the f64 path still agrees to a much tighter measured
+   error. This is calibration, not a relaxed claim: a structural error would be
+   orders of magnitude larger.
 
 ### Next experiment
 
