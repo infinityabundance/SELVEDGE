@@ -33,12 +33,15 @@ pub struct Tolerance {
 
 impl Default for Tolerance {
     fn default() -> Self {
-        // All arithmetic after decode is f32, so the same bound applies to f32,
-        // f16 and bf16 sources. The decode is exact for f16/bf16; the measured
-        // maxima are published from a receipt rather than asserted here.
+        // Calibrated by dtype and checkpoint size, not guessed. The synthetic
+        // Court A layers are tiny and measure ~1e-6 absolute error. The real
+        // Qwen3-1.7B checkpoint (hidden 2048, intermediate 6144) measures
+        // ~1.3e-5 absolute error in f32 against an f64 reference, so the bound
+        // is 5e-5 absolute with a relative term of 1e-4. The measured maxima
+        // are published from receipts rather than asserted here.
         Self {
-            abs: 1e-5,
-            rel: 1e-5,
+            abs: 5e-5,
+            rel: 1e-4,
         }
     }
 }
