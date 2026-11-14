@@ -33,9 +33,10 @@ pub(crate) struct ValidateArgs {
     /// Expected compatibility id, checked against every shard.
     #[arg(long)]
     pub(crate) expect_compatibility: Option<String>,
-    /// Hash verification mode.
-    #[arg(long, value_enum, default_value_t = VerifyArg::All)]
-    pub(crate) verify: VerifyArg,
+    /// Hash verification mode; defaults to the configuration's
+    /// `verify_sha256` setting.
+    #[arg(long, value_enum)]
+    pub(crate) verify: Option<VerifyArg>,
     /// Shard ids to verify when `--verify selected` is used. Repeatable or
     /// comma-separated.
     #[arg(long = "select")]
@@ -65,9 +66,9 @@ struct FailureReport<'a> {
 pub(crate) fn run(args: &ValidateArgs) -> CliResult {
     let config = crate::config::load(&args.config)?;
     let verify = match args.verify {
-        VerifyArg::All => VerifyMode::All,
-        VerifyArg::None => VerifyMode::StructuralOnly,
-        VerifyArg::Selected => {
+        Some(VerifyArg::All) => VerifyMode::All,
+        Some(VerifyArg::None) => VerifyMode::StructuralOnly,
+        Some(VerifyArg::Selected) => {
             let mut ids = Vec::new();
             for value in &args.select {
                 for part in value.split(',') {
@@ -83,6 +84,8 @@ pub(crate) fn run(args: &ValidateArgs) -> CliResult {
             }
             VerifyMode::Selected(ids)
         }
+        None if config.storage.verify_sha256 => VerifyMode::All,
+        None => VerifyMode::StructuralOnly,
     };
     let expected_model_digest = match &args.expect_digest {
         Some(value) => Some(Sha256Digest::parse_hex(value)?),

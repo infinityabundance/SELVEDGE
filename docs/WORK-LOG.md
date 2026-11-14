@@ -241,6 +241,11 @@ versions. The CLI and fixture runs use the same court and limits.
 7. **The fixture is synthetic.** Its model/tokenizer digests are labels for the
    fixture, not a real checkpoint, and the quantized shard's scales are
    synthetic.
+8. **Cache invalidation is not implemented because no cache exists yet.** This
+   increment has residency records and a hot-reload catalog, but no KV or shard
+   cache whose invalidation could be tested. Court D covers the catalog/id
+   rejection; cache invalidation belongs to the store phase and must get a named
+   test there.
 
 ### Next experiment
 

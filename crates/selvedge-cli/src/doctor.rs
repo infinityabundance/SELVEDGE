@@ -358,12 +358,9 @@ fn available_bytes(path: &Path) -> Result<u64, String> {
 fn probe_host_checks() -> Vec<Check> {
     let host_mount = Path::new("/hostroot");
     let (base, source) = if host_mount.join("proc/cpuinfo").exists() {
-        (
-            "/hostroot".to_owned(),
-            "host root mounted read-only at /hostroot",
-        )
+        ("/hostroot".to_owned(), "read-only host facts via /hostroot")
     } else {
-        (String::new(), "container view of /proc and /sys")
+        (String::new(), "read-only container view of /proc and /sys")
     };
     let mut checks = Vec::with_capacity(3);
 

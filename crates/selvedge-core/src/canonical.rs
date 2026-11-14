@@ -204,10 +204,6 @@ mod tests {
             canonical_json_value(&second).unwrap()
         );
         assert_eq!(
-            Sha256Digest::of(&first.to_string().into_bytes()),
-            Sha256Digest::of(&first.to_string().into_bytes())
-        );
-        assert_eq!(
             canonical_json_sha256(&first).unwrap(),
             canonical_json_sha256(&second).unwrap()
         );

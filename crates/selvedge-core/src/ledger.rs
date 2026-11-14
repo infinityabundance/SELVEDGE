@@ -13,7 +13,8 @@
 
 use core::fmt;
 
-use serde::{Deserialize, Serialize};
+use serde::de::{self, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use thiserror::Error;
 
 use crate::error::{CoreError, Result};
@@ -23,8 +24,7 @@ use crate::tensor::ParamIdentity;
 use crate::units::{checked_add, checked_mul};
 
 /// Category of non-learned auxiliary bytes.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(try_from = "String")]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum AuxiliaryKind {
     /// Quantization scales.
     Scales,
@@ -74,6 +74,32 @@ impl TryFrom<String> for AuxiliaryKind {
 impl fmt::Display for AuxiliaryKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.stable_name())
+    }
+}
+
+impl Serialize for AuxiliaryKind {
+    fn serialize<S: Serializer>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.stable_name())
+    }
+}
+
+impl<'de> Deserialize<'de> for AuxiliaryKind {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> core::result::Result<Self, D::Error> {
+        struct KindVisitor;
+
+        impl Visitor<'_> for KindVisitor {
+            type Value = AuxiliaryKind;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("a stable SELVEDGE auxiliary byte kind")
+            }
+
+            fn visit_str<E: de::Error>(self, value: &str) -> core::result::Result<Self::Value, E> {
+                AuxiliaryKind::try_from(value.to_owned()).map_err(E::custom)
+            }
+        }
+
+        deserializer.deserialize_str(KindVisitor)
     }
 }
 
@@ -829,5 +855,24 @@ mod tests {
             ledger.check_decision(&plan),
             Err(BudgetError::Exceeded { .. })
         ));
+    }
+
+    #[test]
+    fn auxiliary_kind_serialises_as_stable_strings() {
+        for kind in [
+            AuxiliaryKind::Scales,
+            AuxiliaryKind::ZeroPoints,
+            AuxiliaryKind::QuantMetadata,
+            AuxiliaryKind::Other("sidecar".to_owned()),
+        ] {
+            let text = serde_json::to_string(&kind).unwrap();
+            let parsed: AuxiliaryKind = serde_json::from_str(&text).unwrap();
+            assert_eq!(parsed, kind);
+        }
+        let map = std::collections::BTreeMap::from([(AuxiliaryKind::Scales, 8_u64)]);
+        let text = serde_json::to_string(&map).unwrap();
+        let parsed: std::collections::BTreeMap<AuxiliaryKind, u64> =
+            serde_json::from_str(&text).unwrap();
+        assert_eq!(parsed, map);
     }
 }
