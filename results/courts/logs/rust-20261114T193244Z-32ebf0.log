@@ -1,0 +1,167 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running `target/debug/selvedge convert --model results/artifacts/demo-20261114T193242Z/model/tiny-swiglu.safetensors --out results/artifacts/demo-20261114T193242Z/bundle --groups 4 --complete --alignment 512 --force --json`
+{
+  "schema": "selvedge/convert-report/v1",
+  "ok": true,
+  "config_hash": "c89333d6e3cbf04b47774fd297396488260ece890b9304c0e9f14ec3a4540faf",
+  "model_digest": "2915edd4cceff674826e461d73ee3e9d1494ab2303fc93bbda62b485ec60c216",
+  "bundle_id": "swiglu-2915edd4ccef-db0421ba987c",
+  "bundle_path": "results/artifacts/demo-20261114T193242Z/bundle/swiglu-2915edd4ccef-db0421ba987c.slv",
+  "alignment": 512,
+  "complete": true,
+  "payload_bytes": 6144,
+  "shard_count": 12,
+  "peak_inflight_bytes": 128,
+  "max_inflight_bytes": 4294967296,
+  "transforms": [
+    "swiglu.down.transpose.v1",
+    "swiglu.gate.rowmajor.v1",
+    "swiglu.up.rowmajor.v1"
+  ],
+  "shards": [
+    {
+      "short_id": "4b0cb0ac6626",
+      "role": "mlp.gate",
+      "layer": 0,
+      "group": 0,
+      "channels": "0..3",
+      "shape": "3x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.gate.rowmajor.v1",
+      "bytes": 96,
+      "sha256": "21ae9526c6b7a4eb25644ba6eca3bc455d8653b17684c142f7edc19abb0eb967"
+    },
+    {
+      "short_id": "cec19f0ac879",
+      "role": "mlp.up",
+      "layer": 0,
+      "group": 0,
+      "channels": "0..3",
+      "shape": "3x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.up.rowmajor.v1",
+      "bytes": 96,
+      "sha256": "1f17fb960607c78b61a246729b09a6564e8d5aabcbd4dcd52b45df2decb7d43f"
+    },
+    {
+      "short_id": "35f27be0a53f",
+      "role": "mlp.down",
+      "layer": 0,
+      "group": 0,
+      "channels": "0..3",
+      "shape": "3x8",
+      "storage_order": "transposed[1,0]",
+      "transform_id": "swiglu.down.transpose.v1",
+      "bytes": 96,
+      "sha256": "251a902b8e635bdc2b3f91efdba3df66d2e8d2b7d22f51b3e2ffdc67abf4d9e6"
+    },
+    {
+      "short_id": "cb6a4f43b900",
+      "role": "mlp.gate",
+      "layer": 0,
+      "group": 1,
+      "channels": "3..6",
+      "shape": "3x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.gate.rowmajor.v1",
+      "bytes": 96,
+      "sha256": "0f7aeed1d5f69388810332c461930979453986ec756771bf4033064f4e0ba7ca"
+    },
+    {
+      "short_id": "326ddcc6755a",
+      "role": "mlp.up",
+      "layer": 0,
+      "group": 1,
+      "channels": "3..6",
+      "shape": "3x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.up.rowmajor.v1",
+      "bytes": 96,
+      "sha256": "04088dfc50515de4bc7d97ee558616f12882cc3f74f2c0e054b184689583b589"
+    },
+    {
+      "short_id": "8ee9e79e5572",
+      "role": "mlp.down",
+      "layer": 0,
+      "group": 1,
+      "channels": "3..6",
+      "shape": "3x8",
+      "storage_order": "transposed[1,0]",
+      "transform_id": "swiglu.down.transpose.v1",
+      "bytes": 96,
+      "sha256": "33b96106a52c8269460ecffcf6635a18757c518b6aea3942ea30a0b1694684af"
+    },
+    {
+      "short_id": "80762ef1ad70",
+      "role": "mlp.gate",
+      "layer": 0,
+      "group": 2,
+      "channels": "6..9",
+      "shape": "3x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.gate.rowmajor.v1",
+      "bytes": 96,
+      "sha256": "39eec323e6b21f5bcb913bd260ac5123177f7471f54ed92c4c84acc3245a495e"
+    },
+    {
+      "short_id": "a9c0ba011fed",
+      "role": "mlp.up",
+      "layer": 0,
+      "group": 2,
+      "channels": "6..9",
+      "shape": "3x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.up.rowmajor.v1",
+      "bytes": 96,
+      "sha256": "150531118042c17bfca97962eb78269f372bc759f3861ea0af0d8ba3930f61b0"
+    },
+    {
+      "short_id": "d1ce6c009f2c",
+      "role": "mlp.down",
+      "layer": 0,
+      "group": 2,
+      "channels": "6..9",
+      "shape": "3x8",
+      "storage_order": "transposed[1,0]",
+      "transform_id": "swiglu.down.transpose.v1",
+      "bytes": 96,
+      "sha256": "adbf3c64dcd47141fc0d75b2edc73f06313170ed160914955ea0a0d6f905a564"
+    },
+    {
+      "short_id": "76e0807dea81",
+      "role": "mlp.gate",
+      "layer": 0,
+      "group": 3,
+      "channels": "9..10",
+      "shape": "1x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.gate.rowmajor.v1",
+      "bytes": 32,
+      "sha256": "ff7f06c960d7c2dd012aa5ecb27cb92fd2b3575898ddd46ad985caca84fd0517"
+    },
+    {
+      "short_id": "f543b60fc835",
+      "role": "mlp.up",
+      "layer": 0,
+      "group": 3,
+      "channels": "9..10",
+      "shape": "1x8",
+      "storage_order": "row_major",
+      "transform_id": "swiglu.up.rowmajor.v1",
+      "bytes": 32,
+      "sha256": "05db23db22eef02015e5920a216a6e754004ec6b34bc4f3e0d77b734a048251d"
+    },
+    {
+      "short_id": "86bd1d446e56",
+      "role": "mlp.down",
+      "layer": 0,
+      "group": 3,
+      "channels": "9..10",
+      "shape": "1x8",
+      "storage_order": "transposed[1,0]",
+      "transform_id": "swiglu.down.transpose.v1",
+      "bytes": 32,
+      "sha256": "ab7146b36a0fca9cda15e7436ad38b4faaf0ae574d28d4c92ff77cd693fefd66"
+    }
+  ]
+}

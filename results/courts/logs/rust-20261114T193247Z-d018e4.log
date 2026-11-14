@@ -1,0 +1,348 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/selvedge court a --json --report-out results/artifacts/demo-20261114T193242Z/court-a.json --stamp 20261114T193242Z --revision b9b7c16b597b3cb518dd8d83904bc3c85a7f6a7b`
+{
+  "schema": "selvedge/court-a/v1",
+  "court": "a",
+  "passed": true,
+  "seed": 6780993247035596838,
+  "tolerance_abs": 0.00001,
+  "tolerance_rel": 0.00001,
+  "stamp": "20261114T193242Z",
+  "revision": "b9b7c16b597b3cb518dd8d83904bc3c85a7f6a7b",
+  "generated_by": "selvedge-convert 0.1.0",
+  "scenarios": [
+    {
+      "name": "all_groups_equal_original",
+      "passed": true,
+      "detail": "source=f32 shards=12 payload=6144 bytes peak=128 bytes; f32 max abs 9.336e-7 rel 2.100e-5; f64 max abs 4.441e-16 rel 1.760e-14"
+    },
+    {
+      "name": "group_permutation_invariance",
+      "passed": true,
+      "detail": "two group orders differ by max abs 2.980e-8 (not bitwise required)"
+    },
+    {
+      "name": "single_group_full_span",
+      "passed": true,
+      "detail": "source=f32 shards=3 payload=1536 bytes peak=252 bytes; f32 max abs 2.206e-7 rel 2.187e-5; f64 max abs 0.000e0 rel 0.000e0"
+    },
+    {
+      "name": "empty_subset_is_exact_zero",
+      "passed": true,
+      "detail": "12 components are exactly +0.0; this is a mathematical zero, not a skip proof"
+    },
+    {
+      "name": "group_size_one",
+      "passed": true,
+      "detail": "source=f32 shards=12 payload=6144 bytes peak=40 bytes; f32 max abs 4.326e-8 rel 3.402e-7; f64 max abs 0.000e0 rel 0.000e0"
+    },
+    {
+      "name": "group_size_two",
+      "passed": true,
+      "detail": "source=f32 shards=12 payload=6144 bytes peak=60 bytes; f32 max abs 1.395e-7 rel 5.873e-6; f64 max abs 2.220e-16 rel 3.575e-16"
+    },
+    {
+      "name": "group_size_three",
+      "passed": true,
+      "detail": "source=f32 shards=12 payload=6144 bytes peak=80 bytes; f32 max abs 1.365e-7 rel 2.445e-6; f64 max abs 2.220e-16 rel 1.015e-15"
+    },
+    {
+      "name": "group_size_prime",
+      "passed": true,
+      "detail": "source=f32 shards=6 payload=3072 bytes peak=168 bytes; f32 max abs 1.281e-7 rel 4.476e-6; f64 max abs 1.110e-16 rel 1.737e-15"
+    },
+    {
+      "name": "non_divisible_grouping",
+      "passed": true,
+      "detail": "source=f32 shards=9 payload=4608 bytes peak=100 bytes; f32 max abs 6.842e-8 rel 5.254e-6; f64 max abs 1.110e-16 rel 2.974e-15"
+    },
+    {
+      "name": "intermediate_one",
+      "passed": true,
+      "detail": "source=f32 shards=3 payload=1536 bytes peak=40 bytes; f32 max abs 5.704e-8 rel 5.398e-6; f64 max abs 0.000e0 rel 0.000e0"
+    },
+    {
+      "name": "hidden_one",
+      "passed": true,
+      "detail": "source=f32 shards=6 payload=3072 bytes peak=16 bytes; f32 max abs 2.000e-10 rel 1.429e-7; f64 max abs 6.939e-18 rel 1.474e-16"
+    },
+    {
+      "name": "input_shapes",
+      "passed": true,
+      "detail": "source=f32 shards=9 payload=4608 bytes peak=80 bytes; f32 max abs 2.753e-7 rel 5.246e-5; f64 max abs 2.220e-16 rel 6.174e-14"
+    },
+    {
+      "name": "column_major_source",
+      "passed": true,
+      "detail": "source=f32 shards=9 payload=4608 bytes peak=112 bytes; f32 max abs 4.950e-7 rel 3.000e-7; f64 max abs 4.441e-16 rel 4.564e-16"
+    },
+    {
+      "name": "transposed_source",
+      "passed": true,
+      "detail": "source=f32 shards=9 payload=4608 bytes peak=112 bytes; f32 max abs 1.638e-7 rel 1.528e-5; f64 max abs 2.220e-16 rel 5.593e-15"
+    },
+    {
+      "name": "f16_source",
+      "passed": true,
+      "detail": "source=f16 shards=6 payload=3072 bytes peak=120 bytes; f32 max abs 2.696e-7 rel 1.704e-6; f64 max abs 4.441e-16 rel 3.648e-16"
+    },
+    {
+      "name": "bf16_source",
+      "passed": true,
+      "detail": "source=bf16 shards=6 payload=3072 bytes peak=120 bytes; f32 max abs 2.141e-7 rel 2.606e-5; f64 max abs 4.441e-16 rel 7.462e-15"
+    },
+    {
+      "name": "twenty_random_seeds",
+      "passed": true,
+      "detail": "20 seeds; worst f32 max abs 3.403e-7"
+    },
+    {
+      "name": "determinism_same_bytes_and_ids",
+      "passed": true,
+      "detail": "identical bytes (11264 bytes) and 9 ids"
+    },
+    {
+      "name": "shard_ids_and_hashes_match_manifest",
+      "passed": true,
+      "detail": "9 ids and content hashes recomputed"
+    },
+    {
+      "name": "bundle_validates_all",
+      "passed": true,
+      "detail": "9 shards verified under VerifyMode::All"
+    },
+    {
+      "name": "small_memory_ceiling",
+      "passed": true,
+      "detail": "converted with a 160-byte ceiling; peak 160 bytes"
+    }
+  ],
+  "measurements": [
+    {
+      "scenario": "all_groups_equal_original",
+      "source_dtype": "f32",
+      "grouping": "count 4",
+      "max_abs_f32": 9.335568966761798e-7,
+      "max_rel_f32": 0.000020995285452432902,
+      "max_abs_f64": 4.440892098500626e-16,
+      "max_rel_f64": 1.7603973710983802e-14,
+      "count": 176,
+      "shard_count": 12,
+      "payload_bytes": 6144,
+      "peak_inflight_bytes": 128,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "single_group_full_span",
+      "source_dtype": "f32",
+      "grouping": "single group",
+      "max_abs_f32": 2.206257736503403e-7,
+      "max_rel_f32": 0.000021869043901574403,
+      "max_abs_f64": 0.0,
+      "max_rel_f64": 0.0,
+      "count": 132,
+      "shard_count": 3,
+      "payload_bytes": 1536,
+      "peak_inflight_bytes": 252,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "group_size_one",
+      "source_dtype": "f32",
+      "grouping": "explicit size 1",
+      "max_abs_f32": 4.326318747693847e-8,
+      "max_rel_f32": 3.401720893025011e-7,
+      "max_abs_f64": 0.0,
+      "max_rel_f64": 0.0,
+      "count": 25,
+      "shard_count": 12,
+      "payload_bytes": 6144,
+      "peak_inflight_bytes": 40,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "group_size_two",
+      "source_dtype": "f32",
+      "grouping": "explicit size 2",
+      "max_abs_f32": 1.3947311644502136e-7,
+      "max_rel_f32": 5.873255899540457e-6,
+      "max_abs_f64": 2.220446049250313e-16,
+      "max_rel_f64": 3.574684095997313e-16,
+      "count": 25,
+      "shard_count": 12,
+      "payload_bytes": 6144,
+      "peak_inflight_bytes": 60,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "group_size_three",
+      "source_dtype": "f32",
+      "grouping": "explicit size 3",
+      "max_abs_f32": 1.3650586949687238e-7,
+      "max_rel_f32": 2.4453016130486637e-6,
+      "max_abs_f64": 2.220446049250313e-16,
+      "max_rel_f64": 1.0152328301599633e-15,
+      "count": 25,
+      "shard_count": 12,
+      "payload_bytes": 6144,
+      "peak_inflight_bytes": 80,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "group_size_prime",
+      "source_dtype": "f32",
+      "grouping": "prime size 7",
+      "max_abs_f32": 1.2813114202980813e-7,
+      "max_rel_f32": 4.4763328982770335e-6,
+      "max_abs_f64": 1.1102230246251565e-16,
+      "max_rel_f64": 1.7372831460107893e-15,
+      "count": 25,
+      "shard_count": 6,
+      "payload_bytes": 3072,
+      "peak_inflight_bytes": 168,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "non_divisible_grouping",
+      "source_dtype": "f32",
+      "grouping": "4/4/2",
+      "max_abs_f32": 6.84236041159636e-8,
+      "max_rel_f32": 5.253959289940299e-6,
+      "max_abs_f64": 1.1102230246251565e-16,
+      "max_rel_f64": 2.973754761413975e-15,
+      "count": 25,
+      "shard_count": 9,
+      "payload_bytes": 4608,
+      "peak_inflight_bytes": 100,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "intermediate_one",
+      "source_dtype": "f32",
+      "grouping": "intermediate=1",
+      "max_abs_f32": 5.704483468926824e-8,
+      "max_rel_f32": 5.3979075220971365e-6,
+      "max_abs_f64": 0.0,
+      "max_rel_f64": 0.0,
+      "count": 25,
+      "shard_count": 3,
+      "payload_bytes": 1536,
+      "peak_inflight_bytes": 40,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "hidden_one",
+      "source_dtype": "f32",
+      "grouping": "hidden=1",
+      "max_abs_f32": 1.999520757300921e-10,
+      "max_rel_f32": 1.4291395772017037e-7,
+      "max_abs_f64": 6.938893903907228e-18,
+      "max_rel_f64": 1.4737917014083208e-16,
+      "count": 5,
+      "shard_count": 6,
+      "payload_bytes": 3072,
+      "peak_inflight_bytes": 16,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "input_shapes",
+      "source_dtype": "f32",
+      "grouping": "batch [1,1],[4,17],[2,3,5]",
+      "max_abs_f32": 2.7525967594144163e-7,
+      "max_rel_f32": 0.000052457457934053744,
+      "max_abs_f64": 2.220446049250313e-16,
+      "max_rel_f64": 6.174291628422284e-14,
+      "count": 495,
+      "shard_count": 9,
+      "payload_bytes": 4608,
+      "peak_inflight_bytes": 80,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "column_major_source",
+      "source_dtype": "f32",
+      "grouping": "column-major source",
+      "max_abs_f32": 4.950166463402184e-7,
+      "max_rel_f32": 3.0002266292635597e-7,
+      "max_abs_f64": 4.440892098500626e-16,
+      "max_rel_f64": 4.56372999716242e-16,
+      "count": 35,
+      "shard_count": 9,
+      "payload_bytes": 4608,
+      "peak_inflight_bytes": 112,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "transposed_source",
+      "source_dtype": "f32",
+      "grouping": "transposed source",
+      "max_abs_f32": 1.638113669155672e-7,
+      "max_rel_f32": 0.00001528057573136253,
+      "max_abs_f64": 2.220446049250313e-16,
+      "max_rel_f64": 5.5926874271026506e-15,
+      "count": 35,
+      "shard_count": 9,
+      "payload_bytes": 4608,
+      "peak_inflight_bytes": 112,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "f16_source",
+      "source_dtype": "f16",
+      "grouping": "f16 source",
+      "max_abs_f32": 2.6961021681870534e-7,
+      "max_rel_f32": 1.7036347917281322e-6,
+      "max_abs_f64": 4.440892098500626e-16,
+      "max_rel_f64": 3.647974194743261e-16,
+      "count": 30,
+      "shard_count": 6,
+      "payload_bytes": 3072,
+      "peak_inflight_bytes": 120,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    },
+    {
+      "scenario": "bf16_source",
+      "source_dtype": "bf16",
+      "grouping": "bf16 source",
+      "max_abs_f32": 2.141241908226732e-7,
+      "max_rel_f32": 0.000026062001033521547,
+      "max_abs_f64": 4.440892098500626e-16,
+      "max_rel_f64": 7.461506195975527e-15,
+      "count": 30,
+      "shard_count": 6,
+      "payload_bytes": 3072,
+      "peak_inflight_bytes": 120,
+      "tolerance_abs": 0.00001,
+      "tolerance_rel": 0.00001
+    }
+  ],
+  "receipt_numbers": {
+    "all_groups_max_abs_f32": 9.335568966761798e-7,
+    "all_groups_max_rel_f32": 0.000020995285452432902,
+    "all_groups_max_abs_f64": 4.440892098500626e-16,
+    "all_groups_max_rel_f64": 1.7603973710983802e-14,
+    "f16_max_abs_f32": 2.6961021681870534e-7,
+    "bf16_max_abs_f32": 2.141241908226732e-7,
+    "tolerance_abs": 0.00001,
+    "tolerance_rel": 0.00001,
+    "scenario_count": 21,
+    "compared_components": 176,
+    "shard_count": 12,
+    "payload_bytes": 6144,
+    "peak_inflight_bytes": 128
+  },
+  "scenario_count": 21
+}

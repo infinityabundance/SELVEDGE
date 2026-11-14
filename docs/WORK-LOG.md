@@ -388,13 +388,13 @@ rounding.
 
 | what was verified | evidence |
 | --- | --- |
-| `cargo fmt --all --check` | `results/courts/rust-20261114T192803Z-9a04be.json` |
-| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T192804Z-2bc9f5.json` |
-| `cargo test --workspace` (unit, safetensors hostile/proptest, decomposition, named Court A, CLI) | `results/courts/rust-20261114T192804Z-bfd748.json` |
-| `selvedge court a` | `results/courts/rust-20261114T192808Z-58ccc8.json`; report `results/court-a/20261114T193212Z.json` |
-| `scripts/demo-offline.sh` (generate, convert, validate, verify, court a) | `results/courts/rust-20261114T192809Z-d2af65.json`, `...192810Z-8813b1.json`, `...192811Z-490a12.json`, `...192811Z-80757b.json`, `...192812Z-d2c0de.json`; report `results/demo-offline/20261114T192809Z.json` |
-| Every commit carries the operator identity | `results/courts/commit_identity-20261114T192812Z-fe8b25.json` |
-| Generated numbers match their receipts | `results/courts/perf_numbers-20261114T192852Z-fd0571.json` (write), `...192857Z-ed9bc8.json` and `...192909Z-901902.json` (checks) |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T193201Z-745b98.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T193201Z-6e1e55.json` |
+| `cargo test --workspace` (unit, safetensors hostile/proptest, decomposition, named Court A, CLI) | `results/courts/rust-20261114T193202Z-b1b1e9.json` |
+| `selvedge court a` | `results/courts/rust-20261114T193212Z-98eac9.json`; report `results/court-a/20261114T193212Z.json` |
+| `scripts/demo-offline.sh` (generate, convert, validate, verify, court a) | `results/courts/rust-20261114T193242Z-bf3cae.json`, `...193244Z-32ebf0.json`, `...193245Z-1df203.json`, `...193245Z-428f12.json`, `...193247Z-d018e4.json`; report `results/demo-offline/20261114T193242Z.json` |
+| Every commit carries the operator identity | `results/courts/commit_identity-20261114T193248Z-14c438.json` |
+| Generated numbers match their receipts | `results/courts/perf_numbers-20261114T193222Z-457677.json` (write) and `...193224Z-bee417.json` (check) |
 
 ### Decisions and known limitations
 

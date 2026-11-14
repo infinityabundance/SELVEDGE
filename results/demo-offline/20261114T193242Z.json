@@ -1,0 +1,28 @@
+{
+  "schema": "selvedge/demo-offline/v1",
+  "ok": true,
+  "git_sha": "b9b7c16b597b3cb518dd8d83904bc3c85a7f6a7b",
+  "worktree_dirty": false,
+  "stamp": "20261114T193242Z",
+  "started_utc": "2026-11-14T19:32:42Z",
+  "finished_utc": "2026-11-14T19:32:48Z",
+  "network_mode": "none",
+  "config_hash": "c89333d6e3cbf04b47774fd297396488260ece890b9304c0e9f14ec3a4540faf",
+  "seed": "0x5E1AED6E51E12026",
+  "source_model": "results/artifacts/demo-20261114T193242Z/model/tiny-swiglu.safetensors",
+  "bundle": "results/artifacts/demo-20261114T193242Z/bundle/swiglu-2915edd4ccef-db0421ba987c.slv",
+  "artifacts": {
+    "generate_log_sha256": "42aa53be37817262b7ef99297f9b337a6c51d806be120ca857cdddeafaf232c5",
+    "convert_report_sha256": "c635c434bee1041331a743705d5b0c91aab58e8a655490d7ee1e48f11c7f5057",
+    "validation_report_sha256": "7262f26bc9f147fd64478eb78abdd4c80a73c6693ea39d4f60204ba800910497",
+    "verification_report_sha256": "503b7290054fa6a79064d42707b6110d94657d20926af4d160803bbf70aa5256",
+    "court_a_report_sha256": "b0b8b3d0dea541cbf1d8b1d2b05580583bba12a1285dbd881bb489fcfb66107d"
+  },
+  "commands": [
+    "scripts/court rust -- cargo run -p selvedge-fixtures -- --out-dir results/artifacts/demo-20261114T193242Z/model --force",
+    "scripts/court rust -- cargo run -p selvedge-cli -- convert --model results/artifacts/demo-20261114T193242Z/model/tiny-swiglu.safetensors --out results/artifacts/demo-20261114T193242Z/bundle --groups 4 --complete --alignment 512 --force --json",
+    "scripts/court rust -- cargo run -p selvedge-cli -- format validate results/artifacts/demo-20261114T193242Z/bundle/swiglu-2915edd4ccef-db0421ba987c.slv --json",
+    "scripts/court rust -- cargo run -p selvedge-cli -- convert verify --bundle results/artifacts/demo-20261114T193242Z/bundle/swiglu-2915edd4ccef-db0421ba987c.slv --model results/artifacts/demo-20261114T193242Z/model/tiny-swiglu.safetensors --json",
+    "scripts/court rust -- cargo run -p selvedge-cli -- court a --json --report-out results/artifacts/demo-20261114T193242Z/court-a.json --stamp 20261114T193242Z --revision b9b7c16b597b3cb518dd8d83904bc3c85a7f6a7b"
+  ]
+}
