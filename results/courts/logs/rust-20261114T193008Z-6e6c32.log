@@ -1,0 +1,26 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/selvedge court a`
+selvedge court a — SwiGLU decomposition and reconstruction
+PASS all_groups_equal_original: source=f32 shards=12 payload=6144 bytes peak=96 bytes; f32 max abs 9.336e-7 rel 2.100e-5; f64 max abs 4.441e-16 rel 1.760e-14
+PASS group_permutation_invariance: two group orders differ by max abs 2.980e-8 (not bitwise required)
+PASS single_group_full_span: source=f32 shards=3 payload=1536 bytes peak=216 bytes; f32 max abs 2.206e-7 rel 2.187e-5; f64 max abs 0.000e0 rel 0.000e0
+PASS empty_subset_is_exact_zero: 12 components are exactly +0.0; this is a mathematical zero, not a skip proof
+PASS group_size_one: source=f32 shards=12 payload=6144 bytes peak=20 bytes; f32 max abs 4.326e-8 rel 3.402e-7; f64 max abs 0.000e0 rel 0.000e0
+PASS group_size_two: source=f32 shards=12 payload=6144 bytes peak=40 bytes; f32 max abs 1.395e-7 rel 5.873e-6; f64 max abs 2.220e-16 rel 3.575e-16
+PASS group_size_three: source=f32 shards=12 payload=6144 bytes peak=60 bytes; f32 max abs 1.365e-7 rel 2.445e-6; f64 max abs 2.220e-16 rel 1.015e-15
+PASS group_size_prime: source=f32 shards=6 payload=3072 bytes peak=140 bytes; f32 max abs 1.281e-7 rel 4.476e-6; f64 max abs 1.110e-16 rel 1.737e-15
+PASS non_divisible_grouping: source=f32 shards=9 payload=4608 bytes peak=80 bytes; f32 max abs 6.842e-8 rel 5.254e-6; f64 max abs 1.110e-16 rel 2.974e-15
+PASS intermediate_one: source=f32 shards=3 payload=1536 bytes peak=20 bytes; f32 max abs 5.704e-8 rel 5.398e-6; f64 max abs 0.000e0 rel 0.000e0
+PASS hidden_one: source=f32 shards=6 payload=3072 bytes peak=8 bytes; f32 max abs 2.000e-10 rel 1.429e-7; f64 max abs 6.939e-18 rel 1.474e-16
+PASS input_shapes: source=f32 shards=9 payload=4608 bytes peak=60 bytes; f32 max abs 2.753e-7 rel 5.246e-5; f64 max abs 2.220e-16 rel 6.174e-14
+PASS column_major_source: source=f32 shards=9 payload=4608 bytes peak=84 bytes; f32 max abs 4.950e-7 rel 3.000e-7; f64 max abs 4.441e-16 rel 4.564e-16
+PASS transposed_source: source=f32 shards=9 payload=4608 bytes peak=84 bytes; f32 max abs 1.638e-7 rel 1.528e-5; f64 max abs 2.220e-16 rel 5.593e-15
+PASS f16_source: source=f16 shards=6 payload=3072 bytes peak=96 bytes; f32 max abs 2.696e-7 rel 1.704e-6; f64 max abs 4.441e-16 rel 3.648e-16
+PASS bf16_source: source=bf16 shards=6 payload=3072 bytes peak=96 bytes; f32 max abs 2.141e-7 rel 2.606e-5; f64 max abs 4.441e-16 rel 7.462e-15
+PASS twenty_random_seeds: 20 seeds; worst f32 max abs 3.403e-7
+PASS determinism_same_bytes_and_ids: identical bytes (11264 bytes) and 9 ids
+PASS shard_ids_and_hashes_match_manifest: 9 ids and content hashes recomputed
+PASS bundle_validates_all: 9 shards verified under VerifyMode::All
+PASS small_memory_ceiling: converted with a 128-byte ceiling; peak 128 bytes
+tolerance abs=1.000e-5 rel=1.000e-5; scenarios=21
+overall: pass
