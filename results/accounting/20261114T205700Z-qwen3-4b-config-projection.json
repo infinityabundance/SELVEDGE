@@ -1,0 +1,47 @@
+{
+  "budget": {
+    "always_active_backbone_elements": 1332870656,
+    "backbone_fits": false,
+    "ceiling": 1000000000,
+    "ceiling_binding": true,
+    "checkpoint_tensor_elements": 4411424256,
+    "dense_execution_compliant": false,
+    "headroom_elements": -3022468096,
+    "max_compliant_ffn_elements": 0,
+    "max_compliant_ffn_fraction": 0.0,
+    "removable_ffn_elements": 2689597440,
+    "unique_learned_elements": 4022468096,
+    "verdict": "impossible_backbone_over_ceiling"
+  },
+  "generated_by": "scripts/courts/config_projection.py",
+  "kind": "config_projection",
+  "model": {
+    "config_sha256": "8ba006f74fecfaaeb392872a60f4a480e7ec9860153d2e1b769ec81f9a147f8a",
+    "head_dim": 128,
+    "heads": 32,
+    "hidden": 2560,
+    "id": "Qwen/Qwen3-4B",
+    "intermediate": 9728,
+    "kv_heads": 8,
+    "layers": 36,
+    "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+    "tie_word_embeddings": true,
+    "vocab": 151936
+  },
+  "notes": [
+    "reads config.json only; no weights are downloaded or measured",
+    "cannot verify tensor shapes or whether the embedding/output tie exists in the bytes",
+    "for an exact count on real weights use `selvedge inspect-model`"
+  ],
+  "ok": true,
+  "revision": "a67671aecf9296a41528cd6a842437d6e3c629dd",
+  "schema": "selvedge/config-projection/v1",
+  "stamp": "20261114T205700Z",
+  "totals": {
+    "attention": 943727616,
+    "embedding": 388956160,
+    "ffn": 2689597440,
+    "lm_head": 388956160,
+    "norm": 186880
+  }
+}
