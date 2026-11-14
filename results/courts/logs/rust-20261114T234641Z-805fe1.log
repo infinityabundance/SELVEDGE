@@ -1,0 +1,41 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+warning: stripping a suffix manually
+   --> crates/selvedge-store/src/sysfs.rs:179:25
+    |
+179 |             return Some(stripped[..stripped.len() - 1].to_owned());
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the suffix was tested here
+   --> crates/selvedge-store/src/sysfs.rs:178:9
+    |
+178 |         if stripped.ends_with('p') {
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_strip
+    = note: `-W clippy::manual-strip` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::manual_strip)]`
+help: try using the `strip_suffix` method
+    |
+178 ~         if let Some(<stripped>) = stripped.strip_suffix('p') {
+179 ~             return Some(<stripped>.to_owned());
+    |
+
+warning: unused return value of `tier::InFlightTransfer::fail` that must be used
+   --> crates/selvedge-store/src/store.rs:811:17
+    |
+811 |                 in_flight.fail("verification failed");
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+811 |                 let _ = in_flight.fail("verification failed");
+    |                 +++++++
+
+warning: `selvedge-store` (lib) generated 2 warnings
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.40s

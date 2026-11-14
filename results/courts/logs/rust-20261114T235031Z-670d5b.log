@@ -1,0 +1,15 @@
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+error[E0603]: function `utc_now` is private
+    --> crates/selvedge-store/src/store_bench.rs:29:36
+     |
+  29 | use crate::io_scan::{format_stamp, utc_now};
+     |                                    ^^^^^^^ private function
+     |
+note: the function `utc_now` is defined here
+    --> crates/selvedge-store/src/io_scan.rs:1058:1
+     |
+1058 | fn utc_now() -> String {
+     | ^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0603`.
+error: could not compile `selvedge-store` (lib) due to 1 previous error

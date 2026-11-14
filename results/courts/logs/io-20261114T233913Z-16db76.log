@@ -1,0 +1,21 @@
+Linux 672fbc431643 7.3.3-1-cachyos #1 SMP PREEMPT_DYNAMIC Sat, 07 Nov 2026 18:39:10 +0000 x86_64 GNU/Linux
+---
+nvme0n1
+nvme1n1
+sda
+sdb
+sdc
+zram0
+---
+/sys/block/nvme1n1/stat
+109337370 46845283 16057646577 67758210 178582646 296805727 17007767498 2625092798        1 170569539 2766863167   748453        0 232684784  1559944 43333987 72452214
+/sys/block/nvme0n1/stat
+ 1108395   258095 245996930   315282  1120956   153594 271935088  2319864        0   380030  2770900   132783        0 497312480   126541     9075     9211
+---
+TARGET SOURCE                    FSTYPE OPTIONS
+/work  /dev/nvme1n1p1[/SELVEDGE] ext4   rw,relatime
+---
+/usr/bin/fio
+/usr/bin/dd
+---
+True

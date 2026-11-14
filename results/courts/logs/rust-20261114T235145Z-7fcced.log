@@ -1,0 +1,23 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+error: used `expect()` on a `Result` value
+   --> crates/selvedge-store/tests/court_d_extension.rs:364:38
+    |
+364 |                           let report = store_ref
+    |  ______________________________________^
+365 | |                             .read_required(scope_ref, id, slice)
+366 | |                             .expect("concurrent read must succeed");
+    | |___________________________________________________________________^
+    |
+    = note: if this value is an `Err`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+    = note: `-D clippy::expect-used` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::expect_used)]`
+
+error: could not compile `selvedge-store` (test "court_d_extension") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -19,7 +19,7 @@ use std::num::NonZeroU64;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-use rustix::fs::{fadvise, Advice};
+use rustix::fs::{Advice, fadvise};
 use serde::Serialize;
 
 use crate::error::{Result, StoreError};

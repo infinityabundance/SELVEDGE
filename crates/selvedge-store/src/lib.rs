@@ -38,6 +38,7 @@ pub mod layout;
 pub mod metrics;
 pub mod pagecache;
 pub mod store;
+pub mod store_bench;
 pub mod sysfs;
 pub mod tier;
 
@@ -48,13 +49,14 @@ pub use cache::{
 };
 pub use error::{Result, StoreError};
 pub use layout::{Extent, Layout, LayoutReport, Run, RunPart};
-pub use metrics::{percentiles, MetricsSink, ReadMetrics, StoreStats, METRICS_SCHEMA};
+pub use metrics::{METRICS_SCHEMA, MetricsSink, ReadMetrics, StoreStats, percentiles};
 pub use pagecache::{AdviceReport, PageCache};
 pub use store::{
     ExecutionScope, PolicyKind, PrefetchHint, PrefetchOutcome, PrefetchRejection, ProofRegistry,
     ReadOrder, ReadReport, ReadSource, ScopeReadReport, ShardStore, StoreConfig, VerificationMode,
     VerificationProof,
 };
+pub use store_bench::{BenchConfig, BenchReport, STORE_BENCH_SCHEMA};
 pub use sysfs::{DeviceCounters, Environment, MemoryInfo, MountInfo};
 pub use tier::{
     InFlightTransfer, QueueLimits, QueueSnapshot, QueueStats, Residency, Tier, Transfer,

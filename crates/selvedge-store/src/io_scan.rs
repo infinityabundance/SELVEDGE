@@ -346,6 +346,9 @@ pub struct IoScanReport {
     pub cache_control: CacheControl,
     /// Sequential points.
     pub sequential: Vec<SequentialPoint>,
+    /// Sequential points with readahead disabled (`POSIX_FADV_RANDOM`), which
+    /// isolates the per-operation device latency from the kernel's readahead.
+    pub sequential_noreadahead: Vec<SequentialPoint>,
     /// Random points.
     pub random: Vec<RandomPoint>,
     /// Queue-depth points.
@@ -479,6 +482,21 @@ pub fn run(config: &IoScanConfig) -> Result<IoScanReport> {
             config.drop_cache,
             &mut drops,
             &sampler,
+            false,
+        )?);
+    }
+    let mut sequential_noreadahead = Vec::new();
+    for block in config.block_sizes.iter().copied() {
+        sequential_noreadahead.push(sequential_point(
+            &file,
+            &config.file,
+            len,
+            block,
+            config.sequential_bytes,
+            config.drop_cache,
+            &mut drops,
+            &sampler,
+            true,
         )?);
     }
     let mut random = Vec::new();
@@ -627,6 +645,7 @@ pub fn run(config: &IoScanConfig) -> Result<IoScanReport> {
             drop_effective: cold_warm_ratio > 2.0,
         },
         sequential,
+        sequential_noreadahead,
         random,
         queue_depth,
         alignment,
@@ -679,6 +698,7 @@ fn sequential_point(
     cold: bool,
     drops: &mut Vec<AdviceReport>,
     sampler: &DeviceSampler,
+    no_readahead: bool,
 ) -> Result<SequentialPoint> {
     let bytes = total_bytes.min(len.saturating_sub(block));
     if bytes < block {
@@ -689,7 +709,11 @@ fn sequential_point(
     let operations = bytes / block;
     drop_if_cold(path, cold, drops)?;
     let window = sampler.window();
-    PageCache::sequential(file, 0)?;
+    if no_readahead {
+        PageCache::random(file, 0)?;
+    } else {
+        PageCache::sequential(file, 0)?;
+    }
     let mut buffer = vec![0_u8; usize::try_from(block)?];
     let mut samples = Vec::with_capacity(usize::try_from(operations)?);
     let start = Instant::now();
@@ -797,6 +821,7 @@ fn qd_point(
         ));
     }
     drop_if_cold(path, cold, drops)?;
+    PageCache::random(file, 0)?;
     let window = sampler.window();
     let latencies: Mutex<Vec<u64>> = Mutex::new(Vec::new());
     let start = Instant::now();
@@ -874,6 +899,7 @@ fn alignment_point(
         ));
     }
     drop_if_cold(path, cold, drops)?;
+    PageCache::random(file, 0)?;
     let window = sampler.window();
     let mut buffer = vec![0_u8; usize::try_from(read_bytes)?];
     let start = Instant::now();
@@ -913,6 +939,7 @@ fn overread_point(
         ));
     }
     drop_if_cold(path, cold, drops)?;
+    PageCache::random(file, 0)?;
     let window = sampler.window();
     let slice = &mut buffer[..usize::try_from(overread_bytes)?];
     let start = Instant::now();
@@ -950,6 +977,7 @@ fn checksum_point(
     }
     let mut buffer = vec![0_u8; 1024 * 1024];
     // Warm pass: read once to populate, then hash while re-reading.
+    PageCache::sequential(file, 0)?;
     let mut offset = 0_u64;
     while offset < bytes {
         let want = usize::try_from((bytes - offset).min(buffer.len() as u64))?;
@@ -1055,7 +1083,9 @@ impl SplitMix64 {
     }
 }
 
-fn utc_now() -> String {
+/// Current wall-clock timestamp as `YYYY-MM-DDTHH:MM:SSZ`, UTC.
+#[must_use]
+pub fn utc_now() -> String {
     let seconds = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_secs())
@@ -1068,6 +1098,13 @@ fn stamp_now() -> String {
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_secs())
         .unwrap_or(0);
+    format_timestamp(seconds, true)
+}
+
+/// Format a Unix timestamp as the compact receipt stamp
+/// (`YYYYMMDDTHHMMSSZ`), UTC.
+#[must_use]
+pub fn format_stamp(seconds: u64) -> String {
     format_timestamp(seconds, true)
 }
 
@@ -1162,6 +1199,7 @@ mod tests {
         };
         let report = run(&config).unwrap();
         assert_eq!(report.sequential.len(), 2);
+        assert_eq!(report.sequential_noreadahead.len(), 2);
         assert_eq!(report.random.len(), 2);
         assert_eq!(report.queue_depth.len(), 2);
         assert!(report.checksum.warm_elapsed_ns > 0);

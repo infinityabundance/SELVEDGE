@@ -8,6 +8,7 @@
 //! rejection, the metrics schema, and the typed exact-mode invariant.
 
 #![allow(clippy::unwrap_used)]
+#![allow(clippy::expect_used)]
 
 use std::collections::BTreeSet;
 use std::os::unix::fs::FileExt;

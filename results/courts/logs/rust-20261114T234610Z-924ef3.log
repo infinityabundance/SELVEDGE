@@ -1,0 +1,477 @@
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:448:62
+    |
+408 | pub fn run(config: &IoScanConfig) -> Result<IoScanReport> {
+    |                                      -------------------- expected `StoreError` because of this
+...
+448 |     let mut buffer = vec![0_u8; usize::try_from(buffer_bytes)?];
+    |                                 -----------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                 |
+    |                                 this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:693:55
+    |
+682 | ) -> Result<SequentialPoint> {
+    |      ----------------------- expected `StoreError` because of this
+...
+693 |     let mut buffer = vec![0_u8; usize::try_from(block)?];
+    |                                 ----------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                 |
+    |                                 this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:694:69
+    |
+682 | ) -> Result<SequentialPoint> {
+    |      ----------------------- expected `StoreError` because of this
+...
+694 |     let mut samples = Vec::with_capacity(usize::try_from(operations)?);
+    |                                          ---------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                          |
+    |                                          this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:746:53
+    |
+734 | ) -> Result<RandomPoint> {
+    |      ------------------- expected `StoreError` because of this
+...
+746 |     let slice = &mut buffer[..usize::try_from(block)?];
+    |                               ----------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                               |
+    |                               this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:810:67
+    |
+810 |                 let mut buffer = vec![0_u8; usize::try_from(block)?];
+    |                                             ----------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                             |
+    |                                             this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:811:79
+    |
+811 |                 let mut local = Vec::with_capacity(usize::try_from(operations)?);
+    |                                                    ---------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                                    |
+    |                                                    this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:878:60
+    |
+868 | ) -> Result<AlignmentPoint> {
+    |      ---------------------- expected `StoreError` because of this
+...
+878 |     let mut buffer = vec![0_u8; usize::try_from(read_bytes)?];
+    |                                 ---------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                 |
+    |                                 this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:917:62
+    |
+908 | ) -> Result<AlignmentPoint> {
+    |      ---------------------- expected `StoreError` because of this
+...
+917 |     let slice = &mut buffer[..usize::try_from(overread_bytes)?];
+    |                               -------------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                               |
+    |                               this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:955:78
+    |
+946 | ) -> Result<ChecksumPoint> {
+    |      --------------------- expected `StoreError` because of this
+...
+955 |         let want = usize::try_from((bytes - offset).min(buffer.len() as u64))?;
+    |                    ----------------------------------------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                    |
+    |                    this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:963:78
+    |
+946 | ) -> Result<ChecksumPoint> {
+    |      --------------------- expected `StoreError` because of this
+...
+963 |         let want = usize::try_from((bytes - offset).min(buffer.len() as u64))?;
+    |                    ----------------------------------------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                    |
+    |                    this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:977:78
+    |
+946 | ) -> Result<ChecksumPoint> {
+    |      --------------------- expected `StoreError` because of this
+...
+977 |         let want = usize::try_from((bytes - offset).min(buffer.len() as u64))?;
+    |                    ----------------------------------------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                    |
+    |                    this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/io_scan.rs:991:67
+    |
+946 | ) -> Result<ChecksumPoint> {
+    |      --------------------- expected `StoreError` because of this
+...
+991 |     let mut shard_buffer = vec![0_u8; usize::try_from(shard_bytes)?];
+    |                                       ----------------------------^ the trait `From<TryFromIntError>` is not implemented for `StoreError`
+    |                                       |
+    |                                       this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `StoreError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+  --> crates/selvedge-store/src/pagecache.rs:57:50
+   |
+57 |         fadvise(&file, 0, None, Advice::DontNeed)?;
+   |         -----------------------------------------^ the trait `From<Errno>` is not implemented for `StoreError`
+   |         |
+   |         this can't be annotated with `?` because it has type `Result<_, Errno>`
+   |
+note: `StoreError` needs to implement `From<Errno>`
+  --> crates/selvedge-store/src/error.rs:17:1
+   |
+17 | pub enum StoreError {
+   | ^^^^^^^^^^^^^^^^^^^
+   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+  --> crates/selvedge-store/src/error.rs:26:14
+   |
+26 |     Format(#[from] selvedge_format::FormatError),
+   |              ^^^^ `From<FormatError>`
+...
+29 |     Io(#[from] std::io::Error),
+   |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+  --> crates/selvedge-store/src/pagecache.rs:77:59
+   |
+77 |         fadvise(file, offset, Some(len), Advice::DontNeed)?;
+   |         --------------------------------------------------^ the trait `From<Errno>` is not implemented for `StoreError`
+   |         |
+   |         this can't be annotated with `?` because it has type `Result<_, Errno>`
+   |
+note: `StoreError` needs to implement `From<Errno>`
+  --> crates/selvedge-store/src/error.rs:17:1
+   |
+17 | pub enum StoreError {
+   | ^^^^^^^^^^^^^^^^^^^
+   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+  --> crates/selvedge-store/src/error.rs:26:14
+   |
+26 |     Format(#[from] selvedge_format::FormatError),
+   |              ^^^^ `From<FormatError>`
+...
+29 |     Io(#[from] std::io::Error),
+   |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+  --> crates/selvedge-store/src/pagecache.rs:90:59
+   |
+90 |         fadvise(file, offset, Some(len), Advice::WillNeed)?;
+   |         --------------------------------------------------^ the trait `From<Errno>` is not implemented for `StoreError`
+   |         |
+   |         this can't be annotated with `?` because it has type `Result<_, Errno>`
+   |
+note: `StoreError` needs to implement `From<Errno>`
+  --> crates/selvedge-store/src/error.rs:17:1
+   |
+17 | pub enum StoreError {
+   | ^^^^^^^^^^^^^^^^^^^
+   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+  --> crates/selvedge-store/src/error.rs:26:14
+   |
+26 |     Format(#[from] selvedge_format::FormatError),
+   |              ^^^^ `From<FormatError>`
+...
+29 |     Io(#[from] std::io::Error),
+   |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/pagecache.rs:100:56
+    |
+100 |         fadvise(file, offset, None, Advice::Sequential)?;
+    |         -----------------------------------------------^ the trait `From<Errno>` is not implemented for `StoreError`
+    |         |
+    |         this can't be annotated with `?` because it has type `Result<_, Errno>`
+    |
+note: `StoreError` needs to implement `From<Errno>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/pagecache.rs:110:52
+    |
+110 |         fadvise(file, offset, None, Advice::Random)?;
+    |         -------------------------------------------^ the trait `From<Errno>` is not implemented for `StoreError`
+    |         |
+    |         this can't be annotated with `?` because it has type `Result<_, Errno>`
+    |
+note: `StoreError` needs to implement `From<Errno>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0277]: `?` couldn't convert the error to `StoreError`
+   --> crates/selvedge-store/src/sysfs.rs:136:36
+    |
+106 | pub fn mount_for(path: &Path) -> Result<MountInfo> {
+    |                                  ----------------- expected `StoreError` because of this
+...
+136 |     let stats = statvfs(&canonical)?;
+    |                 -------------------^ the trait `From<Errno>` is not implemented for `StoreError`
+    |                 |
+    |                 this can't be annotated with `?` because it has type `Result<_, Errno>`
+    |
+note: `StoreError` needs to implement `From<Errno>`
+   --> crates/selvedge-store/src/error.rs:17:1
+    |
+ 17 | pub enum StoreError {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: `StoreError` implements trait `From<T>`
+   --> crates/selvedge-store/src/error.rs:26:14
+    |
+ 26 |     Format(#[from] selvedge_format::FormatError),
+    |              ^^^^ `From<FormatError>`
+...
+ 29 |     Io(#[from] std::io::Error),
+    |          ^^^^ `From<std::io::Error>`
+
+error[E0382]: borrow of moved value: `metrics`
+   --> crates/selvedge-store/src/store.rs:593:20
+    |
+575 |         let metrics = match &config.metrics {
+    |             ------- move occurs because `metrics` has type `MetricsSink`, which does not implement the `Copy` trait
+...
+590 |             metrics,
+    |             ------- value moved here
+...
+593 |             epoch: metrics.epoch(),
+    |                    ^^^^^^^ value borrowed here after move
+    |
+note: if `MetricsSink` implemented `Clone`, you could clone the value
+   --> crates/selvedge-store/src/metrics.rs:274:1
+    |
+274 | pub struct MetricsSink {
+    | ^^^^^^^^^^^^^^^^^^^^^^ consider implementing `Clone` for this type
+    |
+   ::: crates/selvedge-store/src/store.rs:590:13
+    |
+590 |             metrics,
+    |             ------- you could clone this value
+
+Some errors have detailed explanations: E0277, E0382.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `selvedge-store` (lib) due to 19 previous errors
+warning: build failed, waiting for other jobs to finish...

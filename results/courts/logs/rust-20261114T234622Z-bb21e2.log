@@ -1,0 +1,103 @@
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+warning: field `inserted_seq` is never read
+   --> crates/selvedge-store/src/cache.rs:192:5
+    |
+189 | pub(crate) struct Entry {
+    |                   ----- field in this struct
+...
+192 |     inserted_seq: u64,
+    |     ^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `cancellations` is never used
+   --> crates/selvedge-store/src/metrics.rs:173:19
+    |
+117 | impl StoreCounters {
+    | ------------------ method in this implementation
+...
+173 |     pub(crate) fn cancellations(&self) -> &AtomicU64 {
+    |                   ^^^^^^^^^^^^^
+
+warning: unused return value of `InFlightTransfer::fail` that must be used
+   --> crates/selvedge-store/src/store.rs:798:13
+    |
+798 |             in_flight.fail("positional read failed");
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+798 |             let _ = in_flight.fail("positional read failed");
+    |             +++++++
+
+warning: unused return value of `InFlightTransfer::fail` that must be used
+   --> crates/selvedge-store/src/store.rs:809:17
+    |
+809 |                 in_flight.fail("verification failed");
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: use `let _ = ...` to ignore the resulting value
+    |
+809 |                 let _ = in_flight.fail("verification failed");
+    |                 +++++++
+
+warning: unused return value of `InFlightTransfer::complete` that must be used
+   --> crates/selvedge-store/src/store.rs:814:9
+    |
+814 |         in_flight.complete();
+    |         ^^^^^^^^^^^^^^^^^^^^
+    |
+help: use `let _ = ...` to ignore the resulting value
+    |
+814 |         let _ = in_flight.complete();
+    |         +++++++
+
+warning: unused return value of `InFlightTransfer::fail` that must be used
+   --> crates/selvedge-store/src/store.rs:981:17
+    |
+981 |                 in_flight.fail("run read failed");
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: use `let _ = ...` to ignore the resulting value
+    |
+981 |                 let _ = in_flight.fail("run read failed");
+    |                 +++++++
+
+warning: unused return value of `InFlightTransfer::complete` that must be used
+   --> crates/selvedge-store/src/store.rs:984:13
+    |
+984 |             in_flight.complete();
+    |             ^^^^^^^^^^^^^^^^^^^^
+    |
+help: use `let _ = ...` to ignore the resulting value
+    |
+984 |             let _ = in_flight.complete();
+    |             +++++++
+
+warning: unused return value of `InFlightTransfer::fail` that must be used
+    --> crates/selvedge-store/src/store.rs:1116:17
+     |
+1116 |                 in_flight.fail("prefetch read failed");
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: use `let _ = ...` to ignore the resulting value
+     |
+1116 |                 let _ = in_flight.fail("prefetch read failed");
+     |                 +++++++
+
+warning: unused return value of `InFlightTransfer::complete` that must be used
+    --> crates/selvedge-store/src/store.rs:1119:13
+     |
+1119 |             in_flight.complete();
+     |             ^^^^^^^^^^^^^^^^^^^^
+     |
+help: use `let _ = ...` to ignore the resulting value
+     |
+1119 |             let _ = in_flight.complete();
+     |             +++++++
+
+warning: `selvedge-store` (lib) generated 9 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.39s

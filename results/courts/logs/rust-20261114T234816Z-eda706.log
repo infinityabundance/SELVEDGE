@@ -1,0 +1,37 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_store-614b4019990fe443)
+
+running 1 test
+
+thread 'layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard' (55) panicked at crates/selvedge-store/src/layout.rs:333:9:
+assertion `left == right` failed
+  left: 3
+ right: 2
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<usize, usize>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: selvedge_store::layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard
+             at ./src/layout.rs:333:9
+   5: selvedge_store::layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard::{closure#0}
+             at ./src/layout.rs:320:64
+   6: <selvedge_store::layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard ... FAILED
+
+failures:
+
+failures:
+    layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p selvedge-store --lib`

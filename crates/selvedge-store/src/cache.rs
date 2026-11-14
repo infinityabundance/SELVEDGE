@@ -140,6 +140,27 @@ pub struct CacheStats {
 }
 
 impl CacheStats {
+    /// A zeroed counter block for reports that were not produced by a policy.
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            policy: "none".to_owned(),
+            capacity_bytes: 0,
+            used_bytes: 0,
+            entries: 0,
+            pinned_entries: 0,
+            hits: 0,
+            misses: 0,
+            inserts: 0,
+            admissions: 0,
+            evictions: 0,
+            evicted_bytes: 0,
+            evicted_unused_bytes: 0,
+            refusals: 0,
+            bypassed_bytes: 0,
+        }
+    }
+
     /// Hit ratio as a fraction of lookups, or zero when there were none.
     #[must_use]
     pub fn hit_ratio(&self) -> f64 {
