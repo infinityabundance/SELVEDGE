@@ -1,0 +1,27 @@
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/src/court.rs:98:13
+    |
+ 97 |         CourtCommand::AReal(real) => run_a_real(
+    |                                      ---------- arguments to this function are incorrect
+ 98 |             real,
+    |             ^^^^ expected `&RealCourtArgs`, found `RealCourtArgs`
+    |
+note: function defined here
+   --> crates/selvedge-cli/src/court.rs:156:4
+    |
+156 | fn run_a_real(
+    |    ^^^^^^^^^^
+157 |     args: &RealCourtArgs,
+    |     --------------------
+help: consider borrowing here
+    |
+ 98 |             &real,
+    |             +
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `selvedge-cli` (bin "selvedge" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-cli` (bin "selvedge") due to 1 previous error

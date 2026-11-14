@@ -1,0 +1,4374 @@
+{
+  "schema": "selvedge/model-accounting/v1",
+  "ok": true,
+  "stamp": "20261114T201533Z",
+  "revision": "d9bb4ce17c699a8df22c204e890f59c6b970bc35",
+  "generated_by": "selvedge-convert 0.1.0",
+  "model": {
+    "path": "/hf-cache/models/Qwen/Qwen3-1.7B/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "model_type": "qwen3",
+    "architectures": [
+      "Qwen3ForCausalLM"
+    ],
+    "config_sha256": "1ddb5b89ebc90dcb417a45c213d818577e65976454d29385c8f6140771d95197",
+    "checkpoint_digest": "c4de86a90d4aa78ebca027702c52cb693748b5917d420484ad4536ea2a9e0f1a",
+    "checkpoint_files": 2,
+    "hidden": 2048,
+    "intermediate": 6144,
+    "layers": 28,
+    "vocab": 151936,
+    "heads": 16,
+    "kv_heads": 8,
+    "head_dim": 128
+  },
+  "tie": {
+    "config_tie_word_embeddings": true,
+    "lm_head_present": true,
+    "lm_head_identical_to_embedding": true,
+    "treated_as_shared": true,
+    "compared_elements": 311164928
+  },
+  "components": [
+    {
+      "tensor": "lm_head.weight",
+      "component": "lm_head",
+      "shape": [
+        151936,
+        2048
+      ],
+      "elements": 311164928,
+      "bytes": 622329856,
+      "dtype": "bf16",
+      "layer": null,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.embed_tokens.weight",
+      "component": "embedding",
+      "shape": [
+        151936,
+        2048
+      ],
+      "elements": 311164928,
+      "bytes": 622329856,
+      "dtype": "bf16",
+      "layer": null,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.0.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.0.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.0.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.0.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 0,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.1.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.1.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.1.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.1.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 1,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.10.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.10.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.10.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.10.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 10,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.11.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.11.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.11.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.11.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 11,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.12.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.12.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.12.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.12.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 12,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.13.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.13.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.13.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.13.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 13,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.14.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.14.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.14.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.14.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 14,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.15.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.15.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.15.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.15.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 15,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.16.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.16.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.16.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.16.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 16,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.17.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.17.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.17.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.17.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 17,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.18.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.18.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.18.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.18.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 18,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.19.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.19.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.19.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.19.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 19,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.2.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.2.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.2.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.2.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 2,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.20.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.20.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.20.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.20.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 20,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.21.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.21.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.21.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.21.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 21,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.22.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.22.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.22.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.22.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 22,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.23.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.23.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.23.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.23.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 23,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.24.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.24.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.24.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.24.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 24,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.25.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.25.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.25.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.25.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 25,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.26.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.26.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.26.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.26.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 26,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.27.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.27.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.27.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.27.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 27,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.3.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.3.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.3.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.3.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 3,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.4.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.4.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.4.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.4.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 4,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.5.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.5.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.5.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.5.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 5,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.6.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.6.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.6.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.6.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 6,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.7.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.7.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.7.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.7.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 7,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.8.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.8.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.8.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.8.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 8,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.input_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.mlp.down_proj.weight",
+      "component": "mlp.down",
+      "shape": [
+        2048,
+        6144
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.9.mlp.gate_proj.weight",
+      "component": "mlp.gate",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.9.mlp.up_proj.weight",
+      "component": "mlp.up",
+      "shape": [
+        6144,
+        2048
+      ],
+      "elements": 12582912,
+      "bytes": 25165824,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": false,
+      "ffn": true
+    },
+    {
+      "tensor": "model.layers.9.post_attention_layernorm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.self_attn.k_norm.weight",
+      "component": "attention.k_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.self_attn.k_proj.weight",
+      "component": "attention.k",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.self_attn.o_proj.weight",
+      "component": "attention.o",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.self_attn.q_norm.weight",
+      "component": "attention.q_norm",
+      "shape": [
+        128
+      ],
+      "elements": 128,
+      "bytes": 256,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.self_attn.q_proj.weight",
+      "component": "attention.q",
+      "shape": [
+        2048,
+        2048
+      ],
+      "elements": 4194304,
+      "bytes": 8388608,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.layers.9.self_attn.v_proj.weight",
+      "component": "attention.v",
+      "shape": [
+        1024,
+        2048
+      ],
+      "elements": 2097152,
+      "bytes": 4194304,
+      "dtype": "bf16",
+      "layer": 9,
+      "always_active": true,
+      "ffn": false
+    },
+    {
+      "tensor": "model.norm.weight",
+      "component": "norm",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "bytes": 4096,
+      "dtype": "bf16",
+      "layer": null,
+      "always_active": true,
+      "ffn": false
+    }
+  ],
+  "totals": {
+    "embedding": 311164928,
+    "attention": 352328704,
+    "norm": 116736,
+    "ffn": 1056964608,
+    "lm_head": 311164928
+  },
+  "budget": {
+    "ceiling": 1000000000,
+    "checkpoint_tensor_elements": 2031739904,
+    "unique_learned_elements": 1720574976,
+    "always_active_backbone_elements": 663610368,
+    "removable_ffn_elements": 1056964608,
+    "headroom_elements": -720574976,
+    "max_compliant_ffn_elements": 336389632,
+    "max_compliant_ffn_fraction": 0.31826007176959326,
+    "per_layer_full_ffn_elements": 37748736,
+    "max_compliant_channels_per_layer": 1955,
+    "intermediate_per_layer": 6144,
+    "group_count": 16,
+    "group_width": 384,
+    "max_compliant_whole_groups_per_layer": 5,
+    "max_compliant_full_ffn_layers": 8.91128200954861,
+    "ceiling_binding": true,
+    "dense_execution_compliant": false,
+    "backbone_fits": true,
+    "verdict": "binding_backbone_fits",
+    "explanation": "the dense checkpoint is 1720574976 unique parameters and exceeds the 1000000000 ceiling, but the always-on backbone is 663610368; at most 336389632 FFN parameters (a fraction 0.318260 of the FFN) can be active per token"
+  },
+  "flops": {
+    "measured": false,
+    "formulas": [
+      "matmul FLOPs = 2 * out_features * in_features for one token",
+      "attention projections = q + k + v + o matmuls, using kv_heads for k and v",
+      "attention core = 4 * context_length * (heads * head_dim) for QK^T and AV",
+      "attention softmax estimate = 5 * context_length * heads (elementwise, not measured)",
+      "RMSNorm estimate = 4 * normalised_elements; q_norm and k_norm apply once per head",
+      "SwiGLU matmul = 2*(I*H) for gate + 2*(I*H) for up + 2*(H*I) for down = 6*I*H",
+      "SwiGLU elementwise estimate = 6 * I (SiLU, gate multiply, group accumulate)",
+      "lm_head = 2 * vocab * hidden, executed once per token whether or not weights are tied",
+      "embedding lookup is a gather and contributes no matmul FLOPs",
+      "no FLOP here is measured; they are arithmetic estimates from these formulas"
+    ],
+    "per_token": {
+      "attention_projections_per_layer": 25165824,
+      "attention_projections_all_layers": 704643072,
+      "attention_core": [
+        {
+          "context": 1,
+          "attention_core": 8192,
+          "attention_softmax_estimate": 80
+        },
+        {
+          "context": 2048,
+          "attention_core": 16777216,
+          "attention_softmax_estimate": 163840
+        },
+        {
+          "context": 40960,
+          "attention_core": 335544320,
+          "attention_softmax_estimate": 3276800
+        }
+      ],
+      "norms_per_layer_estimate": 28672,
+      "lm_head_projection": 622329856,
+      "always_on_backbone": 1327783936,
+      "ffn_matmul_per_layer": 75497472,
+      "ffn_elementwise_per_layer_estimate": 36864,
+      "ffn_matmul_all_layers": 2113929216,
+      "ffn_total_all_layers_estimate": 2114961408,
+      "dense_total_at_first_context_estimate": 3442976960
+    },
+    "groups": {
+      "group_count": 16,
+      "group_width": 384,
+      "group_widths": [
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384
+      ],
+      "elements_per_full_group": 2359296,
+      "matmul_flops_per_full_group": 4718592,
+      "elementwise_per_full_group_estimate": 2304,
+      "always_on_plus_one_group": 1332504832,
+      "always_on_plus_all_groups": 3442745344
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "cpu": {
+    "device": "cpu",
+    "matmul_bitwise_equal": true,
+    "matmul_expected": [
+      [
+        11.0,
+        14.0
+      ],
+      [
+        24.5,
+        32.0
+      ]
+    ],
+    "matmul_result": [
+      [
+        11.0,
+        14.0
+      ],
+      [
+        24.5,
+        32.0
+      ]
+    ],
+    "silu_input": [
+      -2.0,
+      -1.0,
+      0.0,
+      1.0,
+      2.0
+    ],
+    "silu_max_abs_error": 1.1920928955078125e-07,
+    "silu_ok": true,
+    "silu_result": [
+      -0.23840583860874176,
+      -0.2689414322376251,
+      0.0,
+      0.7310585975646973,
+      1.7615940570831299
+    ],
+    "silu_tolerance": 1e-06
+  },
+  "cuda": {
+    "capability": "8.9",
+    "checks": {
+      "device": "cuda:0",
+      "matmul_bitwise_equal": true,
+      "matmul_expected": [
+        [
+          11.0,
+          14.0
+        ],
+        [
+          24.5,
+          32.0
+        ]
+      ],
+      "matmul_result": [
+        [
+          11.0,
+          14.0
+        ],
+        [
+          24.5,
+          32.0
+        ]
+      ],
+      "silu_input": [
+        -2.0,
+        -1.0,
+        0.0,
+        1.0,
+        2.0
+      ],
+      "silu_max_abs_error": 1.1920928955078125e-07,
+      "silu_ok": true,
+      "silu_result": [
+        -0.23840583860874176,
+        -0.2689414322376251,
+        0.0,
+        0.7310585379600525,
+        1.7615940570831299
+      ],
+      "silu_tolerance": 1e-06
+    },
+    "device_count": 1,
+    "device_name": "NVIDIA GeForce RTX 4080 SUPER"
+  },
+  "cuda_available": true,
+  "ok": true,
+  "platform": "Linux-7.3.3-1-cachyos-x86_64-with-glibc2.41",
+  "python": "3.12.16",
+  "revision": "9bccaffe8b4f3e11113e0c389d8fb3418ab779a4",
+  "schema": "selvedge/oracle-probe/v1",
+  "stamp": "20261114T201402Z",
+  "timestamp_utc": "2026-11-14T20:14:17Z",
+  "versions": {
+    "numpy": "2.5.4",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "torch_cuda_runtime": "13.2",
+    "transformers": "5.23.0"
+  }
+}

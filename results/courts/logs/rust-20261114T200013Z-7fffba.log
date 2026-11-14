@@ -1,0 +1,27 @@
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+error[E0599]: no method named `finish` found for unit type `()` in the current scope
+   --> crates/selvedge-convert/src/accounting.rs:400:10
+    |
+398 |       let digest = selvedge_core::Sha256Builder::new()
+    |                    -----------------------------------
+    |                    |
+    |  __________________method `finish` is available on `&mut Sha256Builder`
+    | |
+399 | |         .update(&bytes)
+400 | |         .finish()
+    | |         -^^^^^^ method not found in `()`
+    | |_________|
+    |
+    |
+note: method `update` modifies its receiver in-place
+   --> crates/selvedge-convert/src/accounting.rs:399:10
+    |
+399 |         .update(&bytes)
+    |          ^^^^^^ this call modifies its receiver in-place
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `selvedge-convert` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-convert` (lib test) due to 1 previous error

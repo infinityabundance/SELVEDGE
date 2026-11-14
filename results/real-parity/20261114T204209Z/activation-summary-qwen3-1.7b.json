@@ -1,0 +1,88 @@
+{
+  "activations": {
+    "bytes": 58730456,
+    "path": "/work/results/artifacts/activations/qwen3-1.7b/activations.safetensors",
+    "sha256": "389a7ccd30f04bf2bc5112157a1a91d061345711a501b6af2b039006c5ed70aa",
+    "tensor_count": 112
+  },
+  "aligned_rows": 64,
+  "arithmetic_mode": {
+    "allow_bf16_reduced_precision_reduction": false,
+    "allow_tf32_cudnn": false,
+    "allow_tf32_matmul": false,
+    "float32_matmul_precision": "highest"
+  },
+  "bf16_output_stats": {
+    "input_abs_max": 394.0,
+    "output_abs_max": 13056.0,
+    "output_abs_mean": 2.7048138044774532,
+    "output_rms": 22.37607102803133
+  },
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 4080 SUPER",
+  "dtype_paths": [
+    "bf16",
+    "f32"
+  ],
+  "f32_output_stats": {
+    "input_abs_max": 388.1025085449219,
+    "output_abs_max": 13045.7412109375,
+    "output_abs_mean": 2.704411531133311,
+    "output_rms": 22.197093638895705
+  },
+  "f32_rows": 64,
+  "hidden": 2048,
+  "intermediate": 6144,
+  "layers": 28,
+  "model": {
+    "directory": "/hf-cache/models/Qwen/Qwen3-1.7B/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "id": "Qwen/Qwen3-1.7B",
+    "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "notes": [
+    "the bf16 path is the checkpoint's native dtype and is the teacher output",
+    "the f32 path is the same weights widened exactly, used as the arithmetic reference",
+    "only the MLP module boundary is instrumented",
+    "trust_remote_code=False and local_files_only=True"
+  ],
+  "prompt_set": {
+    "id": "qwen3-teacher-prompts-v1",
+    "max_tokens": 64,
+    "path": "fixtures/prompts/qwen3-teacher-prompts.json",
+    "per_prompt": [
+      {
+        "id": "arith-chain",
+        "prompt_sha256": "e2b02500ea3c934e106b32d3fea841528e183af88b05487751bd6691e02fc6a6",
+        "token_ids_sha256": "c0f44b7d8d327a5b920b52a4ae43ce91f57dd4b8c19652d0a13aab3ab060612e",
+        "tokens": 21
+      },
+      {
+        "id": "code-snippet",
+        "prompt_sha256": "fcd1e832688263efc2469e812a52db409bdcde367cb07c40c12290e86164a08d",
+        "token_ids_sha256": "12e34ab5a0fb434af78abc60913de0f888fbbaa9ee8b778194e0f7adb956c54f",
+        "tokens": 16
+      },
+      {
+        "id": "short-explain",
+        "prompt_sha256": "952c9f92cea1dffcf12e45066712562f28c7d5c94b158d203fbf508ad0073cad",
+        "token_ids_sha256": "8d212f77690b93a6e58ff1d4ebc55dded090a43b6a926182e7c2933904fc5750",
+        "tokens": 14
+      },
+      {
+        "id": "list-format",
+        "prompt_sha256": "fe83ac9f0b2660ef33f5a550de1485d5f10edaaa1f7fdc2502c103fd2ec12858",
+        "token_ids_sha256": "618787b3c948445d30d7981791e2829168921d752fc5592c1fe6ce432ff5add0",
+        "tokens": 13
+      }
+    ]
+  },
+  "schema": "selvedge/activation-capture/v1",
+  "stamp": "20261114T205412Z",
+  "timestamp_utc": "2026-11-14T20:54:12Z",
+  "versions": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu132",
+    "torch_cuda_runtime": "13.2",
+    "transformers": "5.23.0"
+  }
+}

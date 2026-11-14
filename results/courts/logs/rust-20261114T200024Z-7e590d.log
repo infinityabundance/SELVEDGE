@@ -1,0 +1,43 @@
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+error: field `max_position_embeddings` is never read
+   --> crates/selvedge-convert/src/accounting.rs:341:5
+    |
+325 | struct QwenConfig {
+    |        ---------- field in this struct
+...
+341 |     max_position_embeddings: Option<u64>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `QwenConfig` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `-D dead-code` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: manual checked division
+   --> crates/selvedge-convert/src/accounting.rs:823:27
+    |
+823 |     let whole_groups = if group_width == 0 {
+    |                           ^^^^^^^^^^^^^^^^ check performed here
+...
+826 |         channels_per_layer / group_width
+    |         -------------------------------- division performed here
+    |
+    = help: consider using `checked_div`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_checked_ops
+    = note: `-D clippy::manual-checked-ops` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_checked_ops)]`
+
+error: manual checked division
+    --> crates/selvedge-convert/src/accounting.rs:1060:54
+     |
+1060 |     budget.max_compliant_whole_groups_per_layer = if budget.group_width == 0 {
+     |                                                      ^^^^^^^^^^^^^^^^^^^^^^^ check performed here
+...
+1063 |         budget.max_compliant_channels_per_layer / budget.group_width
+     |         ------------------------------------------------------------ division performed here
+     |
+     = help: consider using `checked_div`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_checked_ops
+
+error: could not compile `selvedge-convert` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-convert` (lib test) due to 3 previous errors

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/oracle/capture_activations.py", line 248, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capture_activations.py", line 163, in main
+    bf16 = capture_pass(model, tokenizer, prompts, device, args.max_tokens, "bf16")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capture_activations.py", line 117, in capture_pass
+    inputs = torch.cat(input_rows, dim=0)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Sizes of tensors must match except in dimension 0. Expected size 21 but got size 16 for tensor number 1 in the list.

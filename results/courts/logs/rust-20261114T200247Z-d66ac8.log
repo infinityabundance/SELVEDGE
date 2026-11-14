@@ -1,0 +1,17 @@
+warning: unused variable: `backbone`
+   --> crates/selvedge-convert/src/accounting.rs:795:9
+    |
+795 |     let backbone = totals
+    |         ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_backbone`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+model=/hf-cache/models/Qwen/Qwen3-1.7B/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e type=qwen3 layers=28 hidden=2048 intermediate=6144 heads=16 kv_heads=8 head_dim=128 vocab=151936
+config_sha256=1ddb5b89ebc90dcb417a45c213d818577e65976454d29385c8f6140771d95197 checkpoint_digest=c4de86a90d4aa78ebca027702c52cb693748b5917d420484ad4536ea2a9e0f1a files=2
+tie config=true lm_head_present=true identical=true treated_as_shared=true compared_elements=311164928
+totals embedding=311164928 attention=352328704 norm=116736 ffn=1056964608 lm_head=311164928
+unique=1720574976 checkpoint_tensor_elements=2031739904 backbone=663610368 removable_ffn=1056964608 ceiling=1000000000 headroom=-720574976
+verdict=binding_backbone_fits binding=true dense_compliant=false backbone_fits=true max_ffn=336389632 fraction=0.318260 channels/layer=1955 whole_groups/layer=5 full_ffn_layers=8.911
+the dense checkpoint is 1720574976 unique parameters and exceeds the 1000000000 ceiling, but the always-on backbone is 663610368; at most 336389632 FFN parameters (a fraction 0.318260 of the FFN) can be active per token
+flops/token backbone=1327783936 ffn_all=2114961408 dense=3442976960 (estimates)
+flops/group width=384 group_count=16 ffn_matmul=4718592 always_on_plus_one_group=1332504832

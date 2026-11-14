@@ -1,0 +1,9 @@
+model=/hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca type=qwen3 layers=28 hidden=1024 intermediate=3072 heads=16 kv_heads=8 head_dim=128 vocab=151936
+config_sha256=660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd checkpoint_digest=ad15450e2cc22602dea17ade7ac209fb47baed8beffff34264527f002853149e files=1
+tie config=true lm_head_present=true identical=true treated_as_shared=true compared_elements=155582464
+totals embedding=155582464 attention=176167936 norm=58368 ffn=264241152 lm_head=155582464
+unique=596049920 checkpoint_tensor_elements=751632384 backbone=331808768 removable_ffn=264241152 ceiling=1000000000 headroom=403950080
+verdict=not_binding binding=false dense_compliant=true backbone_fits=true max_ffn=668191232 fraction=1.000000 channels/layer=7768 whole_groups/layer=40 full_ffn_layers=70.804
+the full dense checkpoint is 596049920 unique learned parameters, at or below the 1000000000 ceiling; sparsity is a quality/cost choice here, not a compliance requirement
+flops/token backbone=664064000 ffn_all=528998400 dense=1193294016 (estimates)
+flops/group width=192 group_count=16 ffn_matmul=1179648 always_on_plus_one_group=665244800

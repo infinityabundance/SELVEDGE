@@ -1,0 +1,13 @@
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+error: unused variable: `backbone`
+   --> crates/selvedge-convert/src/accounting.rs:795:9
+    |
+795 |     let backbone = totals
+    |         ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_backbone`
+    |
+    = note: `-D unused-variables` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_variables)]`
+
+error: could not compile `selvedge-convert` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-convert` (lib test) due to 1 previous error

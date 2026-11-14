@@ -1,0 +1,19 @@
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+error[E0507]: cannot move out of `args.command` as enum variant `AReal` which is behind a shared reference
+  --> crates/selvedge-cli/src/court.rs:89:11
+   |
+89 |     match args.command {
+   |           ^^^^^^^^^^^^
+...
+97 |         CourtCommand::AReal(real) => run_a_real(
+   |                             ---- data moved here because `real` has type `court::RealCourtArgs`, which does not implement the `Copy` trait
+   |
+help: consider borrowing the pattern binding
+   |
+97 |         CourtCommand::AReal(ref real) => run_a_real(
+   |                             +++
+
+For more information about this error, try `rustc --explain E0507`.
+error: could not compile `selvedge-cli` (bin "selvedge" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-cli` (bin "selvedge") due to 1 previous error
