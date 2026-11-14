@@ -1,0 +1,24 @@
+[package]
+name = "selvedge-store"
+description = "Tiered shard storage, cache policies and measured physical I/O for SELVEDGE"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+selvedge-core.workspace = true
+selvedge-format.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+rustix.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+selvedge-fixtures.workspace = true
+
+[lints]
+workspace = true
