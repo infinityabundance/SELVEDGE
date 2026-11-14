@@ -266,9 +266,9 @@ they come from a receipt.
 
 ## 2026-11-14 — S2: safetensors, exact SwiGLU groups, Court A
 
-Revision: `c0c68a454f936b0979f4a7afc7754f68c445328b`. The Court A receipt is
-`results/court-a/20261114T192745Z.json` (stamp `20261114T192745Z`, revision
-`c0c68a454f936b0979f4a7afc7754f68c445328b`). Every command below ran offline
+Revision: `52225ef03f1d1924867a60863a5c0480953eb29f`. The Court A receipt is
+`results/court-a/20261114T193212Z.json` (stamp `20261114T193212Z`, revision
+`52225ef03f1d1924867a60863a5c0480953eb29f`). Every command below ran offline
 (`--network none`) in the Rust court with the image and limits recorded in its
 receipt. No model-quality or timing number is claimed.
 
@@ -313,7 +313,7 @@ transpose and tolerance policy.
 
 | hypothesis | result | evidence |
 | --- | --- | --- |
-| H0: the full group sum reconstructs the dense FFN in f32 within a stated bound. | Confirmed on the synthetic SwiGLU for the full named scenario matrix; the measured maxima are printed below from the receipt. | Court A receipt `results/court-a/20261114T192745Z.json`; `court_a` tests. |
+| H0: the full group sum reconstructs the dense FFN in f32 within a stated bound. | Confirmed on the synthetic SwiGLU for the full named scenario matrix; the measured maxima are printed below from the receipt. | Court A receipt `results/court-a/20261114T193212Z.json`; `court_a` tests. |
 | The decomposition survives group permutation, sizes one/two/three/prime, non-divisible grouping and the empty subset. | Confirmed within the same measured bound. The empty subset is exactly `+0.0`; this is a mathematical zero, not a skip-quality proof. | Named scenarios `group_permutation_invariance`, `group_size_*`, `non_divisible_grouping`, `empty_subset_is_exact_zero`. |
 | Repacking is orientation-independent for column-major and explicitly transposed sources. | Confirmed for both storage orders. | Named scenarios `column_major_source`, `transposed_source`. |
 | The down shard can be a contiguous transposed copy without a gather-heavy fragment. | Confirmed by decoding the manifest-declared `transposed[1,0]` order and matching the source. | `swiglu.down.transpose.v1` shards; `shard_ids_and_hashes_match_manifest`. |
@@ -375,7 +375,7 @@ Every value below is emitted from the Court A receipt by
 <!-- END GENERATED: court-a-payload-bytes -->
 - peak in-flight bytes during the all-groups conversion:
 <!-- BEGIN GENERATED: court-a-peak-inflight-bytes -->
-96
+128
 <!-- END GENERATED: court-a-peak-inflight-bytes -->
 
 The pass gate is elementwise `|a - b| <= abs_tol + rel_tol * |b|`. The printed
@@ -391,7 +391,7 @@ rounding.
 | `cargo fmt --all --check` | `results/courts/rust-20261114T192803Z-9a04be.json` |
 | `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T192804Z-2bc9f5.json` |
 | `cargo test --workspace` (unit, safetensors hostile/proptest, decomposition, named Court A, CLI) | `results/courts/rust-20261114T192804Z-bfd748.json` |
-| `selvedge court a` | `results/courts/rust-20261114T192808Z-58ccc8.json`; report `results/court-a/20261114T192745Z.json` |
+| `selvedge court a` | `results/courts/rust-20261114T192808Z-58ccc8.json`; report `results/court-a/20261114T193212Z.json` |
 | `scripts/demo-offline.sh` (generate, convert, validate, verify, court a) | `results/courts/rust-20261114T192809Z-d2af65.json`, `...192810Z-8813b1.json`, `...192811Z-490a12.json`, `...192811Z-80757b.json`, `...192812Z-d2c0de.json`; report `results/demo-offline/20261114T192809Z.json` |
 | Every commit carries the operator identity | `results/courts/commit_identity-20261114T192812Z-fe8b25.json` |
 | Generated numbers match their receipts | `results/courts/perf_numbers-20261114T192852Z-fd0571.json` (write), `...192857Z-ed9bc8.json` and `...192909Z-901902.json` (checks) |
