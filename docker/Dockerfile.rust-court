@@ -1,0 +1,31 @@
+# SELVEDGE Rust court.
+#
+# Minimal Debian-based image: pinned Rust stable toolchain plus the packages a
+# Cargo workspace needs (linker, pkg-config, CA roots, git for the identity
+# court). The court mounts /work, /cargo and /work/target, runs as the host UID,
+# and never gets the network unless the caller passes --net.
+#
+# Build with scripts/build-courts.sh; the resulting image id and base digest are
+# recorded in docker/IMAGES.lock.
+ARG RUST_BASE=rust:1.98-slim
+FROM ${RUST_BASE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        git \
+        jq \
+        pkg-config \
+        procps \
+        util-linux \
+    && rm -rf /var/lib/apt/lists/*
+
+# Keep the upstream toolchain and PATH; CARGO_HOME is overridden at run time to
+# the persistent /cargo cache. Record the versions the image was built with.
+RUN rustc --version && cargo --version && cc --version | head -1
+
+WORKDIR /work

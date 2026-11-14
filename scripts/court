@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Short aliases over scripts/docker-court.sh. Everything still runs in the
+# court with the same hard limits; this script only chooses the argv.
+#
+# Usage:
+#   scripts/court [--net] [--gpu] rust test [cargo args...]
+#   scripts/court rust fmt | clippy | build | check | run | bench | doc
+#   scripts/court rust -- cargo test -p selvedge-core
+#   scripts/court python scripts/perf_numbers.py --check
+#   scripts/court python -m pytest tests
+#   scripts/court io -- fio --name=seq --filename=/work/target/io.bin ...
+#   scripts/court commit_identity
+#   scripts/court perf_numbers
+set -Eeuo pipefail
+
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+court_runner="$script_dir/docker-court.sh"
+
+usage() {
+  sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+if (($# == 0)); then
+  usage >&2
+  exit 64
+fi
+
+declare -a flags=()
+while (($#)); do
+  case "$1" in
+    --net | --gpu | --host-root-ro)
+      flags+=("$1")
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if (($# == 0)); then
+  usage >&2
+  exit 64
+fi
+
+court="$1"
+shift
+
+case "$court" in
+  rust)
+    if (($# == 0)); then
+      exec "$court_runner" "${flags[@]}" rust
+    fi
+    if [[ "$1" == "--" ]]; then
+      shift
+      exec "$court_runner" "${flags[@]}" rust -- "$@"
+    fi
+    case "$1" in
+      fmt | clippy | build | check | test | run | bench | doc | update | metadata | tree)
+        subcommand="$1"
+        shift
+        exec "$court_runner" "${flags[@]}" rust -- cargo "$subcommand" "$@"
+        ;;
+      *)
+        exec "$court_runner" "${flags[@]}" rust -- "$@"
+        ;;
+    esac
+    ;;
+  python)
+    if (($# == 0)); then
+      exec "$court_runner" "${flags[@]}" python
+    fi
+    if [[ "$1" == "--" ]]; then
+      shift
+      exec "$court_runner" "${flags[@]}" python -- "$@"
+    fi
+    case "$1" in
+      -m | -c | -V | --version)
+        exec "$court_runner" "${flags[@]}" python -- python3 "$@"
+        ;;
+      *)
+        exec "$court_runner" "${flags[@]}" python -- python3 "$@"
+        ;;
+    esac
+    ;;
+  io)
+    if (($# == 0)); then
+      exec "$court_runner" "${flags[@]}" io
+    fi
+    if [[ "$1" == "--" ]]; then
+      shift
+      exec "$court_runner" "${flags[@]}" io -- "$@"
+    fi
+    exec "$court_runner" "${flags[@]}" io -- "$@"
+    ;;
+  commit_identity)
+    exec "$court_runner" "${flags[@]}" commit_identity -- "$@"
+    ;;
+  perf_numbers)
+    if (($# == 0)); then
+      exec "$court_runner" "${flags[@]}" perf_numbers
+    fi
+    exec "$court_runner" "${flags[@]}" perf_numbers -- python3 scripts/perf_numbers.py "$@"
+    ;;
+  *)
+    printf 'court: unknown court %q\n' "$court" >&2
+    usage >&2
+    exit 64
+    ;;
+esac

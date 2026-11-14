@@ -1,0 +1,29 @@
+# SELVEDGE Python court (also used for `io` and `perf_numbers` courts).
+#
+# Pinned Python 3.12 with build tooling for oracle wheels, fio for physical I/O
+# courts, and the exact pins from docker/requirements-court.txt. The court runs
+# offline at test time, so no pip install may happen inside a court run.
+ARG PYTHON_BASE=python:3.12-slim
+FROM ${PYTHON_BASE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+COPY docker/requirements-court.txt /tmp/requirements-court.txt
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        fio \
+        git \
+        jq \
+        procps \
+        util-linux \
+    && pip install --no-cache-dir --no-compile -r /tmp/requirements-court.txt \
+    && rm -f /tmp/requirements-court.txt \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 --version && python3 -c 'import numpy, pytest; print("numpy", numpy.__version__); print("pytest", pytest.__version__)'
+
+WORKDIR /work
