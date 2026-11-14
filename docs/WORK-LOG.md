@@ -134,3 +134,122 @@ duration and the toolchain versions observed inside the container.
 S1: create the Cargo workspace and the `selvedge-core` / `selvedge-format` /
 `selvedge-convert` crates with Court A tests run through `scripts/court rust
 test`. Nothing in S1 may quote a number that is not generated from a receipt.
+
+## 2026-11-14 — S1: workspace, data contracts, shard format, CLI and Courts C/D
+
+Revision: `099e0d815968c1333e15ee4e1f608f2b61fdd7d8`. All receipts below were
+produced with a clean worktree at that revision, offline, in the Rust court with
+the image recorded in `docker/IMAGES.lock`. No performance number was measured
+and none is claimed.
+
+### Plan
+
+S1 delivers the foundation every later phase codes against, in dependency
+order: a Cargo workspace; `selvedge-core` data contracts with a real budget
+gate; `selvedge-format` with manifest v1, validation and atomic publication;
+the `selvedge` CLI (`doctor`, `inspect`, `format validate`); deterministic
+fixtures; and executable Courts C and D. Tensor conversion (S2) and the
+oracle/selectors (S3) are explicitly out of scope.
+
+### What was built
+
+- `selvedge-core`: canonical little-endian byte writer and sorted-key JSON;
+  `Sha256Digest`; `ModelDigest` over a normalized checkpoint fileset;
+  content-derived `ShardId`; `TensorRole`, `DType` (including packed and
+  explicit-unsupported variants), `QuantScheme`, `StorageOrder`,
+  `TensorSlice`, `ChannelSet`, `ParamIdentity`, `ElementCount`; checked size
+  arithmetic; `ParameterLedger` with union accounting, repeated-read counters,
+  FLOPs, tier bytes, non-learned auxiliary bytes, `Budget`/`BudgetVerdict`,
+  `DecisionPlan`, a within-budget fallback hook and `TokenAccounting`;
+  `SelectionDecision` with `NativeSetAttestation`/`ExactSelection`;
+  residency and transfer records; `CostModel`/`Backend` traits; typed `Config`
+  with hard limits and canonical hash; test-support temp directories.
+- `selvedge-format`: manifest v1 with per-shard role/layer/channels/shape/
+  orientation/dtype/quantization/offset/length/checksum/alignment/
+  compatibility id/transform/links/calibration; validator covering length,
+  magic, version, bounded manifest parsing, semantic checks, content-derived
+  ids, extent bounds, overlap, alignment, payload hashes, expected model digest
+  and compatibility id, selected/structural verification modes and
+  cancellation; atomic publisher (temporary file, fsync, full validation of the
+  temporary file, hard-link or rename, directory fsync); sidecar publication
+  and staleness detection; `MemoryBundle`; `BundleFile` with capped and
+  cancellable reads; hot-reload catalog.
+- `selvedge-cli`: `doctor [--json] [--probe-host]`, `inspect <bundle|manifest>
+  [--json]`, `format validate <bundle>` with expected-digest/compatibility and
+  verification-mode flags, and executable `court c` / `court d`.
+- `selvedge-fixtures`: in-repo xorshift PRNG and a two-layer, four-group
+  synthetic bundle with one block-quantized shard; tracked artifact and
+  regeneration command in `fixtures/README.md`.
+- `docker/Dockerfile.rust-court`: adds the `rustfmt` and `clippy` components so
+  the offline format and lint courts work; `docker/IMAGES.lock` updated by
+  `scripts/build-courts.sh rust`.
+- `docs/SHARD-FORMAT.md`, `docs/ARCHITECTURE.md`, `fixtures/README.md`.
+
+### Hypotheses and results
+
+| hypothesis | result | evidence |
+| --- | --- | --- |
+| Content-derived shard ids can be recomputed and tamper-detected without hashing physical layout fields. | Confirmed. The validator recomputes every id; a mutated role produces `ShardIdMismatch`, duplicate ids are rejected, and every identity field changes the id. | `court_d` tests `stored_id_that_is_not_content_derived_is_rejected`, `duplicate_shard_ids_are_rejected`; core `ids` unit tests. |
+| Union accounting can count tied/overlapping/recurrent parameters once while preserving reads and FLOPs separately. | Confirmed on the synthetic cases. Tied embeddings count once with both reads; overlapping ranges merge; recurrent reuse reports one unique set and every read; adapters/memory/router/verifier count as learned. | Court C named scenarios and tests, receipt `619bb7`. |
+| A compliance budget gate can make an over-budget decision impossible to ignore. | Confirmed. Exactly at the limit is `Within`; one element over is `Err(Exceeded)`; teacher mode returns only a labelled non-compliant verdict; a fallback is re-checked and a still-over-budget fallback is rejected. | Court C boundary/fallback tests. |
+| Quantization metadata can be excluded from learned counts without losing it. | Confirmed. Scales and zero points are reported as auxiliary bytes; the learned count is unchanged. | Court C `quantized_metadata_excluded_from_learned_count`. |
+| Atomic publication plus full validation of the temporary file prevents torn reads under crash and concurrency. | Confirmed on the tested platform. Interrupted and short/long streams leave no final artifact and preserve an existing bundle; concurrent readers only ever see complete bundles; immutable bundles refuse overwrite. | Court D tests; receipt `c40df8`. |
+| The parser can reject malformed, truncated, overlapping, misaligned, version-skewed and unsupported inputs without panicking. | Confirmed by named tests, a deterministic hostile corpus, and property tests over arbitrary bytes and random byte mutations. | `court_d` proptest cases and hostile-corpus test. |
+
+### Verification performed (receipts, not prose)
+
+| what was verified | evidence |
+| --- | --- |
+| Fixture regenerated and committed deterministically | `results/courts/rust-20261114T190600Z-14db24.json` and its log |
+| `cargo fmt --all --check` | `results/courts/rust-20261114T190640Z-b701f5.json` |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `results/courts/rust-20261114T190643Z-14200a.json` |
+| `cargo test --workspace` (unit, Court C, Court D, fixture reproducibility, CLI end-to-end) | `results/courts/rust-20261114T190647Z-1c906b.json` |
+| `selvedge doctor --json` (all checks pass; CUDA reported not compiled in) | `results/courts/rust-20261114T190651Z-685d81.json` |
+| `selvedge inspect fixtures/tiny-synthetic.slv --json` | `results/courts/rust-20261114T190655Z-dac5bb.json` |
+| `selvedge format validate` with expected model digest and compatibility id | `results/courts/rust-20261114T190658Z-63dc2e.json` |
+| `selvedge court c` | `results/courts/rust-20261114T190701Z-619bb7.json` |
+| `selvedge court d --workdir target/court-d` | `results/courts/rust-20261114T190704Z-c40df8.json` |
+
+Every receipt records the image reference and id, applied limits verified by
+container inspection, network mode (`none`), exit code, duration and toolchain
+versions. The CLI and fixture runs use the same court and limits.
+
+### Decisions and known limitations
+
+1. **Edition and resolver.** rustc 1.98.1 supports edition 2024, so the
+   workspace uses edition 2024, `rust-version = "1.98"` and resolver 3. The
+   toolchain is pinned in `docker/IMAGES.lock`.
+2. **Manifest and payload are not signed.** SHA-256 detects corruption and naive
+   tampering; an attacker who rewrites the whole bundle can produce a
+   self-consistent artifact. Callers should pin the model digest, revision and
+   compatibility id externally. The sidecar binds the manifest digest but is a
+   separate file. Padding bytes are not hashed. This is stated in
+   `docs/SHARD-FORMAT.md` rather than hidden.
+3. **Alignment is not benchmarked here.** 4096 is the configured default and a
+   benchmark target, not a measured optimum. The fixture uses 512 to keep the
+   tracked artifact small.
+4. **No model path.** There is no safetensors/GGUF reader, no tensor
+   conversion, no oracle, no selector and no runtime. `CostModel` and `Backend`
+   are contracts only. CUDA is not compiled into this build and `doctor` says
+   so instead of inventing GPU facts.
+5. **Exactness is typed, not tested end-to-end.** `ExactSelection` can only be
+   constructed by native-set equality or explicit reclassification. Court E
+   parity against a real backend remains future work.
+6. **`cargo-fuzz` is not checked in.** The parser boundary is covered by
+   `proptest` and a deterministic hostile corpus; a fuzz target is documented as
+   future work in `docs/SHARD-FORMAT.md`.
+7. **The fixture is synthetic.** Its model/tokenizer digests are labels for the
+   fixture, not a real checkpoint, and the quantized shard's scales are
+   synthetic.
+
+### Next experiment
+
+S2 (tensor conversion) should use the interfaces listed in
+`docs/ARCHITECTURE.md`: build `ShardRecord`s with `ShardId::derive`, use
+`TensorSlice`/`bytes_for` for byte math and `publish_bundle` for publication,
+then prove **Court A** exact reconstruction on a deterministic synthetic SwiGLU
+before touching any upstream checkpoint. The first measurable question is
+whether full-group reconstruction is exact in F32 within a stated tolerance and
+whether grouped slices survive permutation and axis-orientation changes. No
+timings or model-quality numbers should be published from that increment until
+they come from a receipt.

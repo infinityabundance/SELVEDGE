@@ -12,10 +12,12 @@ The scientific question, stated so it can fail:
 > physical-I/O Pareto frontier over the strongest existing sparse inference and
 > offloading baselines?
 
-This repository is in **bootstrap state**. It contains the reproducible
-execution and evidence infrastructure; it does not yet contain the Rust model
-crates, the conversion path, or any experimental result. Nothing here is a
-demonstrated new architecture, and no performance claim has been measured.
+This repository contains the reproducible execution and evidence
+infrastructure, the Rust data contracts (`selvedge-core`), the versioned shard
+container (`selvedge-format`), the `selvedge` CLI and deterministic fixtures. It
+does **not** yet contain tensor conversion, an oracle, selectors, a runtime or
+any experimental result. Nothing here is a demonstrated new architecture, and
+no performance claim has been measured.
 
 ## Rules this repository enforces mechanically
 
@@ -51,6 +53,22 @@ scripts/court commit_identity
 scripts/court perf_numbers
 scripts/court perf_numbers --write
 scripts/court perf_numbers --list
+
+# Rust workspace checks (offline, in the Rust court)
+scripts/court rust fmt --all --check
+scripts/court rust clippy --workspace --all-targets -- -D warnings
+scripts/court rust test --workspace
+
+# regenerate the tracked synthetic fixture
+scripts/court rust -- cargo run -p selvedge-fixtures -- fixtures
+
+# CLI (built by the previous test/build run; use `cargo run -p selvedge-cli --`
+# to build on demand inside the court)
+scripts/court rust -- target/debug/selvedge doctor --json
+scripts/court rust -- target/debug/selvedge inspect fixtures/tiny-synthetic.slv
+scripts/court rust -- target/debug/selvedge format validate fixtures/tiny-synthetic.slv
+scripts/court rust -- target/debug/selvedge court c
+scripts/court rust -- target/debug/selvedge court d --workdir target/court-d
 
 # negative self-tests (these must exit zero and print PASS lines)
 scripts/docker-court.sh python -- bash scripts/courts/perf_numbers_negative_cases.sh
@@ -100,6 +118,13 @@ Limit overrides are accepted only as valid non-zero values, e.g.
 ## Layout
 
 ```text
+Cargo.toml                     Rust workspace (resolver 3, edition 2024)
+crates/selvedge-core/          canonical IDs, tensor contracts, ledger, config
+crates/selvedge-format/        manifest v1, validator, atomic publisher, readers
+crates/selvedge-fixtures/      deterministic synthetic bundle generator
+crates/selvedge-cli/           the `selvedge` binary
+fixtures/                      tracked tiny bundle and reproduction instructions
+docker/                        court Dockerfiles, pinned requirements, image lock
 scripts/docker-court.sh        fail-closed Docker court (receipts, limits)
 scripts/court                  short aliases over the court
 scripts/build-courts.sh        build court images, update docker/IMAGES.lock
@@ -107,8 +132,8 @@ scripts/probe-hardware.sh      hardware/toolchain probe, through the courts
 scripts/check-commit-identity.sh
 scripts/perf_numbers.py        generated-numbers check/write
 scripts/courts/                helpers that run *inside* a court
-docker/                        court Dockerfiles, pinned requirements, image lock
-docs/                          mandate copy, work log, generated numbers
+docs/                          mandate copy, format/architecture docs, work log
+docs/PERF-NUMBERS.md           numbers generated from receipts
 results/                       court receipts, logs, hardware probes
 ```
 
