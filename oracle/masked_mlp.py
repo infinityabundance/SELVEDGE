@@ -116,12 +116,23 @@ def grouped_forward(
 
 
 class MaskedMlp(torch.nn.Module):
-    """An FFN wrapper with a mutable per-channel mask.
+    """An FFN wrapper with a mutable per-channel or per-token mask.
 
     The original projection modules are reused, so no weights are copied and no
     parameter is added. `mask` is a non-persistent buffer of length
     `intermediate`; setting it to ones reproduces the dense MLP exactly (the
     multiplication by 1.0 is exact and the reduction order is unchanged).
+
+    `token_mask` is empty by default. When it is set to a `[T, intermediate]`
+    (or `[1, T, intermediate]`) tensor it takes precedence over `mask`, so each
+    position can use a different group subset. This is the per-token path used
+    by the M2 selectors; the arithmetic is the same masked sum, only the mask
+    is position dependent.
+
+    `track_activation` is off by default. When it is on, the pre-mask
+    intermediate activation is made a leaf that requires grad and retains it,
+    and is stored as `last_activation`. This is used only for the labelled
+    non-deployable gradient x activation attribution arms.
     """
 
     def __init__(self, original: torch.nn.Module) -> None:
@@ -136,11 +147,50 @@ class MaskedMlp(torch.nn.Module):
             torch.ones(intermediate, dtype=torch.float32),
             persistent=False,
         )
+        self.register_buffer(
+            "token_mask",
+            torch.zeros(0, dtype=torch.float32),
+            persistent=False,
+        )
+        self.track_activation = False
+        self.last_activation = None
+
+    def set_token_mask(self, token_mask: torch.Tensor | None) -> None:
+        if token_mask is None:
+            self.token_mask = torch.zeros(
+                0, dtype=self.mask.dtype, device=self.mask.device
+            )
+            return
+        if token_mask.dim() == 3:
+            if token_mask.shape[0] != 1:
+                raise ValueError("token mask batch dimension must be 1")
+            token_mask = token_mask[0]
+        if token_mask.dim() != 2:
+            raise ValueError("token mask must be [T, intermediate]")
+        if token_mask.shape[1] != self.mask.numel():
+            raise ValueError("token mask width does not match the layer")
+        self.token_mask = token_mask.to(
+            device=self.mask.device, dtype=self.mask.dtype
+        )
+
+    def clear_token_mask(self) -> None:
+        self.set_token_mask(None)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         gate = self.gate_proj(hidden_states)
         up = self.up_proj(hidden_states)
         activation = self.act_fn(gate) * up
+        self.last_activation = activation
+        if self.track_activation:
+            activation.requires_grad_(True)
+            activation.retain_grad()
+        if self.token_mask.numel() != 0:
+            if self.token_mask.shape != activation.shape[-2:]:
+                raise ValueError(
+                    "token mask shape does not match the activation: "
+                    f"{tuple(self.token_mask.shape)} vs {tuple(activation.shape[-2:])}"
+                )
+            return self.down_proj(activation * self.token_mask)
         return self.down_proj(activation * self.mask)
 
 
@@ -174,7 +224,20 @@ class MaskController:
                 raise ValueError("mask width does not match the layer")
             wrapper.mask.copy_(mask)
 
+    def set_token_masks(self, masks: list[torch.Tensor]) -> None:
+        if len(masks) != len(self.wrappers):
+            raise ValueError(
+                f"{len(masks)} token masks for {len(self.wrappers)} layers"
+            )
+        for wrapper, mask in zip(self.wrappers, masks):
+            wrapper.set_token_mask(mask)
+
+    def clear_token_masks(self) -> None:
+        for wrapper in self.wrappers:
+            wrapper.clear_token_mask()
+
     def set_dense(self) -> None:
+        self.clear_token_masks()
         for wrapper in self.wrappers:
             wrapper.mask.fill_(1.0)
 
@@ -405,3 +468,134 @@ def random_rankings(layers: int, groups: int, seed: int) -> list[list[int]]:
     generator = torch.Generator(device="cpu")
     generator.manual_seed(seed)
     return [torch.randperm(groups, generator=generator).tolist() for _ in range(layers)]
+
+
+class HiddenCapture:
+    """Capture each decoder layer's pre-MLP hidden state during a forward.
+
+    The hook is installed on `layer.mlp`, so `inputs[0]` is the residual-stream
+    hidden state `h` that the FFN actually receives. It is detached and cloned;
+    no computation is changed. `layers[l]` is a `[1, T, hidden]` tensor for the
+    last forward that ran while the capture was active.
+    """
+
+    def __init__(self, model: torch.nn.Module) -> None:
+        self.model = model
+        self.layers = list(model.model.layers)
+        self.captured: list[torch.Tensor | None] = [None] * len(self.layers)
+        self.handles = []
+        for index, layer in enumerate(self.layers):
+            self.handles.append(
+                layer.mlp.register_forward_pre_hook(self._make_hook(index))
+            )
+
+    def _make_hook(self, index: int):
+        def hook(_module, inputs):
+            if inputs:
+                self.captured[index] = inputs[0].detach().clone()
+        return hook
+
+    def clear(self) -> None:
+        self.captured = [None] * len(self.layers)
+
+    def get(self, layer: int) -> torch.Tensor:
+        value = self.captured[layer]
+        if value is None:
+            raise RuntimeError(f"no hidden state captured for layer {layer}")
+        return value
+
+    def remove(self) -> None:
+        for handle in self.handles:
+            handle.remove()
+        self.handles = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.remove()
+        return False
+
+
+def group_contributions(
+    mlp: torch.nn.Module,
+    hidden_states: torch.Tensor,
+    groups: int,
+) -> dict:
+    """Per-group FFN output contributions for one layer.
+
+    `hidden_states` is `[T, hidden]` (or any shape ending in hidden). Returns,
+    for the flattened token rows `T`:
+
+    * `contributions`: `[T, G, hidden_out]`, where row `g` is
+      `a_g @ W_down[:, G_g]^T` and `a_g` is the group's intermediate
+      activation;
+    * `dense`: `[T, hidden_out]`, the sum over all groups (the dense layer
+      output for these hidden states);
+    * `gram`: `[T, G, G]`, `contributions . contributions` over the output axis;
+    * `dot_dense`: `[T, G]`, `contributions . dense`;
+    * `dense_sq`: `[T]`, `||dense||^2`;
+    * `group_norms`: `[T, G]`, `||a_g||_2`;
+    * `bounds`: the group channel bounds.
+
+    The exact local squared error of a subset `S` is
+    `dense_sq - 2 sum_{g in S} dot_dense[g] + sum_{g,j in S} gram[g,j]`.
+    These identities are tested in `oracle/tests/test_masked_mlp.py`.
+    """
+    shape = hidden_states.shape
+    if shape[-1] != mlp.gate_proj.in_features:
+        raise ValueError("hidden width does not match the gate projection")
+    flat = hidden_states.reshape(-1, shape[-1])
+    activation = dense_channels(mlp, flat)
+    intermediate = activation.shape[-1]
+    bounds = group_bounds(intermediate, groups)
+    out_width = mlp.down_proj.out_features
+    contributions = torch.empty(
+        (flat.shape[0], len(bounds), out_width),
+        dtype=torch.float32,
+        device=flat.device,
+    )
+    norms = torch.empty(
+        (flat.shape[0], len(bounds)), dtype=torch.float32, device=flat.device
+    )
+    weight = mlp.down_proj.weight
+    for index, (start, end) in enumerate(bounds):
+        chunk = activation[:, start:end]
+        contributions[:, index, :] = chunk @ weight[:, start:end].transpose(0, 1)
+        norms[:, index] = chunk.norm(dim=1)
+    dense = contributions.sum(dim=1)
+    gram = contributions @ contributions.transpose(1, 2)
+    dot_dense = (contributions * dense.unsqueeze(1)).sum(dim=2)
+    dense_sq = (dense * dense).sum(dim=1)
+    return {
+        "contributions": contributions,
+        "dense": dense,
+        "gram": gram,
+        "dot_dense": dot_dense,
+        "dense_sq": dense_sq,
+        "group_norms": norms,
+        "bounds": bounds,
+        "activation": activation,
+    }
+
+
+def subset_local_error(stats: dict, selected: torch.Tensor) -> torch.Tensor:
+    """Exact local squared error for a boolean `[T, G]` selected set."""
+    gram = stats["gram"]
+    dot = stats["dot_dense"]
+    mask = selected.to(torch.float32)
+    linear = (dot * mask).sum(dim=1)
+    quadratic = torch.einsum("tg,tgj,tj->t", mask, gram, mask)
+    return stats["dense_sq"] - 2.0 * linear + quadratic
+
+
+def subset_selection_from_groups(selection: list[list[int]], groups: int) -> torch.Tensor:
+    """A `[T, G]` boolean tensor from per-token group index lists."""
+    tokens = len(selection)
+    selected = torch.zeros((tokens, groups), dtype=torch.bool)
+    for token, indices in enumerate(selection):
+        for index in indices:
+            if index < 0 or index >= groups:
+                raise ValueError(f"group {index} is out of range 0..{groups}")
+            selected[token, index] = True
+    return selected

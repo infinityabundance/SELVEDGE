@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/work/oracle/m2_selectors.py", line 3432, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 3422, in main
+    return command_evaluate(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 2684, in command_evaluate
+    outcome = evaluate_arm_on_window(
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 2563, in evaluate_arm_on_window
+    selection, info = selection_for_arm(
+                      ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 1658, in selection_for_arm
+    scores, features = arm_scores_from_hidden(arm, controller, dense_hidden, accounting)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 1022, in arm_scores_from_hidden
+    score_standardized(layer_features, arm["learned"], layer)
+  File "/work/oracle/m2_selectors.py", line 933, in score_standardized
+    mean = torch.tensor(weights["feature_mean"][layer], dtype=features.dtype, device=features.device)
+                        ~~~~~~~^^^^^^^^^^^^^^^^
+KeyError: 'feature_mean'

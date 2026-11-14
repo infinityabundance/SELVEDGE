@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/work/oracle/m2_selectors.py", line 3426, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 3410, in main
+    return command_prepare(args)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 1783, in command_prepare
+    learned = fit_learned_models(labels, group_count(accounting))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 795, in fit_learned_models
+    regret, count = context_regret(layer, scores)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 758, in context_regret
+    context_scores = scores[cursor : cursor + count].reshape(count, groups)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: shape '[16, 16]' is invalid for input of size 16

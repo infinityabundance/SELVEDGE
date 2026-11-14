@@ -1,0 +1,74 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+error: the loop variable `row` is used to index `augmented`
+  --> crates/selvedge-atlas/src/fit.rs:98:20
+   |
+98 |         for row in (column + 1)..n {
+   |                    ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+98 -         for row in (column + 1)..n {
+98 +         for (row, <item>) in augmented.iter().enumerate().take(n).skip((column + 1)) {
+   |
+
+error: the loop variable `index` is only used to index `augmented`
+   --> crates/selvedge-atlas/src/fit.rs:119:26
+    |
+119 |             for index in column..=n {
+    |                          ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_range_loop
+help: consider using an iterator
+    |
+119 -             for index in column..=n {
+119 +             for <item> in augmented.iter_mut().take(n + 1).skip(column) {
+    |
+
+error: this `if` statement can be collapsed
+   --> crates/selvedge-atlas/src/input.rs:97:9
+    |
+ 97 | /         if let Some(hidden) = &self.hidden {
+ 98 | |             if hidden.iter().any(|value| !value.is_finite()) {
+ 99 | |                 return Err(AtlasError::invalid("hidden", "contains a non-finite value"));
+100 | |             }
+101 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+ 97 ~         if let Some(hidden) = &self.hidden
+ 98 ~             && hidden.iter().any(|value| !value.is_finite()) {
+ 99 |                 return Err(AtlasError::invalid("hidden", "contains a non-finite value"));
+100 ~             }
+    |
+
+error: using `contains()` instead of `iter().any()` is more efficient
+   --> crates/selvedge-atlas/src/weights.rs:124:16
+    |
+124 |             if self.feature_scale[layer].iter().any(|value| *value == 0.0) {
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `self.feature_scale[layer].contains(&0.0)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_contains
+    = note: `-D clippy::manual-contains` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_contains)]`
+
+error: useless use of `vec!`
+   --> crates/selvedge-atlas/src/selector.rs:263:33
+    |
+263 |         let mut sum_projected = vec![0.0_f64; GROUP_FEATURE_COUNT];
+    |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can use an array directly: `[0.0_f64; GROUP_FEATURE_COUNT]`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#useless_vec
+    = note: `-D clippy::useless-vec` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_vec)]`
+
+error: could not compile `selvedge-atlas` (lib test) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-atlas` (lib) due to 5 previous errors

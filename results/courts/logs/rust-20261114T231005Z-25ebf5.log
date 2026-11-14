@@ -1,0 +1,32 @@
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+error: the loop variable `row` is used to index `augmented`
+  --> crates/selvedge-atlas/src/fit.rs:98:20
+   |
+98 |         for row in (column + 1)..n {
+   |                    ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+98 -         for row in (column + 1)..n {
+98 +         for (row, <item>) in augmented.iter().enumerate().take(n).skip((column + 1)) {
+   |
+
+error: the loop variable `row` is only used to index `augmented`
+   --> crates/selvedge-atlas/src/fit.rs:115:20
+    |
+115 |         for row in (column + 1)..n {
+    |                    ^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_range_loop
+help: consider using an iterator
+    |
+115 -         for row in (column + 1)..n {
+115 +         for <item> in augmented.iter_mut().take(n).skip((column + 1)) {
+    |
+
+error: could not compile `selvedge-atlas` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-atlas` (lib test) due to 2 previous errors

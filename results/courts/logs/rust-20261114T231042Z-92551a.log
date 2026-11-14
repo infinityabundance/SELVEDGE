@@ -1,0 +1,22 @@
+warning: unreachable `pub` item
+  --> crates/selvedge-cli/src/atlas_cmd.rs:15:1
+   |
+15 | pub struct AtlasArgs {
+   | ---^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+   = note: requested on the command line with `-W unreachable-pub`
+
+warning: unreachable `pub` item
+   --> crates/selvedge-cli/src/atlas_cmd.rs:114:1
+    |
+114 | pub fn run(args: &AtlasArgs) -> Result<ExitCode, Box<dyn std::error::Error>> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+atlas fit: 28 layers, 16 groups, 868 controller elements -> results/selectors/atlas-fit-weights.json

@@ -883,3 +883,43 @@ change to a budget, arm, selector definition, sample size, threshold or kill
 condition after the first measurement is an amendment appended here with its
 own timestamp, and the pre-amendment results are reported against the original
 text.
+
+### A3 — 2026-11-14T23:04Z, after the M2 oracle and full-selector measurements
+
+The registered M2 text required every arm in a comparison to have exactly the
+same realized active unique element count. The measurements show that exact
+equality is impossible at whole-group granularity once a learned controller is
+counted:
+
+- the smallest removable FFN unit in this bundle is one channel, which is
+  `3 * 2048 = 6,144` learned elements (a group is 384 channels,
+  `2,359,296` elements);
+- the registered learned controller has 868 learned elements, which is not a
+  multiple of 6,144, so no whole-channel allocation can make its count
+  element-identical to a controller-free arm at the same group count.
+
+The realized counts are reported exactly in every receipt and in
+`results/selectors/table.md`. The operative comparison rule is therefore
+restated, without changing any threshold, arm or kill condition:
+
+1. arms are compared at the same whole-group allocation (142 groups for the
+   B142 confirmatory table);
+2. the learned controller's weights are counted in that arm's active unique
+   parameters, as the hard rule requires;
+3. a comparison is budget-matched when the realized counts differ only by the
+   controller and that difference is at most one channel (`<= 6,144`
+   elements). The difference and its direction are printed for every
+   comparison. A learned arm is never *below* the baseline in this rule, so it
+   cannot obtain a hidden budget advantage; here the learned arms are 868
+   elements (0.000087% of the budget) above `token-magnitude`;
+4. the arms that are not matched at all (`static-greedy-swap4`, 112 groups;
+   and the B140 arms in the B142 table) remain flagged and are excluded from
+   the K6 comparison.
+
+Why this does not change the conclusion: the confirmatory K6 test compares
+each learned arm with `token-magnitude`; the learned arms have more active
+parameters and a worse KL, so the 868-element difference cannot rescue them.
+The pre-amendment measurements and their `matched_budget=false` labels are
+retained in `results/selectors/eval-full-20261114T230320Z.json` and
+`results/selectors/selectors.json`; the post-amendment analysis is the one
+cited by `results/M2-SELECTORS.md`.

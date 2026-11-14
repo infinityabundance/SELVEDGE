@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/work/oracle/m2_selectors.py", line 3448, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 3440, in main
+    return command_analyze(args)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 3010, in command_analyze
+    metrics = fs.arm_domain_metrics(
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier_sweep.py", line 1286, in arm_domain_metrics
+    "positions": int(sum(item["positions"] for item in items)),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier_sweep.py", line 1286, in <genexpr>
+    "positions": int(sum(item["positions"] for item in items)),
+                         ~~~~^^^^^^^^^^^^^
+KeyError: 'positions'

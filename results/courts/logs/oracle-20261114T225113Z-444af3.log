@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/oracle/m2_selectors.py", line 3432, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 3422, in main
+    return command_evaluate(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 2619, in command_evaluate
+    if prepare["split_sha256"] != split_receipt["derived"]["sha256"]:
+       ~~~~~~~^^^^^^^^^^^^^^^^
+KeyError: 'split_sha256'

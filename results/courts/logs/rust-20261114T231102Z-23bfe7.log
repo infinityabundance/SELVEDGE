@@ -1,0 +1,26 @@
+atlas compare: ok=true arms=13 comparisons=12 ceiling=1000000000
+  static-magnitude-k5            active=993911808 delta=-4718592 matched=false budget=B140
+  static-frequency-k5            active=993911808 delta=-4718592 matched=false budget=B140
+  static-random-k5               active=993911808 delta=-4718592 matched=false budget=B140
+  static-greedy-uniform5         active=998630400 delta=0 matched=true budget=B142
+  static-greedy-swap4            active=927851520 delta=-70778880 matched=false budget=M1-K3-112
+  token-random                   active=998630400 delta=0 matched=true budget=B142
+  token-magnitude                active=998630400 delta=0 matched=true budget=B142
+  token-frequency                active=998630400 delta=0 matched=true budget=B142
+  token-task-static-nn           active=998630400 delta=0 matched=true budget=B142
+  token-learned-unary            active=998631268 delta=868 matched=true budget=B142
+  token-learned-interaction      active=998631268 delta=868 matched=true budget=B142
+  token-gxo                      active=998630400 delta=0 matched=true budget=B142
+  token-cor-gxo                  active=998630400 delta=0 matched=true budget=B142
+  static-magnitude-k5            vs token-magnitude relative=-0.5037 CI=[-0.5404, -0.4676] passes=false
+  static-frequency-k5            vs token-magnitude relative=-0.5478 CI=[-0.5920, -0.5080] passes=false
+  static-random-k5               vs token-magnitude relative=-0.7695 CI=[-0.8178, -0.7235] passes=false
+  static-greedy-uniform5         vs token-magnitude relative=-0.1559 CI=[-0.1848, -0.1302] passes=false
+  static-greedy-swap4            vs token-magnitude relative=-0.4850 CI=[-0.5245, -0.4485] passes=false
+  token-random                   vs token-magnitude relative=-0.6139 CI=[-0.6603, -0.5656] passes=false
+  token-frequency                vs token-magnitude relative=-0.0536 CI=[-0.0574, -0.0500] passes=false
+  token-task-static-nn           vs token-magnitude relative=-0.4360 CI=[-0.4746, -0.3974] passes=false
+  token-learned-unary            vs token-magnitude relative=-0.5734 CI=[-0.6264, -0.5261] passes=false
+  token-learned-interaction      vs token-magnitude relative=-0.5736 CI=[-0.6110, -0.5366] passes=false
+  token-gxo                      vs token-magnitude relative=-0.6714 CI=[-0.7052, -0.6379] passes=false
+  token-cor-gxo                  vs token-magnitude relative=-0.6986 CI=[-0.7425, -0.6589] passes=false

@@ -8,7 +8,9 @@
 //! - `selvedge inspect-model <dir> [--json]`: exact parameter/FLOP accounting;
 //! - `selvedge format validate <bundle> [--json]`: full validator;
 //! - `selvedge court c|d`: executable Court C (budget accounting) and Court D
-//!   (storage integrity/crash) scenarios.
+//!   (storage integrity/crash) scenarios;
+//! - `selvedge atlas fit|select|compare`: selector fitting, parity selection
+//!   and independent matched-budget accounting.
 
 #![forbid(unsafe_code)]
 
@@ -16,6 +18,7 @@ use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand};
 
+mod atlas_cmd;
 mod config;
 mod convert_cmd;
 mod court;
@@ -55,6 +58,8 @@ enum Commands {
     Convert(convert_cmd::ConvertArgs),
     /// Run the executable verification courts.
     Court(court::CourtArgs),
+    /// Atlas selector fit, select and matched-budget compare.
+    Atlas(atlas_cmd::AtlasArgs),
 }
 
 #[derive(Debug, Args)]
@@ -82,6 +87,7 @@ fn main() -> ExitCode {
         },
         Commands::Convert(args) => convert_cmd::run(&args),
         Commands::Court(args) => court::run(&args),
+        Commands::Atlas(args) => atlas_cmd::run(&args),
     };
     match result {
         Ok(code) => code,
