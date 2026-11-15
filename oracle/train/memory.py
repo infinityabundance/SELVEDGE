@@ -174,12 +174,13 @@ class MemoryGeometry:
         return {
             "kind": "hashed_memory_bytes",
             "dtype_bytes": deployment_bytes,
-            "resident_table_bytes_fp32": fp32_table,
+            "resident_table_bytes_fp32_equivalent": fp32_table,
             "resident_table_bytes_deployment": deploy_table,
             "read_bytes_per_token": read_bytes,
             "read_bytes_per_token_basis": "modelled",
-            "note": "read bytes are distinct identities read at the declared "
-                    "dtype; they are a modelled lower bound, never measured I/O",
+            "note": "the table is stored and trained in bf16 (its deployment "
+                    "dtype); the fp32 figure is the equivalent size if it were "
+                    "held in fp32, not the training footprint",
         }
 
 
@@ -200,7 +201,7 @@ class HashedMemory(nn.Module):
         self.layer = int(layer)
         self.context = context
         self.table = nn.Parameter(torch.empty(self.rows, self.value_dim,
-                                              dtype=torch.float32))
+                                              dtype=torch.bfloat16))
         self.proj = nn.Linear(self.reads * self.value_dim, self.hidden, bias=False,
                               dtype=torch.float32)
         self.gate = nn.Linear(self.hidden, 1, bias=False, dtype=torch.float32)
@@ -237,8 +238,11 @@ class HashedMemory(nn.Module):
         length = hidden_states.shape[-2]
         tokens = self.context.require(length)
         index = self.indices(tokens)
-        # Gather the retrieved rows: [B, T, reads, value_dim].
-        values = self.table[index]
+        # Gather the retrieved rows: [B, T, reads, value_dim]. The table is
+        # stored in bf16 (its deployment dtype); the projection and gate are
+        # fp32. This is a memory-fit decision recorded in the contract
+        # amendment, not a change to the active or accessible counts.
+        values = self.table[index].to(self.proj.weight.dtype)
         mixed = self.proj(values.reshape(*hidden_states.shape[:-1],
                                          self.reads * self.value_dim))
         gate = torch.sigmoid(self.gate(hidden_states))

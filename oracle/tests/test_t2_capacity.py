@@ -104,7 +104,7 @@ def test_memory_active_accounting_matches_the_contract():
 def test_memory_bytes_are_reported_not_confused():
     geometry = memory.MemoryGeometry()
     report = geometry.bytes_report(insertions=4)
-    assert report["resident_table_bytes_fp32"] == 1_073_741_824
+    assert report["resident_table_bytes_fp32_equivalent"] == 1_073_741_824
     assert report["resident_table_bytes_deployment"] == 536_870_912
     assert report["read_bytes_per_token"] == 4_206_592
     assert report["read_bytes_per_token_basis"] == "modelled"
@@ -283,3 +283,45 @@ def test_dense_control_is_parameter_matched_to_expert_only_active():
     expert = arms.python_mirror(arms.build_config(arms.T2_ARMS["X"]))["active_unique_params"]
     # Only the 229,376-element router separates them, and D is cheaper.
     assert expert - dense == 229_376
+
+
+# ---------------------------------------------------------------------------
+# P2.4 instrument: the compact target against a brute-force full target
+
+
+def test_instrument_targets_match_a_float64_full_vocabulary_reference(monkeypatch):
+    import instrument_check
+
+    monkeypatch.setattr(instrument_check, "CHUNK", 7)  # exercise chunk boundaries
+    torch.manual_seed(23)
+    positions, vocab, top_k = 6, 96, 16
+    teacher = torch.randn(positions, vocab)
+    student = torch.randn(positions, vocab)
+    got = instrument_check.window_targets(student, teacher)
+
+    teacher64 = teacher.double()
+    student64 = student.double()
+    log_p_t = torch.log_softmax(teacher64, dim=-1)
+    log_p_s = torch.log_softmax(student64, dim=-1)
+    p_t = log_p_t.exp()
+    values, ids = torch.topk(teacher64, top_k, dim=-1)
+    support = torch.zeros_like(p_t, dtype=torch.bool)
+    support.scatter_(1, ids, True)
+    tail_mask = ~support
+    p_tail = (p_t * tail_mask).sum(-1)
+    q_support = log_p_s.exp().gather(1, ids).sum(-1)
+    q_tail = 1.0 - q_support
+    compact = -(p_t.gather(1, ids) * log_p_s.gather(1, ids)).sum(-1) \
+        - p_tail * q_tail.log()
+    full = -(p_t * log_p_s).sum(-1)
+    r = (p_t * tail_mask) / p_tail.unsqueeze(-1)
+    s = (log_p_s.exp() * tail_mask) / q_tail.unsqueeze(-1)
+    entropy = -(r * r.clamp_min(1e-300).log()).sum(-1)
+    kl = (r * (r.clamp_min(1e-300).log()
+               - s.clamp_min(1e-300).log())).sum(-1)
+    assert torch.allclose(got["compact"].double(), compact, atol=1e-9)
+    assert torch.allclose(got["full"].double(), full, atol=1e-9)
+    assert torch.allclose(got["bias"].double(), compact - full, atol=1e-9)
+    assert torch.allclose(got["bias"].double(), -p_tail * (entropy + kl), atol=1e-7)
+    assert torch.allclose(got["tail_entropy"].double(), entropy, atol=1e-7)
+    assert torch.allclose(got["tail_kl"].double(), kl, atol=1e-6)

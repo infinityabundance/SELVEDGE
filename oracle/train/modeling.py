@@ -288,7 +288,15 @@ class DenseAdapter(nn.Module):
 
 
 class AdditiveFFN(nn.Module):
-    """Base frozen FFN plus an extra residual module."""
+    """Base frozen FFN plus an extra residual module.
+
+    The extra's output is cast to the base's dtype before the add. Without the
+    cast, an fp32 projection result would promote the whole residual stream to
+    fp32 for the rest of the model: that changes the numerics of every
+    downstream layer (and doubles activation memory) even when the extra is
+    exactly zero at step 0. The cast makes the zero point exact and keeps the
+    registered bf16 compute path.
+    """
 
     def __init__(self, base: nn.Module, extra: nn.Module):
         super().__init__()
@@ -296,7 +304,11 @@ class AdditiveFFN(nn.Module):
         self.extra = extra
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
-        return self.base(hidden_states) + self.extra(hidden_states)
+        base = self.base(hidden_states)
+        extra = self.extra(hidden_states)
+        if extra.dtype != base.dtype:
+            extra = extra.to(base.dtype)
+        return base + extra
 
 
 class AdditiveExtras(nn.Module):
@@ -309,9 +321,13 @@ class AdditiveExtras(nn.Module):
         self.extras = nn.ModuleList(extras)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
-        output = self.extras[0](hidden_states)
+        first = self.extras[0](hidden_states)
+        output = first
         for module in self.extras[1:]:
-            output = output + module(hidden_states)
+            extra = module(hidden_states)
+            if extra.dtype != output.dtype:
+                extra = extra.to(output.dtype)
+            output = output + extra
         return output
 
 
@@ -344,6 +360,7 @@ class ArmModel:
     profile: str = "t1"
     context: TokenContext | None = None
     memory_layers: tuple[int, ...] = field(default_factory=tuple)
+    trainable_names: list[str] = field(default_factory=list)
 
     def trainable_parameters(self):
         return [p for p in self.model.parameters() if p.requires_grad]
@@ -511,6 +528,9 @@ def build_arm(model, arm: str, config: dict, admission: dict, seed: int,
         if arm == "H*":
             trainable.set_router_grad(False)
         trainable.declared_active = admission["active_unique_params"]
+        trainable.trainable_names = [name for name, parameter
+                                     in model.named_parameters()
+                                     if parameter.requires_grad]
         return trainable
 
     if arm in ("A", "A0"):
@@ -547,6 +567,8 @@ def build_arm(model, arm: str, config: dict, admission: dict, seed: int,
                          router_modules=router_modules, extra_modules=extra_modules,
                          admission=admission, config=config)
     trainable.declared_active = admission["active_unique_params"]
+    trainable.trainable_names = [name for name, parameter
+                                 in model.named_parameters() if parameter.requires_grad]
     return trainable
 
 

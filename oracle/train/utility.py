@@ -68,25 +68,35 @@ def tensor_digest(tensors) -> str:
 
 @torch.inference_mode()
 def _forward_loss(arm_model, input_ids, targets, offset: int, device):
-    """One forward pass; returns (`logits`, per-position loss `[N]`)."""
-    logits = arm_model.forward(input_ids=input_ids).logits
+    """One forward pass; returns (`logits`, per-position loss `[N]`).
+
+    The bf16 autocast matches the training and evaluation instrument, so the
+    utility labels are measured on the same compute path the arm trains on.
+    """
+    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=input_ids.is_cuda):
+        logits = arm_model.forward(input_ids=input_ids).logits
     flat = logits.reshape(-1, logits.shape[-1])
     values, ids, lse = targets.read(offset, flat.shape[0], device)
     return logits, loop.distillation_loss_per_position(flat, values, ids, lse)
 
 
 def label_utilities(arm_model, targets, stream, device, calibration_tokens: int,
-                    batch_windows: int = 1) -> dict:
+                    micro_positions: int = 256) -> dict:
     """Measure `u_e(t)` for every layer and specialist.
 
     Returns `{"features": {layer: [N, hidden]}, "utilities": {layer: [N, m]},
     "manifest": {...}}`. Layers are keyed by their position in the model.
+
+    `micro_positions` bounds the forward-pass activation memory. The labelling
+    runs while the optimiser state is resident, so it must fit in the headroom
+    the training step leaves; a 256-position sub-batch is 4x smaller than a
+    full window and does not change a single label.
     """
     if calibration_tokens % loop.WINDOW:
         raise ValueError("calibration_tokens must be a multiple of the window")
-    windows = calibration_tokens // loop.WINDOW
-    if windows % batch_windows:
-        raise ValueError("calibration windows must divide by batch_windows")
+    if calibration_tokens % micro_positions:
+        raise ValueError("calibration_tokens must be a multiple of micro_positions")
+    torch.cuda.empty_cache()
     banks = arm_model.banks()
     if not banks:
         raise ValueError("arm has no specialist bank to label")
@@ -113,12 +123,11 @@ def label_utilities(arm_model, targets, stream, device, calibration_tokens: int,
         base_losses = []
         bank.full_bank = True
         bank.exclude = None
-        for start in range(0, windows, batch_windows):
-            offset = start * loop.WINDOW
+        for start in range(0, calibration_tokens, micro_positions):
             ids = torch.from_numpy(
-                stream[offset:offset + batch_windows * loop.WINDOW].astype("int64")
-            ).reshape(batch_windows, loop.WINDOW).to(device)
-            _logits, loss = _forward_loss(arm_model, ids, targets, offset, device)
+                stream[start:start + micro_positions].astype("int64")
+            ).reshape(1, micro_positions).to(device)
+            _logits, loss = _forward_loss(arm_model, ids, targets, start, device)
             base_losses.append(loss.cpu())
             passes += 1
         handle.remove()
@@ -131,12 +140,11 @@ def label_utilities(arm_model, targets, stream, device, calibration_tokens: int,
         expert_losses = {expert: [] for expert in range(bank.experts)}
         for expert in range(bank.experts):
             bank.exclude = expert
-            for start in range(0, windows, batch_windows):
-                offset = start * loop.WINDOW
+            for start in range(0, calibration_tokens, micro_positions):
                 ids = torch.from_numpy(
-                    stream[offset:offset + batch_windows * loop.WINDOW].astype("int64")
-                ).reshape(batch_windows, loop.WINDOW).to(device)
-                _logits, loss = _forward_loss(arm_model, ids, targets, offset, device)
+                    stream[start:start + micro_positions].astype("int64")
+                ).reshape(1, micro_positions).to(device)
+                _logits, loss = _forward_loss(arm_model, ids, targets, start, device)
                 expert_losses[expert].append(loss.cpu())
                 passes += 1
         bank.exclude = None
@@ -167,6 +175,7 @@ def label_utilities(arm_model, targets, stream, device, calibration_tokens: int,
         "experts_per_layer": int(next(iter(utilities.values())).shape[1]),
         "calibration_tokens": int(calibration_tokens),
         "calibration_range": [0, int(calibration_tokens)],
+        "micro_positions": int(micro_positions),
         "loo_passes_per_layer": 1 + int(next(iter(utilities.values())).shape[1]),
         "loo_passes": passes,
         "reference_set": "full bank (all m specialists, unit weight)",
@@ -220,6 +229,9 @@ def train_router(features: torch.Tensor, utilities: torch.Tensor,
     """
     if features.shape[0] != utilities.shape[0]:
         raise ValueError("features and utilities disagree on positions")
+    device = router.weight.device
+    features = features.to(device)
+    utilities = utilities.to(device)
     mean = utilities.mean(dim=0, keepdim=True)
     std = utilities.std(dim=0, keepdim=True).clamp_min(1e-6)
     labels = ((utilities - mean) / std).detach()
@@ -231,7 +243,7 @@ def train_router(features: torch.Tensor, utilities: torch.Tensor,
     router.train()
     for step in range(steps):
         index = torch.randint(0, features.shape[0], (min(4096, features.shape[0]),),
-                              generator=generator)
+                              generator=generator).to(device)
         batch_features = features.index_select(0, index)
         batch_target = target.index_select(0, index)
         logits = router(batch_features)

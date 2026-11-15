@@ -18,6 +18,7 @@ token count, the LR schedule or the data order.
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import json
 import math
@@ -207,12 +208,15 @@ def run_router_phase(arm_model, targets, stream, device, args, report_path: str)
     if not banks:
         raise SystemExit("H* router phase needs a specialist bank")
     calibration_tokens = args.calibration_windows * WINDOW
-    print(f"router-phase: labelling {len(banks)} layers on {calibration_tokens} tokens "
+    allocated = torch.cuda.memory_allocated() / (1024 ** 3)
+    print(f"router-phase: start allocated={allocated:.2f}GiB; labelling {len(banks)} "
+          f"layers on {calibration_tokens} tokens "
           f"({1 + banks[0].experts} passes per layer)", flush=True)
     payload = utility.label_utilities(arm_model, targets, stream, device,
                                       calibration_tokens=calibration_tokens)
     labels_path = args.labels_out or os.path.join(args.out, "utility-labels.pt")
     utility.save_labels(labels_path, payload)
+    manifest = payload["manifest"]
     runs = []
     for index, bank in enumerate(banks):
         run = utility.train_router(payload["features"][index],
@@ -220,15 +224,20 @@ def run_router_phase(arm_model, targets, stream, device, args, report_path: str)
                                    steps=args.router_steps, seed=args.seed + index)
         run["layer"] = index
         runs.append(run)
+    del payload
+    gc.collect()
+    torch.cuda.empty_cache()
+    allocated = torch.cuda.memory_allocated() / (1024 ** 3)
+    print(f"router-phase: done allocated={allocated:.2f}GiB", flush=True)
     report = {
         "schema": "selvedge/t2-router-phase/v1",
         "arm": args.arm,
         "labels": labels_path,
-        "labels_manifest": payload["manifest"],
+        "labels_manifest": manifest,
         "router_runs": runs,
         "router_steps": args.router_steps,
         "calibration_tokens": calibration_tokens,
-        "utility_passes": payload["manifest"]["loo_passes"],
+        "utility_passes": manifest["loo_passes"],
         "note": "the router is frozen after this phase; experts and memory are "
                 "trained by distillation through the frozen mask (T2.6)",
     }
@@ -261,6 +270,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--grad-checkpoint", action="store_true",
                         help="activation checkpointing for the frozen core; T2 hybrid "
                              "arms need it to fit 16 GiB (recorded in the receipt)")
+    parser.add_argument("--deterministic", action="store_true",
+                        help="request deterministic kernels (T2 determinism test)")
     parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     parser.add_argument("--artifact-dir", default="results/artifacts/train")
     parser.add_argument("--out", required=True)
@@ -268,6 +279,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--steps", type=int, default=2048)
     parser.add_argument("--micro-batch", type=int, default=2,
                         help="windows per forward/backward call")
+    parser.add_argument("--micro-positions", type=int, default=1024,
+                        help="positions per forward call inside an accumulation "
+                             "step; smaller values bound activation memory without "
+                             "changing the effective batch")
     parser.add_argument("--accum", type=int, default=32,
                         help="gradient accumulation steps")
     parser.add_argument("--checkpoint-every", type=int, default=250)
@@ -282,6 +297,15 @@ def main(argv: list[str]) -> int:
 
     if not torch.cuda.is_available():
         raise SystemExit("training requires the GPU court (--gpu)")
+    if args.deterministic:
+        # Bitwise determinism is a property of the kernels, not of the arm: the
+        # dense control is non-deterministic too when cuBLAS/SDPA pick a
+        # reduction order. Request the deterministic implementations and record
+        # whatever the platform does with the request.
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+        torch.use_deterministic_algorithms(True, warn_only=False)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
     device = torch.device("cuda")
 
     config, admission = load_admission(args.config, args.admission)
@@ -358,7 +382,8 @@ def main(argv: list[str]) -> int:
         torch.cuda.empty_cache()
         torch.cuda.reset_peak_memory_stats()
 
-    trainable = arm_model.trainable_parameters()
+    by_name = dict(arm_model.model.named_parameters())
+    trainable = [by_name[name] for name in arm_model.trainable_names]
     optimizer = torch.optim.AdamW(trainable, lr=1e-3, betas=(0.9, 0.95), eps=1e-8,
                                   weight_decay=0.0)
     start_step = 0
@@ -369,6 +394,15 @@ def main(argv: list[str]) -> int:
         set_seed(args.seed + state["step"])
         start_step = state["step"]
         print(f"train: resumed from {args.resume} at step {start_step}")
+    if (args.profile == "t2" and args.arm == "H*" and args.warmup_steps > 0
+            and start_step >= args.warmup_steps):
+        # The utility phase happened before this checkpoint: the treatment is
+        # already in force and must not silently revert on resume.
+        router_phase["done"] = True
+        arm_model.set_router_grad(False)
+        for bank in arm_model.banks():
+            for parameter in bank.router.parameters():
+                parameter.requires_grad_(False)
 
     meta = {
         "schema": "selvedge/train-run/v1",
@@ -382,7 +416,7 @@ def main(argv: list[str]) -> int:
         "admission_active_unique": admission["active_unique_params"],
         "admitted_selector_unique": admission["selector_unique_params"],
         "admitted_execution_unique": admission["execution_unique_params"],
-        "trainable_elements": arm_model.trainable_elements(),
+        "trainable_elements": sum(parameter.numel() for parameter in trainable),
         "stream_sha256": stream_index["stream_sha256"],
         "teacher_manifest": targets.manifest["teacher_revision"],
         "targets_tokens": targets.tokens,
@@ -430,22 +464,28 @@ def main(argv: list[str]) -> int:
         step_start = time.time()
         for micro in range(args.accum):
             offset = step * tokens_per_step + micro * args.micro_batch * WINDOW
-            ids = np.asarray(stream[offset:offset + args.micro_batch * WINDOW],
-                             dtype=np.int64).reshape(args.micro_batch, WINDOW)
-            input_ids = torch.from_numpy(ids).to(device)
-            with torch.autocast("cuda", dtype=torch.bfloat16):
-                logits = arm_model.model(input_ids=input_ids, use_cache=False).logits
-            flat_logits = logits.reshape(-1, logits.shape[-1])
-            count = flat_logits.shape[0]
-            values, target_ids, lse = targets.read(offset, count, device)
-            loss = distillation_loss(flat_logits, values, target_ids, lse)
-            if args.load_balance and args.arm != "H*":
-                auxiliary = load_balance_loss(arm_model)
-                if auxiliary is not None:
-                    loss = loss + auxiliary
-            (loss / args.accum).backward()
-            step_loss += float(loss.detach()) / args.accum
-            del logits, flat_logits, loss
+            block = args.micro_batch * WINDOW
+            if block % args.micro_positions:
+                raise SystemExit("micro_positions must divide micro_batch * window")
+            splits = block // args.micro_positions
+            for sub in range(splits):
+                sub_offset = offset + sub * args.micro_positions
+                ids = np.asarray(stream[sub_offset:sub_offset + args.micro_positions],
+                                 dtype=np.int64).reshape(1, args.micro_positions)
+                input_ids = torch.from_numpy(ids).to(device)
+                with torch.autocast("cuda", dtype=torch.bfloat16):
+                    logits = arm_model.model(input_ids=input_ids, use_cache=False).logits
+                flat_logits = logits.reshape(-1, logits.shape[-1])
+                count = flat_logits.shape[0]
+                values, target_ids, lse = targets.read(sub_offset, count, device)
+                loss = distillation_loss(flat_logits, values, target_ids, lse)
+                if args.load_balance and args.arm != "H*":
+                    auxiliary = load_balance_loss(arm_model)
+                    if auxiliary is not None:
+                        loss = loss + auxiliary
+                (loss / args.accum / splits).backward()
+                step_loss += float(loss.detach()) / args.accum / splits
+                del logits, flat_logits, loss
         grad_norm = torch.nn.utils.clip_grad_norm_(trainable, 1.0)
         optimizer.step()
         tokens_done += tokens_per_step
@@ -474,9 +514,12 @@ def main(argv: list[str]) -> int:
         if (step + 1) % args.checkpoint_every == 0 or (step + 1) == args.steps:
             state = {
                 "step": step + 1,
+                # Save every parameter that is trainable *by construction*, not
+                # only those still carrying requires_grad: H* freezes its router
+                # after the utility phase and that router must still resume.
                 "model": {name: parameter.detach().cpu()
                           for name, parameter in arm_model.model.named_parameters()
-                          if parameter.requires_grad},
+                          if name in arm_model.trainable_names},
                 "optimizer": optimizer.state_dict(),
                 "arm": args.arm,
                 "seed": args.seed,

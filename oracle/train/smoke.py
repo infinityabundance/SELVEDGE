@@ -72,10 +72,12 @@ def run_loop(arm: str, config: str, admission: str, out: str, steps: int,
              accum: int, profile: str = "t1", warmup_steps: int = 0,
              calibration_windows: int = 32, router_steps: int = 200,
              labels_out: str | None = None, load_balance: bool = False,
-             grad_checkpoint: bool = False) -> None:
+             grad_checkpoint: bool = False, deterministic: bool = False,
+             micro_positions: int = 1024) -> None:
     argv = ["--arm", arm, "--config", config, "--admission", admission,
             "--out", out, "--steps", str(steps), "--checkpoint-every", "10",
             "--micro-batch", str(micro_batch), "--accum", str(accum),
+            "--micro-positions", str(micro_positions),
             "--profile", profile]
     if resume:
         argv += ["--resume", resume]
@@ -91,6 +93,8 @@ def run_loop(arm: str, config: str, admission: str, out: str, steps: int,
         argv += ["--load-balance"]
     if grad_checkpoint:
         argv += ["--grad-checkpoint"]
+    if deterministic:
+        argv += ["--deterministic"]
     loop.main(argv)
 
 
@@ -154,6 +158,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--router-steps", type=int, default=200)
     parser.add_argument("--load-balance", action="store_true")
     parser.add_argument("--grad-checkpoint", action="store_true")
+    parser.add_argument("--grad-checkpoint-arms", default="H,H*",
+                        help="T2 arms that need activation checkpointing to fit 16 GiB")
+    parser.add_argument("--deterministic", action="store_true")
+    parser.add_argument("--micro-positions", type=int, default=None)
     parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     parser.add_argument("--dataset-root", default="results/artifacts/datasets")
     parser.add_argument("--split-dir", default="results/artifacts")
@@ -192,11 +200,18 @@ def main(argv: list[str]) -> int:
         out = os.path.join(args.out_dir, arm)
         resume_out = os.path.join(args.out_dir, f"{arm}-resume")
         determinism_out = os.path.join(args.out_dir, f"{arm}-determinism")
+        import shutil
+
+        for name in (out, resume_out, determinism_out):
+            shutil.rmtree(name, ignore_errors=True)
         common = dict(profile=args.profile, warmup_steps=args.warmup_steps,
                       calibration_windows=args.calibration_windows,
                       router_steps=args.router_steps,
                       load_balance=args.load_balance and arm != "H*",
-                      grad_checkpoint=args.grad_checkpoint)
+                      grad_checkpoint=(args.grad_checkpoint or
+                                       (t2 and arm in args.grad_checkpoint_arms.split(","))),
+                      deterministic=args.deterministic,
+                      micro_positions=args.micro_positions or (512 if t2 else 1024))
         print(f"smoke: arm {arm} training {args.steps} steps", flush=True)
         torch.cuda.reset_peak_memory_stats()
         run_loop(arm, config, admission, out, args.steps, None, True,
@@ -211,8 +226,6 @@ def main(argv: list[str]) -> int:
         first_losses = read_losses(os.path.join(determinism_out, "train.jsonl"))
         first_hash = checkpoint_digest(
             os.path.join(determinism_out, f"step-{args.determinism_steps:06d}.pt"))
-        import shutil
-
         shutil.rmtree(determinism_out)
         run_loop(arm, config, admission, determinism_out, args.determinism_steps, None,
                  False, args.micro_batch, args.accum, **common)
