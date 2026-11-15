@@ -128,11 +128,12 @@ python3 scripts/storage-summary.py --bundle <label> \
 
 Environment: one consumer NVMe device, ext4, RTX 4080 SUPER host, 8 CPUs in the
 `io` court, 8 GiB cgroup memory. Every number is the median of three repeats;
-the range and coefficient of variation are in
-`results/store/summary-06b.json` and `results/store/summary-17b.json`. Every
-pass drops the page cache first except the explicitly warm control, and every
-pass carries a 32 MiB cold device probe because this workstation's drive is
-bimodal.
+the range and coefficient of variation are in the tracked summaries
+(`results/store/summary-06b.json`, `results/store/summary-17b.json`, the
+coalesced-only summaries, and `results/io/summary-06b.json`,
+`results/io/summary-17b.json`). Every pass drops the page cache first except the
+explicitly warm control, and every pass carries a 32 MiB cold device probe
+because this workstation's drive is bimodal.
 
 ### 5.1 Exact-mode bundle reads (whole bundle, verified)
 
@@ -490,8 +491,10 @@ Three repeats, page cache dropped for each cold measurement:
   `results/store/summary-coalesced-17b.json`.
 - I/O summaries: `results/io/summary-06b.json`, `results/io/summary-17b.json`
   and the coalesced-only summaries.
-- Raw receipts: `results/store/store-bench-*-r{1,2,3}.tmp.json`,
-  `results/store/coalesced-*-r{1,2,3}.json`,
-  `results/io/io-scan-*-r{1,2,3}.tmp.json` (these are JSON receipts and are
-  tracked; the JSONL volumes are not).
+- Raw receipts: `results/store/store-bench-*-r{1,2,3}.json`,
+  `results/store/coalesced-*-r{1,2,3}.json` and
+  `results/io/io-scan-*-r{1,2,3}.json` are tracked. The per-request JSONL under
+  `results/store/metrics-*/` and the scratch `results/store/*.tmp.json` files are
+  excluded (see `.gitignore`). `results/io/io-scan-06b-verify-*.json` is a
+  later `io` court smoke check, not one of the three-repeat benchmark inputs.
 - Courts: `results/courts/io-*.json`, `results/courts/rust-*.json`.
