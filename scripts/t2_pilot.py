@@ -383,7 +383,6 @@ def cmd_state_init(args) -> int:
                 "admitted": record.get("admitted"),
                 "active_unique_params": record.get("active_unique_params"),
                 "config_sha256": record.get("config_sha256"),
-                "step_index_sha256": record.get("step_index_sha256"),
             }
     state = previous or {
         "schema": "selvedge/t2-pilot-state/v1",
@@ -515,7 +514,12 @@ def cmd_arm_receipt(args) -> int:
         digest = None
         if os.path.exists(sidecar):
             with open(sidecar, "r", encoding="utf-8") as handle:
-                digest = handle.read().split()[0].strip()
+                raw = handle.read().strip()
+            if raw.startswith("{"):
+                # loop.save_checkpoint writes a JSON sidecar with sha256 and bytes
+                digest = (json.loads(raw) or {}).get("sha256")
+            elif raw:
+                digest = raw.split()[0]
         checkpoint = {
             "path": os.path.relpath(path, REPO),
             "name": name,
@@ -609,15 +613,23 @@ def cmd_arm_receipt(args) -> int:
             "training_tokens": measured["tokens"],
             "tokens_per_second": measured["tokens_per_second"],
             "training_flops": None,
-            "note": "FLOPs are the admission record's per-token count; the "
+            "note": "FLOPs are the admission record's declared per-token count; the "
                     "receipt stores the declared value rather than a counter",
         }
         if meta.get("admission"):
             admission = load_json(repo_path(meta["admission"]))
-            receipt["compute"]["declared_total_flops_per_token"] = admission.get("total_flops")
-            receipt["compute"]["declared_flops_trained"] = (
-                admission.get("total_flops", 0) * int(measured["tokens"])
-                if admission.get("total_flops") else None)
+            declared = admission.get("total_flops")
+            if isinstance(declared, dict):
+                per_token = sum(int(value) for value in declared.values()
+                                if isinstance(value, (int, float)))
+                break_down = {key: int(value) for key, value in declared.items()
+                              if isinstance(value, (int, float))}
+            else:
+                per_token = int(declared) if declared else 0
+                break_down = None
+            receipt["compute"]["declared_total_flops_per_token"] = per_token
+            receipt["compute"]["declared_flops_breakdown"] = break_down
+            receipt["compute"]["declared_flops_trained"] = per_token * int(measured["tokens"])
     write_json_atomic(os.path.join(out_dir, "run.json"), receipt)
     print(json.dumps({
         "arm": arm,
@@ -648,6 +660,7 @@ def cmd_eval_receipt(args) -> int:
         "stamp": stamp_now(),
         "utc": utc_now(),
         "eval_receipt": args.eval,
+        "revision": receipt.get("revision"),
         "eval_receipt_stamp": receipt.get("stamp"),
         "eval_revision": receipt.get("revision"),
         "checkpoint_sha256": (receipt.get("model") or {}).get("checkpoint_sha256"),

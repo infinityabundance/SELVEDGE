@@ -234,6 +234,78 @@ def paired_kl_domains(left: ArmMetrics, right: ArmMetrics, seed: int,
 
 
 # ---------------------------------------------------------------------------
+# registered geometry, for the bytes/token arithmetic
+
+#: docs/EXPERIMENT-CONTRACT.md T2.2/T2.3 and results/T2-PLAN.md section 2. These
+#: are the declared constants the configs are built from; every byte figure below
+#: is arithmetic on them at the declared dtype, labelled `modelled` because this
+#: instrument has no DRAM/PCIe counter and measures no I/O.
+LAYERS = 28
+DENSE_WIDTH = 2048
+HIDDEN = 1024
+SPECIALISTS = 8
+SPECIALIST_WIDTH = 512
+MEMORY_INSERTS = 4
+MEMORY_ROWS = 1 << 18
+MEMORY_VALUE_DIM = 256
+MEMORY_READS = 2
+BYTES = {"bf16": 2, "fp32": 4}
+
+
+def model_resources(training: dict) -> dict:
+    """Per-arm bytes/token and parameter counts, all modelled from the geometry."""
+    # Per token the deployed router reads k = 4 of the 8 specialists plus the
+    # router row, so the read figure is the k-read, not the whole bank. The bank
+    # total is reported separately because the two are routinely confused.
+    expert_elements_read = (LAYERS * 4 * 3 * SPECIALIST_WIDTH * HIDDEN
+                            + LAYERS * HIDDEN * SPECIALISTS)
+    expert_bank_elements = (LAYERS * SPECIALISTS * 3 * SPECIALIST_WIDTH * HIDDEN
+                            + LAYERS * HIDDEN * SPECIALISTS)
+    expert_weight_bytes = expert_elements_read * BYTES["bf16"]
+    expert_bank_bytes = expert_bank_elements * BYTES["bf16"]
+    value_bytes = MEMORY_INSERTS * MEMORY_READS * MEMORY_VALUE_DIM * BYTES["bf16"]
+    projection_bytes = MEMORY_INSERTS * MEMORY_READS * MEMORY_VALUE_DIM * HIDDEN * BYTES["bf16"]
+    gate_bytes = MEMORY_INSERTS * HIDDEN * BYTES["bf16"]
+    memory_read_bytes = value_bytes + projection_bytes + gate_bytes
+    dense_adapter_bytes = LAYERS * 3 * HIDDEN * DENSE_WIDTH * BYTES["bf16"]
+    table_rows = MEMORY_INSERTS * MEMORY_ROWS * MEMORY_VALUE_DIM
+
+    defs = {
+        "D": {"expert": 0, "memory": 0, "dense": dense_adapter_bytes},
+        "M": {"expert": 0, "memory": memory_read_bytes, "dense": 0},
+        "X": {"expert": expert_weight_bytes, "memory": 0, "dense": 0},
+        "H": {"expert": expert_weight_bytes, "memory": memory_read_bytes, "dense": 0},
+        "H*": {"expert": expert_weight_bytes, "memory": memory_read_bytes, "dense": 0},
+    }
+    result = {}
+    for arm, entry in defs.items():
+        record = training.get(arm) or {}
+        result[arm] = {
+            "active_unique_params": record.get("active_unique_params"),
+            "total_accessible_params": record.get("total_accessible_params"),
+            "trainable_elements": record.get("trainable_elements"),
+            "declared_flops_per_token": record.get("declared_total_flops_per_token"),
+            "expert_weight_bytes_per_token": entry["expert"] if entry["expert"] else 0,
+            "expert_bank_bytes_total_bf16": (expert_bank_bytes if entry["expert"] else 0),
+            "memory_read_bytes_per_token": entry["memory"],
+            "memory_value_bytes_per_token": value_bytes if entry["memory"] else 0,
+            "memory_projection_bytes_per_token": projection_bytes if entry["memory"] else 0,
+            "memory_gate_bytes_per_token": gate_bytes if entry["memory"] else 0,
+            "dense_adapter_weight_bytes_per_token": entry["dense"],
+            "added_weight_bytes_per_token": entry["expert"] + entry["memory"] + entry["dense"],
+            "memory_table_resident_bytes_bf16": (table_rows * BYTES["bf16"]
+                                                 if entry["memory"] else 0),
+            "memory_table_equivalent_bytes_fp32": (table_rows * BYTES["fp32"]
+                                                   if entry["memory"] else 0),
+            "added_weight_bytes_per_token_measured": None,
+            "note": "modelled lower bound on distinct identities read at the declared "
+                    "dtype; this instrument measures no DRAM or PCIe traffic, so no "
+                    "measured bytes/token exists",
+        }
+    return result
+
+
+# ---------------------------------------------------------------------------
 # the rule
 
 
@@ -340,10 +412,13 @@ def decide(arm: ArmMetrics, comparator: ArmMetrics, threshold: float,
             "twice_half_width": 2.0 * half_width,
             "difference_abs": abs(improvement),
             "separable_from_noise": bool(separable),
+            "separable_text": ("separable from noise" if separable
+                               else "not separable from noise"),
             "note": "T2.8: without the replication the H*-H difference must exceed "
                     "twice the item-level CI half-width to count as anything",
         },
         "passes": passes,
+        "verdict": "PASS" if passes else "FAIL",
         "threshold_met": bool(threshold_met),
     }
 
@@ -502,6 +577,8 @@ def main(argv: list[str]) -> int:
         "k16": kill["K16"]["passes"],
         "passes": bool(kill["K15"]["passes"] and kill["K16"]["passes"]),
     }
+    for name, entry in kill.items():
+        entry["verdict"] = "PASS" if entry["passes"] else "FAIL"
 
     # The interpretation, quoted from T2.11, chosen by the observed pattern.
     h_star_vs_h = kill["K15"]["passes"]
@@ -548,6 +625,8 @@ def main(argv: list[str]) -> int:
             "tokens_per_second": measured.get("tokens_per_second"),
             "vram_peak_gib": measured.get("vram_peak_gib"),
             "wall_seconds": measured.get("wall_seconds"),
+            "wall_hours": (round(measured["wall_seconds"] / 3600.0, 4)
+                           if measured.get("wall_seconds") else None),
             "train_seconds": measured.get("train_seconds"),
             "active_unique_params": (receipt.get("admission") or {}).get(
                 "active_unique_params"),
@@ -584,6 +663,7 @@ def main(argv: list[str]) -> int:
         },
         "arms": arm_table,
         "training": training,
+        "model_resources": model_resources(training),
         "comparisons": comparisons,
         "kill_conditions": kill,
         "outcome": outcome,
