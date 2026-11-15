@@ -1,0 +1,81 @@
+{
+  "schema": "selvedge/train-corpus-spec/v1",
+  "note": "Pinned, permissively licensed training corpus for the T1 experiment. Only the files named here are downloaded, into the gitignored results/artifacts/train-corpus cache. No corpus text is committed; the lock records every file's SHA-256 and size. The deterministic stream built from these sources is shared byte-for-byte by every arm.",
+  "preregistration": "docs/EXPERIMENT-CONTRACT.md section T1 (T1.3)",
+  "stream": {
+    "mix": [
+      { "source": "fineweb-edu-sample-10bt", "fraction": 0.7 },
+      { "source": "codeparrot-clean-0001", "fraction": 0.2 },
+      { "source": "hendrycks-math-train", "fraction": 0.1 }
+    ],
+    "block_tokens": 1024,
+    "token_budget": 134217728,
+    "headroom_fraction": 0.1,
+    "document_order": "sha256 of the normalised document text, ascending",
+    "separator": "eos_token",
+    "repeat_short_sources": true
+  },
+  "sources": [
+    {
+      "id": "fineweb-edu-sample-10bt",
+      "repo_id": "HuggingFaceFW/fineweb-edu",
+      "repo_type": "dataset",
+      "revision": "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9",
+      "files": ["sample/10BT/013_00000.parquet"],
+      "format": "parquet",
+      "text_fields": ["text"],
+      "license": "ODC-By-1.0",
+      "license_tag": "license:odc-by",
+      "row_license_field": null,
+      "role": "text",
+      "contamination_note": "Public educational web text; plausibly in Qwen3 pretraining. Similarity-filtered against every evaluation item before tokenisation."
+    },
+    {
+      "id": "codeparrot-clean-0001",
+      "repo_id": "codeparrot/codeparrot-clean",
+      "repo_type": "dataset",
+      "revision": "35a59fb025bc0a102f7d96eac09d145b896d487b",
+      "files": ["file-000000000001.json.gz"],
+      "format": "jsonl-gz",
+      "text_fields": ["content"],
+      "license": "per-row (dataset card declares none)",
+      "license_tag": null,
+      "row_license_field": "license",
+      "permissive_allowlist": [
+        "mit",
+        "apache-2.0",
+        "bsd-3-clause",
+        "bsd-2-clause",
+        "isc",
+        "mpl-2.0",
+        "unlicense",
+        "cc0-1.0"
+      ],
+      "role": "code",
+      "contamination_note": "Only rows whose own license field is in the permissive allowlist are used. Rows with any other value, including unknown, are discarded and counted."
+    },
+    {
+      "id": "hendrycks-math-train",
+      "repo_id": "EleutherAI/hendrycks_math",
+      "repo_type": "dataset",
+      "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+      "files": [
+        "algebra/train-00000-of-00001.parquet",
+        "counting_and_probability/train-00000-of-00001.parquet",
+        "geometry/train-00000-of-00001.parquet",
+        "intermediate_algebra/train-00000-of-00001.parquet",
+        "number_theory/train-00000-of-00001.parquet",
+        "prealgebra/train-00000-of-00001.parquet",
+        "precalculus/train-00000-of-00001.parquet"
+      ],
+      "format": "parquet",
+      "text_fields": ["problem", "solution"],
+      "text_template": "Problem: {problem}\nSolution: {solution}",
+      "license": "MIT",
+      "license_tag": "license:mit",
+      "row_license_field": null,
+      "role": "math",
+      "contamination_note": "MATH train splits only. The MATH test splits are never read. MATH is not an evaluation task in T1."
+    }
+  ]
+}

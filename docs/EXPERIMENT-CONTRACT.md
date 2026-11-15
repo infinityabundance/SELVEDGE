@@ -964,3 +964,452 @@ text above is retained unchanged as the pre-registration.
    logical-omission and final-KL comparisons they contain, and are not
    comparable on the physical axis. The corrected table is generated from
    `results/selectors/eval-full-20261115T005000Z.json`.
+
+# Experiment contract — T1: trained / upcycled compliant architectures and the dense control
+
+Status: **pre-registered before any training-data pass or baseline evaluation
+that informs a threshold.** This section is appended to the M1/M2 contract and
+does not modify it. M1 and M2 rejected the inference-only, post-hoc selection
+branch for Qwen3-1.7B: even a causally unavailable per-token oracle at the
+compliant budget was outside the usable tier, and the best physically compliant
+arms were static masks with unusable quality. T1 asks the next question the
+mandate requires: **if the model is trained to tolerate the compliant budget,
+does conditional computation buy quality that a dense model of the same size and
+cost cannot?**
+
+The decisive comparison is arm B against arm C at matched active parameters,
+matched tokens and matched training compute. If B does not beat C, the
+conditional-computation claim is rejected at this scale (K13), whatever B does
+against the untrained baseline D.
+
+## T1.1 Registered model facts
+
+All counts below are the receipts' unique, tie-aware counts, not total tensor
+elements. The ceiling is `1,000,000,000` unique active learned parameters per
+output token, enforced by the Rust ledger path (`selvedge admit`, T1.9), not by
+a Python assertion.
+
+| model | unique learned | always-on backbone | removable FFN | verdict |
+| --- | ---: | ---: | ---: | --- |
+| Qwen3-0.6B | 596,049,920 | 331,808,768 | 264,241,152 | not binding |
+| Qwen3-1.7B | 1,720,574,976 | 663,610,368 | 1,056,964,608 | binding, backbone fits |
+
+Qwen3-0.6B: 28 layers, hidden 1024, intermediate 3072, 16 heads / 8 KV heads,
+head_dim 128, vocab 151936, tied embeddings. Qwen3-1.7B: 28 layers, hidden
+2048, intermediate 6144. Both Apache-2.0; revisions and weight hashes are in
+`docs/MODELS.md`. One group of the default 16-group partition is 2,359,296
+elements for the 1.7B FFN and 589,824 for the 0.6B FFN.
+
+## T1.2 Architectures (all arms)
+
+Every arm is a next-token model. "Active" means the union of learned parameter
+elements read by the router **and** the executed computation for one output
+token, counted once. Frozen weights are still learned parameters and are counted
+when read. Router and adapter parameters are counted. Parameter counts below
+are design counts; the authoritative count for every run is the Rust admission
+record in T1.9, and a mismatch between the design count and the admission record
+fails closed (K10).
+
+**D — dense baseline, no training.** Unmodified `Qwen/Qwen3-0.6B` at revision
+`c1899de289a04d12100db370d81485cdf75e47ca`. Active unique `596,049,920`;
+compliant. This is the model a more complex architecture must beat at all.
+
+**E — quality reference, non-compliant, never in compliant results.**
+Unmodified `Qwen/Qwen3-1.7B` at revision
+`70d244cc86ccca08cf5af4e1e306ecf908b1ad5e`. Active unique `1,720,574,976`;
+`research_noncompliant_teacher`. It is the distillation teacher and the quality
+ceiling. No compliant comparison may include it.
+
+**A — sparse-upcycled Qwen3-1.7B.** Frozen 1.7B backbone (`663,610,368`) plus,
+per layer, a trainable router that selects `k = 5` of 16 contiguous FFN channel
+groups, plus trainable rank-8 residual adapters on the selected groups. Each
+selected group's gate/up/down slices are read; unselected groups are never
+computed. The adapter for group `g` acts on the group's 384-wide pre-down
+activation `a_g = SiLU(W_gate_g x) * (W_up_g x)`:
+`a_g -> a_g + B_g (A_g a_g)` with `A_g: R^384 -> R^8` and `B_g: R^8 -> R^384`.
+`B_g` is zero-initialised. Router: one `d_model x 16` linear per layer, no bias,
+softmax over 16 logits, hard top-5 forward with a straight-through gradient.
+
+Active unique is
+`663,610,368 + 28*5*2,359,296 + 28*5*(2048*8 + 8*384) + 28*2048*16`
+= `663,610,368 + 330,301,440 + 2,723,840 + 917,504` = **`997,553,152`**.
+Compliant.
+
+**A0 — untrained A reference.** Arm A's architecture with the router at its
+seed-1001 initialisation and zero adapters, no training. This is the
+M2-comparable point (per-token selection at k=5 with an untrained router) and it
+lets the report say whether training rescues omission. Compliant, same count as
+A.
+
+**B — 0.6B core plus routed specialist capacity.** Frozen unmodified 0.6B core
+(`596,049,920`, including its dense FFN) plus, per layer, `m = 8` specialist
+SwiGLU FFN blocks of intermediate width 512 and a router selecting `k = 4` of
+them. Each specialist is `W_gate: 1024x512`, `W_up: 1024x512`, `W_down:
+512x1024`; its output is added residually to the layer output; `W_down` is
+zero-initialised so step 0 is exactly the frozen core. Router: `d_model x 8`
+linear per layer, no bias, hard top-4, straight-through.
+
+Active unique is `596,049,920 + 28*4*1,572,864 + 28*1024*8`
+= `596,049,920 + 176,160,768 + 229,376` = **`772,440,064`**. Compliant.
+
+**C — dense control at matched active parameters.** Frozen 0.6B core plus a
+*dense* (unrouted) SwiGLU adapter of intermediate width 2048 in every layer,
+with `W_down` zero-initialised and added residually: `3*1024*2048 = 6,291,456`
+elements per layer, `176,160,768` in total. Active unique is
+`596,049,920 + 176,160,768` = **`772,210,688`**. Compliant. The only difference
+between B and C is conditional (routed) versus dense computation at the same
+active parameter count; the `229,376`-element router makes B *more* expensive,
+never cheaper, which is the A3 direction rule carried forward.
+
+**C2 — ceiling-max dense control.** Frozen 0.6B core plus a dense SwiGLU
+adapter of intermediate width 4608 in every layer: `3*1024*4608 = 14,155,776`
+per layer, `396,361,728` total. Active unique is
+`596,049,920 + 396,361,728` = **`992,411,648`**. Compliant. C2 answers "is the
+ceiling better spent densely" but is not parameter-matched to B, so it is a
+secondary arm and is flagged as such in every table.
+
+Arms A, A0, B, C and C2 are in *approximate* mode whenever selection changes
+which groups execute; the M1/M2 exact-mode distinction is unchanged and no
+exact-mode claim is made here. Every trained arm's report carries
+`CausalAvailability::Available` (the router reads only the current layer's
+pre-FFN hidden state, the layer index and its own parameters; no future token,
+teacher logit or gold label) and `PhysicalCompliance::Compliant` with measured
+reads from the Rust admission record.
+
+**Step-0 identity.** For B, C and C2 the zero-initialised `W_down` makes the
+adapter's contribution exactly zero, so the modified model must reproduce the
+frozen 0.6B core's logits within the bf16 instrument tolerance
+`max |logit_delta| <= 1e-3` on the registered verification batch (expected
+exactly `0`, since adding a zero tensor is exact). For A, the same check is run
+with `k = 16` (all groups) so the omitted groups contribute too; at the
+registered `k = 5` the model does **not** match the dense teacher, by design.
+The omission delta at `k = 5` is measured and reported, never hidden. A failure
+of the zero-point check is K12.
+
+## T1.3 Data sources, revisions and licences
+
+Spec: `data/train-corpus-spec.json`; lock: `data/train-corpus.lock.json`; fetch
+receipt: `results/train/fetch-*.json`. Files are downloaded only by an explicit
+`--net` court step, hashed against the Hugging Face LFS object id, and never
+committed. The corpus text lives in the gitignored
+`results/artifacts/train-corpus/`.
+
+| source | revision | file | licence | role |
+| --- | --- | --- | --- | --- |
+| `HuggingFaceFW/fineweb-edu`, config `sample-10BT` | `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9` | `sample/10BT/013_00000.parquet` | ODC-By 1.0 (`license:odc-by`) | text, 70% of tokens |
+| `codeparrot/codeparrot-clean` | `35a59fb025bc0a102f7d96eac09d145b896d487b` | `file-000000000001.json.gz` | per-row `license` field; allowlist below | code, 20% of tokens |
+| `EleutherAI/hendrycks_math`, all seven configs, **train** splits only | `21a5633873b6a120296cce3e2df9d5550074f4a3` | `*/train-00000-of-00001.parquet` | MIT | math, 10% of tokens |
+
+`codeparrot/codeparrot-clean` declares no dataset-level licence. Its rows carry
+a per-file `license` field, so the corpus is the subset whose row licence is in
+the exact allowlist
+`{mit, apache-2.0, bsd-3-clause, bsd-2-clause, isc, mpl-2.0, unlicense,
+cc0-1.0}`; rows with any other value, including `unknown`, are discarded and
+counted. This is a row-level licence filter, not a dataset-level claim, and is
+recorded as a residual risk in `docs/LIMITATIONS.md`. The MATH **test** splits
+are never read. GSM8K, HumanEval and TruthfulQA are not in any training source,
+and are similarity-filtered against the corpus in T1.5 anyway.
+
+**Deterministic materialisation.** Documents from each source are ordered by the
+SHA-256 of their normalised text (never by file position), concatenated per
+source with one end-of-text separator between documents, tokenised with the
+pinned Qwen3 tokenizer, and interleaved into one stream by a fixed 70:20:10
+block schedule at 1024-token granularity. The stream is written as
+little-endian `uint32` to `train.bin` with a sidecar `train.index.json`
+recording the SHA-256, the token count and the per-source spans. Every arm reads
+the same file from offset 0 in the same order. A source that runs out of tokens
+repeats from its own start (the MATH source is small and is repeated); the
+repeat factor is recorded in the index. The corpus is materialised to the
+registered budget plus 10% headroom; no arm reads beyond the registered budget.
+
+## T1.4 Teacher targets
+
+Teacher: arm E, dense Qwen3-1.7B, bf16, `torch.inference_mode`, TF32 disabled.
+Targets are computed **once** over the materialised stream, in chunks of 4096
+tokens (4 x 1024), and cached so the teacher is never re-run per arm.
+
+Per position the cache stores the top-16 teacher logits in bf16, the top-16
+vocabulary indices in int32, and the teacher log-sum-exp in fp32: exactly
+`16*2 + 16*4 + 4 = 100` bytes per position. At the registered budget of
+`134,217,728` tokens the cache is `13,421,772,800` bytes (12.5 GiB) plus a
+manifest. The manifest records, per chunk, the token span, the SHA-256 of the
+chunk file, the teacher revision and the row range; a mismatch fails closed.
+Disk use is bounded by the registered budget plus headroom, and no chunk is
+written without its checksum.
+
+**Verification.** After the cache is built, a registered sample of 16 chunks is
+recomputed by a live teacher forward and compared: the top-16 index sets must be
+identical, the logits must agree within the bf16 tolerance
+`|a-b| <= 1e-2`, and the log-sum-exp within `1e-3`. The sample, the deltas and
+pass/fail are in the build receipt. A failure invalidates the cache and stops
+training.
+
+The objective is the exact top-k cross-entropy with a tail bucket:
+`L = -sum_j p_t(j) log p_s(j) - p_tail log p_s(tail)`, where `p_t` is the
+teacher distribution restricted to its top-16 support plus a tail of mass
+`1 - sum_j p_t(j)`, and `p_s` is the student's probability on the same support
+plus the sum of the remaining student mass as the tail. This is exact given the
+stored quantities and identical for every arm. No hard-label cross-entropy term
+is added.
+
+Teacher targets are derived from a non-compliant model. They are a training
+signal only and are never part of a compliant inference path.
+
+## T1.5 Contamination and leakage
+
+Before any training token is produced, every candidate training document is
+checked against every evaluation item (HumanEval prompts, GSM8K questions,
+TruthfulQA questions, and the 40 held-out wikitext articles) by (a) exact 5-word
+-shingle Jaccard at the pre-registered threshold `0.2`, and (b) an exact match
+of any 64-token substring. A document failing either test is discarded and
+counted per evaluation set. The counts appear in the corpus receipt; if any
+evaluation item survives at Jaccard `>= 0.5` the corpus build fails closed
+(K10).
+
+No evaluation label, gold answer, canonical solution or test is ever tokenised
+into the corpus. The router sees no teacher logits, no future token and no
+evaluation item. The teacher cache is built on training text only.
+
+Residual risk: fineweb-edu, codeparrot-clean and MATH are public and are
+plausibly in Qwen3's pretraining corpus, so absolute teacher KL is optimistic.
+All comparisons are relative to the same teacher on the same tokens.
+
+## T1.6 Token budget, sequence length, optimiser, routing, seeds
+
+- **Token budget.** `134,217,728` tokens (2^27) per full-budget arm. Registered
+  before measurement from the analytical estimate in T1.14 and the 6-10 hour
+  window. The smoke receipt either confirms it fits or triggers the single
+  pre-run amendment in K14. No arm is silently shrunk.
+- **Sequence length** 1024 tokens. No window crosses a 1024-token block
+  boundary. The corpus separator token is the model's end-of-text token.
+- **Batch.** Micro-batch 4 sequences x 1024 tokens, gradient accumulation 16,
+  effective batch `65,536` tokens per optimiser step. `134,217,728 / 65,536 =
+  2048` steps per full-budget arm.
+- **Precision.** bf16 compute for the frozen backbone; fp32 master weights for
+  every trainable adapter/router with AdamW. Rationale: the frozen backbone must
+  fit in 16 GiB in bf16, while fp32 masters keep the adapters' updates stable at
+  the registered learning rate.
+- **Optimiser.** AdamW, `betas = (0.9, 0.95)`, `eps = 1e-8`, weight decay
+  `0.0` on adapters and routers, gradient clip `1.0`. Peak LR `1e-3` for
+  adapter/router parameters, linear warm-up over 100 steps, cosine decay to
+  `1e-4` at the end of the registered budget. No parameter group uses a
+  different schedule.
+- **LoRA / adapter ranks.** A: rank 8 on the selected FFN groups. B: specialist
+  width 512 (not low-rank; the specialist *is* the capacity). C: dense width
+  2048. C2: dense width 4608.
+- **Routing.** Hard top-k (A: k=5 of 16; B: k=4 of 8). Training uses a
+  straight-through estimator: the forward gate is the hard 0/1 top-k mask; the
+  backward pass treats the mask as the softmax probability. Eval uses the hard
+  mask. A soft-mixture evaluation (all experts weighted by the softmax) is run
+  as a registered ablation on the same items and the hard-minus-soft KL gap is
+  reported per arm; the hard value is the primary.
+- **Load balancing.** A Switch-style auxiliary loss
+  `0.01 * m * sum_i f_i * p_i` is added to the distillation loss, where `f_i` is
+  the fraction of tokens routed to expert `i` in the batch and `p_i` is its mean
+  router probability. Expert utilisation is logged every step. The auxiliary
+  loss is identical for A and B.
+- **Seeds.** Every full-budget arm uses seed `1001` (torch, numpy and the data
+  order derive from it). The decisive pair B/C is replicated at `33,554,432`
+  tokens (2^25, 512 steps) with seeds `2001`, `2002`, `2003`; the replication is
+  used only to estimate run-to-run spread and is reported as a seed-level CI.
+- **Consequence of one full-budget seed.** A single full-budget seed cannot
+  separate a small B-C difference from seed noise. The registered decision rule
+  therefore requires the 3% relative margin to exceed **twice the seed-level
+  standard deviation** measured in the 32M-token replication; if it does not,
+  the result is reported as "not separable from seed noise" and K13 is not
+  treated as passed.
+
+## T1.7 Evaluation suite (fixed before measurement)
+
+Instrument: bf16 model forward (TF32 disabled), logits cast to f32 for the
+metrics, greedy decoding for pass@1 and exact match, fixed prompt templates in
+`oracle/eval/tasks.py`, fixed item order, no sampling for primary metrics. This
+is a **different instrument** from M1/M2, which used an f32 teacher; T1 KL values
+are not comparable to M1/M2 KL values and no such comparison is made.
+
+1. **HumanEval pass@1** (MIT, revision `7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544`),
+   all 164 problems. Prompt is the dataset `prompt` field; greedy decode up to
+   256 new tokens, stopping at the first of `\nclass `, `\ndef `, `\n#`,
+   `\nif __name__`, or EOS. The completion is executed with the canonical test
+   under a 3-second per-problem wall-clock limit in a subprocess with no
+   network, no inherited file handles and a bounded address space; a timeout,
+   crash or syntax error is a failure. pass@1 is the fraction of problems whose
+   test passes. The code-execution risk is recorded in `docs/LIMITATIONS.md`.
+2. **GSM8K exact match** (MIT, revision
+   `740312add88f781978c0658806c59bc2815b9866`), the 300 problems with the
+   lexicographically lowest SHA-256 of the normalised question (fixed before
+   measurement). Prompt `Question: {q}\nAnswer:`; greedy decode up to 512
+   tokens; the predicted value is the last number on the line after `####`, or
+   the last integer in the output; exact match after stripping commas and
+   leading zeros.
+3. **TruthfulQA MC1** (Apache-2.0, revision
+   `741b8276f2d1982aa3d5b832d3ee81ed3b896490`, `multiple_choice` validation),
+   all 817 questions. For each question the model scores each supplied choice
+   under the registered template `Q: {question}\nA: {choice}`; accuracy is the
+   fraction where the argmax-scored choice has label 1. This is a closed-book
+   factual-consistency set; it is permissively licensed and pinned, and its
+   contamination risk is declared (T1.5).
+4. **Teacher KL and PPL** on the existing pinned held-out split: 40 wikitext
+   articles (up to two 512-token windows each), 40 HumanEval prompts and 40
+   GSM8K questions from `results/splits/`. KL is `KL(teacher || student)` per
+   position in nats/token, and PPL is the student's perplexity on the true token
+   on the same tokens. Reported per domain and pooled.
+5. **Mixed-task prompts.** A fixed interleaving of the three domain slices
+   (wikitext window, HumanEval prompt, GSM8K question, repeating) measured with
+   the same KL/PPL definitions, so a domain-specific gain cannot hide a pooled
+   regression.
+6. **Routing ablation.** For A and B only: hard top-k versus soft mixture KL on
+   the same items, per domain. This is the reported train/eval routing gap.
+
+**Strict no-training-on-eval.** No evaluation item, label or test is in the
+corpus. The evaluation harness reads the pinned dataset cache and the model
+checkpoint only; it never writes to the corpus or target cache.
+
+## T1.8 Metrics, CIs and statistical method
+
+- Primary metrics are the two co-primary endpoints:
+  - `P1` = pooled held-out teacher KL in nats/token (lower is better), with the
+    per-domain values reported alongside.
+  - `P2` = task composite = arithmetic mean of HumanEval pass@1, GSM8K exact
+    match and TruthfulQA MC1 accuracy (higher is better), each in `[0,1]`.
+- Secondary: per-domain KL/PPL, top-1 agreement with the teacher, teacher KL on
+  the mixed interleaving, expert utilisation, the routing gap, and wall-clock.
+- CIs are paired percentile bootstraps with 10,000 resamples, seed `20261115`;
+  KL resamples windows, HumanEval/GSM8K/TruthfulQA resample items. The
+  B-minus-C and B-minus-D differences are computed on paired items, never on
+  independent means.
+- One full-budget seed per arm; the seed-level CI comes from the 32M-token
+  replication (T1.6). Both are reported. A difference that is inside the
+  item-level CI but outside the seed-level spread, or vice versa, is reported as
+  ambiguous, not as a win.
+- Multiple comparisons: there are two co-primary endpoints. A claim needs the
+  threshold on at least one endpoint and no regression beyond the margin on the
+  other. No other endpoint can be substituted after measurement.
+
+## T1.9 Accounting enforcement (Rust is the source of truth)
+
+`selvedge admit --config <arm-config.json> --out <admission.json>` builds a
+`SelectionPath` from the declared selector and execution tensor slices, admits
+it through `ParameterLedger::admit_selection_path` under
+`ComplianceMode::Compliance`, and writes the admitted path, the verdict, the
+selector/execution read counts, their union and the FLOP estimates. The command
+exits non-zero and writes no admitted path for an over-budget arm.
+
+The training and evaluation entry points refuse to start a config whose
+admission record is missing, is not `Within { .. }`, or whose config SHA-256 does
+not match the record. A Python-side mirror of the union computation is run as a
+cross-check on every run and its disagreement with the Rust record is a hard
+error (K10). The Python mirror is never the source of truth.
+
+Routers and adapters are declared in the same config and counted:
+`selector_uses` are the router projections, `execution_uses` are the frozen
+backbone slices, the selected group slices, the adapters and the
+embedding/output projection as the model executes it (tied counted once).
+
+## T1.10 Pre-registered thresholds and decision rule
+
+Let `KL` be `P1` and `TASK` be `P2`.
+
+- **Regression margin.** An arm "does not regress" on `P1` if its KL is at most
+  `1.02 x` the comparator's, and on `P2` if its score is at least the
+  comparator's minus `0.01` absolute.
+- **B vs D (trained conditional vs untrained dense).** B must improve on at
+  least one co-primary by `>= 5%` relative with a paired 95% CI lower bound
+  above zero, and must not regress on the other beyond the margin.
+- **B vs C (the decisive comparison).** B must improve on at least one
+  co-primary by `>= 3%` relative with a paired 95% CI lower bound above zero,
+  must not regress on the other beyond the margin, and the improvement must
+  exceed twice the seed-level standard deviation from the 32M-token replication.
+- **Gap closed versus the reference.** For each co-primary,
+  `gap_closed = (arm - D) / (E - D)` using the metric's polarity. A "meaningful
+  result at this scale" requires `gap_closed >= 0.10` on at least one
+  co-primary. If no arm reaches it, the report says so and does not claim a
+  quality win.
+- **A vs A0 (does training rescue omission).** A must reduce KL relative to A0
+  by `>= 10%` relative with the CI lower bound above zero. If it does not,
+  training did not rescue static omission at this budget and the omission branch
+  closes for this teacher.
+- **C2.** Reported as a secondary point. If C2 beats B on both co-primaries with
+  CIs excluding zero, the honest conclusion is "at this ceiling, dense capacity
+  is better than routed capacity at this scale", and K13 triggers.
+- Every threshold is fixed here, before any measurement. No threshold moves
+  after a measurement; a needed change is an amendment (T1.15) and the
+  pre-amendment results are reported against the original text.
+
+## T1.11 Kill conditions (fixed now)
+
+- **K10 — data, target and accounting integrity.** Any shard, corpus or target
+  checksum mismatch; any contamination at Jaccard `>= 0.5`; any run whose Rust
+  admission record is missing, over-budget, or disagrees with the Python mirror;
+  any arm whose executed parameter union exceeds the ceiling. Fail closed: do
+  not train or compare the affected arm.
+- **K11 — training instability.** Non-finite loss or gradients, or gradient norm
+  above `10` for more than 5% of steps, or a checkpoint that cannot be resumed
+  bit-identically after a crash, or eval KL that diverges from the training-loss
+  trend by more than 10x. The arm is reported failed; it is not silently
+  retried with different hyperparameters. A restart from the last good
+  checkpoint with identical configuration is allowed and recorded.
+- **K12 — step-0 identity.** If the zero-initialised arms (B, C, C2, and A with
+  `k = 16`) do not reproduce the frozen base within `max |logit_delta| <= 1e-3`,
+  the training path is defective and stops.
+- **K13 — decisive comparison.** If B does not beat C on either co-primary with
+  the registered 3% margin, the CI lower bound above zero and the seed-spread
+  condition, the conditional-computation advantage is rejected at this scale.
+  Do not proceed to larger scales on the basis of this architecture without a
+  new pre-registration.
+- **K14 — budget reality.** If the measured throughput implies the registered
+  `134,217,728`-token budget cannot finish inside the 10-hour-per-arm window,
+  the budget is amended **once, before any full run**, with the smoke receipt as
+  evidence; it is never shrunk after seeing a result. If even the largest honest
+  budget (10 hours per arm) is below `33,554,432` tokens, stop and report that
+  the experiment is infeasible on this hardware rather than running an
+  underpowered comparison.
+
+## T1.12 Matched compute
+
+"Matched compute" is defined as `tokens x realized active FLOPs per token`
+(forward plus backward for training, forward for evaluation), computed from the
+Rust admission record's slice shapes and the realized executed set, not from a
+formula estimate alone. Wall-clock is reported separately and is not substituted
+for FLOPs. B and C are matched on active unique parameters to within the
+`229,376`-element router difference (B more expensive, 0.03%) and on tokens;
+their FLOP difference is the router plus the dense-vs-routed execution and is
+reported. A is matched to B on the ceiling and on tokens, not on FLOPs, because
+its backbone is 2.6x larger; the FLOP ratio is reported and A is never pooled
+with B/C.
+
+## T1.13 What a negative result means
+
+- If B does not beat C, conditional computation as implemented here (a routed
+  residual specialist bank on a frozen compliant core) does not buy quality over
+  a dense adapter of the same active size and training compute. That is a
+  negative result for the SELVEDGE hypothesis at this scale, not for
+  conditional computation in general, and it is published as such.
+- If A does not beat A0, training the router and adapters does not rescue
+  omission at k=5 on this teacher. The M2 conclusion is then strengthened: the
+  problem is the budget and the checkpoint, not the post-hoc selection rule.
+- If every trained arm is inside noise of D, the token budget or the adapter
+  capacity is too small for the effect to appear; the report says that and
+  distinguishes it from "conditional computation does not work".
+
+## T1.14 Budget reality and amendments
+
+The registered budget was set analytically before the smoke measurement:
+`134,217,728` tokens is the largest power of two that the slowest arm (A, a
+1.7B frozen backbone at an estimated 4,000-6,000 tokens/s) can finish inside
+10 hours (`~5,000 tokens/s x 36,000 s = 1.8e8` tokens; 1.34e8 leaves margin).
+The smoke receipt measures actual throughput, VRAM and steps/s for every arm and
+is the evidence for the budget table in `results/T1-PLAN.md`. If the measured
+values contradict the registration, K14's single amendment is recorded here with
+its timestamp and the smoke receipt stamp before any full-budget run.
+
+The exact commands for the full runs are in `results/T1-PLAN.md`; they are
+generated from the same arm configs the admission records admit.
+
+## T1.15 Deviations and amendments
+
+As in M1/M2: planned deviations are none. Unplanned deviations are recorded in
+`docs/WORK-LOG.md` and in the affected receipt with reason and timestamp. A
+change to a budget, arm, threshold, sample size, contamination rule or kill
+condition after the first measurement is an amendment appended here with its own
+timestamp, and the pre-amendment results are reported against the original text.
