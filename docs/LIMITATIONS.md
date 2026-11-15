@@ -177,10 +177,10 @@ the inference-only, post-hoc selection family.
 - **The one-pass and offline timings use different conventions.** For the online
   arm the selector hooks run inside the timed forward; for the offline and
   random arms the selector runs outside it. `selector_seconds`,
-  `execution_seconds` and `total_seconds` are recorded separately so a selector
-  time is never compared against a forward time that already contains it. The
-  online selector time includes a per-layer device synchronisation and is
-  therefore conservative.
+  `execution_seconds` and `total_seconds` are recorded separately. The online
+  `execution_seconds` is a subtraction and is not a clean execution measure,
+  because the per-layer synchronisation inside the hook also waits for forward
+  work; the online total is the defensible comparison across arms.
 - **The oracle is local, not globally optimal.** It exactly minimises a
   one-layer squared-output error per token and then applies the map; it does
   not solve the joint per-token combinatorial problem over all layers and

@@ -234,15 +234,18 @@ sample on the RTX 4080 SUPER the online arm spends
 <!-- BEGIN GENERATED: m2c-onepass-b140-seconds-2 -->
 0.739
 <!-- END GENERATED: m2c-onepass-b140-seconds-2 -->
-seconds in selection,
-<!-- BEGIN GENERATED: m2c-onepass-b140-execution-seconds -->
-0.502
-<!-- END GENERATED: m2c-onepass-b140-execution-seconds -->
-seconds in execution, and
+seconds inside the selection hooks and
 <!-- BEGIN GENERATED: m2c-onepass-b140-total-seconds -->
 1.242
 <!-- END GENERATED: m2c-onepass-b140-total-seconds -->
-seconds in total. The offline arm spends
+seconds in the whole forward. The remainder after subtracting the hook time is
+<!-- BEGIN GENERATED: m2c-onepass-b140-execution-seconds -->
+0.502
+<!-- END GENERATED: m2c-onepass-b140-execution-seconds -->
+seconds, but it is **not** a clean execution measurement: the per-layer
+device synchronisation inside the hook also waits for forward work, so the
+subtraction can absorb it. The defensible online quantity is the total. The
+offline arm spends
 <!-- BEGIN GENERATED: m2c-offline-b140-execution-seconds -->
 1.240
 <!-- END GENERATED: m2c-offline-b140-execution-seconds -->
@@ -250,12 +253,11 @@ seconds in execution over its two forwards and
 <!-- BEGIN GENERATED: m2c-offline-b140-total-seconds -->
 1.307
 <!-- END GENERATED: m2c-offline-b140-total-seconds -->
-seconds in total, with a selector time that is not nested in the forward. The
-online selector time is conservative because it includes a per-layer device
-synchronisation; the offline selector is measured on already-captured states in
-a batch. The random baseline is not a controller-cost claim: its selector is a
-naive scalar splitmix generator and reads no learned parameters (its measured
-time is
+seconds in total, with its selector time outside the timed forward. The online
+selector time is conservative because it includes that synchronisation; the
+offline selector is measured on already-captured states in a batch. The random
+baseline is not a controller-cost claim: its selector is a naive scalar splitmix
+generator and reads no learned parameters (its measured time is
 <!-- BEGIN GENERATED: m2c-random-b140-selector-seconds -->
 6.320
 <!-- END GENERATED: m2c-random-b140-selector-seconds -->
