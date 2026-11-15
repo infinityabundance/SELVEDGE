@@ -1,0 +1,94 @@
+{
+  "disk": {
+    "available_bytes": 112404271104,
+    "budget_tokens": 67108864,
+    "build_peak_bytes": 17867735040,
+    "checkpoint_bytes": {
+      "D": 2113929216,
+      "H": 5866438656,
+      "H*": 5866438656,
+      "M": 1635827712,
+      "X": 4230610944
+    },
+    "checkpoint_size_cross_check": {
+      "D": {
+        "analytic_bytes": 2113929216,
+        "analytic_le_measured": true,
+        "measured_smoke_bytes": 2114029497,
+        "ratio": 0.999953
+      },
+      "H": {
+        "analytic_bytes": 5866438656,
+        "analytic_le_measured": true,
+        "measured_smoke_bytes": 5866590113,
+        "ratio": 0.999974
+      },
+      "H*": {
+        "analytic_bytes": 5866438656,
+        "analytic_le_measured": true,
+        "measured_smoke_bytes": 5866590113,
+        "ratio": 0.999974
+      },
+      "M": {
+        "analytic_bytes": 1635827712,
+        "analytic_le_measured": true,
+        "measured_smoke_bytes": 1635842957,
+        "ratio": 0.999991
+      },
+      "X": {
+        "analytic_bytes": 4230610944,
+        "analytic_le_measured": true,
+        "measured_smoke_bytes": 4230748073,
+        "ratio": 0.999968
+      }
+    },
+    "existing_cache_bytes": 419430400,
+    "filesystem": "/mnt/1tb_kingston/SELVEDGE",
+    "fits": true,
+    "headroom_bytes": 45875580928,
+    "in_flight_checkpoint_bytes": 5866438656,
+    "notes": [
+      "the target build writes teacher-targets.bin.tmp before the atomic rename, so the old and the new cache coexist during the build",
+      "the loop retains the latest two checkpoints per arm and deletes older ones, and a third copy exists while a new one is being written",
+      "H*'s utility-label checkpoint holds the cached 1024-wide features for 28 layers x 32,768 calibration positions as well as the labels"
+    ],
+    "required_bytes": 66528690176,
+    "reserve_bytes": 10737418240,
+    "retained_two_per_arm_bytes": 39426490368,
+    "schema": "selvedge/t2-disk-arithmetic/v1",
+    "targets_bytes": 6710886400,
+    "training_peak_bytes": 66528690176,
+    "utility_label_bytes": 3787456512
+  },
+  "gpu": {
+    "available": true,
+    "compute_apps": [
+      {
+        "name": "/usr/bin/kwin_wayland",
+        "pid": 1873,
+        "used_mib": 106
+      },
+      {
+        "name": "/usr/bin/sunshine",
+        "pid": 3137,
+        "used_mib": 253
+      },
+      {
+        "name": "/home/one/.local/zed.app/libexec/zed-editor",
+        "pid": 1116182,
+        "used_mib": 132
+      }
+    ],
+    "compute_mib": 491,
+    "total_mib": 16376,
+    "used_mib": 1324
+  },
+  "gpu_idle": true,
+  "gpu_reason": "",
+  "ok": true,
+  "revision": "1dd7270f3959a3e0ce15f670a03997467235d04b",
+  "schema": "selvedge/t2-launch-guard/v1",
+  "selvedge_containers": [],
+  "stamp": "20261115T132656Z",
+  "utc": "2026-11-15T13:26:56Z"
+}

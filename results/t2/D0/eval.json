@@ -1,0 +1,144 @@
+{
+  "arm": "D0",
+  "checkpoint_sha256": null,
+  "command": "oracle/eval/baseline.py --profile t1 --arm D --seed 1001 --out results/eval/t2-D0.json",
+  "compliance_label": "compliant_dense_baseline",
+  "config_sha256": null,
+  "determinism": null,
+  "eval_receipt": "results/eval/t2-D0.json",
+  "eval_receipt_stamp": "20261115T143727Z",
+  "eval_revision": "3875497a087071ea08e3624d6ce0a7872cb406cb",
+  "instrument": {
+    "decoding": "greedy (do_sample=false, num_beams=1)",
+    "gsm8k_extractor": "last number after '####' else last number",
+    "gsm8k_max_new_tokens": 512,
+    "humaneval_address_space_bytes": 1500000000,
+    "humaneval_max_new_tokens": 256,
+    "humaneval_stop_strings": [
+      "\nclass ",
+      "\ndef ",
+      "\n#",
+      "\nif __name__",
+      "\nprint("
+    ],
+    "humaneval_timeout_seconds": 3.0,
+    "kl": "KL(teacher || student) in nats/token, f32 logits",
+    "precision": "bf16 forward, f32 logits for metrics",
+    "seed": 20261115,
+    "truthfulqa_scoring": "length-normalised log-likelihood, argmax"
+  },
+  "mixed": {
+    "kl": {
+      "ci_high": 0.6238448986069609,
+      "ci_low": 0.5735547719988973,
+      "mean": 0.5977188146362702,
+      "n": 120,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "top1": {
+      "ci_high": 0.5346237013675272,
+      "ci_low": 0.5142714666885634,
+      "mean": 0.5243696083625158,
+      "n": 120,
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "per_domain": {
+    "code": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.43499261943623424,
+        "ci_low": 0.37134282815270125,
+        "mean": 0.4024487841874361,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 5.338276642560959,
+      "top1": 0.6593392245471478,
+      "window_count": 40
+    },
+    "general": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.7430234986171127,
+        "ci_low": 0.6850802547298371,
+        "mean": 0.7132523864507675,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 27.554230010509492,
+      "top1": 0.41012113690376284,
+      "window_count": 80
+    },
+    "math": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.7422978609614074,
+        "ci_low": 0.6180806231126189,
+        "mean": 0.677455273270607,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 10.926088416576386,
+      "top1": 0.5036484636366367,
+      "window_count": 40
+    }
+  },
+  "per_task": {
+    "gsm8k_exact_match": 0.10333333333333333,
+    "humaneval_pass_at_1": 0.18902439024390244,
+    "truthfulqa_mc1": 0.3023255813953488
+  },
+  "per_task_ci": {
+    "gsm8k": {
+      "ci_high": 0.14,
+      "ci_low": 0.07,
+      "mean": 0.10333333333333333,
+      "n": 300,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "humaneval": {
+      "ci_high": 0.25,
+      "ci_low": 0.13414634146341464,
+      "mean": 0.18902439024390244,
+      "n": 164,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "truthfulqa": {
+      "ci_high": 0.33414932680538556,
+      "ci_low": 0.2717258261933905,
+      "mean": 0.3023255813953488,
+      "n": 817,
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "pooled": {
+    "kl": null,
+    "ppl": null,
+    "top1": null
+  },
+  "primary_composite_pc": 0.19822776832419486,
+  "primary_kl_mixed_p1": {
+    "ci_high": 0.6238448986069609,
+    "ci_low": 0.5735547719988973,
+    "mean": 0.5977188146362702,
+    "n": 120,
+    "resamples": 10000,
+    "seed": 20261115
+  },
+  "resources": null,
+  "revision": "3875497a087071ea08e3624d6ce0a7872cb406cb",
+  "schema": "selvedge/t2-eval-summary/v1",
+  "seconds": 280.88,
+  "stamp": "20261115T143727Z",
+  "utc": "2026-11-15T14:37:27Z",
+  "vram_peak_gib": 6.341
+}
