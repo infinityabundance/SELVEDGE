@@ -1490,3 +1490,424 @@ budget, token count, metric, decision threshold or kill condition changes.
    keeps the registered effective batch of 65,536 tokens, the same data order,
    the same LR schedule and the same token budget. The partition is recorded in
    every run receipt.
+
+# Experiment contract — T2: the five-arm error-directed capacity matrix
+
+Status: **pre-registered before any measured comparison.** This section is
+appended after T1 and does not modify it. T1's arms `D`, `E`, `A`, `A0`, `B`,
+`C` and `C2` keep their T1 definitions **verbatim as legacy arms**; nothing in
+T1 is silently rewritten here. T2 introduces five new arms (`D`, `M`, `X`, `H`,
+`H*`) whose names overlap T1's on purpose, so this section fixes the mapping:
+
+- **T2's `D` is T1's arm `C`** (frozen 0.6B core plus a parameter-matched dense
+  SwiGLU adapter). It is the pilot's dense control.
+- **T1's `D`** (the unmodified frozen Qwen3-0.6B at `596,049,920` active) is
+  called **`D0`** everywhere in T2. It is the pilot's equal-active-parameter
+  dense reference and is never retrained.
+- T1's `B` (`596,049,920` core + 8 specialists/layer at `k = 4`) is exactly T2's
+  `X`; the T2 admission record is a new record over a new config file, and the
+  numbers are required to coincide (`772,440,064`), which is a check rather than
+  a coincidence.
+- T1's `E` remains the non-compliant 1.7B teacher and never enters a compliant
+  T2 comparison.
+
+T2 asks the single question the program's plan defers to (`docs/PROGRAM-PLAN.md`
+P3.4, §8 "NOW"): **at one backbone, one data order and one compute budget, does
+error-directed conditional capacity beat (a) a naive hybrid of the same
+architecture, (b) a parameter-matched dense adapter, and (c) the frozen core?**
+The matrix is the smallest one that can attribute a win to *error direction*
+rather than to more parameters or more modules.
+
+The decisive comparison is `H*` against `H`, with `D` and `D0` as controls. If
+`H*` does not beat `H`, error-directed routing is not supported at this scale
+(K15) and WS3 is not scaled.
+
+## T2.1 Arms (all five, one backbone, one data order)
+
+Every arm is a next-token model over the same frozen Qwen3-0.6B core
+(`596,049,920` unique learned elements, revision
+`c1899de289a04d12100db370d81485cdf75e47ca`). "Active" means the union of learned
+parameter elements read by the selector **and** executed for one output token,
+counted once, admitted by the Rust ledger (`selvedge admit`, T1.9). Parameter
+counts below are arithmetic from the registered constants and are **not**
+measurements; the authoritative count for every run is the admission record, and
+a mismatch fails closed (K10). `total accessible` is reported for every arm
+because the difference between accessible and active capacity is the object of
+the experiment.
+
+| arm | path | active unique | total accessible |
+| --- | --- | ---: | ---: |
+| `D` | frozen core + dense width-2048 SwiGLU adapter in every layer (T1 `C`) | 772,210,688 | 772,210,688 |
+| `M` | frozen core + hashed memory at 4 layers, no experts | 598,153,216 | 866,586,624 |
+| `X` | frozen core + 8 width-512 SwiGLU specialists/layer, `k = 4` (T1 `B`) | 772,440,064 | 948,600,832 |
+| `H` | `X` + `M`, plain distillation router + Switch load balance | 774,543,360 | 1,219,137,536 |
+| `H*` | identical modules to `H`; router trained on measured utility labels | 774,543,360 | 1,219,137,536 |
+
+Reproduce (pure integer arithmetic, no model access):
+
+```bash
+python3 - <<'PY'
+core, h, layers, m, k, w, rows, vd, reads, ins = (
+    596_049_920, 1024, 28, 8, 4, 512, 1 << 18, 256, 2, 4)
+mem_active = ins * (reads * vd + reads * vd * h + h)
+mem_total = ins * (rows * vd + reads * vd * h + h)
+dense = core + layers * 3 * h * 2048
+experts = layers * k * 3 * w * h + layers * h * m
+print("D", dense)
+print("M", core + mem_active, core + mem_total)
+print("X", core + experts, core + layers * m * 3 * w * h + layers * h * m)
+print("H", core + experts + mem_active, core + layers * m * 3 * w * h
+      + layers * h * m + mem_total)
+PY
+```
+
+Direction rule (A3/T1.12 carried forward): `H` and `H*` have **more** active
+parameters and **more** FLOPs than `X` and `D` (`+2,103,296` over `X`,
+`+2,332,672` over `D`), so a hybrid win can never be explained by it being
+cheaper, and a hybrid loss cannot be excused by it being cheaper either. `M` has
+`+2,103,296` active over `D0` (+0.35%) and `176,160,768` *fewer* active than
+`D`; that asymmetry is why `M`'s comparator is `D0`, not `D` (T2.7 K17).
+
+### T2.1.1 The Arm B sizing defect (P2.1), stated here
+
+T1's arm `B` (= T2's `X`) has a bank of `28 * 8 * 1,572,864 = 352,321,536`
+elements and a total accessible size of `948,600,832`, already **under** the
+`1,000,000,000` ceiling. Arm `B` therefore never extracts capacity from beyond
+the ceiling: at 8 specialists it trades *compute* for quality at equal total
+size. That is a legitimate experiment but it is **not** the capacity-extraction
+experiment, and no T2 result may be read as evidence about dormant capacity.
+The capacity ladder (`s = 16/64/256`, where total first exceeds the ceiling at
+`s = 16` and the bank alone at `s = 64`) is out of scope for this pilot
+(`docs/PROGRAM-PLAN.md` P2.2/P3.5 D) and is not run here. `H` and `H*` have a
+total accessible of `1,219,137,536`, of which only `774,543,360` is active: the
+pilot tests **routing and retrieval over a larger accessible set**, not capacity
+beyond the memory of the device.
+
+## T2.2 Memory path (P3.1)
+
+Implemented in `oracle/train/memory.py`; the module is `HashedMemory`.
+
+- **Addressing.** Deterministic hashing of the recent token prefix. Two heads
+  per insertion layer: a bigram head (order 2) and a trigram head (order 3). The
+  key is a 64-bit FNV-1a-style fold of the n-gram's token ids seeded by a fixed
+  salt derived from `(layer, order)`;
+  `index = (key >> 46) & (rows - 1)` for `rows = 2^18`. Positions with an
+  incomplete n-gram are left-padded with id `0`. **There is no learned key
+  scan**, no key table, and no learned index: the index parameters counted as
+  active are exactly `0`.
+- **Values.** `256`-dimensional, `2^18 = 262,144` rows per table, one table per
+  insertion layer, `4` insertion layers at 0-based depth `{3, 10, 17, 24}`.
+  Total state: `4 * 2^18 = 1,048,576` rows, `268,435,456` values.
+- **Reads.** Exactly **2 row reads per token per insertion layer**, one per
+  head, so `8` row reads per token over the model. A collision between the two
+  heads reads one row twice; the accounting declares the two reads as two
+  *distinct* 256-element identities, which is the conservative (higher) union.
+- **Projection.** The two retrieved 256-vectors are concatenated to 512 and
+  projected to `d_model = 1024` by a per-layer `512x1024` matrix
+  (`524,288` elements per layer).
+- **Gate.** A per-layer `1024 -> 1` linear followed by a sigmoid; its output
+  multiplies the projected value before the residual add (`1,024` elements per
+  layer).
+- **Zero point.** The projection matrix is zero-initialised, so the memory
+  contribution is exactly zero at step 0 and the arm reproduces `D0` exactly
+  (T2.4).
+- **Active accounting.** Per insertion layer: `2*256 = 512` value elements +
+  `524,288` projection + `1,024` gate = `525,824`; over four layers
+  `2,103,296`. The whole table is **not** charged as active. The exact exported
+  form is `HashedMemory.active_parameter_report()` and the Rust declaration in
+  `results/train/admission-configs/t2/{M,H}.json`.
+- **Bytes.** Reported separately and never conflated:
+  - *resident* table footprint: `1,073,741,824` bytes fp32 (the training
+    representation) and `536,870,912` bytes bf16 (the deployment representation);
+  - *read* bytes per token for the memory path at bf16:
+    `4,206,592` bytes (`8*256*2` values + `4*524,288*2` projection +
+    `4*1,024*2` gate). The projection dominates; that is reported, not hidden.
+  
+  Both are reported in every T2 receipt. The read-bytes figure is a **modelled
+  lower bound** at the declared dtype (it is bytes of distinct identities read,
+  not measured PCIe traffic); it is labelled `modelled` in the receipt and is
+  never presented as measured I/O.
+
+Leakage rule: the index at position `t` is a function of `tokens[0..t]` only.
+The unit test `test_hash_index_is_causal_and_deterministic` changes token `t+1`
+and asserts the index at `t` is unchanged, changes token `t` and asserts the
+index changes on a fixture with no collision, and asserts two constructions with
+different torch seeds produce identical indices (no torch RNG participates).
+
+## T2.3 Expert path (P3.2)
+
+`oracle/train/modeling.SpecialistBank`, unchanged in geometry from T1's `B`:
+
+- per-layer bank of `m = 8` SwiGLU specialists of intermediate width `512`
+  (`W_gate, W_up: 1024x512`, `W_down: 512x1024`), read for `k = 4` selected
+  specialists per token;
+- `W_down` zero-initialised, so the bank's contribution is exactly zero at step
+  0 and step-0 parity holds (T2.4);
+- hard top-k in the forward pass, straight-through softmax in the backward pass;
+- a `1024x8` router per layer (`229,376` elements, no bias).
+
+The `m = 16/64/256` ladder of `docs/PROGRAM-PLAN.md` P2.2 is **not** run and must
+not be run in this phase.
+
+## T2.4 Step-0 parity and the execution kernel
+
+**Parity.** Every T2 arm must reproduce `D0`'s logits on the registered 2x1024
+verification slice within `max |logit_delta| <= 1e-3` in bf16 (expected exactly
+`0`: every added module has a zero-initialised output path). A failure is K12
+extended to T2 and stops the arm. The per-arm report is
+`oracle/train/modeling.zero_point_report`.
+
+**Deterministic dispatch (T2 execution detail).** T1's `combine` accumulated
+routed outputs with `index_add_`, whose CUDA atomics are not bitwise
+reproducible (T1.15 A6/A7). T2 replaces it with a slot-wise combine: the
+capacity-sorted buffer output is re-indexed per (token, slot) pair and summed
+over the `k` slots with tensor writes at unique indices and a reduction over a
+fixed slot order. The mathematics is unchanged (the same terms are summed); the
+result is bitwise deterministic. Recorded here because it changes T1's execution
+kernel and therefore cannot be inherited silently. The T1 arms keep the T1
+kernel; T2 arms use the deterministic one.
+
+## T2.5 Error-directed signal (P3.3)
+
+Implemented in `oracle/train/utility.py`.
+
+**Utility target.** For a calibration position `t` at layer `l` and specialist
+`e`:
+
+`u_e(t) = L_{-e}(t) - L_{+e}(t)`
+
+where `L_{+e}` is the registered T1.4 per-position distillation loss with the
+layer's full bank active (`all m` specialists routed, hard top-`m`), and `L_{-e}`
+is the same loss with specialist `e` masked out of the bank at that layer
+(`all m - 1` others active) and every other layer unchanged. The reference set
+is therefore **all `m` specialists**, and `u_e` is a leave-one-expert-out loss
+delta: the marginal value of `e` in the full bank. Because the deployed router
+selects `k < m`, the measured utility is an upper bound on the utility in a
+top-`k` set; this is stated as a limitation, not corrected post hoc.
+
+**Sample and passes.** Calibration slice = the first `32` windows of the
+training stream (stream tokens `[0, 32,768)`), fixed, calibration-only (no
+evaluation item is in the training stream, T1.5). For each of the `28` layers:
+`1` pass with all `m` active and `m = 8` passes with one expert masked, i.e.
+**`9` leave-one-out passes per layer, `252` passes per label set**, each over
+`32,768` tokens. The label tensor is `[28, 32768, 8]` fp32
+(`29,360,128` bytes) plus per-layer means/stds; it is checkpointed with a
+SHA-256 manifest recording the model checkpoint hash, the stream hash, the
+calibration range, the expert-bank state hash and the pass count.
+
+**Router head and loss.** The head is the layer's existing `1024x8` router.
+Inputs are the **pre-expert hidden state** at that layer (the input to the
+layer's additive module, captured before the bank executes), detached, plus
+nothing else: no future token, no teacher logit, no gold token, no gate value.
+Labels are standardised per layer over the calibration set. The router is
+trained with a listwise KL to the softmax of the standardised utilities at
+temperature `tau = 1` on standardised units:
+
+`L_router = mean_t KL( softmax_e(u_e(t)/tau) || softmax_e(z_e(t)/tau) )`
+
+where `z` is the router logits. `200` full-batch AdamW steps at `lr = 1e-3` over
+the cached `[32768, 1024]` features per layer (forward and backward through the
+router only; no core forward). Selection at inference is the hard top-`k` of
+`z`, `k = 4`.
+
+**H vs H\* exactly.** `H` trains the router with the straight-through gradient
+of the distillation loss plus the T1.6 Switch auxiliary loss
+`0.01 * m * sum_i f_i * p_i`. `H*` treats the routing mask as a **constant** for
+the distillation loss (no gradient to the router from distillation) and adds
+**no** load-balance term: the router is trained only by `L_router`. Experts and
+memory in both arms receive the distillation gradient through whatever mask the
+router produced. This is the whole treatment.
+
+**Leakage evidence.** Three assertions are recorded in the label receipt and
+checked by tests:
+
+1. **Calibration is disjoint from evaluation.** The calibration range is a
+   subrange of the T1.5 contamination-filtered training stream; no evaluation
+   item, label or test is in it (T1.5). Token-range disjointness and the stream
+   hash are recorded.
+2. **Features precede the outcome.** Features are captured at the layer input
+   under `torch.no_grad()`; a test captures them under two *different* expert
+   masks and asserts the features are bitwise identical, which proves the
+   router input cannot carry the intervention's result.
+3. **Labels never enter the forward.** The utility tensor is produced under
+   `torch.no_grad()` and is used only in `L_router`; a test perturbs the labels
+   and asserts the model's logits and the captured features are unchanged.
+
+## T2.6 Interference control and the warm-up schedule
+
+At step 0 every `W_down` is zero, so every utility label is exactly `0` and the
+utility target is uninformative. The bank must be ramped before labels are
+measurable.
+
+- **Phase W (warm-up, both `H` and `H*`).** Train experts and memory with the
+  naive router for `W = min(64, floor(0.0625 * total_steps))` optimiser steps
+  (`64` steps at the registered 65,536-token batch = `4,194,304` tokens). Both
+  arms run this phase identically, so it cannot favour either.
+- **Phase U (`H*` only).** Freeze the bank and memory; compute one label set;
+  train the 28 router heads for `200` steps on cached features.
+- **Phase J (both arms).** Train to the registered budget. `H` continues with
+  the straight-through router; `H*` keeps the router **frozen** after phase U
+  (no distillation gradient, no load balance, no relabelling). Periodic
+  relabelling is explicitly deferred (P3.5 phase B extension), so the pilot
+  measures "a router trained once on measured utility" and says so.
+- **Matched compute.** Both arms execute the same number of distillation steps
+  and the same number of parameter updates on experts and memory. `H*`'s extra
+  work is phase U: `252` forward passes over `32,768` tokens plus `200` router
+  steps; its FLOPs are reported separately in the H* receipt and are not charged
+  to `H`. The ratio is reported; the two arms are matched on distillation tokens
+  and active parameter updates, not on the utility-labelling overhead.
+- **Parity tolerance after warm-up.** Step-0 parity is `1e-3` as in T2.4. The
+  post-warm-up bank is *not* expected to be near zero; the non-duplication audit
+  (P3.2) reports per-specialist residual correlation instead.
+
+## T2.7 Token budget (measured first, then registered)
+
+The budget is **not** fixed in this registration. It is derived from the T2
+smoke receipt and fixed in a single amendment (A8) **before any full run**, by
+this rule, fixed now:
+
+1. Measure each arm's training throughput (tokens/s) and VRAM peak on the smoke
+   run, at the registered micro-batch of 1 window and accumulation 64 (T1.15
+   A7), with the same GQA/SDPA path.
+2. Declared window: **5 hours of training per arm** (the midpoint of the 4–6
+   hour target), 5 arms on one GPU, `5 x 5 = 25` GPU-hours plus the H\*
+   labelling overhead.
+3. `budget = largest power of two <= 0.9 * 3600 * 5 * min_over_arms(tokens/s)`,
+   where the `0.9` leaves 10% for checkpoint writes, evaluation and the H\*
+   labelling phase, and `min_over_arms` uses the **slowest** arm so every arm
+   fits the same budget. The H\* labelling overhead is subtracted explicitly
+   before the power of two is taken.
+4. If that budget is below `2^24 = 16,777,216` tokens, the pilot is infeasible
+   on this hardware and is reported as such rather than run underpowered
+   (T1's K14 rule, carried forward).
+5. The measured throughput, the per-arm VRAM peak, the arithmetic and the chosen
+   budget are copied into amendment A8 quoting the budget receipt's stamp and
+   revision. `134,217,728` tokens is **not** assumed and must not be registered
+   if the measurement does not fit.
+
+The exact launch commands are generated in `results/T2-PLAN.md` from the same
+arm configs the admission records admit.
+
+## T2.8 Seeds
+
+- **Pilot:** one seed per arm, seed `1001` (torch, numpy and the data order
+  derive from it), as in T1.6.
+- **Replication (conditional):** the decisive trio `H*`, `H`, `D` at
+  `1/4` of the pilot budget with seeds `2001, 2002, 2003`, run only if it fits
+  the 5-arm, 25-GPU-hour envelope; the smoke receipt's arithmetic decides, and
+  the decision is recorded in A8.
+- **Consequence if the replication is not run.** The T2 report then carries one
+  seed per arm. No seed-level CI is claimed. The `H* - H` difference is reported
+  with item-level paired CIs only, and it must exceed **twice the item-level CI
+  half-width** to count; a difference inside that width is reported as
+  "not separable from noise", never as a win.
+
+## T2.9 Evaluation, metrics and CIs
+
+The instrument is exactly T1.7/T1.8: bf16 forward with f32 logits for metrics,
+greedy decoding, fixed prompt templates, fixed item order, the 40-article
+wikitext split plus 40 HumanEval prompts and 40 GSM8K questions, HumanEval
+pass@1, GSM8K exact match, TruthfulQA MC1, teacher KL/PPL per domain and on the
+fixed mixed interleaving, and paired percentile bootstraps with 10,000
+resamples at seed `20261115`.
+
+**Primary composite, fixed now.** `PC = (HumanEval pass@1 + GSM8K exact match +
+TruthfulQA MC1) / 3`, identical to T1's `P2`. The co-primary is pooled teacher
+KL on the mixed interleaving (`P1`).
+
+**Decision order, fixed now.** `PC` is the primary statistic. Because a
+short-budget pilot can floor all three task scores, the registered fallback is:
+if the paired `PC` difference has a 95% CI that contains zero **for both arms of
+a comparison**, the decisive statistic for that comparison becomes `P1` (pooled
+teacher KL), lower is better. This order is declared before measurement; no
+other endpoint may be substituted afterwards.
+
+**Margins.** Relative improvement is `(comparator - arm) / comparator` for KL
+and `(arm - comparator) / comparator` for `PC`. If a comparator's `PC` is below
+`0.02`, the relative margin is replaced by an absolute `+0.01` (a relative
+margin on a near-zero composite is undefined; this rule is fixed now). "No
+regression" means KL at most `1.02x` the comparator's and `PC` at least the
+comparator's minus `0.01` absolute, as in T1.10.
+
+**Bytes and wall-clock.** Every T2 table reports the triple T2 requires: quality,
+bytes/token (memory read bytes modelled at the declared dtype, plus resident
+table bytes; expert weight bytes read) and wall-clock. FLOPs alone is not a
+result (P6.3).
+
+## T2.10 Pre-registered kill conditions (K15-K19)
+
+- **K15 — error direction.** `H*` must improve over `H` on the primary statistic
+  by `>= 3%` relative with a paired 95% CI lower bound above zero, and must not
+  regress beyond the margin on the other endpoint. If it does not, **error-
+  directed routing is not supported at this scale**: WS3's central bet (P3.3) is
+  recorded as a negative result, no bank scaling follows, and the error-directed
+  mechanism is not carried into WS4/WS5 without a new pre-registration.
+- **K16 — hybrid versus dense capacity.** `H*` must improve over `D` on the
+  primary statistic by `>= 5%` relative with the CI lower bound above zero and
+  no regression beyond the margin. If it does not, the hybrid's accessible
+  capacity (`1,219,137,536` total) buys nothing over an equal-active dense
+  adapter, and the pilot does not justify any capacity-scaling ladder.
+- **K17 — memory path.** `M` must satisfy both:
+  1. improve over `D0` (the equal-active-parameter dense comparator: `D0` has
+     `596,049,920` active against `M`'s `598,153,216`, i.e. `M` is `+0.35%`
+     more expensive) on the primary statistic by `>= 5%` relative with the CI
+     lower bound above zero;
+  2. close at least `10%` of the `D0 -> D` gap:
+     `gap_closed = (M - D0) / (D - D0) >= 0.10` on that statistic.
+  
+  If (1) fails, the memory path is retired at this scale. If (1) passes and (2)
+  fails, `M` buys quality at low active cost but not enough capacity leverage,
+  and no memory ladder is run. The equal-*total*-capacity dense adapter
+  (`core + 268,435,456` dense adapter elements, active `864,485,376`) is
+  registered as a **deferred** arm `D_M` with its arithmetic fixed here; it is
+  not run in this pilot because it is a sixth training arm outside the
+  five-arm envelope. K17 therefore uses `D0` for the equal-active comparison and
+  states plainly that the equal-total comparison is not measured.
+- **K18 — expert path.** `X` must improve over `D` on the primary statistic by
+  `>= 3%` relative with the CI lower bound above zero and no regression beyond
+  the margin on the other endpoint. This is T1's decisive `B` vs `C` comparison
+  under the T2 instrument; a failure replicates T1's K13 and retires routed
+  specialists at this scale.
+- **K19 — aggregate and the scaling gate.** Scaling the bank (P2.2), running
+  P3.5 phases C/D, or spending any WS4/WS5 work on the assumption that
+  conditional capacity works requires **both** K15 and K16 to pass. If neither
+  `M`, `X` nor `H*` passes its comparison, WS3 is retired and the report says
+  so. If `H*` beats `H` but not `D`, error direction is supported as a routing
+  effect but not as a quality win over dense capacity: the report says that and
+  does not scale.
+
+No threshold in this section moves after a measurement. A needed change is a
+dated amendment that states it was made without knowledge of the outcome, and
+the pre-amendment comparison is reported against the original text (P6.5).
+
+## T2.11 What a negative result means
+
+- **`H*` does not beat `H`.** A router trained on measured counterfactual
+  utility is no better than a distillation-trained router at this scale. The
+  program's central bet (P3.3) fails, WS3's error-directed branch is retired,
+  and the report distinguishes this from "conditional capacity cannot work".
+- **`H*` beats `H` but not `D`.** Error direction is a real routing effect but
+  conditional capacity does not beat dense capacity of equal active size at this
+  budget. The bank is not scaled; error-directed routing is kept as a candidate
+  mechanism for a larger budget or a different backbone, with a new
+  pre-registration.
+- **`M` beats `D0` but not the `D0 -> D` gap.** Memory is a cheap capacity
+  store but not a substitute for active capacity. The memory path stays as a
+  component of a larger bank at a larger scale, and the pilot does not justify
+  it alone.
+- **`X` does not beat `D`.** Routed specialists lose to a dense adapter of the
+  same active size, replicating T1's K13. The hybrid result is then interpreted
+  as "memory plus a losing expert path", not as evidence for specialists.
+- **Everything inside noise of `D0`.** The budget or the adapter capacity is too
+  small for any effect to appear; the report says that and does not convert it
+  into a claim about the architecture (T1.13's rule).
+- **What would justify scaling the bank.** Only: K15 and K16 both pass, on the
+  primary statistic, with CIs excluding zero, at the registered budget. A pass
+  on `H*` vs `H` alone justifies a *router* experiment at a larger bank; it does
+  not justify the ladder.
+
+## T2.12 Deviations and amendments
+
+As in M1/M2/T1. Unplanned deviations are recorded in `docs/WORK-LOG.md` and in
+the affected receipt with reason and timestamp. The budget amendment A8 (T2.7)
+is the only planned amendment; it is written before any full-budget step.
