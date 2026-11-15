@@ -117,7 +117,7 @@ but not physically compliant.
 the full gate/up projection to score groups (`token-magnitude`,
 `token-frequency`, both learned arms, both GxO arms) cannot be compliant at this
 budget: the selector's own read is `28 * 2 * 2048 * 6144` elements, which
-alone is 70% of the ceiling and leaves no room for the backbone
+alone is most of the ceiling and leaves no room for the backbone
 and the selected FFN. The oracle arms cannot be compliant either; their search
 evaluates dense group contributions. No arm in the measured family is both
 causally available, physically compliant and better than `token-magnitude`.
@@ -268,9 +268,19 @@ explicitly instead of copying the magnitude arm's reason.
 A genuinely sparse path was implemented in `masked_mlp.sparse_grouped_forward`:
 it groups tokens by identical subset, slices gate/up rows and down columns with
 `index_select` before every matmul, and never computes an unselected channel.
-It reproduces the masked-dense KL of every evaluated arm to the printed
-precision (for example `token-magnitude` and `token-magnitude-sparse` both have
-KL `6.676772`; the full JSON records the per-window equality).
+Court B checks it against the masked-dense path with `atol=rtol=1e-5` on
+synthetic layers, including rows that select nothing and rows that select every
+group, and against a float64 hand computation. On the full split it reproduces
+the masked-dense KL of every evaluated arm to the printed precision: for
+`token-magnitude` the dense KL is
+<!-- BEGIN GENERATED: m2c-token-magnitude-dense-kl -->
+6.676772
+<!-- END GENERATED: m2c-token-magnitude-dense-kl -->
+and the sparse KL is
+<!-- BEGIN GENERATED: m2c-token-magnitude-sparse-kl -->
+6.676772
+<!-- END GENERATED: m2c-token-magnitude-sparse-kl -->
+and the full JSON records the per-window equality.
 
 The by-construction read count is cross-checked with
 `torch.profiler(record_shapes=True)`: every `aten::mm` contributes `k*n`
