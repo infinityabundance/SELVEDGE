@@ -1,6 +1,7 @@
 # SELVEDGE results — honest current state
 
-Status: **M2 complete; M3 part 1 (storage) measured**. The pre-registered M1 frontier and the M2 per-token
+Status: **M2 complete; M3 part 1 (storage) measured; the T2 trained branch is
+running.** The pre-registered M1 frontier and the M2 per-token
 selector/oracle experiment have been measured. M1 rejected static whole-group
 omission. M2 rejects the inference-only, post-hoc per-token selection branch:
 even a causally unavailable per-token oracle at the compliant budget is far
@@ -9,6 +10,8 @@ activation magnitude at matched realized active parameters. The reports are
 `results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; the registered contract
 is `docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendments A3 and A4).
 The correction of record for physical accounting is `docs/M2-CORRECTION.md`.
+The first *trained* branch — the T2 five-arm capacity matrix — is launched and
+in progress; see "T2, in progress" below. Its result is not claimed here.
 
 This file states what is established, with the receipt that establishes it, and
 what is not. It is not a benchmark report: no latency, throughput or quality
@@ -147,16 +150,38 @@ number has been measured, and none is claimed.
 0.05
   <!-- END GENERATED: report-acceptable-kl -->
 
+## T2, in progress
+
+The first trained branch is registered in `docs/EXPERIMENT-CONTRACT.md` T2 (with
+amendments A8 and A9). Five arms — a dense-adapter control `D`, the hashed
+memory path `M`, routed specialists `X`, a naive hybrid `H` and an
+error-directed hybrid `H*` — train from one frozen Qwen3-0.6B core, on one data
+order, at one token budget and one seed, and are then evaluated on the full
+registered suite. The decision rule K15-K19 is fixed in the contract and applied
+mechanically by `oracle/eval/t2_decision.py`.
+
+Where the evidence lives: `results/t2/pilot-state.json` (phase status,
+timestamps, exit codes, per-arm argv and hashes), `results/t2/<arm>/run.json`
+(git SHA, config hash, seed, data-order hash, admission record, throughput,
+VRAM, wall-clock, checkpoint hash), `results/eval/t2-*.json` (the registered
+harness) and `results/T2-PILOT.md` (the published report, generated from the
+decision receipt by `scripts/t2_report.py`).
+
+**No T2 quality claim is made in this file while the pilot is unfinished.** A
+partial pilot is not a result: the arms that have finished are not interpreted
+before the ones that have not, and the verdict appears only in
+`results/T2-PILOT.md`.
+
 ## Not established
 
 - **No capability claim.** The frontier measures next-token distributions on
   pinned text. KL on Wikipedia is not a code, math, reasoning or factuality
   benchmark. See `docs/LIMITATIONS.md`.
-- **No trained or upcycled model.** Post-hoc per-token selection is measured
-  and negative. A model trained or upcycled to tolerate the sparse FFN, a
-  distilled smaller teacher, quantization and a learned memory layer are
-  untested. The negative result bounds post-hoc inference-only selection, not
-  sparsity in general.
+- **No trained or upcycled model is evaluated in this report.** The M2 result
+  bounds post-hoc inference-only selection, not sparsity in general. A model
+  trained or upcycled to tolerate the sparse FFN is the T2 branch, which is
+  running; a distilled smaller teacher, quantization and a learned memory layer
+  at scale remain untested.
 - **No end-to-end model latency and no hardware-counter FLOPs.** FLOP values
   are derived from realized channel counts, not hardware counters. Arm wall
   clock is a cost observation, not a benchmark. M3 part 1 does measure
