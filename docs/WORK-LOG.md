@@ -970,10 +970,11 @@ selector tuning without a new oracle bound.
   digests). `SemanticExactness::classify` records `Proven` or `Approximate`
   with a typed `SemanticGap`. `ExecutionScope` is documented as scope integrity
   only and cannot be converted. `crates/selvedge-core/tests/ui/` plus
-  `tests/compile_fail.rs` prove, by compiling four forbidden programs with
+  `tests/compile_fail.rs` prove, by compiling five forbidden programs with
   `rustc`, that the removed constructor does not exist, that a witness cannot
-  be forged, that a scope is not a witness, and that a boolean cannot be a
-  physical verdict.
+  be forged, that the real store scope is not a witness, that a boolean cannot
+  be a physical verdict, and that an exact-labelled decision cannot be minted
+  from outside the crate.
 - **Defect 2 — two verdicts.** `crates/selvedge-core/src/verdict.rs` defines
   `CausalAvailability` and `PhysicalCompliance`, each evidence-bearing with
   named failing reasons. A compliant physical verdict requires measured reads.

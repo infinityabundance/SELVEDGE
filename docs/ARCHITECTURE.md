@@ -132,14 +132,15 @@ A selector that predicts a subset therefore cannot produce `Proven`; its only
 possible record is `Approximate`. If routing changes which operators run, the
 path is approximate by construction.
 
-**Compile-fail evidence.** `crates/selvedge-core/tests/ui/` contains four cases
+**Compile-fail evidence.** `crates/selvedge-core/tests/ui/` contains five cases
 and `tests/compile_fail.rs` runs each one through `rustc` against the built
 rlib, asserting the named error. The cases prove that
 `reclassify_from_approximate` no longer exists, that a witness cannot be built
-from a struct literal, that an `ExecutionScope`-shaped value is not accepted
-where a witness is required, and that a physical verdict cannot be constructed
-from a boolean. This is the offline equivalent of trybuild; no extra
-dependency or network is needed.
+from a struct literal, that the real `selvedge_store::ExecutionScope` is not
+accepted where a witness is required, that a physical verdict cannot be
+constructed from a boolean, and that an exact-labelled decision cannot be
+minted from outside the crate. This is the offline equivalent of trybuild; no
+extra dependency or network is needed.
 
 Caching and prefetching may change latency but must not change the selected
 set; that is the exact-mode contract future phases must test in Court E. The
@@ -153,7 +154,7 @@ into a stronger claim without evidence. The findings and dispositions:
 
 | location | risk before | disposition |
 | --- | --- | --- |
-| `SelectionProvenance` / `SelectionMode` | a caller could construct an exact-mode provenance, and `reclassify_from_approximate` could promote a subset | public constructor is `approximate` only; `native_provenance` is crate-private; exactness is `ExactSelection`, which needs a witness. The declared `mode` is documented as a label, never evidence |
+| `SelectionProvenance` / `SelectionMode` | a caller could construct an exact-mode provenance, and `reclassify_from_approximate` could promote a subset | the only public provenance constructor is `approximate`; no constructor mints an exact-labelled decision (a compile-fail case asserts that the former `SelectionDecision::native` does not exist). Exactness is `ExactSelection`, which needs a witness. The declared `mode` can only arrive from a deserialized receipt and is documented as a label, never evidence |
 | `selvedge_store::ExecutionScope` | a correct scoped read could be presented as exact execution | separate type with no conversion to `ExactSelection`; a compile-fail case asserts the type error; module docs state the distinction |
 | `selvedge_store::ProofRegistry` | a publication proof skips re-hashing, so a forged registry could hide corrupt bytes | explicit trust input: only used when `VerificationMode::PublicationProof` is configured; bundle and manifest digests are checked. All M1-M3 measurements use `VerificationMode::Always`. Documented in `docs/LIMITATIONS.md`; not silently defaulted |
 | `TokenAccounting::within_budget` | a derived boolean could be treated as permission | it is a record field only; the gate is `check_decision`, which returns `Err` in compliance mode |

@@ -94,20 +94,15 @@ impl SelectionProvenance {
     /// Provenance for a selector that predicts a subset.
     ///
     /// A deserialized record can still carry `mode: exact`; that field is a
-    /// declaration, never evidence. Only [`ExactSelection`] is evidence.
+    /// declaration, never evidence. Only [`ExactSelection`] is evidence, and
+    /// there is deliberately no constructor that mints an exact-labelled
+    /// decision: a selector cannot relabel its subset as the native set.
     ///
     /// # Errors
     ///
     /// Rejects an empty or over-long selector id.
     pub fn approximate(selector_id: impl Into<String>, scores: Vec<ShardScore>) -> Result<Self> {
         Self::build(selector_id, SelectionMode::Approximate, scores)
-    }
-
-    /// Provenance for the model's own native set, used by
-    /// [`SelectionDecision::native`]. It is crate-private so no selector can
-    /// mint an exact-mode decision through the public API.
-    pub(crate) fn native_provenance() -> Result<Self> {
-        Self::build("native", SelectionMode::Exact, Vec::new())
     }
 
     fn build(
@@ -178,14 +173,15 @@ impl SelectionDecision {
 
     /// The native (unmodified) computation set for a step.
     ///
+    /// There is deliberately no constructor for a decision labelled
+    /// [`SelectionMode::Exact`]. Such a label would be a declaration, not
+    /// evidence, and a public constructor would let a selector relabel its
+    /// subset. Exactness is [`ExactSelection`], and it needs a
+    /// [`NativeSetWitness`].
+    ///
     /// # Errors
     ///
     /// Rejects empty sets and duplicates through [`SelectionDecision::new`].
-    pub fn native(shards: Vec<ShardId>) -> Result<Self> {
-        let provenance = SelectionProvenance::native_provenance()?;
-        Self::new(shards, provenance)
-    }
-
     /// Selected shards, sorted ascending.
     #[must_use]
     pub fn shards(&self) -> &[ShardId] {
@@ -618,6 +614,11 @@ mod tests {
         SelectionDecision::new(vec![id(2), id(1)], provenance).unwrap()
     }
 
+    fn decision_with(shards: Vec<ShardId>) -> SelectionDecision {
+        let provenance = SelectionProvenance::approximate("predictor", Vec::new()).unwrap();
+        SelectionDecision::new(shards, provenance).unwrap()
+    }
+
     #[test]
     fn decision_is_sorted_and_unique() {
         let decision = approximate();
@@ -651,7 +652,7 @@ mod tests {
     fn witness_for_a_different_set_is_rejected_by_exact_selection() {
         let native = NativeComputationSet::declare("bundle-a", vec![id(1), id(2)]).unwrap();
         let witness = NativeSetWitness::compare("bundle-a", &[id(1), id(2)], &native).unwrap();
-        let other = SelectionDecision::native(vec![id(1), id(3)]).unwrap();
+        let other = decision_with(vec![id(1), id(3)]);
         assert!(ExactSelection::from_witness(other, witness).is_err());
     }
 
@@ -679,7 +680,7 @@ mod tests {
                 ..
             }
         ));
-        let mismatch = SelectionDecision::native(vec![id(1)]).unwrap();
+        let mismatch = decision_with(vec![id(1)]);
         assert!(matches!(
             SemanticExactness::classify(mismatch, "bundle-a", Some(&native)),
             SemanticExactness::Approximate {

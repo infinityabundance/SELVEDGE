@@ -1,0 +1,55 @@
+warning: associated function `native_provenance` is never used
+   --> crates/selvedge-core/src/selection.rs:109:19
+    |
+ 93 | impl SelectionProvenance {
+    | ------------------------ associated function in this implementation
+...
+109 |     pub(crate) fn native_provenance() -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated function `native` is never used
+   --> crates/selvedge-core/src/selection.rs:189:19
+    |
+154 | impl SelectionDecision {
+    | ---------------------- associated function in this implementation
+...
+189 |     pub(crate) fn native(shards: Vec<ShardId>) -> Result<Self> {
+    |                   ^^^^^^
+
+warning: `selvedge-core` (lib) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/compile_fail.rs (target/debug/deps/compile_fail-81eee40ccec6c6bb)
+
+running 1 test
+test ui_cases_fail_to_compile ... FAILED
+
+failures:
+
+---- ui_cases_fail_to_compile stdout ----
+
+thread 'ui_cases_fail_to_compile' (55) panicked at crates/selvedge-core/tests/compile_fail.rs:118:9:
+UI case no_exact_mode_label compiled, but it must be rejected: is private
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: compile_fail::ui_cases_fail_to_compile
+             at ./tests/compile_fail.rs:118:9
+   3: compile_fail::ui_cases_fail_to_compile::{closure#0}
+             at ./tests/compile_fail.rs:57:30
+   4: <compile_fail::ui_cases_fail_to_compile::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    ui_cases_fail_to_compile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `-p selvedge-core --test compile_fail`

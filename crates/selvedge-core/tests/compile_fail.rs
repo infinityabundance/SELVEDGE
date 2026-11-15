@@ -30,18 +30,25 @@ fn target_dir() -> PathBuf {
 fn crate_rlibs(crate_name: &str) -> Vec<PathBuf> {
     let deps = target_dir().join("debug/deps");
     let prefix = format!("lib{crate_name}-");
-    let mut found: Vec<PathBuf> = std::fs::read_dir(&deps)
+    let mut found: Vec<(std::time::SystemTime, PathBuf)> = std::fs::read_dir(&deps)
         .unwrap_or_else(|err| panic!("cannot read {deps:?}: {err}"))
         .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| {
+        .map(|entry| {
+            let modified = entry
+                .metadata()
+                .and_then(|metadata| metadata.modified())
+                .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
+            (modified, entry.path())
+        })
+        .filter(|(_, path)| {
             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             name.starts_with(&prefix) && name.ends_with(".rlib")
         })
         .collect();
-    found.sort();
-    found.reverse();
-    found
+    // Newest first. A stale rlib from an earlier build must never decide the
+    // barrier: it can still expose a constructor the current source removed.
+    found.sort_by(|left, right| right.0.cmp(&left.0).then_with(|| right.1.cmp(&left.1)));
+    found.into_iter().map(|(_, path)| path).collect()
 }
 
 fn expected_error(source: &str) -> String {
@@ -87,38 +94,30 @@ fn ui_cases_fail_to_compile() {
         let source = std::fs::read_to_string(&case).expect("read UI case");
         let expected = expected_error(&source);
         let stem = case.file_stem().unwrap().to_string_lossy().to_string();
-        let mut last_stderr = String::new();
-        let mut compiled = false;
-        for rlib in &rlibs {
-            let output = Command::new("rustc")
-                .arg("--edition=2021")
-                .arg("--crate-type=lib")
-                .arg("--crate-name")
-                .arg(format!("ui_{stem}"))
-                .arg("--extern")
-                .arg(format!("selvedge_core={}", rlib.display()))
-                .arg("--extern")
-                .arg(format!("selvedge_store={}", store_rlib.display()))
-                .arg("-L")
-                .arg(format!("dependency={}", deps.display()))
-                .arg("--out-dir")
-                .arg(&out_dir)
-                .arg(&case)
-                .output()
-                .expect("rustc must be available in the rust court");
-            if output.status.success() {
-                compiled = true;
-                break;
-            }
-            last_stderr = String::from_utf8_lossy(&output.stderr).to_string();
-            if last_stderr.contains(&expected) {
-                break;
-            }
-        }
+        let rlib = rlibs.first().expect("a core rlib was asserted above");
+        // Only the newest rlib is admissible. Trying older builds could let a
+        // removed constructor appear to exist again.
+        let output = Command::new("rustc")
+            .arg("--edition=2021")
+            .arg("--crate-type=lib")
+            .arg("--crate-name")
+            .arg(format!("ui_{stem}"))
+            .arg("--extern")
+            .arg(format!("selvedge_core={}", rlib.display()))
+            .arg("--extern")
+            .arg(format!("selvedge_store={}", store_rlib.display()))
+            .arg("-L")
+            .arg(format!("dependency={}", deps.display()))
+            .arg("--out-dir")
+            .arg(&out_dir)
+            .arg(&case)
+            .output()
+            .expect("rustc must be available in the rust court");
         assert!(
-            !compiled,
+            !output.status.success(),
             "UI case {stem} compiled, but it must be rejected: {expected}"
         );
+        let last_stderr = String::from_utf8_lossy(&output.stderr).to_string();
         assert!(
             last_stderr.contains(&expected),
             "UI case {stem} failed for the wrong reason.\nexpected: {expected}\nstderr:\n{last_stderr}"

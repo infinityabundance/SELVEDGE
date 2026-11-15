@@ -1,0 +1,23 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+error: associated function `native_provenance` is never used
+   --> crates/selvedge-core/src/selection.rs:109:19
+    |
+ 93 | impl SelectionProvenance {
+    | ------------------------ associated function in this implementation
+...
+109 |     pub(crate) fn native_provenance() -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^
+    |
+    = note: `-D dead-code` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: associated function `native` is never used
+   --> crates/selvedge-core/src/selection.rs:189:19
+    |
+154 | impl SelectionDecision {
+    | ---------------------- associated function in this implementation
+...
+189 |     pub(crate) fn native(shards: Vec<ShardId>) -> Result<Self> {
+    |                   ^^^^^^
+
+error: could not compile `selvedge-core` (lib) due to 2 previous errors
