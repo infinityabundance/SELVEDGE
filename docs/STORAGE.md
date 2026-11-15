@@ -240,22 +240,57 @@ Reading:
 
 ### 5.2 Cache residency (second pass over the same bundle)
 
+No cache (`none-cold`) on the 0.6B bundle: median
+<!-- BEGIN GENERATED: storage-06b-none-cold -->
+609.6
+<!-- END GENERATED: storage-06b-none-cold -->
+MiB/s, and on the 1.7B bundle
+<!-- BEGIN GENERATED: storage-17b-none-cold -->
+700.3
+<!-- END GENERATED: storage-17b-none-cold -->
+MiB/s. The page-cache-warm control (`none-warm`, pass 2) is
+<!-- BEGIN GENERATED: storage-06b-none-warm-pass2 -->
+2043.8
+<!-- END GENERATED: storage-06b-none-warm-pass2 -->
+MiB/s on the 0.6B bundle and
+<!-- BEGIN GENERATED: storage-17b-none-warm-pass2 -->
+2172.4
+<!-- END GENERATED: storage-17b-none-warm-pass2 -->
+MiB/s on the 1.7B bundle; that is the operating system serving the file, not
+the store.
+
 LRU 1/8 of the payload on pass 2: 0.6B
 <!-- BEGIN GENERATED: storage-06b-lru1of8-pass2 -->
-676.568
+676.6
 <!-- END GENERATED: storage-06b-lru1of8-pass2 -->
 MiB/s, 1.7B
 <!-- BEGIN GENERATED: storage-17b-lru1of8-pass2 -->
-761.219
+761.2
 <!-- END GENERATED: storage-17b-lru1of8-pass2 -->
+MiB/s. LRU 1/4: 0.6B
+<!-- BEGIN GENERATED: storage-06b-lru1of4-pass2 -->
+770.3
+<!-- END GENERATED: storage-06b-lru1of4-pass2 -->
+MiB/s, 1.7B
+<!-- BEGIN GENERATED: storage-17b-lru1of4-pass2 -->
+786.1
+<!-- END GENERATED: storage-17b-lru1of4-pass2 -->
 MiB/s. LRU 1/2: 0.6B
 <!-- BEGIN GENERATED: storage-06b-lru1of2-pass2 -->
-1095.59
+1095.6
 <!-- END GENERATED: storage-06b-lru1of2-pass2 -->
 MiB/s, 1.7B
 <!-- BEGIN GENERATED: storage-17b-lru1of2-pass2 -->
-1285.23
+1285.2
 <!-- END GENERATED: storage-17b-lru1of2-pass2 -->
+MiB/s. LRU 2x: 0.6B
+<!-- BEGIN GENERATED: storage-06b-lru2x-pass2 -->
+30014.5
+<!-- END GENERATED: storage-06b-lru2x-pass2 -->
+MiB/s, 1.7B
+<!-- BEGIN GENERATED: storage-17b-lru2x-pass2 -->
+34755.2
+<!-- END GENERATED: storage-17b-lru2x-pass2 -->
 MiB/s. `pinned-all` (an all-hit upper bound): 0.6B
 <!-- BEGIN GENERATED: storage-06b-pinned-pass2 -->
 29614.9
