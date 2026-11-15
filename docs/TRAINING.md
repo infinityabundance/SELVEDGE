@@ -70,10 +70,13 @@ and it is documented at the call site.
 
 The five failures were recorded at revision
 `56c648fe2c8b4c261112513f0e6d55dc8aea6049` in
-`results/courts/logs/oracle-20261115T070709Z-262951.log`. Each is resolved below
-as either an implementation defect or a wrong test expectation. The revision
-that resolves them is the one that adds this document; the court receipt names
-it.
+`results/courts/logs/oracle-20261115T070709Z-262951.log`. By the time that
+revision was committed, the test file already carried corrected expectations and
+the suite passed at HEAD: the recorded log was stale, which is not by itself a
+resolution. Each case is therefore re-derived below as either an implementation
+defect or a wrong test expectation, and the replacement tests are **stricter**
+than the ones they replace. The determination of record is this section plus the
+tests at the revision that adds it.
 
 | test | recorded failure | determination | resolution |
 | --- | --- | --- | --- |
