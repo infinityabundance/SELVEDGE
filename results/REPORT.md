@@ -172,6 +172,43 @@ partial pilot is not a result: the arms that have finished are not interpreted
 before the ones that have not, and the verdict appears only in
 `results/T2-PILOT.md`.
 
+### Pilot state, recorded read-only
+
+As of the last poll before this commit (`scripts/poll-t2-pilot.sh`,
+`results/t2/pilot-state.json`):
+
+| arm | state | evidence present |
+| --- | --- | --- |
+| `D` (dense control) | **completed** — trained the registered budget and evaluated | `results/t2/D/run.json`, `results/t2/D/eval.json`, `results/eval/t2-D.json` |
+| `M` (memory only) | **completed** — trained the registered budget and evaluated | `results/t2/M/run.json`, `results/t2/M/eval.json`, `results/eval/t2-M.json` |
+| `X` (specialists) | **trained; evaluating** — training receipt written, evaluation court launched | `results/t2/X/run.json`; evaluation not yet summarised |
+| `H` (naive hybrid) | **pending** | — |
+| `H*` (error-directed hybrid) | **pending** | — |
+
+Two of five arms have both a training receipt and an evaluation summary; one has
+a training receipt only. The two hybrids, which carry the registered K15/K16
+comparison, have not started. The pilot is therefore **not separable from
+"unfinished"** and no ordering between arms is stated here, deliberately — an
+early ordering is exactly the reading that T2.8 and the one-seed risk in
+`results/T2-PLAN.md` §5 forbid.
+
+Read-only monitoring is `scripts/poll-t2-pilot.sh` (one report) or `--follow`. It
+reads state, per-arm logs, `docker ps` and free disk; it writes nothing to the
+run. Nothing in this session started, restarted or touched any container, and no
+GPU work was performed.
+
+### What still has to happen before a verdict
+
+1. `X`'s evaluation summary (`results/t2/X/eval.json`).
+2. `H` training and evaluation.
+3. `H*` training (its label phase runs at its warm-up step, then the router is
+   frozen) and evaluation.
+4. `oracle/eval/t2_decision.py` applied to the five summaries, then
+   `scripts/finish-t2-pilot.sh` to render `results/T2-PILOT.md` and run the
+   courts.
+
+The remaining order is fixed by `scripts/run-t2-pilot.sh`, not by this document.
+
 ## Not established
 
 - **No capability claim.** The frontier measures next-token distributions on
@@ -215,3 +252,21 @@ and training tokens. The M2 oracle bound says post-hoc selection cannot close
 the gap; the next question is whether training can change the model so the same
 budget is usable. Do not resume inference-only selector tuning without a new
 oracle bound.
+
+### Where the next two phases are written down
+
+The staged program after T2 is `docs/PROGRAM-PLAN.md` §10–§17 (WS7–WS12: design
+doctrine, complementarity and two-timescale organisation, deficit-directed
+capability construction, eighteen mechanisms with kill criteria, twenty-one
+original proposals with decisive experiments, and the staged frontier claim),
+with a dependency-ordered queue in §16 and a single NEXT in §17. That plan's
+first step is deliberately not a new training run: it is the routed-overflow
+audit and the two H\*-target diagnostics (P12.1/P12.2), because either can
+invalidate a scale-up and both are diagnosable without the GPU.
+
+The citations those items rely on changed in the same pass. Twelve works named
+by the strategy note could not be located and are marked `UNSUPPORTED`; one
+("Routing in Gradient Space") is right about the mechanism and wrong about the
+paper; and one (mHC) is published with an analysis showing its *effective*
+stream count is low, which forbids reading it as a capacity win. See
+`docs/PRIOR-ART-AND-NOVELTY.md` §10–§11 before quoting any of them.

@@ -1363,3 +1363,79 @@ separate, dated change that cites the decision receipt.
 `1dd7270f3959a3e0ce15f670a03997467235d04b`. It records every transition in
 `results/t2/pilot-state.json`. Progress and the resume command are printed by
 `scripts/poll-t2-pilot.sh`.
+
+## 2026-11-15 — S9: the next-phase plan, the literature second pass, and a read-only pilot record
+
+### Plan
+
+The T2 pilot owns the GPU in this session, so nothing here may touch it. The
+session delivers three documents and one tool:
+
+1. extend `docs/PROGRAM-PLAN.md` with the workstreams that follow T2, without
+   renumbering or deleting anything already registered;
+2. verify every work those workstreams newly name, in the same way the earlier
+   ledger was built: a real fetch, a recorded URL, a retrieval time, and a
+   verdict that the fetched bytes support;
+3. record the running pilot's state read-only, so the next session does not have
+   to reconstruct it from container state;
+4. keep the fetch tool honest about how it failed.
+
+### What was added to the plan
+
+WS7 (design doctrine), WS8 (complementarity and two-timescale organisation),
+WS9 (deficit-directed capability construction), WS10 (eighteen candidate
+mechanisms, each with its own cheap decisive experiment and kill criterion),
+WS11 (twenty-one original proposals with decisive experiments), WS12 (staged
+program and frontier claim), a dependency-ordered queue and a NOW that names no
+GPU work. Every new item carries what / why / depends / acceptance evidence /
+status / effort, and every mechanism item whose novelty is contested names the
+ledger entry that contests it. Existing IDs are untouched; the new sections say
+so in their own preamble.
+
+The plan's first post-pilot step is deliberately not a training run. It is the
+routed-overflow validity-mask audit and the two H-star target diagnostics,
+because either can invalidate a scale-up and neither needs the GPU.
+
+### What the literature pass changed
+
+The Atom API answered HTTP 429 for most requests in the early rounds. That is
+recorded in the receipts rather than hidden, and the tool gained two fallbacks
+that read `arxiv.org/abs/<id>` and `arxiv.org/search` directly, so a claim is
+still backed by a fetched page.
+
+The consequential outcomes are in `docs/PRIOR-ART-AND-NOVELTY.md` section ten
+and eleven. Summarised: a set of named works could not be located at all and are
+`UNSUPPORTED`; one citation is right about the mechanism and wrong about the
+paper; three names are method names rather than paper titles; and the published
+analysis of manifold-constrained hyper-connections finds a low *effective*
+stream count, which forbids reading that mechanism as a capacity win.
+
+### Pilot, recorded read-only
+
+`scripts/poll-t2-pilot.sh` was used for every reading. The dense control and the
+memory arm have both training receipts and evaluation summaries; the routed
+specialist arm has a training receipt and was evaluating; the two hybrids had not
+started. No arm was interpreted, no container was touched, and no GPU work was
+performed in this session. The per-arm state table and the "what still has to
+happen" list are in `results/REPORT.md`.
+
+### Verified courts at this revision
+
+- `commit_identity` — OK.
+- `perf_numbers` — OK, every generated region still matches its receipt after the
+  documentation edits.
+- the `python --net` prior-art court, one receipt per fetch round, listed in the
+  ledger's method section.
+
+### Limitations
+
+- The ledger still does not prove absence. `UNSUPPORTED` means "not located by
+  the recorded searches", and the searches are listed so a reader can repeat or
+  extend them.
+- The pilot's partial state is a progress record, not a result.
+- The plan is a plan: no new item's acceptance evidence exists yet.
+
+### Next experiment
+
+None started here. The next GPU job is whatever `scripts/run-t2-pilot.sh` does
+next; the next *program* step is the audit and diagnostics named above.
