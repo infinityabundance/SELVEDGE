@@ -16,23 +16,37 @@ per-token set. Capacity is `ceil(tokens * k / experts * factor)` with factor
 1.25; overflow pairs are dropped and counted (they are rare under the
 load-balancing auxiliary loss).
 
+The combine is *slot-wise* rather than an `index_add_` accumulation: the
+per-pair outputs are returned to token-major order with a gather and reduced
+over the fixed slot axis. The terms are the same; the result is bitwise
+deterministic, which `index_add_`'s CUDA atomics are not (T1.15 A6/A7, T2.4).
+
 Routing is hard top-k in the forward pass and softmax in the backward pass
-(straight-through). `soft_mixture` is an evaluation-only ablation that computes
-all experts weighted by the softmax; it is reported as a non-compliant routing
-gap, never as a compliant arm.
+(straight-through). With `router_grad=False` the mask is a constant for the
+distillation loss and the router receives no gradient from it: that is the
+`H*` treatment, where the router is trained only on measured utility labels
+(T2.5). `soft_mixture` is an evaluation-only ablation that computes all experts
+weighted by the softmax; it is reported as a non-compliant routing gap, never
+as a compliant arm.
 """
 
 from __future__ import annotations
 
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from memory import HashedMemory, MemoryGeometry, TokenContext
+
 CAPACITY_FACTOR = 1.25
+#: 0-based depths of the four memory insertions (T2.2).
+T2_MEMORY_LAYERS = (3, 10, 17, 24)
+#: T2 arm names in their registered spelling (T2.1).
+T2_ARMS = ("D", "M", "X", "H", "H*")
 
 
 def _capacity(tokens: int, k: int, experts: int, factor: float = CAPACITY_FACTOR) -> int:
@@ -48,7 +62,9 @@ class _RoutedDispatch(nn.Module):
         self.experts = experts
         self.k = k
         self.soft_mixture = False
+        self.router_grad = True
         self.last_routing: torch.Tensor | None = None
+        self.last_probs: torch.Tensor | None = None
         self._dropped_pairs = torch.zeros((), dtype=torch.long)
 
     def routing(self, flat: torch.Tensor, router_weight: torch.Tensor):
@@ -57,12 +73,18 @@ class _RoutedDispatch(nn.Module):
         _values, top_index = probs.topk(self.k, dim=-1)
         mask = torch.zeros_like(probs).scatter_(-1, top_index, 1.0)
         self.last_routing = top_index.detach()
-        weight = straight_gate = mask + probs - probs.detach()
+        self.last_probs = probs
+        if self.router_grad:
+            straight_gate = mask + probs - probs.detach()
+        else:
+            # The forward value is identical (the hard 0/1 mask); the mask is
+            # simply a constant for the distillation loss. Used by H* (T2.5).
+            straight_gate = mask
         pair_weight = straight_gate.gather(-1, top_index).reshape(-1)
         return probs, straight_gate, top_index, pair_weight
 
     def dispatch(self, flat: torch.Tensor, top_index: torch.Tensor):
-        """Return (buffer [experts*capacity, hidden], row, pair_token, weight, mask)."""
+        """Return (buffer [experts, capacity, hidden], row, order, valid)."""
         tokens = flat.shape[0]
         device = flat.device
         pairs = tokens * self.k
@@ -86,16 +108,29 @@ class _RoutedDispatch(nn.Module):
         buffer = flat.new_zeros(self.experts * capacity, self.hidden)
         gathered = flat.index_select(0, sorted_token)
         buffer.index_copy_(0, row[valid], gathered[valid])
-        return buffer.view(self.experts, capacity, self.hidden), row, sorted_token, valid
+        return buffer.view(self.experts, capacity, self.hidden), row, order, valid
 
-    def combine(self, output: torch.Tensor, row: torch.Tensor, sorted_token: torch.Tensor,
+    def combine(self, output: torch.Tensor, row: torch.Tensor, order: torch.Tensor,
                 valid: torch.Tensor, pair_weight: torch.Tensor,
                 tokens: int) -> torch.Tensor:
+        """Deterministic slot-wise combine (T2.4).
+
+        `row` is in sorted-pair order, so the sorted outputs are gathered back
+        to token-major pair order with the inverse permutation. Pairs were built
+        token-major (`pair = token * k + slot`), so the reshape is
+        `[tokens, k, hidden]` and the reduction over slots is in a fixed order.
+        Overflow pairs are zeroed by `valid`; their incoming gradient is zero,
+        so the clamped duplicate rows cannot introduce an order-dependent sum.
+        """
+        pairs = tokens * self.k
         flat_out = output.reshape(-1, self.hidden).index_select(0, row)
+        inverse = torch.empty_like(order)
+        inverse.scatter_(0, order, torch.arange(pairs, device=order.device,
+                                                dtype=order.dtype))
+        flat_out = flat_out.index_select(0, inverse)
         flat_out = flat_out * pair_weight.unsqueeze(-1).to(flat_out.dtype)
-        result = output.new_zeros(tokens, self.hidden)
-        result.index_add_(0, sorted_token[valid], flat_out[valid])
-        return result
+        flat_out = flat_out * valid.unsqueeze(-1).to(flat_out.dtype)
+        return flat_out.view(tokens, self.k, self.hidden).sum(dim=1)
 
 
 class RoutedGroupFFN(_RoutedDispatch):
@@ -167,20 +202,28 @@ class RoutedGroupFFN(_RoutedDispatch):
                         self.adapter_up[group])
                 out = out + F.linear(activation, self.down_groups[group]) * weight
             return out.reshape(shape)
-        buffer, row, sorted_token, valid = self.dispatch(flat, top_index)
+        buffer, row, order, valid = self.dispatch(flat, top_index)
         output = self._group_ffn(buffer)
-        combined = self.combine(output, row, sorted_token, valid, pair_weight,
+        combined = self.combine(output, row, order, valid, pair_weight,
                                 flat.shape[0])
         return combined.reshape(shape)
 
 
 class SpecialistBank(_RoutedDispatch):
-    """Residual bank of m small SwiGLU FFNs, hard top-k routed per token."""
+    """Residual bank of m small SwiGLU FFNs, hard top-k routed per token.
+
+    `full_bank` (with `exclude`) is the counterfactual mode used only by the
+    utility labeller: every specialist is executed with unit weight except the
+    one named by `exclude`, which is masked out. It is an intervention, not a
+    deployed routing mode, and it bypasses the router entirely.
+    """
 
     def __init__(self, hidden: int, width: int, specialists: int, k: int,
                  router: nn.Linear):
         super().__init__(hidden, specialists, k)
         self.width = width
+        self.full_bank = False
+        self.exclude: int | None = None
         self.gate = nn.Parameter(torch.empty(specialists, width, hidden,
                                              dtype=torch.float32))
         self.up = nn.Parameter(torch.empty(specialists, width, hidden,
@@ -200,6 +243,15 @@ class SpecialistBank(_RoutedDispatch):
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         shape = hidden_states.shape
         flat = hidden_states.reshape(-1, shape[-1])
+        if self.full_bank:
+            out = torch.zeros_like(flat)
+            for expert in range(self.experts):
+                if self.exclude is not None and expert == self.exclude:
+                    continue
+                gate = F.linear(flat, self.gate[expert])
+                up = F.linear(flat, self.up[expert])
+                out = out + F.linear(F.silu(gate) * up, self.down[expert])
+            return out.reshape(shape)
         probs, straight_through, top_index, pair_weight = self.routing(
             flat, self.router.weight)
         if self.soft_mixture:
@@ -210,9 +262,9 @@ class SpecialistBank(_RoutedDispatch):
                 out = out + F.linear(F.silu(gate) * up, self.down[expert]) * \
                     probs[:, expert].unsqueeze(-1)
             return out.reshape(shape)
-        buffer, row, sorted_token, valid = self.dispatch(flat, top_index)
+        buffer, row, order, valid = self.dispatch(flat, top_index)
         output = self._experts(buffer)
-        combined = self.combine(output, row, sorted_token, valid, pair_weight,
+        combined = self.combine(output, row, order, valid, pair_weight,
                                 flat.shape[0])
         return combined.reshape(shape)
 
@@ -247,8 +299,37 @@ class AdditiveFFN(nn.Module):
         return self.base(hidden_states) + self.extra(hidden_states)
 
 
+class AdditiveExtras(nn.Module):
+    """Several residual modules summed in a fixed order (hybrid arms)."""
+
+    def __init__(self, extras: list[nn.Module]):
+        super().__init__()
+        if not extras:
+            raise ValueError("AdditiveExtras needs at least one module")
+        self.extras = nn.ModuleList(extras)
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        output = self.extras[0](hidden_states)
+        for module in self.extras[1:]:
+            output = output + module(hidden_states)
+        return output
+
+
 # ---------------------------------------------------------------------------
 # construction
+
+
+def _install_token_context(model: nn.Module, context: TokenContext) -> None:
+    """Give the memory modules the prefix the layer is actually processing."""
+
+    def hook(_module, args, kwargs):
+        ids = kwargs.get("input_ids")
+        if ids is None and args:
+            ids = args[0]
+        if ids is not None:
+            context.set(ids)
+
+    model.register_forward_pre_hook(hook, with_kwargs=True)
 
 
 @dataclass
@@ -260,6 +341,9 @@ class ArmModel:
     extra_modules: list[nn.Module]
     admission: dict
     config: dict
+    profile: str = "t1"
+    context: TokenContext | None = None
+    memory_layers: tuple[int, ...] = field(default_factory=tuple)
 
     def trainable_parameters(self):
         return [p for p in self.model.parameters() if p.requires_grad]
@@ -271,6 +355,75 @@ class ArmModel:
         for module in self.model.modules():
             if isinstance(module, _RoutedDispatch):
                 module.soft_mixture = value
+
+    def set_router_grad(self, value: bool) -> None:
+        """`False` freezes the distillation path into every router (H*, T2.5)."""
+        for module in self.model.modules():
+            if isinstance(module, _RoutedDispatch):
+                module.router_grad = value
+
+    def forward(self, input_ids: torch.Tensor, **kwargs):
+        """Uniform step/forward API for every T1 and T2 arm."""
+        return self.model(input_ids=input_ids, use_cache=False, **kwargs)
+
+    def banks(self) -> list[nn.Module]:
+        return [module for module in self.model.modules()
+                if isinstance(module, SpecialistBank)]
+
+    def memories(self) -> list[nn.Module]:
+        return [module for module in self.model.modules()
+                if isinstance(module, HashedMemory)]
+
+    def extra_ledger(self) -> dict:
+        """Element counts of every added module, by role.
+
+        This is the Python side of the admission declaration: the test
+        `test_t2_arm_ledger_matches_admission_config` requires every count here
+        to equal the matching `execution_uses` slice in the Rust config.
+        """
+        roles = {
+            "memory_values": 0, "memory_projection": 0, "memory_gate": 0,
+            "memory_index": 0, "specialist_gate": 0, "specialist_up": 0,
+            "specialist_down": 0, "dense_adapter": 0, "router": 0,
+        }
+        memories = self.memories()
+        banks = self.banks()
+        adapters = [module for module in self.model.modules()
+                    if isinstance(module, DenseAdapter)]
+        for module in memories:
+            roles["memory_values"] += module.table.numel()
+            roles["memory_projection"] += module.proj.weight.numel()
+            roles["memory_gate"] += module.gate.weight.numel()
+        for module in banks:
+            roles["specialist_gate"] += module.gate.numel()
+            roles["specialist_up"] += module.up.numel()
+            roles["specialist_down"] += module.down.numel()
+        for module in adapters:
+            roles["dense_adapter"] += module.gate.numel() + module.up.numel() \
+                + module.down.numel()
+        roles["router"] = sum(module.weight.numel() for module in self.router_modules)
+        return {
+            "roles": roles,
+            "memory_layers": len(memories),
+            "bank_layers": len(banks),
+            "dense_adapter_layers": len(adapters),
+            "total": sum(roles.values()),
+        }
+
+    def active_extra_elements(self) -> int:
+        """Active added elements: what the arm reads for one output token."""
+        active = 0
+        for module in self.memories():
+            geometry = module.geometry()
+            active += geometry.active_per_layer
+        for module in self.banks():
+            per_expert = module.width * module.hidden * 3
+            active += module.k * per_expert
+            active += module.router.weight.numel()
+        for module in self.model.modules():
+            if isinstance(module, DenseAdapter):
+                active += module.gate.numel() + module.up.numel() + module.down.numel()
+        return active
 
     def routing_summary(self) -> dict:
         summary = {}
@@ -295,15 +448,70 @@ def _router(hidden: int, outputs: int, seed: int | None) -> nn.Linear:
     return router
 
 
-def build_arm(model, arm: str, config: dict, admission: dict, seed: int) -> ArmModel:
-    """Wrap a loaded base model in the arm's trainable modules."""
+def build_arm(model, arm: str, config: dict, admission: dict, seed: int,
+              profile: str = "t1") -> ArmModel:
+    """Wrap a loaded base model in the arm's trainable modules.
+
+    `profile="t1"` keeps T1's arm letters exactly. `profile="t2"` registers the
+    five T2 arms; T2's `D` is T1's `C` (the parameter-matched dense control),
+    not T1's untrained `D` (T2.1).
+    """
     layers = model.model.layers
     hidden = model.config.hidden_size
     router_modules: list[nn.Module] = []
     extra_modules: list[nn.Module] = []
+    context: TokenContext | None = None
+    memory_layers: tuple[int, ...] = ()
 
     for parameter in model.parameters():
         parameter.requires_grad_(False)
+
+    if profile == "t2":
+        if arm not in T2_ARMS:
+            raise ValueError(f"unknown T2 arm {arm}")
+        wants_memory = arm in ("M", "H", "H*")
+        wants_experts = arm in ("X", "H", "H*")
+        if wants_memory:
+            context = TokenContext()
+            _install_token_context(model, context)
+        dense_width = 2048 if arm == "D" else 0
+        for index, layer in enumerate(layers):
+            extras: list[nn.Module] = []
+            if wants_experts:
+                router = _router(hidden, 8, seed + 2000 + index)
+                bank = SpecialistBank(hidden, 512, 8, 4, router)
+                router_modules.append(router)
+                extra_modules.append(bank)
+                extras.append(bank)
+            if wants_memory and index in T2_MEMORY_LAYERS:
+                memory = HashedMemory(hidden, index, context,
+                                      geometry=MemoryGeometry(hidden=hidden),
+                                      seed=seed + 3000 + index)
+                extra_modules.append(memory)
+                extras.append(memory)
+            if dense_width:
+                adapter = DenseAdapter(hidden, dense_width)
+                extra_modules.append(adapter)
+                extras.append(adapter)
+            if extras:
+                extra = extras[0] if len(extras) == 1 else AdditiveExtras(extras)
+                layer.mlp = AdditiveFFN(layer.mlp, extra)
+        kind = {True: "hybrid", False: "conditional"}[wants_memory or wants_experts]
+        if arm == "D":
+            kind = "dense_adapter"
+        elif arm == "M":
+            kind = "memory"
+        elif arm == "X":
+            kind = "specialists"
+        memory_layers = T2_MEMORY_LAYERS if wants_memory else ()
+        trainable = ArmModel(model=model, arm=arm, kind=kind,
+                             router_modules=router_modules, extra_modules=extra_modules,
+                             admission=admission, config=config, profile=profile,
+                             context=context, memory_layers=memory_layers)
+        if arm == "H*":
+            trainable.set_router_grad(False)
+        trainable.declared_active = admission["active_unique_params"]
+        return trainable
 
     if arm in ("A", "A0"):
         groups, k, rank = 16, 5, 32
@@ -366,6 +574,62 @@ def load_admission(config_path: str, admission_path: str) -> tuple[dict, dict]:
     return config, admission
 
 
+def resource_report(arm_model: ArmModel, deployment_bytes: int = 2) -> dict:
+    """Active and accessible capacity, and the bytes triple, for one arm.
+
+    `weight_bytes_per_token_modelled` and the memory read bytes are modelled at
+    the declared dtype (distinct identities read, bf16 by default). They are
+    labelled `modelled` and never presented as measured I/O.
+    """
+    report = {
+        "arm": arm_model.arm,
+        "profile": arm_model.profile,
+        "active_unique_params": getattr(arm_model, "declared_active", None),
+        "total_accessible": (arm_model.config or {}).get("total_accessible"),
+        "trainable_elements": arm_model.trainable_elements(),
+        "extra_ledger": arm_model.extra_ledger(),
+        "dtype_bytes": deployment_bytes,
+    }
+    memories = arm_model.memories()
+    if memories:
+        geometry = memories[0].geometry()
+        report["memory"] = {
+            "insertions": len(memories),
+            "layers": list(arm_model.memory_layers),
+            "active": geometry.active_report(len(memories)),
+            "bytes": geometry.bytes_report(len(memories), deployment_bytes),
+        }
+    banks = arm_model.banks()
+    if banks:
+        per_layer = banks[0].k * 3 * banks[0].width * banks[0].hidden
+        active = len(banks) * per_layer
+        router = sum(bank.router.weight.numel() for bank in banks)
+        report["experts"] = {
+            "layers": len(banks),
+            "m": banks[0].experts,
+            "k": banks[0].k,
+            "width": banks[0].width,
+            "active_elements_per_token": active,
+            "weight_bytes_per_token_modelled": (active + router) * deployment_bytes,
+            "router_elements": router,
+            "bank_total_elements": sum(bank.gate.numel() + bank.up.numel()
+                                       + bank.down.numel() for bank in banks),
+            "basis": "modelled",
+        }
+    adapters = [module for module in arm_model.model.modules()
+                if isinstance(module, DenseAdapter)]
+    if adapters:
+        active = sum(module.gate.numel() + module.up.numel() + module.down.numel()
+                     for module in adapters)
+        report["dense_adapter"] = {
+            "layers": len(adapters),
+            "active_elements_per_token": active,
+            "weight_bytes_per_token_modelled": active * deployment_bytes,
+            "basis": "modelled",
+        }
+    return report
+
+
 def base_logits_for(base_model, input_ids: torch.Tensor) -> torch.Tensor:
     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=input_ids.is_cuda), \
             torch.inference_mode():
@@ -423,6 +687,8 @@ def adapter_zero_report(arm_model: ArmModel) -> dict:
             maxima.append(float(module.down.abs().max().item()))
         elif isinstance(module, DenseAdapter):
             maxima.append(float(module.down.abs().max().item()))
+        elif isinstance(module, HashedMemory):
+            maxima.append(float(module.proj.weight.abs().max().item()))
     worst = max(maxima) if maxima else 0.0
     return {
         "kind": "adapter_zero_init",
@@ -443,7 +709,7 @@ def zero_point_report(arm_model: ArmModel, base_logits: torch.Tensor | None,
     reconstruction plus the exact-zero adapter check.
     """
     zero = adapter_zero_report(arm_model)
-    if arm_model.arm in ("A", "A0"):
+    if arm_model.profile == "t1" and arm_model.arm in ("A", "A0"):
         modules = [module for module in arm_model.model.modules()
                    if isinstance(module, RoutedGroupFFN)]
         reconstructions = [group_reconstruction_report(module) for module in modules[:3]]

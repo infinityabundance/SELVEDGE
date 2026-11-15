@@ -1,0 +1,45 @@
+{
+  "schema": "selvedge/admission-record/v1",
+  "arm": "H*",
+  "admitted": true,
+  "config_sha256": "6f5c137edf128262cb8fe1ca6149b589d3b6a952620be17e0fa31dcaca716937",
+  "budget": {
+    "active_unique_limit": 1000000000,
+    "mode": "compliance"
+  },
+  "total_accessible": 1219137536,
+  "mode": "compliance",
+  "active_unique_params": 774543360,
+  "selector_unique_params": 229376,
+  "execution_unique_params": 774313984,
+  "selector_elements_read": 229376,
+  "execution_elements_read": 774313984,
+  "selector_flops": {
+    "matmul_flops": 458752,
+    "other_flops": 0,
+    "controller_flops": 0
+  },
+  "execution_flops": {
+    "matmul_flops": 1548623872,
+    "other_flops": 9906176,
+    "controller_flops": 0
+  },
+  "total_flops": {
+    "matmul_flops": 1549082624,
+    "other_flops": 9906176,
+    "controller_flops": 0
+  },
+  "verdict": {
+    "kind": "within",
+    "active_unique_params": 774543360,
+    "limit": 1000000000
+  },
+  "refusal": null,
+  "notes": [
+    "frozen 0.6B core + per-layer 8 SwiGLU specialists of width 512, hard top-4 routing, zero-initialised down projections",
+    "hashed memory: 2 n-gram heads (order 2 and 3), no learned index, 2 row reads per token per insertion layer, 256-dim values, 2^18 rows per table, four insertion layers at 0-based depth 3, 10, 17 and 24, per-layer 512->1024 projection and 1024->1 sigmoid gate; the projection is zero-initialised",
+    "same modules as H; router trained on measured leave-one-expert-out utility labels, no load balance and no distillation gradient to the router"
+  ],
+  "stamp": null,
+  "revision": null
+}

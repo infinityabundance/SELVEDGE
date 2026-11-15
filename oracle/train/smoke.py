@@ -69,20 +69,38 @@ def read_losses(path: str) -> dict[int, float]:
 
 def run_loop(arm: str, config: str, admission: str, out: str, steps: int,
              resume: str | None, zero_point: bool, micro_batch: int,
-             accum: int) -> None:
+             accum: int, profile: str = "t1", warmup_steps: int = 0,
+             calibration_windows: int = 32, router_steps: int = 200,
+             labels_out: str | None = None, load_balance: bool = False,
+             grad_checkpoint: bool = False) -> None:
     argv = ["--arm", arm, "--config", config, "--admission", admission,
             "--out", out, "--steps", str(steps), "--checkpoint-every", "10",
-            "--micro-batch", str(micro_batch), "--accum", str(accum)]
+            "--micro-batch", str(micro_batch), "--accum", str(accum),
+            "--profile", profile]
     if resume:
         argv += ["--resume", resume]
     if zero_point:
         argv += ["--zero-point"]
+    if profile == "t2":
+        argv += ["--warmup-steps", str(warmup_steps),
+                 "--calibration-windows", str(calibration_windows),
+                 "--router-steps", str(router_steps)]
+        if labels_out:
+            argv += ["--labels-out", labels_out]
+    if load_balance:
+        argv += ["--load-balance"]
+    if grad_checkpoint:
+        argv += ["--grad-checkpoint"]
     loop.main(argv)
+
+
+def checkpoint_digest(path: str) -> str:
+    return loop.sha256_file(path)
 
 
 def evaluate_checkpoint(arm: str, config: str, admission: str, checkpoint: str,
                         hf_root: str, dataset_root: str, split_dir: str,
-                        split_receipts: str, device) -> dict:
+                        split_receipts: str, device, profile: str = "t1") -> dict:
     from transformers import AutoModelForCausalLM
 
     config_payload, admission_payload = load_admission(config, admission)
@@ -92,7 +110,8 @@ def evaluate_checkpoint(arm: str, config: str, admission: str, checkpoint: str,
         local_files_only=True, trust_remote_code=False, attn_implementation="sdpa")
     base.to(device)
     base.eval()
-    arm_model = build_arm(base, arm, config_payload, admission_payload, 1001)
+    arm_model = build_arm(base, arm, config_payload, admission_payload, 1001,
+                          profile=profile)
     arm_model.model.to(device)
     state = torch.load(checkpoint, map_location=device, weights_only=False)
     arm_model.model.load_state_dict(state["model"], strict=False)
@@ -121,13 +140,20 @@ def evaluate_checkpoint(arm: str, config: str, admission: str, checkpoint: str,
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--arms", default="A,B,C")
-    parser.add_argument("--steps", type=int, default=20)
-    parser.add_argument("--resume-split", type=int, default=10)
-    parser.add_argument("--config-dir", default="results/train/admission-configs")
-    parser.add_argument("--admission-dir", default="results/train/admission")
-    parser.add_argument("--out-dir", default="results/artifacts/train/smoke")
+    parser.add_argument("--profile", choices=["t1", "t2"], default="t1")
+    parser.add_argument("--arms", default=None)
+    parser.add_argument("--steps", type=int, default=None)
+    parser.add_argument("--determinism-steps", type=int, default=10)
+    parser.add_argument("--resume-split", type=int, default=None)
+    parser.add_argument("--config-dir", default=None)
+    parser.add_argument("--admission-dir", default=None)
+    parser.add_argument("--out-dir", default=None)
     parser.add_argument("--receipt", default="results/train")
+    parser.add_argument("--warmup-steps", type=int, default=0)
+    parser.add_argument("--calibration-windows", type=int, default=32)
+    parser.add_argument("--router-steps", type=int, default=200)
+    parser.add_argument("--load-balance", action="store_true")
+    parser.add_argument("--grad-checkpoint", action="store_true")
     parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     parser.add_argument("--dataset-root", default="results/artifacts/datasets")
     parser.add_argument("--split-dir", default="results/artifacts")
@@ -140,6 +166,21 @@ def main(argv: list[str]) -> int:
     if not torch.cuda.is_available():
         raise SystemExit("smoke requires the GPU court (--gpu)")
     device = torch.device("cuda")
+    t2 = args.profile == "t2"
+    defaults = {
+        "arms": "D,M,X,H,H*" if t2 else "A,B,C",
+        "steps": 50 if t2 else 20,
+        "resume-split": 25 if t2 else 10,
+        "config-dir": "results/train/admission-configs/t2" if t2
+        else "results/train/admission-configs",
+        "admission-dir": "results/train/admission/t2" if t2
+        else "results/train/admission",
+        "out-dir": "results/artifacts/train/smoke-t2" if t2
+        else "results/artifacts/train/smoke",
+    }
+    for name, value in defaults.items():
+        if getattr(args, name.replace("-", "_")) is None:
+            setattr(args, name.replace("-", "_"), value)
     arms = [item for item in args.arms.split(",") if item]
     reports = {}
     for arm in arms:
@@ -150,29 +191,64 @@ def main(argv: list[str]) -> int:
                              "run scripts/train-admission.sh")
         out = os.path.join(args.out_dir, arm)
         resume_out = os.path.join(args.out_dir, f"{arm}-resume")
+        determinism_out = os.path.join(args.out_dir, f"{arm}-determinism")
+        common = dict(profile=args.profile, warmup_steps=args.warmup_steps,
+                      calibration_windows=args.calibration_windows,
+                      router_steps=args.router_steps,
+                      load_balance=args.load_balance and arm != "H*",
+                      grad_checkpoint=args.grad_checkpoint)
         print(f"smoke: arm {arm} training {args.steps} steps", flush=True)
         torch.cuda.reset_peak_memory_stats()
         run_loop(arm, config, admission, out, args.steps, None, True,
-                 args.micro_batch, args.accum)
+                 args.micro_batch, args.accum, **common)
         full_losses = read_losses(os.path.join(out, "train.jsonl"))
 
+        # Determinism: the same seed twice, compared on the loss trajectory and
+        # the step-N checkpoint hash (T2 execution is deterministic, T2.4).
+        torch.cuda.reset_peak_memory_stats()
+        run_loop(arm, config, admission, determinism_out, args.determinism_steps, None,
+                 False, args.micro_batch, args.accum, **common)
+        first_losses = read_losses(os.path.join(determinism_out, "train.jsonl"))
+        first_hash = checkpoint_digest(
+            os.path.join(determinism_out, f"step-{args.determinism_steps:06d}.pt"))
+        import shutil
+
+        shutil.rmtree(determinism_out)
+        run_loop(arm, config, admission, determinism_out, args.determinism_steps, None,
+                 False, args.micro_batch, args.accum, **common)
+        second_losses = read_losses(os.path.join(determinism_out, "train.jsonl"))
+        second_hash = checkpoint_digest(
+            os.path.join(determinism_out, f"step-{args.determinism_steps:06d}.pt"))
+        determinism = {
+            "steps": args.determinism_steps,
+            "loss_trajectories_identical": first_losses == second_losses,
+            "checkpoint_sha256_first": first_hash,
+            "checkpoint_sha256_second": second_hash,
+            "checkpoint_hash_identical": first_hash == second_hash,
+            "max_abs_loss_delta": max(
+                (abs(first_losses[step] - second_losses[step]) for step in first_losses),
+                default=None),
+            "note": "T2 uses a deterministic slot-wise combine; a hash mismatch is a "
+                    "kernel defect, not hardware noise (T2.4)",
+        }
+
         run_loop(arm, config, admission, resume_out, args.resume_split, None, False,
-                 args.micro_batch, args.accum)
+                 args.micro_batch, args.accum, **common)
         checkpoint = os.path.join(resume_out, f"step-{args.resume_split:06d}.pt")
         run_loop(arm, config, admission, resume_out, args.steps, checkpoint, False,
-                 args.micro_batch, args.accum)
+                 args.micro_batch, args.accum, **common)
         resumed_losses = read_losses(os.path.join(resume_out, "train.jsonl"))
-        common = sorted(set(full_losses) & set(resumed_losses))
-        common = [step for step in common if step > args.resume_split]
-        deltas = [abs(full_losses[step] - resumed_losses[step]) for step in common]
+        compared = sorted(set(full_losses) & set(resumed_losses))
+        compared = [step for step in compared if step > args.resume_split]
+        deltas = [abs(full_losses[step] - resumed_losses[step]) for step in compared]
         resume = {
-            "steps_compared": len(common),
+            "steps_compared": len(compared),
             "max_abs_loss_delta": float(max(deltas)) if deltas else None,
             "mean_abs_loss_delta": float(np.mean(deltas)) if deltas else None,
-            "full_losses": {str(step): full_losses[step] for step in common},
-            "resumed_losses": {str(step): resumed_losses[step] for step in common},
-            "note": "GPU atomics in grouped routing are not bitwise reproducible; "
-                    "the delta is the measured continuation difference",
+            "full_losses": {str(step): full_losses[step] for step in compared},
+            "resumed_losses": {str(step): resumed_losses[step] for step in compared},
+            "note": "T2 continuation must be bitwise identical after a resume; any "
+                    "delta is reported verbatim",
         }
         summary = json.load(open(os.path.join(out, "summary.json"), encoding="utf-8"))
         zero_point = json.load(open(os.path.join(out, "zero-point.json"),
@@ -182,11 +258,13 @@ def main(argv: list[str]) -> int:
             final = os.path.join(out, f"step-{args.steps:06d}.pt")
             eval_result = evaluate_checkpoint(arm, config, admission, final,
                                               args.hf_root, args.dataset_root,
-                                              args.split_dir, args.split_receipts, device)
+                                              args.split_dir, args.split_receipts,
+                                              device, profile=args.profile)
             torch.cuda.empty_cache()
         reports[arm] = {
             "train": summary,
             "resume": resume,
+            "determinism": determinism,
             "zero_point": zero_point,
             "eval": eval_result,
         }
@@ -197,7 +275,8 @@ def main(argv: list[str]) -> int:
                       if resume["max_abs_loss_delta"] is not None else "n/a")
         print(f"smoke: arm {arm} tok/s={summary['tokens_per_second']:.0f} "
               f"vram={summary['vram_peak_gib']:.2f}GiB "
-              f"zero_point={zero_point['ok']} resume_delta={deltas_msg}", flush=True)
+              f"zero_point={zero_point['ok']} resume_delta={deltas_msg} "
+              f"deterministic={determinism['checkpoint_hash_identical']}", flush=True)
 
     stamp = stamp_now()
     receipt = {
@@ -205,8 +284,13 @@ def main(argv: list[str]) -> int:
         "stamp": stamp,
         "revision": os.environ.get("SELVEDGE_REVISION", "unknown"),
         "finished_utc": utc_now(),
+        "profile": args.profile,
         "steps": args.steps,
+        "determinism_steps": args.determinism_steps,
         "tokens_per_step": 64 * 1024,
+        "warmup_steps": args.warmup_steps,
+        "calibration_windows": args.calibration_windows,
+        "grad_checkpoint": args.grad_checkpoint,
         "arms": reports,
         "gpu": torch.cuda.get_device_name(0),
         "torch": torch.__version__,

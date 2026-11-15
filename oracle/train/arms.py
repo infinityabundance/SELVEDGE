@@ -79,14 +79,22 @@ def accounting(size: str) -> dict:
 class Arm:
     name: str
     size: str
-    kind: str  # dense | routed_groups | specialists | dense_adapter
+    kind: str  # dense | routed_groups | specialists | dense_adapter | memory | hybrid
     groups: int = 0
     k: int = 0
     adapter_rank: int = 0
     specialists: int = 0
     specialist_width: int = 0
     dense_width: int = 0
+    memory_layers: tuple[int, ...] = ()
+    memory_rows: int = 1 << 18
+    memory_value_dim: int = 256
+    memory_reads: int = 2
     notes: tuple[str, ...] = field(default_factory=tuple)
+
+    @property
+    def inserts(self) -> int:
+        return len(self.memory_layers)
 
 
 ARMS = {
@@ -111,6 +119,96 @@ ARMS = {
               notes=("frozen 0.6B core + one dense width-4608 SwiGLU adapter per layer; "
                      "ceiling-max dense control, not parameter-matched to B",)),
 }
+
+# ---------------------------------------------------------------------------
+# T2: the five-arm error-directed capacity matrix (docs/EXPERIMENT-CONTRACT.md T2)
+#
+# T2's `D` is T1's `C` (the parameter-matched dense control); T1's untrained
+# dense baseline is `D0` in T2. The T2 names live in their own table so no T1
+# definition can be rewritten by accident.
+
+T2_MEMORY_LAYERS = (3, 10, 17, 24)
+T2_MEMORY_ROWS = 1 << 18
+T2_MEMORY_VALUE_DIM = 256
+T2_MEMORY_READS = 2
+
+DESIGN_ACTIVE_T2 = {
+    "D": 772_210_688,
+    "M": 598_153_216,
+    "X": 772_440_064,
+    "H": 774_543_360,
+    "H*": 774_543_360,
+}
+DESIGN_TOTAL_T2 = {
+    "D": 772_210_688,
+    "M": 866_586_624,
+    "X": 948_600_832,
+    "H": 1_219_137_536,
+    "H*": 1_219_137_536,
+}
+
+_MEMORY_NOTES = (
+    "hashed memory: 2 n-gram heads (order 2 and 3), no learned index, 2 row reads "
+    "per token per insertion layer, 256-dim values, 2^18 rows per table, four "
+    "insertion layers at 0-based depth 3, 10, 17 and 24, per-layer 512->1024 "
+    "projection and 1024->1 sigmoid gate; the projection is zero-initialised",
+)
+_SPECIALIST_NOTES = (
+    "frozen 0.6B core + per-layer 8 SwiGLU specialists of width 512, hard top-4 "
+    "routing, zero-initialised down projections",
+)
+
+T2_ARMS = {
+    "D": Arm(name="D", size="0.6b", kind="dense_adapter", dense_width=2048,
+             notes=("T2 dense control = T1 arm C: frozen core + one dense width-2048 "
+                    "SwiGLU adapter per layer, parameter-matched to X's active experts",)),
+    "M": Arm(name="M", size="0.6b", kind="memory",
+             memory_layers=T2_MEMORY_LAYERS, memory_rows=T2_MEMORY_ROWS,
+             memory_value_dim=T2_MEMORY_VALUE_DIM, memory_reads=T2_MEMORY_READS,
+             notes=_MEMORY_NOTES + ("no expert bank",)),
+    "X": Arm(name="X", size="0.6b", kind="specialists", specialists=8, k=4,
+             specialist_width=512, notes=_SPECIALIST_NOTES + ("no memory path",)),
+    "H": Arm(name="H", size="0.6b", kind="hybrid", specialists=8, k=4,
+             specialist_width=512,
+             memory_layers=T2_MEMORY_LAYERS, memory_rows=T2_MEMORY_ROWS,
+             memory_value_dim=T2_MEMORY_VALUE_DIM, memory_reads=T2_MEMORY_READS,
+             notes=_SPECIALIST_NOTES + _MEMORY_NOTES
+             + ("plain distillation router plus Switch load balance",)),
+    "H*": Arm(name="H*", size="0.6b", kind="hybrid", specialists=8, k=4,
+              specialist_width=512,
+              memory_layers=T2_MEMORY_LAYERS, memory_rows=T2_MEMORY_ROWS,
+              memory_value_dim=T2_MEMORY_VALUE_DIM, memory_reads=T2_MEMORY_READS,
+              notes=_SPECIALIST_NOTES + _MEMORY_NOTES
+              + ("same modules as H; router trained on measured leave-one-expert-out "
+                 "utility labels, no load balance and no distillation gradient to "
+                 "the router",)),
+}
+
+
+def memory_elements(arm: Arm, hidden: int = 1024) -> dict:
+    """Memory-path element arithmetic for one arm (T2.2).
+
+    Returns per-layer and total counts; `active` excludes the table because a
+    read touches two 256-element rows, not the whole table.
+    """
+    if not arm.inserts:
+        return {"inserts": 0, "rows": 0, "values": 0, "projection": 0,
+                "gate": 0, "index": 0, "active": 0, "total": 0}
+    per_values = arm.memory_reads * arm.memory_value_dim
+    per_projection = arm.memory_reads * arm.memory_value_dim * hidden
+    per_gate = hidden
+    per_layer_active = per_values + per_projection + per_gate
+    per_table = arm.memory_rows * arm.memory_value_dim
+    return {
+        "inserts": arm.inserts,
+        "rows": arm.inserts * arm.memory_rows,
+        "values": arm.inserts * per_table,
+        "projection": arm.inserts * per_projection,
+        "gate": arm.inserts * per_gate,
+        "index": 0,
+        "active": arm.inserts * per_layer_active,
+        "total": arm.inserts * (per_table + per_projection + per_gate),
+    }
 
 
 def _use(tensor: str, elements: int) -> dict:
@@ -223,6 +321,66 @@ def build_config(arm: Arm) -> dict:
         execution_other += int(round(per_token["ffn_elementwise_per_layer_estimate"]
                                      * layers * (1.0 + arm.dense_width / intermediate)))
         additions = layers * per_layer
+    elif arm.kind == "memory":
+        memory = memory_elements(arm, hidden)
+        for layer in range(layers):
+            for component in ffn_by_layer[layer]:
+                execution_uses.append(_use(component["tensor"], component["elements"]))
+                execution_matmul += 2 * component["elements"]
+        execution_other += per_token["ffn_elementwise_per_layer_estimate"] * layers
+        for layer in arm.memory_layers:
+            # Two distinct 256-element value rows: the conservative union even
+            # when the two hash heads collide on one row.
+            for slot in range(arm.memory_reads):
+                elements = arm.memory_value_dim
+                key = f"model.layers.{layer}.memory.table.row.slot{slot}"
+                execution_uses.append(_use(key, elements))
+                execution_other += elements  # gather (element copies, not FLOPs)
+            projection = arm.memory_reads * arm.memory_value_dim * hidden
+            key = f"model.layers.{layer}.memory.proj.weight"
+            execution_uses.append(_use(key, projection))
+            execution_matmul += 2 * projection
+            gate = hidden
+            key = f"model.layers.{layer}.memory.gate.weight"
+            execution_uses.append(_use(key, gate))
+            execution_matmul += 2 * gate
+        additions = memory["total"]
+    elif arm.kind == "hybrid":
+        memory = memory_elements(arm, hidden)
+        specialist_elements = 2 * arm.specialist_width * hidden + hidden * arm.specialist_width
+        for layer in range(layers):
+            for component in ffn_by_layer[layer]:
+                execution_uses.append(_use(component["tensor"], component["elements"]))
+                execution_matmul += 2 * component["elements"]
+            for slot in range(arm.k):
+                for suffix in ("gate", "up", "down"):
+                    elements = arm.specialist_width * hidden
+                    key = f"model.layers.{layer}.specialists.{suffix}.slot{slot}"
+                    execution_uses.append(_use(key, elements))
+                    execution_matmul += 2 * elements
+            router_elements = hidden * arm.specialists
+            selector_uses.append(_use(f"model.layers.{layer}.specialists.router.weight",
+                                      router_elements))
+            controller_matmul += 2 * router_elements
+            if layer in arm.memory_layers:
+                for slot in range(arm.memory_reads):
+                    elements = arm.memory_value_dim
+                    key = f"model.layers.{layer}.memory.table.row.slot{slot}"
+                    execution_uses.append(_use(key, elements))
+                    execution_other += elements
+                projection = arm.memory_reads * arm.memory_value_dim * hidden
+                key = f"model.layers.{layer}.memory.proj.weight"
+                execution_uses.append(_use(key, projection))
+                execution_matmul += 2 * projection
+                gate = hidden
+                key = f"model.layers.{layer}.memory.gate.weight"
+                execution_uses.append(_use(key, gate))
+                execution_matmul += 2 * gate
+        execution_other += int(round(per_token["ffn_elementwise_per_layer_estimate"]
+                                     * layers * (1.0 + arm.k * arm.specialist_width
+                                                 / intermediate)))
+        additions = (layers * (arm.specialists * specialist_elements
+                               + hidden * arm.specialists) + memory["total"])
     elif arm.kind == "dense":
         for layer in range(layers):
             for component in ffn_by_layer[layer]:
@@ -291,20 +449,29 @@ def sha256_file(path: str) -> str:
     return digest.hexdigest()
 
 
-def emit(out_dir: str, arms: list[str]) -> int:
+def _tables(profile: str) -> tuple[dict, dict, dict]:
+    if profile == "t2":
+        return T2_ARMS, DESIGN_ACTIVE_T2, DESIGN_TOTAL_T2
+    return ARMS, DESIGN_ACTIVE, DESIGN_TOTAL_ACCESSIBLE
+
+
+def emit(out_dir: str, arms: list[str], profile: str = "t1") -> int:
+    table, design_active, _design_total = _tables(profile)
     os.makedirs(out_dir, exist_ok=True)
     for name in arms:
-        config = build_config(ARMS[name])
+        config = build_config(table[name])
         path = os.path.join(out_dir, f"{name}.json")
         write_json_atomic(path, config)
         flops = config["execution_flops"]
-        print(f"arms: {name} config={path} total_accessible={config['total_accessible']} "
+        print(f"arms: {profile} {name} config={path} "
+              f"total_accessible={config['total_accessible']} "
               f"forward_matmul_flops={flops['matmul_flops']} "
-              f"declared_active={DESIGN_ACTIVE[name]}")
+              f"declared_active={design_active[name]}")
     return 0
 
 
-def check(out_dir: str, admission_dir: str, arms: list[str]) -> int:
+def check(out_dir: str, admission_dir: str, arms: list[str], profile: str = "t1") -> int:
+    table, design_active, design_total = _tables(profile)
     failures = []
     for name in arms:
         config_path = os.path.join(out_dir, f"{name}.json")
@@ -323,19 +490,19 @@ def check(out_dir: str, admission_dir: str, arms: list[str]) -> int:
             continue
         if record.get("config_sha256") != sha256_file(config_path):
             failures.append(f"{name}: record config_sha256 does not match the config bytes")
-        if record["active_unique_params"] != DESIGN_ACTIVE[name]:
+        if record["active_unique_params"] != design_active[name]:
             failures.append(f"{name}: admission union {record['active_unique_params']} != "
-                            f"design {DESIGN_ACTIVE[name]}")
+                            f"design {design_active[name]}")
         if mirror["active_unique_params"] != record["active_unique_params"]:
             failures.append(f"{name}: Python mirror {mirror['active_unique_params']} "
                             f"disagrees with the Rust record "
                             f"{record['active_unique_params']}")
-        if config["total_accessible"] != DESIGN_TOTAL_ACCESSIBLE[name]:
+        if config["total_accessible"] != design_total[name]:
             failures.append(f"{name}: total_accessible {config['total_accessible']} != "
-                            f"design {DESIGN_TOTAL_ACCESSIBLE[name]}")
+                            f"design {design_total[name]}")
         if record["active_unique_params"] > CEILING:
             failures.append(f"{name}: over ceiling")
-        print(f"arms: {name} admitted active={record['active_unique_params']} "
+        print(f"arms: {profile} {name} admitted active={record['active_unique_params']} "
               f"selector={record['selector_unique_params']} "
               f"execution={record['execution_unique_params']} "
               f"total_accessible={config['total_accessible']}")
@@ -343,26 +510,34 @@ def check(out_dir: str, admission_dir: str, arms: list[str]) -> int:
         for failure in failures:
             print(f"arms: FAIL {failure}", file=sys.stderr)
         return 1
-    print("arms: all admission records match the design counts and the Python mirror")
+    print(f"arms: {profile} records match the design counts and the Python mirror")
     return 0
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["emit", "check", "mirror"])
-    parser.add_argument("--out", default=os.path.join(REPO, CONFIG_DIR))
-    parser.add_argument("--admission", default=os.path.join(REPO, ADMISSION_DIR))
-    parser.add_argument("--arms", default="D,A,A0,B,C,C2")
+    parser.add_argument("--profile", choices=["t1", "t2"], default="t1")
+    parser.add_argument("--out", default=None)
+    parser.add_argument("--admission", default=None)
+    parser.add_argument("--arms", default=None)
     parser.add_argument("--config", help="config to mirror when command=mirror")
     args = parser.parse_args(argv)
-    names = [item for item in args.arms.split(",") if item]
-    unknown = [item for item in names if item not in ARMS]
+    table, _design_active, _design_total = _tables(args.profile)
+    default_out = os.path.join(REPO, CONFIG_DIR, *([] if args.profile == "t1" else ["t2"]))
+    default_admission = os.path.join(REPO, ADMISSION_DIR,
+                                     *([] if args.profile == "t1" else ["t2"]))
+    out = args.out or default_out
+    admission = args.admission or default_admission
+    default_arms = "D,A,A0,B,C,C2" if args.profile == "t1" else "D,M,X,H,H*"
+    names = [item for item in (args.arms or default_arms).split(",") if item]
+    unknown = [item for item in names if item not in table]
     if unknown:
-        parser.error(f"unknown arms: {unknown}")
+        parser.error(f"unknown {args.profile} arms: {unknown}")
     if args.command == "emit":
-        return emit(args.out, names)
+        return emit(out, names, args.profile)
     if args.command == "check":
-        return check(args.out, args.admission, names)
+        return check(out, admission, names, args.profile)
     if not args.config:
         parser.error("--config is required for mirror")
     print(json.dumps(python_mirror(load_json(args.config)), indent=2, sort_keys=True))

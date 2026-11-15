@@ -1,0 +1,44 @@
+{
+  "schema": "selvedge/admission-record/v1",
+  "arm": "M",
+  "admitted": true,
+  "config_sha256": "16830ac92c2405582612a69d06edf3428dc08c0bcbd5934c7c6764fbb4090a1b",
+  "budget": {
+    "active_unique_limit": 1000000000,
+    "mode": "compliance"
+  },
+  "total_accessible": 866586624,
+  "mode": "compliance",
+  "active_unique_params": 598153216,
+  "selector_unique_params": 0,
+  "execution_unique_params": 598153216,
+  "selector_elements_read": 0,
+  "execution_elements_read": 598153216,
+  "selector_flops": {
+    "matmul_flops": 0,
+    "other_flops": 0,
+    "controller_flops": 0
+  },
+  "execution_flops": {
+    "matmul_flops": 1196302336,
+    "other_flops": 9562112,
+    "controller_flops": 0
+  },
+  "total_flops": {
+    "matmul_flops": 1196302336,
+    "other_flops": 9562112,
+    "controller_flops": 0
+  },
+  "verdict": {
+    "kind": "within",
+    "active_unique_params": 598153216,
+    "limit": 1000000000
+  },
+  "refusal": null,
+  "notes": [
+    "hashed memory: 2 n-gram heads (order 2 and 3), no learned index, 2 row reads per token per insertion layer, 256-dim values, 2^18 rows per table, four insertion layers at 0-based depth 3, 10, 17 and 24, per-layer 512->1024 projection and 1024->1 sigmoid gate; the projection is zero-initialised",
+    "no expert bank"
+  ],
+  "stamp": null,
+  "revision": null
+}

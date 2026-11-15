@@ -64,6 +64,7 @@ def write_json_atomic(path: str, payload: dict) -> None:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", required=True)
+    parser.add_argument("--profile", choices=["t1", "t2"], default="t1")
     parser.add_argument("--model-size", default="0.6b", choices=["0.6b", "1.7b"])
     parser.add_argument("--checkpoint", default=None)
     parser.add_argument("--config", default=None)
@@ -96,6 +97,7 @@ def main(argv: list[str]) -> int:
 
     teacher = harness.load_model(
         harness.model_path(args.hf_root, "1.7b"), device)
+    built = None
     if args.arm == "E":
         student = teacher
     else:
@@ -104,7 +106,8 @@ def main(argv: list[str]) -> int:
             from modeling import build_arm, load_admission
 
             config, admission = load_admission(args.config, args.admission)
-            arm_model = build_arm(base, args.arm, config, admission, args.seed)
+            arm_model = build_arm(base, args.arm, config, admission, args.seed,
+                                  profile=args.profile)
             arm_model.model.to(device)
             state = torch.load(args.checkpoint, map_location=device, weights_only=False)
             _missing, unexpected = arm_model.model.load_state_dict(state["model"],
@@ -120,6 +123,7 @@ def main(argv: list[str]) -> int:
             print(f"eval: loaded {loaded} tensors; {len(trainable)} trainable")
             arm_model.model.eval()
             student = arm_model.model
+            built = arm_model
         elif args.checkpoint:
             raise SystemExit("--checkpoint requires --config and --admission")
         else:
@@ -134,6 +138,14 @@ def main(argv: list[str]) -> int:
         "C": "compliant_dense_control",
         "C2": "compliant_dense_ceiling_control",
     }.get(args.arm, "unlabelled")
+    if args.profile == "t2":
+        compliance = {
+            "D": "compliant_dense_control",
+            "M": "compliant_hashed_memory",
+            "X": "compliant_routed_specialists",
+            "H": "compliant_naive_hybrid",
+            "H*": "compliant_error_directed_hybrid",
+        }.get(args.arm, "unlabelled")
 
     results: dict = {}
 
@@ -171,6 +183,11 @@ def main(argv: list[str]) -> int:
                 student, tokenizer, truthfulqa[:args.truthfulqa_limit], device)
 
     vram = torch.cuda.max_memory_allocated() / (1024 ** 3)
+    resources = None
+    if built is not None:
+        from modeling import resource_report
+
+        resources = resource_report(built)
     stamp = stamp_now()
     receipt = {
         "schema": "selvedge/eval-receipt/v1",
@@ -224,6 +241,7 @@ def main(argv: list[str]) -> int:
             "seed": 20261115,
         },
         "determinism": determinism,
+        "resources": resources,
         "results": results,
     }
     write_json_atomic(args.out, receipt)

@@ -30,11 +30,37 @@ import torch
 import torch.nn.functional as F
 from transformers import AutoModelForCausalLM
 
+import utility
 from modeling import base_logits_for, build_arm, load_admission, zero_point_report
 
 WINDOW = 1024
 RECORD_BYTES = 100
 TOP_K = 16
+
+
+def load_balance_loss(arm_model, coefficient: float = 0.01):
+    """T1.6 Switch auxiliary loss over every routed bank.
+
+    `coefficient * m * sum_i f_i * p_i`, summed over layers. Evaluated on the
+    current micro-batch's routing. Never used by `H*`, whose router is trained
+    only on measured utility labels (T2.5); the caller decides.
+    """
+    banks = arm_model.banks()
+    if not banks:
+        return None
+    total = None
+    for bank in banks:
+        if bank.last_probs is None or bank.last_routing is None:
+            continue
+        probs = bank.last_probs
+        tokens = probs.shape[0]
+        counts = torch.bincount(bank.last_routing.reshape(-1),
+                                minlength=bank.experts).to(probs.dtype)
+        fraction = counts / max(1, tokens * bank.k)
+        mean_prob = probs.mean(dim=0)
+        term = coefficient * bank.experts * (fraction * mean_prob).sum()
+        total = term if total is None else total + term
+    return total
 
 
 def utc_now() -> str:
@@ -122,6 +148,16 @@ def distillation_loss(logits: torch.Tensor, values: torch.Tensor, ids: torch.Ten
     Teacher top-k logits (`values`), their indices (`ids`) and the teacher
     log-sum-exp (`lse`) are [N, k], [N, k] and [N].
     """
+    return distillation_loss_per_position(logits, values, ids, lse).mean()
+
+
+def distillation_loss_per_position(logits: torch.Tensor, values: torch.Tensor,
+                                 ids: torch.Tensor, lse: torch.Tensor) -> torch.Tensor:
+    """The T1.4 objective per position, `[N]`.
+
+    The utility labels need the per-position value because a counterfactual is
+    a per-token loss delta (T2.5).
+    """
     student_lse = chunked_logsumexp(logits)
     student_support = logits.gather(1, ids).float()
     log_student = student_support - student_lse.unsqueeze(-1)
@@ -134,8 +170,7 @@ def distillation_loss(logits: torch.Tensor, values: torch.Tensor, ids: torch.Ten
     # mass instead of producing -inf. See docs/TRAINING.md.
     tail_mass = (1.0 - support_mass).clamp(min=1e-7, max=1.0)
     log_tail = tail_mass.log()
-    loss = -(p_teacher * log_student).sum(dim=-1) - p_tail * log_tail
-    return loss.mean()
+    return -(p_teacher * log_student).sum(dim=-1) - p_tail * log_tail
 
 
 def lr_at(step: int, total_steps: int) -> float:
@@ -164,11 +199,68 @@ def load_checkpoint(path: str, device) -> dict:
     return torch.load(path, map_location=device, weights_only=False)
 
 
+def run_router_phase(arm_model, targets, stream, device, args, report_path: str) -> dict:
+    """T2 phase U: label the bank by leave-one-expert-out, train the routers."""
+    banks = arm_model.banks()
+    if args.profile != "t2" or args.arm != "H*":
+        return {}
+    if not banks:
+        raise SystemExit("H* router phase needs a specialist bank")
+    calibration_tokens = args.calibration_windows * WINDOW
+    print(f"router-phase: labelling {len(banks)} layers on {calibration_tokens} tokens "
+          f"({1 + banks[0].experts} passes per layer)", flush=True)
+    payload = utility.label_utilities(arm_model, targets, stream, device,
+                                      calibration_tokens=calibration_tokens)
+    labels_path = args.labels_out or os.path.join(args.out, "utility-labels.pt")
+    utility.save_labels(labels_path, payload)
+    runs = []
+    for index, bank in enumerate(banks):
+        run = utility.train_router(payload["features"][index],
+                                   payload["utilities"][index], bank.router,
+                                   steps=args.router_steps, seed=args.seed + index)
+        run["layer"] = index
+        runs.append(run)
+    report = {
+        "schema": "selvedge/t2-router-phase/v1",
+        "arm": args.arm,
+        "labels": labels_path,
+        "labels_manifest": payload["manifest"],
+        "router_runs": runs,
+        "router_steps": args.router_steps,
+        "calibration_tokens": calibration_tokens,
+        "utility_passes": payload["manifest"]["loo_passes"],
+        "note": "the router is frozen after this phase; experts and memory are "
+                "trained by distillation through the frozen mask (T2.6)",
+    }
+    write_json_atomic(report_path, report)
+    # Freeze the treatment: no distillation gradient, no load balance, no
+    # further router updates.
+    arm_model.set_router_grad(False)
+    for bank in banks:
+        for parameter in bank.router.parameters():
+            parameter.requires_grad_(False)
+    return report
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", required=True)
     parser.add_argument("--config", required=True)
     parser.add_argument("--admission", required=True)
+    parser.add_argument("--profile", choices=["t1", "t2"], default="t1")
+    parser.add_argument("--warmup-steps", type=int, default=0,
+                        help="T2 phase W length (H and H* run it identically)")
+    parser.add_argument("--calibration-windows", type=int, default=32,
+                        help="T2 H* utility calibration windows")
+    parser.add_argument("--router-steps", type=int, default=200,
+                        help="T2 H* router-head steps on the cached utility labels")
+    parser.add_argument("--labels-out", default=None,
+                        help="T2 H* utility label checkpoint path")
+    parser.add_argument("--load-balance", action="store_true",
+                        help="add the T1.6 Switch auxiliary loss (never for H*)")
+    parser.add_argument("--grad-checkpoint", action="store_true",
+                        help="activation checkpointing for the frozen core; T2 hybrid "
+                             "arms need it to fit 16 GiB (recorded in the receipt)")
     parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     parser.add_argument("--artifact-dir", default="results/artifacts/train")
     parser.add_argument("--out", required=True)
@@ -233,11 +325,24 @@ def main(argv: list[str]) -> int:
         stream_probe = np.asarray(stream[0:2 * WINDOW], dtype=np.int64).reshape(2, WINDOW)
         probe_ids = torch.from_numpy(stream_probe).to(device)
         probe_base = base_logits_for(base, probe_ids)
-    arm_model = build_arm(base, args.arm, config, admission, args.seed)
+    arm_model = build_arm(base, args.arm, config, admission, args.seed,
+                          profile=args.profile)
     arm_model.model.to(device)
     for parameter in arm_model.trainable_parameters():
         parameter.requires_grad_(True)
     arm_model.model.train()
+    if args.grad_checkpoint:
+        arm_model.model.gradient_checkpointing_enable(
+            gradient_checkpointing_kwargs={"use_reentrant": False})
+        arm_model.model.enable_input_require_grads()
+        for parameter in arm_model.trainable_parameters():
+            parameter.requires_grad_(True)
+    if args.profile == "t2" and args.arm == "H*" and args.warmup_steps > 0:
+        # Phase W trains the router with the naive rule; the utility treatment
+        # starts after the label step.
+        arm_model.set_router_grad(True)
+    router_phase = {"done": args.warmup_steps <= 0 or args.profile != "t2"
+                    or args.arm != "H*", "report": None}
     if args.zero_point:
         report = zero_point_report(arm_model, probe_base, probe_ids)
         write_json_atomic(os.path.join(args.out, "zero-point.json"), report)
@@ -289,7 +394,26 @@ def main(argv: list[str]) -> int:
         "window": WINDOW,
         "gpu": torch.cuda.get_device_name(0),
         "torch": torch.__version__,
+        "grad_checkpoint": bool(args.grad_checkpoint),
     }
+    if args.profile == "t2":
+        meta["profile"] = args.profile
+        meta["warmup_steps"] = args.warmup_steps
+        meta["load_balance"] = bool(args.load_balance)
+        meta["extra_ledger"] = arm_model.extra_ledger()
+        meta["active_extra_elements"] = arm_model.active_extra_elements()
+        meta["declared_active"] = int(admission["active_unique_params"])
+        meta["total_accessible"] = int(config["total_accessible"])
+        if arm_model.memories():
+            from memory import MemoryGeometry
+
+            geometry = arm_model.memories()[0].geometry()
+            meta["memory"] = {
+                "insertions": len(arm_model.memories()),
+                "layers": list(arm_model.memory_layers),
+                "active": geometry.active_report(len(arm_model.memories())),
+                "bytes": geometry.bytes_report(len(arm_model.memories())),
+            }
     write_json_atomic(os.path.join(args.out, "run-meta.json"), meta)
 
     log = open(log_path, "a", encoding="utf-8")
@@ -315,6 +439,10 @@ def main(argv: list[str]) -> int:
             count = flat_logits.shape[0]
             values, target_ids, lse = targets.read(offset, count, device)
             loss = distillation_loss(flat_logits, values, target_ids, lse)
+            if args.load_balance and args.arm != "H*":
+                auxiliary = load_balance_loss(arm_model)
+                if auxiliary is not None:
+                    loss = loss + auxiliary
             (loss / args.accum).backward()
             step_loss += float(loss.detach()) / args.accum
             del logits, flat_logits, loss
@@ -367,6 +495,13 @@ def main(argv: list[str]) -> int:
                 sidecar = os.path.join(args.out, stale + ".sha256")
                 if os.path.exists(sidecar):
                     os.unlink(sidecar)
+        if (not router_phase["done"] and (step + 1) >= args.warmup_steps
+                and start_step < args.warmup_steps):
+            router_phase["done"] = True
+            report = run_router_phase(arm_model, targets, stream, device, args,
+                                      os.path.join(args.out, "router-phase.json"))
+            router_phase["report"] = report
+            arm_model.model.train()
     log.close()
     total = time.time() - started
     summary = {
@@ -385,6 +520,12 @@ def main(argv: list[str]) -> int:
         "finished_utc": utc_now(),
         "log": log_path,
     }
+    if args.profile == "t2":
+        summary["profile"] = args.profile
+        summary["warmup_steps"] = args.warmup_steps
+        summary["router_phase"] = router_phase["report"]
+        summary["total_accessible"] = int(config["total_accessible"])
+        summary["extra_ledger"] = arm_model.extra_ledger()
     write_json_atomic(os.path.join(args.out, "summary.json"), summary)
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
