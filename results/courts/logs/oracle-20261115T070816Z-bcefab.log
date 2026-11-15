@@ -1,0 +1,39 @@
+smoke: arm C2 training 20 steps
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/20 loss=1.4752 tok/s=7327 vram=8.49GiB
+train: step 10/20 loss=1.3840 tok/s=7596 vram=11.02GiB
+train: step 20/20 loss=1.3885 tok/s=7538 vram=11.02GiB
+{
+  "admitted_active_unique": 992411648,
+  "arm": "C2",
+  "finished_utc": "2026-11-15T07:12:59Z",
+  "log": "results/artifacts/train/smoke/C2/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 7518.626567978799,
+  "train_seconds": 174.32971143722534,
+  "trainable_elements": 396361728,
+  "vram_peak_gib": 11.01589584350586,
+  "wall_seconds": 247.8217589855194
+}
+train: step 1/10 loss=1.4752 tok/s=7387 vram=11.02GiB
+train: step 10/10 loss=1.3839 tok/s=7473 vram=11.02GiB
+{
+  "admitted_active_unique": 992411648,
+  "arm": "C2",
+  "finished_utc": "2026-11-15T07:15:59Z",
+  "log": "results/artifacts/train/smoke/C2-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 10,
+  "tokens": 655360,
+  "tokens_per_second": 7439.6113529128015,
+  "train_seconds": 88.09062314033508,
+  "trainable_elements": 396361728,
+  "vram_peak_gib": 11.01687240600586,
+  "wall_seconds": 133.87987852096558
+}
+train: resumed from results/artifacts/train/smoke/C2-resume/step-000010.pt at step 10
+train: step 20/20 loss=1.3883 tok/s=7569 vram=12.50GiB

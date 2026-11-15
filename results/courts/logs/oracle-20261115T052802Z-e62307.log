@@ -1,0 +1,69 @@
+smoke: arm A training 20 steps
+train: zero-point max|delta|=3.052e-04 ok=True kind=routed_group_reconstruction
+train: step 1/20 loss=11.2157 tok/s=6189 vram=11.29GiB
+train: step 10/20 loss=11.1857 tok/s=6286 vram=11.39GiB
+train: step 20/20 loss=10.5084 tok/s=6274 vram=11.39GiB
+{
+  "admitted_active_unique": 998269952,
+  "arm": "A",
+  "finished_utc": "2026-11-15T05:31:40Z",
+  "log": "results/artifacts/train/smoke/A/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 6261.109645154433,
+  "train_seconds": 209.3430836200714,
+  "trainable_elements": 11927552,
+  "vram_peak_gib": 11.38558292388916,
+  "wall_seconds": 209.6254177093506
+}
+train: step 1/10 loss=11.2479 tok/s=6256 vram=11.39GiB
+train: step 10/10 loss=11.3094 tok/s=6202 vram=11.39GiB
+{
+  "admitted_active_unique": 998269952,
+  "arm": "A",
+  "finished_utc": "2026-11-15T05:33:25Z",
+  "log": "results/artifacts/train/smoke/A-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 10,
+  "tokens": 655360,
+  "tokens_per_second": 6250.462016395754,
+  "train_seconds": 104.84984922409058,
+  "trainable_elements": 11927552,
+  "vram_peak_gib": 11.391692161560059,
+  "wall_seconds": 105.0228157043457
+}
+train: resumed from results/artifacts/train/smoke/A-resume/step-000010.pt at step 10
+train: step 20/20 loss=10.6997 tok/s=6212 vram=11.39GiB
+{
+  "admitted_active_unique": 998269952,
+  "arm": "A",
+  "finished_utc": "2026-11-15T05:35:11Z",
+  "log": "results/artifacts/train/smoke/A-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 6243.577135027821,
+  "train_seconds": 104.96546864509583,
+  "trainable_elements": 11927552,
+  "vram_peak_gib": 11.391692161560059,
+  "wall_seconds": 105.12402009963989
+}
+eval: generated 5/5
+Traceback (most recent call last):
+  File "/work/oracle/train/smoke.py", line 215, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/smoke.py", line 179, in main
+    eval_result = evaluate_checkpoint(arm, config, admission, final,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/smoke.py", line 104, in evaluate_checkpoint
+    result = harness.smoke(arm_model.model, teacher, tokenizer,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/harness.py", line 313, in smoke
+    "gsm8k": tasks.gsm8k_prompt(items["gsm8k"][0]),
+                                ~~~~~^^^^^^^^^
+KeyError: 'gsm8k'

@@ -1,0 +1,22 @@
+B specialists (1024 tok): median 237.2 ms min 232.1 ms vram 9.11 GiB
+USDT:2026-11-15 05:17:52 7:7 SyncActivityProfilerHandler.cpp:39] profiler_start
+USDT:2026-11-15 05:17:53 7:7 SyncActivityProfilerHandler.cpp:46] profiler_stop
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us      42.935ms        10.00%      42.935ms      23.385us          1836  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us      37.450ms         8.73%      37.450ms      25.236us          1484  
+                                        Memset (Device)         0.00%       0.000us         0.00%       0.000us       0.000us      28.964ms         6.75%      28.964ms       8.484us          3414  
+void at::native::(anonymous namespace)::multi_tensor...         0.00%       0.000us         0.00%       0.000us       0.000us      19.198ms         4.47%      19.198ms       1.600ms            12  
+void at::native::(anonymous namespace)::multi_tensor...         0.00%       0.000us         0.00%       0.000us       0.000us      17.474ms         4.07%      17.474ms       2.912ms             6  
+ampere_bf16_s1688gemm_bf16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us      17.105ms         3.99%      17.105ms      45.371us           377  
+ampere_bf16_s1688gemm_bf16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us      15.494ms         3.61%      15.494ms      31.112us           498  
+void at::native::(anonymous namespace)::multi_tensor...         0.00%       0.000us         0.00%       0.000us       0.000us      14.102ms         3.29%      14.102ms       2.350ms             6  
+void at::native::(anonymous namespace)::multi_tensor...         0.00%       0.000us         0.00%       0.000us       0.000us      13.936ms         3.25%      13.936ms       2.323ms             6  
+ampere_bf16_s16816gemm_bf16_128x128_ldg8_f2f_stages_...         0.00%       0.000us         0.00%       0.000us       0.000us      13.889ms         3.24%      13.889ms     126.266us           110  
+ampere_bf16_s16816gemm_bf16_128x64_ldg8_f2f_stages_6...         0.00%       0.000us         0.00%       0.000us       0.000us      12.004ms         2.80%      12.004ms      10.286us          1167  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us      11.340ms         2.64%      11.340ms       5.888us          1926  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 284.187ms
+Self CUDA time total: 429.143ms
+

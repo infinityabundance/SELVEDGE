@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/oracle/train/arms.py", line 372, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/arms.py", line 362, in main
+    return emit(args.out, names)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/arms.py", line 296, in emit
+    config = build_config(ARMS[name])
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/arms.py", line 158, in build_config
+    attention_core = next(item["attention_core"] for item in per_token["attention_core"]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration

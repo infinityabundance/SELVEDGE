@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/oracle/train/corpus.py", line 624, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/corpus.py", line 617, in main
+    return build(args.spec, args.lock, args.cache_root, args.dataset_root, args.hf_root,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/corpus.py", line 430, in build
+    other = eval_shingles[kind][index][1]
+            ~~~~~~~~~~~~~~~~~~~^^^^^^^
+IndexError: list index out of range

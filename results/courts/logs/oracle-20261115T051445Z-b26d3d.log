@@ -1,0 +1,33 @@
+logits torch.Size([1, 1024, 151936]) torch.bfloat16 34.75 -23.625
+values torch.Size([1024, 16]) torch.float32 47.75 11.3125
+tids torch.Size([1024, 16]) 1 132822
+lse torch.Size([1024]) 47.7500114440918 17.18876838684082
+teacher lse0 17.1344051361084 cached 17.18876838684082
+teacher top1 [25, 74592, 18348] cached ids [25, 74592, 18348]
+teacher topvals [15.125, 13.375, 12.4375] cached vals [15.125, 13.5, 12.5625]
+Traceback (most recent call last):
+  File "/work/results/artifacts/train/dbg.py", line 33, in <module>
+    loss = loop.distillation_loss(logits.reshape(-1, logits.shape[-1]).detach(), values.detach(), tids.detach(), lse.detach())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/loop.py", line 125, in distillation_loss
+    student_lse = chunked_logsumexp(logits)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/loop.py", line 112, in chunked_logsumexp
+    parts.append(torch.utils.checkpoint.checkpoint(_lse_f32, part,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/_compile.py", line 54, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1552, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/checkpoint.py", line 606, in checkpoint
+    return _checkpoint_impl(
+           ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/checkpoint.py", line 676, in _checkpoint_impl
+    next(gen)
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/checkpoint.py", line 2041, in _checkpoint_without_reentrant_generator_impl
+    new_frame.save_inputs(*args)
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/checkpoint.py", line 1003, in save_inputs
+    _make_saved_tensor(arg, is_output=False)
+RuntimeError: Inference tensors cannot be saved for backward. Please do not use Tensors created in inference mode in computation tracked by autograd. To work around this, you can make a clone to get a normal tensor and use it in autograd, or use `torch.no_grad()` instead of `torch.inference_mode()`.

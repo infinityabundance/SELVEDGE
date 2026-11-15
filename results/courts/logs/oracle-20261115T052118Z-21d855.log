@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/results/artifacts/train/layer_dbg.py", line 32, in <module>
+k=16 delta max 0.5 mean 0.016357421875 ref abs mean 3.4375
+dropped 0
+k=5 delta max 61.25 mean 2.828125
+    o_buf = w._group_ffn(buf)[0]
+            ^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 139, in _group_ffn
+    gate = torch.bmm(buffer, self.gate_groups.transpose(1, 2))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/_native/registry.py", line 1145, in eager_router
+    return _fallback.call_boxed(keyset, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Expected size for first two dimensions of batch2 tensor to be: [1, 2048] but got: [16, 2048].

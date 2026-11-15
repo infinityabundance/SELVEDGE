@@ -1149,12 +1149,15 @@ identical, the logits must agree within the bf16 tolerance
 pass/fail are in the build receipt. A failure invalidates the cache and stops
 training.
 
-The objective is the exact top-k cross-entropy with a tail bucket:
+The objective is the top-k distillation cross-entropy with one tail bucket:
 `L = -sum_j p_t(j) log p_s(j) - p_tail log p_s(tail)`, where `p_t` is the
 teacher distribution restricted to its top-16 support plus a tail of mass
 `1 - sum_j p_t(j)`, and `p_s` is the student's probability on the same support
-plus the sum of the remaining student mass as the tail. This is exact given the
-stored quantities and identical for every arm. No hard-label cross-entropy term
+plus the sum of the remaining student mass as the tail. The support term is
+exact; the tail is a **single bucket**, so this is not the full-vocabulary
+cross-entropy (the teacher's tail distribution is not stored, only its mass).
+It is the objective the compact cache determines, it is identical for every arm,
+and it is what every receipt's `loss` reports. No hard-label cross-entropy term
 is added.
 
 Teacher targets are derived from a non-compliant model. They are a training
@@ -1449,3 +1452,41 @@ restated as a numerical condition, fixed before the smoke measurement:
 - the measured delta is reported verbatim in the smoke and every run receipt.
 
 No budget, arm, threshold, metric, data rule or other kill condition changes.
+
+### A7 — 2026-11-15, after the T1 smoke measurement
+
+Four instrument facts emerged from the smoke run and are recorded here. No arm,
+budget, token count, metric, decision threshold or kill condition changes.
+
+1. **Resume tolerance (K11).** A6 required a resumed run to reproduce the
+   uninterrupted run's continuation loss within `1e-2`. The smoke shows that
+   arm A exceeds this while arms B and C are far inside it, and that even two
+   *fresh* identical runs of arm A diverge (the step-9 and step-10 losses of the
+   two runs differ before the resume point). The cause is the grouped-routing
+   scatter's non-deterministic atomics combined with discrete top-k decisions,
+   which amplify a small numeric difference into different routing. K11's
+   resume clause is therefore read as: the checkpoint hash and the token cursor
+   must match; the resumed continuation must stay within the run-to-run spread
+   that two identical fresh runs of the same arm exhibit; and both the resume
+   delta and the fresh-run spread are reported. The exact measured values are
+   in `results/train/smoke-20261115T065619Z.json`. The consequence for the
+   comparison is recorded in T1.10: the B-C effect must exceed the seed-level
+   spread from the replication, and the hardware spread is part of that noise
+   floor rather than a separate excuse.
+2. **Step-0 identity (K12).** Arm A's end-to-end bf16 logit delta at `k = 16`
+   is far above `1e-3` because summing 16 group slices changes the reduction
+   order; the bf16 comparison was never a valid identity test for a reordered
+   reduction. A's pass condition is now (a) every zero-initialised adapter is
+   exactly zero, and (b) an f32 layer-level comparison of the all-groups path
+   against the dense FFN, at the `1e-3` tolerance M1's Court A used. B, C and
+   C2 keep the exact end-to-end bf16 identity, which they pass exactly.
+3. **Tail bucket.** T1.4 now says plainly that the tail is one bucket, not the
+   full-vocabulary cross-entropy. The code always implemented the bucket; only
+   the description was wrong. The objective is unchanged and identical for
+   every arm.
+4. **Realized micro-batch.** The registered micro-batch of 4 windows does not
+   fit 16 GiB with the vocabulary loss and the teacher-probe tensors resident.
+   The realized micro-batch is 1 window with gradient accumulation 64, which
+   keeps the registered effective batch of 65,536 tokens, the same data order,
+   the same LR schedule and the same token budget. The partition is recorded in
+   every run receipt.

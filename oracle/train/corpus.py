@@ -283,15 +283,15 @@ def iter_documents(source: dict, cache_root: str):
 
 
 def document_text(source: dict, row: dict) -> str | None:
-    template = source.get("text_template")
     try:
-        if template:
-            return template.format(**{key: row[key] for key in source["text_fields"]})
         parts = [row[key] for key in source["text_fields"]]
     except (KeyError, TypeError):
         return None
     if any(part is None for part in parts):
         return None
+    template = source.get("text_template")
+    if template:
+        return template.format(**dict(zip(source["text_fields"], parts)))
     return "\n".join(str(part) for part in parts)
 
 

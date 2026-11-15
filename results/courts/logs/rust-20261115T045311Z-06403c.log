@@ -1,0 +1,22 @@
+   Compiling selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+error[E0382]: borrow of moved value: `path`
+   --> crates/selvedge-cli/src/admit_cmd.rs:193:26
+    |
+117 |     let path = SelectionPath::new(
+    |         ---- move occurs because `path` has type `SelectionPath`, which does not implement the `Copy` trait
+...
+159 |     match ledger.admit_selection_path(path) {
+    |                                       ---- value moved here
+...
+193 |             let active = path.active_unique_params().ok();
+    |                          ^^^^ value borrowed here after move
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+159 |     match ledger.admit_selection_path(path.clone()) {
+    |                                           ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `selvedge-cli` (bin "selvedge") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-cli` (bin "selvedge" test) due to 1 previous error

@@ -1,0 +1,94 @@
+...............................F....FF.....FF...                         [100%]
+=================================== FAILURES ===================================
+__________ test_python_mirror_unions_overlapping_and_adjacent_ranges ___________
+
+    def test_python_mirror_unions_overlapping_and_adjacent_ranges():
+        config = {
+            "selector_uses": [
+                {"identity": {"tensor": "router", "elements": {"start": 0, "end": 100}}},
+            ],
+            "execution_uses": [
+                {"identity": {"tensor": "ffn", "elements": {"start": 0, "end": 100}}},
+                {"identity": {"tensor": "ffn", "elements": {"start": 100, "end": 200}}},
+                {"identity": {"tensor": "ffn", "elements": {"start": 50, "end": 150}}},
+                {"identity": {"tensor": "norm", "elements": {"start": 0, "end": 10}}},
+            ],
+        }
+        mirror = arms.python_mirror(config)
+        assert mirror["active_unique_params"] == 310
+        assert mirror["selector_elements"] == 100
+>       assert mirror["execution_elements"] == 460
+E       assert 310 == 460
+
+oracle/tests/test_t1_infrastructure.py:52: AssertionError
+_________________________ test_document_text_template __________________________
+
+    def test_document_text_template():
+        source = {"text_fields": ["problem", "solution"],
+                  "text_template": "Problem: {problem}\nSolution: {solution}"}
+        assert corpus.document_text(source, {"problem": "1+1", "solution": "2"}) == (
+            "Problem: 1+1\nSolution: 2")
+>       assert corpus.document_text(source, {"problem": None, "solution": "2"}) is None
+E       AssertionError: assert 'Problem: None\nSolution: 2' is None
+E        +  where 'Problem: None\nSolution: 2' = <function document_text at 0x7fdf6015ec00>({'text_fields': ['problem', 'solution'], 'text_template': 'Problem: {problem}\nSolution: {solution}'}, {'problem': None, 'solution': '2'})
+E        +    where <function document_text at 0x7fdf6015ec00> = corpus.document_text
+
+oracle/tests/test_t1_infrastructure.py:98: AssertionError
+_____________________ test_pack_unpack_round_trip_is_exact _____________________
+
+    def test_pack_unpack_round_trip_is_exact():
+        generator = np.random.default_rng(7)
+        values = generator.integers(0, 65535, size=(4, 3, 16), dtype=np.uint16)
+        indices = generator.integers(0, 151936, size=(4, 3, 16), dtype=np.int32)
+        logsumexp = generator.normal(size=(4, 3)).astype(np.float32)
+        packed = teacher_cache.pack(values, indices, logsumexp)
+        got_values, got_indices, got_lse = teacher_cache.unpack(np.frombuffer(packed,
+                                                                            dtype=np.uint8))
+        assert np.array_equal(got_indices, indices.reshape(-1, 16))
+        assert np.array_equal(got_lse, logsumexp.reshape(-1))
+        expected = teacher_cache.bf16_to_float32(values.reshape(-1, 16))
+>       assert np.array_equal(got_values, expected)
+E       assert False
+E        +  where False = <function array_equal at 0x7fe03c379ef0>(array([[ 4.52198400e+06, -2.25800263e+30,  2.10000000e+01,\n        -1.12655382e-19,  8.94605107e+25, -1.50066626e-10,\n...,  7.59325953e-25,\n        -9.26911564e-29,  2.91015625e-01,  4.67514282e+23,\n        -1.30000271e-32]], dtype=float32), array([[ 4.52198400e+06, -2.25800263e+30,  2.10000000e+01,\n        -1.12655382e-19,  8.94605107e+25, -1.50066626e-10,\n...,  7.59325953e-25,\n        -9.26911564e-29,  2.91015625e-01,  4.67514282e+23,\n        -1.30000271e-32]], dtype=float32))
+E        +    where <function array_equal at 0x7fe03c379ef0> = np.array_equal
+
+oracle/tests/test_t1_infrastructure.py:116: AssertionError
+______________________ test_adapter_zero_report_is_strict ______________________
+
+    def test_adapter_zero_report_is_strict():
+        model = torch.nn.Sequential(modeling.DenseAdapter(8, 4))
+        fake = modeling.ArmModel(model=model, arm="C2", kind="dense_adapter",
+                                 router_modules=[], extra_modules=[],
+                                 admission={}, config={})
+        report = modeling.adapter_zero_report(fake)
+        assert report["ok"] and report["max_abs"] == 0.0
+>       model[0].down.normal_()
+E       RuntimeError: a leaf Variable that requires grad is being used in an in-place operation.
+
+oracle/tests/test_t1_infrastructure.py:192: RuntimeError
+__________________ test_distillation_loss_matches_bruteforce ___________________
+
+    def test_distillation_loss_matches_bruteforce():
+        torch.manual_seed(5)
+        vocab, top_k, positions = 32, 16, 4
+        logits = torch.randn(positions, vocab)
+        teacher = torch.randn(positions, vocab)
+        values, ids = torch.topk(teacher, top_k, dim=-1)
+        lse = torch.logsumexp(teacher, dim=-1)
+        student_logp = F.log_softmax(logits, dim=-1)
+        teacher_p = teacher.softmax(dim=-1)
+        expected = -(teacher_p * student_logp).sum(dim=-1).mean()
+        got = loop.distillation_loss(logits, values, ids, lse)
+>       assert torch.allclose(got, expected, atol=1e-5)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7fdfc0d572e0>(tensor(3.4980), tensor(4.0765), atol=1e-05)
+E        +    where <built-in method allclose of type object at 0x7fdfc0d572e0> = torch.allclose
+
+oracle/tests/test_t1_infrastructure.py:211: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t1_infrastructure.py::test_python_mirror_unions_overlapping_and_adjacent_ranges
+FAILED oracle/tests/test_t1_infrastructure.py::test_document_text_template - ...
+FAILED oracle/tests/test_t1_infrastructure.py::test_pack_unpack_round_trip_is_exact
+FAILED oracle/tests/test_t1_infrastructure.py::test_adapter_zero_report_is_strict
+FAILED oracle/tests/test_t1_infrastructure.py::test_distillation_loss_matches_bruteforce
+5 failed, 43 passed in 4.45s

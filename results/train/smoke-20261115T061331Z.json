@@ -1,0 +1,926 @@
+{
+  "arms": {
+    "A": {
+      "eval": {
+        "checkpoint_step": 20,
+        "determinism": {
+          "identical": false,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 7.08909273147583,
+                  "ppl": 1425.93115234375,
+                  "top1": 0.07692307978868484,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 11.371929168701172,
+                  "ppl": 510095.375,
+                  "top1": 0.0,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 11.371929168701172,
+                "ci_low": 7.08909273147583,
+                "mean": 9.230510950088501,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 255760.65307617188,
+              "top1": 0.03846153989434242,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 9.73233938217163,
+                  "ppl": 199560.80859375,
+                  "top1": 0.007827788591384888,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 9.73233938217163,
+                "ci_low": 9.73233938217163,
+                "mean": 9.73233938217163,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 199560.80859375,
+              "top1": 0.007827788591384888,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 10.182893753051758,
+                  "ppl": 219551.515625,
+                  "top1": 0.0,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 9.781926155090332,
+                  "ppl": 31200.171875,
+                  "top1": 0.0,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 10.182893753051758,
+                "ci_low": 9.781926155090332,
+                "mean": 9.982409954071045,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 125375.84375,
+              "top1": 0.0,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 10.429054101308187,
+              "ci_low": 8.867786089579264,
+              "mean": 9.648420095443726,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.028250289460023247,
+              "ci_low": 0.0026092628637949624,
+              "mean": 0.015429776161909103,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 7.08909273147583,
+                "nll": 7.262580394744873,
+                "positions": 117,
+                "ppl": 1425.93115234375,
+                "top1": 0.07692307978868484,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 11.371929168701172,
+                "nll": 13.142353057861328,
+                "positions": 108,
+                "ppl": 510095.375,
+                "top1": 0.0,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 9.390360832214355,
+                "nll": 11.506948471069336,
+                "positions": 511,
+                "ppl": 99404.0859375,
+                "top1": 0.013698630034923553,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 10.074317932128906,
+                "nll": 12.610595703125,
+                "positions": 511,
+                "ppl": 299717.53125,
+                "top1": 0.001956947147846222,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 10.182893753051758,
+                "nll": 12.299342155456543,
+                "positions": 48,
+                "ppl": 219551.515625,
+                "top1": 0.0,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 9.781926155090332,
+                "nll": 10.34817886352539,
+                "positions": 49,
+                "ppl": 31200.171875,
+                "top1": 0.0,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": " -..  ...........................................................................................................................................................................................................................................................",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "  File \"/tmp/selvedge-he-zhec8m46/candidate.py\", line 12\n    -..  ...........................................................................................................................................................................................................................................................\n                                                                                                                                                                                                                                                                    ^\nIndentationError: unindent does not match any outer indentation level\n",
+              "timeout": false
+            },
+            {
+              "completion": "? the ( ( ( ( ( ( ())) ()) ( ())))) , , ( ( ( ( ( () ( ( ( ( ( () ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (, ( ( ( ( ( ( ( ( ( ( (. (. ( ( ( (,, ( (, (? (? ( (., (,,,,,,,,,,, (,, (,,,,,,,,, (,,,,,,,,,,,,,,,? ( (,,,,,,,, (,.,, (,. ( (..,,.,,,,,,,,,,,,,,, (,,,,,,,, ( (.,,,,,,,,,,,,,,,,, the,,,, the,,, the,,, the,,., this,,,. the., the the, the the the, and the, and,,,,,, (..,,,., this,, and.,,.",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "  File \"/tmp/selvedge-he-azrwei28/candidate.py\", line 12\n    ? the ( ( ( ( ( ( ())) ()) ( ())))) , , ( ( ( ( ( () ( ( ( ( ( () ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (, ( ( ( ( ( ( ( ( ( ( (. (. ( ( ( (,, ( (, (? (? ( (., (,,,,,,,,,,, (,, (,,,,,,,,, (,,,,,,,,,,,,,,,? ( (,,,,,,,, (,.,, (,. ( (..,,.,,,,,,,,,,,,,,, (,,,,,,,, ( (.,,,,,,,,,,,,,,,,, the,,,, the,,, the,,, the,,., this,,,. the., the the, the the the, and the, and,,,,,, (..,,,., this,, and.,,.\n    ^\nSyntaxError: invalid syntax\n",
+              "timeout": false
+            },
+            {
+              "completion": " &\u2010 & &\ufffd &\ufffd\u2010\u2010\u2010\ufffd &\u2010\ufffd\ufffd\u2010\u0e07ponpon\u0e07 &\u0e07\ufffdpon\ufffd &\ufffd &\u0e07\u0e07\ufffd\u0e07\u2010\ufffd &\u0e07\u2010 &ponpon\u0e07\ufffd\u0e07\u2010\u0e07pon &\u0e07pon &pon\u0e07ponponpon\u0e07 & &ponpon & &ponpon\u0e07pon\u0e07\u0e07\u0e07\u0e07\u2010\u2010\u0e07\u0e07\u0e07\u0e07\u2010\u2010\u2010\u2010\u0e07\u0e07pon\u0e07ponpon\u0e07pon\u0e07\u0e07pon\u0e07\u0e07pon\u0e07\u0e07pon & &\u0e07 & &pon\u0e07\u0e07ponpon\u0e07\u0e07pon & &\u0e07 &pon\u0e07 &\u0e07\u0e07\u0e07 &\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u2010\u2010\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u2010\u0e07\u2010\u0e07 &\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07pon\u0e07\u2010\u0e07\u0e07\u0e07\u0e07\u0e07\u2010\u0e07\u0e07\u0e07ponpon\u0e07\u0e07\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07\u0e07 &\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07 unic\u0e07pon\u0e07pon\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07 corporate",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "&\u2010\ufffd\ufffd\u2010\u0e07ponpon\u0e07 &\u0e07\ufffdpon\ufffd &\ufffd &\u0e07\u0e07\ufffd\u0e07\u2010\ufffd &\u0e07\u2010 &ponpon\u0e07\ufffd\u0e07\u2010\u0e07pon &\u0e07pon &pon\u0e07ponponpon\u0e07 & &ponpon & &ponpon\u0e07pon\u0e07\u0e07\u0e07\u0e07\u2010\u2010\u0e07\u0e07\u0e07\u0e07\u2010\u2010\u2010\u2010\u0e07\u0e07pon\u0e07ponpon\u0e07pon\u0e07\u0e07pon\u0e07\u0e07pon\u0e07\u0e07pon & &\u0e07 & &pon\u0e07\u0e07ponpon\u0e07\u0e07pon & &\u0e07 &pon\u0e07 &\u0e07\u0e07\u0e07 &\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u2010\u2010\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u2010\u0e07\u2010\u0e07 &\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07pon\u0e07\u2010\u0e07\u0e07\u0e07\u0e07\u0e07\u2010\u0e07\u0e07\u0e07ponpon\u0e07\u0e07\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07\u0e07 &\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07 unic\u0e07pon\u0e07pon\u0e07\u0e07\u0e07pon\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07\u0e07 corporate\n                                                                                                                                                                                                                                                                                                                                                                                     ^\nIndentationError: unindent does not match any outer indentation level\n",
+              "timeout": false
+            },
+            {
+              "completion": ",,,,,,,,,,,,,,,,,,,,,,,,,,,\u00a0\u00a0\u00a0\u00a0,\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "  File \"/tmp/selvedge-he-ck3lp1o7/candidate.py\", line 16\n    ,,,,,,,,,,,,,,,,,,,,,,,,,,,\u00a0\u00a0\u00a0\u00a0,\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\n                               ^\nSyntaxError: invalid non-printable character U+00A0\n",
+              "timeout": false
+            },
+            {
+              "completion": " {!!gne {!! {!! {!! {!! {!!\u6709\u8272 {!!\u91d1\u5c71 {!! {!!\u4e00\u8d77 {!! {!! {!! {!!.MSG {!! {!! {!!.TXT.TXT {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!! {!!.MSG {!! {!! {!! {!! {!! {!! {!! {!! {!!\u62a5\u4e1a\u62a5\u4e1a {!! {!! {!!\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a {!!\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a {!!\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u6211\u73b0\u5728\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1agne\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a.MSG\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a.MSG\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u95ea\u7535\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a.MSG\u62a5\u4e1a.MSG\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a.MSG\u62a5\u4e1a.MSG\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1agne\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a.MSG\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a.MSG\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\u4e1a\u62a5\ufffd\n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ^\nIndentationError: unindent does not match any outer indentation level\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 0
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 8.61470651626587
+      },
+      "resume": {
+        "full_losses": {
+          "11": 11.14991208910942,
+          "12": 10.991340309381485,
+          "13": 10.924071982502937,
+          "14": 10.83877843618393,
+          "15": 10.560926146805286,
+          "16": 10.59901001304388,
+          "17": 10.247636154294014,
+          "18": 10.210748702287674,
+          "19": 10.141358509659767,
+          "20": 10.10658473521471
+        },
+        "max_abs_loss_delta": 0.2654702812433243,
+        "mean_abs_loss_delta": 0.17087989822030067,
+        "note": "GPU atomics in grouped routing are not bitwise reproducible; the delta is the measured continuation difference",
+        "resumed_losses": {
+          "11": 10.994819566607475,
+          "12": 10.72587002813816,
+          "13": 10.665470138192177,
+          "14": 10.702696844935417,
+          "15": 10.420474149286747,
+          "16": 10.38772538304329,
+          "17": 10.124051123857498,
+          "18": 10.054776579141617,
+          "19": 9.937245234847069,
+          "20": 10.164730422198772
+        },
+        "steps_compared": 10
+      },
+      "train": {
+        "admitted_active_unique": 998269952,
+        "arm": "A",
+        "finished_utc": "2026-11-15T05:55:50Z",
+        "log": "results/artifacts/train/smoke/A/train.jsonl",
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 20,
+        "tokens": 1310720,
+        "tokens_per_second": 6289.173796961358,
+        "train_seconds": 208.40893292427063,
+        "trainable_elements": 11927552,
+        "vram_peak_gib": 7.386878967285156,
+        "wall_seconds": 208.82202196121216
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 28,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "A",
+        "end_to_end_bf16_note": "not used as a pass condition for A: the grouped reduction moves bf16 logits beyond 1e-3 by construction",
+        "kind": "routed_group_reconstruction",
+        "max_abs_reconstruction_delta": 0.00030517578125,
+        "ok": true,
+        "reconstructions": [
+          {
+            "groups": 16,
+            "kind": "group_reconstruction_f32",
+            "max_abs_delta": 4.57763671875e-05,
+            "mean_abs_delta": 4.3892623580177315e-06,
+            "note": "f32 widened weights; the bf16 routed sum changes the reduction order and is not bitwise equal by construction",
+            "ok": true,
+            "tokens": 64,
+            "tolerance": 0.001
+          },
+          {
+            "groups": 16,
+            "kind": "group_reconstruction_f32",
+            "max_abs_delta": 4.9591064453125e-05,
+            "mean_abs_delta": 4.797605470230337e-06,
+            "note": "f32 widened weights; the bf16 routed sum changes the reduction order and is not bitwise equal by construction",
+            "ok": true,
+            "tokens": 64,
+            "tolerance": 0.001
+          },
+          {
+            "groups": 16,
+            "kind": "group_reconstruction_f32",
+            "max_abs_delta": 0.00030517578125,
+            "mean_abs_delta": 4.834595074498793e-06,
+            "note": "f32 widened weights; the bf16 routed sum changes the reduction order and is not bitwise equal by construction",
+            "ok": true,
+            "tokens": 64,
+            "tolerance": 0.001
+          }
+        ],
+        "tolerance": 0.001
+      }
+    },
+    "B": {
+      "eval": {
+        "checkpoint_step": 20,
+        "determinism": {
+          "identical": false,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 0.3280075192451477,
+                  "ppl": 3.378323793411255,
+                  "top1": 0.7264957427978516,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 0.4910871088504791,
+                  "ppl": 9.841737747192383,
+                  "top1": 0.49074074625968933,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.4910871088504791,
+                "ci_low": 0.3280075192451477,
+                "mean": 0.4095473140478134,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 6.610030770301819,
+              "top1": 0.6086182445287704,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 0.6255377531051636,
+                  "ppl": 24.275490760803223,
+                  "top1": 0.43346379697322845,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6255377531051636,
+                "ci_low": 0.6255377531051636,
+                "mean": 0.6255377531051636,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 24.275490760803223,
+              "top1": 0.43346379697322845,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 0.5190824270248413,
+                  "ppl": 10.891585350036621,
+                  "top1": 0.3958333432674408,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 0.5464498996734619,
+                  "ppl": 12.419313430786133,
+                  "top1": 0.5306122303009033,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5464498996734619,
+                "ci_low": 0.5190824270248413,
+                "mean": 0.5327661633491516,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 11.655449390411377,
+              "top1": 0.46322278678417206,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 0.5543582538763682,
+              "ci_low": 0.49087589979171753,
+              "mean": 0.5226170768340429,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.5635239233573277,
+              "ci_low": 0.4400126288334528,
+              "mean": 0.5017682760953903,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 0.3280075192451477,
+                "nll": 1.2173796892166138,
+                "positions": 117,
+                "ppl": 3.378323793411255,
+                "top1": 0.7264957427978516,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 0.4910871088504791,
+                "nll": 2.2866322994232178,
+                "positions": 108,
+                "ppl": 9.841737747192383,
+                "top1": 0.49074074625968933,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.596259593963623,
+                "nll": 2.9861836433410645,
+                "positions": 511,
+                "ppl": 19.8099365234375,
+                "top1": 0.4540117383003235,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6548159122467041,
+                "nll": 3.3583261966705322,
+                "positions": 511,
+                "ppl": 28.741044998168945,
+                "top1": 0.4129158556461334,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 0.5190824270248413,
+                "nll": 2.3879904747009277,
+                "positions": 48,
+                "ppl": 10.891585350036621,
+                "top1": 0.3958333432674408,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 0.5464498996734619,
+                "nll": 2.5192527770996094,
+                "positions": 49,
+                "ppl": 12.419313430786133,
+                "top1": 0.5306122303009033,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": "    # Check if all elements are the same\n    if len(numbers) < 2:\n        return False\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2] and numbers[2] == numbers[3]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2] and numbers[2] == numbers[3] and numbers[3] == numbers[4]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2] and numbers[2] == numbers[3] and numbers[3] == numbers[4] and numbers[4] == numbers[5]:\n        return",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-grr1ck90/candidate.py\", line 48, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-grr1ck90/candidate.py\", line 39, in check\n    assert candidate([1.0, 2.0, 3.9, 4.0, 5.0, 2.2], 0.3) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    result = []\n    stack = []\n    i = 0\n    while i < len(paren_string):\n        if paren_string[i] == '(':\n            stack.append(i)\n            i += 1\n        elif paren_string[i] == ')':\n            if stack:\n                stack.pop()\n                i += 1\n            else:\n                i += 1\n        else:\n            i += 1\n    # Now, the stack is empty, and the remaining characters are the groups\n    # We need to collect the groups that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in the stack\n    # So, the groups are the ones that are not in",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-uk5vpzyy/candidate.py\", line 58, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-uk5vpzyy/candidate.py\", line 47, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # Find the longest prefix of the string that is a palindrome\n    # and is a prefix of the string\n    # Then, the rest of the string is the suffix\n    # So, the palindrome is the prefix + suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of the suffix\n    # So, the palindrome is the prefix + reverse of",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-zx0mkz7e/candidate.py\", line 53, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-zx0mkz7e/candidate.py\", line 47, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    stones = []\n    for i in range(n):\n        if i % 2 == 0:\n            stones.append(i + 1)\n        else:\n            stones.append(i + 2)\n    return stones\n",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-r9g5djhj/candidate.py\", line 37, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-r9g5djhj/candidate.py\", line 27, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+              "timeout": false
+            },
+            {
+              "completion": "    words = s.split()\n    return words\n",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-1l0wvvvq/candidate.py\", line 29, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-1l0wvvvq/candidate.py\", line 18, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 0
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 12.067991733551025
+      },
+      "resume": {
+        "full_losses": {
+          "11": 1.3688600193709135,
+          "12": 1.3582230126485229,
+          "13": 1.3815281111747026,
+          "14": 1.3691732930019498,
+          "15": 1.3777811620384455,
+          "16": 1.3786573484539986,
+          "17": 1.4114755848422647,
+          "18": 1.362054857891053,
+          "19": 1.3746279804036021,
+          "20": 1.3839514213614166
+        },
+        "max_abs_loss_delta": 0.0002699242904782295,
+        "mean_abs_loss_delta": 9.615817107260227e-05,
+        "note": "GPU atomics in grouped routing are not bitwise reproducible; the delta is the measured continuation difference",
+        "resumed_losses": {
+          "11": 1.3689551996067166,
+          "12": 1.3581771664321423,
+          "13": 1.3815789422951639,
+          "14": 1.369198800995946,
+          "15": 1.377835941966623,
+          "16": 1.3785983328707516,
+          "17": 1.4115116093307734,
+          "18": 1.3617849336005747,
+          "19": 1.3744891667738557,
+          "20": 1.3837657631374896
+        },
+        "steps_compared": 10
+      },
+      "train": {
+        "admitted_active_unique": 772440064,
+        "arm": "B",
+        "finished_utc": "2026-11-15T06:03:38Z",
+        "log": "results/artifacts/train/smoke/B/train.jsonl",
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 20,
+        "tokens": 1310720,
+        "tokens_per_second": 6853.594005862076,
+        "train_seconds": 191.24564409255981,
+        "trainable_elements": 352550912,
+        "vram_peak_gib": 10.754467010498047,
+        "wall_seconds": 246.36132907867432
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 28,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "B",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    },
+    "C": {
+      "eval": {
+        "checkpoint_step": 20,
+        "determinism": {
+          "identical": true,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 0.3261626064777374,
+                  "ppl": 3.3707311153411865,
+                  "top1": 0.7264957427978516,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 0.49493786692619324,
+                  "ppl": 9.914527893066406,
+                  "top1": 0.49074074625968933,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.49493786692619324,
+                "ci_low": 0.3261626064777374,
+                "mean": 0.41055023670196533,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 6.642629504203796,
+              "top1": 0.6086182445287704,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 0.6255830526351929,
+                  "ppl": 24.19455623626709,
+                  "top1": 0.4363992214202881,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6255830526351929,
+                "ci_low": 0.6255830526351929,
+                "mean": 0.6255830526351929,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 24.19455623626709,
+              "top1": 0.4363992214202881,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 0.5187996625900269,
+                  "ppl": 11.046184539794922,
+                  "top1": 0.375,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 0.5436434149742126,
+                  "ppl": 12.347513198852539,
+                  "top1": 0.5510203838348389,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5436434149742126,
+                "ci_low": 0.5187996625900269,
+                "mean": 0.5312215387821198,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 11.69684886932373,
+              "top1": 0.46301019191741943,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 0.5547214448451996,
+              "ci_low": 0.4901817739009857,
+              "mean": 0.5224516093730927,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.5713051160176595,
+              "ci_low": 0.4340466558933258,
+              "mean": 0.5026758859554926,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 0.3261626064777374,
+                "nll": 1.2151297330856323,
+                "positions": 117,
+                "ppl": 3.3707311153411865,
+                "top1": 0.7264957427978516,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 0.49493786692619324,
+                "nll": 2.2940011024475098,
+                "positions": 108,
+                "ppl": 9.914527893066406,
+                "top1": 0.49074074625968933,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.5983253717422485,
+                "nll": 2.9864535331726074,
+                "positions": 511,
+                "ppl": 19.815284729003906,
+                "top1": 0.4540117383003235,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6528407335281372,
+                "nll": 3.3524911403656006,
+                "positions": 511,
+                "ppl": 28.573827743530273,
+                "top1": 0.4187867045402527,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 0.5187996625900269,
+                "nll": 2.402085065841675,
+                "positions": 48,
+                "ppl": 11.046184539794922,
+                "top1": 0.375,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 0.5436434149742126,
+                "nll": 2.5134546756744385,
+                "positions": 49,
+                "ppl": 12.347513198852539,
+                "top1": 0.5510203838348389,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": "    # Check if all elements are the same\n    if len(numbers) < 2:\n        return False\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2] and numbers[2] == numbers[3]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2] and numbers[2] == numbers[3] and numbers[3] == numbers[4]:\n        return True\n    # Check if all elements are the same or not\n    if numbers[0] == numbers[1] and numbers[1] == numbers[2] and numbers[2] == numbers[3] and numbers[3] == numbers[4] and numbers[4] == numbers[5]:\n        return",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-dkmbrnws/candidate.py\", line 48, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-dkmbrnws/candidate.py\", line 39, in check\n    assert candidate([1.0, 2.0, 3.9, 4.0, 5.0, 2.2], 0.3) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    result = []\n    stack = []\n    i = 0\n    while i < len(paren_string):\n        if paren_string[i] == '(':\n            stack.append(i)\n        elif paren_string[i] == ')':\n            if stack:\n                stack.pop()\n            else:\n                # Not balanced, but we can ignore this\n                i += 1\n        else:\n            i += 1\n    # Now, the stack is empty, and the remaining characters are the groups\n    # We need to collect the groups that are not balanced\n    # So, we need to collect the groups that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So, the groups are the ones that are not balanced\n    # So",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": null,
+              "stderr": "timeout",
+              "timeout": true
+            },
+            {
+              "completion": "    # Find the longest prefix of the string that is a palindrome\n    prefix = ''\n    while True:\n        if is_palindrome(prefix):\n            break\n        prefix += string[0]\n    # Now, the string is of the form 'prefix' + 'suffix', where 'prefix' is a palindrome\n    # So, the shortest palindrome is 'prefix' + reverse of the string after the prefix\n    # But the string after the prefix is the suffix of the original string\n    # So, the shortest palindrome is 'prefix' + reverse of the suffix\n    # But the suffix is the original string after the prefix\n    # So, the suffix is the original string after the prefix\n    # So, the shortest palindrome is 'prefix' + reverse of the suffix\n    # But the suffix is the original string after the prefix\n    # So, the shortest palindrome is 'prefix' + reverse of the suffix\n    # But the suffix is the original string after the prefix\n    # So, the shortest palindrome is 'prefix' + reverse of the suffix\n    # But the suffix is the original string after the prefix\n    # So, the shortest palindrome is 'prefix' + reverse of the suffix\n    # But the suffix",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-3neet7gk/candidate.py\", line 55, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-3neet7gk/candidate.py\", line 49, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    stones = []\n    for i in range(n):\n        if i % 2 == 0:\n            stones.append(i + 1)\n        else:\n            stones.append(i + 2)\n    return stones\n",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-80y7m9lx/candidate.py\", line 37, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-80y7m9lx/candidate.py\", line 27, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+              "timeout": false
+            },
+            {
+              "completion": "    words = s.split(',')\n    if not words:\n        return []\n    return words\n",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-jm0_ydv8/candidate.py\", line 31, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-jm0_ydv8/candidate.py\", line 20, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 1
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 8.966345310211182
+      },
+      "resume": {
+        "full_losses": {
+          "11": 1.370011699385941,
+          "12": 1.358403122983873,
+          "13": 1.3814658764749765,
+          "14": 1.3695782339200377,
+          "15": 1.3789268867112696,
+          "16": 1.3780381800606847,
+          "17": 1.410963648930192,
+          "18": 1.3628362799063325,
+          "19": 1.3736283760517836,
+          "20": 1.384008688852191
+        },
+        "max_abs_loss_delta": 0.00022997194901108742,
+        "mean_abs_loss_delta": 7.326174527406692e-05,
+        "note": "GPU atomics in grouped routing are not bitwise reproducible; the delta is the measured continuation difference",
+        "resumed_losses": {
+          "11": 1.3700406113639474,
+          "12": 1.3583930190652609,
+          "13": 1.3813983276486397,
+          "14": 1.3695864817127585,
+          "15": 1.3789971116930246,
+          "16": 1.377972845453769,
+          "17": 1.4109861720353365,
+          "18": 1.3627427252940834,
+          "19": 1.3737645717337728,
+          "20": 1.384238660801202
+        },
+        "steps_compared": 10
+      },
+      "train": {
+        "admitted_active_unique": 772210688,
+        "arm": "C",
+        "finished_utc": "2026-11-15T06:10:39Z",
+        "log": "results/artifacts/train/smoke/C/train.jsonl",
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 20,
+        "tokens": 1310720,
+        "tokens_per_second": 8747.632036483403,
+        "train_seconds": 149.83712100982666,
+        "trainable_elements": 176160768,
+        "vram_peak_gib": 6.775661468505859,
+        "wall_seconds": 154.33966517448425
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 28,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "C",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    }
+  },
+  "command": "oracle/train/smoke.py",
+  "finished_utc": "2026-11-15T06:13:31Z",
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "revision": "434bb35368dda7737bcda0e69d47a7fa48a121c4",
+  "schema": "selvedge/train-smoke/v1",
+  "stamp": "20261115T061331Z",
+  "steps": 20,
+  "tokens_per_step": 65536,
+  "torch": "2.15.0+cu132"
+}

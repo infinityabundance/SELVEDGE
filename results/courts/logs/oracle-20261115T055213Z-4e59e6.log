@@ -1,0 +1,175 @@
+smoke: arm A training 20 steps
+train: zero-point max|delta|=3.052e-04 ok=True kind=routed_group_reconstruction
+train: step 1/20 loss=11.5794 tok/s=6336 vram=7.30GiB
+train: step 10/20 loss=11.4597 tok/s=6315 vram=7.39GiB
+train: step 20/20 loss=10.1066 tok/s=6199 vram=7.39GiB
+{
+  "admitted_active_unique": 998269952,
+  "arm": "A",
+  "finished_utc": "2026-11-15T05:55:50Z",
+  "log": "results/artifacts/train/smoke/A/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 6289.173796961358,
+  "train_seconds": 208.40893292427063,
+  "trainable_elements": 11927552,
+  "vram_peak_gib": 7.386878967285156,
+  "wall_seconds": 208.82202196121216
+}
+train: step 1/10 loss=11.5384 tok/s=6364 vram=7.39GiB
+train: step 10/10 loss=11.4263 tok/s=6220 vram=7.39GiB
+{
+  "admitted_active_unique": 998269952,
+  "arm": "A",
+  "finished_utc": "2026-11-15T05:57:36Z",
+  "log": "results/artifacts/train/smoke/A-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 10,
+  "tokens": 655360,
+  "tokens_per_second": 6244.338513656746,
+  "train_seconds": 104.95267009735107,
+  "trainable_elements": 11927552,
+  "vram_peak_gib": 7.386878967285156,
+  "wall_seconds": 105.12940573692322
+}
+train: resumed from results/artifacts/train/smoke/A-resume/step-000010.pt at step 10
+train: step 20/20 loss=10.1647 tok/s=6257 vram=7.40GiB
+{
+  "admitted_active_unique": 998269952,
+  "arm": "A",
+  "finished_utc": "2026-11-15T05:59:21Z",
+  "log": "results/artifacts/train/smoke/A-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 6305.239132866394,
+  "train_seconds": 103.938960313797,
+  "trainable_elements": 11927552,
+  "vram_peak_gib": 7.402775287628174,
+  "wall_seconds": 104.12085795402527
+}
+eval: generated 5/5
+eval: generated 5/5
+eval: generated 5/5
+smoke: arm A tok/s=6289 vram=7.39GiB zero_point=True resume_delta=2.655e-01
+smoke: arm B training 20 steps
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/20 loss=1.4752 tok/s=6930 vram=8.12GiB
+train: step 10/20 loss=1.3805 tok/s=6908 vram=10.75GiB
+train: step 20/20 loss=1.3840 tok/s=6799 vram=10.75GiB
+{
+  "admitted_active_unique": 772440064,
+  "arm": "B",
+  "finished_utc": "2026-11-15T06:03:38Z",
+  "log": "results/artifacts/train/smoke/B/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 6853.594005862076,
+  "train_seconds": 191.24564409255981,
+  "trainable_elements": 352550912,
+  "vram_peak_gib": 10.754467010498047,
+  "wall_seconds": 246.36132907867432
+}
+train: step 1/10 loss=1.4752 tok/s=6823 vram=10.75GiB
+train: step 10/10 loss=1.3804 tok/s=6882 vram=10.75GiB
+{
+  "admitted_active_unique": 772440064,
+  "arm": "B",
+  "finished_utc": "2026-11-15T06:05:38Z",
+  "log": "results/artifacts/train/smoke/B-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 10,
+  "tokens": 655360,
+  "tokens_per_second": 6854.533542635263,
+  "train_seconds": 95.60971522331238,
+  "trainable_elements": 352550912,
+  "vram_peak_gib": 10.754467010498047,
+  "wall_seconds": 118.03134322166443
+}
+train: resumed from results/artifacts/train/smoke/B-resume/step-000010.pt at step 10
+train: step 20/20 loss=1.3838 tok/s=6810 vram=12.07GiB
+{
+  "admitted_active_unique": 772440064,
+  "arm": "B",
+  "finished_utc": "2026-11-15T06:07:36Z",
+  "log": "results/artifacts/train/smoke/B-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 6846.948727748004,
+  "train_seconds": 95.71562838554382,
+  "trainable_elements": 352550912,
+  "vram_peak_gib": 12.067991733551025,
+  "wall_seconds": 113.92848801612854
+}
+eval: generated 5/5
+eval: generated 5/5
+eval: generated 5/5
+smoke: arm B tok/s=6854 vram=10.75GiB zero_point=True resume_delta=2.699e-04
+smoke: arm C training 20 steps
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/20 loss=1.4752 tok/s=8810 vram=5.46GiB
+train: step 10/20 loss=1.3809 tok/s=8570 vram=6.78GiB
+train: step 20/20 loss=1.3840 tok/s=8823 vram=6.78GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "C",
+  "finished_utc": "2026-11-15T06:10:39Z",
+  "log": "results/artifacts/train/smoke/C/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 8747.632036483403,
+  "train_seconds": 149.83712100982666,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 154.33966517448425
+}
+train: step 1/10 loss=1.4752 tok/s=8741 vram=6.78GiB
+train: step 10/10 loss=1.3809 tok/s=8576 vram=6.78GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "C",
+  "finished_utc": "2026-11-15T06:11:57Z",
+  "log": "results/artifacts/train/smoke/C-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 10,
+  "tokens": 655360,
+  "tokens_per_second": 8700.13176596751,
+  "train_seconds": 75.32759475708008,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 77.40033602714539
+}
+train: resumed from results/artifacts/train/smoke/C-resume/step-000010.pt at step 10
+train: step 20/20 loss=1.3842 tok/s=8700 vram=7.43GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "C",
+  "finished_utc": "2026-11-15T06:13:17Z",
+  "log": "results/artifacts/train/smoke/C-resume/train.jsonl",
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 20,
+  "tokens": 1310720,
+  "tokens_per_second": 8726.630911144954,
+  "train_seconds": 75.09885621070862,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 7.431951522827148,
+  "wall_seconds": 77.16698932647705
+}
+eval: generated 5/5
+eval: generated 5/5
+eval: generated 5/5
+smoke: arm C tok/s=8748 vram=6.78GiB zero_point=True resume_delta=2.300e-04
+smoke: receipt=results/train/smoke-20261115T061331Z.json

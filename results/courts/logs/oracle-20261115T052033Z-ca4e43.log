@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/oracle/train/loop.py", line 374, in <module>
+    raise SystemExit(main(__import__("sys").argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/loop.py", line 242, in main
+    report = zero_point_report(arm_model, probe_base, probe_ids)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 387, in zero_point_report
+    module.k = module.groups
+               ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1976, in __getattr__
+    raise AttributeError(
+AttributeError: 'RoutedGroupFFN' object has no attribute 'groups'. Did you mean: 'up_groups'?
