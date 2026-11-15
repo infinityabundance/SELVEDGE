@@ -45,6 +45,16 @@ bound trained or upcycled sparse models. The reports are
 `results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; limitations are in
 `docs/LIMITATIONS.md`.
 
+## Current state of the trained branch (T1)
+
+T1 is **pre-registered and instrumented, but not trained.** The architecture
+arms, the teacher-target format, the corpus materialisation rules, the
+accounting-admission path and the CPU infrastructure court exist
+(`docs/TRAINING.md`); no training run has been executed and no T1 quality number
+is claimed. The next phase, its ordering and its acceptance evidence are in
+`docs/PROGRAM-PLAN.md`. The prior-art ledger required by the mandate is
+`docs/PRIOR-ART-AND-NOVELTY.md`.
+
 ## Rules this repository enforces mechanically
 
 - **No host builds or tests.** Everything runs in an OOM-protected Docker court

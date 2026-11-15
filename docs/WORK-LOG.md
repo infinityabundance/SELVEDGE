@@ -1079,3 +1079,99 @@ re-run the one-pass measurement at the default court memory limit was killed
 with exit 137 (out of memory); the receipt is retained as
 `results/courts/oracle-20261115T043608Z-0848fe.json` and the run was repeated
 with an explicit, still-enforced larger limit.
+
+## 2026-11-15 — S7a: program plan, prior-art ledger and the T1 infrastructure court
+
+### What was built
+
+- **`docs/PROGRAM-PLAN.md`** — the exhaustive TODO for the next phase, 36
+  numbered items across six workstreams (P1.1–P6.5). Each item has what, why,
+  dependencies, acceptance evidence, an honest status and an effort estimate.
+  It includes the verified capacity-scaling ladder and a `NOW` section naming
+  the single next experiment.
+- **`docs/PRIOR-ART-AND-NOVELTY.md`** — the ledger the mandate requires. 53
+  named works plus 4 found during verification, each with URL, retrieval date,
+  status (`VERIFIED`/`PARTIAL`/`UNSUPPORTED`/`PROPOSED`) and the fetched
+  evidence, plus a feature-overlap matrix and the plain statement of the target
+  claim.
+- **`scripts/prior_art_fetch.py`** — the reproducible fetch instrument. It
+  records HTTP status, final URL, retrieval time, title and abstract for every
+  source into `results/prior-art/*.jsonl`, so a status can be checked against
+  bytes rather than trusted.
+- **`docs/TRAINING.md`** — the training path, the registered objective, the
+  numerical tail floor and the determination table for the five recorded test
+  failures. `oracle/train/loop.py` already referenced this file; it did not
+  exist.
+- **`oracle/tests/test_t1_infrastructure.py`** — the five recorded failures are
+  resolved with reasons, and the replacement tests are stricter than the ones
+  they replace.
+
+### The five failures, determined rather than silenced
+
+The recorded log (`results/courts/logs/oracle-20261115T070709Z-262951.log` at
+revision `56c648f`) was **stale by the time of the WIP commit**: HEAD's test
+file already carried corrected expectations and the suite passed. That is not a
+resolution on its own, so each case was re-derived:
+
+- `document_text` formatted before checking for a missing field → real
+  implementation defect, fixed.
+- the mirror test expected 460 where the fixture's union is 310 → wrong test.
+- the pack/unpack test compared NaN-bearing bf16 bit patterns by value → wrong
+  test; now bit-exact and length-checked.
+- the adapter zero-init test perturbed a leaf parameter outside `no_grad` →
+  wrong test.
+- the distillation-loss test expected the **full-vocabulary** cross-entropy,
+  while the registered T1.4 target is top-16 support plus one tail bucket →
+  wrong expectation. The implementation is the registered objective. The new
+  tests prove that with an independent float64 transcription, support-order
+  invariance, and the decisive case: at full support the objective equals the
+  ordinary cross-entropy to `1e-9` with a finite gradient.
+
+### Verified courts at HEAD
+
+- `scripts/court rust test` — exit 0
+  (`results/courts/rust-20261115T072334Z-2d1680.json`).
+- `scripts/court oracle -- python3 -m pytest oracle/tests -q` — the full oracle
+  suite passed.
+- `scripts/court oracle -- python3 -m pytest oracle/tests/test_t1_infrastructure.py -q`
+  — the infrastructure suite passed after the edits
+  (`results/courts/oracle-20261115T073420Z-287ce4.json`).
+- `scripts/court commit_identity` — OK, the scanned commit carries the operator
+  identity.
+- `scripts/court perf_numbers` — OK, every declared block verified.
+
+### Findings that change the plan
+
+- **SpecPrefetch already publishes P3.7's design**: a separate lightweight
+  adapter predicts next-layer experts while the frozen router decides
+  execution. The program's contribution cannot be predictor/router separation.
+- **SpAx already publishes P4.3's three-way decision** (retain / approximate /
+  omit), so only predicted-error tier assignment is open.
+- **Temporally Extended MoE publishes a stronger version of the stickiness
+  trade-off** than the program's own 2026 negative result: switch rates from
+  over 50% to below 5% while retaining up to 90% of base accuracy. P3.7 must
+  cite it and justify the no-stickiness rule rather than claim novelty.
+- **SpecMD reports that expert access is not temporally local**, which
+  undercuts any locality premise in prefetch or cache design.
+- **`HOPE` and `NorSA` could not be verified** as papers with the claimed
+  mechanisms; `Engram`, `D²-MoE` and `CMoE` are known only through citing
+  works. These are marked `UNSUPPORTED` / `PARTIAL` instead of cited.
+- **The Arm B sizing defect is confirmed by arithmetic**: the whole bank is
+  352,321,536 elements and the whole model 948,600,832, under the ceiling, so
+  Arm B is a compute saver and not a capacity-extraction experiment (P2.1).
+
+### Limitations
+
+- No training run was started; the T1 arms have no measured result.
+- The capacity ladder in `docs/PROGRAM-PLAN.md` is arithmetic over registered
+  constants, not an admission receipt; P2.2 exists to turn it into one.
+- The prior-art ledger cannot cover closed venues or non-acronym titles, so
+  `UNSUPPORTED` means "not found by the recorded searches".
+- The fetch instrument records abstracts and page descriptions, not full texts;
+  a full-text read could narrow the overlap claims.
+
+### Next experiment
+
+The five-arm pilot of P3.4, after the P2.4 teacher-target instrument check: it is
+the only experiment whose outcome decides whether the trained-capacity branch
+continues, and every later workstream assumes its answer.
