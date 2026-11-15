@@ -53,6 +53,29 @@ verification:
 - `UNSUPPORTED`: 2 (NorSA, HOPE)
 - `PROPOSED`: every SELVEDGE mechanism in §5 that is not in this list
 
+**Second pass, 2026-11-15 (S9).** The WS7–WS12 mechanism list named 42 further
+works. They were fetched in rounds 9–17
+(`results/prior-art/prior-art-fetch-20261115-round{9..17}.jsonl`); their verdicts
+are in §10, with 15 supplementary works in §10.1. Totals after that pass — 95
+named works and 19 supplementary works:
+
+- `VERIFIED`: 52 + 24 = 76 named, + 7 supplementary = **83**
+- `PARTIAL`: 3 + 6 = 9 named, + 8 supplementary = **17**
+- `UNSUPPORTED`: 2 + 12 = **14**
+- `PROPOSED`: every SELVEDGE mechanism in §5 and in `docs/PROGRAM-PLAN.md`
+  WS7–WS12 that is not in either list
+
+The 8 supplementary `PARTIAL` rows are works whose *identity* (title, id, date)
+is verified from a fetched search or page but whose abstract was not read, so only
+the existence of the mechanism is supported. That distinction is kept out of the
+named counts on purpose: a named work gets `VERIFIED` only when the fetched text
+supports the mechanism, not merely the title.
+
+A source that is `UNSUPPORTED` is not thereby non-existent; it is not located by
+the recorded searches (§8). The distinction matters for this pass because 12 of
+the 42 names could not be located at all, and several of them are load-bearing
+citations for a proposed experiment.
+
 ## 2. Verification table — novelty-boundary list
 
 | # | work | id / venue | status | recorded evidence | overlap with SELVEDGE |
@@ -60,7 +83,7 @@ verification:
 | 1 | Drop-Upcycling | arXiv 2502.19261 | VERIFIED | abstracts the upcycling slowdown and proposes "partial re-initialization" | dense→sparse upcycling, the P1.3 boundary |
 | 2 | SIMoE (Sparse Interpolated MoE) | ACL 2025 long 816 | VERIFIED | "experts are structurally sparse subsets of the seed LLM's parameters"; router learns an input-dependent merging | expert upcycling + conditional merging |
 | 3 | Memory Layers at Scale | ICML 2025 (PMLR v267) | VERIFIED | "trainable key-value lookup mechanism to add extra parameters ... without increasing FLOPs" | learned memory path (P3.1) |
-| 4 | Engram | DeepSeek (primary not located) | PARTIAL | four 2026 works describe it: "Deepseek's Engram, a conditional memory module ... token-level N-gram hashing" (arXiv 2607.29065); "Engram conditional memory ... decoupling static knowledge lookup from dynamic computation" (arXiv 2603.10087) | hashed conditional memory (P3.1) |
+| 4 | Engram | DeepSeek (primary not located) | PARTIAL | four 2026 works describe it: "Deepseek's Engram, a conditional memory module ... token-level N-gram hashing" (arXiv 2607.29065); "Engram conditional memory ... decoupling static knowledge lookup from dynamic computation" (arXiv 2603.10087). **2026-11-15 (S9):** an ACL 2026 long paper named directly as the Engram/Conditional Memory source was fetched at `https://aclanthology.org/2026.acl-long.226/` — "Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models", Xin Cheng et al., Proceedings of the 64th Annual Meeting of the ACL (Volume 1: Long Papers), 2026. Title, venue and authors are verified; the landing page serves no abstract, so the method is still described only through citing works | hashed conditional memory (P3.1) |
 | 5 | SeqMoE | arXiv 2609.12978 | VERIFIED | recasts expert prediction as sequence modelling + "Job Sequencing with Deadlines" prefetch scheduling | predictive loading (P3.7) |
 | 6 | Prefetch-Steered Routing | arXiv 2610.34721 | VERIFIED | "cache-aware routing ... makes the model's outputs depend on transfer timing"; proposes a deterministic logical cache; 2.2–2.3× faster than exact routing with LRU on OLMoE | cache-aware routing and its semantic hazard (P3.7) |
 
@@ -257,3 +280,160 @@ scripts/court --net python -- python3 scripts/prior_art_fetch.py \
 
 Re-run at every milestone advance and whenever an item in
 `docs/PROGRAM-PLAN.md` moves from `PROPOSED` to implementation.
+
+**Second-pass procedure (uses the HTML fallbacks).** `export.arxiv.org` rate-limits
+by caller (HTTP 429, rounds 9–11). When that happens, do **not** read a 429 as "no
+such paper": rerun the key with `arxiv_page` (known id) or `arxiv_html_search`
+(name), and record the 429 in the same JSONL so the attempt is visible:
+
+```bash
+# one name, HTML search, when the API is refusing
+scripts/court --net python -- python3 scripts/prior_art_fetch.py \
+    --out results/prior-art/prior-art-fetch-20261115-round17.jsonl \
+    --only foam-title,lookahead-offload-search --sleep 4
+
+# one known id, arxiv.org/abs page
+scripts/court --net python -- python3 scripts/prior_art_fetch.py \
+    --out results/prior-art/prior-art-fetch-check.jsonl \
+    --only engram-acl-226-page --sleep 4
+```
+
+An `UNSUPPORTED` verdict in §10 must list the queries attempted; that list is the
+evidence, not the absence of a result.
+
+---
+
+## 10. Verification table — WS7–WS12 works (second pass, 2026-11-15)
+
+This section covers the 42 works named by the WS7–WS12 mechanism list. It is a
+separate table rather than an extension of §2–§4 because it includes the
+`UNSUPPORTED` verdicts that remove citations, and those must be visible as a
+group.
+
+**Method addendum.** `export.arxiv.org` answered **HTTP 429** for most requests
+from the court container in rounds 9–11; the 429s are recorded in those JSONL
+files as findings, not discarded. Two methods were added to
+`scripts/prior_art_fetch.py` for this reason and are used from round 12 on:
+
+- `arxiv_page` — reads `https://arxiv.org/abs/<id>` directly (title, abstract,
+  submission history). Different host, no API quota.
+- `arxiv_html_search` — reads `https://arxiv.org/search/?...` and records every
+  candidate id and title, so a miss is visible as a list of near-misses.
+
+Every row below was resolved by one of: `page_abstract` on the publisher page
+(ACL Anthology), `arxiv_id`/`arxiv_page` for a known id, or
+`arxiv_html_search` for a name. Where a row is `UNSUPPORTED`, the **queries
+tried** are listed in the "does not support" column — that list is the evidence.
+
+| # | work as named | located (id / venue) | status | what it supports | what it does not support | SELVEDGE addition |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 58 | Engram / Conditional Memory (ACL 2026 long 226) | ACL 2026 long 226: "Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models", Cheng et al. | PARTIAL | title, venue, authors, and that the paper frames conditional memory as a sparsity axis | the method: the landing page serves no abstract, so n-gram hashing and sparse lookup still come from citing works (entry 4, 2607.07388) | a union-and-latency ledger for retrieved rows **plus the index parameters evaluated to find them** |
+| 59 | Memory Grafting | 2605.20948 | VERIFIED | frozen hidden states of a grafting model as conditional n-gram memory; exact longest-match suffix lookup; hash-based Engram fallback; beats MoE and vanilla Engram at 2.8B (paper's claim) | any admission criterion for *new* memory entries beyond frequency | P11.3's verified-novelty admission test |
+| 60 | Counterfactual Routing (ACL 2026 long 2187) | ACL 2026 long 2187: "Awakening Dormant Experts: Counterfactual Routing to Mitigate MoE Hallucinations" | VERIFIED | static top-k favours high-frequency patterns; causally important specialists are under-gated; training-free intervention | a *trained* router for causal importance, and any cost accounting | P9.3's interaction-aware utility target, trained, under the union budget |
+| 61 | Agent Memory Distillation (EMNLP findings 2407) | ACL Anthology `2026.findings-emnlp.2407` | VERIFIED | training-free transfer of hierarchical teacher memory (workflow, subtask) into a small agent | any capability representation other than text-like memory, and any cost accounting | P9.1's transfer-retention test and a byte-accounted comparison against weights |
+| 62 | SkillCache | 2611.10022: "How Much Skill Orchestration Can LLM Agents Compile Away? Execution-Grounded Specialization..." | VERIFIED | zero-shot skill specialisation is brittle; a one-trace compiled fast path works | that the artefact is a weight-space capability (it is an executable plan) | P9.6's compile/verify/solve cost split, and P11.14's fallback contract |
+| 63 | the consumer-scale Engram study | nearest: 2607.07388 (TF-Engram), 2608.17050 | PARTIAL | a train-free Engram with SSD-backed tables, GPU–DRAM–SSD hierarchy and early-exit guided predictive prefetching on Qwen3-0.6B | that a *study* exists as the note implies; one system paper is not a study, and the note's claim is stronger than the record | a measured consumer-residency claim inside the union/bytes ledger |
+| 64 | What Is This Memory Useful For? | 2611.03930 | VERIFIED | task-conditioned utility via a task-blind writer and frozen reader with a cost ledger; answer-bearing memories beat matched controls with an interval excluding zero (paper's claim) | anything about marginal utility of **added capacity**, or interactions between two memories | P9.3's interaction term `I(m,e;x)` applied to capacity rather than memory |
+| 65 | Infinite-Parameter LLMs | 2609.18842 | VERIFIED | generating and adapting weights from live data | physical cost under a union budget | P10.1's generated-vs-stored expressivity test at matched storage |
+| 66 | Shaping Latent MoE | 2610.14644 | VERIFIED | local Jacobian rank bounded jointly by expert input and intermediate width; near-square experts at fixed per-expert parameters; layerwise capacity allocation | intrinsic-dimension-guided allocation from measured data; any union ledger | P10.6's measured-ID allocation at matched totals |
+| 67 | LatentMoE / Nemotron | 2601.18089; 2602.04870; 2610.40577; Nemotron-3 reports | VERIFIED | accuracy per FLOP and per parameter; adopted into Nemotron-3; O(1)-communication variant; multi-view routing | bytes per token, residency, cold-start cost | P10.2/T3: take the geometry as given and measure what it costs physically |
+| 68 | Titans | 2501.00663 | VERIFIED | a neural long-term memory module that learns at test time | versioning, rollback, tier separation | P10.3's stable/episodic/working split with rollback |
+| 69 | MIRAS | nearest 2504.13173: "It's All Connected: A Journey Through Test-Time Memorization, Attentional Bias, Retention, and Online Optimization" | PARTIAL | Transformers, Titans and linear RNNs unified as associative memories with an internal objective | the acronym MIRAS (absent from the fetched text), so the note's naming is stronger than the record | P7.7's objective as a design constraint on the boundary, not a framework citation |
+| 70 | TTT-E2E | 2512.23675 | VERIFIED | continues learning at test time by next-token prediction, compressing context into weights; constant latency vs context (paper's claim) | per-token union accounting or residency | charging the write inside the arm ledger |
+| 71 | TTT-NTP | 2606.21803 | VERIFIED | fast-weight writes supervised by the model's own next contextual hidden state | tiering or rollback | P10.3's tier split and the document-removal target task |
+| 72 | Select-TTT | 2610.36794 | VERIFIED | uniform write schedules dilute query-relevant information; query-conditioned write strength from the frozen head, no new parameters | multi-stage relevance change or consolidation | P10.7's staged version and the write→consolidate transition |
+| 73 | LOTUS | 2606.31779: "Bridging the Gap Between Latent and Explicit Reasoning with Looped Transformers" | VERIFIED | looped padded transformer with CE on each latent position's gold CoT step; matches explicit CoT at 3B; large thought-phase latency reduction (paper's claim) | the note's title — LOTUS is the method inside that paper, not a paper title | matched-wall-clock comparison against search, and trajectory→operator compilation (P11.14) |
+| 74 | Latent Reasoning with Supervised Thinking States | 2602.08332 | VERIFIED | thinking tokens generated while the input is processed, transformed to embedding space, supervised by teacher forcing | cost accounting against CoT at matched wall clock | P10.4's four-arm matched-clock court |
+| 75 | Multi-View MoE (29 Oct 2026) | 2610.40577, v1 submitted Thu 29 Oct 2026 | VERIFIED | single-router rankings disagree with expert-utility rankings, especially in middle and deep layers | any accounting of the multi-view selection's own cost | P10.5's router-parameter accounting inside the active budget |
+| 76 | intrinsic-dimension expert allocation | nearest 2610.14644 | PARTIAL | expert geometry ↔ Jacobian rank, and layerwise allocation | a paper that allocates by *measured intrinsic dimension of the data* | P10.6 as specified, with ID as the measured allocation signal |
+| 77 | MemCredit | 2611.15600 | VERIFIED | counterfactual intervention credits distilled into a utility estimator; relevance for recall, utility for arbitration | weight-space capacity, or any pairwise interaction term | P9.3's four-condition interaction utility is the pair version of this idea |
+| 78 | Memory-Aware Routing | 2610.23583 (MARS) | VERIFIED | session state as shared control interface between memory construction and model selection | union accounting of router plus memory parameters | P10.5's counted-router comparison |
+| 79 | Doc2Weight | **not located** | UNSUPPORTED | — | `all:"Doc2Weight"`, `ti:"Doc2Weight"`, `all:"Doc2" AND all:"weight"`, `all:"document to weight" AND all:"adaptation"` returned no related entry | must be specified from first principles and called PROPOSED; nearest published relatives are P9.1/P10.10 |
+| 80 | MemAgent | 2609.32521 | VERIFIED | 13 memory methods, none generalises; agent memory formulated as a routing problem over providers | whether provider routing composes under a byte budget | P8.2/P9.3 composition accounting |
+| 81 | KV-Skill | 2608.05475 | VERIFIED | external factorised operators read by a frozen model through a lightweight interface; registration from text and reward-learned operators | rollback/versioning; a document-removal target | P11.11 leasing and P10.3 tiering on top of the same interface |
+| 82 | ReaComp | **not located** | UNSUPPORTED | — | `all:"ReaComp"` (twice), `all:"reasoning compression"`, and a latent variant returned no entry for the name; adjacent ReCUT (2506.10822) is a different method | the citation cannot be used; PROPOSED |
+| 83 | Mixture-of-Recursions | 2507.10524 (entry 44) | VERIFIED | shared stack, per-token depth, selective KV caching | union accounting of retained KV | P10.9's KV byte accounting |
+| 84 | MI-Distillation | **not located** | UNSUPPORTED | — | `all:"MI-Distillation"`, `all:"mutual information" AND all:"distillation"`, and the reasoning variant returned no such method | P10.10 is stated from first principles |
+| 85 | One-Token Verification | **not located** | UNSUPPORTED | — | `all:"one-token" AND all:"verification"`, `AND all:"correctness"`, `all:"one-token"`, and a token/verifier/confidence query returned homonyms only | P10.11 is PROPOSED; the citation is unsupported |
+| 86 | CORE | **not located** | UNSUPPORTED | — | `ti:"CORE" AND all:"reasoning"`, `all:"CORE" AND all:"advantage"`, `all:"CORE" AND all:"chain-of-thought"` returned unrelated works | the name attracts homonyms; any CORE claim must be dropped or re-specified |
+| 87 | LAPO | **not located** | UNSUPPORTED | — | `all:"LAPO" AND all:"reasoning"`, `all:"LAPO" AND all:"policy"`, `all:"LAPO"` returned zero entries | as above |
+| 88 | ScMoE | 2404.05019 | VERIFIED | shortcut-connected MoE to overlap expert-parallel communication | any capability-side use (skipping work rather than hiding latency) | P10.14's capability-side shortcut, claimed narrowly and with re-tested dependencies |
+| 89 | RFID-MoE | 2602.09316 | VERIFIED | SVD compression keyed on heterogeneous inter-group routing frequency and information density | allocation by verified capability loss | P10.15's allocation objective |
+| 90 | Meta-Learning Where to Allocate Experts | **not located** | UNSUPPORTED | — | `ti:"Allocate" AND ti:"Experts"`, `all:"expert allocation" AND all:"meta-learning"`, and a budget variant (25 results, none the named work) | P10.13 is stated from first principles |
+| 91 | Fast-weight Product Key Memory | **not located as a combination** | UNSUPPORTED | the components: product-key retrieval (2407.04153, 2412.04139) and fast weights (Titans, MIRAS, Select-TTT); `all:"product key memory"` returned only 2101.11685, which is static | the combination, and any writable-PKM claim | P10.17 as specified, with the static-store control and rollback |
+| 92 | FOAM (12 Nov 2026) | **not located** | UNSUPPORTED | — | `ti:"FOAM"`, `all:"FOAM" AND all:"optimizer"`, `AND all:"AdamW"`, `AND all:"Muon"`, `AND all:"Lion"`, `AND all:"orthogonal"` returned foam-material physics or nothing | P10.18 keeps FOAM conditional and runs Muon vs tuned AdamW meanwhile |
+| 93 | Manifold-Constrained Hyper-Connections | 2609.05309 (analysis on DeepSeek-V4-Flash); 2608.05549 (speech domain) | VERIFIED | mHC widens the residual pathway to n streams; a typical attention/FFN site effectively uses about two; read/write routing is concentrated and depth-dependent | capacity claims: the analysis says the *effective* stream count is low | P12.14's wildcard becomes a measured effective-stream test, not a capacity claim |
+| 94 | xHC | **not located** | UNSUPPORTED | — | `all:"xHC"`, `all:"xHC" OR all:"extended hyper-connections"`, `all:"hyper-connections" AND all:"streams"` returned mHC/MSAR works and no xHC | the note's xHC claim is stronger than any located source; the family (mHC, MSAR) is published | the family is prior art; an xHC-specific claim needs its own definition |
+| 95 | low-rank logits (ICLR 2026) | **not located** | UNSUPPORTED | — | `ti:"low-rank" AND ti:"logits"`, `all:"low-rank" AND all:"logits" AND all:"vocabulary"`, `AND all:"softmax"`, and an output-layer variant returned unrelated works | P12.14's low-rank-logits wildcard is PROPOSED, not a replication |
+| 96 | SemPIC | **not located** | UNSUPPORTED | — | `all:"SemPIC"` (twice), `all:"SemPIC" OR all:"semantic prefix cache"`, `all:"semantic cache" AND all:"LLM"` (other semantic-cache works only) | semantic caching is prior art (supplementary rows); the named method is not |
+| 97 | Routing in Gradient Space | no paper by that title; the mechanism is 2610.00493 | PARTIAL | routing should score the *update*: usefulness is the inner product of an expert's update with the negative loss gradient, i.e. gradient-space routing under another title | the note's title and citation; any full-width-expert version | P9.3 can cite the right paper; the note's citation must be corrected |
+| 98 | ProbMoE | PMLR v306 (entry 17) | VERIFIED | expert selection as a distribution over cardinality-constrained subsets | union/bytes accounting | P11.9's constrained selection builds on it |
+| 99 | recent future-aware offloading (11 Nov 2026) | nearest: 2611.11364 (v1 8 Nov 2026, training-side), 2603.09983 (MoE-SpAc, speculative activation), 2410.17954, 2609.12978, 2608.21614, 2610.33404 | PARTIAL | predictive and future-aware offloading is thoroughly published, including predictive caching with token scheduling and speculative activation | the specific 11 Nov 2026 work the note names: no fetched record supports that date-plus-claim pair | nothing claimed; the family is crowded (§6.5) |
+
+### 10.1 Supplementary works located in the second pass
+
+| # | work | id | status | why it matters |
+| ---: | --- | --- | --- | --- |
+| 100 | Frozen Memory Is Not Enough | 2608.17050 | VERIFIED | asks whether the frozen Engram memory or its *reader* matters when moved across backbones; the design template for P12.13's transfer test |
+| 101 | TF-Engram | 2607.07388 | VERIFIED | train-free Engram, SSD-backed tables, early-exit guided predictive prefetching; reports a gain over a parameter-matched LoRA on Qwen3-0.6B (paper's claim). The closest thing to the note's "consumer-scale" item |
+| 102 | Multi-Head LatentMoE | 2602.04870 | VERIFIED | O(1) communication regardless of k; deterministic expert-parallel traffic |
+| 103 | Descent-Aligned Routing | 2610.00493 | VERIFIED | the correct citation for the note's "routing in gradient space" (row 97) |
+| 104 | Multi-Stream Attention Residuals | 2610.13630 | VERIFIED | multi-head depth attention over residual streams; part of the mHC/xHC family |
+| 105 | ExpertFlow | 2410.17954 | VERIFIED | predictive expert caching plus token scheduling for single-GPU offloading; the strongest published form of the note's "future-aware offloading" |
+| 106 | OOM (Offload-Optimized MoE) | 2611.11364 | VERIFIED | offload-optimised full-parameter MoE training with memory/execution co-design; v1 8 Nov 2026 |
+| 107 | MemoryAthena | 2609.25853 | PARTIAL | identity only (adaptive routing over latent and generated memories) |
+| 108 | SkillMoV | 2606.17615 | PARTIAL | identity only (mixture-of-view routing with prototype-conditioned gating) |
+| 109 | ReCUT | 2506.10822 | PARTIAL | identity only; the nearest published relative of the unfound "ReaComp" |
+| 110 | MoE-SpAc | 2603.09983 | PARTIAL | identity only (speculative activation utility for edge MoE inference) |
+| 111 | From Exact Hits to Close Enough | 2603.03301 | PARTIAL | identity only (semantic caching for LLM embeddings); the nearest relative of the unfound "SemPIC" |
+| 112 | vCache | 2502.03771 | PARTIAL | identity only (verified semantic prompt caching) |
+| 113 | CNN with large memory layers | 2101.11685 | PARTIAL | identity only; the only "product key memory" hit, and it is static memory |
+| 114 | Multi-View MoE with vision-language reranking | 2609.18139 | PARTIAL | identity only (a homonym of the note's Multi-View MoE, different task) |
+
+## 11. Consequential findings from the second pass
+
+1. **Twelve named works do not exist as named.** `Doc2Weight`, `ReaComp`,
+   `MI-Distillation`, `One-Token Verification`, `CORE`, `LAPO`,
+   `Meta-Learning Where to Allocate Experts`, `Fast-weight Product Key Memory` (as
+   a combination), `FOAM`, `xHC`, `low-rank logits (ICLR 2026)` and `SemPIC` were
+   not located by any recorded search. In every case the note's claim is stronger
+   than the record. Two of them are load-bearing: **P10.18's optimiser court names
+   FOAM as an arm**, and **P10.11's mechanism is described as if published**. Both
+   items now say so explicitly and carry a PROPOSED label.
+2. **One citation is right about the mechanism and wrong about the paper.**
+   "Routing in Gradient Space" is not a title; the mechanism is published by
+   2610.00493 as descent-aligned routing. The idea stands, the citation does not.
+3. **Three names are method names, not paper titles.** LOTUS is the method in
+   2606.31779; SkillCache is the method in 2611.10022; TF-Engram is a system paper.
+   Citing the acronym as a title would be a false citation even though the work
+   exists.
+4. **MIRAS is an acronym that the located paper does not use.** 2504.13173 is the
+   unifying test-time-memorisation framework, and it is the right source for the
+   *content*; the *name* is not in the fetched text.
+5. **The Engram primary source is now located but not readable as an abstract.**
+   ACL 2026 long 226 is "Conditional Memory via Scalable Lookup", verified by
+   title, venue and authors. Any statement about its method still rests on citing
+   works. Entry 4 is updated accordingly.
+6. **Two of the note's most useful items are already published in stronger form
+   than the note implies.** MemCredit (2611.15600) already attributes memory by
+   counterfactual intervention, and the 2611.03930 study already measures
+   task-conditioned memory utility with a cost ledger. SELVEDGE's novelty is the
+   **pairwise interaction term** and its use as a *capacity* selection target, not
+   the utility idea.
+7. **mHC's own analysis undercuts a capacity reading of it.** 2609.05309 finds a
+   typical site effectively uses about two of four streams. A SELVEDGE mHC/xHC
+   wildcard must therefore be an *effective-stream* measurement, not a capacity
+   claim. This is the single most useful negative finding of the pass.
+8. **The latent-MoE geometry axis is fully published** (2601.18089,
+   2610.14644, 2610.40577) including the near-square result and the
+   router-ranking/utility-ranking disagreement. P10.2/T3 must therefore be
+   presented as an accounting replication with a union ledger, never as a
+   discovery.
+9. **The fast-weight/adaptation axis is crowded but the target task is not.**
+   Titans, MIRAS, TTT-E2E, TTT-NTP, Select-TTT and KV-Skill all write state at
+   test time. None of the fetched abstracts reports a **document-removal** test
+   with rollback and versioning. That is the part of P10.3 worth claiming.
+10. **arXiv's Atom API is not reliable enough to be a single source.** Round 9–11
+    returned HTTP 429 for most queries. The ledger now uses two HTML fallbacks and
+    records the 429s. Any future refresh must expect this and must not read a 429
+    as "no such paper".
