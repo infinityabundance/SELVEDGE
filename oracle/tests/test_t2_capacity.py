@@ -101,6 +101,26 @@ def test_memory_active_accounting_matches_the_contract():
     assert report["rows_total"] == 4 * ROWS
 
 
+def test_duplicate_and_empty_reads_are_safe_and_counted():
+    # A one-row table forces both heads onto the same row: the duplicate read
+    # must be safe and must still be declared as two 256-element identities.
+    geometry = memory.MemoryGeometry(rows=1)
+    context = memory.TokenContext()
+    module = memory.HashedMemory(1024, 3, context, geometry=geometry)
+    context.set(torch.tensor([[7, 8, 9]], dtype=torch.int64))
+    with torch.no_grad():
+        output = module(torch.randn(1, 3, 1024))
+    assert output.shape == (1, 3, 1024)
+    report = module.active_parameter_report()
+    assert report["value_elements_per_layer"] == 512
+    assert report["table_elements_per_layer"] == 256
+    # A single-position sequence is the empty-prefix case.
+    context.set(torch.tensor([[5]], dtype=torch.int64))
+    with torch.no_grad():
+        short = module(torch.randn(1, 1, 1024))
+    assert short.shape == (1, 1, 1024)
+
+
 def test_memory_bytes_are_reported_not_confused():
     geometry = memory.MemoryGeometry()
     report = geometry.bytes_report(insertions=4)
