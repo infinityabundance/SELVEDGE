@@ -171,6 +171,49 @@ ns and verify time
 <!-- END GENERATED: storage-17b-plan-verify -->
 ns.
 
+The full stall distribution for the 0.6B bundle is p50
+<!-- BEGIN GENERATED: storage-06b-plan-p50 -->
+1435636
+<!-- END GENERATED: storage-06b-plan-p50 -->
+ns and p99
+<!-- BEGIN GENERATED: storage-06b-plan-p99 -->
+1681869
+<!-- END GENERATED: storage-06b-plan-p99 -->
+ns (p95 is above); for the 1.7B bundle p50
+<!-- BEGIN GENERATED: storage-17b-plan-p50 -->
+4725656
+<!-- END GENERATED: storage-17b-plan-p50 -->
+ns and p99
+<!-- BEGIN GENERATED: storage-17b-plan-p99 -->
+5494788
+<!-- END GENERATED: storage-17b-plan-p99 -->
+ns. Per pass the 0.6B plan-order arm requests
+<!-- BEGIN GENERATED: storage-06b-plan-requested -->
+1056964608
+<!-- END GENERATED: storage-06b-plan-requested -->
+bytes, completes and uses
+<!-- BEGIN GENERATED: storage-06b-plan-used -->
+1056964608
+<!-- END GENERATED: storage-06b-plan-used -->
+and wastes
+<!-- BEGIN GENERATED: storage-06b-plan-wasted -->
+0
+<!-- END GENERATED: storage-06b-plan-wasted -->
+bytes; the 1.7B arm requests
+<!-- BEGIN GENERATED: storage-17b-plan-requested -->
+4227858432
+<!-- END GENERATED: storage-17b-plan-requested -->
+, uses
+<!-- BEGIN GENERATED: storage-17b-plan-used -->
+4227858432
+<!-- END GENERATED: storage-17b-plan-used -->
+and wastes
+<!-- BEGIN GENERATED: storage-17b-plan-wasted -->
+0
+<!-- END GENERATED: storage-17b-plan-wasted -->
+. Waste is zero for whole-bundle exact reads; the prefetch arm below is where
+non-zero waste is measured.
+
 `coalesced` on the 0.6B bundle: median
 <!-- BEGIN GENERATED: storage-06b-coalesced-tp -->
 618.075
@@ -195,6 +238,14 @@ ns, verify time
 <!-- BEGIN GENERATED: storage-06b-coalesced-verify -->
 416415755
 <!-- END GENERATED: storage-06b-coalesced-verify -->
+ns. Its p50 is
+<!-- BEGIN GENERATED: storage-06b-coalesced-p50 -->
+1977775
+<!-- END GENERATED: storage-06b-coalesced-p50 -->
+ns and p99
+<!-- BEGIN GENERATED: storage-06b-coalesced-p99 -->
+2459540
+<!-- END GENERATED: storage-06b-coalesced-p99 -->
 ns. On the 1.7B bundle: median
 <!-- BEGIN GENERATED: storage-17b-coalesced-tp -->
 532.99
@@ -219,6 +270,14 @@ ns, verify time
 <!-- BEGIN GENERATED: storage-17b-coalesced-verify -->
 1655812198
 <!-- END GENERATED: storage-17b-coalesced-verify -->
+ns; p50
+<!-- BEGIN GENERATED: storage-17b-coalesced-p50 -->
+6175000
+<!-- END GENERATED: storage-17b-coalesced-p50 -->
+ns and p99
+<!-- BEGIN GENERATED: storage-17b-coalesced-p99 -->
+8648000
+<!-- END GENERATED: storage-17b-coalesced-p99 -->
 ns.
 
 Reading:
@@ -242,46 +301,46 @@ Reading:
 
 No cache (`none-cold`) on the 0.6B bundle: median
 <!-- BEGIN GENERATED: storage-06b-none-cold -->
-609.6
+609.641
 <!-- END GENERATED: storage-06b-none-cold -->
 MiB/s, and on the 1.7B bundle
 <!-- BEGIN GENERATED: storage-17b-none-cold -->
-700.3
+700.283
 <!-- END GENERATED: storage-17b-none-cold -->
 MiB/s. The page-cache-warm control (`none-warm`, pass 2) is
 <!-- BEGIN GENERATED: storage-06b-none-warm-pass2 -->
-2043.8
+2043.76
 <!-- END GENERATED: storage-06b-none-warm-pass2 -->
 MiB/s on the 0.6B bundle and
 <!-- BEGIN GENERATED: storage-17b-none-warm-pass2 -->
-2172.4
+2172.41
 <!-- END GENERATED: storage-17b-none-warm-pass2 -->
 MiB/s on the 1.7B bundle; that is the operating system serving the file, not
 the store.
 
 LRU 1/8 of the payload on pass 2: 0.6B
 <!-- BEGIN GENERATED: storage-06b-lru1of8-pass2 -->
-676.6
+676.568
 <!-- END GENERATED: storage-06b-lru1of8-pass2 -->
 MiB/s, 1.7B
 <!-- BEGIN GENERATED: storage-17b-lru1of8-pass2 -->
-761.2
+761.219
 <!-- END GENERATED: storage-17b-lru1of8-pass2 -->
 MiB/s. LRU 1/4: 0.6B
 <!-- BEGIN GENERATED: storage-06b-lru1of4-pass2 -->
-770.3
+770.309
 <!-- END GENERATED: storage-06b-lru1of4-pass2 -->
 MiB/s, 1.7B
 <!-- BEGIN GENERATED: storage-17b-lru1of4-pass2 -->
-786.1
+786.096
 <!-- END GENERATED: storage-17b-lru1of4-pass2 -->
 MiB/s. LRU 1/2: 0.6B
 <!-- BEGIN GENERATED: storage-06b-lru1of2-pass2 -->
-1095.6
+1095.59
 <!-- END GENERATED: storage-06b-lru1of2-pass2 -->
 MiB/s, 1.7B
 <!-- BEGIN GENERATED: storage-17b-lru1of2-pass2 -->
-1285.2
+1285.23
 <!-- END GENERATED: storage-17b-lru1of2-pass2 -->
 MiB/s. LRU 2x: 0.6B
 <!-- BEGIN GENERATED: storage-06b-lru2x-pass2 -->
