@@ -4,10 +4,15 @@
 # Usage:
 #   scripts/docker-court.sh <court> [flags] [-- argv...]
 #
-#   courts: rust | python | oracle | io | commit_identity | perf_numbers
+#   courts: rust | python | oracle | io | commit_identity | perf_numbers | wait
 #   flags:  --net            enable network (default: --network none)
 #           --gpu            pass the NVIDIA GPU (fails closed if unavailable)
 #           --host-root-ro   expose the host root read-only at /hostroot
+#           --detach         launch with `docker run -d` and return immediately;
+#                            `scripts/court wait <state.json>` finishes the run,
+#                            writes the log and the receipt, and exits with the
+#                            container's exit code. Limits, mounts and the GPU
+#                            are byte-identical to the foreground path.
 #           --               everything after this is the container argv
 #
 # The `oracle` court mounts the persistent Hugging Face cache read-write at
@@ -50,12 +55,17 @@ usage() {
   cat <<'EOF'
 usage: scripts/docker-court.sh <court> [flags] [-- argv...]
 
-  courts : rust | python | oracle | io | commit_identity | perf_numbers
+  courts : rust | python | oracle | io | commit_identity | perf_numbers | wait
            (or start with -- for a generic Python-court passthrough)
   flags  : --net            enable network (default: --network none)
            --gpu            pass the NVIDIA GPU (fails closed if unavailable)
            --host-root-ro   expose the host root read-only at /hostroot
+           --detach         launch detached; finish with `court wait <state.json>`
            --               everything after this is the container argv
+
+  detach : scripts/docker-court.sh oracle --gpu --detach -- python3 work.py
+           # prints the container name and the pending-state path
+           scripts/docker-court.sh wait -- results/courts/pending/<name>.json
 
 limits (required; empty, zero or malformed refuses to run):
   SELVEDGE_MEM=8g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g
@@ -106,6 +116,7 @@ court=""
 net=0
 gpu=0
 host_root_ro=0
+detach=0
 declare -a argv=()
 
 if [[ "$1" == "--" ]]; then
@@ -120,8 +131,8 @@ else
 fi
 
 case "$court" in
-  rust | python | oracle | io | commit_identity | perf_numbers) ;;
-  *) die "unknown court '$court' (expected rust|python|oracle|io|commit_identity|perf_numbers, or -- <argv>)" 64 ;;
+  rust | python | oracle | io | commit_identity | perf_numbers | wait) ;;
+  *) die "unknown court '$court' (expected rust|python|oracle|io|commit_identity|perf_numbers|wait, or -- <argv>)" 64 ;;
 
 esac
 
@@ -144,6 +155,10 @@ while (($#)); do
       host_root_ro=1
       shift
       ;;
+    --detach)
+      detach=1
+      shift
+      ;;
     -h | --help)
       usage
       exit 0
@@ -153,6 +168,126 @@ while (($#)); do
       ;;
   esac
 done
+
+# ---------------------------------------------------------------------------
+# wait mode: block on a detached container, capture its log, write its receipt
+# ---------------------------------------------------------------------------
+if [[ "$court" == "wait" ]]; then
+  ((${#argv[@]} == 1)) || die "wait takes exactly one pending-state file" 64
+  state_abs="${argv[0]}"
+  [[ -f "$state_abs" ]] || die "pending-state file '$state_abs' does not exist" 66
+  command -v docker >/dev/null 2>&1 || die "docker not found; cannot wait" 69
+  docker info >/dev/null 2>&1 || die "docker daemon unreachable; cannot wait" 69
+
+  mapfile -t state_fields < <(python3 - "$state_abs" <<'PY'
+import json, sys
+state = json.load(open(sys.argv[1], encoding="utf-8"))
+for key in ("container_name", "log_rel", "receipt_rel", "toolchain_abs",
+            "inspect_abs", "started_utc"):
+    print(state.get(key, ""))
+PY
+  ) || die "cannot read pending state '$state_abs'" 78
+  ((${#state_fields[@]} == 6)) || die "malformed pending state '$state_abs'" 78
+  container_name="${state_fields[0]}"
+  log_rel="${state_fields[1]}"
+  receipt_rel="${state_fields[2]}"
+  toolchain_abs="${state_fields[3]}"
+  inspect_abs="${state_fields[4]}"
+  started_utc="${state_fields[5]}"
+  [[ -n "$container_name" && -n "$log_rel" && -n "$receipt_rel" ]] ||
+    die "pending state '$state_abs' is missing container or receipt fields" 78
+
+  # Fail closed if the container vanished: there is nothing to attribute.
+  docker inspect --format '{{.State.Status}}' "$container_name" >/dev/null 2>&1 ||
+    die "detached container '$container_name' no longer exists" 66
+
+  start_ns=$(date +%s%N)
+  set +e
+  # `docker wait` prints the container's exit code on stdout; its own status is
+  # the success of the wait, not of the container.
+  rc=$(docker wait "$container_name" 2>/dev/null)
+  wait_rc=$?
+  set -e
+  end_ns=$(date +%s%N)
+  wait_ms=$(((end_ns - start_ns) / 1000000))
+  ((wait_rc == 0)) || die "docker wait failed for '$container_name'" 69
+  [[ "$rc" =~ ^[0-9]+$ ]] || die "docker wait returned '$rc' for '$container_name'" 69
+
+  mkdir -p "$(dirname "$repo_root/$log_rel")" "$(dirname "$inspect_abs")" ||
+    die "cannot create the log directory" 73
+  set +e
+  docker logs "$container_name" >"$repo_root/$log_rel" 2>&1
+  logs_rc=$?
+  set -e
+  ((logs_rc == 0)) || printf 'court: WARNING docker logs failed for %s\n' "$container_name" >&2
+
+  if ! docker inspect "$container_name" >"$inspect_abs" 2>/dev/null; then
+    printf '[]\n' >"$inspect_abs"
+    printf 'court: WARNING could not inspect container %s; enforcement cannot be proven\n' \
+      "$container_name" >&2
+  fi
+  # Duration prefers the daemon's own start/finish timestamps.
+  duration_ms=$wait_ms
+  finished_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  if measured=$(python3 - "$inspect_abs" <<'PY'
+import datetime, json, sys
+try:
+    payload = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+if not isinstance(payload, list) or not payload:
+    raise SystemExit(0)
+state = payload[0].get("State") or {}
+started = state.get("StartedAt") or ""
+finished = state.get("FinishedAt") or ""
+try:
+    begin = datetime.datetime.fromisoformat(started.replace("Z", "+00:00"))
+    end = datetime.datetime.fromisoformat(finished.replace("Z", "+00:00"))
+except Exception:
+    raise SystemExit(0)
+if end <= begin:
+    raise SystemExit(0)
+print(int((end - begin).total_seconds() * 1000))
+PY
+  ); then
+    if [[ "$measured" =~ ^[0-9]+$ ]] && ((measured > 0)); then
+      duration_ms=$measured
+    fi
+  fi
+
+  docker rm -f "$container_name" >/dev/null 2>&1 || true
+
+  toolchain_path=""
+  [[ -f "$toolchain_abs" ]] && toolchain_path="$toolchain_abs"
+
+  set +e
+  python3 - "$state_abs" "$finished_utc" "$toolchain_path" "$rc" "$duration_ms" <<'PY'
+import json, subprocess, sys
+state = json.load(open(sys.argv[1], encoding="utf-8"))
+finished_utc, toolchain, exit_code, duration_ms = sys.argv[2:6]
+argv = [state["receipt_args"][0]] + state["receipt_args"][1:]
+argv += ["--finished-utc", finished_utc, "--toolchain", toolchain,
+         "--exit-code", exit_code, "--duration-ms", duration_ms, "--"] + state["argv"]
+raise SystemExit(subprocess.call([sys.executable] + argv))
+PY
+  receipt_rc=$?
+  set -e
+
+  rm -f "$toolchain_abs" "$inspect_abs"
+
+  printf 'court: %s exit=%s enforcement=%s receipt=%s log=%s\n' \
+    "${state_abs##*/}" "$rc" "$([[ $receipt_rc -eq 0 ]] && echo ok || echo FAILED)" \
+    "$receipt_rel" "$log_rel" >&2
+  if [[ -n "${SELVEDGE_RECEIPT_PATHFILE:-}" ]]; then
+    printf '%s\n' "$repo_root/$receipt_rel" >"$SELVEDGE_RECEIPT_PATHFILE"
+  fi
+  if ((receipt_rc != 0)); then
+    exit "$receipt_rc"
+  fi
+  # The pending-state file is kept: it holds the exact argv of the run and is
+  # consumed by the pilot's arm receipt. A human can delete old ones by hand.
+  exit "$rc"
+fi
 
 # ---------------------------------------------------------------------------
 # hard limits, validated before anything runs
@@ -447,8 +582,100 @@ if [[ "$network_mode" == "none" ]]; then
   common+=(-e "CARGO_NET_OFFLINE=true")
 fi
 
-printf 'court: %s image=%s memory=%s cpus=%s pids=%s tmp=%s network=%s gpu=%s\n' \
-  "$court" "$image_ref" "$mem" "$cpus" "$pids" "$tmp_size" "$network_mode" "$gpu_mode" >&2
+detach_note=""
+if ((detach)); then
+  detach_note=" detach=pending"
+fi
+printf 'court: %s image=%s memory=%s cpus=%s pids=%s tmp=%s network=%s gpu=%s%s\n' \
+  "$court" "$image_ref" "$mem" "$cpus" "$pids" "$tmp_size" "$network_mode" "$gpu_mode" \
+  "$detach_note" >&2
+
+# The receipt arguments are built once and reused by the foreground path and by
+# the detached `wait` path, so a detached run cannot drift from a supervised one.
+inspect_abs="$repo_root/results/courts/.tmp/${rand}.inspect.json"
+declare -a receipt_static=(
+  --receipt-out "$repo_root/$receipt_rel"
+  --court "$court"
+  --stamp "$stamp"
+  --started-utc "$started_utc"
+  --revision "$revision"
+  --worktree-dirty "$worktree_dirty"
+  --container-name "$container_name"
+  --inspect "$inspect_abs"
+  --image-ref "$image_ref"
+  --image-id "$image_id"
+  --image-digest "$image_digest"
+  --image-digest-source "$image_digest_source"
+  --memory "$mem"
+  --cpus "$cpus"
+  --pids "$pids"
+  --tmpfs-size "$tmp_size"
+  --nofile "$nofile"
+  --network "$network_mode"
+  --gpu-mode "$gpu_mode"
+  --gpu-detail "$gpu_detail"
+  --user "${host_uid}:${host_gid}"
+  "${receipt_mount_args[@]}"
+  --host-uname "$(uname -srm)"
+  --docker-client "$docker_client"
+  --docker-server "$docker_server"
+  --cgroup-version "$cgroup_version"
+  --log "$log_rel"
+)
+
+if ((detach)); then
+  # -------------------------------------------------------------------------
+  # detached launch: the container is not tied to this shell, so the training
+  # survives a session loss. `wait` finishes it and writes the receipt.
+  # -------------------------------------------------------------------------
+  pending_dir="$repo_root/results/courts/pending"
+  mkdir -p "$pending_dir" || die "cannot create $pending_dir" 73
+  state_abs="$pending_dir/${container_name}.json"
+  printf '%s\0' "$receipt_writer" "${receipt_static[@]}" >"$tmpdir/receipt_args"
+  printf '%s\0' "${argv[@]}" >"$tmpdir/argv"
+  python3 - "$state_abs" "$container_name" "$log_rel" "$receipt_rel" \
+    "$toolchain_abs" "$inspect_abs" "$stamp" "$started_utc" "$revision" \
+    "$tmpdir/receipt_args" "$tmpdir/argv" <<'PY' || die "cannot write the pending-state file" 73
+import json, os, sys
+(state_path, container_name, log_rel, receipt_rel, toolchain_abs, inspect_abs,
+ stamp, started_utc, revision, args_path, argv_path) = sys.argv[1:12]
+
+def read_nul(path):
+    with open(path, "rb") as handle:
+        parts = handle.read().split(b"\0")
+    if parts and parts[-1] == b"":
+        parts.pop()
+    return [item.decode() for item in parts]
+
+state = {
+    "schema": "selvedge/court-detached/v1",
+    "container_name": container_name,
+    "log_rel": log_rel,
+    "receipt_rel": receipt_rel,
+    "toolchain_abs": toolchain_abs,
+    "inspect_abs": inspect_abs,
+    "stamp": stamp,
+    "started_utc": started_utc,
+    "revision": revision,
+    "receipt_args": read_nul(args_path),
+    "argv": read_nul(argv_path),
+}
+tmp = state_path + ".tmp"
+with open(tmp, "w", encoding="utf-8") as handle:
+    json.dump(state, handle, indent=2, sort_keys=True)
+    handle.write("\n")
+    handle.flush()
+    os.fsync(handle.fileno())
+os.replace(tmp, state_path)
+PY
+  container_id=$(docker run -d "${common[@]}" "${gpu_args[@]}" "$image_ref" \
+    /bin/sh -c 'if [ -n "${SELVEDGE_TOOLCHAIN_OUT:-}" ]; then /bin/sh '"$toolchain_probe_script"' > "$SELVEDGE_TOOLCHAIN_OUT" 2>&1 || true; fi; exec "$@"' \
+    selvedge-court "${argv[@]}") || die "detached docker run failed for $container_name" 69
+  printf 'court: %s detached container=%s state=%s log=%s\n' \
+    "$court" "$container_id" "$state_abs" "$repo_root/$log_rel" >&2
+  printf '%s\n' "$state_abs"
+  exit 0
+fi
 
 start_ns=$(date +%s%N)
 set +e
@@ -464,7 +691,7 @@ finished_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 # ---------------------------------------------------------------------------
 # verify the limits actually applied, then write the receipt
 # ---------------------------------------------------------------------------
-inspect_file="$tmpdir/inspect.json"
+inspect_file="$inspect_abs"
 if ! docker inspect "$container_name" >"$inspect_file" 2>/dev/null; then
   printf '[]\n' >"$inspect_file"
   printf 'court: WARNING could not inspect container %s; enforcement cannot be proven\n' \
@@ -478,43 +705,16 @@ if [[ -f "$toolchain_abs" ]]; then
 fi
 
 set +e
-python3 "$receipt_writer" \
-  --receipt-out "$repo_root/$receipt_rel" \
-  --court "$court" \
-  --stamp "$stamp" \
-  --started-utc "$started_utc" \
+python3 "$receipt_writer" "${receipt_static[@]}" \
   --finished-utc "$finished_utc" \
-  --revision "$revision" \
-  --worktree-dirty "$worktree_dirty" \
-  --container-name "$container_name" \
-  --inspect "$inspect_file" \
   --toolchain "$toolchain_path" \
-  --image-ref "$image_ref" \
-  --image-id "$image_id" \
-  --image-digest "$image_digest" \
-  --image-digest-source "$image_digest_source" \
-  --memory "$mem" \
-  --cpus "$cpus" \
-  --pids "$pids" \
-  --tmpfs-size "$tmp_size" \
-  --nofile "$nofile" \
-  --network "$network_mode" \
-  --gpu-mode "$gpu_mode" \
-  --gpu-detail "$gpu_detail" \
-  --user "${host_uid}:${host_gid}" \
-  "${receipt_mount_args[@]}" \
   --exit-code "$rc" \
   --duration-ms "$duration_ms" \
-  --host-uname "$(uname -srm)" \
-  --docker-client "$docker_client" \
-  --docker-server "$docker_server" \
-  --cgroup-version "$cgroup_version" \
-  --log "$log_rel" \
   -- "${argv[@]}"
 receipt_rc=$?
 set -e
 
-rm -f "$toolchain_abs"
+rm -f "$toolchain_abs" "$inspect_abs"
 
 printf 'court: %s exit=%s enforcement=%s receipt=%s log=%s\n' \
   "$court" "$rc" "$([[ $receipt_rc -eq 0 ]] && echo ok || echo FAILED)" \

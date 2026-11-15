@@ -13,13 +13,15 @@
 #   scripts/court io -- fio --name=seq --filename=/work/target/io.bin ...
 #   scripts/court commit_identity
 #   scripts/court perf_numbers
+#   scripts/court --gpu --detach oracle -- python3 oracle/train/loop.py ...
+#   scripts/court wait results/courts/pending/<container>.json
 set -Eeuo pipefail
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 court_runner="$script_dir/docker-court.sh"
 
 usage() {
-  sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 if (($# == 0)); then
@@ -30,7 +32,7 @@ fi
 declare -a flags=()
 while (($#)); do
   case "$1" in
-    --net | --gpu | --host-root-ro)
+    --net | --gpu | --host-root-ro | --detach)
       flags+=("$1")
       shift
       ;;
@@ -108,6 +110,9 @@ case "$court" in
     ;;
   commit_identity)
     exec "$court_runner" commit_identity "${flags[@]}" -- "$@"
+    ;;
+  wait)
+    exec "$court_runner" wait -- "$@"
     ;;
   perf_numbers)
     if (($# == 0)); then
