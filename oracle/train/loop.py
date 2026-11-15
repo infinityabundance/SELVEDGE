@@ -247,6 +247,11 @@ def main(argv: list[str]) -> int:
               f"kind={report['kind']}")
         if not report["ok"]:
             raise SystemExit("zero-point identity check failed (K12)")
+        del probe_base, probe_ids
+        probe_base = None
+        probe_ids = None
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
 
     trainable = arm_model.trainable_parameters()
     optimizer = torch.optim.AdamW(trainable, lr=1e-3, betas=(0.9, 0.95), eps=1e-8,

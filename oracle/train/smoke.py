@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import gc
 import json
 import os
 import sys
@@ -100,9 +101,12 @@ def evaluate_checkpoint(arm: str, config: str, admission: str, checkpoint: str,
     split, split_sha = tasks.load_split(split_dir, split_receipts)
     windows = tasks.heldout_windows(split)
     humaneval = tasks.load_humaneval(dataset_root)
+    gsm8k = tasks.gsm8k_subset(dataset_root, 5)
+    truthfulqa = tasks.load_truthfulqa(dataset_root)[:5]
     teacher = harness.load_model(harness.model_path(hf_root, "1.7b"), device)
     result = harness.smoke(arm_model.model, teacher, tokenizer,
-                           {"humaneval": humaneval}, windows, device, problems=5)
+                           {"humaneval": humaneval, "gsm8k": gsm8k,
+                            "truthfulqa": truthfulqa}, windows, device, problems=5)
     prompts = [tasks.humaneval_prompt(item) for item in humaneval[:5]]
     first = harness.generate_texts(arm_model.model, tokenizer, prompts, 32,
                                    harness.GEN_BATCH, device)
@@ -129,8 +133,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--split-dir", default="results/artifacts")
     parser.add_argument("--split-receipts", default="results/splits")
     parser.add_argument("--skip-eval", action="store_true")
-    parser.add_argument("--micro-batch", type=int, default=2)
-    parser.add_argument("--accum", type=int, default=32)
+    parser.add_argument("--micro-batch", type=int, default=1)
+    parser.add_argument("--accum", type=int, default=64)
     args = parser.parse_args(argv)
 
     if not torch.cuda.is_available():
@@ -186,6 +190,9 @@ def main(argv: list[str]) -> int:
             "zero_point": zero_point,
             "eval": eval_result,
         }
+        gc.collect()
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
         deltas_msg = (f"{resume['max_abs_loss_delta']:.3e}"
                       if resume["max_abs_loss_delta"] is not None else "n/a")
         print(f"smoke: arm {arm} tok/s={summary['tokens_per_second']:.0f} "

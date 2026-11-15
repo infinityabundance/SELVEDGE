@@ -310,7 +310,8 @@ def smoke(student, teacher, tokenizer, items, windows, device, problems: int = 5
         "distributional": distributional(student, teacher, subset, device),
         "humaneval": run_humaneval(student, tokenizer, small, device),
         "probes": {
-            "gsm8k": tasks.gsm8k_prompt(items["gsm8k"][0]),
-            "truthfulqa": tasks.truthfulqa_prompt(items["truthfulqa"][0], ""),
+            "gsm8k": tasks.gsm8k_prompt(items["gsm8k"][0]) if items.get("gsm8k") else None,
+            "truthfulqa": tasks.truthfulqa_prompt(items["truthfulqa"][0], "")
+            if items.get("truthfulqa") else None,
         },
     }
