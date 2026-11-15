@@ -1022,18 +1022,23 @@ ceiling. No compliant comparison may include it.
 
 **A — sparse-upcycled Qwen3-1.7B.** Frozen 1.7B backbone (`663,610,368`) plus,
 per layer, a trainable router that selects `k = 5` of 16 contiguous FFN channel
-groups, plus trainable rank-8 residual adapters on the selected groups. Each
+groups, plus trainable rank-32 residual adapters on the selected groups. Each
 selected group's gate/up/down slices are read; unselected groups are never
 computed. The adapter for group `g` acts on the group's 384-wide pre-down
 activation `a_g = SiLU(W_gate_g x) * (W_up_g x)`:
-`a_g -> a_g + B_g (A_g a_g)` with `A_g: R^384 -> R^8` and `B_g: R^8 -> R^384`.
+`a_g -> a_g + B_g (A_g a_g)` with `A_g: R^384 -> R^32` and `B_g: R^32 -> R^384`.
 `B_g` is zero-initialised. Router: one `d_model x 16` linear per layer, no bias,
 softmax over 16 logits, hard top-5 forward with a straight-through gradient.
 
 Active unique is
-`663,610,368 + 28*5*2,359,296 + 28*5*(2048*8 + 8*384) + 28*2048*16`
-= `663,610,368 + 330,301,440 + 2,723,840 + 917,504` = **`997,553,152`**.
-Compliant.
+`663,610,368 + 28*5*2,359,296 + 28*5*(384*32 + 32*384) + 28*2048*16`
+= `663,610,368 + 330,301,440 + 3,440,640 + 917,504` = **`998,269,952`**.
+Compliant. (The adapter is a low-rank factorisation over the 384-wide group
+activation: `r*(384+384)` elements per selected group. Correction of record:
+the first committed text wrote the adapter as acting on the hidden state and
+counted `r*(384+2048)`; the code, the admission config and this number were
+corrected before any measurement, with no change to any threshold, arm or kill
+condition. See T1.15 A5.)
 
 **A0 — untrained A reference.** Arm A's architecture with the router at its
 seed-1001 initialisation and zero adapters, no training. This is the
@@ -1194,7 +1199,7 @@ All comparisons are relative to the same teacher on the same tokens.
   adapter/router parameters, linear warm-up over 100 steps, cosine decay to
   `1e-4` at the end of the registered budget. No parameter group uses a
   different schedule.
-- **LoRA / adapter ranks.** A: rank 8 on the selected FFN groups. B: specialist
+- **LoRA / adapter ranks.** A: rank 32 on the selected FFN groups. B: specialist
   width 512 (not low-rank; the specialist *is* the capacity). C: dense width
   2048. C2: dense width 4608.
 - **Routing.** Hard top-k (A: k=5 of 16; B: k=4 of 8). Training uses a
@@ -1413,3 +1418,34 @@ As in M1/M2: planned deviations are none. Unplanned deviations are recorded in
 change to a budget, arm, threshold, sample size, contamination rule or kill
 condition after the first measurement is an amendment appended here with its own
 timestamp, and the pre-amendment results are reported against the original text.
+
+### A5 — 2026-11-15, before any T1 measurement
+
+Arm A's adapter arithmetic was corrected. The first committed text described the
+rank-8 adapter as acting on the hidden state and counted `r*(384+2048)` elements
+per selected group. The adapter acts on the group's 384-wide pre-down activation,
+so each factor is 384 wide and the rank was raised to 32: `r*(384+384) = 24,576`
+elements per selected group, `28*5*24,576 = 3,440,640` in total, giving an active
+unique count of `998,269,952` instead of `997,553,152`. No budget, arm, token
+count, threshold, metric, seed or kill condition changes, and no measurement had
+been taken when this correction was made. The authoritative count is the Rust
+admission record (`results/train/admission/A.json`).
+
+### A6 — 2026-11-15, before the T1 smoke measurement
+
+K11 required a checkpoint to be resumable "bit-identically". The routed arms
+execute their groups with a grouped scatter (`index_add_` over the selected
+tokens), and current CUDA atomics in that kernel are not bitwise reproducible
+across runs even from identical state and identical data. Bitwise resume cannot
+therefore be a pass condition without changing the execution kernel, and
+changing the kernel would change what is being trained. K11's resume clause is
+restated as a numerical condition, fixed before the smoke measurement:
+
+- a resume from the step-10 checkpoint into a 20-step run must reproduce the
+  uninterrupted run's loss for every continuation step within
+  `max |loss_full - loss_resumed| <= 1e-2`;
+- the checkpoint hash must match its sidecar exactly, and the resumed run must
+  start from the recorded step and token cursor;
+- the measured delta is reported verbatim in the smoke and every run receipt.
+
+No budget, arm, threshold, metric, data rule or other kill condition changes.

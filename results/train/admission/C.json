@@ -1,0 +1,43 @@
+{
+  "schema": "selvedge/admission-record/v1",
+  "arm": "C",
+  "admitted": true,
+  "config_sha256": "3d61dfa36f8b1c2f9a393051cf0cfcf2bcb9e394a65b1e197f4e29bceadf6ea2",
+  "budget": {
+    "active_unique_limit": 1000000000,
+    "mode": "compliance"
+  },
+  "total_accessible": 772210688,
+  "mode": "compliance",
+  "active_unique_params": 772210688,
+  "selector_unique_params": 0,
+  "execution_unique_params": 772210688,
+  "selector_elements_read": 0,
+  "execution_elements_read": 772210688,
+  "selector_flops": {
+    "matmul_flops": 0,
+    "other_flops": 0,
+    "controller_flops": 0
+  },
+  "execution_flops": {
+    "matmul_flops": 1544421376,
+    "other_flops": 9904128,
+    "controller_flops": 0
+  },
+  "total_flops": {
+    "matmul_flops": 1544421376,
+    "other_flops": 9904128,
+    "controller_flops": 0
+  },
+  "verdict": {
+    "kind": "within",
+    "active_unique_params": 772210688,
+    "limit": 1000000000
+  },
+  "refusal": null,
+  "notes": [
+    "frozen 0.6B core + one dense width-2048 SwiGLU adapter per layer; parameter-matched to B's active specialists"
+  ],
+  "stamp": null,
+  "revision": null
+}

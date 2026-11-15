@@ -1,0 +1,43 @@
+{
+  "schema": "selvedge/admission-record/v1",
+  "arm": "B",
+  "admitted": true,
+  "config_sha256": "e442fc9c5773831d6a9dde349b5897b81e14fbdd4eef855799d3a3f615a20461",
+  "budget": {
+    "active_unique_limit": 1000000000,
+    "mode": "compliance"
+  },
+  "total_accessible": 948600832,
+  "mode": "compliance",
+  "active_unique_params": 772440064,
+  "selector_unique_params": 229376,
+  "execution_unique_params": 772210688,
+  "selector_elements_read": 229376,
+  "execution_elements_read": 772210688,
+  "selector_flops": {
+    "matmul_flops": 458752,
+    "other_flops": 0,
+    "controller_flops": 0
+  },
+  "execution_flops": {
+    "matmul_flops": 1544421376,
+    "other_flops": 9904128,
+    "controller_flops": 0
+  },
+  "total_flops": {
+    "matmul_flops": 1544880128,
+    "other_flops": 9904128,
+    "controller_flops": 0
+  },
+  "verdict": {
+    "kind": "within",
+    "active_unique_params": 772440064,
+    "limit": 1000000000
+  },
+  "refusal": null,
+  "notes": [
+    "frozen 0.6B core + per-layer 8 SwiGLU specialists of width 512, hard top-4 routing, zero-initialised down projections"
+  ],
+  "stamp": null,
+  "revision": null
+}

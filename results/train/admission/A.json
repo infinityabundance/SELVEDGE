@@ -1,0 +1,44 @@
+{
+  "schema": "selvedge/admission-record/v1",
+  "arm": "A",
+  "admitted": true,
+  "config_sha256": "bd15d51e98c025ee7b575695ad313a4c0076bff1419523e2d9b8ed585a88564d",
+  "budget": {
+    "active_unique_limit": 1000000000,
+    "mode": "compliance"
+  },
+  "total_accessible": 1732502528,
+  "mode": "compliance",
+  "active_unique_params": 998269952,
+  "selector_unique_params": 917504,
+  "execution_unique_params": 997352448,
+  "selector_elements_read": 917504,
+  "execution_elements_read": 997352448,
+  "selector_flops": {
+    "matmul_flops": 1835008,
+    "other_flops": 0,
+    "controller_flops": 0
+  },
+  "execution_flops": {
+    "matmul_flops": 1994704896,
+    "other_flops": 9595904,
+    "controller_flops": 0
+  },
+  "total_flops": {
+    "matmul_flops": 1996539904,
+    "other_flops": 9595904,
+    "controller_flops": 0
+  },
+  "verdict": {
+    "kind": "within",
+    "active_unique_params": 998269952,
+    "limit": 1000000000
+  },
+  "refusal": null,
+  "notes": [
+    "frozen 1.7B backbone + per-layer router over 16 FFN groups, k=5, rank-32 residual adapters on the selected groups",
+    "slot identities stand for the k realized groups; the runtime check requires k distinct groups per layer and the Python mirror uses the realized group identities"
+  ],
+  "stamp": null,
+  "revision": null
+}

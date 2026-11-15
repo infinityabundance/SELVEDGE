@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+"""T1 smoke tests: every architecture trains, checkpoints, resumes and evaluates.
+
+Per arm (A, B, C):
+
+  1. verify the Rust admission record for the arm config;
+  2. verify step-0 identity against the frozen base (K12);
+  3. train 20 registered-shape steps (65,536 tokens per step);
+  4. train 10 steps, resume from the step-10 checkpoint, train to 20, and
+     compare the continuation loss with the uninterrupted run (K11 resume
+     evidence, reported as a numerical delta — GPU atomics in grouped routing
+     are not bitwise reproducible);
+  5. evaluate on 5 HumanEval problems, 2 held-out windows per domain and a
+     fixed determinism probe (the same 5 prompts generated twice);
+  6. record throughput, VRAM peak and steps/s for the budget table.
+
+Writes results/train/smoke-<stamp>.json. No full run is started here.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime
+import json
+import os
+import sys
+
+import numpy as np
+import torch
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "eval"))
+
+import harness  # noqa: E402
+import loop  # noqa: E402
+import tasks  # noqa: E402
+from modeling import build_arm, load_admission  # noqa: E402
+
+
+def utc_now() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def stamp_now() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def write_json_atomic(path: str, payload: dict) -> None:
+    os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(tmp, path)
+
+
+def read_losses(path: str) -> dict[int, float]:
+    losses = {}
+    with open(path, "r", encoding="utf-8") as handle:
+        for line in handle:
+            record = json.loads(line)
+            losses[int(record["step"])] = float(record["loss"])
+    return losses
+
+
+def run_loop(arm: str, config: str, admission: str, out: str, steps: int,
+             resume: str | None, zero_point: bool, micro_batch: int,
+             accum: int) -> None:
+    argv = ["--arm", arm, "--config", config, "--admission", admission,
+            "--out", out, "--steps", str(steps), "--checkpoint-every", "10",
+            "--micro-batch", str(micro_batch), "--accum", str(accum)]
+    if resume:
+        argv += ["--resume", resume]
+    if zero_point:
+        argv += ["--zero-point"]
+    loop.main(argv)
+
+
+def evaluate_checkpoint(arm: str, config: str, admission: str, checkpoint: str,
+                        hf_root: str, dataset_root: str, split_dir: str,
+                        split_receipts: str, device) -> dict:
+    from transformers import AutoModelForCausalLM
+
+    config_payload, admission_payload = load_admission(config, admission)
+    size = "1.7b" if arm in ("A", "A0") else "0.6b"
+    base = AutoModelForCausalLM.from_pretrained(
+        harness.model_path(hf_root, size), dtype=torch.bfloat16,
+        local_files_only=True, trust_remote_code=False, attn_implementation="sdpa")
+    base.to(device)
+    base.eval()
+    arm_model = build_arm(base, arm, config_payload, admission_payload, 1001)
+    arm_model.model.to(device)
+    state = torch.load(checkpoint, map_location=device, weights_only=False)
+    arm_model.model.load_state_dict(state["model"], strict=False)
+    arm_model.model.eval()
+    tokenizer = harness.load_tokenizer(hf_root)
+    split, split_sha = tasks.load_split(split_dir, split_receipts)
+    windows = tasks.heldout_windows(split)
+    humaneval = tasks.load_humaneval(dataset_root)
+    teacher = harness.load_model(harness.model_path(hf_root, "1.7b"), device)
+    result = harness.smoke(arm_model.model, teacher, tokenizer,
+                           {"humaneval": humaneval}, windows, device, problems=5)
+    prompts = [tasks.humaneval_prompt(item) for item in humaneval[:5]]
+    first = harness.generate_texts(arm_model.model, tokenizer, prompts, 32,
+                                   harness.GEN_BATCH, device)
+    second = harness.generate_texts(arm_model.model, tokenizer, prompts, 32,
+                                    harness.GEN_BATCH, device)
+    result["determinism"] = {"problems": len(prompts), "identical": first == second}
+    result["checkpoint_step"] = int(state["step"])
+    result["split_sha256"] = split_sha
+    result["vram_peak_gib"] = torch.cuda.max_memory_allocated() / (1024 ** 3)
+    return result
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--arms", default="A,B,C")
+    parser.add_argument("--steps", type=int, default=20)
+    parser.add_argument("--resume-split", type=int, default=10)
+    parser.add_argument("--config-dir", default="results/train/admission-configs")
+    parser.add_argument("--admission-dir", default="results/train/admission")
+    parser.add_argument("--out-dir", default="results/artifacts/train/smoke")
+    parser.add_argument("--receipt", default="results/train")
+    parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
+    parser.add_argument("--dataset-root", default="results/artifacts/datasets")
+    parser.add_argument("--split-dir", default="results/artifacts")
+    parser.add_argument("--split-receipts", default="results/splits")
+    parser.add_argument("--skip-eval", action="store_true")
+    parser.add_argument("--micro-batch", type=int, default=2)
+    parser.add_argument("--accum", type=int, default=32)
+    args = parser.parse_args(argv)
+
+    if not torch.cuda.is_available():
+        raise SystemExit("smoke requires the GPU court (--gpu)")
+    device = torch.device("cuda")
+    arms = [item for item in args.arms.split(",") if item]
+    reports = {}
+    for arm in arms:
+        config = os.path.join(args.config_dir, f"{arm}.json")
+        admission = os.path.join(args.admission_dir, f"{arm}.json")
+        if not os.path.exists(admission):
+            raise SystemExit(f"missing admission record {admission}; "
+                             "run scripts/train-admission.sh")
+        out = os.path.join(args.out_dir, arm)
+        resume_out = os.path.join(args.out_dir, f"{arm}-resume")
+        print(f"smoke: arm {arm} training {args.steps} steps", flush=True)
+        torch.cuda.reset_peak_memory_stats()
+        run_loop(arm, config, admission, out, args.steps, None, True,
+                 args.micro_batch, args.accum)
+        full_losses = read_losses(os.path.join(out, "train.jsonl"))
+
+        run_loop(arm, config, admission, resume_out, args.resume_split, None, False,
+                 args.micro_batch, args.accum)
+        checkpoint = os.path.join(resume_out, f"step-{args.resume_split:06d}.pt")
+        run_loop(arm, config, admission, resume_out, args.steps, checkpoint, False,
+                 args.micro_batch, args.accum)
+        resumed_losses = read_losses(os.path.join(resume_out, "train.jsonl"))
+        common = sorted(set(full_losses) & set(resumed_losses))
+        common = [step for step in common if step > args.resume_split]
+        deltas = [abs(full_losses[step] - resumed_losses[step]) for step in common]
+        resume = {
+            "steps_compared": len(common),
+            "max_abs_loss_delta": float(max(deltas)) if deltas else None,
+            "mean_abs_loss_delta": float(np.mean(deltas)) if deltas else None,
+            "full_losses": {str(step): full_losses[step] for step in common},
+            "resumed_losses": {str(step): resumed_losses[step] for step in common},
+            "note": "GPU atomics in grouped routing are not bitwise reproducible; "
+                    "the delta is the measured continuation difference",
+        }
+        summary = json.load(open(os.path.join(out, "summary.json"), encoding="utf-8"))
+        zero_point = json.load(open(os.path.join(out, "zero-point.json"),
+                                    encoding="utf-8"))
+        eval_result = None
+        if not args.skip_eval:
+            final = os.path.join(out, f"step-{args.steps:06d}.pt")
+            eval_result = evaluate_checkpoint(arm, config, admission, final,
+                                              args.hf_root, args.dataset_root,
+                                              args.split_dir, args.split_receipts, device)
+            torch.cuda.empty_cache()
+        reports[arm] = {
+            "train": summary,
+            "resume": resume,
+            "zero_point": zero_point,
+            "eval": eval_result,
+        }
+        deltas_msg = (f"{resume['max_abs_loss_delta']:.3e}"
+                      if resume["max_abs_loss_delta"] is not None else "n/a")
+        print(f"smoke: arm {arm} tok/s={summary['tokens_per_second']:.0f} "
+              f"vram={summary['vram_peak_gib']:.2f}GiB "
+              f"zero_point={zero_point['ok']} resume_delta={deltas_msg}", flush=True)
+
+    stamp = stamp_now()
+    receipt = {
+        "schema": "selvedge/train-smoke/v1",
+        "stamp": stamp,
+        "revision": os.environ.get("SELVEDGE_REVISION", "unknown"),
+        "finished_utc": utc_now(),
+        "steps": args.steps,
+        "tokens_per_step": 64 * 1024,
+        "arms": reports,
+        "gpu": torch.cuda.get_device_name(0),
+        "torch": torch.__version__,
+        "command": " ".join(sys.argv),
+    }
+    path = os.path.join(args.receipt, f"smoke-{stamp}.json")
+    write_json_atomic(path, receipt)
+    print(f"smoke: receipt={path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

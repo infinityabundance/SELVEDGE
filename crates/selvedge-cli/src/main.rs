@@ -2,6 +2,8 @@
 //!
 //! Implemented commands:
 //!
+//! - `selvedge admit --config <json>`: admit one arm's declared selection path
+//!   against the active-parameter ceiling and emit an admission record;
 //! - `selvedge doctor [--json] [--probe-host]`: environment and schema probe;
 //!   exits non-zero on any failed check;
 //! - `selvedge inspect <bundle|manifest> [--json]`: read-only shard table;
@@ -18,6 +20,7 @@ use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand};
 
+mod admit_cmd;
 mod atlas_cmd;
 mod config;
 mod convert_cmd;
@@ -47,6 +50,8 @@ struct Cli {
 // move the allocation without changing argument handling.
 #[allow(clippy::large_enum_variant)]
 enum Commands {
+    /// Admit a declared selection path against the active-parameter ceiling.
+    Admit(admit_cmd::AdmitArgs),
     /// Probe the environment, config, schema versions and toolchain identity.
     Doctor(doctor::DoctorArgs),
     /// Print a shard table for a bundle or a bare manifest. Read-only.
@@ -84,6 +89,7 @@ type CliResult = Result<ExitCode, Box<dyn std::error::Error>>;
 fn main() -> ExitCode {
     let cli = Cli::parse();
     let result: CliResult = match cli.command {
+        Commands::Admit(args) => admit_cmd::run(&args),
         Commands::Doctor(args) => doctor::run(&args),
         Commands::Inspect(args) => inspect::run(&args),
         Commands::InspectModel(args) => inspect_model_cmd::run(&args),
