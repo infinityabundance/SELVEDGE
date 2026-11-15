@@ -849,10 +849,10 @@ flowchart TD
     C --> E[P3.6 cold start]
     D --> E
     E --> F[P3.3 error-directed router]
-    F --> G[P3.4 five-arm pilot = NOW]
-    G --> H{hybrid wins?}
+    F --> G[P3.4 five-arm pilot — NOW]
+    G --> H{hybrid wins}
     H -->|no| I[record negative and stop WS3 scaling]
-    H -->|yes| J[P3.5 C+D, P4.1 P4.2]
+    H -->|yes| J[P3.5 phases C and D, P4.1 P4.2]
     J --> K[P3.7 prefetch predictor]
     K --> L[P4.3 P4.4 P4.5]
     L --> M[WS5 mechanisms]
