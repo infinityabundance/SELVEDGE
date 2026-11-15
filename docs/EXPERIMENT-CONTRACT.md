@@ -1911,3 +1911,151 @@ the pre-amendment comparison is reported against the original text (P6.5).
 As in M1/M2/T1. Unplanned deviations are recorded in `docs/WORK-LOG.md` and in
 the affected receipt with reason and timestamp. The budget amendment A8 (T2.7)
 is the only planned amendment; it is written before any full-budget step.
+
+### A8 — 2026-11-15, before any T2 full-budget step
+
+The T2 smoke (`results/train/smoke-20261115T103325Z.json` for D, M and X;
+`results/train/smoke-20261115T114908Z.json` for H;
+`results/train/smoke-20261115T125618Z.json` for H*) and the budget derivation
+(`results/train/budget-20261115T130456Z.json`) fix the budget and record the
+execution decisions. The receipts carry revision
+`7561a94cc2f12c3c5f05ce38af70933c4fa15d9f`; two working-tree edits landed
+immediately after that revision (checkpoint loading moved to the CPU, and the
+P2.4 analysis pooling). Neither touches the training step, the data order or the
+loss; the per-step throughput and VRAM are unchanged by them.
+
+**1. Declared budget.** Every T2 arm trains for
+
+<!-- BEGIN GENERATED: t2-budget-tokens -->
+67108864
+<!-- END GENERATED: t2-budget-tokens -->
+
+tokens. The arithmetic is T2.7's rule applied to the measured slowest arm: the
+slowest arm is `H` at
+
+<!-- BEGIN GENERATED: t2-slowest-tokens-per-second -->
+4767.47
+<!-- END GENERATED: t2-slowest-tokens-per-second -->
+
+tokens/s; `0.9 * 5 h * 3600 s * that rate` is 77,232,958, whose largest power of
+two is the declared budget. The slowest arm therefore needs
+
+<!-- BEGIN GENERATED: t2-slowest-arm-hours -->
+3.91
+<!-- END GENERATED: t2-slowest-arm-hours -->
+
+hours, and the five arms together
+
+<!-- BEGIN GENERATED: t2-total-gpu-hours -->
+15.68
+<!-- END GENERATED: t2-total-gpu-hours -->
+
+GPU-hours. The per-arm table (throughput, VRAM peak, hours, resume delta) is
+generated in `results/T2-PLAN.md` from the same receipt.
+
+**2. Replication.** The H*/H/D replication at seeds 2001-2003 and a quarter
+budget (`16,777,216` tokens each) costs 7.50 GPU-hours by the same receipt
+(0.93 + 0.98 + 0.59 h per seed), and three H* label phases add about 0.75 h.
+The total is 23.9 GPU-hours, inside the 25-hour envelope, so the replication is
+**registered as planned**. If launch-time throughput on any of the three arms is
+below 4,500 tokens/s, the replication is dropped and T2.8's
+one-seed consequence applies; the decision is recorded in the run receipts.
+
+**3. Deterministic kernels.** T2 runs train with
+`torch.use_deterministic_algorithms(True)` and
+`CUBLAS_WORKSPACE_CONFIG=:4096:8`. Without them the dense control itself is not
+bitwise reproducible (measured 5-step loss spread 1.7e-4 on `D`), so bitwise
+determinism would be untestable. With them, all five arms produce **identical
+loss trajectories and identical checkpoint hashes** on two same-seed runs, and
+a resume reproduces the uninterrupted continuation exactly (all five receipts
+report `0.0`). This is a difference from T1's kernel configuration and is
+recorded, not inherited silently.
+
+**4. Micro-batch partition.** Each accumulation step is split into
+1024-token forwards into two 512-position forwards (`--micro-positions 512`).
+The effective batch stays `65,536` tokens, the optimiser step is unchanged, and
+the split is identical for every arm.
+
+**5. Memory table dtype.** The memory value table is stored and trained in
+bf16, its deployment dtype; the projection and gate stay fp32. An fp32 table
+put the hybrid arms at 13.4-13.8 GiB and they failed closed on the 16 GiB
+device; bf16 brings them to 10.85 GiB. The active-parameter union, the
+accessible total and the read-byte figure are unchanged (`read_bytes_per_token`
+was already quoted at the deployment dtype). The fp32 table size
+(`1,073,741,824` bytes) is reported as the *equivalent* size, not as the
+training footprint. Activation checkpointing is available
+(`--grad-checkpoint`) and is **not** used: with the bf16 table the arms fit
+without it.
+
+**6. H\* labelling cost.** One label set is `28` layers x `9` passes x `32,768`
+calibration tokens, sub-batched at 256 positions. It is measured separately in
+the H* receipt and is not charged to `H`'s compute (T2.6).
+
+### A9 — 2026-11-15, before any T2 full-budget step: the P2.4 instrument decision
+
+The check is `results/train/instrument-20261115T130334Z.json`: the six students
+`D0`, `D`, `M`, `X`, `H`, `H*` (the 50-step smoke checkpoints) evaluated on all
+`160` held-out windows against a **live full-vocabulary** Qwen3-1.7B teacher,
+with the compact T1.4 target computed on the same positions.
+
+**What the tail bucket costs.** Across the sample the teacher's mean tail mass
+is
+
+<!-- BEGIN GENERATED: t2-instrument-p-tail -->
+0.05
+<!-- END GENERATED: t2-instrument-p-tail -->
+
+of each position's probability, its tail entropy is
+
+<!-- BEGIN GENERATED: t2-instrument-tail-entropy -->
+5.32
+<!-- END GENERATED: t2-instrument-tail-entropy -->
+
+nats, and the student-versus-teacher tail divergence is
+
+<!-- BEGIN GENERATED: t2-instrument-tail-kl -->
+1.41
+<!-- END GENERATED: t2-instrument-tail-kl -->
+
+nats (for `D0`; the five arms are within 0.04 of it). The compact target is
+therefore lower than the full target by
+
+<!-- BEGIN GENERATED: t2-instrument-bias -->
+-0.397
+<!-- END GENERATED: t2-instrument-bias -->
+
+nats per token, which is exactly `-p_tail * (H + KL)` on the pooled valid
+positions (the receipt's identity check agrees to six decimals). The bias is
+almost constant across students (`0.3966` to `0.4000` nats), which is the
+condition under which a constant offset cannot reorder them.
+
+**Ranking.** The cross-student Spearman correlation between the compact and full
+losses is
+
+<!-- BEGIN GENERATED: t2-instrument-spearman -->
+0.829
+<!-- END GENERATED: t2-instrument-spearman -->
+
+with `0.58` of positions above the `1e-3` tail-mass floor. Of the three
+registered decisive pairs, two are statistically distinguishable and keep their
+sign under both targets (`X-D`: compact `+0.00584`, full `+0.00697`; `M-D0`:
+compact `-0.00189`, full `-0.00210`). The third (`H*-H`) is inside its 95% CI
+under **both** targets (compact `[-0.00383, +0.00239]`, full
+`[-0.00251, +0.00396]`), so it is not evidence for either target.
+
+**Decision.** The T1.4 compact target stands as the **training** objective for
+T2, and T2's evaluation reports **both** the compact and the full-vocabulary
+teacher KL on the held-out sample. The rule that produced the training decision
+(only statistically distinguishable pairs count) was written after the
+measurement and is therefore labelled exploratory; the both-targets safeguard
+is adopted unconditionally, so a ranking reversal inside a CI would be visible
+in the T2 report even if the training target never changed. No T2 threshold,
+arm, budget or kill condition moves.
+
+**Hard-label control, registered as an option and not run.** A dense control
+trained on the teacher's top-1 label (or the true next token) instead of the
+soft target would separate "the compact target is adequate" from "distillation
+itself is doing the work". It is registered here as arm `HL` with the same
+architecture as `D`, the same budget and the same seeds, and it is **not run in
+this pilot**: it is a sixth training arm outside the five-arm envelope. If T2's
+H*/H comparison is inside its CI, `HL` is the pre-registered next control.
