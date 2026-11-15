@@ -186,6 +186,9 @@ fn device_name(source: &str) -> Option<String> {
 }
 
 /// Block-device counters from `/sys/block/<name>/stat`.
+///
+/// The kernel reports the two time fields in milliseconds; they are kept in
+/// that unit and named accordingly rather than rescaled into nanoseconds.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DeviceCounters {
@@ -195,14 +198,14 @@ pub struct DeviceCounters {
     pub reads_merged: u64,
     /// Sectors read (512-byte units, as the kernel reports them).
     pub sectors_read: u64,
-    /// Nanoseconds spent reading.
-    pub read_ns: u64,
+    /// Kernel-reported time spent reading, in milliseconds.
+    pub read_time_ms: u64,
     /// Completed write requests.
     pub writes_completed: u64,
     /// Sectors written.
     pub sectors_written: u64,
-    /// Nanoseconds spent writing.
-    pub write_ns: u64,
+    /// Kernel-reported time spent writing, in milliseconds.
+    pub write_time_ms: u64,
 }
 
 impl DeviceCounters {
@@ -225,12 +228,12 @@ impl DeviceCounters {
             reads_completed: self.reads_completed.saturating_sub(earlier.reads_completed),
             reads_merged: self.reads_merged.saturating_sub(earlier.reads_merged),
             sectors_read: self.sectors_read.saturating_sub(earlier.sectors_read),
-            read_ns: self.read_ns.saturating_sub(earlier.read_ns),
+            read_time_ms: self.read_time_ms.saturating_sub(earlier.read_time_ms),
             writes_completed: self
                 .writes_completed
                 .saturating_sub(earlier.writes_completed),
             sectors_written: self.sectors_written.saturating_sub(earlier.sectors_written),
-            write_ns: self.write_ns.saturating_sub(earlier.write_ns),
+            write_time_ms: self.write_time_ms.saturating_sub(earlier.write_time_ms),
         }
     }
 }
@@ -256,10 +259,10 @@ pub fn device_counters(name: &str) -> Result<DeviceCounters> {
         reads_completed: parse(0),
         reads_merged: parse(1),
         sectors_read: parse(2),
-        read_ns: parse(3),
+        read_time_ms: parse(3),
         writes_completed: parse(4),
         sectors_written: parse(6),
-        write_ns: parse(7),
+        write_time_ms: parse(7),
     })
 }
 

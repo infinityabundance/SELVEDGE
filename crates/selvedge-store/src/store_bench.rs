@@ -17,6 +17,8 @@
 //! measures the operating system's cache and is explicitly not attributed to the
 //! store.
 
+use std::fs::File;
+use std::os::unix::fs::FileExt;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
@@ -151,6 +153,10 @@ pub struct PassStats {
     pub page_cache_dropped: bool,
     /// Advice record for the drop, when one was issued.
     pub drop: Option<AdviceReport>,
+    /// Throughput of a fixed 32 MiB cold device probe taken immediately before
+    /// the pass. Device-wide throughput on this workstation is bimodal, so every
+    /// pass carries its own device-state marker.
+    pub device_probe_mib_s: Option<f64>,
     /// Device movement, when counters are available.
     pub device: Option<DevicePass>,
 }
@@ -374,6 +380,7 @@ struct ArmSpec {
     policy: PolicyKind,
     cache_bytes: u64,
     order: ReadOrder,
+    pass2_order: ReadOrder,
     coalesced: bool,
     warm_pass2: bool,
     prefetch_waste: bool,
@@ -385,6 +392,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::None,
             cache_bytes: 0,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -393,6 +401,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::None,
             cache_bytes: 0,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Plan,
             coalesced: false,
             warm_pass2: true,
             prefetch_waste: false,
@@ -401,6 +410,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::None,
             cache_bytes: 0,
             order: ReadOrder::Physical,
+            pass2_order: ReadOrder::Physical,
             coalesced: true,
             warm_pass2: false,
             prefetch_waste: false,
@@ -409,6 +419,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Lru,
             cache_bytes: payload / 8,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -417,6 +428,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Lru,
             cache_bytes: payload / 4,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -425,6 +437,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Lru,
             cache_bytes: payload / 2,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -433,6 +446,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Lru,
             cache_bytes: payload.saturating_mul(2),
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -441,6 +455,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Lfu,
             cache_bytes: payload / 4,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -449,6 +464,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::LeastStale,
             cache_bytes: payload / 4,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -457,6 +473,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Pinned,
             cache_bytes: payload,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Reverse,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
@@ -465,6 +482,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             policy: PolicyKind::Lru,
             cache_bytes: payload,
             order: ReadOrder::Plan,
+            pass2_order: ReadOrder::Plan,
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: true,
@@ -508,6 +526,7 @@ fn run_arm(
         errors: 0,
         page_cache_dropped: true,
         drop: None,
+        device_probe_mib_s: None,
         device: None,
     };
     let mut result = ArmResult {
@@ -527,6 +546,7 @@ fn run_arm(
         order: match spec.order {
             ReadOrder::Plan => "plan".to_owned(),
             ReadOrder::Physical => "physical".to_owned(),
+            ReadOrder::Reverse => "reverse".to_owned(),
         },
         coalesced: spec.coalesced,
         pass2_page_cache_dropped: !spec.warm_pass2,
@@ -578,28 +598,24 @@ fn run_arm(
                 .to_owned(),
         );
     } else {
-        let drop1 = PageCache::drop_file(&config.bundle)?;
         result.pass1 = measure_pass(
             &store,
             scope,
             &mut buffer,
             spec.coalesced,
             spec.order,
-            Some(drop1),
+            true,
+            &config.bundle,
             device_name,
         )?;
-        let drop2 = if spec.warm_pass2 {
-            None
-        } else {
-            Some(PageCache::drop_file(&config.bundle)?)
-        };
         result.pass2 = Some(measure_pass(
             &store,
             scope,
             &mut buffer,
             spec.coalesced,
-            spec.order,
-            drop2,
+            spec.pass2_order,
+            !spec.warm_pass2,
+            &config.bundle,
             device_name,
         )?);
     }
@@ -615,15 +631,34 @@ fn run_arm(
     Ok(result)
 }
 
+// One measurement pass needs the store, the scope, the caller buffer, the read
+// strategy, the coldness control and the device marker. A parameter object here
+// would only move the argument list behind a struct with the same fields.
+#[allow(clippy::too_many_arguments)]
 fn measure_pass(
     store: &ShardStore,
     scope: &ExecutionScope,
     buffer: &mut [u8],
     coalesced: bool,
     order: ReadOrder,
-    drop: Option<AdviceReport>,
+    cold: bool,
+    bundle: &Path,
     device_name: &Option<String>,
 ) -> Result<PassStats> {
+    let drop = if cold {
+        Some(PageCache::drop_file(bundle)?)
+    } else {
+        None
+    };
+    let device_probe_mib_s = if cold {
+        let probe = device_probe(bundle, buffer)?;
+        // The probe read 32 MiB into the page cache; drop again so the pass
+        // starts cold and the probe does not flatter it.
+        PageCache::drop_file(bundle)?;
+        Some(probe)
+    } else {
+        None
+    };
     let stats_before = store.stats();
     let device_before = device_snapshot(device_name);
     let report: ScopeReadReport = if coalesced {
@@ -647,8 +682,9 @@ fn measure_pass(
         stall_max_ns: report.stall_max_ns,
         stall_total_ns: report.stall_ns,
         errors: report.errors,
-        page_cache_dropped: drop.is_some(),
+        page_cache_dropped: cold,
         drop,
+        device_probe_mib_s,
         device: None,
     };
     pass.device = device_pass(device_before, device_after, device_name, pass.bytes_used);
@@ -656,6 +692,30 @@ fn measure_pass(
         pass.cache_hit_bytes = pass.bytes_used.saturating_sub(device.read_bytes);
     }
     Ok(pass)
+}
+
+/// Read the last 32 MiB of the bundle with a fresh handle and sequential advice.
+///
+/// This is a device-state marker, not a pass measurement: it answers "was the
+/// drive in its fast or slow mode at this point?" without touching the cache the
+/// pass is about to use.
+fn device_probe(bundle: &Path, scratch: &mut [u8]) -> Result<f64> {
+    const PROBE_BYTES: u64 = 32 * 1024 * 1024;
+    let file = File::open(bundle)?;
+    let len = file.metadata()?.len();
+    let start_offset = len.saturating_sub(PROBE_BYTES);
+    PageCache::sequential(&file, start_offset)?;
+    let limit = scratch.len().min(1024 * 1024);
+    let buffer = &mut scratch[..limit];
+    let mut offset = start_offset;
+    let begin = Instant::now();
+    while offset < len {
+        let want = usize::try_from((len - offset).min(buffer.len() as u64))?;
+        file.read_exact_at(&mut buffer[..want], offset)?;
+        offset += want as u64;
+    }
+    let elapsed = u64::try_from(begin.elapsed().as_nanos()).unwrap_or(u64::MAX);
+    Ok(mib_s(len - start_offset, elapsed))
 }
 
 fn prefetch_waste_pass(
@@ -715,6 +775,7 @@ fn prefetch_waste_pass(
         errors: 0,
         page_cache_dropped: true,
         drop: Some(drop),
+        device_probe_mib_s: None,
         device: None,
     };
     pass.device = device_pass(device_before, device_after, device_name, pass.bytes_used);

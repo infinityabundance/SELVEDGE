@@ -470,6 +470,10 @@ pub enum ReadOrder {
     Plan,
     /// Ascending physical offset.
     Physical,
+    /// Reverse manifest order. Same set, different visit order: used to show
+    /// what a partially filled cache is worth without the cyclic-scan
+    /// pathology of a forward scan.
+    Reverse,
 }
 
 /// Result of reading a whole scope.
@@ -897,9 +901,10 @@ impl ShardStore {
                 actual: buffer.len() as u64,
             });
         }
-        let order_ids = match order {
+        let order_ids: Vec<ShardId> = match order {
             ReadOrder::Plan => scope.ids().iter().copied().collect(),
             ReadOrder::Physical => self.layout.physical_order(Some(scope.ids())),
+            ReadOrder::Reverse => scope.ids().iter().rev().copied().collect(),
         };
         let start = Instant::now();
         let mut samples = Vec::with_capacity(order_ids.len());

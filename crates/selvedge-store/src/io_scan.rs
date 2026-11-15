@@ -146,11 +146,15 @@ pub struct CacheControl {
     pub dropped: bool,
     /// Advice records issued, one per cold point.
     pub drops: Vec<AdviceReport>,
-    /// Warm probe latency in nanoseconds.
+    /// Warm probe latency in nanoseconds (median of five).
     pub warm_probe_ns: u64,
-    /// Cold probe latency in nanoseconds after a drop.
+    /// Cold probe latency in nanoseconds after a drop (median of five).
     pub cold_probe_ns: u64,
-    /// Ratio cold/warm; above one means the drop had an effect.
+    /// Every warm probe sample.
+    pub warm_probes_ns: Vec<u64>,
+    /// Every cold probe sample.
+    pub cold_probes_ns: Vec<u64>,
+    /// Ratio of the two medians; above one means the drop had an effect.
     pub cold_warm_ratio: f64,
     /// Whether the ratio is above 2, the documented evidence threshold.
     pub drop_effective: bool,
@@ -450,20 +454,34 @@ pub fn run(config: &IoScanConfig) -> Result<IoScanReport> {
         .max(1);
     let mut buffer = vec![0_u8; usize::try_from(buffer_bytes)?];
 
-    // Page-cache control evidence: a warm 4 KiB probe and a cold one.
-    let probe_offset = aligned_offset(len, 4096, 4096);
+    // Page-cache control evidence: five warm 4 KiB probes and five cold ones at
+    // distinct offsets, so no probe is served by another probe's readahead. The
+    // stride scales with the file so a small file still yields distinct probes.
+    let probe_stride = (len / 32).clamp(4096, 1024 * 1024);
+    let probe_base = 0_u64;
     let mut probe = [0_u8; 4096];
-    file.read_exact_at(&mut probe, probe_offset)?;
-    let warm_start = Instant::now();
-    file.read_exact_at(&mut probe, probe_offset)?;
-    let warm_probe_ns = u64::try_from(warm_start.elapsed().as_nanos()).unwrap_or(u64::MAX);
+    PageCache::random(&file, 0)?;
+    let mut warm_probes_ns = Vec::with_capacity(5);
+    for index in 0..5_u64 {
+        let offset = probe_base + index * probe_stride;
+        file.read_exact_at(&mut probe, offset)?;
+        let warm_start = Instant::now();
+        file.read_exact_at(&mut probe, offset)?;
+        warm_probes_ns.push(u64::try_from(warm_start.elapsed().as_nanos()).unwrap_or(u64::MAX));
+    }
     let mut drops = Vec::new();
     if config.drop_cache {
         drops.push(PageCache::drop_file(&config.file)?);
     }
-    let cold_start = Instant::now();
-    file.read_exact_at(&mut probe, probe_offset)?;
-    let cold_probe_ns = u64::try_from(cold_start.elapsed().as_nanos()).unwrap_or(u64::MAX);
+    let mut cold_probes_ns = Vec::with_capacity(5);
+    for index in 0..5_u64 {
+        let offset = probe_base + (index + 2) * probe_stride;
+        let cold_start = Instant::now();
+        file.read_exact_at(&mut probe, offset)?;
+        cold_probes_ns.push(u64::try_from(cold_start.elapsed().as_nanos()).unwrap_or(u64::MAX));
+    }
+    let warm_probe_ns = median(&mut warm_probes_ns.clone());
+    let cold_probe_ns = median(&mut cold_probes_ns.clone());
     let cold_warm_ratio = if warm_probe_ns == 0 {
         0.0
     } else {
@@ -641,6 +659,8 @@ pub fn run(config: &IoScanConfig) -> Result<IoScanReport> {
             drops,
             warm_probe_ns,
             cold_probe_ns,
+            warm_probes_ns,
+            cold_probes_ns,
             cold_warm_ratio,
             drop_effective: cold_warm_ratio > 2.0,
         },
@@ -1054,6 +1074,14 @@ fn mib_per_second(bytes: u64, elapsed_ns: u64) -> f64 {
 fn aligned_offset(len: u64, size: u64, alignment: u64) -> u64 {
     let span = len.saturating_sub(size).min(alignment);
     span - (span % alignment.max(1))
+}
+
+fn median(samples: &mut [u64]) -> u64 {
+    if samples.is_empty() {
+        return 0;
+    }
+    samples.sort_unstable();
+    samples[samples.len() / 2]
 }
 
 /// Deterministic SplitMix64 sampler.
