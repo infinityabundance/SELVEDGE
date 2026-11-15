@@ -45,3 +45,10 @@ results/**/*.gguf
 *~
 .vscode/
 .idea/
+
+# Raw per-request JSONL from the storage bench is large (tens of MiB per
+# repeat). Only the JSON receipts and the variance summaries are tracked;
+# regenerate the raw metrics with `selvedge store bench --metrics-dir ...`
+# (see docs/STORAGE.md).
+results/store/metrics-*/
+results/store/*.tmp.json

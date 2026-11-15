@@ -804,6 +804,12 @@ path. Either outcome is informative and should be pre-registered next.
 
 ## 2026-11-14 — M2: per-token causal selection, oracle potential and the Rust Atlas crate
 
+> **Later correction (2026-11-15, S5b).** The `deployable` flag used in this
+> entry is superseded by the two typed verdicts; the M2 instrument reported
+> logical selection counts, not physical reads. The oracle bound is retained as
+> a logical-omission counterfactual. See `docs/M2-CORRECTION.md` and the S5b
+> entry below.
+
 Revisions: `a0b107adc23f23cbda43a09cbd6d229b0ea024a1` (M2
 pre-registration, committed before measurement), `1e623062379239a4bed3337ed2ed91d1a7f5411b`
 (the selector harness, oracle search, Rust Atlas crate and Court B tests used
@@ -951,3 +957,74 @@ post-hoc selector cannot close the gap; the next test is whether training can
 change the model so the same budget is usable. Keep the Atlas graph and the
 two-view head for the eventual scheduler, and do not resume inference-only
 selector tuning without a new oracle bound.
+
+## 2026-11-15 — S5b: exactness boundary, dual verdicts, measured accounting, one-pass selection
+
+### What was built
+
+- **Defect 1 — exactness boundary.** `crates/selvedge-core/src/selection.rs` no
+  longer has `reclassify_from_approximate` or `NativeSetAttestation`. The only
+  path to `ExactSelection` is `from_witness`, and the only source of a
+  `NativeSetWitness` is `NativeSetWitness::compare` against a bundle-declared
+  `NativeComputationSet` (bundle id, full set equality, declared and executed
+  digests). `SemanticExactness::classify` records `Proven` or `Approximate`
+  with a typed `SemanticGap`. `ExecutionScope` is documented as scope integrity
+  only and cannot be converted. `crates/selvedge-core/tests/ui/` plus
+  `tests/compile_fail.rs` prove, by compiling four forbidden programs with
+  `rustc`, that the removed constructor does not exist, that a witness cannot
+  be forged, that a scope is not a witness, and that a boolean cannot be a
+  physical verdict.
+- **Defect 2 — two verdicts.** `crates/selvedge-core/src/verdict.rs` defines
+  `CausalAvailability` and `PhysicalCompliance`, each evidence-bearing with
+  named failing reasons. A compliant physical verdict requires measured reads.
+  The Python harness emits both per arm; the `deployable` field is gone from
+  `oracle/m2_selectors.py`, its receipts, `results/selectors/table.md` and the
+  generated M2 table.
+- **Defect 3 — measured accounting.** `masked_mlp.sparse_grouped_forward` slices
+  gate/up rows and down columns before the matmul, groups identical per-token
+  subsets, and counts the exact sliced elements. `audit_sparse_reads` cross-checks
+  the counter against `torch.profiler(record_shapes=True)`; five real layers
+  matched exactly (`results/selectors/sparse-audit-20261115T002900Z.json`).
+  `ParameterLedger::admit_selection_path` checks the union of selector and
+  execution uses before execution and is the only source of
+  `AdmittedSelectionPath`.
+- **Defect 4 — one-pass selection.** `online_one_pass_select` selects inside a
+  forward pre-hook from the state the layer receives under its own earlier
+  masks. It is compared with the two-pass arm on the oracle sample.
+- **Storage WIP finished.** `prefetch_bytes_wasted = read - used` is validated
+  with unit tests and Court D tests (all-used, partial, saturating,
+  serialised, never-delivered).
+- **Corrected M2 measurement.** Full held-out re-evaluation at
+  `results/selectors/eval-full-20261115T005000Z.json`; corrected table and
+  analysis regenerated. Six of 23 arms are physically compliant (static/random
+  masks plus `token-random`, all with unusable quality). The oracle bound
+  survives as a logical-omission counterfactual. `docs/M2-CORRECTION.md` is the
+  correction of record.
+
+### Measured findings
+
+- The sparse path reproduces the masked-dense KL to the printed precision for
+  every arm (for example both magnitude variants at KL 6.676772).
+- `token-magnitude`'s selector reads 225,485,783,040 parameter elements over the
+  160 evaluation windows, and the per-token union of selector plus execution is
+  1,480,713,216, above the ceiling. It was never physically compliant.
+- The one-pass arm is better than the two-pass arm at both B140 and B142; the
+  paired difference excludes zero (`docs/M2-CORRECTION.md`). The earlier M2
+  numbers therefore depended on teacher-state iteration, and the dependence was
+  unfavourable.
+- `token-task-static-nn` was found to read whole-window shingles; it is now
+  `causal: unavailable, future_tokens`.
+
+### Limitations
+
+- The six compliant arms are not learned and not useful.
+- The one-pass comparison is eight windows, one seed, one teacher.
+- No exact neural-execution runtime consumes `ExactSelection` yet.
+- Raw JSONL metrics from the storage bench are kept out of git; summaries and
+  the regenerating commands are tracked (see `docs/STORAGE.md`).
+
+### Next experiment
+
+The trained/upcycled branch, as stated at the end of the M2 entry. Do not
+resume inference-only selector tuning without a new oracle bound and without a
+physically compliant controller whose selection reads fit the budget headroom.

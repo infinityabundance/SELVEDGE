@@ -1,0 +1,26 @@
+USDT:2026-11-15 00:22:48 7:7 SyncActivityProfilerHandler.cpp:39] profiler_start
+USDT:2026-11-15 00:22:48 7:7 SyncActivityProfilerHandler.cpp:46] profiler_stop
+ERROR:2026-11-15 00:22:48 7:7 DeviceProperties.cpp:56] gpuGetDeviceCount failed with code 35
+counter ReadAccounting(selector_parameter_elements=0, selector_elements_read=0, execution_elements_read=1536, selection_flops=0, execution_flops=3072, matmul_calls=9, tokens=10, layers=1, measurements=['sliced-weight-element-count'])
+aten::select 10 [[10, 3], [], []]
+aten::select 4 [[1], [], []]
+aten::select 12 [[2], [], []]
+aten::index_select 2 [[10, 8], [], [4]]
+aten::select 3 [[10, 8], [], []]
+aten::select 4 [[4, 8], [], []]
+aten::index_select 2 [[12, 8], [], [4]]
+aten::select 6 [[12, 8], [], []]
+aten::matmul 2 [[4, 8], [8, 4]]
+aten::mm 2 [[4, 8], [8, 4]]
+aten::index_select 1 [[8, 12], [], [4]]
+aten::matmul 1 [[4, 4], [4, 8]]
+aten::mm 1 [[4, 4], [4, 8]]
+aten::index_select 4 [[12, 8], [], [8]]
+aten::select 4 [[8, 8], [], []]
+aten::matmul 3 [[4, 8], [8, 8]]
+aten::mm 3 [[4, 8], [8, 8]]
+aten::index_select 2 [[8, 12], [], [8]]
+aten::index_select 1 [[10, 8], [], [2]]
+aten::select 1 [[2, 8], [], []]
+aten::matmul 3 [[2, 8], [8, 8]]
+aten::mm 3 [[2, 8], [8, 8]]

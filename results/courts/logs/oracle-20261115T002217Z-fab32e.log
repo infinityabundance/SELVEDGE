@@ -1,0 +1,24 @@
+....................F.                                                   [100%]
+=================================== FAILURES ===================================
+______________ test_court_b_sparse_read_audit_matches_the_counter ______________
+
+    def test_court_b_sparse_read_audit_matches_the_counter() -> None:
+        torch.manual_seed(9)
+        mlp = TinyMlp(hidden=8, intermediate=12, seed=19)
+        groups = 3
+        selection = _per_token_selection(5, groups, [[0], [1, 2], [0, 2]])
+        audit = masked_mlp.audit_sparse_reads(
+            mlp, torch.randn(2, 5, 8), groups, selection.repeat(2, 1)
+        )
+>       assert audit["matches"], audit
+E       AssertionError: {'counted_elements': 1536, 'profiled_elements': 960, 'counted_flops': 3072, 'profiled_flops': 6144, ...}
+E       assert False
+
+oracle/tests/test_masked_mlp.py:368: AssertionError
+----------------------------- Captured stderr call -----------------------------
+USDT:2026-11-15 00:22:27 7:7 SyncActivityProfilerHandler.cpp:39] profiler_start
+USDT:2026-11-15 00:22:27 7:7 SyncActivityProfilerHandler.cpp:46] profiler_stop
+ERROR:2026-11-15 00:22:27 7:7 DeviceProperties.cpp:56] gpuGetDeviceCount failed with code 35
+=========================== short test summary info ============================
+FAILED oracle/tests/test_masked_mlp.py::test_court_b_sparse_read_audit_matches_the_counter
+1 failed, 21 passed in 3.70s

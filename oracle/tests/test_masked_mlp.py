@@ -285,3 +285,101 @@ def test_court_b_rankings_put_the_largest_first() -> None:
     result = masked_mlp.rankings(statistics)
     assert result["magnitude"] == [[1, 0]]
     assert result["frequency"] == [[0, 1]]
+
+
+def _per_token_selection(tokens: int, groups: int, pattern: list[list[int]]) -> torch.Tensor:
+    selection = torch.zeros((tokens, groups), dtype=torch.bool)
+    for token in range(tokens):
+        for index in pattern[token % len(pattern)]:
+            selection[token, index] = True
+    return selection
+
+
+def test_court_b_sparse_path_matches_masked_dense_for_per_token_subsets() -> None:
+    torch.manual_seed(3)
+    mlp = TinyMlp(hidden=8, intermediate=12, seed=11)
+    x = torch.randn(1, 7, 8)
+    groups = 4
+    selection = _per_token_selection(7, groups, [[0, 2], [1], [0, 1, 3], []])
+    masked = torch.stack(
+        [
+            masked_mlp.grouped_forward(mlp, x[0, token : token + 1], groups, sorted(
+                torch.nonzero(selection[token]).flatten().tolist()
+            )).squeeze(0)
+            if bool(selection[token].any())
+            else torch.zeros_like(mlp(x[0, token : token + 1])[0])
+            for token in range(7)
+        ]
+    ).unsqueeze(0)
+    sparse = masked_mlp.sparse_grouped_forward(mlp, x, groups, selection)
+    assert sparse.shape == x.shape[:-1] + (mlp.down_proj.out_features,)
+    assert torch.allclose(sparse, masked, atol=1e-5, rtol=1e-5)
+
+
+def test_court_b_sparse_path_matches_dense_mask_including_empty_rows() -> None:
+    torch.manual_seed(5)
+    mlp = TinyMlp(hidden=6, intermediate=10, seed=13)
+    wrapper = masked_mlp.MaskedMlp(mlp)
+    x = torch.randn(1, 5, 6)
+    groups = 5
+    selection = _per_token_selection(5, groups, [[0], [], [2, 4], [0, 1, 2, 3, 4]])
+    bounds = masked_mlp.group_bounds(10, groups)
+    mask = torch.zeros((5, 10))
+    for index, (start, end) in enumerate(bounds):
+        mask[:, start:end] = selection[:, index : index + 1].to(torch.float32)
+    wrapper.set_token_mask(mask)
+    dense = wrapper(x)
+    wrapper.clear_token_mask()
+    wrapper.set_sparse_selection(selection, groups)
+    sparse = wrapper(x)
+    assert torch.allclose(sparse, dense, atol=1e-5, rtol=1e-5)
+
+
+def test_court_b_sparse_read_count_is_exactly_the_sliced_elements() -> None:
+    torch.manual_seed(7)
+    mlp = TinyMlp(hidden=8, intermediate=12, seed=17)
+    groups = 3
+    bounds = masked_mlp.group_bounds(12, groups)  # widths [4, 4, 4]
+    selection = torch.zeros((4, groups), dtype=torch.bool)
+    selection[0, 0] = True
+    selection[1, 0] = True
+    selection[2, 2] = True
+    selection[3, 1] = True
+    counter = masked_mlp.ReadAccounting()
+    masked_mlp.sparse_grouped_forward(
+        mlp, torch.randn(1, 4, 8), groups, selection, counter=counter
+    )
+    # Two tokens share group 0 (executed together once), one token each uses
+    # groups 2 and 1: three sliced executions of width 4.
+    per_row = 4 * (2 * 8 + 8)
+    # Three distinct subsets, each executed once: group 0 is shared by two
+    # tokens, and a batched matmul reads its weight slice once.
+    assert counter.execution_elements_read == 3 * per_row
+    assert counter.execution_flops == 2 * 4 * per_row
+    assert counter.matmul_calls == 3 * 3
+
+
+def test_court_b_sparse_read_audit_matches_the_counter() -> None:
+    torch.manual_seed(9)
+    mlp = TinyMlp(hidden=8, intermediate=12, seed=19)
+    groups = 3
+    selection = _per_token_selection(5, groups, [[0], [1, 2], [0, 2]])
+    audit = masked_mlp.audit_sparse_reads(
+        mlp, torch.randn(2, 5, 8), groups, selection.repeat(2, 1)
+    )
+    assert audit["matches"], audit
+    assert audit["counted_elements"] == audit["profiled_elements"]
+    assert audit["counted_flops"] == audit["profiled_flops"]
+
+
+def test_court_b_dense_and_selector_accounting_formulas_match_shapes() -> None:
+    elements, flops = masked_mlp.dense_execution_accounting(
+        tokens=3, hidden=2048, intermediate=6144, out_width=2048, layers=28
+    )
+    assert elements == 28 * 6144 * (2 * 2048 + 2048)
+    assert flops == 2 * 3 * elements
+    selector_elements, selector_flops = masked_mlp.selector_dense_accounting(
+        tokens=3, hidden=2048, intermediate=6144, layers=28
+    )
+    assert selector_elements == 28 * 2 * 2048 * 6144
+    assert selector_flops == 2 * 3 * selector_elements

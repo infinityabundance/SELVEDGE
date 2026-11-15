@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/work/oracle/m2_selectors.py", line 4598, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 4584, in main
+    return command_evaluate(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 3185, in command_evaluate
+    outcome = evaluate_arm_on_window(
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 2948, in evaluate_arm_on_window
+    "accounting": arm_accounting_evidence(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 384, in arm_accounting_evidence
+    execution_unique = selection_unique_channels(selection, bounds) * (
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 276, in selection_unique_channels
+    per_token = layer_selection.to(torch.int64) @ widths
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+NotImplementedError: "addmv_impl_cuda" not implemented for 'Long'

@@ -1,0 +1,66 @@
+   Compiling selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.52s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_store-614b4019990fe443)
+
+running 22 tests
+test cache::tests::no_cache_counts_every_lookup_as_a_miss ... ok
+test cache::tests::lru_evicts_least_recently_used_deterministically ... ok
+test cache::tests::least_stale_protects_the_current_sequence_entry ... ok
+test cache::tests::lfu_prefers_the_least_frequently_used_entry ... ok
+test io_scan::tests::aligned_offsets_stay_inside_the_file ... ok
+test cache::tests::pinned_cache_refuses_rather_than_evicting ... ok
+test io_scan::tests::sampler_is_deterministic_and_bounded ... ok
+test cache::tests::waste_is_counted_for_evicted_unused_bytes ... ok
+test io_scan::tests::timestamp_formatting_is_utc_and_compact_variant_is_stable ... ok
+test layout::tests::a_gap_start_new_run_unless_permitted ... ok
+test layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard ... ok
+test layout::tests::bounded_runs_never_split_a_shard ... ok
+test metrics::tests::nearest_rank_percentiles_are_deterministic ... ok
+test layout::tests::physical_order_is_independent_of_manifest_order ... ok
+test metrics::tests::prefetch_waste_is_read_minus_used ... ok
+test metrics::tests::prefetch_waste_is_serialised_in_the_stats_record ... ok
+test metrics::tests::prefetch_waste_is_zero_when_everything_is_used ... ok
+test metrics::tests::prefetch_waste_saturates_instead_of_underflowing ... ok
+test sysfs::tests::deltas_saturate_at_zero ... ok
+test sysfs::tests::partition_names_map_to_block_devices ... ok
+test sysfs::tests::mount_lookup_finds_the_repository_filesystem ... ok
+test io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/court_d_extension.rs (target/debug/deps/court_d_extension-1b99f94abe47da83)
+
+running 24 tests
+test backpressure_is_caller_visible_and_prefetch_only_by_bytes ... ok
+test cancel_under_load_releases_every_reservation ... ok
+test gpu_staging_is_declared_but_refused ... ok
+test buffer_size_mismatch_is_refused_before_any_io ... ok
+test a_prefetch_that_is_never_delivered_is_all_waste ... ok
+test exact_scope_refuses_duplicates_empty_and_out_of_scope_reads ... ok
+test checksum_failure_fails_closed_and_later_reads_recover ... ok
+test coalesced_pass_verifies_every_shard_and_counts_device_bytes ... ok
+test a_proof_for_another_bundle_is_refused_at_open ... ok
+test hot_reload_rejects_a_conflicting_bundle_and_the_store_is_unchanged ... ok
+test layout_report_describes_the_real_extent_placement ... ok
+test invalid_configuration_is_refused_before_io ... ok
+test no_cache_never_stores_and_reports_unit_amplification ... ok
+test lru_reuses_a_repeated_shard_and_evicts ... ok
+test concurrent_readers_and_one_prefetcher_never_observe_torn_data ... ok
+test path_and_manifest_digest_are_recorded ... ok
+test metrics_jsonl_has_one_record_per_read_with_both_clocks ... ok
+test physical_order_and_plan_order_deliver_the_same_set ... ok
+test prefetch_coalesces_adjacent_extents_without_changing_execution ... ok
+test pinned_cache_refuses_a_second_shard_instead_of_overflowing ... ok
+test prefetch_of_an_unknown_shard_id_is_rejected ... ok
+test prefetched_bytes_are_only_counted_useful_when_delivered ... ok
+test publication_proof_skips_hashing_only_when_it_names_the_open_bundle ... ok
+test small_cache_stress_reuses_bytes_and_never_corrupts ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests selvedge_store
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

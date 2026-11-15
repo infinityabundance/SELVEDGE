@@ -1,0 +1,578 @@
+{
+  "schema": "selvedge/io-scan/v1",
+  "stamp": "20261115T01353Z",
+  "revision": "8090b1bf5544352c0e6565e8762c2133feb20f7d",
+  "started_utc": "2026-11-15T01:32:56Z",
+  "finished_utc": "2026-11-15T01:33:03Z",
+  "argv": [
+    "./target/release/selvedge",
+    "io-scan",
+    "--file",
+    "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+    "--workdir",
+    "results/io",
+    "--out",
+    "results/io/io-scan-06b-r3.tmp.json",
+    "--stamp",
+    "20261115T01353Z"
+  ],
+  "environment": {
+    "hostname": "1430bcb00c2b",
+    "kernel": "7.3.3-1-cachyos",
+    "arch": "x86_64",
+    "cpu_model": "AMD Ryzen 7 9800X3D 8-Core Processor",
+    "logical_cpus": 8,
+    "memory": {
+      "total_bytes": 134722048000,
+      "available_bytes": 38252580864,
+      "swap_total_bytes": 134721040384,
+      "swap_free_bytes": 9413283840,
+      "cgroup_limit_bytes": 8589934592,
+      "cgroup_current_bytes": 3723264,
+      "source": "/proc/meminfo and /sys/fs/cgroup/memory.{max,current}"
+    },
+    "court": "io",
+    "court_memory_bytes": 8589934592,
+    "revision": "8090b1bf5544352c0e6565e8762c2133feb20f7d"
+  },
+  "mount": {
+    "path": "/work/results/io",
+    "source": "/dev/nvme1n1p1",
+    "target": "/work",
+    "fstype": "ext4",
+    "options": "rw,relatime",
+    "device_name": "nvme1n1",
+    "total_bytes": 1426376364032,
+    "free_bytes": 214796845056,
+    "block_size": 4096
+  },
+  "file": {
+    "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+    "len_bytes": 1057882112
+  },
+  "plan": {
+    "block_sizes": [
+      4096,
+      65536,
+      1048576,
+      8388608
+    ],
+    "sequential_bytes": 268435456,
+    "random_samples": [
+      2048,
+      512,
+      128,
+      32
+    ],
+    "queue_depths": [
+      1,
+      4,
+      16
+    ],
+    "qd_block_bytes": 65536,
+    "qd_total_bytes": 268435456,
+    "alignment_offsets": [
+      512,
+      4096,
+      65536
+    ],
+    "alignment_read_bytes": 3145728,
+    "overread_bytes": 8388608,
+    "checksum_bytes": 1073741824,
+    "drop_cache": true,
+    "seed": 1592614637
+  },
+  "device": {
+    "name": "nvme1n1",
+    "before": {
+      "reads_completed": 114312786,
+      "reads_merged": 48088176,
+      "sectors_read": 16778952465,
+      "read_time_ms": 80720223,
+      "writes_completed": 181185023,
+      "sectors_written": 17388378802,
+      "write_time_ms": 2670639375
+    },
+    "after": {
+      "reads_completed": 114428366,
+      "reads_merged": 48088176,
+      "sectors_read": 16789619273,
+      "read_time_ms": 80741947,
+      "writes_completed": 181185356,
+      "sectors_written": 17388424034,
+      "write_time_ms": 2670640189
+    },
+    "delta": {
+      "reads_completed": 115580,
+      "reads_merged": 0,
+      "sectors_read": 10666808,
+      "read_time_ms": 21724,
+      "writes_completed": 333,
+      "sectors_written": 45232,
+      "write_time_ms": 814
+    },
+    "idle_delta": {
+      "reads_completed": 0,
+      "reads_merged": 0,
+      "sectors_read": 0,
+      "read_time_ms": 0,
+      "writes_completed": 0,
+      "sectors_written": 0,
+      "write_time_ms": 0
+    },
+    "idle_window_ns": 200059935
+  },
+  "cache_control": {
+    "dropped": true,
+    "drops": [
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 1736946,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 4348,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 388987,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 361366,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 340186,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 1476519,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 9671805,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 8851663,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 8653943,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 10277047,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 909580,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 1815113,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 3841349,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 6833341,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 9421818,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 7284613,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 9808170,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 72896,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 60383,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 58649,
+        "strength": "advisory"
+      },
+      {
+        "path": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+        "advice": "posix_fadvise_dontneed",
+        "bytes": 1057882112,
+        "elapsed_ns": 1719523,
+        "strength": "advisory"
+      }
+    ],
+    "warm_probe_ns": 231,
+    "cold_probe_ns": 127478,
+    "warm_probes_ns": [
+      340,
+      241,
+      230,
+      231,
+      231
+    ],
+    "cold_probes_ns": [
+      191077,
+      136315,
+      68568,
+      127478,
+      125314
+    ],
+    "cold_warm_ratio": 551.8528138528138,
+    "drop_effective": true
+  },
+  "sequential": [
+    {
+      "block_bytes": 4096,
+      "bytes": 268435456,
+      "operations": 65536,
+      "elapsed_ns": 153086288,
+      "throughput_mib_s": 1672.2595037381795,
+      "p50_ns": 140,
+      "p95_ns": 390,
+      "p99_ns": 651,
+      "max_ns": 665083,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "block_bytes": 65536,
+      "bytes": 268435456,
+      "operations": 4096,
+      "elapsed_ns": 149319097,
+      "throughput_mib_s": 1714.4491571630651,
+      "p50_ns": 2094,
+      "p95_ns": 313777,
+      "p99_ns": 458006,
+      "max_ns": 670162,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "block_bytes": 1048576,
+      "bytes": 268435456,
+      "operations": 256,
+      "elapsed_ns": 146766006,
+      "throughput_mib_s": 1744.2731254811144,
+      "p50_ns": 594230,
+      "p95_ns": 829310,
+      "p99_ns": 893109,
+      "max_ns": 1166530,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "block_bytes": 8388608,
+      "bytes": 268435456,
+      "operations": 32,
+      "elapsed_ns": 145261704,
+      "throughput_mib_s": 1762.336479269168,
+      "p50_ns": 4549853,
+      "p95_ns": 5061148,
+      "p99_ns": 5230866,
+      "max_ns": 5230866,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    }
+  ],
+  "sequential_noreadahead": [
+    {
+      "block_bytes": 4096,
+      "bytes": 268435456,
+      "operations": 65536,
+      "elapsed_ns": 1009786823,
+      "throughput_mib_s": 253.51885583082122,
+      "p50_ns": 12063,
+      "p95_ns": 21420,
+      "p99_ns": 29265,
+      "max_ns": 4201853,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "block_bytes": 65536,
+      "bytes": 268435456,
+      "operations": 4096,
+      "elapsed_ns": 666277470,
+      "throughput_mib_s": 384.2243082300231,
+      "p50_ns": 93044,
+      "p95_ns": 502529,
+      "p99_ns": 860979,
+      "max_ns": 1143016,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "block_bytes": 1048576,
+      "bytes": 268435456,
+      "operations": 256,
+      "elapsed_ns": 304046741,
+      "throughput_mib_s": 841.9758066079714,
+      "p50_ns": 1233616,
+      "p95_ns": 1562450,
+      "p99_ns": 1745091,
+      "max_ns": 1769938,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "block_bytes": 8388608,
+      "bytes": 268435456,
+      "operations": 32,
+      "elapsed_ns": 307313886,
+      "throughput_mib_s": 833.024512273422,
+      "p50_ns": 9467844,
+      "p95_ns": 11197306,
+      "p99_ns": 11213616,
+      "max_ns": 11213616,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    }
+  ],
+  "random": [
+    {
+      "block_bytes": 4096,
+      "samples": 2048,
+      "bytes_requested": 8388608,
+      "device_bytes": 8343552,
+      "device_amplification": 0.99462890625,
+      "p50_ns": 114604,
+      "p95_ns": 206265,
+      "p99_ns": 209141,
+      "min_ns": 481,
+      "max_ns": 339775,
+      "mean_ns": 126442.49853515625,
+      "cold": true
+    },
+    {
+      "block_bytes": 65536,
+      "samples": 512,
+      "bytes_requested": 33554432,
+      "device_bytes": 33226752,
+      "device_amplification": 0.990234375,
+      "p50_ns": 262640,
+      "p95_ns": 463606,
+      "p99_ns": 637962,
+      "min_ns": 4168,
+      "max_ns": 788063,
+      "mean_ns": 291268.75,
+      "cold": true
+    },
+    {
+      "block_bytes": 1048576,
+      "samples": 128,
+      "bytes_requested": 134217728,
+      "device_bytes": 130023424,
+      "device_amplification": 0.96875,
+      "p50_ns": 1152133,
+      "p95_ns": 1487550,
+      "p99_ns": 1546159,
+      "min_ns": 62617,
+      "max_ns": 1722520,
+      "mean_ns": 1139767.40625,
+      "cold": true
+    },
+    {
+      "block_bytes": 8388608,
+      "samples": 32,
+      "bytes_requested": 268435456,
+      "device_bytes": 209715200,
+      "device_amplification": 0.78125,
+      "p50_ns": 9082634,
+      "p95_ns": 10918135,
+      "p99_ns": 19958009,
+      "min_ns": 451343,
+      "max_ns": 19958009,
+      "mean_ns": 7740304.78125,
+      "cold": true
+    }
+  ],
+  "queue_depth": [
+    {
+      "queue_depth": 1,
+      "block_bytes": 65536,
+      "bytes": 268435456,
+      "elapsed_ns": 592816057,
+      "throughput_mib_s": 431.8371558549063,
+      "p50_ns": 84458,
+      "p95_ns": 439311,
+      "p99_ns": 769077,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "queue_depth": 4,
+      "block_bytes": 65536,
+      "bytes": 268435456,
+      "elapsed_ns": 367673748,
+      "throughput_mib_s": 696.2694546253,
+      "p50_ns": 329105,
+      "p95_ns": 615851,
+      "p99_ns": 716569,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    },
+    {
+      "queue_depth": 16,
+      "block_bytes": 65536,
+      "bytes": 268435456,
+      "elapsed_ns": 226006563,
+      "throughput_mib_s": 1132.7104691203149,
+      "p50_ns": 785187,
+      "p95_ns": 1493300,
+      "p99_ns": 2222263,
+      "device_bytes": 268435456,
+      "device_amplification": 1.0,
+      "cold": true
+    }
+  ],
+  "alignment": [
+    {
+      "label": "shard-extent offset aligned at 512",
+      "offset": 66048,
+      "alignment": 512,
+      "bytes_requested": 3145728,
+      "bytes_useful": 3145728,
+      "device_bytes": 3149824,
+      "requested_per_useful": 1.0,
+      "device_per_useful": 1.0013020833333333,
+      "elapsed_ns": 4283485,
+      "cold": true
+    },
+    {
+      "label": "shard-extent offset aligned at 4096",
+      "offset": 69632,
+      "alignment": 4096,
+      "bytes_requested": 3145728,
+      "bytes_useful": 3145728,
+      "device_bytes": 3145728,
+      "requested_per_useful": 1.0,
+      "device_per_useful": 1.0,
+      "elapsed_ns": 4835957,
+      "cold": true
+    },
+    {
+      "label": "shard-extent offset aligned at 65536",
+      "offset": 131072,
+      "alignment": 0,
+      "bytes_requested": 3145728,
+      "bytes_useful": 3145728,
+      "device_bytes": 3145728,
+      "requested_per_useful": 1.0,
+      "device_per_useful": 1.0,
+      "elapsed_ns": 3753545,
+      "cold": true
+    },
+    {
+      "label": "over-read 8388608 bytes to use 3145728",
+      "offset": 65536,
+      "alignment": 0,
+      "bytes_requested": 8388608,
+      "bytes_useful": 3145728,
+      "device_bytes": 8388608,
+      "requested_per_useful": 2.6666666666666665,
+      "device_per_useful": 2.6666666666666665,
+      "elapsed_ns": 9884172,
+      "cold": true
+    }
+  ],
+  "checksum": {
+    "algorithm": "sha256",
+    "bytes": 1057882112,
+    "warm_elapsed_ns": 446605219,
+    "warm_throughput_mib_s": 2258.9861405090296,
+    "warm_ns_per_gib": 453300700.5387189,
+    "cold_elapsed_ns": 983996961,
+    "cold_throughput_mib_s": 1025.2826380426188,
+    "cold_device_bytes": 1057882112,
+    "digest": "37d76839b631403aab87144d69df22f76bade81f63cad5eba3a433215b7b8e1c",
+    "shard_bytes": 3145728,
+    "shard_hash_ns": 1220791
+  },
+  "notes": [
+    "device counters are read from /sys/block/<dev>/stat and are device-wide, not per-process: the idle-window delta is the measured noise floor, and background host I/O is not excluded",
+    "the file is smaller than host RAM, so coldness is enforced by POSIX_FADV_DONTNEED and evidenced by the cold/warm probe ratio and by device bytes approximately equal to requested bytes",
+    "sequential per-operation latency includes kernel readahead; it is not a pure device latency"
+  ]
+}

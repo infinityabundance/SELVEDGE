@@ -59,10 +59,14 @@ selvedge-bench    -> measurement harness (later)
 | `StorageOrder` | row-major, column-major, or explicit transpose axis permutation; never inferred from shape |
 | `TensorSlice` | non-empty ordered channel range, shape rank and channel-axis agreement, element-count consistency, quantization consistency |
 | `ParamIdentity` | tensor key plus half-open element range; equal tensor keys alias the same learned elements |
-| `ParameterLedger` | unique-union accounting over parameter identities, repeated reads kept separate, FLOPs and tier bytes tracked, auxiliary bytes excluded from learned counts |
+| `ParameterLedger` | unique-union accounting over parameter identities, repeated reads kept separate, FLOPs and tier bytes tracked, auxiliary bytes excluded from learned counts; `admit_selection_path` checks the union of selector **and** execution parameters before execution |
 | `Budget` | pre-execution union check; compliance mode returns an error rather than a boolean |
 | `SelectionDecision` | sorted unique shard ids plus selector provenance; duplicates rejected |
-| `ExactSelection` | private fields; only constructible from a verified native-set equality or an explicit documented reclassification |
+| `NativeComputationSet` | a bundle's declared full native shard set; sorted unique ids plus a canonical digest computed by the constructor |
+| `NativeSetWitness` | private fields; only `compare` can produce one, by full set equality against a declaration, with bundle id and both digests |
+| `ExactSelection` | private fields; only `from_witness` can produce one, and it re-derives the decision's digest and requires the witnessed executed digest |
+| `SemanticExactness` | `Proven(ExactSelection)` or `Approximate { decision, gap }`; no reclassification state |
+| `ArmVerdict` | two independent evidence-bearing records: `CausalAvailability` and `PhysicalCompliance`; no deployable boolean |
 | `Config` | typed TOML with hard limits, validation, canonical JSON hash |
 
 All integer encodings are explicit little-endian. Hashed paths use `BTreeMap`
@@ -102,22 +106,84 @@ mixed into compliant results.
 
 ## Exact versus approximate
 
-Exact mode is a typed distinction, not a string on a report:
+Exactness is a **semantic** claim about the model computation. It is separate
+from **scope integrity**, which is a storage claim:
 
-- `SelectionDecision` carries `SelectionMode::Exact` or `Approximate` in its
-  provenance.
-- `NativeSetAttestation::attest` succeeds only when the decision is exact and
-  its selected set equals the supplied native computation set.
-- `ExactSelection` has private fields and can only be built by
-  `from_verified` (set equality) or
-  `reclassify_from_approximate` (explicit justification recorded in
-  provenance).
-- A selector that predicts a subset therefore cannot accidentally produce an
-  exact decision. If routing changes which operators run, the path is
-  approximate by construction.
+- `selvedge_store::ExecutionScope` proves only that the store will not return a
+  shard outside the supplied set. It has no native computation set to compare
+  against and cannot be converted into `ExactSelection`. A correct scoped read
+  is not evidence that a selector executed the native neural computation.
+- `NativeComputationSet::declare(bundle_id, shards)` is the model bundle's own
+  declaration. The constructor sorts the ids, rejects duplicates and empty sets,
+  and computes a canonical digest over `(bundle_id, ids)`.
+- `NativeSetWitness::compare(executed_bundle_id, executed, native)` requires the
+  bundle ids to match, the executed set to be duplicate-free, and **full set
+equality in both directions**. It records the bundle id, the declared digest,
+  the executed digest and the shard count. The fields are private.
+- `ExactSelection::from_witness(decision, witness)` re-derives the decision's
+  digest and requires it to equal the witnessed executed digest and the
+  declared digest. There is no string-justification constructor, no declared
+  mode shortcut and no store-scope conversion.
+- `SemanticExactness::classify(decision, bundle, Some(native))` returns
+  `Proven` only through that path; otherwise `Approximate` with a typed
+  `SemanticGap` (`NoNativeDeclaration`, `SetMismatch`, `BundleMismatch`).
+
+A selector that predicts a subset therefore cannot produce `Proven`; its only
+possible record is `Approximate`. If routing changes which operators run, the
+path is approximate by construction.
+
+**Compile-fail evidence.** `crates/selvedge-core/tests/ui/` contains four cases
+and `tests/compile_fail.rs` runs each one through `rustc` against the built
+rlib, asserting the named error. The cases prove that
+`reclassify_from_approximate` no longer exists, that a witness cannot be built
+from a struct literal, that an `ExecutionScope`-shaped value is not accepted
+where a witness is required, and that a physical verdict cannot be constructed
+from a boolean. This is the offline equivalent of trybuild; no extra
+dependency or network is needed.
 
 Caching and prefetching may change latency but must not change the selected
-set; that is the exact-mode contract future phases must test in Court E.
+set; that is the exact-mode contract future phases must test in Court E. The
+existing M1-M3 measurements use the approximate masked path and **no exact
+neural-execution claim is made**.
+
+## Audit: places where an approximation could be relabelled
+
+The review asked for a workspace audit of paths that could turn an approximation
+into a stronger claim without evidence. The findings and dispositions:
+
+| location | risk before | disposition |
+| --- | --- | --- |
+| `SelectionProvenance` / `SelectionMode` | a caller could construct an exact-mode provenance, and `reclassify_from_approximate` could promote a subset | public constructor is `approximate` only; `native_provenance` is crate-private; exactness is `ExactSelection`, which needs a witness. The declared `mode` is documented as a label, never evidence |
+| `selvedge_store::ExecutionScope` | a correct scoped read could be presented as exact execution | separate type with no conversion to `ExactSelection`; a compile-fail case asserts the type error; module docs state the distinction |
+| `selvedge_store::ProofRegistry` | a publication proof skips re-hashing, so a forged registry could hide corrupt bytes | explicit trust input: only used when `VerificationMode::PublicationProof` is configured; bundle and manifest digests are checked. All M1-M3 measurements use `VerificationMode::Always`. Documented in `docs/LIMITATIONS.md`; not silently defaulted |
+| `TokenAccounting::within_budget` | a derived boolean could be treated as permission | it is a record field only; the gate is `check_decision`, which returns `Err` in compliance mode |
+| M2 `deployable` flag | one boolean for causality and physical cost | deleted from the Python harness; replaced by `ArmVerdict` (`CausalAvailability` + `PhysicalCompliance`) in every receipt and table |
+| `PhysicalEvidence` constructed counts | a formula could be called a measurement | `PhysicalCompliance::compliant` rejects `ReadMeasurement::Constructed`; the sparse oracle path reports `Measured` only after a counter and a per-op audit |
+| `atlas::TwoViewDecision` | a missing cost could be treated as zero | `DecisionStatus::CostUnavailable` is a separate variant; it is never a numeric zero |
+
+## Two verdicts, not one deployable boolean
+
+`selvedge_core::verdict` defines two independent records emitted for every
+evaluated arm:
+
+- `CausalAvailability::Available { evidence }` lists the exact
+  `DecisionInput`s the selector read and names the audit; `Unavailable` names
+  one of `FutureTokens`, `FutureLayers`, `TeacherLogits`, `GoldLabels`,
+  `UnmaskedFutureState`, `HeldOutMeasurement`, `BackwardTarget` or
+  `UndeclaredInput`.
+- `PhysicalCompliance::Compliant { evidence }` requires
+  `ReadMeasurement::Measured` (a constructed formula cannot establish
+  compliance) plus selector parameter elements, selector reads, execution
+  reads, executed unique elements, and selection/execution FLOPs.
+  `NonCompliant` names `DenseComputationMasked`,
+  `SelectionReadsOutsideActiveSet`, `MissingSparseExecutionPath`,
+  `UnmeasuredParameterReads` or `OverCeiling`.
+
+`ParameterLedger::admit_selection_path` takes a `SelectionPath` (selector uses
+plus execution uses) and checks their **union** against the ceiling before
+execution. It returns `AdmittedSelectionPath`, whose private fields mean an
+over-budget selector has no value that an execution function could accept. This
+is the type-level form of "do not spend the parameter budget twice".
 
 ## Format flow
 
@@ -470,12 +536,13 @@ versions, precision flags, seed, realized active count and per-article metrics.
 
 ### S3 — oracle and selectors should consume/produce
 
-- Build `SelectionDecision::new(shards, SelectionProvenance::new(selector_id,
-  SelectionMode::Approximate, scores))`. Record the realized set with
-  `SelectionProvenance::set_realized` after execution.
-- To claim exactness, compare against the native set with
-  `ExactSelection::from_verified`; only use
-  `reclassify_from_approximate` when an external verification is documented.
+- Build `SelectionDecision::new(shards, SelectionProvenance::approximate(selector_id, scores))`. Record the realized set with
+  `SelectionProvenance::set_realized` after execution. The public constructor
+  cannot mint an exact-mode provenance.
+- To claim semantic exactness, compare the executed set with the bundle's
+  `NativeComputationSet` using `NativeSetWitness::compare`, then pass the
+  witness to `ExactSelection::from_witness`. There is no reclassification
+  constructor and an `ExecutionScope` is not a witness.
 - Build `DecisionPlan` with `ParamUse` values. A tied embedding and LM head must
   share one `ParamTensorId`; a recurrent block must reuse one identity with
   `reads` above the element count. Quantization metadata goes to
@@ -483,6 +550,10 @@ versions, precision flags, seed, realized active count and per-article metrics.
 - Call `ParameterLedger::check_decision` (or
   `check_decision_with_fallback`) before execution. Do not treat a
   `TokenAccounting` boolean as permission; the compliance gate returns `Err`.
+- For a selector that reads learned weights, call
+  `ParameterLedger::admit_selection_path` with a `SelectionPath` containing both
+  the selector uses and the execution uses. The union is checked; only an
+  `AdmittedSelectionPath` may reach execution.
 - Emit `TokenAccounting` per output token for compliant results and label
   teacher-mode rows with `BudgetVerdict::NoncompliantTeacher`.
 - Use `CostModel` and `Backend` for predicted/actual costs; do not attribute
@@ -557,8 +628,10 @@ selvedge atlas compare
 ```
 
 The selectors are **approximate** by construction: they predict a subset, so
-they cannot produce an exact `SelectionDecision`. The oracle is not part of the
-crate; it needs the per-layer group contributions and repeated forwards, and it
-is labelled non-deployable in every receipt. The value head is trained on
-interventions; the cost head is deliberately unfilled until the M3 trace
-scheduler has real traces, so no M2 result silently assumes a transfer time.
+they cannot produce an exact `SelectionDecision` or `ExactSelection`. The oracle
+is not part of the crate; it needs the per-layer group contributions and
+repeated forwards, so it is causally unavailable (`unmasked_future_state`) and
+physically non-compliant (`dense_computation_masked`) in every receipt. The
+value head is trained on interventions; the cost head is deliberately unfilled
+until the M3 trace scheduler has real traces, so no M2 result silently assumes a
+transfer time.

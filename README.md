@@ -29,11 +29,15 @@ Qwen3-1.7B within the `<=1e9` unique-active-parameter ceiling without changing
 its next-token distribution. **Neither can, in the measured family.** Static
 masks are a cliff near the dense model. Per-token selection helps: activation
 magnitude at matched realized parameters beats the best static M1 arm. But
-every deployable per-token arm is still orders of magnitude outside the
-acceptable tier, and **even a non-deployable per-token oracle at the compliant
-budget cannot reach the usable tier**. The 64-group oracle is the best and is
-still far outside it. The inference-only, post-hoc selection branch is dead for
-this teacher at this granularity.
+every causally available per-token arm is still orders of magnitude outside the
+acceptable tier, and none of the arms that beat activation magnitude is
+physically compliant: their selectors read all gate/up channels and the
+original execution was masked dense. **Even a causally unavailable per-token
+oracle at the compliant budget cannot reach the usable tier.** The 64-group
+oracle is the best and is still far outside it. The inference-only, post-hoc
+selection branch is dead for this teacher at this granularity. The corrected
+accounting, the six physically compliant (static/random) arms and the one-pass
+comparison are in `docs/M2-CORRECTION.md`.
 
 The result is bounded and honest: it covers post-hoc selection on a dense
 checkpoint, at 16-64 equal contiguous groups, with no retraining. It does not

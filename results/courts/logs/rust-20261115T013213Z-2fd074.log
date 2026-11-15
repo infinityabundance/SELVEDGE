@@ -1,0 +1,13 @@
+   Compiling selvedge-core v0.1.0 (/work/crates/selvedge-core)
+   Compiling selvedge-format v0.1.0 (/work/crates/selvedge-format)
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+   Compiling selvedge-store v0.1.0 (/work/crates/selvedge-store)
+error[E0308]: mismatched types
+   --> crates/selvedge-store/src/store_bench.rs:633:28
+    |
+633 |             max_in_flight: spec.max_in_flight,
+    |                            ^^^^^^^^^^^^^^^^^^ expected `usize`, found `u32`
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `selvedge-store` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

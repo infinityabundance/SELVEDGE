@@ -1,0 +1,100 @@
+{
+  "all_match": true,
+  "created_utc": "2026-11-15T00:27:09Z",
+  "environment": {
+    "arithmetic": {
+      "allow_bf16_reduced_precision_reduction": false,
+      "allow_tf32_cudnn": false,
+      "allow_tf32_matmul": false,
+      "dtype": "float32",
+      "float32_matmul_precision": "highest"
+    },
+    "cudnn_deterministic": false,
+    "device": "cuda",
+    "device_capability": "8.9",
+    "device_name": "NVIDIA GeForce RTX 4080 SUPER",
+    "device_total_memory_bytes": 16765091840,
+    "driver": "620.70.06",
+    "numpy": "2.5.4",
+    "platform": "Linux-7.3.3-1-cachyos-x86_64-with-glibc2.41",
+    "python": "3.12.16",
+    "seed": 20261114,
+    "torch": "2.15.0+cu132",
+    "torch_cuda_runtime": "13.2",
+    "transformers": "5.23.0"
+  },
+  "layers": [
+    0,
+    7,
+    14,
+    21,
+    27
+  ],
+  "method": "for each audited layer, an 8-token hidden state is copied to CPU with that layer's weights; grouped_forward executes only the top-5 groups and torch.profiler(record_shapes=True) sums k*n over every aten::mm second operand. The by-construction counter must equal that sum exactly.",
+  "model": {
+    "id": "Qwen/Qwen3-1.7B",
+    "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "results": [
+    {
+      "counted_elements": 94371840,
+      "counted_flops": 188743680,
+      "counted_matmuls": 24,
+      "layer": 0,
+      "matches": true,
+      "profiled_elements": 94371840,
+      "profiled_flops": 188743680,
+      "profiled_matmuls": 24,
+      "tokens": 8
+    },
+    {
+      "counted_elements": 94371840,
+      "counted_flops": 188743680,
+      "counted_matmuls": 24,
+      "layer": 7,
+      "matches": true,
+      "profiled_elements": 94371840,
+      "profiled_flops": 188743680,
+      "profiled_matmuls": 24,
+      "tokens": 8
+    },
+    {
+      "counted_elements": 94371840,
+      "counted_flops": 188743680,
+      "counted_matmuls": 24,
+      "layer": 14,
+      "matches": true,
+      "profiled_elements": 94371840,
+      "profiled_flops": 188743680,
+      "profiled_matmuls": 24,
+      "tokens": 8
+    },
+    {
+      "counted_elements": 94371840,
+      "counted_flops": 188743680,
+      "counted_matmuls": 24,
+      "layer": 21,
+      "matches": true,
+      "profiled_elements": 94371840,
+      "profiled_flops": 188743680,
+      "profiled_matmuls": 24,
+      "tokens": 8
+    },
+    {
+      "counted_elements": 47185920,
+      "counted_flops": 188743680,
+      "counted_matmuls": 12,
+      "layer": 27,
+      "matches": true,
+      "profiled_elements": 47185920,
+      "profiled_flops": 188743680,
+      "profiled_matmuls": 12,
+      "tokens": 8
+    }
+  ],
+  "revision": "8090b1bf5544352c0e6565e8762c2133feb20f7d",
+  "schema": "selvedge/selectors/sparse-read-audit-v1",
+  "stamp": "20261115T002900Z",
+  "tokens": 8,
+  "window_doc_id": "wikitext-article-037"
+}

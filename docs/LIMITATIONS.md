@@ -41,10 +41,16 @@ teacher KL, PPL ratio and top-1 agreement on pinned held-out text.
 - Do not read the KL values as "the model has lost N% of its ability". KL is a
   distributional distance on one text distribution.
 - Do not read the non-uniform allocation result as "optimal allocation solves
-  the ceiling". It is a greedy heuristic, it is explicitly non-deployable
-  (it uses teacher logits and calibrates with an oracle), and its candidate set
-  is pruned to one add and one remove per layer. A better search could do
-  better; this experiment did not run one.
+  the ceiling". It is a greedy heuristic, it is causally unavailable at runtime
+  (it uses teacher logits during calibration and its mask is an offline oracle
+  result), and its candidate set is pruned to one add and one remove per layer.
+  A better search could do better; this experiment did not run one.
+- **Do not read the M2 active-count column as physical reads.** The original
+  instrument charged logical selections, not parameter elements. The corrected
+  accounting and the two verdicts (`causal`, `physical`) are in
+  `docs/M2-CORRECTION.md`. Arms whose selector reads full gate/up projections or
+  whose execution is dense-masked are physically non-compliant even when their
+  logical active count is under the ceiling.
 - Do not read the code and math slices as capability evaluations. They are
   prompt-only next-token-distribution slices. The canonical solutions and gold
   answers are never fed to the model.
@@ -121,6 +127,26 @@ teacher KL, PPL ratio and top-1 agreement on pinned held-out text.
   performance.
 - Treating the two-group additive-greedy observation as the registered
   matched-budget result; it is not (see `results/M1-FRONTIER.md`).
+- Treating a `PhysicalCompliance::Compliant` record as a runtime benchmark. It
+  says the measured path reads only counted elements; it does not measure
+  wall-clock throughput or a trained model.
+
+## Storage / trust limitations
+
+- **Publication proofs are a trust input.** `VerificationMode::Always` hashes
+  every shard on every read. `VerificationMode::PublicationProof` trusts a
+  registry whose bundle id and manifest digest match; a forged registry could
+  therefore hide corrupted bytes. Every reported measurement in this repository
+  uses `Always`; the proof path exists for a warm audit path that is not yet
+  measured.
+- **Sparse read counts are per matmul call, not per token.** A batched forward
+  reads each sliced weight once per matmul; a one-token decode re-reads the same
+  slice. The reported `execution_elements_read` is for the measured batched
+  forward, and the *unique* set (what the ceiling constrains) is per output
+  token. Both are recorded; they are not interchangeable.
+- **The storage measurements are single-node.** One consumer NVMe device, one
+  kernel, one page-cache policy. They are repeated, but they do not generalise
+  to a different drive, firmware, filesystem or concurrency level.
 
 ## M2 selectors: what the per-token result does not establish
 
@@ -128,6 +154,19 @@ The M2 report is `results/M2-SELECTORS.md`; the registered contract is the M2
 section of `docs/EXPERIMENT-CONTRACT.md`. The measured result is negative for
 the inference-only, post-hoc selection family.
 
+- **The M2 selection traces come from a degraded, untrained-router setting.**
+  The per-token subsets are post-hoc statistics on an unmodified dense
+  checkpoint, not the output of a trained router. Their instability (subsets
+  change almost every token; the one-pass and two-pass arms differ) should not
+  be extrapolated to a trained router, a model trained with sparsity, or a
+  different granularity.
+- **The one-pass comparison is small.** Eight held-out windows, one seed, one
+  teacher. Its paired difference excludes zero on that sample; that is a
+  measured comparison, not a population claim.
+- **No exact neural execution is claimed.** The `NativeSetWitness` and
+  `ExactSelection` types exist and are tested, but no end-to-end exact-mode
+  runtime consumes them yet. M1-M3 measurements use the approximate masked
+  path.
 - **The oracle is local, not globally optimal.** It exactly minimises a
   one-layer squared-output error per token and then applies the map; it does
   not solve the joint per-token combinatorial problem over all layers and
@@ -153,11 +192,11 @@ the inference-only, post-hoc selection family.
   interaction measurement shows the pairwise term is context-dependent and not
   predicted by the tested graph features. A richer interaction model is
   untested.
-- **Gradient x activation and corrected gradient x activation are
-  non-deployable here.** Their backward target uses teacher-forced tokens and a
-  summed loss. They are attribution baselines, not online selectors. The
-  corrected term is a reproduction of the stated corrective term in the 2026
-  paper, not of its full experimental pipeline.
+- **Gradient x activation and corrected gradient x activation are causally
+  unavailable here (`backward_target`).** Their backward target uses
+  teacher-forced tokens and a summed loss. They are attribution baselines, not
+  online selectors. The corrected term is a reproduction of the stated
+  corrective term in the 2026 paper, not of its full experimental pipeline.
 - **The 868-element controller mismatch is real.** Amendment A3 explains why
   exact element equality is impossible at whole-group granularity. The learned
   arms are 868 elements above the baseline, never below it.

@@ -1,0 +1,286 @@
+# M2 correction of record — exactness, dual verdicts and measured accounting
+
+Status: **correction, measured**. This document corrects `results/M2-SELECTORS.md`
+without deleting its history. It was prompted by a formal review that found
+four defects in the M2 instrument and in the core types:
+
+1. an approximate selection could be relabelled exact from a string
+   justification;
+2. a single `deployable` boolean conflated selection causality with physical
+   compliance;
+3. the reported "active" parameter counts were logical selection counts, not
+   the parameter elements the selector and the execution physically read;
+4. the M2 per-token arms used captured dense hidden states and a second
+   forward, so their numbers were not from a one-pass online selector.
+
+The type-level fixes live in `crates/selvedge-core/src/selection.rs`,
+`crates/selvedge-core/src/verdict.rs` and
+`crates/selvedge-core/src/ledger.rs`. The measurement fixes live in
+`oracle/masked_mlp.py` and `oracle/m2_selectors.py`. Every measured number in
+this document is generated from a receipt; the receipt stamp and revision are
+recorded in `docs/perf-numbers.json`.
+
+## 1. What `token-magnitude` actually did
+
+`token-magnitude` used `dense_group_norms` (`oracle/m2_selectors.py`) to rank
+groups. That function called `masked_mlp.dense_channels`, which computes
+**every** gate and up channel of the layer (`SiLU(W_gate x) ⊙ (W_up x)`) before
+taking each group's norm. The selection decision therefore read
+`2 * hidden * intermediate = 25,165,824` parameter elements per token per layer,
+whether or not those groups were selected. At 28 layers this is
+`704,643,072` elements for one token, outside every claimed active set.
+
+`MaskedMlp.forward` then computed the full gate/up projections again and
+multiplied the full `[T, intermediate]` activation by a 0/1 mask before the full
+down projection. PyTorch executed dense matrix multiplies; excluded channels
+were computed and discarded. The reported `active_ffn_elements` was the count
+of logically selected channels, not the count of weights whose bytes were read.
+
+The corrected accounting for the primary baseline on the full held-out split is:
+
+- realized active unique elements (logical selection plus controller):
+  <!-- BEGIN GENERATED: m2c-baseline-active -->
+998630400
+  <!-- END GENERATED: m2c-baseline-active -->
+- selector parameter elements read to make the decision:
+  <!-- BEGIN GENERATED: m2c-baseline-selector-reads -->
+225485783040
+  <!-- END GENERATED: m2c-baseline-selector-reads -->
+  (summed over 160 windows; the per-token union is in the receipt)
+- execution parameter elements read:
+  <!-- BEGIN GENERATED: m2c-baseline-execution-reads -->
+169114337280
+  <!-- END GENERATED: m2c-baseline-execution-reads -->
+- union of selector and execution elements for one output token, plus the
+  backbone:
+  <!-- BEGIN GENERATED: m2c-baseline-unique -->
+1479926784
+  <!-- END GENERATED: m2c-baseline-unique -->
+
+That union is above the `1,000,000,000` ceiling. The arm was never physically
+compliant, and the old table's `active unique` column could not show it.
+
+## 2. Corrected M2 table (general held-out, compact)
+
+The full table is generated in `results/M2-SELECTORS.md` and
+`results/selectors/table.md`. The two verdicts are independent:
+
+- `causal`: did the selector read only information available before its
+  decision?
+- `physical`: did selection **and** execution read only counted elements, and
+  was the executed computation genuinely sparse and measured?
+
+Of
+<!-- BEGIN GENERATED: m2c-arm-count -->
+23
+<!-- END GENERATED: m2c-arm-count -->
+evaluated arms,
+<!-- BEGIN GENERATED: m2c-causal-count -->
+19
+<!-- END GENERATED: m2c-causal-count -->
+are causally available and
+<!-- BEGIN GENERATED: m2c-compliance-count -->
+6
+<!-- END GENERATED: m2c-compliance-count -->
+are physically compliant. The six compliant arms are the static and random
+masks executed through the sliced sparse path; none of them is useful quality.
+
+| arm | causal | physical | KL mean | why it fails |
+| --- | --- | --- | ---: | --- |
+| token-magnitude | available | non_compliant | 6.676772 | dense gate/up selector reads outside the active set; dense masked execution |
+| token-frequency | available | non_compliant | 7.034329 | same |
+| token-learned-unary | available | non_compliant | 10.474509 | features require every gate/up channel |
+| token-learned-interaction | available | non_compliant | 10.482465 | same |
+| token-gxo / token-cor-gxo | unavailable | non_compliant | 11.137447 / 11.322907 | backward target is the gold token |
+| token-task-static-nn | unavailable | non_compliant | 9.580137 | document 5-shingles include tokens after the decision |
+| static-magnitude-k5-sparse | available | compliant | 10.019480 | quality is unusable |
+| static-greedy-uniform5-sparse | available | compliant | 7.706658 | quality is unusable |
+| token-random-sparse | available | compliant | 10.745491 | chance baseline |
+
+The KL values in that table are the generated `results/selectors/table.md`
+values; the receipt is the corrected full evaluation named at the end.
+
+`static-greedy-uniform5` at the matched B142 allocation is the M1 best static
+arm; its KL is
+<!-- BEGIN GENERATED: m2c-static-kl -->
+7.706657
+<!-- END GENERATED: m2c-static-kl -->
+and its sparse variant is physically compliant. Per-token magnitude is better:
+<!-- BEGIN GENERATED: m2c-baseline-kl-2 -->
+6.676772
+<!-- END GENERATED: m2c-baseline-kl-2 -->
+but not physically compliant.
+
+**Which arms cannot be made physically compliant at all.** Any arm that needs
+the full gate/up projection to score groups (`token-magnitude`,
+`token-frequency`, both learned arms, both GxO arms) cannot be compliant at this
+budget: the selector's own read is `28 * 2 * 2048 * 6144 = 704,643,072`
+elements, which alone is 70% of the ceiling and leaves no room for the backbone
+and the selected FFN. The oracle arms cannot be compliant either; their search
+evaluates dense group contributions. No arm in the measured family is both
+causally available, physically compliant and better than chance.
+
+## 3. The oracle bound survives as a counterfactual result
+
+The oracle result in `results/M2-SELECTORS.md` is a bound on **logical group
+omission**, measured with the same masked-dense instrument. It is not a claim
+about a physically compliant execution and it is not a claim that a runtime
+exists. It survives as a counterfactual: even if the selection cost were free
+and the mask were applied exactly, the best per-token oracle reaches KL
+
+<!-- BEGIN GENERATED: m2c-oracle-best-kl -->
+3.665418
+<!-- END GENERATED: m2c-oracle-best-kl -->
+
+on the oracle sample, far outside the registered usable tier. The conclusion
+"the inference-only post-hoc selection branch is dead for this teacher at this
+granularity" stands for the *logical omission* question. The word "deployable"
+does not: the old M2 arms that carried it were never physically compliant.
+
+## 4. One-pass online selection versus teacher-state iteration
+
+`online-one-pass-magnitude` was added. Its hook runs immediately before each
+wrapped MLP and selects from the hidden state that layer actually receives under
+the masks already applied in the same forward. It captures no dense state and
+performs no second forward. `offline-iterated-magnitude` is the old two-pass
+arm: a dense first pass, captured states, then a second forward.
+
+Both are causally available. Both are physically non-compliant for the reason in
+section 2. On the same eight-window oracle sample:
+
+| arm | budget | KL mean | top-1 | selector seconds (all windows) |
+| --- | --- | ---: | ---: | ---: |
+| online-one-pass | B140 | 6.529975 | 0.0827 | 0.734 |
+| offline-iterated | B140 | 6.955762 | 0.0651 | 0.067 |
+| online-one-pass | B142 | 6.423737 | 0.0930 | 0.705 |
+| offline-iterated | B142 | 6.611430 | 0.0707 | 0.523 |
+
+The online KL is
+<!-- BEGIN GENERATED: m2c-onepass-b140-kl -->
+6.529975
+<!-- END GENERATED: m2c-onepass-b140-kl -->
+at B140 and
+<!-- BEGIN GENERATED: m2c-onepass-b142-kl -->
+6.423737
+<!-- END GENERATED: m2c-onepass-b142-kl -->
+at B142. The offline-iterated KL is
+<!-- BEGIN GENERATED: m2c-offline-b140-kl -->
+6.955762
+<!-- END GENERATED: m2c-offline-b140-kl -->
+at B140 and
+<!-- BEGIN GENERATED: m2c-offline-b142-kl -->
+6.611430
+<!-- END GENERATED: m2c-offline-b142-kl -->
+at B142.
+
+Paired difference (online minus offline), per window, 10,000-resample
+percentile bootstrap over the eight windows:
+
+- B140:
+<!-- BEGIN GENERATED: m2c-onepass-minus-offline-b140 -->
+-0.425787
+<!-- END GENERATED: m2c-onepass-minus-offline-b140 -->
+  with 95% CI
+  [
+<!-- BEGIN GENERATED: m2c-onepass-minus-offline-b140-low -->
+-0.557538
+<!-- END GENERATED: m2c-onepass-minus-offline-b140-low -->
+  ,
+<!-- BEGIN GENERATED: m2c-onepass-minus-offline-b140-high -->
+-0.309288
+<!-- END GENERATED: m2c-onepass-minus-offline-b140-high -->
+  ];
+- B142:
+<!-- BEGIN GENERATED: m2c-onepass-minus-offline-b142 -->
+-0.187693
+<!-- END GENERATED: m2c-onepass-minus-offline-b142 -->
+  with 95% CI
+  [
+<!-- BEGIN GENERATED: m2c-onepass-minus-offline-b142-low -->
+-0.281567
+<!-- END GENERATED: m2c-onepass-minus-offline-b142-low -->
+  ,
+<!-- BEGIN GENERATED: m2c-onepass-minus-offline-b142-high -->
+-0.101138
+<!-- END GENERATED: m2c-onepass-minus-offline-b142-high -->
+  ].
+
+The earlier M2 numbers depended on iteration: the two-pass arm is worse in both
+budgets. The difference is negative (one-pass is better) and excludes zero. The
+plausible reading is that the first mask pass changes the states the second pass
+selects from, and the second pass is not self-consistent with its own execution;
+the one-pass arm decides from a state it will actually execute. This is one
+eight-window sample and one teacher, so it is a measured comparison, not a
+general claim.
+
+Controller cost: the one-pass controller has zero learned parameters; the
+controller is the hand-written norm/top-k rule. Its parameter reads are the same
+dense gate/up reads that make the arm non-compliant. Its measured selector time
+is
+<!-- BEGIN GENERATED: m2c-onepass-b140-seconds-2 -->
+0.734
+<!-- END GENERATED: m2c-onepass-b140-seconds-2 -->
+seconds over 161 windows (about 4.6 ms per window) on the RTX 4080 SUPER, and
+it holds the GPU synchronisation inside the hook, so this is a conservative
+measurement.
+
+## 5. Tensor-access audit of the sparse path
+
+A genuinely sparse path was implemented in `masked_mlp.sparse_grouped_forward`:
+it groups tokens by identical subset, slices gate/up rows and down columns with
+`index_select` before every matmul, and never computes an unselected channel.
+It reproduces the masked-dense KL of every evaluated arm to the printed
+precision (for example `token-magnitude` and `token-magnitude-sparse` both have
+KL `6.676772`; the full JSON records the per-window equality).
+
+The by-construction read count is cross-checked with
+`torch.profiler(record_shapes=True)`: every `aten::mm` contributes `k*n`
+weight elements and `2*m*n*k` FLOPs. On real Qwen3-1.7B weights, eight tokens
+through five layers, all five layers matched exactly:
+
+- layer 0 counted:
+  <!-- BEGIN GENERATED: m2c-audit-layer0 -->
+94371840
+  <!-- END GENERATED: m2c-audit-layer0 -->
+- layer 0 profiled:
+  <!-- BEGIN GENERATED: m2c-audit-layer0-profiled -->
+94371840
+  <!-- END GENERATED: m2c-audit-layer0-profiled -->
+- all audited layers: `matches: true` in
+  `results/selectors/sparse-audit-20261115T002900Z.json`.
+
+That file is the audit receipt; the per-layer rows for layers 0, 7, 14, 21 and
+27 are printed there with counted elements, profiled elements, counted FLOPs and
+profiled FLOPs.
+
+## 6. Residual gaps
+
+- The six compliant arms are static or random masks; there is no compliant
+  learned selector in this family at this budget. A compliant controller would
+  need a scoring projection small enough to fit the
+  `1,369,600`-element B142 headroom; no such controller was trained here.
+- The one-pass comparison uses the oracle sample (eight windows), because the
+  full split would multiply the controller cost measurement by the number of
+  windows. It is one seed and one teacher.
+- `token-task-static-nn` was found to read whole-window shingles, including
+  future tokens. It is now labelled `future_tokens`; the old prose that called it
+  a deployable per-token arm is not retained as a claim.
+- The M2 selection traces come from a degraded, untrained-router setting: the
+  selected subsets are the output of a post-hoc statistic on an unmodified dense
+  checkpoint, not a trained router. Their instability (and the one-pass
+  difference) should not be extrapolated to a trained router.
+- Exact neural execution remains future work: the type-level witness exists, but
+  no end-to-end exact-mode runtime consumes it yet (Court E parity is still
+  future work).
+
+## Receipts
+
+- Corrected full evaluation:
+  `results/selectors/eval-full-20261115T005000Z.json`
+- Analysis and corrected table: `results/selectors/selectors.json`,
+  `results/selectors/table.md`
+- One-pass comparison: `results/selectors/onepass-20261115T012700Z.json`
+- Sparse-read audit: `results/selectors/sparse-audit-20261115T002900Z.json`
+- Rust parity/accounting: `results/selectors/atlas-compare.json`
+- Court receipts: `results/courts/` (oracle, rust, io, commit_identity,
+  perf_numbers)

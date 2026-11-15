@@ -1,0 +1,17 @@
+store-bench: bundle=swiglu-ad15450e2cc2-76dd1b90442e payload=1056964608 bytes shards=1344 stamp=20261115T014100Z revision=8090b1bf5544352c0e6565e8762c2133feb20f7d
+  none-cold              pass1    609.6 MiB/s p95=1604167 ns st=3276580296 dev=1057071104 B amp 1.00 pass2    615.6 MiB/s hits=0 page_drop=true
+  none-warm              pass1    612.3 MiB/s p95=1587697 ns st=2118592031 dev=1057214464 B amp 1.00 pass2   2085.7 MiB/s hits=0 page_drop=false
+  plan-order             pass1    616.3 MiB/s p95=1564053 ns st=3278125195 dev=1056964608 B amp 1.00 pass2    608.6 MiB/s hits=0 page_drop=true
+  coalesced              pass1    758.9 MiB/s p95=1139852 ns st=2663521099 dev=1057329152 B amp 1.00 pass2    746.0 MiB/s hits=0 page_drop=true
+  lru-1of8               pass1    597.8 MiB/s p95=1634734 ns st=3162085808 dev=1057009664 B amp 1.00 pass2    676.6 MiB/s hits=168 page_drop=true
+  lru-1of4               pass1    590.4 MiB/s p95=1659592 ns st=3001828317 dev=1057239040 B amp 1.00 pass2    770.5 MiB/s hits=336 page_drop=true
+  lru-1of2               pass1    585.6 MiB/s p95=1650454 ns st=2618423923 dev=1056972800 B amp 1.00 pass2   1108.9 MiB/s hits=672 page_drop=true
+  lru-2x                 pass1    556.4 MiB/s p95=1735983 ns st=1836557307 dev=1057079296 B amp 1.00 pass2  28610.3 MiB/s hits=1344 page_drop=true
+  lfu-1of4               pass1    580.5 MiB/s p95=1711538 ns st=3011892626 dev=1106415616 B amp 1.05 pass2    780.9 MiB/s hits=336 page_drop=true
+  least-stale-1of4       pass1    582.9 MiB/s p95=1702682 ns st=3021855064 dev=1064493056 B amp 1.01 pass2    771.5 MiB/s hits=336 page_drop=true
+  pinned-all             pass1    553.6 MiB/s p95=1712019 ns st=1845713286 dev=1057034240 B amp 1.00 pass2  29614.9 MiB/s hits=1344 page_drop=true
+  prefetch-layer-waste   pass1    174.2 MiB/s p95=54001 ns st=411799 dev=38141952 B amp 4.04
+  queue-depth-1          pass1    597.5 MiB/s p95=1704756 ns st=3312143253 dev=1083600896 B amp 1.03 pass2    614.3 MiB/s hits=0 page_drop=true
+  queue-depth-4          pass1    421.5 MiB/s p95=3124208 ns st=4030021015 dev=1057304576 B amp 1.00 pass2    609.1 MiB/s hits=0 page_drop=true
+  queue-depth-16         pass1    610.3 MiB/s p95=1587527 ns st=3304824583 dev=1057591296 B amp 1.00 pass2    604.0 MiB/s hits=0 page_drop=true
+  queue-depth-64         pass1    598.4 MiB/s p95=1623313 ns st=3311966626 dev=1056968704 B amp 1.00 pass2    613.5 MiB/s hits=0 page_drop=true

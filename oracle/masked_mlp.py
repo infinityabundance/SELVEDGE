@@ -28,8 +28,54 @@ caller. The module has no CLI and no network access.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 import torch
 import torch.nn.functional as F
+
+
+@dataclass
+class ReadAccounting:
+    """Parameter-element reads and FLOPs of one selection+execution path.
+
+    `selector_*` counts what the selector read to make its decision (including
+    any dense gate/up projection used to score groups). `execution_*` counts
+    what the selected computation read. `executed_unique_*` is filled by the
+    caller from the union of the two identity sets; the counter itself cannot
+    know tensor identities, so it never invents a union.
+    """
+
+    selector_parameter_elements: int = 0
+    selector_elements_read: int = 0
+    execution_elements_read: int = 0
+    selection_flops: int = 0
+    execution_flops: int = 0
+    matmul_calls: int = 0
+    tokens: int = 0
+    layers: int = 0
+    measurements: list[str] = field(default_factory=list)
+
+    def add_selector(self, elements: int, flops: int) -> None:
+        self.selector_elements_read += int(elements)
+        self.selection_flops += int(flops)
+
+    def add_execution(self, elements: int, flops: int, matmuls: int = 1) -> None:
+        self.execution_elements_read += int(elements)
+        self.execution_flops += int(flops)
+        self.matmul_calls += int(matmuls)
+
+    def as_dict(self) -> dict:
+        return {
+            "selector_parameter_elements": self.selector_parameter_elements,
+            "selector_elements_read": self.selector_elements_read,
+            "execution_elements_read": self.execution_elements_read,
+            "selection_flops": self.selection_flops,
+            "execution_flops": self.execution_flops,
+            "matmul_calls": self.matmul_calls,
+            "tokens": self.tokens,
+            "layers": self.layers,
+            "measurements": list(self.measurements),
+        }
 
 
 def group_bounds(intermediate: int, groups: int) -> list[tuple[int, int]]:
@@ -115,6 +161,171 @@ def grouped_forward(
     return out.reshape(*shape[:-1], mlp.down_proj.out_features)
 
 
+def sparse_grouped_forward(
+    mlp: torch.nn.Module,
+    hidden_states: torch.Tensor,
+    groups: int,
+    selection: torch.Tensor,
+    counter: ReadAccounting | None = None,
+) -> torch.Tensor:
+    """Execute only the selected groups, slicing weights before every matmul.
+
+    `selection` is `[T, G]` boolean (one row per token). Tokens with the same
+    subset are executed together; for each distinct subset the gate/up rows and
+    down columns are sliced with `index_select` *before* the matmul, so no
+    unselected channel is ever computed. This is the genuinely sparse execution
+    path: its parameter reads are exactly the sliced elements.
+
+    The result is the same sum as the masked-dense path, up to f32 reduction
+    order. `oracle/tests/test_masked_mlp.py` checks the two paths against a
+    float64 hand computation and against each other.
+    """
+    if selection.dim() != 2:
+        raise ValueError("selection must be [T, G]")
+    shape = hidden_states.shape
+    if shape[-1] != mlp.gate_proj.in_features:
+        raise ValueError("hidden width does not match the gate projection")
+    flat = hidden_states.reshape(-1, shape[-1])
+    if flat.shape[0] != selection.shape[0]:
+        raise ValueError(
+            f"selection has {selection.shape[0]} rows for {flat.shape[0]} tokens"
+        )
+    intermediate = mlp.down_proj.in_features
+    out_width = mlp.down_proj.out_features
+    bounds = group_bounds(intermediate, groups)
+    if selection.shape[1] != len(bounds):
+        raise ValueError("selection group count does not match the layer")
+    selection = selection.to(device=flat.device, dtype=torch.bool)
+
+    out = torch.zeros(
+        (flat.shape[0], out_width), dtype=flat.dtype, device=flat.device
+    )
+    by_subset: dict[tuple[int, ...], list[int]] = {}
+    rows = selection.detach().cpu()
+    for token in range(rows.shape[0]):
+        key = tuple(int(index) for index in torch.nonzero(rows[token]).flatten())
+        by_subset.setdefault(key, []).append(token)
+
+    gate_weight = mlp.gate_proj.weight
+    up_weight = mlp.up_proj.weight
+    down_weight = mlp.down_proj.weight
+    for key, tokens in by_subset.items():
+        if not key:
+            continue
+        channels: list[int] = []
+        for index in key:
+            start, end = bounds[index]
+            channels.extend(range(start, end))
+        index_tensor = torch.tensor(channels, dtype=torch.long, device=flat.device)
+        token_tensor = torch.tensor(tokens, dtype=torch.long, device=flat.device)
+        x = flat.index_select(0, token_tensor)
+        width = len(channels)
+        count = len(tokens)
+        gate = x @ gate_weight.index_select(0, index_tensor).transpose(0, 1)
+        up = x @ up_weight.index_select(0, index_tensor).transpose(0, 1)
+        activation = F.silu(gate) * up
+        down = down_weight.index_select(1, index_tensor)
+        out.index_copy_(0, token_tensor, activation @ down.transpose(0, 1))
+        if counter is not None:
+            # One matmul call reads each sliced weight element once, regardless
+            # of how many token rows share the subset (a batched kernel reuses
+            # the weight). FLOPs still scale with the token rows.
+            elements = width * (2 * flat.shape[1] + out_width)
+            flops = 2 * count * elements
+            counter.add_execution(elements, flops, matmuls=3)
+    if counter is not None:
+        counter.tokens += flat.shape[0]
+        counter.layers += 1
+        counter.measurements.append("sliced-weight-element-count")
+    return out.reshape(*shape[:-1], out_width)
+
+
+def dense_execution_accounting(
+    tokens: int, hidden: int, intermediate: int, out_width: int, layers: int
+) -> tuple[int, int]:
+    """Parameter elements read and FLOPs of a dense masked execution.
+
+    One token through one layer reads every gate, up and down element once:
+    `I * (2H + O)`. FLOPs are `2 * I * (2H + O)` per token per layer. This is the
+    count the masked-dense path physically performs; it is reported as the
+    measured-basis for the `dense_computation_masked` verdict.
+    """
+    per_token_layer = intermediate * (2 * hidden + out_width)
+    elements = layers * per_token_layer
+    return elements, 2 * tokens * elements
+
+
+def selector_dense_accounting(
+    tokens: int, hidden: int, intermediate: int, layers: int
+) -> tuple[int, int]:
+    """Parameter elements read and FLOPs of a dense gate/up group-norm selector.
+
+    `dense_group_norms` computes every gate and up channel for every token and
+    layer to rank groups; it reads `2 * H * I` elements per token per layer and
+    performs `2 * (2 * H * I)` FLOPs. Those reads are outside a selected-group
+    active set and must be charged to the selection path.
+    """
+    per_token_layer = 2 * hidden * intermediate
+    elements = layers * per_token_layer
+    return elements, 2 * tokens * elements
+
+
+def audit_sparse_reads(
+    mlp: torch.nn.Module,
+    hidden_states: torch.Tensor,
+    groups: int,
+    selection: torch.Tensor,
+) -> dict:
+    """Cross-check `sparse_grouped_forward` against a per-op tensor audit.
+
+    The sparse path is instrumented with `torch.profiler(record_shapes=True)`.
+    Every `aten::mm` whose second operand is a sliced weight contributes
+    `k * n` parameter elements, and `2 * m * n * k` FLOPs. The audit compares
+    those sums with the counter's by-construction count. A mismatch is returned
+    as `matches: false` instead of being hidden.
+    """
+    counter = ReadAccounting()
+    with torch.profiler.profile(
+        activities=[torch.profiler.ProfilerActivity.CPU],
+        record_shapes=True,
+    ) as profile:
+        with torch.no_grad():
+            sparse_grouped_forward(
+                mlp, hidden_states, groups, selection, counter=counter
+            )
+    profiled_elements = 0
+    profiled_flops = 0
+    matmuls = 0
+    for event in profile.key_averages(group_by_input_shape=True):
+        # Only the kernel-level `aten::mm` is counted: the dispatcher also
+        # records an `aten::matmul` event for the same operation, and summing
+        # both would double every byte.
+        if event.key != "aten::mm":
+            continue
+        shapes = event.input_shapes
+        if len(shapes) != 2 or len(shapes[0]) != 2 or len(shapes[1]) != 2:
+            continue
+        m, k = shapes[0]
+        k2, n = shapes[1]
+        if k != k2 or 0 in (m, k, n):
+            continue
+        profiled_elements += event.count * k * n
+        profiled_flops += event.count * 2 * m * n * k
+        matmuls += event.count
+    return {
+        "counted_elements": counter.execution_elements_read,
+        "profiled_elements": profiled_elements,
+        "counted_flops": counter.execution_flops,
+        "profiled_flops": profiled_flops,
+        "counted_matmuls": counter.matmul_calls,
+        "profiled_matmuls": matmuls,
+        "matches": (
+            counter.execution_elements_read == profiled_elements
+            and counter.execution_flops == profiled_flops
+        ),
+    }
+
+
 class MaskedMlp(torch.nn.Module):
     """An FFN wrapper with a mutable per-channel or per-token mask.
 
@@ -154,6 +365,41 @@ class MaskedMlp(torch.nn.Module):
         )
         self.track_activation = False
         self.last_activation = None
+        self.sparse_groups = 0
+        self.sparse_selection = None
+        self.read_counter = None
+
+    def set_sparse_selection(
+        self,
+        selection: torch.Tensor | None,
+        groups: int = 0,
+        counter: ReadAccounting | None = None,
+    ) -> None:
+        """Execute only the selected groups, slicing weights before the matmul.
+
+        `selection` is a `[T, G]` boolean tensor (or `[1, T, G]`), one row per
+        token. When it is set, `forward` uses `sparse_grouped_forward` instead of
+        computing dense gate/up projections and masking afterwards. `counter`,
+        when supplied, accumulates the exact number of parameter elements the
+        sliced matmuls read.
+        """
+        if selection is None:
+            self.sparse_selection = None
+            self.sparse_groups = 0
+            self.read_counter = None
+            return
+        if selection.dim() == 3:
+            if selection.shape[0] != 1:
+                raise ValueError("sparse selection batch dimension must be 1")
+            selection = selection[0]
+        if selection.dim() != 2:
+            raise ValueError("sparse selection must be [T, G]")
+        self.sparse_selection = selection.to(device=self.mask.device, dtype=torch.bool)
+        self.sparse_groups = int(groups)
+        self.read_counter = counter
+
+    def clear_sparse_selection(self) -> None:
+        self.set_sparse_selection(None)
 
     def set_token_mask(self, token_mask: torch.Tensor | None) -> None:
         if token_mask is None:
@@ -177,6 +423,14 @@ class MaskedMlp(torch.nn.Module):
         self.set_token_mask(None)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        if self.sparse_selection is not None:
+            return sparse_grouped_forward(
+                self,
+                hidden_states,
+                self.sparse_groups,
+                self.sparse_selection,
+                counter=self.read_counter,
+            )
         gate = self.gate_proj(hidden_states)
         up = self.up_proj(hidden_states)
         activation = self.act_fn(gate) * up
@@ -239,7 +493,27 @@ class MaskController:
     def set_dense(self) -> None:
         self.clear_token_masks()
         for wrapper in self.wrappers:
+            wrapper.clear_sparse_selection()
             wrapper.mask.fill_(1.0)
+
+    def set_sparse_selections(
+        self,
+        selections: list[torch.Tensor],
+        groups: int,
+        counter: ReadAccounting | None = None,
+    ) -> None:
+        """Switch every layer to genuinely sparse execution of its selection."""
+        if len(selections) != len(self.wrappers):
+            raise ValueError(
+                f"{len(selections)} selections for {len(self.wrappers)} layers"
+            )
+        self.clear_token_masks()
+        for wrapper, selection in zip(self.wrappers, selections):
+            wrapper.set_sparse_selection(selection, groups, counter)
+
+    def clear_sparse_selections(self) -> None:
+        for wrapper in self.wrappers:
+            wrapper.clear_sparse_selection()
 
     def suspend(self) -> None:
         """Restore the original MLP modules so the unmodified model can run."""

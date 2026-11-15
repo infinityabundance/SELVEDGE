@@ -497,6 +497,10 @@ fn coalesced_pass_verifies_every_shard_and_counts_device_bytes() {
     assert_eq!(report.bytes_used, expected);
     assert_eq!(store.stats().device_bytes, expected);
     assert_eq!(store.stats().checksum_failures, 0);
+    // The coalesced path verifies every shard; its verification time must be
+    // counted, not silently dropped because the read was one run.
+    assert!(store.stats().verify_ns > 0);
+    assert!(store.stats().transfer_ns > 0);
 }
 
 #[test]

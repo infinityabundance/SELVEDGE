@@ -129,6 +129,18 @@ pub struct PassStats {
     pub shards: u64,
     /// Bytes delivered to the caller in total.
     pub bytes_used: u64,
+    /// Bytes the shards needed.
+    pub bytes_requested: u64,
+    /// Bytes that arrived.
+    pub bytes_completed: u64,
+    /// Bytes moved but not delivered for use.
+    pub bytes_wasted: u64,
+    /// Bytes read from the backing tier.
+    pub device_bytes: u64,
+    /// Measured `device_bytes / bytes_used` for the pass.
+    pub read_amplification: f64,
+    /// Time spent hashing and comparing in this pass.
+    pub verify_ns: u64,
     /// Store cache hits during the pass.
     pub hits: u64,
     /// Bytes delivered from the store cache during the pass.
@@ -373,6 +385,10 @@ pub fn default_arms() -> Vec<String> {
         "least-stale-1of4".to_owned(),
         "pinned-all".to_owned(),
         "prefetch-layer-waste".to_owned(),
+        "queue-depth-1".to_owned(),
+        "queue-depth-4".to_owned(),
+        "queue-depth-16".to_owned(),
+        "queue-depth-64".to_owned(),
     ]
 }
 
@@ -384,6 +400,7 @@ struct ArmSpec {
     coalesced: bool,
     warm_pass2: bool,
     prefetch_waste: bool,
+    max_in_flight: usize,
 }
 
 fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
@@ -396,6 +413,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "none-warm" => ArmSpec {
             policy: PolicyKind::None,
@@ -405,6 +423,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: true,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "coalesced" => ArmSpec {
             policy: PolicyKind::None,
@@ -414,6 +433,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: true,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "lru-1of8" => ArmSpec {
             policy: PolicyKind::Lru,
@@ -423,6 +443,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "lru-1of4" => ArmSpec {
             policy: PolicyKind::Lru,
@@ -432,6 +453,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "lru-1of2" => ArmSpec {
             policy: PolicyKind::Lru,
@@ -441,6 +463,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "lru-2x" => ArmSpec {
             policy: PolicyKind::Lru,
@@ -450,6 +473,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "lfu-1of4" => ArmSpec {
             policy: PolicyKind::Lfu,
@@ -459,6 +483,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "least-stale-1of4" => ArmSpec {
             policy: PolicyKind::LeastStale,
@@ -468,6 +493,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "pinned-all" => ArmSpec {
             policy: PolicyKind::Pinned,
@@ -477,6 +503,7 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: false,
+            max_in_flight: 64,
         },
         "prefetch-layer-waste" => ArmSpec {
             policy: PolicyKind::Lru,
@@ -486,7 +513,26 @@ fn arm_spec(arm: &str, payload: u64) -> Result<ArmSpec> {
             coalesced: false,
             warm_pass2: false,
             prefetch_waste: true,
+            max_in_flight: 64,
         },
+        "queue-depth-1" | "queue-depth-4" | "queue-depth-16" | "queue-depth-64" => {
+            let depth = match arm {
+                "queue-depth-1" => 1,
+                "queue-depth-4" => 4,
+                "queue-depth-16" => 16,
+                _ => 64,
+            };
+            ArmSpec {
+                policy: PolicyKind::None,
+                cache_bytes: 0,
+                order: ReadOrder::Plan,
+                pass2_order: ReadOrder::Reverse,
+                coalesced: false,
+                warm_pass2: false,
+                prefetch_waste: false,
+                max_in_flight: depth,
+            }
+        }
         other => {
             return Err(StoreError::config(format!(
                 "unknown arm {other:?}; known arms are {}",
@@ -514,6 +560,12 @@ fn run_arm(
     let empty_pass = PassStats {
         shards: 0,
         bytes_used: 0,
+        bytes_requested: 0,
+        bytes_completed: 0,
+        bytes_wasted: 0,
+        device_bytes: 0,
+        read_amplification: 0.0,
+        verify_ns: 0,
         hits: 0,
         cache_hit_bytes: 0,
         elapsed_ns: 0,
@@ -578,8 +630,8 @@ fn run_arm(
         verification: VerificationMode::Always,
         queue: QueueLimits {
             max_pending: 4096,
-            max_in_flight: 64,
-            max_in_flight_bytes: max_extent.saturating_mul(64),
+            max_in_flight: spec.max_in_flight,
+            max_in_flight_bytes: max_extent.saturating_mul(spec.max_in_flight as u64),
         },
         max_run_bytes: max_extent
             .saturating_mul(config.run_multiple)
@@ -669,9 +721,32 @@ fn measure_pass(
     let device_after = device_snapshot(device_name);
     let stats_after = store.stats();
     let hits = stats_after.hits.saturating_sub(stats_before.hits);
+    let bytes_requested = stats_after
+        .bytes_requested
+        .saturating_sub(stats_before.bytes_requested);
+    let bytes_completed = stats_after
+        .bytes_completed
+        .saturating_sub(stats_before.bytes_completed);
+    let bytes_wasted = stats_after
+        .bytes_wasted
+        .saturating_sub(stats_before.bytes_wasted);
+    let device_bytes = stats_after
+        .device_bytes
+        .saturating_sub(stats_before.device_bytes);
+    let verify_ns = stats_after.verify_ns.saturating_sub(stats_before.verify_ns);
     let mut pass = PassStats {
         shards: report.shards,
         bytes_used: report.bytes_used,
+        bytes_requested,
+        bytes_completed,
+        bytes_wasted,
+        device_bytes,
+        read_amplification: if report.bytes_used == 0 {
+            0.0
+        } else {
+            device_bytes as f64 / report.bytes_used as f64
+        },
+        verify_ns,
         hits,
         cache_hit_bytes: 0,
         elapsed_ns: report.elapsed_ns,
@@ -760,11 +835,25 @@ fn prefetch_waste_pass(
     let stats = store.stats();
     let device_after = device_snapshot(device_name);
     let (_, p50, p95, p99, max) = crate::metrics::percentiles(&mut stalls);
+    let bytes_requested = stats
+        .bytes_requested
+        .saturating_sub(stats_before.bytes_requested);
+    let bytes_completed = stats
+        .bytes_completed
+        .saturating_sub(stats_before.bytes_completed);
+    let bytes_wasted = stats.bytes_wasted.saturating_sub(stats_before.bytes_wasted);
+    let verify_ns = stats.verify_ns.saturating_sub(stats_before.verify_ns);
     let mut pass = PassStats {
         shards: deliver as u64,
-        bytes_used: stats.bytes_used,
+        bytes_used: stats.bytes_used.saturating_sub(stats_before.bytes_used),
+        bytes_requested,
+        bytes_completed,
+        bytes_wasted,
+        device_bytes: 0,
+        read_amplification: 0.0,
+        verify_ns,
         hits: stats.hits.saturating_sub(stats_before.hits),
-        cache_hit_bytes: stats.bytes_used,
+        cache_hit_bytes: stats.bytes_used.saturating_sub(stats_before.bytes_used),
         elapsed_ns,
         throughput_mib_s: mib_s(stats.bytes_used, elapsed_ns),
         stall_p50_ns: p50,

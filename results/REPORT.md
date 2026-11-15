@@ -3,11 +3,12 @@
 Status: **M2 complete**. The pre-registered M1 frontier and the M2 per-token
 selector/oracle experiment have been measured. M1 rejected static whole-group
 omission. M2 rejects the inference-only, post-hoc per-token selection branch:
-even a non-deployable per-token oracle at the compliant budget is far outside
-the registered usable tier, and no deployable selector beats activation
-magnitude at matched realized active parameters. The reports are
+even a causally unavailable per-token oracle at the compliant budget is far
+outside the registered usable tier, and no causally available selector beats
+activation magnitude at matched realized active parameters. The reports are
 `results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; the registered contract
-is `docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendment A3).
+is `docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendments A3 and A4).
+The correction of record for physical accounting is `docs/M2-CORRECTION.md`.
 
 This file states what is established, with the receipt that establishes it, and
 what is not. It is not a benchmark report: no latency, throughput or quality
@@ -52,22 +53,43 @@ number has been measured, and none is claimed.
 9. **The static result is negative and reproducible.** Two independent complete
    runs produced bitwise-identical per-arm aggregates. Failed attempts,
    amendments and the dirty-worktree superseded receipts are retained.
-10. **The per-token oracle potential is measured and negative.** A
-    non-deployable oracle that chooses an exact local subset per token and per
+10. **The per-token oracle potential is measured and negative.** A causally
+    unavailable oracle that chooses an exact local subset per token and per
     layer, at the same realized budget, was evaluated at 16, 64 and 4 groups.
     The 64-group oracle is the best and is still far outside the registered
-    usable tier. A bounded exact-KL refinement does not rescue it.
-11. **Per-token selection helps but cannot escape the cliff.** At matched
-    realized active parameters, per-token activation magnitude beats the best
-    static M1 arm, and every other deployable per-token arm is worse than
-    per-token magnitude. The learned unary, learned interaction-aware,
-    gradient-attribution and corrected-attribution arms are all worse.
+    usable tier. A bounded exact-KL refinement does not rescue it. Its bound is
+    about logical omission quality, not a compliant runtime.
+11. **Per-token selection helps logically but cannot escape the cliff, and the
+    best arms are physically non-compliant.** At matched realized active
+    parameters, per-token activation magnitude beats the best static M1 arm, and
+    every other causally available per-token arm is worse than per-token
+    magnitude. The learned unary, learned interaction-aware,
+    gradient-attribution and corrected-attribution arms are all worse. Corrected
+    accounting shows that the magnitude, frequency and learned selectors read all
+    gate/up channels to score groups, so they cannot be executed under the
+    ceiling; only static/random masks executed through the sliced sparse path are
+    physically compliant, and they are far worse. See `docs/M2-CORRECTION.md`.
 12. **The Rust Atlas boundary is implemented and parity-tested.**
     `selvedge-atlas` owns the quality-observation record, the interaction
     graph, the leakage-bounded selector input, seven selectors, the two-view
     head contract and independent matched-budget accounting. `selvedge atlas
     fit|select|compare|cost` run; the Python/Rust parity, leakage, graph and
     calibration tests pass on exported real fixtures.
+13. **Exactness and the two verdicts are type-level, not prose.**
+    `ExactSelection` requires a `NativeSetWitness` from full set equality
+    against a declared `NativeComputationSet`; the old string reclassification
+    is gone, and compile-fail cases prove the barrier. `CausalAvailability` and
+    `PhysicalCompliance` are separate evidence-bearing records; there is no
+    `deployable` boolean. `ParameterLedger::admit_selection_path` checks the
+    union of selector and execution parameters before execution. See
+    `docs/ARCHITECTURE.md` and `docs/M2-CORRECTION.md`.
+14. **The tiered store and its exact-mode reads are measured.** `selvedge-store`
+    implements the host-RAM cache policies, scoped reads, advisory prefetch and
+    the `prefetch_bytes_wasted` metric. Cold/warm whole-bundle reads on the real
+    0.6B and 1.7B bundles, the page-cache control, read-size, queue-depth,
+    alignment, checksum and cache-residency sweeps are three-repeat measurements
+    with ranges and CVs in `docs/STORAGE.md` and the `results/store` and
+    `results/io` summaries.
 
 ## Numbers (generated from receipts)
 
@@ -137,9 +159,11 @@ number has been measured, and none is claimed.
 - **No measured speed, latency, storage bandwidth or FLOPs.** FLOP values are
   derived from realized channel counts, not hardware counters. Arm wall clock
   is a cost observation, not a benchmark.
-- **No scheduler or runtime.** `selvedge-atlas` exists; `selvedge-store`,
-  `selvedge-sim` and `selvedge-runtime` do not. The Atlas cost head is
-  explicitly unavailable until M3, and no transfer time is assumed.
+- **No scheduler or runtime.** `selvedge-atlas` and `selvedge-store` exist;
+  `selvedge-sim`, `selvedge-runtime` and GPU staging do not. The Atlas cost head
+  is explicitly unavailable until the M3 trace scheduler has real traces, and
+  no transfer time is assumed. The storage measurements are host-RAM/NVMe
+  only, not GPU transfer numbers.
 - **The native-bf16 match is a model of PyTorch's arithmetic on these inputs.**
   A different kernel or backend may round differently.
 
@@ -148,7 +172,9 @@ number has been measured, and none is claimed.
 The activation files, bundles, dataset cache and derived split live under the
 gitignored `results/artifacts/` directory; the tracked receipts carry their
 hashes, sizes and measurements. Rebuilding is documented in
-`docs/BUDGET-MATH.md`, `docs/DATASETS.md` and `docs/WORK-LOG.md`.
+`docs/BUDGET-MATH.md`, `docs/DATASETS.md` and `docs/WORK-LOG.md`. The raw
+storage JSONL is excluded from git; `scripts/storage-summary.py` regenerates the
+tracked variance summaries from the receipts.
 
 ## Next
 

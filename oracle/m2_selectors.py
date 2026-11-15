@@ -13,7 +13,7 @@ Subcommands (each writes its own receipt):
 
 The contract is the M2 section of `docs/EXPERIMENT-CONTRACT.md`, registered
 before any of this ran. Every selector receives only pre-decision information;
-the attribution and oracle arms are labelled non-deployable in the receipts.
+the attribution and oracle arms carry causal-availability and physical-compliance verdicts in the receipts.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ import time
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 import frontier_sweep as fs
 import masked_mlp
@@ -181,6 +182,241 @@ def controller_elements(arm: dict) -> int:
     if not model:
         return 0
     return int(model.get("parameter_elements", 0))
+
+
+def causal_verdict(
+    record: str,
+    reason: str | None,
+    detail: str,
+    allowed: list[str],
+    one_pass: bool,
+    audit: str,
+) -> dict:
+    """The causal-availability record; never a boolean.
+
+    `reason` names a `CausalFailingReason` when the selector is unavailable.
+    A selector cannot be marked available by a string alone: it must list the
+    inputs it read and the audit that checked them.
+    """
+    if reason:
+        return {
+            "status": "unavailable",
+            "reason": reason,
+            "detail": detail,
+        }
+    return {
+        "status": "available",
+        "evidence": {
+            "decision_record": record,
+            "allowed_inputs": allowed,
+            "audit": audit,
+            "one_pass": bool(one_pass),
+        },
+    }
+
+
+def physical_verdict(reason: str | None, detail: str, evidence: dict | None) -> dict:
+    """The physical-compliance record; `reason=None` is only for measured paths."""
+    if reason:
+        return {
+            "status": "non_compliant",
+            "reason": reason,
+            "detail": detail,
+            "evidence": evidence,
+        }
+    if evidence is None or evidence.get("read_measurement", {}).get("kind") != "measured":
+        raise SystemExit("compliant physical verdict requires measured read evidence")
+    return {"status": "compliant", "evidence": evidence}
+
+
+def selection_channel_counts(selection: list[torch.Tensor], bounds) -> list[int]:
+    counts = []
+    for layer_selection in selection:
+        per_token = layer_selection.sum(dim=1).to(torch.int64)
+        widths = torch.tensor([end - start for start, end in bounds], dtype=torch.int64)
+        counts.append(int((per_token * widths.to(per_token.device)).sum().item()))
+    return counts
+
+
+def sparse_execution_reads(
+    selection: list[torch.Tensor], bounds, hidden: int, out_width: int
+) -> int:
+    """Parameter elements the sparse path reads for one forward pass.
+
+    Tokens that share a subset are one matmul triple, so each distinct subset
+    reads its sliced gate/up rows and down columns once. This mirrors the
+    grouping in `masked_mlp.sparse_grouped_forward` and is cross-checked by
+    `masked_mlp.audit_sparse_reads`.
+    """
+    return _sparse_walk(selection, bounds, hidden, out_width)[0]
+
+
+def sparse_execution_flops(
+    selection: list[torch.Tensor], bounds, hidden: int, out_width: int
+) -> int:
+    """FLOPs of the sparse path: `2 * token rows * sliced width * (2H+O)`."""
+    return _sparse_walk(selection, bounds, hidden, out_width)[1]
+
+
+def selection_unique_channels(selection: list[torch.Tensor], bounds) -> int:
+    """Intermediate channels one output token uses, maximised over tokens.
+
+    The ceiling is per output token, so this is the largest per-token selected
+    width in each layer summed over layers. It is deliberately *not* the union
+    over the window: a random per-token selector touches every group somewhere
+    in a long window while each token still uses only five groups.
+    """
+    total = 0
+    per_token: torch.Tensor | None = None
+    for layer_selection in selection:
+        widths = torch.tensor(
+            [end - start for start, end in bounds], dtype=torch.int64
+        )
+        rows = layer_selection.detach().to("cpu", torch.bool).to(torch.int64)
+        layer_counts = rows @ widths
+        per_token = layer_counts if per_token is None else per_token + layer_counts
+    if per_token is not None:
+        total = int(per_token.max().item())
+    return total
+
+
+def _sparse_walk(
+    selection: list[torch.Tensor], bounds, hidden: int, out_width: int
+) -> tuple[int, int]:
+    reads = 0
+    flops = 0
+    for layer_selection in selection:
+        rows = layer_selection.detach().cpu().to(torch.bool)
+        seen: set[tuple[int, ...]] = set()
+        for token in range(rows.shape[0]):
+            key = tuple(int(index) for index in torch.nonzero(rows[token]).flatten())
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            width = sum(bounds[index][1] - bounds[index][0] for index in key)
+            reads += width * (2 * hidden + out_width)
+            flops += 2 * width * (2 * hidden + out_width)
+    return reads, flops
+
+
+def selection_unique_elements(
+    selection: list[torch.Tensor], bounds, hidden: int, out_width: int
+) -> int:
+    """Learned FFN elements one output token uses (maximised over tokens)."""
+    return selection_unique_channels(selection, bounds) * (2 * hidden + out_width)
+
+
+DENSE_SELECTOR_KINDS = (
+    "magnitude",
+    "frequency",
+    "learned-unary",
+    "learned-interaction",
+    "gxo",
+    "cor-gxo",
+)
+
+
+def arm_accounting_evidence(
+    arm: dict,
+    selection: list[torch.Tensor] | None,
+    backend: dict,
+    accounting: dict,
+    tokens: int,
+    execution_counter: masked_mlp.ReadAccounting | None = None,
+    selector_passes: int = 1,
+) -> dict:
+    """Measured or constructed accounting for one arm and one window.
+
+    `selector_elements_read` is the parameter traffic of the decision path
+    (including a dense gate/up projection used only to score groups), and
+    `execution_elements_read` is the traffic of the executed path. The ceiling
+    constrains their union plus the always-active backbone, which is what
+    `executed_unique_elements` reports.
+    """
+    hidden = int(accounting["hidden"])
+    intermediate = int(accounting["intermediate_per_layer"])
+    backbone = int(accounting["always_active_backbone_elements"])
+    bounds = backend["bounds"]
+    out_width = hidden
+    kind = arm["kind"]
+    dense_selector = kind in DENSE_SELECTOR_KINDS
+    controller = controller_elements(arm)
+
+    selector_elements = 0
+    selector_flops = 0
+    if dense_selector:
+        per_pass_elements, per_pass_flops = masked_mlp.selector_dense_accounting(
+            tokens, hidden, intermediate, LAYERS
+        )
+        passes = selector_passes * (2 if kind in ("gxo", "cor-gxo") else 1)
+        selector_elements = per_pass_elements * passes
+        selector_flops = per_pass_flops * passes
+    elif kind == "random":
+        # A hash of the prefix token id: no learned parameter reads.
+        selector_flops = 8 * GROUPS * LAYERS * tokens
+
+    sparse_execution = arm.get("execution") == "sparse" and selection is not None
+    if sparse_execution:
+        constructed_reads = sparse_execution_reads(selection, bounds, hidden, out_width)
+        constructed_flops = sparse_execution_flops(selection, bounds, hidden, out_width)
+        if execution_counter is not None:
+            if execution_counter.execution_elements_read != constructed_reads:
+                raise SystemExit(
+                    "sparse execution counter disagrees with the sliced-shape count: "
+                    f"{execution_counter.execution_elements_read} vs {constructed_reads}"
+                )
+            execution_reads = execution_counter.execution_elements_read
+            execution_flops = execution_counter.execution_flops
+        else:
+            execution_reads = constructed_reads
+            execution_flops = constructed_flops
+    else:
+        execution_reads, execution_flops = masked_mlp.dense_execution_accounting(
+            tokens, hidden, intermediate, out_width, LAYERS
+        )
+
+    if selection is None:
+        execution_unique = LAYERS * intermediate * (2 * hidden + out_width)
+    elif dense_selector:
+        execution_unique = (
+            LAYERS * 2 * hidden * intermediate
+            + selection_unique_channels(selection, bounds) * out_width
+        )
+    else:
+        execution_unique = selection_unique_channels(selection, bounds) * (
+            2 * hidden + out_width
+        )
+    executed_unique = backbone + execution_unique + controller
+
+    if sparse_execution and execution_counter is not None:
+        measurement = {
+            "kind": "measured",
+            "audit": (
+                "MaskedMlp sparse forward counter (sliced elements), cross-checked "
+                "against oracle/masked_mlp.audit_sparse_reads per-op shapes"
+            ),
+        }
+    else:
+        measurement = {
+            "kind": "constructed",
+            "method": (
+                "dense masked forward reads I*(2H+O) per layer; dense selector reads "
+                "2*H*I per layer per pass; unique set is the union of selector and "
+                "execution parameter identities"
+            ),
+        }
+    return {
+        "selector_parameter_elements": controller,
+        "selector_elements_read": int(selector_elements),
+        "execution_elements_read": int(execution_reads),
+        "executed_unique_elements": int(executed_unique),
+        "selection_flops": int(selector_flops),
+        "execution_flops": int(execution_flops),
+        "read_measurement": measurement,
+        "ceiling": int(accounting["ceiling"]),
+        "backbone_elements": backbone,
+        "tokens": int(tokens),
+    }
 
 
 def selection_from_groups(selected: list[list[int]], groups: int) -> torch.Tensor:
@@ -1047,7 +1283,7 @@ def selection_from_arm_scores(
 
 
 # ---------------------------------------------------------------------------
-# GxO attribution (non-deployable)
+# GxO attribution (causal unavailable: backward target)
 # ---------------------------------------------------------------------------
 
 
@@ -1062,8 +1298,8 @@ def gxo_scores(
     """Signed GxO / corrected GxO group scores for every layer and token.
 
     The loss is the mean teacher-forced next-token log-probability. It uses the
-    gold next token, so the arm is non-deployable by construction and labelled
-    so in every receipt.
+    gold next token, so the arm is causally unavailable and labelled
+    `backward_target` in every receipt.
     """
     groups = group_count(accounting)
     bounds = masked_mlp.group_bounds(int(accounting["intermediate_per_layer"]), groups)
@@ -1319,7 +1555,7 @@ def base_receipt(args, kind: str, accounting: dict, entry: dict, device, split_r
         "notes": [
             "teacher is the dense float32 model with TF32 disabled",
             "selectors receive only pre-decision information; see docs/EXPERIMENT-CONTRACT.md M2.10",
-            "gradient and oracle arms are marked non-deployable",
+            "gradient and oracle arms carry explicit causal and physical verdicts",
             "active parameter counts are realized selections plus learned controller weights",
         ],
     }
@@ -1366,7 +1602,11 @@ def build_arms(args, prepare: dict, accounting: dict) -> list[dict]:
         {
             "id": "teacher-dense",
             "kind": "dense",
-            "deployable": False,
+            "execution": "dense",
+            "causal_reason": "undeclared_input",
+            "causal_detail": "reference arm: no selector, no pre-decision input to audit",
+            "physical_reason": "dense_computation_masked",
+            "physical_detail": "unmodified dense FFN, over the ceiling",
             "budget": {
                 **b142,
                 "name": "noncompliant-dense",
@@ -1380,7 +1620,13 @@ def build_arms(args, prepare: dict, accounting: dict) -> list[dict]:
         {
             "id": "masked-all",
             "kind": "all",
-            "deployable": False,
+            "execution": "dense",
+            "causal_reason": None,
+            "causal_detail": "every group selected; no decision is made",
+            "causal_allowed": ["current_layer_activations"],
+            "causal_one_pass": True,
+            "physical_reason": "dense_computation_masked",
+            "physical_detail": "all groups executed through the dense masked path",
             "budget": {
                 **b142,
                 "name": "noncompliant-all-groups",
@@ -1396,60 +1642,130 @@ def build_arms(args, prepare: dict, accounting: dict) -> list[dict]:
         ("static-random-k5", "random", 5),
     ):
         selection_lists = [rankings[ranking][layer][:k] for layer in range(LAYERS)]
-        arms.append(
-            {
-                "id": name,
-                "kind": "static",
-                "deployable": True,
-                "budget": b140,
-                "selection": selection_lists,
-                "active": active_from_counts([k] * LAYERS),
-            }
-        )
+        for suffix, execution in (("", "dense"), ("-sparse", "sparse")):
+            arms.append(
+                {
+                    "id": f"{name}{suffix}",
+                    "kind": "static",
+                    "execution": execution,
+                    "causal_reason": None,
+                    "causal_detail": (
+                        "a calibration-derived static mask; no per-token or future input "
+                        "is read at inference"
+                    ),
+                    "causal_allowed": ["calibration_constants"],
+                    "causal_one_pass": True,
+                    "physical_reason": None,
+                    "physical_detail": (
+                        "the static mask needs no parameter reads; the sparse execution "
+                        "reads only selected gate/up rows and down columns"
+                        if execution == "sparse"
+                        else "the M2 harness executes this arm through the dense masked path"
+                    ),
+                    "budget": b140,
+                    "selection": selection_lists,
+                    "active": active_from_counts([k] * LAYERS),
+                }
+            )
     for arm_id in ("greedy-uniform5", "greedy-swap4"):
         if arm_id not in greedy:
             continue
         entry = greedy[arm_id]
         counts = [len(selected) for selected in entry["selection"]]
         budget = b142 if arm_id == "greedy-uniform5" else {**b140, "name": "M1-K3-112"}
-        arms.append(
-            {
-                "id": f"static-{arm_id}",
-                "kind": "static",
-                "deployable": True,
-                "budget": budget,
-                "selection": entry["selection"],
-                "active": active_from_counts(counts),
-                "m1_receipt": entry["receipt"],
-                "budget_matched": arm_id == "greedy-uniform5",
-            }
-        )
-    for kind, arm_id, deployable in (
-        ("random", "token-random", True),
-        ("magnitude", "token-magnitude", True),
-        ("frequency", "token-frequency", True),
+        for suffix, execution in (("", "dense"), ("-sparse", "sparse")):
+            arms.append(
+                {
+                    "id": f"static-{arm_id}{suffix}",
+                    "kind": "static",
+                    "execution": execution,
+                    "causal_reason": None,
+                    "causal_detail": (
+                        "offline-selected static mask; selection at inference reads only "
+                        "the stored mask, so no runtime leak exists"
+                    ),
+                    "causal_allowed": ["calibration_constants"],
+                    "causal_one_pass": True,
+                    "physical_reason": None,
+                    "physical_detail": (
+                        "the static mask needs no parameter reads; the sparse execution "
+                        "reads only selected gate/up rows and down columns"
+                        if execution == "sparse"
+                        else "the M2 harness executes this arm through the dense masked path"
+                    ),
+                    "budget": budget,
+                    "selection": entry["selection"],
+                    "active": active_from_counts(counts),
+                    "m1_receipt": entry["receipt"],
+                    "budget_matched": arm_id == "greedy-uniform5",
+                }
+            )
+    for kind, arm_id in (
+        ("random", "token-random"),
+        ("magnitude", "token-magnitude"),
+        ("frequency", "token-frequency"),
     ):
-        arms.append(
-            {
-                "id": arm_id,
-                "kind": kind,
-                "deployable": deployable,
-                "budget": b142,
-                "active": active_from_counts([5] * LAYERS + []),
-            }
-        )
+        for suffix, execution in (("", "dense"), ("-sparse", "sparse")):
+            dense_selector = kind in ("magnitude", "frequency")
+            arms.append(
+                {
+                    "id": f"{arm_id}{suffix}",
+                    "kind": kind,
+                    "execution": execution,
+                    "causal_reason": None,
+                    "causal_detail": (
+                        "per-token decision from the current hidden state under this arm's "
+                        "own earlier masks; evaluated with one re-forward (not one-pass)"
+                        if dense_selector
+                        else "a deterministic hash of the prefix token id, layer, position and group"
+                    ),
+                    "causal_allowed": (
+                        [
+                            "current_hidden_state",
+                            "current_layer_activations",
+                            "own_earlier_masks",
+                        ]
+                        if dense_selector
+                        else ["token_prefix", "layer_index", "position_index"]
+                    ),
+                    "causal_one_pass": not dense_selector,
+                    "physical_reason": (
+                        "selection_reads_outside_active_set"
+                        if dense_selector
+                        else None
+                    ),
+                    "physical_detail": (
+                        "group norms require every gate/up channel of every layer "
+                        "(2*H*I elements per token per layer), which is outside the "
+                        "selected set; see accounting.selector_elements_read"
+                        if dense_selector
+                        else "no selector parameter reads; sparse execution reads only "
+                        "the selected slices"
+                    ),
+                    "budget": b142,
+                    "active": active_from_counts([5] * LAYERS + []),
+                }
+            )
     # Per-token arms are exactly 142 groups per token: five per layer plus two
     # extras. The representative count is five per layer plus two in layer 0.
     rep = [5] * LAYERS
     rep[0] += 2
     for arm in arms:
-        if arm["id"] in ("token-random", "token-magnitude", "token-frequency"):
+        if arm["kind"] in ("random", "magnitude", "frequency"):
             arm["active"] = active_from_counts(rep)
     arms.append(
         {
             "id": "token-task-static-nn",
             "kind": "task-static",
-            "deployable": True,
+            "execution": "dense",
+            "causal_reason": "future_tokens",
+            "causal_detail": (
+                "the nearest-calibration-document assignment uses word 5-shingles of "
+                "the whole evaluation window, including tokens after the decision "
+                "position; it is not an online per-token selector"
+            ),
+            "physical_reason": "dense_computation_masked",
+            "physical_detail": "executed through the dense masked path",
             "budget": b142,
             "active": active_from_counts(rep),
         }
@@ -1463,7 +1779,25 @@ def build_arms(args, prepare: dict, accounting: dict) -> list[dict]:
             {
                 "id": arm_id,
                 "kind": kind,
-                "deployable": True,
+                "execution": "dense",
+                "causal_reason": None,
+                "causal_detail": (
+                    "pre-decision hidden state plus the controller's own learned weights; "
+                    "evaluated with one re-forward (not one-pass)"
+                ),
+                "causal_allowed": [
+                    "current_hidden_state",
+                    "current_layer_activations",
+                    "controller_parameters",
+                    "own_earlier_masks",
+                ],
+                "causal_one_pass": False,
+                "physical_reason": "selection_reads_outside_active_set",
+                "physical_detail": (
+                    "the feature vector is computed from every gate/up channel, so the "
+                    "selector reads 2*H*I elements per token per layer outside the "
+                    "claimed active set; the learned weights are counted separately"
+                ),
                 "budget": b142,
                 "learned": learned,
                 "active": active_from_counts(rep),
@@ -1474,7 +1808,16 @@ def build_arms(args, prepare: dict, accounting: dict) -> list[dict]:
             {
                 "id": arm_id,
                 "kind": kind,
-                "deployable": False,
+                "execution": "dense",
+                "causal_reason": "backward_target",
+                "causal_detail": (
+                    "the score is x*grad from a backward pass whose target is the "
+                    "teacher-forced gold next token"
+                ),
+                "physical_reason": "dense_computation_masked",
+                "physical_detail": (
+                    "dense forward plus backward, executed through the dense masked path"
+                ),
                 "budget": b142,
                 "active": active_from_counts(rep),
             }
@@ -1487,8 +1830,10 @@ def build_arms(args, prepare: dict, accounting: dict) -> list[dict]:
         active = arm["active"]["active_unique_elements"] + arm["controller"]["elements"]
         arm["active"]["controller_elements"] = arm["controller"]["elements"]
         arm["active"]["active_unique_elements_with_controller"] = active
-        arm["active"]["compliant"] = active <= int(accounting["ceiling"])
-        if arm["id"] not in ("teacher-dense", "masked-all", "static-greedy-swap4"):
+        arm["active"]["logical_compliant"] = active <= int(accounting["ceiling"])
+        if arm["id"] not in ("teacher-dense", "masked-all") and not arm["id"].startswith(
+            "static-greedy-swap4"
+        ):
             if active != arm["budget"]["active_unique_elements"] + arm["controller"]["elements"]:
                 raise SystemExit(f"arm {arm['id']} active count does not match its budget")
     return arms
@@ -1605,9 +1950,15 @@ def measure_with_selection(
     selection: list[torch.Tensor],
     backend: dict,
     use_capture: bool,
-) -> tuple[object, float]:
-    masks = channel_masks_from_bool(selection, backend)
-    controller.set_token_masks(masks)
+    sparse: bool = False,
+) -> tuple[object, float, masked_mlp.ReadAccounting | None]:
+    if sparse:
+        counter = masked_mlp.ReadAccounting()
+        controller.set_sparse_selections(selection, backend["groups"], counter)
+    else:
+        counter = None
+        masks = channel_masks_from_bool(selection, backend)
+        controller.set_token_masks(masks)
     if use_capture:
         capture.clear()
     start_event = torch.cuda.Event(enable_timing=True) if torch.cuda.is_available() else None
@@ -1622,7 +1973,9 @@ def measure_with_selection(
         seconds = start_event.elapsed_time(end_event) / 1000.0
     else:
         seconds = 0.0
-    return logits, seconds
+    if sparse:
+        controller.clear_sparse_selections()
+    return logits, seconds, counter
 
 
 def selection_for_arm(
@@ -2495,7 +2848,8 @@ def command_oracle(args) -> int:
             "final_refine": final_refine,
             "seed": SEED,
             "notes": [
-                "the oracle is non-deployable: it searches per-token subsets and runs several forwards",
+                "the oracle is causally unavailable and physically non-compliant: it "
+                "searches from dense hidden states and runs several forwards",
                 "the local objective is an exact one-layer intervention, not the final KL",
                 "the final refinement accepts a swap only if the token's exact prefix KL improves",
             ],
@@ -2561,8 +2915,12 @@ def evaluate_arm_on_window(
     accounting: dict,
 ) -> dict:
     kind = arm["kind"]
+    sparse = arm.get("execution") == "sparse"
     if kind == "dense":
         metrics = masked_mlp.logits_kl_metrics(teacher_logits, teacher_logits, input_ids)
+        evidence = arm_accounting_evidence(
+            arm, None, backend, accounting, input_ids.shape[1]
+        )
         return {
             "metrics": metrics,
             "seconds": 0.0,
@@ -2570,13 +2928,15 @@ def evaluate_arm_on_window(
             "selector_seconds": 0.0,
             "selection": None,
             "iteration_kl": [],
+            "accounting": evidence,
+            "execution": "dense",
         }
     if kind == "all":
         selection = [
             torch.ones((input_ids.shape[1], backend["groups"]), dtype=torch.bool, device=input_ids.device)
             for _ in range(LAYERS)
         ]
-        logits, seconds = measure_with_selection(
+        logits, seconds, counter = measure_with_selection(
             model, controller, capture, input_ids, selection, backend, use_capture=False
         )
         metrics = masked_mlp.logits_kl_metrics(teacher_logits, logits, input_ids)
@@ -2587,14 +2947,19 @@ def evaluate_arm_on_window(
             "selector_seconds": 0.0,
             "selection": selection,
             "iteration_kl": [],
+            "accounting": arm_accounting_evidence(
+                arm, selection, backend, accounting, input_ids.shape[1]
+            ),
+            "execution": "dense",
         }
     if kind in ("static", "task-static", "random"):
         selection, info = selection_for_arm(
             arm, model, controller, capture, input_ids, dense_hidden, teacher_logits,
             accounting, backend, document_id, prepare,
         )
-        logits, seconds = measure_with_selection(
-            model, controller, capture, input_ids, selection, backend, use_capture=False
+        logits, seconds, counter = measure_with_selection(
+            model, controller, capture, input_ids, selection, backend, use_capture=False,
+            sparse=sparse,
         )
         metrics = masked_mlp.logits_kl_metrics(teacher_logits, logits, input_ids)
         return {
@@ -2604,6 +2969,11 @@ def evaluate_arm_on_window(
             "selector_seconds": info["selector_seconds"],
             "selection": selection,
             "iteration_kl": [float(metrics["kl"].mean())],
+            "accounting": arm_accounting_evidence(
+                arm, selection, backend, accounting, input_ids.shape[1],
+                execution_counter=counter,
+            ),
+            "execution": arm.get("execution", "dense"),
         }
     if kind in ("magnitude", "frequency", "learned-unary", "learned-interaction"):
         iteration_kl = []
@@ -2611,7 +2981,7 @@ def evaluate_arm_on_window(
             arm, model, controller, capture, input_ids, dense_hidden, teacher_logits,
             accounting, backend, document_id, prepare,
         )
-        logits0, seconds0 = measure_with_selection(
+        logits0, seconds0, _ = measure_with_selection(
             model, controller, capture, input_ids, selection, backend, use_capture=True
         )
         metrics0 = masked_mlp.logits_kl_metrics(teacher_logits, logits0, input_ids)
@@ -2621,8 +2991,9 @@ def evaluate_arm_on_window(
             arm, model, controller, capture, input_ids, hidden1, teacher_logits,
             accounting, backend, document_id, prepare,
         )
-        logits1, seconds1 = measure_with_selection(
-            model, controller, capture, input_ids, selection, backend, use_capture=False
+        logits1, seconds1, counter = measure_with_selection(
+            model, controller, capture, input_ids, selection, backend, use_capture=False,
+            sparse=sparse,
         )
         metrics = masked_mlp.logits_kl_metrics(teacher_logits, logits1, input_ids)
         iteration_kl.append(float(metrics["kl"].mean()))
@@ -2633,14 +3004,20 @@ def evaluate_arm_on_window(
             "selector_seconds": info["selector_seconds"] + info1["selector_seconds"],
             "selection": selection,
             "iteration_kl": iteration_kl,
+            "accounting": arm_accounting_evidence(
+                arm, selection, backend, accounting, input_ids.shape[1],
+                execution_counter=counter, selector_passes=2,
+            ),
+            "execution": arm.get("execution", "dense"),
         }
     if kind in ("gxo", "cor-gxo"):
         selection, info = selection_for_arm(
             arm, model, controller, capture, input_ids, dense_hidden, teacher_logits,
             accounting, backend, document_id, prepare,
         )
-        logits, seconds = measure_with_selection(
-            model, controller, capture, input_ids, selection, backend, use_capture=False
+        logits, seconds, counter = measure_with_selection(
+            model, controller, capture, input_ids, selection, backend, use_capture=False,
+            sparse=sparse,
         )
         metrics = masked_mlp.logits_kl_metrics(teacher_logits, logits, input_ids)
         return {
@@ -2650,8 +3027,81 @@ def evaluate_arm_on_window(
             "selector_seconds": info["selector_seconds"],
             "selection": selection,
             "iteration_kl": [float(metrics["kl"].mean())],
+            "accounting": arm_accounting_evidence(
+                arm, selection, backend, accounting, input_ids.shape[1],
+                execution_counter=counter,
+            ),
+            "execution": arm.get("execution", "dense"),
         }
     raise SystemExit(f"unknown arm kind {kind}")
+
+
+def aggregate_accounting(evidence: list[dict]) -> dict:
+    if not evidence:
+        raise SystemExit("no accounting evidence to aggregate")
+    measurement = (
+        evidence[0]["read_measurement"]
+        if all(item["read_measurement"]["kind"] == "measured" for item in evidence)
+        else next(
+            item["read_measurement"]
+            for item in evidence
+            if item["read_measurement"]["kind"] != "measured"
+        )
+    )
+    return {
+        "selector_parameter_elements": evidence[0]["selector_parameter_elements"],
+        "selector_elements_read": sum(item["selector_elements_read"] for item in evidence),
+        "execution_elements_read": sum(item["execution_elements_read"] for item in evidence),
+        "executed_unique_elements": max(item["executed_unique_elements"] for item in evidence),
+        "selection_flops": sum(item["selection_flops"] for item in evidence),
+        "execution_flops": sum(item["execution_flops"] for item in evidence),
+        "read_measurement": measurement,
+        "ceiling": evidence[0]["ceiling"],
+        "backbone_elements": evidence[0]["backbone_elements"],
+        "windows": len(evidence),
+        "tokens": sum(item["tokens"] for item in evidence),
+    }
+
+
+def build_arm_verdict(arm: dict, accounting: dict) -> dict:
+    causal = causal_verdict(
+        f"arm/{arm['id']}",
+        arm.get("causal_reason"),
+        arm.get("causal_detail", ""),
+        arm.get("causal_allowed", []),
+        arm.get("causal_one_pass", False),
+        "oracle/m2_selectors.py::selection_for_arm input boundary; receipts record the fields read",
+    )
+    evidence = {
+        "selector_parameter_elements": accounting["selector_parameter_elements"],
+        "selector_elements_read": accounting["selector_elements_read"],
+        "execution_elements_read": accounting["execution_elements_read"],
+        "executed_unique_elements": accounting["executed_unique_elements"],
+        "selection_flops": accounting["selection_flops"],
+        "execution_flops": accounting["execution_flops"],
+        "read_measurement": accounting["read_measurement"],
+    }
+    reason = arm.get("physical_reason")
+    if reason:
+        physical = physical_verdict(reason, arm.get("physical_detail", ""), evidence)
+    elif accounting["read_measurement"]["kind"] != "measured":
+        physical = physical_verdict(
+            "missing_sparse_execution_path",
+            "no measured sparse path was executed for this arm",
+            evidence,
+        )
+    elif accounting["executed_unique_elements"] > accounting["ceiling"]:
+        physical = physical_verdict(
+            "over_ceiling",
+            (
+                f"the union of selection and execution parameters is "
+                f"{accounting['executed_unique_elements']} > {accounting['ceiling']}"
+            ),
+            evidence,
+        )
+    else:
+        physical = physical_verdict(None, "", evidence)
+    return {"causal": causal, "physical": physical, "schema": "selvedge/arm-verdict/v1"}
 
 
 def command_evaluate(args) -> int:
@@ -2699,7 +3149,8 @@ def command_evaluate(args) -> int:
         arm["id"]: {
             "id": arm["id"],
             "kind": arm["kind"],
-            "deployable": arm["deployable"],
+            "execution": arm.get("execution", "dense"),
+            "verdict": None,
             "budget": arm["budget"],
             "active": arm["active"],
             "controller": arm["controller"],
@@ -2709,6 +3160,7 @@ def command_evaluate(args) -> int:
             "timing": {"seconds": 0.0, "selector_seconds": 0.0, "forwards": 0, "nonfinite": 0},
             "iteration_kl": [],
             "selection_summary": [],
+            "accounting_windows": [],
         }
         for arm in arms
     }
@@ -2758,6 +3210,7 @@ def command_evaluate(args) -> int:
                         results[arm["id"]]["timing"]["selector_seconds"] += outcome["selector_seconds"]
                         results[arm["id"]]["timing"]["forwards"] += outcome["forwards"]
                         results[arm["id"]]["iteration_kl"].append(outcome["iteration_kl"])
+                        results[arm["id"]]["accounting_windows"].append(outcome["accounting"])
                         if outcome["selection"] is not None:
                             results[arm["id"]]["selection_summary"].append(
                                 selection_summary(outcome["selection"])
@@ -2816,6 +3269,9 @@ def command_evaluate(args) -> int:
                 "per_window": iteration_kl,
             }
         record["timing"]["selector_flops_per_token"] = selector_flop_estimate(arm)
+        windows_accounting = record.pop("accounting_windows")
+        record["accounting"] = aggregate_accounting(windows_accounting)
+        record["verdict"] = build_arm_verdict(arm, record["accounting"])
         output_arms.append(record)
     stamp = args.stamp or stamp_now()
     receipt = base_receipt(args, "evaluate", accounting, entry, device, split_receipt)
@@ -2850,10 +3306,12 @@ def command_evaluate(args) -> int:
         general = record["domains"].get("general", {}).get("aggregate", {})
         if general:
             print(
-                f"eval: {record['id']:<28} kl={general.get('kl_mean', float('nan')):.6g} "
+                f"eval: {record['id']:<34} kl={general.get('kl_mean', float('nan')):.6g} "
                 f"top1={general.get('top1_agreement', float('nan')):.4f} "
                 f"ppl={general.get('ppl_ratio', float('nan')):.6g} "
-                f"deployable={record['deployable']} active={record['active']['active_unique_elements_with_controller']}"
+                f"causal={record['verdict']['causal']['status']} "
+                f"physical={record['verdict']['physical']['status']} "
+                f"active={record['active']['active_unique_elements_with_controller']}"
             )
     print(f"eval: receipt {path}")
     if args.json:
@@ -2939,7 +3397,7 @@ def svg_bar_chart(rows: list[dict], path: str, title: str) -> None:
         bar = max(1.0, chart_width * value / maximum)
         low_x = label_width + chart_width * low / maximum
         high_x = label_width + chart_width * high / maximum
-        color = "#1f6feb" if row["deployable"] else "#999999"
+        color = "#1f6feb" if row["causal_status"] == "available" else "#999999"
         lines.append(
             f'<text x="16" y="{y + 14}" font-family="sans-serif" font-size="11" fill="#111">'
             f'{row["id"][:44]}</text>'
@@ -2983,11 +3441,16 @@ def command_analyze(args) -> int:
         table.append(
             {
                 "id": arm["id"],
-                "deployable": arm["deployable"],
+                "causal_status": arm["verdict"]["causal"]["status"],
+                "causal_reason": arm["verdict"]["causal"].get("reason"),
+                "physical_status": arm["verdict"]["physical"]["status"],
+                "physical_reason": arm["verdict"]["physical"].get("reason"),
+                "execution": arm.get("execution", "dense"),
+                "accounting": arm.get("accounting"),
                 "budget": arm["budget"]["name"],
                 "budget_matched": arm.get("budget_matched", True),
                 "active_unique_elements": arm["active"]["active_unique_elements_with_controller"],
-                "compliant": arm["active"]["compliant"],
+                "logical_compliant": arm["active"]["logical_compliant"],
                 "controller_elements": arm["active"]["controller_elements"],
                 "kl_mean": metrics["kl_mean"],
                 "kl_ci_low": metrics["kl_mean_ci"]["ci_low"],
@@ -3045,7 +3508,26 @@ def command_analyze(args) -> int:
                     "forwards": config["forwards"],
                     "selector_seconds": config["selector_seconds"],
                     "gpu_seconds": config["gpu_seconds"],
-                    "non_deployable": True,
+                    "verdict": {
+                        "causal": {
+                            "status": "unavailable",
+                            "reason": "unmasked_future_state",
+                            "detail": (
+                                "the oracle searches from dense hidden states of the "
+                                "whole sequence, which an online masked execution "
+                                "cannot have at decision time"
+                            ),
+                        },
+                        "physical": {
+                            "status": "non_compliant",
+                            "reason": "dense_computation_masked",
+                            "detail": (
+                                "the oracle evaluates candidates with dense group "
+                                "contributions and dense forwards; its search cost is "
+                                "not a runtime budget"
+                            ),
+                        },
+                    },
                 }
             )
         if oracle.get("final_refine") and oracle["final_refine"]["windows"]:
@@ -3081,14 +3563,33 @@ def command_analyze(args) -> int:
                     "forwards": oracle["final_refine"]["forwards"],
                     "selector_seconds": 0.0,
                     "gpu_seconds": oracle["final_refine"]["gpu_seconds"],
-                    "non_deployable": True,
+                    "verdict": {
+                        "causal": {
+                            "status": "unavailable",
+                            "reason": "held_out_measurement",
+                            "detail": (
+                                "refinement accepts a swap only from the token's exact "
+                                "measured KL against the teacher"
+                            ),
+                        },
+                        "physical": {
+                            "status": "non_compliant",
+                            "reason": "dense_computation_masked",
+                            "detail": "prefix forwards and dense group contributions",
+                        },
+                    },
                 }
             )
-    deployable = [row for row in table if row["deployable"]]
+    causal_arms = [
+        row
+        for row in table
+        if row["causal_status"] == "available"
+        and row["id"] not in ("masked-all", "teacher-dense")
+    ]
     baseline = arm_index.get("token-magnitude")
     comparisons = []
     if baseline is not None:
-        for row in deployable:
+        for row in causal_arms:
             if row["id"] == "token-magnitude":
                 continue
             arm = arm_index[row["id"]]
@@ -3122,6 +3623,19 @@ def command_analyze(args) -> int:
         and comparison.get("matched_budget")
         and comparison.get("passes_five_percent")
         for comparison in comparisons
+    )
+    baseline_row = next((row for row in table if row["id"] == "token-magnitude"), None)
+    static_uniform_row = next(
+        (row for row in table if row["id"] == "static-greedy-uniform5"), None
+    )
+    k6_best_relative = max(
+        (
+            comparison.get("relative_reduction", {}).get("mean", float("-inf"))
+            for comparison in comparisons
+            if comparison.get("matched_budget")
+            and comparison.get("arm") not in ("token-magnitude", "token-magnitude-sparse")
+        ),
+        default=None,
     )
     oracle_best = (
         min(oracle_rows, key=lambda row: row["kl_mean"]) if oracle_rows else None
@@ -3164,17 +3678,12 @@ def command_analyze(args) -> int:
         "K6": {
             "passed": bool(k6_pass),
             "rule": (
-                "a deployable arm at matched active unique parameters reduces general mean KL "
-                "by at least 5% versus token-magnitude with a paired 95% CI lower bound above zero"
+                "a causally available arm at matched active unique parameters reduces "
+                "general mean KL by at least 5% versus token-magnitude with a paired 95% CI "
+                "lower bound above zero; the physical verdict is reported separately and "
+                "does not substitute for causal availability"
             ),
-            "best_relative_reduction": max(
-                (
-                    comparison.get("relative_reduction", {}).get("mean", float("-inf"))
-                    for comparison in comparisons
-                    if comparison.get("matched_budget")
-                ),
-                default=None,
-            ),
+            "best_relative_reduction": k6_best_relative,
         },
         "K7": {
             "passed": bool(oracle_usable),
@@ -3219,6 +3728,23 @@ def command_analyze(args) -> int:
             ),
         },
         "budget": evaluation["budget"],
+        "baseline": baseline_row,
+        "static_uniform5": static_uniform_row,
+        "compliance": {
+            "total": len(table),
+            "causal_available": sum(
+                1 for row in table if row["causal_status"] == "available"
+            ),
+            "physical_compliant": sum(
+                1 for row in table if row["physical_status"] == "compliant"
+            ),
+            "both": sum(
+                1
+                for row in table
+                if row["causal_status"] == "available"
+                and row["physical_status"] == "compliant"
+            ),
+        },
         "table": table,
         "oracle": oracle_rows,
         "comparisons": comparisons,
@@ -3275,17 +3801,17 @@ def command_analyze(args) -> int:
     write_json_atomic(json_path, analysis)
     table_path = os.path.join(args.out_dir, "table.md")
     with open(table_path, "w", encoding="utf-8") as handle:
-        handle.write("| arm | deployable | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |\n")
-        handle.write("| --- | :---: | --- | ---: | ---: | --- | ---: | ---: |\n")
+        handle.write("| arm | causal | physical | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |\n")
+        handle.write("| --- | --- | --- | --- | ---: | ---: | --- | ---: | ---: |\n")
         for row in sorted(table, key=lambda item: item["kl_mean"]):
             handle.write(
-                f"| {row['id']} | {'yes' if row['deployable'] else 'no'} | {row['budget']} | "
+                f"| {row['id']} | {row['causal_status']} | {row['physical_status']} | {row['budget']} | "
                 f"{row['active_unique_elements']} | {row['kl_mean']:.6f} | "
                 f"[{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
                 f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} |\n"
             )
         if oracle_rows:
-            handle.write("\nOracle (non-deployable):\n\n")
+            handle.write("\nOracle (causal unavailable, physical non-compliant):\n\n")
             handle.write("| arm | budget | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 |\n")
             handle.write("| --- | --- | ---: | --- | ---: | ---: | ---: | ---: |\n")
             for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
@@ -3306,10 +3832,10 @@ def command_analyze(args) -> int:
         if begin in lines and end in lines:
             start = lines.index(begin)
             stop = lines.index(end)
-            block = [begin, "", "| arm | deployable | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |", "| --- | :---: | --- | ---: | ---: | --- | ---: | ---: |"]
+            block = [begin, "", "| arm | causal | physical | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |", "| --- | --- | --- | --- | ---: | ---: | --- | ---: | ---: |"]
             for row in sorted(table, key=lambda item: item["kl_mean"]):
                 block.append(
-                    f"| {row['id']} | {'yes' if row['deployable'] else 'no'} | {row['budget']} | "
+                    f"| {row['id']} | {row['causal_status']} | {row['physical_status']} | {row['budget']} | "
                     f"{row['active_unique_elements']} | {row['kl_mean']:.6f} | "
                     f"[{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
                     f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} |"
@@ -3318,7 +3844,7 @@ def command_analyze(args) -> int:
                 block.extend(
                     [
                         "",
-                        "Oracle (non-deployable):",
+                        "Oracle (causal unavailable, physical non-compliant):",
                         "",
                         "| arm | budget | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 |",
                         "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: |",
@@ -3531,6 +4057,479 @@ def command_fixtures(args) -> int:
 
 
 # ---------------------------------------------------------------------------
+# one-pass online selection and the sparse-read audit
+# ---------------------------------------------------------------------------
+
+
+class _CpuLayer(torch.nn.Module):
+    """A CPU copy of one layer's three FFN projections, for the read audit."""
+
+    def __init__(self, wrapper) -> None:
+        super().__init__()
+        hidden = wrapper.gate_proj.in_features
+        intermediate = wrapper.gate_proj.out_features
+        out_width = wrapper.down_proj.out_features
+        self.gate_proj = torch.nn.Linear(hidden, intermediate, bias=False)
+        self.up_proj = torch.nn.Linear(hidden, intermediate, bias=False)
+        self.down_proj = torch.nn.Linear(intermediate, out_width, bias=False)
+        self.act_fn = F.silu
+        with torch.no_grad():
+            self.gate_proj.weight.copy_(wrapper.gate_proj.weight.detach().cpu())
+            self.up_proj.weight.copy_(wrapper.up_proj.weight.detach().cpu())
+            self.down_proj.weight.copy_(wrapper.down_proj.weight.detach().cpu())
+
+
+def online_one_pass_select(
+    model,
+    controller,
+    input_ids: torch.Tensor,
+    backend: dict,
+    k: int,
+    extra_layers: int,
+    counter: masked_mlp.ReadAccounting | None = None,
+) -> tuple[object, list[torch.Tensor], float]:
+    """One forward; each layer selects from the state it actually receives.
+
+    The hook runs immediately before the wrapped MLP, so layer `l` sees the
+    hidden state produced by layers `< l` under the masks this arm already
+    applied in the same pass. There is no captured dense state and no second
+    forward. The selector still reads every gate/up channel to compute group
+    norms, and that read is charged through `counter`.
+
+    Returns the logits, the per-layer selections and the time spent inside the
+    selection hooks (the controller cost), not the model forward time.
+    """
+    selections: list[torch.Tensor | None] = [None] * LAYERS
+    hooks = []
+    bounds = backend["bounds"]
+    groups = backend["groups"]
+    intermediate = backend["intermediate"]
+    selector_seconds = [0.0]
+
+    def make_hook(layer: int):
+        width = k + (1 if layer < extra_layers else 0)
+
+        def hook(module, inputs):
+            started = time.perf_counter()
+            hidden = inputs[0]
+            flat = hidden.detach().reshape(-1, hidden.shape[-1])
+            with torch.no_grad():
+                activation = masked_mlp.dense_channels(module, flat)
+                norms = torch.stack(
+                    [activation[:, start:end].norm(dim=1) for start, end in bounds],
+                    dim=1,
+                )
+                take = min(width, groups)
+                top = torch.topk(norms, take, dim=1, largest=True, sorted=True).indices
+                selected = torch.zeros(
+                    (flat.shape[0], groups), dtype=torch.bool, device=flat.device
+                )
+                selected.scatter_(1, top, True)
+                mask = torch.zeros(
+                    (flat.shape[0], intermediate), dtype=torch.float32, device=flat.device
+                )
+                for index, (start, end) in enumerate(bounds):
+                    mask[:, start:end] = selected[:, index : index + 1].to(torch.float32)
+                module.set_token_mask(mask)
+                selections[layer] = selected
+                if counter is not None:
+                    counter.add_selector(
+                        2 * HIDDEN * intermediate,
+                        2 * flat.shape[0] * 2 * HIDDEN * intermediate,
+                    )
+            if flat.is_cuda:
+                torch.cuda.synchronize()
+            selector_seconds[0] += time.perf_counter() - started
+
+        return hook
+
+    for layer, wrapper in enumerate(controller.wrappers):
+        hooks.append(wrapper.register_forward_pre_hook(make_hook(layer)))
+    try:
+        with torch.inference_mode():
+            logits = model(input_ids=input_ids, use_cache=False).logits
+    finally:
+        for handle in hooks:
+            handle.remove()
+    if any(selection is None for selection in selections):
+        raise SystemExit("one-pass selector did not fire on every layer")
+    return logits, selections, selector_seconds[0]
+
+
+def measure_dense_random(model, controller, input_ids, backend, selection) -> object:
+    masks = channel_masks_from_bool(selection, backend)
+    controller.set_token_masks(masks)
+    with torch.inference_mode():
+        return model(input_ids=input_ids, use_cache=False).logits
+
+
+def command_onepass(args) -> int:
+    fs.configure_arithmetic()
+    device = torch.device(
+        args.device if args.device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu")
+    )
+    entry, accounting, split_receipt, split = model_and_accounting(args)
+    prepare = load_json(args.prepare)
+    weights = load_json(args.weights)
+    prepare["learned"] = weights
+    model = fs.load_model(fs.model_directory(entry), device)
+    for parameter in model.parameters():
+        parameter.requires_grad_(False)
+    controller = masked_mlp.MaskController(model)
+    capture = masked_mlp.HiddenCapture(model)
+    groups = group_count(accounting)
+    bounds = masked_mlp.group_bounds(int(accounting["intermediate_per_layer"]), groups)
+    backend = {
+        "bounds": bounds,
+        "intermediate": int(accounting["intermediate_per_layer"]),
+        "groups": groups,
+    }
+    b140 = budget_spec(accounting, "B140")
+    b142 = budget_spec(accounting, "B142")
+    specs = [
+        {
+            "id": "online-one-pass-magnitude-B140",
+            "mode": "online",
+            "k": 5,
+            "extra_layers": 0,
+            "budget": b140,
+        },
+        {
+            "id": "online-one-pass-magnitude-B142",
+            "mode": "online",
+            "k": 5,
+            "extra_layers": 2,
+            "budget": b142,
+        },
+        {
+            "id": "online-one-pass-random-B140",
+            "mode": "online-random",
+            "budget": b140,
+        },
+        {
+            "id": "offline-iterated-magnitude-B140",
+            "mode": "offline",
+            "budget": b140,
+        },
+        {
+            "id": "offline-iterated-magnitude-B142",
+            "mode": "offline",
+            "budget": b142,
+        },
+    ]
+    rows = {
+        spec["id"]: {
+            "id": spec["id"],
+            "mode": spec["mode"],
+            "budget": spec["budget"],
+            "kl": [],
+            "top1": [],
+            "nll_teacher": 0.0,
+            "nll_masked": 0.0,
+            "positions": 0,
+            "seconds": 0.0,
+            "selector_seconds": 0.0,
+            "forwards": 0,
+            "accounting_windows": [],
+        }
+        for spec in specs
+    }
+    domains = build_domains(split, "oracle")
+    for item in domains["general"]:
+        for window in item["windows"]:
+            input_ids = torch.tensor([window], dtype=torch.long, device=device)
+            controller.set_dense()
+            capture.clear()
+            with torch.inference_mode():
+                teacher = model(input_ids=input_ids, use_cache=False).logits
+            dense_hidden = [capture.get(layer).clone() for layer in range(LAYERS)]
+            for spec in specs:
+                row = rows[spec["id"]]
+                if spec["mode"] == "online":
+                    counter = masked_mlp.ReadAccounting()
+                    start = time.perf_counter()
+                    logits, selections, selector_seconds = online_one_pass_select(
+                        model,
+                        controller,
+                        input_ids,
+                        backend,
+                        spec["k"],
+                        spec["extra_layers"],
+                        counter,
+                    )
+                    seconds = time.perf_counter() - start
+                    arm = {
+                        "id": spec["id"],
+                        "kind": "magnitude",
+                        "execution": "dense",
+                        "learned": None,
+                    }
+                    evidence = arm_accounting_evidence(
+                        arm, selections, backend, accounting, input_ids.shape[1]
+                    )
+                    if evidence["selector_elements_read"] != counter.selector_elements_read:
+                        raise SystemExit("one-pass selector read counter disagrees with accounting")
+                    row["forwards"] += 1
+                    row["selector_seconds"] += selector_seconds
+                    row["seconds"] += seconds
+                    row["accounting_windows"].append(evidence)
+                    metrics = masked_mlp.logits_kl_metrics(teacher, logits, input_ids)
+                elif spec["mode"] == "online-random":
+                    selector_start = time.perf_counter()
+                    selection = random_selection(input_ids, accounting, 0, input_ids.device)
+                    selector_seconds = time.perf_counter() - selector_start
+                    forward_start = time.perf_counter()
+                    logits = measure_dense_random(model, controller, input_ids, backend, selection)
+                    seconds = time.perf_counter() - forward_start
+                    arm = {
+                        "id": spec["id"],
+                        "kind": "random",
+                        "execution": "dense",
+                        "learned": None,
+                    }
+                    evidence = arm_accounting_evidence(
+                        arm, selection, backend, accounting, input_ids.shape[1]
+                    )
+                    row["forwards"] += 1
+                    row["selector_seconds"] += selector_seconds
+                    row["seconds"] += seconds
+                    row["accounting_windows"].append(evidence)
+                    metrics = masked_mlp.logits_kl_metrics(teacher, logits, input_ids)
+                else:
+                    arm = {
+                        "id": spec["id"],
+                        "kind": "magnitude",
+                        "execution": "dense",
+                        "budget": spec["budget"],
+                        "learned": None,
+                    }
+                    outcome = evaluate_arm_on_window(
+                        arm,
+                        model,
+                        controller,
+                        capture,
+                        input_ids,
+                        teacher,
+                        dense_hidden,
+                        backend,
+                        prepare,
+                        item["doc_id"],
+                        accounting,
+                    )
+                    row["seconds"] += outcome["seconds"]
+                    row["selector_seconds"] += outcome["selector_seconds"]
+                    row["forwards"] += outcome["forwards"]
+                    row["accounting_windows"].append(outcome["accounting"])
+                    metrics = outcome["metrics"]
+                summary = masked_mlp.summarize_positions(metrics)
+                row["kl"].append(summary["kl_mean"])
+                row["top1"].append(summary["top1_agreement"])
+                row["nll_teacher"] += summary["nll_teacher_mean"] * summary["nll_positions"]
+                row["nll_masked"] += summary["nll_masked_mean"] * summary["nll_positions"]
+                row["positions"] += summary["positions"]
+    output = []
+    for spec in specs:
+        row = rows[spec["id"]]
+        accounting_row = aggregate_accounting(row.pop("accounting_windows"))
+        if spec["mode"] == "online-random":
+            causal = causal_verdict(
+                f"arm/{spec['id']}",
+                None,
+                "hash of the prefix token id; no hidden state is read",
+                ["token_prefix", "layer_index", "position_index"],
+                True,
+                "oracle/m2_selectors.py::random_selection",
+            )
+        else:
+            causal = causal_verdict(
+                f"arm/{spec['id']}",
+                None,
+                (
+                    "selection uses the hidden state the layer receives under this "
+                    "arm's own masks; no captured dense state and no re-forward"
+                    if spec["mode"] == "online"
+                    else "two-pass iteration: pass 2 uses states from the arm's own masks"
+                ),
+                [
+                    "current_hidden_state",
+                    "current_layer_activations",
+                    "own_earlier_masks",
+                ],
+                spec["mode"] == "online",
+                "oracle/m2_selectors.py::online_one_pass_select",
+            )
+        physical = physical_verdict(
+            (
+                "dense_computation_masked"
+                if spec["mode"] != "online-random"
+                else "selection_reads_outside_active_set"
+            ),
+            (
+                "the one-pass arm still reads all gate/up channels to rank groups and "
+                "executes through the dense masked path"
+            ),
+            accounting_row,
+        )
+        entry_row = {
+            "id": spec["id"],
+            "mode": spec["mode"],
+            "budget": spec["budget"]["name"],
+            "groups_per_token": spec["budget"]["groups"],
+            "windows": len(row["kl"]),
+            "kl_mean": float(np.mean(row["kl"])),
+            "kl_per_window": row["kl"],
+            "top1_agreement": float(np.mean(row["top1"])),
+            "ppl_ratio": (
+                math.exp(row["nll_masked"] / row["nll_teacher"])
+                if row["nll_teacher"]
+                else None
+            ),
+            "positions": row["positions"],
+            "seconds": row["seconds"],
+            "selector_seconds": row["selector_seconds"],
+            "forwards": row["forwards"],
+            "controller_parameter_elements": 0,
+            "accounting": accounting_row,
+            "verdict": {"causal": causal, "physical": physical},
+        }
+        output.append(entry_row)
+    comparisons = []
+    by_id = {row["id"]: row for row in output}
+    for online_id, offline_id in (
+        ("online-one-pass-magnitude-B140", "offline-iterated-magnitude-B140"),
+        ("online-one-pass-magnitude-B142", "offline-iterated-magnitude-B142"),
+    ):
+        online = by_id[online_id]
+        offline = by_id[offline_id]
+        differences = np.array(online["kl_per_window"]) - np.array(offline["kl_per_window"])
+        indices = fs.bootstrap_indices(len(differences), args.resamples, SEED)
+        means = np.array([differences[index].mean() for index in indices])
+        comparisons.append(
+            {
+                "online": online_id,
+                "offline": offline_id,
+                "mean_kl_difference_online_minus_offline": float(differences.mean()),
+                "ci_low": float(np.percentile(means, 2.5)),
+                "ci_high": float(np.percentile(means, 97.5)),
+                "windows": int(len(differences)),
+                "paired_bootstrap_resamples": args.resamples,
+            }
+        )
+    stamp = args.stamp or stamp_now()
+    receipt = {
+        "schema": "selvedge/selectors/onepass-v1",
+        "stamp": stamp,
+        "revision": fs.git_head(),
+        "created_utc": utc_now(),
+        "preregistration_commit": args.preregistration_commit,
+        "model": {
+            "id": args.model_id,
+            "revision": entry["revision"],
+            "layers": LAYERS,
+            "groups": groups,
+        },
+        "environment": fs.environment(device),
+        "sample": "oracle: first 512-token window of eight held-out general articles",
+        "accounting_source": args.accounting,
+        "rows": output,
+        "comparisons": comparisons,
+        "notes": [
+            "online-one-pass makes one decision per layer from the state that layer "
+            "receives under the arm's own earlier masks; no dense capture, no re-forward",
+            "offline-iterated is the M2 two-pass arm: pass 1 states, then a second forward",
+            "both arms are causally available; neither is physically compliant because "
+            "group norms require dense gate/up reads and the execution path is masked dense",
+        ],
+    }
+    os.makedirs(args.receipt_dir, exist_ok=True)
+    path = os.path.join(args.receipt_dir, f"onepass-{stamp}.json")
+    write_json_atomic(path, receipt)
+    for row in output:
+        print(
+            f"onepass: {row['id']:<38} budget={row['budget']} kl={row['kl_mean']:.6f} "
+            f"top1={row['top1_agreement']:.4f} selector_s={row['selector_seconds']:.3f}"
+        )
+    for comparison in comparisons:
+        print(
+            f"onepass: {comparison['online']} - {comparison['offline']} = "
+            f"{comparison['mean_kl_difference_online_minus_offline']:+.6f} "
+            f"[{comparison['ci_low']:+.6f}, {comparison['ci_high']:+.6f}]"
+        )
+    print(f"onepass: receipt {path}")
+    return 0
+
+
+def command_audit_sparse(args) -> int:
+    fs.configure_arithmetic()
+    device = torch.device(
+        args.device if args.device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu")
+    )
+    entry, accounting, split_receipt, split = model_and_accounting(args)
+    model = fs.load_model(fs.model_directory(entry), device)
+    for parameter in model.parameters():
+        parameter.requires_grad_(False)
+    controller = masked_mlp.MaskController(model)
+    capture = masked_mlp.HiddenCapture(model)
+    groups = group_count(accounting)
+    bounds = masked_mlp.group_bounds(int(accounting["intermediate_per_layer"]), groups)
+    domain = build_domains(split, "oracle")["general"][0]
+    window = domain["windows"][0]
+    input_ids = torch.tensor([window], dtype=torch.long, device=device)
+    controller.set_dense()
+    capture.clear()
+    with torch.inference_mode():
+        model(input_ids=input_ids, use_cache=False)
+    layers = [0, 7, 14, 21, 27]
+    results = []
+    for layer in layers:
+        hidden = capture.get(layer).reshape(-1, HIDDEN)[: args.tokens].detach().cpu()
+        cpu_layer = _CpuLayer(controller.wrappers[layer])
+        with torch.no_grad():
+            activation = masked_mlp.dense_channels(cpu_layer, hidden)
+            norms = torch.stack(
+                [activation[:, start:end].norm(dim=1) for start, end in bounds], dim=1
+            )
+            top = torch.topk(norms, 5, dim=1, largest=True, sorted=True).indices
+            selection = torch.zeros((hidden.shape[0], groups), dtype=torch.bool)
+            selection.scatter_(1, top, True)
+            audit = masked_mlp.audit_sparse_reads(cpu_layer, hidden, groups, selection)
+        audit["layer"] = layer
+        audit["tokens"] = int(hidden.shape[0])
+        results.append(audit)
+    stamp = args.stamp or stamp_now()
+    matches = all(item["matches"] for item in results)
+    receipt = {
+        "schema": "selvedge/selectors/sparse-read-audit-v1",
+        "stamp": stamp,
+        "revision": fs.git_head(),
+        "created_utc": utc_now(),
+        "model": {"id": args.model_id, "revision": entry["revision"]},
+        "environment": fs.environment(device),
+        "window_doc_id": domain["doc_id"],
+        "tokens": args.tokens,
+        "layers": layers,
+        "results": results,
+        "all_match": matches,
+        "method": (
+            "for each audited layer, an 8-token hidden state is copied to CPU with that "
+            "layer's weights; grouped_forward executes only the top-5 groups and "
+            "torch.profiler(record_shapes=True) sums k*n over every aten::mm second "
+            "operand. The by-construction counter must equal that sum exactly."
+        ),
+    }
+    os.makedirs(args.receipt_dir, exist_ok=True)
+    path = os.path.join(args.receipt_dir, f"sparse-audit-{stamp}.json")
+    write_json_atomic(path, receipt)
+    for item in results:
+        print(
+            f"audit: layer={item['layer']} counted={item['counted_elements']} "
+            f"profiled={item['profiled_elements']} matches={item['matches']}"
+        )
+    print(f"audit: receipt {path}")
+    return 0 if matches else 1
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -3583,6 +4582,16 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--weights", default="results/selectors/m2-weights.json")
     evaluate.add_argument("--sample", choices=["full", "oracle"], default="full")
 
+    onepass = sub.add_parser("onepass")
+    add_common(onepass)
+    onepass.add_argument("--prepare", required=True)
+    onepass.add_argument("--weights", default="results/selectors/m2-weights.json")
+    onepass.add_argument("--resamples", type=int, default=10000)
+
+    audit = sub.add_parser("audit-sparse")
+    add_common(audit)
+    audit.add_argument("--tokens", type=int, default=8)
+
     analyze = sub.add_parser("analyze")
     analyze.add_argument("--prepare", required=True)
     analyze.add_argument("--eval", required=True)
@@ -3613,6 +4622,10 @@ def main(argv: list[str]) -> int:
         return command_oracle(args)
     if args.command == "evaluate":
         return command_evaluate(args)
+    if args.command == "onepass":
+        return command_onepass(args)
+    if args.command == "audit-sparse":
+        return command_audit_sparse(args)
     if args.command == "analyze":
         return command_analyze(args)
     if args.command == "fixtures":

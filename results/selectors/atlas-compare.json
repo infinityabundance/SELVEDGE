@@ -2,18 +2,26 @@
   "schema": "selvedge/atlas/compare-v1",
   "budget_groups": {
     "927851520": [
-      "static-greedy-swap4"
+      "static-greedy-swap4",
+      "static-greedy-swap4-sparse"
     ],
     "993911808": [
       "static-magnitude-k5",
+      "static-magnitude-k5-sparse",
       "static-frequency-k5",
-      "static-random-k5"
+      "static-frequency-k5-sparse",
+      "static-random-k5",
+      "static-random-k5-sparse"
     ],
     "998630400": [
       "static-greedy-uniform5",
+      "static-greedy-uniform5-sparse",
       "token-random",
+      "token-random-sparse",
       "token-magnitude",
+      "token-magnitude-sparse",
       "token-frequency",
+      "token-frequency-sparse",
       "token-task-static-nn",
       "token-gxo",
       "token-cor-gxo"
@@ -33,7 +41,23 @@
       "matched": false
     },
     {
+      "id": "static-magnitude-k5-sparse",
+      "budget": "B140",
+      "active_unique_elements": 993911808,
+      "compliant": true,
+      "active_delta_from_baseline": -4718592,
+      "matched": false
+    },
+    {
       "id": "static-frequency-k5",
+      "budget": "B140",
+      "active_unique_elements": 993911808,
+      "compliant": true,
+      "active_delta_from_baseline": -4718592,
+      "matched": false
+    },
+    {
+      "id": "static-frequency-k5-sparse",
       "budget": "B140",
       "active_unique_elements": 993911808,
       "compliant": true,
@@ -49,7 +73,23 @@
       "matched": false
     },
     {
+      "id": "static-random-k5-sparse",
+      "budget": "B140",
+      "active_unique_elements": 993911808,
+      "compliant": true,
+      "active_delta_from_baseline": -4718592,
+      "matched": false
+    },
+    {
       "id": "static-greedy-uniform5",
+      "budget": "B142",
+      "active_unique_elements": 998630400,
+      "compliant": true,
+      "active_delta_from_baseline": 0,
+      "matched": true
+    },
+    {
+      "id": "static-greedy-uniform5-sparse",
       "budget": "B142",
       "active_unique_elements": 998630400,
       "compliant": true,
@@ -65,7 +105,23 @@
       "matched": false
     },
     {
+      "id": "static-greedy-swap4-sparse",
+      "budget": "M1-K3-112",
+      "active_unique_elements": 927851520,
+      "compliant": true,
+      "active_delta_from_baseline": -70778880,
+      "matched": false
+    },
+    {
       "id": "token-random",
+      "budget": "B142",
+      "active_unique_elements": 998630400,
+      "compliant": true,
+      "active_delta_from_baseline": 0,
+      "matched": true
+    },
+    {
+      "id": "token-random-sparse",
       "budget": "B142",
       "active_unique_elements": 998630400,
       "compliant": true,
@@ -81,7 +137,23 @@
       "matched": true
     },
     {
+      "id": "token-magnitude-sparse",
+      "budget": "B142",
+      "active_unique_elements": 998630400,
+      "compliant": true,
+      "active_delta_from_baseline": 0,
+      "matched": true
+    },
+    {
       "id": "token-frequency",
+      "budget": "B142",
+      "active_unique_elements": 998630400,
+      "compliant": true,
+      "active_delta_from_baseline": 0,
+      "matched": true
+    },
+    {
+      "id": "token-frequency-sparse",
       "budget": "B142",
       "active_unique_elements": 998630400,
       "compliant": true,
@@ -150,6 +222,25 @@
       "passes_five_percent": false
     },
     {
+      "arm": "static-magnitude-k5-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 10.019480031728744,
+      "absolute_reduction": -3.342708033323288,
+      "absolute_ci": [
+        -3.571302092075348,
+        -3.1130510330200196
+      ],
+      "relative_reduction": -0.5037223556356006,
+      "relative_ci": [
+        -0.5403784929587622,
+        -0.46763421174468167
+      ],
+      "passes_five_percent": false
+    },
+    {
       "arm": "static-frequency-k5",
       "baseline": "token-magnitude",
       "items": 40,
@@ -165,6 +256,25 @@
       "relative_ci": [
         -0.5919765854174384,
         -0.5080456387231296
+      ],
+      "passes_five_percent": false
+    },
+    {
+      "arm": "static-frequency-k5-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 10.309632694721222,
+      "absolute_reduction": -3.6328606963157655,
+      "absolute_ci": [
+        -3.8912052392959593,
+        -3.3960278391838075
+      ],
+      "relative_reduction": -0.5478490269506564,
+      "relative_ci": [
+        -0.591976546537858,
+        -0.508046032407588
       ],
       "passes_five_percent": false
     },
@@ -188,6 +298,25 @@
       "passes_five_percent": false
     },
     {
+      "arm": "static-random-k5-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 11.78250948190689,
+      "absolute_reduction": -5.105737483501434,
+      "absolute_ci": [
+        -5.391479426622391,
+        -4.836858195066452
+      ],
+      "relative_reduction": -0.7694575298364412,
+      "relative_ci": [
+        -0.8177952386116395,
+        -0.7235278580892904
+      ],
+      "passes_five_percent": false
+    },
+    {
       "arm": "static-greedy-uniform5",
       "baseline": "token-magnitude",
       "items": 40,
@@ -203,6 +332,25 @@
       "relative_ci": [
         -0.1847547449366679,
         -0.13016986154240115
+      ],
+      "passes_five_percent": false
+    },
+    {
+      "arm": "static-greedy-uniform5-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 7.706657522916794,
+      "absolute_reduction": -1.0298855245113372,
+      "absolute_ci": [
+        -1.2203076362609864,
+        -0.862731522321701
+      ],
+      "relative_reduction": -0.15586080879717404,
+      "relative_ci": [
+        -0.18475503164259288,
+        -0.13016985791098437
       ],
       "passes_five_percent": false
     },
@@ -226,6 +374,25 @@
       "passes_five_percent": false
     },
     {
+      "arm": "static-greedy-swap4-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 9.895816111564637,
+      "absolute_reduction": -3.2190441131591796,
+      "absolute_ci": [
+        -3.460273861885071,
+        -2.9945512413978577
+      ],
+      "relative_reduction": -0.4850413202645142,
+      "relative_ci": [
+        -0.5244574719485982,
+        -0.4485171760581143
+      ],
+      "passes_five_percent": false
+    },
+    {
       "arm": "token-random",
       "baseline": "token-magnitude",
       "items": 40,
@@ -245,6 +412,44 @@
       "passes_five_percent": false
     },
     {
+      "arm": "token-random-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 10.745490628480912,
+      "absolute_reduction": -4.0687186300754545,
+      "absolute_ci": [
+        -4.353612416982651,
+        -3.776587635278702
+      ],
+      "relative_reduction": -0.6139419355509036,
+      "relative_ci": [
+        -0.6603335908128143,
+        -0.5656163098810258
+      ],
+      "passes_five_percent": false
+    },
+    {
+      "arm": "token-magnitude-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 6.676771938800812,
+      "absolute_reduction": 5.960464477539063e-8,
+      "absolute_ci": [
+        -1.668930053932982e-7,
+        2.980232238325442e-7
+      ],
+      "relative_reduction": 7.839504139864787e-9,
+      "relative_ci": [
+        -2.6837053901307762e-8,
+        4.393910016657418e-8
+      ],
+      "passes_five_percent": false
+    },
+    {
       "arm": "token-frequency",
       "baseline": "token-magnitude",
       "items": 40,
@@ -260,6 +465,25 @@
       "relative_ci": [
         -0.057404364024134825,
         -0.04998770987209155
+      ],
+      "passes_five_percent": false
+    },
+    {
+      "arm": "token-frequency-sparse",
+      "baseline": "token-magnitude",
+      "items": 40,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "arm_kl": 7.034329241514206,
+      "absolute_reduction": -0.35755724310874937,
+      "absolute_ci": [
+        -0.3839902639389038,
+        -0.3326058328151703
+      ],
+      "relative_reduction": -0.05355192638446636,
+      "relative_ci": [
+        -0.05740438538626773,
+        -0.04998766952956925
       ],
       "passes_five_percent": false
     },
@@ -326,16 +550,16 @@
       "items": 40,
       "available": true,
       "base_kl": 6.6767719984054565,
-      "arm_kl": 11.138053250312804,
-      "absolute_reduction": -4.461281251907349,
+      "arm_kl": 11.137446582317352,
+      "absolute_reduction": -4.460674583911896,
       "absolute_ci": [
-        -4.662853932380676,
-        -4.2608073353767395
+        -4.661997205018997,
+        -4.260214477777481
       ],
-      "relative_reduction": -0.6713925780236452,
+      "relative_reduction": -0.671289641353381,
       "relative_ci": [
-        -0.7051904013694882,
-        -0.6379330951523526
+        -0.7049999250177514,
+        -0.6378677146176112
       ],
       "passes_five_percent": false
     },
@@ -345,16 +569,16 @@
       "items": 40,
       "available": true,
       "base_kl": 6.6767719984054565,
-      "arm_kl": 11.322874438762664,
-      "absolute_reduction": -4.646102440357208,
+      "arm_kl": 11.322906577587128,
+      "absolute_reduction": -4.6461345791816715,
       "absolute_ci": [
-        -4.924681937694549,
-        -4.393329077959061
+        -4.924682223796845,
+        -4.3933687031269075
       ],
-      "relative_reduction": -0.6985880810963068,
+      "relative_reduction": -0.698592315830911,
       "relative_ci": [
-        -0.7424521000912538,
-        -0.6588781003292911
+        -0.7424605099414344,
+        -0.6588791620264276
       ],
       "passes_five_percent": false
     }

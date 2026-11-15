@@ -1,0 +1,21 @@
+io-scan: file=results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv bytes=1057882112 mount=/work (ext4) free=214796894208 bytes cache_dropped=true ratio=584.8
+  seq      4096 B    782.2 MiB/s p50=140 p95=291 p99=531 ns dev_amp=1.00
+  seq     65536 B    861.2 MiB/s p50=2033 p95=643573 p99=878913 ns dev_amp=1.00
+  seq   1048576 B    874.5 MiB/s p50=1149859 p95=1826494 p99=2058256 ns dev_amp=1.00
+  seq   8388608 B    987.1 MiB/s p50=7312577 p95=12745320 p99=15295055 ns dev_amp=1.00
+  seq-nr   4096 B    249.0 MiB/s p50=12193 p95=22271 p99=54722 ns dev_amp=1.00
+  seq-nr  65536 B    429.7 MiB/s p50=86822 p95=456002 p99=780739 ns dev_amp=1.00
+  seq-nr 1048576 B    836.4 MiB/s p50=1217796 p95=1557441 p99=1762804 ns dev_amp=1.00
+  seq-nr 8388608 B    800.6 MiB/s p50=9596736 p95=12692371 p99=15321585 ns dev_amp=1.00
+  rnd      4096 B p50=131356 p95=207117 p99=256850 ns dev_amp=0.99
+  rnd     65536 B p50=263442 p95=490487 p99=613045 ns dev_amp=0.99
+  rnd   1048576 B p50=1201676 p95=1506185 p99=1712391 ns dev_amp=0.97
+  rnd   8388608 B p50=9206016 p95=10395488 p99=10841351 ns dev_amp=0.78
+  qd   1           422.2 MiB/s p50=89277 p99=779667 ns
+  qd   4           649.6 MiB/s p50=345756 p99=832416 ns
+  qd  16           921.7 MiB/s p50=881838 p99=3600379 ns
+  align shard-extent offset aligned at 512     req=3145728 useful=3145728 dev=3149824 amp=1.001
+  align shard-extent offset aligned at 4096    req=3145728 useful=3145728 dev=3145728 amp=1.000
+  align shard-extent offset aligned at 65536   req=3145728 useful=3145728 dev=3145728 amp=1.000
+  align over-read 8388608 bytes to use 3145728 req=8388608 useful=3145728 dev=8388608 amp=2.667
+  sha256 2204.5 MiB/s warm, 464510747 ns/GiB, shard 3145728 B in 1224719 ns

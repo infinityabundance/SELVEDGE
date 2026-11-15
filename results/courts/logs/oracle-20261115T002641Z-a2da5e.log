@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/work/oracle/m2_selectors.py", line 4593, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 4583, in main
+    return command_audit_sparse(args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/m2_selectors.py", line 4443, in command_audit_sparse
+    activation = masked_mlp.dense_channels(cpu_layer, hidden)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/masked_mlp.py", line 131, in dense_channels
+    return mlp.act_fn(gate) * up
+           ^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1976, in __getattr__
+    raise AttributeError(
+AttributeError: '_CpuLayer' object has no attribute 'act_fn'

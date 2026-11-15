@@ -998,15 +998,23 @@ impl ShardStore {
                     .ok_or(StoreError::Overflow {
                         context: "run file offset",
                     })?;
+            let transfer_start = Instant::now();
             if let Err(error) = self.file.read_exact_at(&mut buffer, offset) {
                 let _ = in_flight.fail("run read failed");
                 return Err(StoreError::Io(error));
             }
+            let transfer_ns =
+                u64::try_from(transfer_start.elapsed().as_nanos()).unwrap_or(u64::MAX);
+            self.counters.bump(self.counters.transfer_ns(), transfer_ns);
             let _ = in_flight.complete();
             for part in &run.parts {
                 let begin = part.offset as usize;
                 let end = begin + part.len as usize;
+                let verify_start = Instant::now();
                 let record = self.verify(part.shard, &buffer[begin..end])?;
+                let verify_ns =
+                    u64::try_from(verify_start.elapsed().as_nanos()).unwrap_or(u64::MAX);
+                self.counters.bump(self.counters.verify_ns(), verify_ns);
                 bytes_used = bytes_used.saturating_add(part.len);
                 self.counters.bump(self.counters.read(), 1);
                 self.counters.bump(self.counters.miss(), 1);

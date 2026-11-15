@@ -1,4 +1,146 @@
 {
+  "baseline": {
+    "accounting": {
+      "backbone_elements": 663610368,
+      "ceiling": 1000000000,
+      "executed_unique_elements": 1479926784,
+      "execution_elements_read": 169114337280,
+      "execution_flops": 100343992025088,
+      "read_measurement": {
+        "kind": "constructed",
+        "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+      },
+      "selection_flops": 133791989366784,
+      "selector_elements_read": 225485783040,
+      "selector_parameter_elements": 0,
+      "tokens": 47468,
+      "windows": 160
+    },
+    "active_unique_elements": 998630400,
+    "budget": "B142",
+    "budget_matched": true,
+    "causal_reason": null,
+    "causal_status": "available",
+    "controller_elements": 0,
+    "domains": {
+      "code": {
+        "items": 40,
+        "kl_mean": 6.006223732233048,
+        "kl_mean_ci": {
+          "ci_high": 6.278358119130134,
+          "ci_low": 5.719781026691198,
+          "mean": 6.005218219243289,
+          "resamples": 10000
+        },
+        "kl_p95_ci": {
+          "ci_high": 14.297815988063812,
+          "ci_low": 12.966111168265343,
+          "mean": 13.637098288123607,
+          "resamples": 10000
+        },
+        "kl_p95_mean": 13.633287858963012,
+        "positions": 3913,
+        "ppl_ratio": {
+          "ci_high": 314.50877795706634,
+          "ci_low": 181.37480437919498,
+          "mean": 240.7859071197181,
+          "point": 238.07214761929447,
+          "resamples": 10000
+        },
+        "teacher_entropy_mean": 0.7081546559929848,
+        "top1_agreement": 0.15049818074330687,
+        "top1_ci": {
+          "ci_high": 0.17336662761867047,
+          "ci_low": 0.12935017670504748,
+          "mean": 0.15069766871137544,
+          "resamples": 10000
+        }
+      },
+      "general": {
+        "items": 40,
+        "kl_mean": 6.6767719984054565,
+        "kl_mean_ci": {
+          "ci_high": 6.813144903182983,
+          "ci_low": 6.5412690743803985,
+          "mean": 6.677791911586523,
+          "resamples": 10000
+        },
+        "kl_p95_ci": {
+          "ci_high": 14.186734159588815,
+          "ci_low": 13.614349454641342,
+          "mean": 13.903165980985166,
+          "resamples": 10000
+        },
+        "kl_p95_mean": 13.901721405982972,
+        "positions": 40809,
+        "ppl_ratio": {
+          "ci_high": 529.0013716802952,
+          "ci_low": 396.0993956921722,
+          "mean": 458.93069494213705,
+          "point": 457.21152382829627,
+          "resamples": 10000
+        },
+        "teacher_entropy_mean": 1.5185437217354774,
+        "top1_agreement": 0.0706497948616743,
+        "top1_ci": {
+          "ci_high": 0.07640674416208638,
+          "ci_low": 0.06487279795110226,
+          "mean": 0.07062720155130141,
+          "resamples": 10000
+        }
+      },
+      "math": {
+        "items": 40,
+        "kl_mean": 6.926550328731537,
+        "kl_mean_ci": {
+          "ci_high": 7.300243220627308,
+          "ci_low": 6.596794242858887,
+          "mean": 6.926925176898242,
+          "resamples": 10000
+        },
+        "kl_p95_ci": {
+          "ci_high": 15.017820662856101,
+          "ci_low": 13.561191283464431,
+          "mean": 14.25807573462248,
+          "resamples": 10000
+        },
+        "kl_p95_mean": 14.258312654495239,
+        "positions": 2586,
+        "ppl_ratio": {
+          "ci_high": 683.7841181706261,
+          "ci_low": 393.6131286309287,
+          "mean": 516.9376613502136,
+          "point": 510.9089084942095,
+          "resamples": 10000
+        },
+        "teacher_entropy_mean": 1.1658760860562325,
+        "top1_agreement": 0.053280556853860614,
+        "top1_ci": {
+          "ci_high": 0.0639883236726746,
+          "ci_low": 0.04301780793175567,
+          "mean": 0.05324837515188149,
+          "resamples": 10000
+        }
+      }
+    },
+    "execution": "dense",
+    "id": "token-magnitude",
+    "kl_ci_high": 6.813144903182983,
+    "kl_ci_low": 6.5412690743803985,
+    "kl_mean": 6.6767719984054565,
+    "kl_p95": 13.901721405982972,
+    "logical_compliant": true,
+    "physical_reason": "selection_reads_outside_active_set",
+    "physical_status": "non_compliant",
+    "ppl_ci_high": 529.0013716802952,
+    "ppl_ci_low": 396.0993956921722,
+    "ppl_ratio": 457.21152382829627,
+    "selector_flops_per_token": 32,
+    "selector_seconds": 6.496047251508571,
+    "top1": 0.0706497948616743,
+    "top1_ci_high": 0.07640674416208638,
+    "top1_ci_low": 0.06487279795110226
+  },
   "budget": {
     "B140": {
       "active_unique_elements": 993911808,
@@ -87,6 +229,29 @@
     },
     {
       "absolute_reduction": {
+        "ci_high": -3.1227395313978197,
+        "ci_low": -3.5679355178773404,
+        "mean": -3.342228255666494,
+        "resamples": 10000
+      },
+      "active_delta": -4718592,
+      "arm": "static-magnitude-k5-sparse",
+      "arm_kl": 10.019480031728744,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.4682488111232087,
+        "ci_low": -0.5404312888144092,
+        "mean": -0.5035844801883741,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
         "ci_high": -3.396110678166151,
         "ci_low": -3.884220606982708,
         "mean": -3.6320500905424358,
@@ -105,6 +270,29 @@
         "ci_high": -0.5084496761904255,
         "ci_low": -0.590238916202929,
         "mean": -0.5476413462034451,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -3.3961156642436983,
+        "ci_low": -3.8842222188413142,
+        "mean": -3.6320515617036815,
+        "resamples": 10000
+      },
+      "active_delta": -4718592,
+      "arm": "static-frequency-k5-sparse",
+      "arm_kl": 10.309632694721222,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.5084506168655492,
+        "ci_low": -0.5902391957418477,
+        "mean": -0.5476415496766759,
         "resamples": 10000
       }
     },
@@ -133,6 +321,29 @@
     },
     {
       "absolute_reduction": {
+        "ci_high": -4.8348924937844275,
+        "ci_low": -5.38833404481411,
+        "mean": -5.1056245200634,
+        "resamples": 10000
+      },
+      "active_delta": -4718592,
+      "arm": "static-random-k5-sparse",
+      "arm_kl": 11.78250948190689,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.7232775490556645,
+        "ci_low": -0.8169394921726845,
+        "mean": -0.7693658178714073,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
         "ci_high": -0.860681528300047,
         "ci_low": -1.2199669152498245,
         "mean": -1.028374459205866,
@@ -151,6 +362,29 @@
         "ci_high": -0.12988650445668587,
         "ci_low": -0.18446026861820256,
         "mean": -0.15561526878451742,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -0.8606818883121014,
+        "ci_low": -1.2199662336707116,
+        "mean": -1.0283747454196215,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "static-greedy-uniform5-sparse",
+      "arm_kl": 7.706657522916794,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.12988644725946355,
+        "ci_low": -0.18446043465996598,
+        "mean": -0.1556153097527267,
         "resamples": 10000
       }
     },
@@ -179,6 +413,29 @@
     },
     {
       "absolute_reduction": {
+        "ci_high": -2.997264195382595,
+        "ci_low": -3.4478893347084525,
+        "mean": -3.216712495058775,
+        "resamples": 10000
+      },
+      "active_delta": -70778880,
+      "arm": "static-greedy-swap4-sparse",
+      "arm_kl": 9.895816111564637,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": false,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.4488217080703388,
+        "ci_low": -0.5222059163517697,
+        "mean": -0.4846218085113918,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
         "ci_high": -3.7741308335959913,
         "ci_low": -4.3450894032418725,
         "mean": -4.0646425845778,
@@ -197,6 +454,52 @@
         "ci_high": -0.5660010783537518,
         "ci_low": -0.6590344049460133,
         "mean": -0.6132664216683749,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": -3.774127432703972,
+        "ci_low": -4.345086083561181,
+        "mean": -4.06463983725667,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "token-random-sparse",
+      "arm_kl": 10.745490628480912,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": -0.5660007165493104,
+        "ci_low": -0.6590339570594279,
+        "mean": -0.6132660096518036,
+        "resamples": 10000
+      }
+    },
+    {
+      "absolute_reduction": {
+        "ci_high": 2.920627593994141e-07,
+        "ci_low": -1.6704201698303208e-07,
+        "mean": 6.029784679412842e-08,
+        "resamples": 10000
+      },
+      "active_delta": 0,
+      "arm": "token-magnitude-sparse",
+      "arm_kl": 6.676771938800812,
+      "available": true,
+      "base_kl": 6.6767719984054565,
+      "baseline": "token-magnitude",
+      "items": 40,
+      "matched_budget": true,
+      "passes_five_percent": false,
+      "relative_reduction": {
+        "ci_high": 4.289121935474447e-08,
+        "ci_low": -2.6924648010738344e-08,
+        "mean": 7.901546354789062e-09,
         "resamples": 10000
       }
     },
@@ -225,14 +528,14 @@
     },
     {
       "absolute_reduction": {
-        "ci_high": -2.647271389812231,
-        "ci_low": -3.1681488755345346,
-        "mean": -2.905310493913889,
+        "ci_high": -0.33204391106963155,
+        "ci_low": -0.38400941103696823,
+        "mean": -0.3576830142402649,
         "resamples": 10000
       },
       "active_delta": 0,
-      "arm": "token-task-static-nn",
-      "arm_kl": 9.58013653755188,
+      "arm": "token-frequency-sparse",
+      "arm_kl": 7.034329241514206,
       "available": true,
       "base_kl": 6.6767719984054565,
       "baseline": "token-magnitude",
@@ -240,9 +543,9 @@
       "matched_budget": true,
       "passes_five_percent": false,
       "relative_reduction": {
-        "ci_high": -0.3976985036326602,
-        "ci_low": -0.4744938032365117,
-        "mean": -0.43618940763354186,
+        "ci_high": -0.04993247157283435,
+        "ci_low": -0.05737073037870688,
+        "mean": -0.05356319987192407,
         "resamples": 10000
       }
     },
@@ -293,7 +596,13 @@
       }
     }
   ],
-  "created_utc": "2026-11-14T23:37:26Z",
+  "compliance": {
+    "both": 6,
+    "causal_available": 19,
+    "physical_compliant": 6,
+    "total": 23
+  },
+  "created_utc": "2026-11-15T01:27:44Z",
   "granularity": {
     "coarser_is_worse": true,
     "finer_is_better": true,
@@ -409,10 +718,21 @@
       "kl_ci_low": 5.64469546675682,
       "kl_mean": 5.952733099460602,
       "kl_p95": 12.804016709327698,
-      "non_deployable": true,
       "ppl_ratio": 229.89561966533446,
       "selector_seconds": 2.4027658321429044,
-      "top1": 0.0865949122235179
+      "top1": 0.0865949122235179,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     },
     "oracle_4": {
       "active_unique_elements": 993911808,
@@ -526,10 +846,21 @@
       "kl_ci_low": 7.6002609297633175,
       "kl_mean": 7.833459138870239,
       "kl_p95": 15.181752324104309,
-      "non_deployable": true,
       "ppl_ratio": 1550.588291953571,
       "selector_seconds": 1.5299770501442254,
-      "top1": 0.0560176121070981
+      "top1": 0.0560176121070981,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     },
     "oracle_64": {
       "active_unique_elements": 993911808,
@@ -643,10 +974,21 @@
       "kl_ci_low": 3.289384909719229,
       "kl_mean": 3.6654182374477386,
       "kl_p95": 9.718961238861084,
-      "non_deployable": true,
       "ppl_ratio": 25.451485655502328,
       "selector_seconds": 3.929577284026891,
-      "top1": 0.269324854016304
+      "top1": 0.269324854016304,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     }
   },
   "learned_comparison": {
@@ -783,10 +1125,21 @@
       "kl_ci_low": 5.9802263379096985,
       "kl_mean": 6.273271381855011,
       "kl_p95": 13.221420526504517,
-      "non_deployable": true,
       "ppl_ratio": 327.7615708231668,
       "selector_seconds": 2.776966135133989,
-      "top1": 0.06971624214202166
+      "top1": 0.06971624214202166,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     },
     {
       "active_unique_elements": 998630400,
@@ -900,10 +1253,21 @@
       "kl_ci_low": 5.64469546675682,
       "kl_mean": 5.952733099460602,
       "kl_p95": 12.804016709327698,
-      "non_deployable": true,
       "ppl_ratio": 229.89561966533446,
       "selector_seconds": 2.4027658321429044,
-      "top1": 0.0865949122235179
+      "top1": 0.0865949122235179,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     },
     {
       "active_unique_elements": 993911808,
@@ -1017,10 +1381,21 @@
       "kl_ci_low": 3.289384909719229,
       "kl_mean": 3.6654182374477386,
       "kl_p95": 9.718961238861084,
-      "non_deployable": true,
       "ppl_ratio": 25.451485655502328,
       "selector_seconds": 3.929577284026891,
-      "top1": 0.269324854016304
+      "top1": 0.269324854016304,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     },
     {
       "active_unique_elements": 993911808,
@@ -1134,10 +1509,21 @@
       "kl_ci_low": 7.6002609297633175,
       "kl_mean": 7.833459138870239,
       "kl_p95": 15.181752324104309,
-      "non_deployable": true,
       "ppl_ratio": 1550.588291953571,
       "selector_seconds": 1.5299770501442254,
-      "top1": 0.0560176121070981
+      "top1": 0.0560176121070981,
+      "verdict": {
+        "causal": {
+          "detail": "the oracle searches from dense hidden states of the whole sequence, which an online masked execution cannot have at decision time",
+          "reason": "unmasked_future_state",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "the oracle evaluates candidates with dense group contributions and dense forwards; its search cost is not a runtime budget",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     },
     {
       "active_unique_elements": 998630400,
@@ -1153,17 +1539,28 @@
       "kl_ci_low": 5.159938335418701,
       "kl_mean": 5.7858967781066895,
       "kl_p95": 12.633551120758057,
-      "non_deployable": true,
       "ppl_ratio": 177.6635276080758,
       "selector_seconds": 0.0,
-      "top1": 0.10176125541329384
+      "top1": 0.10176125541329384,
+      "verdict": {
+        "causal": {
+          "detail": "refinement accepts a swap only from the token's exact measured KL against the teacher",
+          "reason": "held_out_measurement",
+          "status": "unavailable"
+        },
+        "physical": {
+          "detail": "prefix forwards and dense group contributions",
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      }
     }
   ],
   "preregistration_commit": "a0b107adc23f23cbda43a09cbd6d229b0ea024a1",
   "receipts": {
     "eval": {
-      "path": "results/selectors/eval-full-20261114T232206Z.json",
-      "sha256": "9753c4079d8432c4668d7a09bbae99f573329235d3f86b5e99dc797350f750c0"
+      "path": "results/selectors/eval-full-20261115T005000Z.json",
+      "sha256": "2d791a3c259fdb7fd00f123a21a2fab20f3789ff4ad517de8addd4693a2453be"
     },
     "oracle": {
       "path": "results/selectors/oracle-20261114T233601Z.json",
@@ -1175,18 +1572,176 @@
     }
   },
   "resamples": 10000,
-  "revision": "8001d4f29881c042de981ae8e80dafd08aa4e96b",
+  "revision": "8090b1bf5544352c0e6565e8762c2133feb20f7d",
   "schema": "selvedge/selectors/analysis-v1",
   "seed": 20261114,
-  "stamp": "20261114T233726Z",
+  "stamp": "20261115T013400Z",
+  "static_uniform5": {
+    "accounting": {
+      "backbone_elements": 663610368,
+      "ceiling": 1000000000,
+      "executed_unique_elements": 998630400,
+      "execution_elements_read": 169114337280,
+      "execution_flops": 100343992025088,
+      "read_measurement": {
+        "kind": "constructed",
+        "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+      },
+      "selection_flops": 0,
+      "selector_elements_read": 0,
+      "selector_parameter_elements": 0,
+      "tokens": 47468,
+      "windows": 160
+    },
+    "active_unique_elements": 998630400,
+    "budget": "B142",
+    "budget_matched": true,
+    "causal_reason": null,
+    "causal_status": "available",
+    "controller_elements": 0,
+    "domains": {
+      "code": {
+        "items": 40,
+        "kl_mean": 8.025311887264252,
+        "kl_mean_ci": {
+          "ci_high": 8.396985521912574,
+          "ci_low": 7.625988799333572,
+          "mean": 8.022565435239075,
+          "resamples": 10000
+        },
+        "kl_p95_ci": {
+          "ci_high": 15.659041630029678,
+          "ci_low": 14.643889330029488,
+          "mean": 15.165190769810678,
+          "resamples": 10000
+        },
+        "kl_p95_mean": 15.163721299171447,
+        "positions": 3913,
+        "ppl_ratio": {
+          "ci_high": 2312.9342952850257,
+          "ci_low": 1040.3431544346122,
+          "mean": 1584.3487015940007,
+          "point": 1545.9397322431926,
+          "resamples": 10000
+        },
+        "teacher_entropy_mean": 0.7081546559929848,
+        "top1_agreement": 0.08083287212066352,
+        "top1_ci": {
+          "ci_high": 0.11111400127410888,
+          "ci_low": 0.05473569672787562,
+          "mean": 0.0810442936829757,
+          "resamples": 10000
+        }
+      },
+      "general": {
+        "items": 40,
+        "kl_mean": 7.7066572368144985,
+        "kl_mean_ci": {
+          "ci_high": 7.922954763770104,
+          "ci_low": 7.5123589064180845,
+          "mean": 7.706166370792388,
+          "resamples": 10000
+        },
+        "kl_p95_ci": {
+          "ci_high": 15.62330971300602,
+          "ci_low": 14.879487538933754,
+          "mean": 15.235857339470389,
+          "resamples": 10000
+        },
+        "kl_p95_mean": 15.237969660758973,
+        "positions": 40809,
+        "ppl_ratio": {
+          "ci_high": 1488.5612889081021,
+          "ci_low": 974.0993467267458,
+          "mean": 1203.1463415753296,
+          "point": 1196.792422842998,
+          "resamples": 10000
+        },
+        "teacher_entropy_mean": 1.5185437217354774,
+        "top1_agreement": 0.023897660383954644,
+        "top1_ci": {
+          "ci_high": 0.028082191571593286,
+          "ci_low": 0.020006671268492936,
+          "mean": 0.02390038652248215,
+          "resamples": 10000
+        }
+      },
+      "math": {
+        "items": 40,
+        "kl_mean": 8.174587070941925,
+        "kl_mean_ci": {
+          "ci_high": 8.525331208407877,
+          "ci_low": 7.840447652339935,
+          "mean": 8.17653898319602,
+          "resamples": 10000
+        },
+        "kl_p95_ci": {
+          "ci_high": 15.795642630457877,
+          "ci_low": 14.530192399024962,
+          "mean": 15.14530028274536,
+          "resamples": 10000
+        },
+        "kl_p95_mean": 15.145061421394349,
+        "positions": 2586,
+        "ppl_ratio": {
+          "ci_high": 2476.979232421485,
+          "ci_low": 1111.6168169799191,
+          "mean": 1684.3548095052586,
+          "point": 1641.2381615051854,
+          "resamples": 10000
+        },
+        "teacher_entropy_mean": 1.1658760860562325,
+        "top1_agreement": 0.03142867761198431,
+        "top1_ci": {
+          "ci_high": 0.039097635978250764,
+          "ci_low": 0.024288295597070828,
+          "mean": 0.03137052984666312,
+          "resamples": 10000
+        }
+      }
+    },
+    "execution": "dense",
+    "id": "static-greedy-uniform5",
+    "kl_ci_high": 7.922954763770104,
+    "kl_ci_low": 7.5123589064180845,
+    "kl_mean": 7.7066572368144985,
+    "kl_p95": 15.237969660758973,
+    "logical_compliant": true,
+    "physical_reason": "missing_sparse_execution_path",
+    "physical_status": "non_compliant",
+    "ppl_ci_high": 1488.5612889081021,
+    "ppl_ci_low": 974.0993467267458,
+    "ppl_ratio": 1196.792422842998,
+    "selector_flops_per_token": 0,
+    "selector_seconds": 0.0,
+    "top1": 0.023897660383954644,
+    "top1_ci_high": 0.028082191571593286,
+    "top1_ci_low": 0.020006671268492936
+  },
   "table": [
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1720574976,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 1720574976,
       "budget": "noncompliant-dense",
       "budget_matched": true,
-      "compliant": false,
+      "causal_reason": "undeclared_input",
+      "causal_status": "unavailable",
       "controller_elements": 0,
-      "deployable": false,
       "domains": {
         "code": {
           "items": 40,
@@ -1288,11 +1843,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "teacher-dense",
       "kl_ci_high": 0.0,
       "kl_ci_low": 0.0,
       "kl_mean": 0.0,
       "kl_p95": 0.0,
+      "logical_compliant": false,
+      "physical_reason": "dense_computation_masked",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 1.0,
       "ppl_ci_low": 1.0,
       "ppl_ratio": 1.0,
@@ -1303,12 +1862,28 @@
       "top1_ci_low": 1.0
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1720574976,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 1720574976,
       "budget": "noncompliant-all-groups",
       "budget_matched": true,
-      "compliant": false,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": false,
       "domains": {
         "code": {
           "items": 40,
@@ -1410,11 +1985,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "masked-all",
       "kl_ci_high": 0.0,
       "kl_ci_low": 0.0,
       "kl_mean": 0.0,
       "kl_p95": 0.0,
+      "logical_compliant": false,
+      "physical_reason": "dense_computation_masked",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 1.0,
       "ppl_ci_low": 1.0,
       "ppl_ratio": 1.0,
@@ -1425,12 +2004,28 @@
       "top1_ci_low": 1.0
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 993911808,
       "budget": "B140",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
       "domains": {
         "code": {
           "items": 40,
@@ -1532,11 +2127,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "static-magnitude-k5",
       "kl_ci_high": 10.27083489984274,
       "kl_ci_low": 9.779429759383202,
       "kl_mean": 10.019481533765793,
       "kl_p95": 18.251940536499024,
+      "logical_compliant": true,
+      "physical_reason": "missing_sparse_execution_path",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 15400.810466908304,
       "ppl_ci_low": 9097.324821456312,
       "ppl_ratio": 11772.884157537612,
@@ -1547,12 +2146,170 @@
       "top1_ci_low": 0.005922934040427208
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 52848230400,
+        "execution_flops": 31357497507840,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 993911808,
       "budget": "B140",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.153138566017152,
+          "kl_mean_ci": {
+            "ci_high": 9.639812766611575,
+            "ci_low": 8.6416664108634,
+            "mean": 9.151296298954488,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.174319133162495,
+            "ci_low": 16.798430788517,
+            "mean": 17.493080799672605,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 17.49177279472351,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 8622.876555047675,
+            "ci_low": 3096.173779440875,
+            "mean": 5323.221536080877,
+            "point": 5111.8673216966845,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.07417389140464366,
+          "top1_ci": {
+            "ci_high": 0.10259984389995223,
+            "ci_low": 0.04946990361670032,
+            "mean": 0.07432505771199707,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.019480031728744,
+          "kl_mean_ci": {
+            "ci_high": 10.270833793133496,
+            "ci_low": 9.77942640542984,
+            "mean": 10.020020167253017,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.637025411128995,
+            "ci_low": 17.88353346467018,
+            "mean": 18.250025911269187,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.2519410610199,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 15400.808184323556,
+            "ci_low": 9097.316086010072,
+            "mean": 11883.359288493068,
+            "point": 11772.866240528698,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.008026652224361896,
+          "top1_ci": {
+            "ci_high": 0.010427081398665905,
+            "ci_low": 0.005922934040427208,
+            "mean": 0.008006969844838603,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 9.306491434574127,
+          "kl_mean_ci": {
+            "ci_high": 9.817732672989369,
+            "ci_low": 8.79051905810833,
+            "mean": 9.305104915069341,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.009478012323378,
+            "ci_low": 16.314196192622184,
+            "mean": 17.150225980029102,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 17.153133964538576,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 9297.396592414914,
+            "ci_low": 3035.1702628499215,
+            "mean": 5431.914501834689,
+            "point": 5205.163694456377,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.035282622720114884,
+          "top1_ci": {
+            "ci_high": 0.04503621626703534,
+            "ci_low": 0.02672472375968937,
+            "mean": 0.035360857415015344,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "static-magnitude-k5-sparse",
+      "kl_ci_high": 10.270833793133496,
+      "kl_ci_low": 9.77942640542984,
+      "kl_mean": 10.019480031728744,
+      "kl_p95": 18.2519410610199,
+      "logical_compliant": true,
+      "physical_reason": null,
+      "physical_status": "compliant",
+      "ppl_ci_high": 15400.808184323556,
+      "ppl_ci_low": 9097.316086010072,
+      "ppl_ratio": 11772.866240528698,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.008026652224361896,
+      "top1_ci_high": 0.010427081398665905,
+      "top1_ci_low": 0.005922934040427208
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "budget_matched": true,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
       "domains": {
         "code": {
           "items": 40,
@@ -1654,11 +2411,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "static-frequency-k5",
       "kl_ci_high": 10.574238388091326,
       "kl_ci_low": 10.053808543384076,
       "kl_mean": 10.309631246328355,
       "kl_p95": 18.674735689163207,
+      "logical_compliant": true,
+      "physical_reason": "missing_sparse_execution_path",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 21899.816551802196,
       "ppl_ci_low": 12731.595064066063,
       "ppl_ratio": 16580.0167664518,
@@ -1669,12 +2430,170 @@
       "top1_ci_low": 0.006285136053338647
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 52848230400,
+        "execution_flops": 31357497507840,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 993911808,
       "budget": "B140",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.520607209205627,
+          "kl_mean_ci": {
+            "ci_high": 10.0030975779891,
+            "ci_low": 9.039888777434827,
+            "mean": 9.519287414330243,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.939637153744698,
+            "ci_low": 17.415836557745934,
+            "mean": 18.16072580625057,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.157748222351074,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 12373.009417909549,
+            "ci_low": 4868.4024440574985,
+            "mean": 7970.383993645584,
+            "point": 7738.046535200314,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.0554887002101168,
+          "top1_ci": {
+            "ci_high": 0.07422382658231069,
+            "ci_low": 0.03882669758924749,
+            "mean": 0.05559881741003832,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.309632694721222,
+          "kl_mean_ci": {
+            "ci_high": 10.574242853820325,
+            "ci_low": 10.05380839318037,
+            "mean": 10.309843473290204,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.061751306056976,
+            "ci_low": 18.297744834423064,
+            "mean": 18.673964811258315,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.674741220474242,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 21899.87410964173,
+            "ci_low": 12731.627270216908,
+            "mean": 16740.819539947544,
+            "point": 16580.042723840954,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.008463018084876239,
+          "top1_ci": {
+            "ci_high": 0.010859519469668157,
+            "ci_low": 0.006285136053338647,
+            "mean": 0.008448565351909493,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 10.070201694965363,
+          "kl_mean_ci": {
+            "ci_high": 10.591505243778228,
+            "ci_low": 9.580945864915847,
+            "mean": 10.070417704974414,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.474707452654837,
+            "ci_low": 17.57086640357971,
+            "mean": 18.486370683684353,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.488235592842102,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 25270.613843223757,
+            "ci_low": 7506.448394531908,
+            "mean": 14185.795702728414,
+            "point": 13505.81372010649,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.03356873265001923,
+          "top1_ci": {
+            "ci_high": 0.04197677310730796,
+            "ci_low": 0.02607282578072045,
+            "mean": 0.0335529117527185,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "static-frequency-k5-sparse",
+      "kl_ci_high": 10.574242853820325,
+      "kl_ci_low": 10.05380839318037,
+      "kl_mean": 10.309632694721222,
+      "kl_p95": 18.674741220474242,
+      "logical_compliant": true,
+      "physical_reason": null,
+      "physical_status": "compliant",
+      "ppl_ci_high": 21899.87410964173,
+      "ppl_ci_low": 12731.627270216908,
+      "ppl_ratio": 16580.042723840954,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.008463018084876239,
+      "top1_ci_high": 0.010859519469668157,
+      "top1_ci_low": 0.006285136053338647
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "budget_matched": true,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
       "domains": {
         "code": {
           "items": 40,
@@ -1776,11 +2695,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "static-random-k5",
       "kl_ci_high": 12.071168467998504,
       "kl_ci_low": 11.507478525042533,
       "kl_mean": 11.782510292530059,
       "kl_p95": 18.64437017440796,
+      "logical_compliant": true,
+      "physical_reason": "missing_sparse_execution_path",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 75695.03515934802,
       "ppl_ci_low": 44218.71344479858,
       "ppl_ratio": 57418.114493585104,
@@ -1791,12 +2714,170 @@
       "top1_ci_low": 0.0009050880558788777
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 52848230400,
+        "execution_flops": 31357497507840,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 993911808,
+      "budget": "B140",
+      "budget_matched": true,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 11.738932919502258,
+          "kl_mean_ci": {
+            "ci_high": 12.332486544251443,
+            "ci_low": 11.1821591681242,
+            "mean": 11.740146354949474,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.13434195101261,
+            "ci_low": 18.167881014943124,
+            "mean": 18.648018691120146,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.646371364593506,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 120039.64974466275,
+            "ci_low": 34528.595110638315,
+            "mean": 66004.1410076073,
+            "point": 62355.19944687482,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.01802066306117922,
+          "top1_ci": {
+            "ci_high": 0.028476079168613066,
+            "ci_low": 0.009253298380644991,
+            "mean": 0.018086393186689823,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 11.78250948190689,
+          "kl_mean_ci": {
+            "ci_high": 12.071168105602265,
+            "ci_low": 11.507477224767207,
+            "mean": 11.783416431649922,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.9929494702816,
+            "ci_low": 18.295735161304474,
+            "mean": 18.644733259124756,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.64436650276184,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 75695.0498159413,
+            "ci_low": 44218.6594138261,
+            "mean": 57997.29671595949,
+            "point": 57418.05621162522,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.0014677103608846664,
+          "top1_ci": {
+            "ci_high": 0.002079256344586611,
+            "ci_low": 0.0009050880558788777,
+            "mean": 0.0014650122200045735,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 11.27800407409668,
+          "kl_mean_ci": {
+            "ci_high": 11.703925929665564,
+            "ci_low": 10.858563544750213,
+            "mean": 11.276385696549415,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.181530104875566,
+            "ci_low": 17.011453388929368,
+            "mean": 17.59169938696623,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 17.59295916557312,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 48100.4164928747,
+            "ci_low": 19939.76362485334,
+            "mean": 31292.473107179667,
+            "point": 30534.49514550723,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.01202976128552109,
+          "top1_ci": {
+            "ci_high": 0.01849921714805532,
+            "ci_low": 0.006367250880575739,
+            "mean": 0.012041323304290419,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "static-random-k5-sparse",
+      "kl_ci_high": 12.071168105602265,
+      "kl_ci_low": 11.507477224767207,
+      "kl_mean": 11.78250948190689,
+      "kl_p95": 18.64436650276184,
+      "logical_compliant": true,
+      "physical_reason": null,
+      "physical_status": "compliant",
+      "ppl_ci_high": 75695.0498159413,
+      "ppl_ci_low": 44218.6594138261,
+      "ppl_ratio": 57418.05621162522,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.0014677103608846664,
+      "top1_ci_high": 0.002079256344586611,
+      "top1_ci_low": 0.0009050880558788777
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 998630400,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
       "domains": {
         "code": {
           "items": 40,
@@ -1898,11 +2979,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "static-greedy-uniform5",
       "kl_ci_high": 7.922954763770104,
       "kl_ci_low": 7.5123589064180845,
       "kl_mean": 7.7066572368144985,
       "kl_p95": 15.237969660758973,
+      "logical_compliant": true,
+      "physical_reason": "missing_sparse_execution_path",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 1488.5612889081021,
       "ppl_ci_low": 974.0993467267458,
       "ppl_ratio": 1196.792422842998,
@@ -1913,12 +2998,170 @@
       "top1_ci_low": 0.020006671268492936
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 998630400,
+        "execution_elements_read": 53603205120,
+        "execution_flops": 31805461757952,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 8.025316393375396,
+          "kl_mean_ci": {
+            "ci_high": 8.396989975869655,
+            "ci_low": 7.625994614362717,
+            "mean": 8.022569953593015,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.659046887159349,
+            "ci_low": 14.643914049863815,
+            "mean": 15.16519837213993,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.163728809356689,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 2312.9464744551624,
+            "ci_low": 1040.3455668883257,
+            "mean": 1584.354347209605,
+            "point": 1545.945201104306,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.08083287212066352,
+          "top1_ci": {
+            "ci_high": 0.11111400127410888,
+            "ci_low": 0.05473569672787562,
+            "mean": 0.0810442936829757,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 7.706657522916794,
+          "kl_mean_ci": {
+            "ci_high": 7.922954983860254,
+            "ci_low": 7.512358618080616,
+            "mean": 7.706166657006145,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.623306005597113,
+            "ci_low": 14.879488610625266,
+            "mean": 15.235857463901045,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.237969827651977,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 1488.560073759921,
+            "ci_low": 974.098615272268,
+            "mean": 1203.146549723973,
+            "point": 1196.7926209378495,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.023897660383954644,
+          "top1_ci": {
+            "ci_high": 0.028082191571593286,
+            "ci_low": 0.020006671268492936,
+            "mean": 0.02390038652248215,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 8.174589610099792,
+          "kl_mean_ci": {
+            "ci_high": 8.525333997011183,
+            "ci_low": 7.840452247262001,
+            "mean": 8.17654150289774,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.795642837285994,
+            "ci_low": 14.530204753875731,
+            "mean": 15.145311789901259,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 15.145072889328002,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 2476.9955234705635,
+            "ci_low": 1111.617284094807,
+            "mean": 1684.3609614499383,
+            "point": 1641.24430492217,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.03142867761198431,
+          "top1_ci": {
+            "ci_high": 0.039097635978250764,
+            "ci_low": 0.024288295597070828,
+            "mean": 0.03137052984666312,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "static-greedy-uniform5-sparse",
+      "kl_ci_high": 7.922954983860254,
+      "kl_ci_low": 7.512358618080616,
+      "kl_mean": 7.706657522916794,
+      "kl_p95": 15.237969827651977,
+      "logical_compliant": true,
+      "physical_reason": null,
+      "physical_status": "compliant",
+      "ppl_ci_high": 1488.560073759921,
+      "ppl_ci_low": 974.098615272268,
+      "ppl_ratio": 1196.7926209378495,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.023897660383954644,
+      "top1_ci_high": 0.028082191571593286,
+      "top1_ci_low": 0.020006671268492936
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 927851520,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 927851520,
       "budget": "M1-K3-112",
       "budget_matched": false,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
       "domains": {
         "code": {
           "items": 40,
@@ -2020,11 +3263,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "static-greedy-swap4",
       "kl_ci_high": 10.153093553334475,
       "kl_ci_low": 9.643579446524381,
       "kl_mean": 9.895817911624908,
       "kl_p95": 18.20951364040375,
+      "logical_compliant": true,
+      "physical_reason": "missing_sparse_execution_path",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 14493.974252326418,
       "ppl_ci_low": 8423.587998286563,
       "ppl_ratio": 11033.683703235876,
@@ -2035,12 +3282,170 @@
       "top1_ci_low": 0.006644947465974838
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 927851520,
+        "execution_elements_read": 42278584320,
+        "execution_flops": 25085998006272,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 927851520,
+      "budget": "M1-K3-112",
+      "budget_matched": false,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 9.770716965198517,
+          "kl_mean_ci": {
+            "ci_high": 10.246618922650814,
+            "ci_low": 9.278182994127272,
+            "mean": 9.768468241518736,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.955948833823204,
+            "ci_low": 17.69119909465313,
+            "mean": 18.333299477765557,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.332942056655884,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 16315.044052626883,
+            "ci_low": 6363.832657711617,
+            "mean": 10556.144584078296,
+            "point": 10249.636817271703,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.05028220703825355,
+          "top1_ci": {
+            "ci_high": 0.07200559542223346,
+            "ci_low": 0.03176791095698718,
+            "mean": 0.05037557322968263,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 9.895816111564637,
+          "kl_mean_ci": {
+            "ci_high": 10.153090366721154,
+            "ci_low": 9.643577072620392,
+            "mean": 9.894504406645298,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 18.60831689298153,
+            "ci_low": 17.831566942334174,
+            "mean": 18.20488352913618,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.209517741203307,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 14493.964193626976,
+            "ci_low": 8423.566687301205,
+            "mean": 11117.340881617389,
+            "point": 11033.66269150216,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.008088195987511426,
+          "top1_ci": {
+            "ci_high": 0.009727139223832637,
+            "ci_low": 0.006644947465974838,
+            "mean": 0.008086597361866153,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 9.24964897632599,
+          "kl_mean_ci": {
+            "ci_high": 9.721235992610454,
+            "ci_low": 8.804040485322474,
+            "mean": 9.249738188149928,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 17.75720379292965,
+            "ci_low": 16.143086617589,
+            "mean": 16.939404289381503,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 16.941450715065002,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 8069.94501248265,
+            "ci_low": 3148.229886783141,
+            "mean": 5104.04415948214,
+            "point": 4945.451292157698,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.021187086822465062,
+          "top1_ci": {
+            "ci_high": 0.029508185830782168,
+            "ci_low": 0.014001205730019138,
+            "mean": 0.021205226070396602,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "static-greedy-swap4-sparse",
+      "kl_ci_high": 10.153090366721154,
+      "kl_ci_low": 9.643577072620392,
+      "kl_mean": 9.895816111564637,
+      "kl_p95": 18.209517741203307,
+      "logical_compliant": true,
+      "physical_reason": null,
+      "physical_status": "compliant",
+      "ppl_ci_high": 14493.964193626976,
+      "ppl_ci_low": 8423.566687301205,
+      "ppl_ratio": 11033.66269150216,
+      "selector_flops_per_token": 0,
+      "selector_seconds": 0.0,
+      "top1": 0.008088195987511426,
+      "top1_ci_high": 0.009727139223832637,
+      "top1_ci_low": 0.006644947465974838
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 998630400,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 170125312,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
       "domains": {
         "code": {
           "items": 40,
@@ -2142,27 +3547,189 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-random",
       "kl_ci_high": 11.02508624523878,
       "kl_ci_low": 10.447649697065355,
       "kl_mean": 10.745493376255036,
       "kl_p95": 20.339777040481568,
+      "logical_compliant": true,
+      "physical_reason": "missing_sparse_execution_path",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 37074.22745447241,
       "ppl_ci_low": 20609.018298064453,
       "ppl_ratio": 27897.584982758548,
       "selector_flops_per_token": 128,
-      "selector_seconds": 74.22308018465992,
+      "selector_seconds": 73.48840420262422,
       "top1": 0.011084382142871618,
       "top1_ci_high": 0.013145593707449733,
       "top1_ci_low": 0.009151896834373474
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 998630400,
+        "execution_elements_read": 15206217154560,
+        "execution_flops": 31805461757952,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 170125312,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 10.274004185199738,
+          "kl_mean_ci": {
+            "ci_high": 10.794457512795926,
+            "ci_low": 9.724615753293039,
+            "mean": 10.272283096123934,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 21.16466946065426,
+            "ci_low": 19.716895905733107,
+            "mean": 20.420702753977775,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.417565202713014,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 26112.46467056598,
+            "ci_low": 7336.418990169298,
+            "mean": 14520.349184339279,
+            "point": 13639.781081786554,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.04073421864304692,
+          "top1_ci": {
+            "ci_high": 0.0523851950088283,
+            "ci_low": 0.0299073560803663,
+            "mean": 0.04081089308908209,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 10.745490628480912,
+          "kl_mean_ci": {
+            "ci_high": 11.025082962065936,
+            "ci_low": 10.447647244036197,
+            "mean": 10.742431748843194,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 20.863416402339936,
+            "ci_low": 19.811147519350055,
+            "mean": 20.33192844892502,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 20.339763927459718,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 37074.12517202504,
+            "ci_low": 20608.970519644077,
+            "mean": 28122.407904380132,
+            "point": 27897.494747024793,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.011084382142871618,
+          "top1_ci": {
+            "ci_high": 0.013145593707449733,
+            "ci_low": 0.009151896834373474,
+            "mean": 0.011100609743511305,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 9.706127691268922,
+          "kl_mean_ci": {
+            "ci_high": 10.098802245259284,
+            "ci_low": 9.308095720708371,
+            "mean": 9.703718229597808,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 19.258596979379654,
+            "ci_low": 17.774392887353898,
+            "mean": 18.518405554296972,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 18.521975135803224,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 11670.335575828563,
+            "ci_low": 4962.773489415324,
+            "mean": 7739.120709022374,
+            "point": 7534.030867105027,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.027801125519908966,
+          "top1_ci": {
+            "ci_high": 0.03574455971189308,
+            "ci_low": 0.020376343163079583,
+            "mean": 0.027830412563399874,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "token-random-sparse",
+      "kl_ci_high": 11.025082962065936,
+      "kl_ci_low": 10.447647244036197,
+      "kl_mean": 10.745490628480912,
+      "kl_p95": 20.339763927459718,
+      "logical_compliant": true,
+      "physical_reason": null,
+      "physical_status": "compliant",
+      "ppl_ci_high": 37074.12517202504,
+      "ppl_ci_low": 20608.970519644077,
+      "ppl_ratio": 27897.494747024793,
+      "selector_flops_per_token": 128,
+      "selector_seconds": 73.36497534345835,
+      "top1": 0.011084382142871618,
+      "top1_ci_high": 0.013145593707449733,
+      "top1_ci_low": 0.009151896834373474
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
       "domains": {
         "code": {
           "items": 40,
@@ -2264,27 +3831,189 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-magnitude",
       "kl_ci_high": 6.813144903182983,
       "kl_ci_low": 6.5412690743803985,
       "kl_mean": 6.6767719984054565,
       "kl_p95": 13.901721405982972,
+      "logical_compliant": true,
+      "physical_reason": "selection_reads_outside_active_set",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 529.0013716802952,
       "ppl_ci_low": 396.0993956921722,
       "ppl_ratio": 457.21152382829627,
       "selector_flops_per_token": 32,
-      "selector_seconds": 6.621041640988551,
+      "selector_seconds": 6.496047251508571,
       "top1": 0.0706497948616743,
       "top1_ci_high": 0.07640674416208638,
       "top1_ci_low": 0.06487279795110226
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 9620869349376,
+        "execution_flops": 31805461757952,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 6.0062228560447695,
+          "kl_mean_ci": {
+            "ci_high": 6.278357028067112,
+            "ci_low": 5.719780974984169,
+            "mean": 6.005217342207431,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.29781446814537,
+            "ci_low": 12.966108187437058,
+            "mean": 13.63709155703068,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 13.633281087875366,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 314.5084335182599,
+            "ci_low": 181.37460009802277,
+            "mean": 240.78568507705134,
+            "point": 238.07192916423588,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.15049818074330687,
+          "top1_ci": {
+            "ci_high": 0.17336662761867047,
+            "ci_low": 0.12935017670504748,
+            "mean": 0.15069766871137544,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 6.676771938800812,
+          "kl_mean_ci": {
+            "ci_high": 6.8131447912752625,
+            "ci_low": 6.541269050091505,
+            "mean": 6.677791851288675,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.186734794974328,
+            "ci_low": 13.614350847005845,
+            "mean": 13.90316712986231,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 13.90172255039215,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 529.0011793132619,
+            "ci_low": 396.09932923428306,
+            "mean": 458.9305777082866,
+            "point": 457.2114091706758,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.0706497948616743,
+          "top1_ci": {
+            "ci_high": 0.07640674416208638,
+            "ci_low": 0.06487279795110226,
+            "mean": 0.07062720155130141,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 6.926544725894928,
+          "kl_mean_ci": {
+            "ci_high": 7.300235406458378,
+            "ci_low": 6.596790665388108,
+            "mean": 6.926919562125206,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.017789692282676,
+            "ci_low": 13.56117788016796,
+            "mean": 14.25806064629078,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 14.258297562599182,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 683.780197670001,
+            "ci_low": 393.61285847881425,
+            "mean": 516.9353106096102,
+            "point": 510.90668711393585,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.053280556853860614,
+          "top1_ci": {
+            "ci_high": 0.0639883236726746,
+            "ci_low": 0.04301780793175567,
+            "mean": 0.05324837515188149,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "token-magnitude-sparse",
+      "kl_ci_high": 6.8131447912752625,
+      "kl_ci_low": 6.541269050091505,
+      "kl_mean": 6.676771938800812,
+      "kl_p95": 13.90172255039215,
+      "logical_compliant": true,
+      "physical_reason": "selection_reads_outside_active_set",
+      "physical_status": "non_compliant",
+      "ppl_ci_high": 529.0011793132619,
+      "ppl_ci_low": 396.09932923428306,
+      "ppl_ratio": 457.2114091706758,
+      "selector_flops_per_token": 32,
+      "selector_seconds": 6.543061347794719,
+      "top1": 0.0706497948616743,
+      "top1_ci_high": 0.07640674416208638,
+      "top1_ci_low": 0.06487279795110226
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "causal_reason": null,
+      "causal_status": "available",
+      "controller_elements": 0,
       "domains": {
         "code": {
           "items": 40,
@@ -2386,27 +4115,189 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-frequency",
       "kl_ci_high": 7.182299358099699,
       "kl_ci_low": 6.889674448370934,
       "kl_mean": 7.034329384565353,
       "kl_p95": 14.642135167121888,
+      "logical_compliant": true,
+      "physical_reason": "selection_reads_outside_active_set",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 813.1471582329104,
       "ppl_ci_low": 600.3155202732225,
       "ppl_ratio": 696.7203689409063,
       "selector_flops_per_token": 32,
-      "selector_seconds": 7.076077523059212,
+      "selector_seconds": 6.96224224253092,
       "top1": 0.06155944182537496,
       "top1_ci_high": 0.06761252395808696,
       "top1_ci_low": 0.05572617989615537
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 10036593819648,
+        "execution_flops": 31805461757952,
+        "read_measurement": {
+          "audit": "MaskedMlp sparse forward counter (sliced elements), cross-checked against oracle/masked_mlp.audit_sparse_reads per-op shapes",
+          "kind": "measured"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 0,
-      "deployable": true,
+      "domains": {
+        "code": {
+          "items": 40,
+          "kl_mean": 6.194939577579499,
+          "kl_mean_ci": {
+            "ci_high": 6.481835536062718,
+            "ci_low": 5.892886242866516,
+            "mean": 6.193478298649787,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.548620669841766,
+            "ci_low": 13.325577809810639,
+            "mean": 13.942961920037272,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 13.939088439941406,
+          "positions": 3913,
+          "ppl_ratio": {
+            "ci_high": 392.545103782868,
+            "ci_low": 216.1510705931106,
+            "mean": 294.2955717632258,
+            "point": 290.4865562643664,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 0.7081546559929848,
+          "top1_agreement": 0.1452121631242335,
+          "top1_ci": {
+            "ci_high": 0.1677383384038694,
+            "ci_low": 0.12416986013529822,
+            "mean": 0.14541397080364638,
+            "resamples": 10000
+          }
+        },
+        "general": {
+          "items": 40,
+          "kl_mean": 7.034329241514206,
+          "kl_mean_ci": {
+            "ci_high": 7.182299389094115,
+            "ci_low": 6.88967425853014,
+            "mean": 7.035474925826787,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 14.92521349608898,
+            "ci_low": 14.358293753862382,
+            "mean": 14.643270529096126,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 14.64213535785675,
+          "positions": 40809,
+          "ppl_ratio": {
+            "ci_high": 813.1468537869499,
+            "ci_low": 600.3154370081038,
+            "mean": 699.5852582949937,
+            "point": 696.7202464569871,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.5185437217354774,
+          "top1_agreement": 0.06155944182537496,
+          "top1_ci": {
+            "ci_high": 0.06761252395808696,
+            "ci_low": 0.05572617989615537,
+            "mean": 0.061524406722732815,
+            "resamples": 10000
+          }
+        },
+        "math": {
+          "items": 40,
+          "kl_mean": 7.141509521007538,
+          "kl_mean_ci": {
+            "ci_high": 7.4454571679234505,
+            "ci_low": 6.848017416298389,
+            "mean": 7.141739974876642,
+            "resamples": 10000
+          },
+          "kl_p95_ci": {
+            "ci_high": 15.145961217880249,
+            "ci_low": 13.948757194280626,
+            "mean": 14.546865361032486,
+            "resamples": 10000
+          },
+          "kl_p95_mean": 14.549312353134155,
+          "positions": 2586,
+          "ppl_ratio": {
+            "ci_high": 856.9641590229795,
+            "ci_low": 459.0369395812714,
+            "mean": 635.2725534250541,
+            "point": 625.4457434494085,
+            "resamples": 10000
+          },
+          "teacher_entropy_mean": 1.1658760860562325,
+          "top1_agreement": 0.049464734620414674,
+          "top1_ci": {
+            "ci_high": 0.05883443939965218,
+            "ci_low": 0.04063174614973832,
+            "mean": 0.04951297814168967,
+            "resamples": 10000
+          }
+        }
+      },
+      "execution": "sparse",
+      "id": "token-frequency-sparse",
+      "kl_ci_high": 7.182299389094115,
+      "kl_ci_low": 6.88967425853014,
+      "kl_mean": 7.034329241514206,
+      "kl_p95": 14.64213535785675,
+      "logical_compliant": true,
+      "physical_reason": "selection_reads_outside_active_set",
+      "physical_status": "non_compliant",
+      "ppl_ci_high": 813.1468537869499,
+      "ppl_ci_low": 600.3154370081038,
+      "ppl_ratio": 696.7202464569871,
+      "selector_flops_per_token": 32,
+      "selector_seconds": 7.026323725585826,
+      "top1": 0.06155944182537496,
+      "top1_ci_high": 0.06761252395808696,
+      "top1_ci_low": 0.05572617989615537
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 998630400,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 0,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
+      "active_unique_elements": 998630400,
+      "budget": "B142",
+      "budget_matched": true,
+      "causal_reason": "future_tokens",
+      "causal_status": "unavailable",
+      "controller_elements": 0,
       "domains": {
         "code": {
           "items": 40,
@@ -2508,11 +4399,15 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-task-static-nn",
       "kl_ci_high": 9.89737444460392,
       "kl_ci_low": 9.284461185634136,
       "kl_mean": 9.58013653755188,
       "kl_p95": 18.02499589920044,
+      "logical_compliant": true,
+      "physical_reason": "dense_computation_masked",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 11114.225332310481,
       "ppl_ci_low": 5798.417128499748,
       "ppl_ratio": 7896.432228896316,
@@ -2523,12 +4418,28 @@
       "top1_ci_low": 0.007248598948353902
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479927652,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 868,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998631268,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 868,
-      "deployable": true,
       "domains": {
         "code": {
           "items": 40,
@@ -2630,27 +4541,47 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-learned-unary",
       "kl_ci_high": 10.792108702361583,
       "kl_ci_low": 10.180009666979313,
       "kl_mean": 10.474508666992188,
       "kl_p95": 19.11923494338989,
+      "logical_compliant": true,
+      "physical_reason": "selection_reads_outside_active_set",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 26662.755621394543,
       "ppl_ci_low": 13052.932144005532,
       "ppl_ratio": 18318.277475115683,
       "selector_flops_per_token": 192,
-      "selector_seconds": 10.093998742289841,
+      "selector_seconds": 9.989023883128539,
       "top1": 0.007354340807069093,
       "top1_ci_high": 0.009148727916181088,
       "top1_ci_low": 0.005772994086146355
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479927652,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 868,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998631268,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": null,
+      "causal_status": "available",
       "controller_elements": 868,
-      "deployable": true,
       "domains": {
         "code": {
           "items": 40,
@@ -2752,27 +4683,47 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-learned-interaction",
       "kl_ci_high": 10.734216721057892,
       "kl_ci_low": 10.240314671695232,
       "kl_mean": 10.482465362548828,
       "kl_p95": 18.973442792892456,
+      "logical_compliant": true,
+      "physical_reason": "selection_reads_outside_active_set",
+      "physical_status": "non_compliant",
       "ppl_ci_high": 23905.814722058563,
       "ppl_ci_low": 13889.186782262055,
       "ppl_ratio": 18070.659350349604,
       "selector_flops_per_token": 4192,
-      "selector_seconds": 12.813586869626306,
+      "selector_seconds": 12.655475827748887,
       "top1": 0.00721941152587533,
       "top1_ci_high": 0.009833738640882075,
       "top1_ci_low": 0.0053603117354214195
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": "backward_target",
+      "causal_status": "unavailable",
       "controller_elements": 0,
-      "deployable": false,
       "domains": {
         "code": {
           "items": 40,
@@ -2809,26 +4760,26 @@
         },
         "general": {
           "items": 40,
-          "kl_mean": 11.138053250312804,
+          "kl_mean": 11.137446582317352,
           "kl_mean_ci": {
-            "ci_high": 11.37727940738201,
-            "ci_low": 10.903365510404111,
-            "mean": 11.137580528407096,
+            "ci_high": 11.37677393078804,
+            "ci_low": 10.902188537120818,
+            "mean": 11.136970204761028,
             "resamples": 10000
           },
           "kl_p95_ci": {
-            "ci_high": 21.18686252236366,
-            "ci_low": 20.32562672972679,
-            "mean": 20.769489733643532,
+            "ci_high": 21.185767052173613,
+            "ci_low": 20.323677660226824,
+            "mean": 20.767436428608892,
             "resamples": 10000
           },
-          "kl_p95_mean": 20.772748708724976,
+          "kl_p95_mean": 20.770706748962404,
           "positions": 40809,
           "ppl_ratio": {
-            "ci_high": 77623.70218244565,
-            "ci_low": 44185.516999963074,
-            "mean": 59138.815862639436,
-            "point": 58584.13776846913,
+            "ci_high": 77599.84855836444,
+            "ci_low": 44124.06296455301,
+            "mean": 59096.18727278663,
+            "point": 58540.83626979294,
             "resamples": 10000
           },
           "teacher_entropy_mean": 1.5185437217354774,
@@ -2874,27 +4825,47 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-gxo",
-      "kl_ci_high": 11.37727940738201,
-      "kl_ci_low": 10.903365510404111,
-      "kl_mean": 11.138053250312804,
-      "kl_p95": 20.772748708724976,
-      "ppl_ci_high": 77623.70218244565,
-      "ppl_ci_low": 44185.516999963074,
-      "ppl_ratio": 58584.13776846913,
+      "kl_ci_high": 11.37677393078804,
+      "kl_ci_low": 10.902188537120818,
+      "kl_mean": 11.137446582317352,
+      "kl_p95": 20.770706748962404,
+      "logical_compliant": true,
+      "physical_reason": "dense_computation_masked",
+      "physical_status": "non_compliant",
+      "ppl_ci_high": 77599.84855836444,
+      "ppl_ci_low": 44124.06296455301,
+      "ppl_ratio": 58540.83626979294,
       "selector_flops_per_token": 0,
-      "selector_seconds": 15.844159967266023,
+      "selector_seconds": 15.776699399924837,
       "top1": 0.010098014073446394,
       "top1_ci_high": 0.012099277462111785,
       "top1_ci_low": 0.0081852650269866
     },
     {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 169114337280,
+        "execution_flops": 100343992025088,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 133791989366784,
+        "selector_elements_read": 225485783040,
+        "selector_parameter_elements": 0,
+        "tokens": 47468,
+        "windows": 160
+      },
       "active_unique_elements": 998630400,
       "budget": "B142",
       "budget_matched": true,
-      "compliant": true,
+      "causal_reason": "backward_target",
+      "causal_status": "unavailable",
       "controller_elements": 0,
-      "deployable": false,
       "domains": {
         "code": {
           "items": 40,
@@ -2931,26 +4902,26 @@
         },
         "general": {
           "items": 40,
-          "kl_mean": 11.322874438762664,
+          "kl_mean": 11.322906577587128,
           "kl_mean_ci": {
-            "ci_high": 11.641560597717762,
-            "ci_low": 11.028434193730355,
-            "mean": 11.322780495009424,
+            "ci_high": 11.64159188091755,
+            "ci_low": 11.028465345799923,
+            "mean": 11.322813451641798,
             "resamples": 10000
           },
           "kl_p95_ci": {
-            "ci_high": 21.687344942092896,
-            "ci_low": 20.621782155036925,
-            "mean": 21.14241086174965,
+            "ci_high": 21.687151012420653,
+            "ci_low": 20.6216037273407,
+            "mean": 21.14223044371128,
             "resamples": 10000
           },
-          "kl_p95_mean": 21.143813037872313,
+          "kl_p95_mean": 21.143638038635252,
           "positions": 40809,
           "ppl_ratio": {
-            "ci_high": 108652.81034311201,
-            "ci_low": 53802.72545609243,
-            "mean": 76939.73448065083,
-            "point": 75718.35338814577,
+            "ci_high": 108657.63564863,
+            "ci_low": 53802.04245636929,
+            "mean": 76941.47549221311,
+            "point": 75719.94754067954,
             "resamples": 10000
           },
           "teacher_entropy_mean": 1.5185437217354774,
@@ -2996,16 +4967,20 @@
           }
         }
       },
+      "execution": "dense",
       "id": "token-cor-gxo",
-      "kl_ci_high": 11.641560597717762,
-      "kl_ci_low": 11.028434193730355,
-      "kl_mean": 11.322874438762664,
-      "kl_p95": 21.143813037872313,
-      "ppl_ci_high": 108652.81034311201,
-      "ppl_ci_low": 53802.72545609243,
-      "ppl_ratio": 75718.35338814577,
+      "kl_ci_high": 11.64159188091755,
+      "kl_ci_low": 11.028465345799923,
+      "kl_mean": 11.322906577587128,
+      "kl_p95": 21.143638038635252,
+      "logical_compliant": true,
+      "physical_reason": "dense_computation_masked",
+      "physical_status": "non_compliant",
+      "ppl_ci_high": 108657.63564863,
+      "ppl_ci_low": 53802.04245636929,
+      "ppl_ratio": 75719.94754067954,
       "selector_flops_per_token": 0,
-      "selector_seconds": 16.371066781808622,
+      "selector_seconds": 16.235749446437694,
       "top1": 0.011084382142871618,
       "top1_ci_high": 0.012698863539844752,
       "top1_ci_low": 0.009466731827706099
@@ -3025,9 +5000,9 @@
   },
   "verdicts": {
     "K6": {
-      "best_relative_reduction": -0.05356321771136643,
+      "best_relative_reduction": -0.05356319987192407,
       "passed": false,
-      "rule": "a deployable arm at matched active unique parameters reduces general mean KL by at least 5% versus token-magnitude with a paired 95% CI lower bound above zero"
+      "rule": "a causally available arm at matched active unique parameters reduces general mean KL by at least 5% versus token-magnitude with a paired 95% CI lower bound above zero; the physical verdict is reported separately and does not substitute for causal availability"
     },
     "K7": {
       "best_oracle": "oracle-local-64",

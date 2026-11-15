@@ -923,3 +923,37 @@ The pre-amendment measurements and their `matched_budget=false` labels are
 retained in `results/selectors/eval-full-20261114T230320Z.json` and
 `results/selectors/selectors.json`; the post-amendment analysis is the one
 cited by `results/M2-SELECTORS.md`.
+
+### A4 — 2026-11-15, after the M2 formal review
+
+The registered M2 text assigned every arm a single `deployable` flag. A formal
+review found that this conflated two independent questions and that the M2
+instrument did not measure the parameter reads it charged. No budget, arm,
+selector definition, sample size, threshold or kill condition changes. The
+following definitions replace the flag in every future receipt; the historical
+text above is retained unchanged as the pre-registration.
+
+1. **`CausalAvailability`** is a typed, evidence-bearing verdict: either
+   `Available { decision_record, allowed_inputs, audit, one_pass }` or
+   `Unavailable { reason, detail }` with one of `future_tokens`,
+   `future_layers`, `teacher_logits`, `gold_labels`, `unmasked_future_state`,
+   `held_out_measurement`, `backward_target`, `undeclared_input`. The K6 rule
+   is read as applying to causally available arms. The old phrase "deployable
+   arm" in K6 and M2.13 means "causally available arm"; it never meant
+   physically compliant.
+2. **`PhysicalCompliance`** is a typed, evidence-bearing verdict: either
+   `Compliant { evidence }` with measured selector reads, execution reads,
+   their union, and FLOPs, or `NonCompliant { reason, evidence }` with
+   `dense_computation_masked`, `selection_reads_outside_active_set`,
+   `missing_sparse_execution_path`, `unmeasured_parameter_reads` or
+   `over_ceiling`.
+3. The M2 `token-magnitude`, `token-frequency` and learned arms read every
+   gate/up channel to score groups and executed dense projections with a mask.
+   They are `selection_reads_outside_active_set` and
+   `dense_computation_masked`. Their reported active counts were logical
+   selection counts. This is recorded in `docs/M2-CORRECTION.md`.
+4. The corrected accounting and the sparse execution path are an instrument
+   change, not an arm change. The pre-correction receipts remain valid for the
+   logical-omission and final-KL comparisons they contain, and are not
+   comparable on the physical axis. The corrected table is generated from
+   `results/selectors/eval-full-20261115T005000Z.json`.
