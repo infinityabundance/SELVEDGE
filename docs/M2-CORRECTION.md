@@ -23,12 +23,12 @@ recorded in `docs/perf-numbers.json`.
 ## 1. What `token-magnitude` actually did
 
 `token-magnitude` used `dense_group_norms` (`oracle/m2_selectors.py`) to rank
-groups. That function called `masked_mlp.dense_channels`, which computes
+decision. That function called `masked_mlp.dense_channels`, which computes
 **every** gate and up channel of the layer (`SiLU(W_gate x) ⊙ (W_up x)`) before
 taking each group's norm. The selection decision therefore read
-`2 * hidden * intermediate = 25,165,824` parameter elements per token per layer,
-whether or not those groups were selected. At 28 layers this is
-`704,643,072` elements for one token, outside every claimed active set.
+`2 * 2048 * 6144` parameter elements per token per layer, whether or not those
+groups were selected. At 28 layers this is `28 * 2 * 2048 * 6144` elements for
+one token, outside every claimed active set.
 
 `MaskedMlp.forward` then computed the full gate/up projections again and
 multiplied the full `[T, intermediate]` activation by a 0/1 mask before the full
@@ -85,20 +85,22 @@ are causally available and
 are physically compliant. The six compliant arms are the static and random
 masks executed through the sliced sparse path; none of them is useful quality.
 
-| arm | causal | physical | KL mean | why it fails |
-| --- | --- | --- | ---: | --- |
-| token-magnitude | available | non_compliant | 6.676772 | dense gate/up selector reads outside the active set; dense masked execution |
-| token-frequency | available | non_compliant | 7.034329 | same |
-| token-learned-unary | available | non_compliant | 10.474509 | features require every gate/up channel |
-| token-learned-interaction | available | non_compliant | 10.482465 | same |
-| token-gxo / token-cor-gxo | unavailable | non_compliant | 11.137447 / 11.322907 | backward target is the gold token |
-| token-task-static-nn | unavailable | non_compliant | 9.580137 | document 5-shingles include tokens after the decision |
-| static-magnitude-k5-sparse | available | compliant | 10.019480 | quality is unusable |
-| static-greedy-uniform5-sparse | available | compliant | 7.706658 | quality is unusable |
-| token-random-sparse | available | compliant | 10.745491 | chance baseline |
+| arm | causal | physical | why it fails |
+| --- | --- | --- | --- |
+| token-magnitude | available | non_compliant | dense gate/up selector reads outside the active set; dense masked execution |
+| token-frequency | available | non_compliant | same |
+| token-learned-unary | available | non_compliant | features require every gate/up channel |
+| token-learned-interaction | available | non_compliant | same |
+| token-gxo / token-cor-gxo | unavailable | non_compliant | backward target is the gold token |
+| token-task-static-nn | unavailable | non_compliant | document 5-shingles include tokens after the decision |
+| static-magnitude-k5-sparse | available | compliant | quality is unusable |
+| static-greedy-uniform5-sparse | available | compliant | quality is unusable |
+| token-random-sparse | available | compliant | chance baseline |
 
-The KL values in that table are the generated `results/selectors/table.md`
-values; the receipt is the corrected full evaluation named at the end.
+The measured KL for every row, with its paired-bootstrap CI, is the generated
+table in `results/M2-SELECTORS.md` and `results/selectors/table.md`; the receipt
+is the corrected full evaluation named at the end. This document deliberately
+does not repeat those numbers outside a generated region.
 
 `static-greedy-uniform5` at the matched B142 allocation is the M1 best static
 arm; its KL is
@@ -114,8 +116,8 @@ but not physically compliant.
 **Which arms cannot be made physically compliant at all.** Any arm that needs
 the full gate/up projection to score groups (`token-magnitude`,
 `token-frequency`, both learned arms, both GxO arms) cannot be compliant at this
-budget: the selector's own read is `28 * 2 * 2048 * 6144 = 704,643,072`
-elements, which alone is 70% of the ceiling and leaves no room for the backbone
+budget: the selector's own read is `28 * 2 * 2048 * 6144` elements, which
+alone is 70% of the ceiling and leaves no room for the backbone
 and the selected FFN. The oracle arms cannot be compliant either; their search
 evaluates dense group contributions. No arm in the measured family is both
 causally available, physically compliant and better than chance.
@@ -148,12 +150,16 @@ arm: a dense first pass, captured states, then a second forward.
 Both are causally available. Both are physically non-compliant for the reason in
 section 2. On the same eight-window oracle sample:
 
-| arm | budget | KL mean | top-1 | selector seconds (all windows) |
-| --- | --- | ---: | ---: | ---: |
-| online-one-pass | B140 | 6.529975 | 0.0827 | 0.734 |
-| offline-iterated | B140 | 6.955762 | 0.0651 | 0.067 |
-| online-one-pass | B142 | 6.423737 | 0.0930 | 0.705 |
-| offline-iterated | B142 | 6.611430 | 0.0707 | 0.523 |
+| arm | budget |
+| --- | --- |
+| online-one-pass | B140 |
+| offline-iterated | B140 |
+| online-one-pass | B142 |
+| offline-iterated | B142 |
+
+Top-1 agreement and measured selector seconds for each row are in
+`results/selectors/onepass-20261115T012700Z.json`; the KL values and the paired
+differences are generated below.
 
 The online KL is
 <!-- BEGIN GENERATED: m2c-onepass-b140-kl -->
@@ -220,9 +226,8 @@ is
 <!-- BEGIN GENERATED: m2c-onepass-b140-seconds-2 -->
 0.734
 <!-- END GENERATED: m2c-onepass-b140-seconds-2 -->
-seconds over 161 windows (about 4.6 ms per window) on the RTX 4080 SUPER, and
-it holds the GPU synchronisation inside the hook, so this is a conservative
-measurement.
+seconds over the oracle sample on the RTX 4080 SUPER, and it holds the GPU
+synchronisation inside the hook, so this is a conservative measurement.
 
 ## 5. Tensor-access audit of the sparse path
 
@@ -257,8 +262,8 @@ profiled FLOPs.
 
 - The six compliant arms are static or random masks; there is no compliant
   learned selector in this family at this budget. A compliant controller would
-  need a scoring projection small enough to fit the
-  `1,369,600`-element B142 headroom; no such controller was trained here.
+  need a scoring projection small enough to fit the B142 headroom; no such
+  controller was trained here.
 - The one-pass comparison uses the oracle sample (eight windows), because the
   full split would multiply the controller cost measurement by the number of
   windows. It is one seed and one teacher.

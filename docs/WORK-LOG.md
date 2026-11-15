@@ -1007,7 +1007,8 @@ selector tuning without a new oracle bound.
   every arm (for example both magnitude variants at KL 6.676772).
 - `token-magnitude`'s selector reads 225,485,783,040 parameter elements over the
   160 evaluation windows, and the per-token union of selector plus execution is
-  1,480,713,216, above the ceiling. It was never physically compliant.
+  above the ceiling (see the generated block in `docs/M2-CORRECTION.md`). It
+  was never physically compliant.
 - The one-pass arm is better than the two-pass arm at both B140 and B142; the
   paired difference excludes zero (`docs/M2-CORRECTION.md`). The earlier M2
   numbers therefore depended on teacher-state iteration, and the dependence was
