@@ -1,0 +1,112 @@
+   Compiling selvedge-core v0.1.0 (/work/crates/selvedge-core)
+warning: unused import: `SelectionMode`
+  --> crates/selvedge-core/src/courts.rs:18:43
+   |
+18 | use crate::selection::{SelectionDecision, SelectionMode, SelectionProvenance};
+   |                                           ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `selvedge-core` (lib) generated 1 warning (run `cargo fix --lib -p selvedge-core` to apply 1 suggestion)
+warning: `selvedge-core` (lib test) generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.99s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_core-b81f19ef8acb1142)
+
+running 46 tests
+test canonical::tests::integers_are_little_endian_and_length_prefixed ... ok
+test canonical::tests::canonical_json_matches_expected_shape ... ok
+test config::tests::hard_limits_are_enforced ... ok
+test canonical::tests::struct_field_order_is_canonicalised ... ok
+test canonical::tests::key_order_does_not_change_canonical_json_or_hash ... ok
+test error::tests::display_names_field_and_reason ... ok
+test hash::tests::empty_vector_matches_known_sha256 ... ok
+test hash::tests::incremental_matches_one_shot ... ok
+test config::tests::default_config_is_valid_and_has_stable_hash ... ok
+test hash::tests::rejects_wrong_length_and_non_hex ... ok
+test hash::tests::parse_and_display_round_trip ... ok
+test ids::tests::model_digest_rejects_duplicate_paths ... ok
+test config::tests::unknown_fields_are_rejected ... ok
+test ids::tests::model_digest_is_order_independent ... ok
+test ledger::tests::auxiliary_kind_serialises_as_stable_strings ... ok
+test ledger::tests::budget_boundary_semantics ... ok
+test ids::tests::shard_id_is_stable_and_display_round_trips ... ok
+test ledger::tests::over_budget_selection_path_is_rejected_before_execution ... ok
+test ids::tests::every_identity_field_changes_the_id ... ok
+test ledger::tests::teacher_mode_labels_an_over_budget_selection_path_instead_of_executing_it ... ok
+test ledger::tests::union_merges_overlaps_and_adjacent_ranges ... ok
+test residency::tests::transfer_math ... ok
+test residency::tests::residency_validation ... ok
+test selection::tests::decision_is_sorted_and_unique ... ok
+test selection::tests::realized_mismatch_is_detectable ... ok
+test selection::tests::duplicate_or_empty_executed_sets_cannot_produce_a_witness ... ok
+test tensor::tests::channel_set_validation_and_span ... ok
+test tensor::tests::dtype_names_round_trip ... ok
+test tensor::tests::param_identity_alias_detection ... ok
+test selection::tests::semantic_exactness_is_only_proven_by_a_witness ... ok
+test selection::tests::exact_selection_requires_a_full_set_witness ... ok
+test selection::tests::witness_for_a_different_set_is_rejected_by_exact_selection ... ok
+test tensor::tests::role_round_trips_known_and_other ... ok
+test tensor::tests::slice_rejects_invariant_violations ... ok
+test tensor::tests::storage_order_permutations_are_validated ... ok
+test testutil::tests::rejects_bad_prefix ... ok
+test units::tests::addition_and_multiplication_report_overflow ... ok
+test units::tests::alignment_rounds_up ... ok
+test testutil::tests::tempdir_is_created_and_removed ... ok
+test units::tests::dtype_byte_counts ... ok
+test units::tests::element_counts_are_checked ... ok
+test config::tests::toml_round_trip_preserves_hash ... ok
+test verdict::tests::causal_verdict_requires_named_evidence ... ok
+test verdict::tests::constructed_reads_cannot_claim_compliance ... ok
+test verdict::tests::empty_evidence_and_impossible_unions_are_rejected ... ok
+test verdict::tests::verdicts_serialise_as_two_records_not_a_boolean ... ok
+
+test result: ok. 46 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/compile_fail.rs (target/debug/deps/compile_fail-6f2ce727f50dffd3)
+
+running 1 test
+test ui_cases_fail_to_compile ... FAILED
+
+failures:
+
+---- ui_cases_fail_to_compile stdout ----
+
+thread 'ui_cases_fail_to_compile' (222) panicked at crates/selvedge-core/tests/compile_fail.rs:109:9:
+UI case approximate_to_exact failed for the wrong reason.
+expected: no function or associated item named `reclassify_from_approximate`
+stderr:
+error[E0599]: no associated function or constant named `reclassify_from_approximate` found for struct `ExactSelection` in the current scope
+ --> /work/crates/selvedge-core/tests/ui/approximate_to_exact.rs:9:29
+  |
+9 |     let _ = ExactSelection::reclassify_from_approximate(decision, "verified externally");
+  |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ associated function or constant not found in `ExactSelection`
+  |
+note: if you're trying to build a new `ExactSelection`, consider using `ExactSelection::from_witness` which returns `Result<ExactSelection, CoreError>`
+ --> crates/selvedge-core/src/selection.rs:477:4
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: compile_fail::ui_cases_fail_to_compile
+             at ./tests/compile_fail.rs:109:9
+   3: compile_fail::ui_cases_fail_to_compile::{closure#0}
+             at ./tests/compile_fail.rs:54:30
+   4: <compile_fail::ui_cases_fail_to_compile::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    ui_cases_fail_to_compile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p selvedge-core --test compile_fail`

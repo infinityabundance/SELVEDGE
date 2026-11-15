@@ -408,3 +408,79 @@ pub fn percentiles(samples: &mut [u64]) -> (usize, u64, u64, u64, u64) {
 
 /// Group counters by a string key for compact reports.
 pub type CounterMap = BTreeMap<String, u64>;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::Ordering;
+
+    #[test]
+    fn prefetch_waste_is_read_minus_used() {
+        let counters = StoreCounters::default();
+        counters
+            .prefetch_bytes_read()
+            .fetch_add(10_000, Ordering::Relaxed);
+        counters
+            .prefetch_bytes_used()
+            .fetch_add(2_500, Ordering::Relaxed);
+        let stats = counters.snapshot();
+        assert_eq!(stats.prefetch_bytes_read, 10_000);
+        assert_eq!(stats.prefetch_bytes_used, 2_500);
+        assert_eq!(stats.prefetch_bytes_wasted, 7_500);
+        assert_eq!(
+            stats.prefetch_bytes_read,
+            stats.prefetch_bytes_used + stats.prefetch_bytes_wasted
+        );
+    }
+
+    #[test]
+    fn prefetch_waste_is_zero_when_everything_is_used() {
+        let counters = StoreCounters::default();
+        counters
+            .prefetch_bytes_read()
+            .fetch_add(4_096, Ordering::Relaxed);
+        counters
+            .prefetch_bytes_used()
+            .fetch_add(4_096, Ordering::Relaxed);
+        assert_eq!(counters.snapshot().prefetch_bytes_wasted, 0);
+    }
+
+    #[test]
+    fn prefetch_waste_saturates_instead_of_underflowing() {
+        let counters = StoreCounters::default();
+        // A counter bug must not wrap into an enormous waste number; the
+        // snapshot saturates and the read side remains the authority.
+        counters
+            .prefetch_bytes_used()
+            .fetch_add(1_000, Ordering::Relaxed);
+        counters
+            .prefetch_bytes_read()
+            .fetch_add(250, Ordering::Relaxed);
+        let stats = counters.snapshot();
+        assert_eq!(stats.prefetch_bytes_wasted, 0);
+        assert_eq!(stats.prefetch_bytes_read, 250);
+        assert_eq!(stats.prefetch_bytes_used, 1_000);
+    }
+
+    #[test]
+    fn prefetch_waste_is_serialised_in_the_stats_record() {
+        let counters = StoreCounters::default();
+        counters
+            .prefetch_bytes_read()
+            .fetch_add(8_192, Ordering::Relaxed);
+        let text = serde_json::to_string(&counters.snapshot()).unwrap();
+        assert!(text.contains("\"prefetch_bytes_wasted\":8192"));
+    }
+
+    #[test]
+    fn nearest_rank_percentiles_are_deterministic() {
+        let mut samples = vec![5, 1, 4, 2, 3];
+        let (count, p50, p95, p99, max) = percentiles(&mut samples);
+        assert_eq!(count, 5);
+        assert_eq!(p50, 3);
+        assert_eq!(p95, 5);
+        assert_eq!(p99, 5);
+        assert_eq!(max, 5);
+    }
+}

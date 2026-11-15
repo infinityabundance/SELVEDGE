@@ -717,6 +717,34 @@ fn prefetched_bytes_are_only_counted_useful_when_delivered() {
         store.stats().prefetch_bytes_used,
         fixture.manifest.shard(&id).unwrap().length
     );
+    let stats = store.stats();
+    assert_eq!(
+        stats.prefetch_bytes_wasted,
+        stats.prefetch_bytes_read - stats.prefetch_bytes_used,
+        "waste must be the prefetched bytes that were never delivered"
+    );
+    assert!(stats.prefetch_bytes_wasted > 0);
+}
+
+#[test]
+fn a_prefetch_that_is_never_delivered_is_all_waste() {
+    let fixture = fixture();
+    let max_shard = largest_shard(&fixture.manifest);
+    let store = ShardStore::open(
+        &fixture.path,
+        coalescing_config(
+            PolicyKind::Lru,
+            payload_bytes(&fixture.manifest),
+            max_shard * 4,
+        ),
+    )
+    .unwrap();
+    let hints: Vec<PrefetchHint> = fixture.ids.iter().copied().map(PrefetchHint::new).collect();
+    let outcome = store.prefetch_advisory(&fixture.scope, &hints).unwrap();
+    assert!(outcome.bytes_admitted > 0);
+    let stats = store.stats();
+    assert_eq!(stats.prefetch_bytes_used, 0);
+    assert_eq!(stats.prefetch_bytes_wasted, stats.prefetch_bytes_read);
 }
 
 #[test]

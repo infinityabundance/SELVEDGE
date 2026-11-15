@@ -34,6 +34,7 @@ pub mod tensor;
 pub mod testutil;
 pub mod traits;
 pub mod units;
+pub mod verdict;
 
 pub use canonical::{canonical_json, canonical_json_sha256, canonical_json_value};
 pub use config::{Config, HardLimits};
@@ -41,17 +42,18 @@ pub use error::{CoreError, Result};
 pub use hash::{Sha256Builder, Sha256Digest};
 pub use ids::{CheckpointFile, FORMAT_VERSION, ModelDigest, ShardId, ShardIdentity};
 pub use ledger::{
-    AuxiliaryKind, Budget, BudgetError, BudgetVerdict, ComplianceMode, DecisionPlan, FlopEstimate,
-    ParamUse, ParameterLedger, QuantDequantWork, ResolvedPlan, TokenAccounting,
-    WithinBudgetFallback, union_element_count,
+    AdmittedSelectionPath, AuxiliaryKind, Budget, BudgetError, BudgetVerdict, ComplianceMode,
+    DecisionPlan, FlopEstimate, ParamUse, ParameterLedger, QuantDequantWork, ResolvedPlan,
+    SelectionPath, TokenAccounting, WithinBudgetFallback, union_element_count,
 };
 pub use residency::{
     ResidencySnapshot, ResidentShard, StorageTier, TransferCompletion, TransferId, TransferOutcome,
     TransferRequest,
 };
 pub use selection::{
-    ExactSelection, NativeSetAttestation, SelectionDecision, SelectionMode, SelectionProvenance,
-    ShardScore,
+    ExactSelection, NATIVE_SET_DOMAIN, NativeComputationSet, NativeSetWitness, SelectionDecision,
+    SelectionMode, SelectionProvenance, SemanticExactness, SemanticGap, ShardScore,
+    native_set_digest,
 };
 pub use tensor::{
     ChannelSet, DType, ElementCount, ParamIdentity, ParamTensorId, QuantScheme, StorageOrder,
@@ -59,3 +61,7 @@ pub use tensor::{
 };
 pub use traits::{Backend, CostEstimate, CostModel};
 pub use units::{align_up, bytes_for, element_count};
+pub use verdict::{
+    ArmVerdict, CausalAvailability, CausalEvidence, CausalFailingReason, DecisionInput,
+    PhysicalCompliance, PhysicalEvidence, PhysicalFailingReason, ReadMeasurement, VERDICT_SCHEMA,
+};

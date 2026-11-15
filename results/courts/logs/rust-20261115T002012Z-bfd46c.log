@@ -1,0 +1,13 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+error: unused import: `SelectionMode`
+  --> crates/selvedge-core/src/courts.rs:18:43
+   |
+18 | use crate::selection::{SelectionDecision, SelectionMode, SelectionProvenance};
+   |                                           ^^^^^^^^^^^^^
+   |
+   = note: `-D unused-imports` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: could not compile `selvedge-core` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-core` (lib test) due to 1 previous error

@@ -13,6 +13,15 @@
 //! is served from. `tests/court_d_extension.rs` asserts the executed set equals
 //! the scope after a prefetch that names both in-scope and out-of-scope shards.
 //!
+//! **A scope is scope integrity, not semantic exactness.** `ExecutionScope`
+//! proves only that the store will not return a shard outside the supplied set;
+//! it has no native computation set to compare against and cannot be converted
+//! into `selvedge_core::ExactSelection`. Semantic exactness requires a
+//! `selvedge_core::NativeSetWitness` comparing the executed set with the model's
+//! declared native set. Keeping the two types separate prevents a correct
+//! scoped read from being presented as evidence that a selector executed the
+//! native neural computation.
+//!
 //! # Bounded memory
 //!
 //! The cache never exceeds `cache_bytes`. A required read whose verified bytes
@@ -286,8 +295,13 @@ impl StoreConfig {
 
 /// The immutable set of shards an exact plan will execute.
 ///
-/// Exact mode is a type-level claim here: this set is the only source of
-/// execution scope and nothing can extend it after construction.
+/// Scope integrity is a type-level claim here: this set is the only source of
+/// execution scope and nothing can extend it after construction. It is **not**
+/// evidence of semantic exactness: the scope does not know the model's declared
+/// native computation set, so it cannot produce
+/// `selvedge_core::ExactSelection`. Use
+/// `selvedge_core::NativeSetWitness::compare` with the declared native set for
+/// that claim.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ExecutionScope {

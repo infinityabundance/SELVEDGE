@@ -1,0 +1,64 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-core/tests/compile_fail.rs:16:5
+   |
+16 | /     manifest
+17 | |         .parent()
+18 | |         .and_then(Path::parent)
+19 | |         .expect("crate is inside the workspace")
+   | |________________________________________________^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+   = note: `-D clippy::expect-used` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::expect_used)]`
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-core/tests/compile_fail.rs:64:5
+   |
+64 |     std::fs::create_dir_all(&out_dir).expect("create UI output dir");
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-core/tests/compile_fail.rs:76:22
+   |
+76 |         let source = std::fs::read_to_string(&case).expect("read UI case");
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `unwrap()` on an `Option` value
+  --> crates/selvedge-core/tests/compile_fail.rs:78:20
+   |
+78 |         let stem = case.file_stem().unwrap().to_string_lossy().to_string();
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unwrap_used
+   = note: `-D clippy::unwrap-used` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::unwrap_used)]`
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-core/tests/compile_fail.rs:82:26
+   |
+82 |               let output = Command::new("rustc")
+   |  __________________________^
+83 | |                 .arg("--edition=2021")
+84 | |                 .arg("--crate-type=lib")
+85 | |                 .arg("--crate-name")
+...  |
+94 | |                 .output()
+95 | |                 .expect("rustc must be available in the rust court");
+   | |____________________________________________________________________^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: could not compile `selvedge-core` (test "compile_fail") due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...

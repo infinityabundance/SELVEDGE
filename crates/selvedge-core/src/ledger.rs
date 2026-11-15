@@ -525,6 +525,154 @@ pub struct ResolvedPlan {
     pub fallback_applied: bool,
 }
 
+/// Learned parameter uses of a selector path and of the execution it enables.
+///
+/// The ceiling constrains the *union*, not the execution alone: a selector that
+/// reads a projection outside the active set has already spent the budget
+/// before any FFN group is executed. Keeping the two lists separate makes the
+/// selector's cost auditable instead of invisible.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SelectionPath {
+    /// Parameters the selector/controller reads to make its decision.
+    pub selector_uses: Vec<ParamUse>,
+    /// Parameters the selected execution reads.
+    pub execution_uses: Vec<ParamUse>,
+    /// Selector/controller FLOPs.
+    pub selector_flops: FlopEstimate,
+    /// Execution FLOPs.
+    pub execution_flops: FlopEstimate,
+}
+
+impl SelectionPath {
+    /// Construct and validate a path.
+    ///
+    /// # Errors
+    ///
+    /// Rejects invalid [`ParamUse`] entries.
+    pub fn new(
+        selector_uses: Vec<ParamUse>,
+        execution_uses: Vec<ParamUse>,
+        selector_flops: FlopEstimate,
+        execution_flops: FlopEstimate,
+    ) -> Result<Self> {
+        for use_value in selector_uses.iter().chain(execution_uses.iter()) {
+            use_value.validate()?;
+        }
+        Ok(Self {
+            selector_uses,
+            execution_uses,
+            selector_flops,
+            execution_flops,
+        })
+    }
+
+    /// Union of every learned parameter element touched by selection and
+    /// execution. This is the quantity the ceiling constrains.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn active_unique_params(&self) -> Result<u64> {
+        union_element_count(
+            self.selector_uses
+                .iter()
+                .chain(self.execution_uses.iter())
+                .map(|use_value| &use_value.identity),
+        )
+    }
+
+    /// Union of the selector's own parameter elements.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn selector_unique_params(&self) -> Result<u64> {
+        union_element_count(
+            self.selector_uses
+                .iter()
+                .map(|use_value| &use_value.identity),
+        )
+    }
+
+    /// Union of the executed parameter elements.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn execution_unique_params(&self) -> Result<u64> {
+        union_element_count(
+            self.execution_uses
+                .iter()
+                .map(|use_value| &use_value.identity),
+        )
+    }
+
+    /// Element reads performed to make the decision, including repeats.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn selector_elements_read(&self) -> Result<u64> {
+        sum_reads(&self.selector_uses)
+    }
+
+    /// Element reads performed to execute the selection, including repeats.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn execution_elements_read(&self) -> Result<u64> {
+        sum_reads(&self.execution_uses)
+    }
+
+    /// Total model FLOPs (selector + execution), excluding neither part.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn total_flops(&self) -> Result<FlopEstimate> {
+        let mut total = self.selector_flops;
+        total.accumulate(&self.execution_flops)?;
+        Ok(total)
+    }
+}
+
+fn sum_reads(uses: &[ParamUse]) -> Result<u64> {
+    let mut total = 0_u64;
+    for use_value in uses {
+        total = checked_add(total, use_value.reads, "parameter reads")?;
+    }
+    Ok(total)
+}
+
+/// A selection path admitted by the budget gate before execution.
+///
+/// The fields are private and there is no public constructor: a runtime that
+/// accepts this type can assume both the selector and the execution it enables
+/// were checked as one union. A path that cannot be admitted has no value to
+/// pass to execution, so an over-budget selection cannot be executed first and
+/// accounted later.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct AdmittedSelectionPath {
+    path: SelectionPath,
+    verdict: BudgetVerdict,
+}
+
+impl AdmittedSelectionPath {
+    /// The admitted path.
+    #[must_use]
+    pub fn path(&self) -> &SelectionPath {
+        &self.path
+    }
+
+    /// The gate's verdict.
+    #[must_use]
+    pub fn verdict(&self) -> &BudgetVerdict {
+        &self.verdict
+    }
+}
+
 /// Accumulates accounting for one token and gates plans against the ceiling.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -798,6 +946,52 @@ impl ParameterLedger {
             }
         }
     }
+
+    /// Admit a selector path against the ceiling before execution.
+    ///
+    /// The union of selector and execution parameters is checked, so a selector
+    /// that reads a projection outside the selected set is rejected instead of
+    /// being charged only after the fact. In compliance mode an over-budget
+    /// path yields [`BudgetError::Exceeded`] and no [`AdmittedSelectionPath`]
+    /// exists to execute.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`BudgetError::Exceeded`] for an over-budget compliant path and
+    /// [`BudgetError::InvalidPlan`] when the path's accounting is malformed.
+    pub fn admit_selection_path(
+        &self,
+        path: SelectionPath,
+    ) -> core::result::Result<AdmittedSelectionPath, BudgetError> {
+        let active_unique_params =
+            path.active_unique_params()
+                .map_err(|err| BudgetError::InvalidPlan {
+                    reason: err.to_string(),
+                })?;
+        let limit = self.budget.active_unique_limit;
+        let verdict = if active_unique_params <= limit {
+            BudgetVerdict::Within {
+                active_unique_params,
+                limit,
+            }
+        } else {
+            match self.budget.mode {
+                ComplianceMode::Compliance => {
+                    return Err(BudgetError::Exceeded {
+                        active_unique_params,
+                        limit,
+                        mode: self.budget.mode,
+                    });
+                }
+                ComplianceMode::ResearchNoncompliantTeacher => BudgetVerdict::NoncompliantTeacher {
+                    active_unique_params,
+                    limit,
+                    label: "research_noncompliant_teacher".to_owned(),
+                },
+            }
+        };
+        Ok(AdmittedSelectionPath { path, verdict })
+    }
 }
 
 #[cfg(test)]
@@ -835,8 +1029,7 @@ mod tests {
         let ledger = ParameterLedger::begin(budget, limit * 2).unwrap();
         let decision = SelectionDecision::new(
             vec![ShardId::from_digest(Sha256Digest::of(b"s"))],
-            SelectionProvenance::new("test", crate::SelectionMode::Approximate, Vec::new())
-                .unwrap(),
+            SelectionProvenance::approximate("test", Vec::new()).unwrap(),
         )
         .unwrap();
         let mut plan = DecisionPlan::new(decision);
@@ -874,5 +1067,69 @@ mod tests {
         let parsed: std::collections::BTreeMap<AuxiliaryKind, u64> =
             serde_json::from_str(&text).unwrap();
         assert_eq!(parsed, map);
+    }
+
+    #[test]
+    fn over_budget_selection_path_is_rejected_before_execution() {
+        let limit = 1_000_000_u64;
+        let budget = Budget::new(limit, ComplianceMode::Compliance).unwrap();
+        let ledger = ParameterLedger::begin(budget, limit * 4).unwrap();
+        // The execution alone fits; the selector reads a projection outside it.
+        let execution = vec![
+            ParamUse::once(identity("ffn", 0, limit / 2), limit * 2, StorageTier::Nvme).unwrap(),
+        ];
+        let selector = vec![
+            ParamUse::once(identity("gate-up", 0, limit), limit * 4, StorageTier::Nvme).unwrap(),
+        ];
+        let path = SelectionPath::new(
+            selector,
+            execution,
+            FlopEstimate::default(),
+            FlopEstimate::default(),
+        )
+        .unwrap();
+        assert!(matches!(
+            ledger.admit_selection_path(path.clone()),
+            Err(BudgetError::Exceeded { .. })
+        ));
+        // A selector inside the same union is admitted, and the admitted type
+        // is the only thing execution could accept.
+        let small_path = SelectionPath::new(
+            vec![
+                ParamUse::once(identity("controller", 0, 100), 400, StorageTier::HostRam).unwrap(),
+            ],
+            vec![
+                ParamUse::once(identity("ffn", 0, limit / 2), limit * 2, StorageTier::Nvme)
+                    .unwrap(),
+            ],
+            FlopEstimate::default(),
+            FlopEstimate::default(),
+        )
+        .unwrap();
+        let admitted = ledger.admit_selection_path(small_path).unwrap();
+        assert!(admitted.verdict().is_within());
+        assert_eq!(
+            admitted.path().active_unique_params().unwrap(),
+            limit / 2 + 100
+        );
+    }
+
+    #[test]
+    fn teacher_mode_labels_an_over_budget_selection_path_instead_of_executing_it() {
+        let limit = 1_000_u64;
+        let budget = Budget::new(limit, ComplianceMode::ResearchNoncompliantTeacher).unwrap();
+        let ledger = ParameterLedger::begin(budget, limit * 4).unwrap();
+        let path = SelectionPath::new(
+            vec![ParamUse::once(identity("a", 0, limit), limit * 4, StorageTier::Nvme).unwrap()],
+            vec![ParamUse::once(identity("b", 0, limit), limit * 4, StorageTier::Nvme).unwrap()],
+            FlopEstimate::default(),
+            FlopEstimate::default(),
+        )
+        .unwrap();
+        let admitted = ledger.admit_selection_path(path).unwrap();
+        assert!(matches!(
+            admitted.verdict(),
+            BudgetVerdict::NoncompliantTeacher { .. }
+        ));
     }
 }

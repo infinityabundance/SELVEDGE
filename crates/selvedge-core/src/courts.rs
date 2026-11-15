@@ -15,7 +15,7 @@ use crate::ledger::{
     ParamUse, ParameterLedger, QuantDequantWork, ResolvedPlan, TokenAccounting,
 };
 use crate::residency::StorageTier;
-use crate::selection::{SelectionDecision, SelectionMode, SelectionProvenance};
+use crate::selection::{SelectionDecision, SelectionProvenance};
 use crate::tensor::{ParamIdentity, ParamTensorId};
 
 /// Result of one named verification scenario.
@@ -103,7 +103,7 @@ fn use_once(key: &str, start: u64, end: u64, tier: StorageTier) -> Result<ParamU
 
 fn plan_for(label: &str, uses: Vec<ParamUse>, flops: FlopEstimate) -> Result<DecisionPlan> {
     let shard = ShardId::from_digest(Sha256Digest::of(label.as_bytes()));
-    let provenance = SelectionProvenance::new(label, SelectionMode::Approximate, Vec::new())?;
+    let provenance = SelectionProvenance::approximate(label, Vec::new())?;
     let decision = SelectionDecision::new(vec![shard], provenance)?;
     let mut plan = DecisionPlan::new(decision);
     for use_value in uses {
