@@ -1,0 +1,24 @@
+/work/results/artifacts/train/probe/dbg_x2.py:13: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print('down max',float(bank.down.abs().max()), 'device', bank.down.device)
+down max 0.0 device cuda:0
+experts out max 0.0
+combine max 0.0
+pair_weight min/max 0.9999999403953552 1.0
+Traceback (most recent call last):
+  File "/work/results/artifacts/train/probe/dbg_x2.py", line 23, in <module>
+    print('bank out max',float(bank(x).float().abs().max()))
+                               ^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 255, in forward
+    probs, straight_through, top_index, pair_weight = self.routing(
+                                                      ^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 71, in routing
+    logits = F.linear(flat, router_weight)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: expected mat1 and mat2 to have the same dtype, but got: c10::BFloat16 != float

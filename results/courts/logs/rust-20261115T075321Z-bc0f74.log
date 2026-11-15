@@ -1,0 +1,15 @@
+   Compiling selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/tests/t2_admission.rs:100:36
+    |
+100 |         let config_path = dir.join(format!("{arm}-over.json"));
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&str`, found `String`
+
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/tests/t2_admission.rs:102:36
+    |
+102 |         let record_path = dir.join(format!("{arm}-record.json"));
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&str`, found `String`
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `selvedge-cli` (test "t2_admission") due to 2 previous errors

@@ -1,0 +1,1080 @@
+{
+  "arms": {
+    "D": {
+      "determinism": {
+        "checkpoint_hash_identical": true,
+        "checkpoint_sha256_first": "e51b3284e3acd37740553238b38ecfa1261d8370d0e9ecf47ce0f1c088b017f3",
+        "checkpoint_sha256_second": "e51b3284e3acd37740553238b38ecfa1261d8370d0e9ecf47ce0f1c088b017f3",
+        "loss_trajectories_identical": true,
+        "max_abs_loss_delta": 0.0,
+        "note": "T2 uses a deterministic slot-wise combine; a hash mismatch is a kernel defect, not hardware noise (T2.4)",
+        "steps": 5
+      },
+      "eval": {
+        "checkpoint_step": 50,
+        "determinism": {
+          "identical": true,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 0.33370843529701233,
+                  "ppl": 3.3296399116516113,
+                  "top1": 0.7179487347602844,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 0.5005117654800415,
+                  "ppl": 9.753533363342285,
+                  "top1": 0.472222238779068,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5005117654800415,
+                "ci_low": 0.33370843529701233,
+                "mean": 0.4171101003885269,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 6.541586637496948,
+              "top1": 0.5950854867696762,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 0.6173042356967926,
+                  "ppl": 23.96117401123047,
+                  "top1": 0.4354207366704941,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6173042356967926,
+                "ci_low": 0.6173042356967926,
+                "mean": 0.6173042356967926,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 23.96117401123047,
+              "top1": 0.4354207366704941,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 0.4130192697048187,
+                  "ppl": 8.462668418884277,
+                  "top1": 0.4375,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 0.519457995891571,
+                  "ppl": 11.430756568908691,
+                  "top1": 0.5102040767669678,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.519457995891571,
+                "ci_low": 0.4130192697048187,
+                "mean": 0.4662386327981949,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 9.946712493896484,
+              "top1": 0.4738520383834839,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 0.5457579990228016,
+              "ci_low": 0.4546773135662079,
+              "mean": 0.5002176562945048,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.5545245160659155,
+              "ci_low": 0.4483809918165207,
+              "mean": 0.501452753941218,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 0.33370843529701233,
+                "nll": 1.202864170074463,
+                "positions": 117,
+                "ppl": 3.3296399116516113,
+                "top1": 0.7179487347602844,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 0.5005117654800415,
+                "nll": 2.2776296138763428,
+                "positions": 108,
+                "ppl": 9.753533363342285,
+                "top1": 0.472222238779068,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.5986196398735046,
+                "nll": 2.9876656532287598,
+                "positions": 511,
+                "ppl": 19.839317321777344,
+                "top1": 0.45792561769485474,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6359888315200806,
+                "nll": 3.335165500640869,
+                "positions": 511,
+                "ppl": 28.083030700683594,
+                "top1": 0.4129158556461334,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 0.4130192697048187,
+                "nll": 2.135664463043213,
+                "positions": 48,
+                "ppl": 8.462668418884277,
+                "top1": 0.4375,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 0.519457995891571,
+                "nll": 2.436307668685913,
+                "positions": 49,
+                "ppl": 11.430756568908691,
+                "top1": 0.5102040767669678,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": "    if not numbers:\n        return False\n    if len(numbers) < 2:\n        return True\n    for i in range(len(numbers) - 1):\n        if abs(numbers[i] - numbers[i + 1]) < threshold:\n            return True\n    return False\n\n",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-jwh_wpu0/candidate.py\", line 40, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-jwh_wpu0/candidate.py\", line 33, in check\n    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.95) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # We need to find all the groups of balanced parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can also track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a stack to track the current level of parentheses\n    # We can use a",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-610z8w3l/candidate.py\", line 50, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-610z8w3l/candidate.py\", line 39, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # Find the longest prefix of the string that is a palindrome\n    # and the longest suffix of the string that is a palindrome\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of the two\n    # and the longest common suffix of the two\n    # and the longest common prefix of",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-ui6a17j1/candidate.py\", line 58, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-ui6a17j1/candidate.py\", line 52, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    if n == 0:\n        return []\n    res = []\n    for i in range(n):\n        if i % 2 == 0:\n            res.append(i + 1)\n        else:\n            res.append(i + 2)\n    return res\n",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-0w9v_dut/candidate.py\", line 39, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-0w9v_dut/candidate.py\", line 29, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+              "timeout": false
+            },
+            {
+              "completion": "    words = s.split(',')\n    if not words:\n        return []\n    return words\n",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-la68yisn/candidate.py\", line 31, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-la68yisn/candidate.py\", line 20, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 0
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 8.966345310211182
+      },
+      "resume": {
+        "full_losses": {
+          "26": 1.4665974704548717,
+          "27": 1.4590497289318591,
+          "28": 1.436330744647421,
+          "29": 1.4691533971345052,
+          "30": 1.4147048322483897,
+          "31": 1.4576413597678766,
+          "32": 1.4723200956359506,
+          "33": 1.356105316663161,
+          "34": 1.4813692574389279,
+          "35": 1.4534692629240453,
+          "36": 1.4183877287432551,
+          "37": 1.4905764511786401,
+          "38": 1.4279855489730835,
+          "39": 1.4687717845663428,
+          "40": 1.4261090061627328,
+          "41": 1.4171220012940466,
+          "42": 1.4520886605605483,
+          "43": 1.396102690603584,
+          "44": 1.4004888008348644,
+          "45": 1.4472860484384,
+          "46": 1.4604937289841473,
+          "47": 1.455919267842546,
+          "48": 1.424898342229426,
+          "49": 1.4334307403769344,
+          "50": 1.4805099377408624
+        },
+        "max_abs_loss_delta": 0.0,
+        "mean_abs_loss_delta": 0.0,
+        "note": "T2 continuation must be bitwise identical after a resume; any delta is reported verbatim",
+        "resumed_losses": {
+          "26": 1.4665974704548717,
+          "27": 1.4590497289318591,
+          "28": 1.436330744647421,
+          "29": 1.4691533971345052,
+          "30": 1.4147048322483897,
+          "31": 1.4576413597678766,
+          "32": 1.4723200956359506,
+          "33": 1.356105316663161,
+          "34": 1.4813692574389279,
+          "35": 1.4534692629240453,
+          "36": 1.4183877287432551,
+          "37": 1.4905764511786401,
+          "38": 1.4279855489730835,
+          "39": 1.4687717845663428,
+          "40": 1.4261090061627328,
+          "41": 1.4171220012940466,
+          "42": 1.4520886605605483,
+          "43": 1.396102690603584,
+          "44": 1.4004888008348644,
+          "45": 1.4472860484384,
+          "46": 1.4604937289841473,
+          "47": 1.455919267842546,
+          "48": 1.424898342229426,
+          "49": 1.4334307403769344,
+          "50": 1.4805099377408624
+        },
+        "steps_compared": 25
+      },
+      "train": {
+        "admitted_active_unique": 772210688,
+        "arm": "D",
+        "extra_ledger": {
+          "bank_layers": 0,
+          "dense_adapter_layers": 28,
+          "memory_layers": 0,
+          "roles": {
+            "dense_adapter": 176160768,
+            "memory_gate": 0,
+            "memory_index": 0,
+            "memory_projection": 0,
+            "memory_values": 0,
+            "router": 0,
+            "specialist_down": 0,
+            "specialist_gate": 0,
+            "specialist_up": 0
+          },
+          "total": 176160768
+        },
+        "finished_utc": "2026-11-15T09:40:23Z",
+        "log": "results/artifacts/train/smoke-t2/D/train.jsonl",
+        "profile": "t2",
+        "router_phase": null,
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 50,
+        "tokens": 3276800,
+        "tokens_per_second": 7943.102143156186,
+        "total_accessible": 772210688,
+        "train_seconds": 412.53403782844543,
+        "trainable_elements": 176160768,
+        "vram_peak_gib": 5.452732086181641,
+        "wall_seconds": 423.49871253967285,
+        "warmup_steps": 10
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 28,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "D",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    },
+    "M": {
+      "determinism": {
+        "checkpoint_hash_identical": true,
+        "checkpoint_sha256_first": "43ae884fff4ffcca7433ebebad777b144c304052f5c13dcf2a1742c30f6aebc4",
+        "checkpoint_sha256_second": "43ae884fff4ffcca7433ebebad777b144c304052f5c13dcf2a1742c30f6aebc4",
+        "loss_trajectories_identical": true,
+        "max_abs_loss_delta": 0.0,
+        "note": "T2 uses a deterministic slot-wise combine; a hash mismatch is a kernel defect, not hardware noise (T2.4)",
+        "steps": 5
+      },
+      "eval": {
+        "checkpoint_step": 50,
+        "determinism": {
+          "identical": true,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 0.3871529996395111,
+                  "ppl": 3.456233501434326,
+                  "top1": 0.7179487347602844,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 0.6604009866714478,
+                  "ppl": 11.466897010803223,
+                  "top1": 0.48148149251937866,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6604009866714478,
+                "ci_low": 0.3871529996395111,
+                "mean": 0.5237769931554794,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 7.461565256118774,
+              "top1": 0.5997151136398315,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 0.7207952737808228,
+                  "ppl": 26.187922477722168,
+                  "top1": 0.4168297350406647,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 0.7207952737808228,
+                "ci_low": 0.7207952737808228,
+                "mean": 0.7207952737808228,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 26.187922477722168,
+              "top1": 0.4168297350406647,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 0.6365411281585693,
+                  "ppl": 12.968043327331543,
+                  "top1": 0.4583333432674408,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 0.626281201839447,
+                  "ppl": 12.652660369873047,
+                  "top1": 0.4693877398967743,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6365411281585693,
+                "ci_low": 0.626281201839447,
+                "mean": 0.6314111649990082,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 12.810351848602295,
+              "top1": 0.46386054158210754,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 0.6725791295369467,
+              "ci_low": 0.5780764917532604,
+              "mean": 0.6253278106451035,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.5347220698992412,
+              "ci_low": 0.45221485694249475,
+              "mean": 0.4934684634208679,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 0.3871529996395111,
+                "nll": 1.240179419517517,
+                "positions": 117,
+                "ppl": 3.456233501434326,
+                "top1": 0.7179487347602844,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 0.6604009866714478,
+                "nll": 2.4394643306732178,
+                "positions": 108,
+                "ppl": 11.466897010803223,
+                "top1": 0.48148149251937866,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6776790618896484,
+                "nll": 3.0191690921783447,
+                "positions": 511,
+                "ppl": 20.474271774291992,
+                "top1": 0.43248531222343445,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.7639114856719971,
+                "nll": 3.4626553058624268,
+                "positions": 511,
+                "ppl": 31.901573181152344,
+                "top1": 0.4011741578578949,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 0.6365411281585693,
+                "nll": 2.562488079071045,
+                "positions": 48,
+                "ppl": 12.968043327331543,
+                "top1": 0.4583333432674408,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 0.626281201839447,
+                "nll": 2.537867546081543,
+                "positions": 49,
+                "ppl": 12.652660369873047,
+                "top1": 0.4693877398967743,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": "    if not numbers:\n        return False\n    if threshold <= 0:\n        return False\n    if numbers[0] == numbers[1]:\n        return False\n    for i in range(1, len(numbers)):\n        if abs(numbers[i] - numbers[i-1]) < threshold:\n            return True\n    return False\n",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-oiuclb7v/candidate.py\", line 41, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-oiuclb7v/candidate.py\", line 34, in check\n    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.95) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    result = []\n    i = 0\n    n = len(paren_string)\n    while i < n:\n        if paren_string[i] == '(':\n            j = i\n            while j < n and paren_string[j] == '(':\n                j += 1\n            result.append(paren_string[i:j])\n            i = j\n        else:\n            i += 1\n    return result\n",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-3gtlig_m/candidate.py\", line 46, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-3gtlig_m/candidate.py\", line 35, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # Find the longest prefix of the input string that is a palindrome\n    # and is not empty\n    prefix = ''\n    for i in range(len(string)):\n        if is_palindrome(string[:i+1]):\n            prefix = string[:i+1]\n            break\n    # Find the longest suffix of the input string that is a palindrome\n    suffix = ''\n    for i in range(len(string) - 1, 0, -1):\n        if is_palindrome(string[i:]):\n            suffix = string[i:]\n            break\n    # Now, the result is the original string + reverse of the prefix + reverse of the suffix\n    return string + prefix[::-1] + suffix[::-1]\n",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-gcu8kaui/candidate.py\", line 51, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-gcu8kaui/candidate.py\", line 46, in check\n    assert candidate('x') == 'x'\n           ^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    levels = []\n    for i in range(n):\n        if i % 2 == 0:\n            levels.append(i + 1)\n        else:\n            levels.append(i + 1)\n    return levels\n",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-pfkdirqp/candidate.py\", line 37, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-pfkdirqp/candidate.py\", line 27, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+              "timeout": false
+            },
+            {
+              "completion": "    words = s.split(',')\n    words = [word for word in words if word.strip()]\n    return words\n",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-vnoh2yek/candidate.py\", line 30, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-vnoh2yek/candidate.py\", line 19, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 0
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 8.372622013092041
+      },
+      "resume": {
+        "full_losses": {
+          "26": 1.5698862043209374,
+          "27": 1.5549650785978884,
+          "28": 1.5295964835677296,
+          "29": 1.5688260435126722,
+          "30": 1.5100021773250774,
+          "31": 1.556038074893877,
+          "32": 1.5725272889249027,
+          "33": 1.4503520551370457,
+          "34": 1.589916532393545,
+          "35": 1.5613037822768092,
+          "36": 1.5239703804254532,
+          "37": 1.5954426866956055,
+          "38": 1.5354647366330028,
+          "39": 1.568319570273161,
+          "40": 1.5242871027439833,
+          "41": 1.5173735753633082,
+          "42": 1.5541775631718338,
+          "43": 1.5011598020792007,
+          "44": 1.5029130887705833,
+          "45": 1.558357578702271,
+          "46": 1.580919446889311,
+          "47": 1.5756650171242654,
+          "48": 1.524794943165034,
+          "49": 1.5287003240082413,
+          "50": 1.5777408028952777
+        },
+        "max_abs_loss_delta": 0.0,
+        "mean_abs_loss_delta": 0.0,
+        "note": "T2 continuation must be bitwise identical after a resume; any delta is reported verbatim",
+        "resumed_losses": {
+          "26": 1.5698862043209374,
+          "27": 1.5549650785978884,
+          "28": 1.5295964835677296,
+          "29": 1.5688260435126722,
+          "30": 1.5100021773250774,
+          "31": 1.556038074893877,
+          "32": 1.5725272889249027,
+          "33": 1.4503520551370457,
+          "34": 1.589916532393545,
+          "35": 1.5613037822768092,
+          "36": 1.5239703804254532,
+          "37": 1.5954426866956055,
+          "38": 1.5354647366330028,
+          "39": 1.568319570273161,
+          "40": 1.5242871027439833,
+          "41": 1.5173735753633082,
+          "42": 1.5541775631718338,
+          "43": 1.5011598020792007,
+          "44": 1.5029130887705833,
+          "45": 1.558357578702271,
+          "46": 1.580919446889311,
+          "47": 1.5756650171242654,
+          "48": 1.524794943165034,
+          "49": 1.5287003240082413,
+          "50": 1.5777408028952777
+        },
+        "steps_compared": 25
+      },
+      "train": {
+        "admitted_active_unique": 598153216,
+        "arm": "M",
+        "extra_ledger": {
+          "bank_layers": 0,
+          "dense_adapter_layers": 0,
+          "memory_layers": 4,
+          "roles": {
+            "dense_adapter": 0,
+            "memory_gate": 4096,
+            "memory_index": 0,
+            "memory_projection": 2097152,
+            "memory_values": 268435456,
+            "router": 0,
+            "specialist_down": 0,
+            "specialist_gate": 0,
+            "specialist_up": 0
+          },
+          "total": 270536704
+        },
+        "finished_utc": "2026-11-15T09:57:09Z",
+        "log": "results/artifacts/train/smoke-t2/M/train.jsonl",
+        "profile": "t2",
+        "router_phase": null,
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 50,
+        "tokens": 3276800,
+        "tokens_per_second": 9320.231287152295,
+        "total_accessible": 866586624,
+        "train_seconds": 351.5792579650879,
+        "trainable_elements": 270536704,
+        "vram_peak_gib": 4.207472801208496,
+        "wall_seconds": 362.23007893562317,
+        "warmup_steps": 10
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 4,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "M",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    },
+    "X": {
+      "determinism": {
+        "checkpoint_hash_identical": true,
+        "checkpoint_sha256_first": "a8a583925f88552167f39fc831ea82b11ec0fe3026388fcaf646f79a6b930f05",
+        "checkpoint_sha256_second": "a8a583925f88552167f39fc831ea82b11ec0fe3026388fcaf646f79a6b930f05",
+        "loss_trajectories_identical": true,
+        "max_abs_loss_delta": 0.0,
+        "note": "T2 uses a deterministic slot-wise combine; a hash mismatch is a kernel defect, not hardware noise (T2.4)",
+        "steps": 5
+      },
+      "eval": {
+        "checkpoint_step": 50,
+        "determinism": {
+          "identical": true,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 0.3364693522453308,
+                  "ppl": 3.318786382675171,
+                  "top1": 0.7094017267227173,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 0.5002148151397705,
+                  "ppl": 9.866422653198242,
+                  "top1": 0.46296295523643494,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5002148151397705,
+                "ci_low": 0.3364693522453308,
+                "mean": 0.41834208369255066,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 6.5926045179367065,
+              "top1": 0.5861823409795761,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 0.6278271675109863,
+                  "ppl": 24.078421592712402,
+                  "top1": 0.4363992065191269,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6278271675109863,
+                "ci_low": 0.6278271675109863,
+                "mean": 0.6278271675109863,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 24.078421592712402,
+              "top1": 0.4363992065191269,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 0.4185522198677063,
+                  "ppl": 9.042800903320312,
+                  "top1": 0.4375,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 0.5385474562644958,
+                  "ppl": 11.515922546386719,
+                  "top1": 0.5306122303009033,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5385474562644958,
+                "ci_low": 0.4185522198677063,
+                "mean": 0.4785498380661011,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 10.279361724853516,
+              "top1": 0.48405611515045166,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 0.5555298129717509,
+              "ci_low": 0.46094957987467444,
+              "mean": 0.5082396964232127,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.5588043878475825,
+              "ci_low": 0.4456207205851873,
+              "mean": 0.5022125542163849,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 0.3364693522453308,
+                "nll": 1.1995991468429565,
+                "positions": 117,
+                "ppl": 3.318786382675171,
+                "top1": 0.7094017267227173,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 0.5002148151397705,
+                "nll": 2.289137363433838,
+                "positions": 108,
+                "ppl": 9.866422653198242,
+                "top1": 0.46296295523643494,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6087000370025635,
+                "nll": 2.98799204826355,
+                "positions": 511,
+                "ppl": 19.845792770385742,
+                "top1": 0.45792561769485474,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6469542980194092,
+                "nll": 3.343252182006836,
+                "positions": 511,
+                "ppl": 28.311050415039062,
+                "top1": 0.41487279534339905,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 0.4185522198677063,
+                "nll": 2.2019689083099365,
+                "positions": 48,
+                "ppl": 9.042800903320312,
+                "top1": 0.4375,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 0.5385474562644958,
+                "nll": 2.443730592727661,
+                "positions": 49,
+                "ppl": 11.515922546386719,
+                "top1": 0.5306122303009033,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": "    if not numbers:\n        return False\n    if len(numbers) < 2:\n        return False\n    for i in range(len(numbers) - 1):\n        if abs(numbers[i] - numbers[i + 1]) < threshold:\n            return True\n    return False\n\n",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-c65munv6/candidate.py\", line 40, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-c65munv6/candidate.py\", line 33, in check\n    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.95) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    result = []\n    i = 0\n    while i < len(paren_string):\n        if paren_string[i] == '(':\n            # Found a new group\n            result.append(paren_string[i])\n            i += 1\n        elif paren_string[i] == ')':\n            # Found a closing bracket\n            if i == len(paren_string) - 1:\n                # No more characters to the right\n                break\n            # Check if the previous character is a matching open bracket\n            if paren_string[i - 1] == '(':\n                # The previous character is a matching open bracket\n                # So we can close the current group\n                result.append(paren_string[i])\n                i += 1\n            else:\n                # The previous character is not a matching open bracket\n                # So we can't close the current group\n                i += 1\n        else:\n            # Not a bracket, skip\n            i += 1\n    return result\n\n",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-bfhc0bzs/candidate.py\", line 60, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-bfhc0bzs/candidate.py\", line 49, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # Find the longest prefix of the string that is a palindrome.\n    # Then, the rest of the string is the suffix.\n    # So, the palindrome is the prefix + suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-rvt4z3_m/candidate.py\", line 53, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-rvt4z3_m/candidate.py\", line 47, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    if n == 0:\n        return []\n    res = []\n    for i in range(n):\n        if i % 2 == 0:\n            res.append(i + 1)\n        else:\n            res.append(i + 2)\n    return res\n",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-qevmf__1/candidate.py\", line 39, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-qevmf__1/candidate.py\", line 29, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+              "timeout": false
+            },
+            {
+              "completion": "    words = s.split(',')\n    if not words:\n        return []\n    return words\n",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-l92cq15t/candidate.py\", line 31, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-l92cq15t/candidate.py\", line 20, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 0
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 11.595644474029541
+      },
+      "resume": {
+        "full_losses": {
+          "26": 1.7631477573886514,
+          "27": 1.755399912595749,
+          "28": 1.7320717100519687,
+          "29": 1.7632624653633684,
+          "30": 1.7119040745310485,
+          "31": 1.751286313869059,
+          "32": 1.764219097327441,
+          "33": 1.654657120583579,
+          "34": 1.7728005633689463,
+          "35": 1.743892380502075,
+          "36": 1.7103569167666137,
+          "37": 1.7812013984657824,
+          "38": 1.7189566446468234,
+          "39": 1.758438610471785,
+          "40": 1.7180149303749204,
+          "41": 1.7070180242881179,
+          "42": 1.7417917139828205,
+          "43": 1.684771880041808,
+          "44": 1.6891722078435123,
+          "45": 1.7364270207472146,
+          "46": 1.7472901670262218,
+          "47": 1.7429549591615796,
+          "48": 1.7145539526827633,
+          "49": 1.7288435362279415,
+          "50": 1.7691437280736864
+        },
+        "max_abs_loss_delta": 0.0,
+        "mean_abs_loss_delta": 0.0,
+        "note": "T2 continuation must be bitwise identical after a resume; any delta is reported verbatim",
+        "resumed_losses": {
+          "26": 1.7631477573886514,
+          "27": 1.755399912595749,
+          "28": 1.7320717100519687,
+          "29": 1.7632624653633684,
+          "30": 1.7119040745310485,
+          "31": 1.751286313869059,
+          "32": 1.764219097327441,
+          "33": 1.654657120583579,
+          "34": 1.7728005633689463,
+          "35": 1.743892380502075,
+          "36": 1.7103569167666137,
+          "37": 1.7812013984657824,
+          "38": 1.7189566446468234,
+          "39": 1.758438610471785,
+          "40": 1.7180149303749204,
+          "41": 1.7070180242881179,
+          "42": 1.7417917139828205,
+          "43": 1.684771880041808,
+          "44": 1.6891722078435123,
+          "45": 1.7364270207472146,
+          "46": 1.7472901670262218,
+          "47": 1.7429549591615796,
+          "48": 1.7145539526827633,
+          "49": 1.7288435362279415,
+          "50": 1.7691437280736864
+        },
+        "steps_compared": 25
+      },
+      "train": {
+        "admitted_active_unique": 772440064,
+        "arm": "X",
+        "extra_ledger": {
+          "bank_layers": 28,
+          "dense_adapter_layers": 0,
+          "memory_layers": 0,
+          "roles": {
+            "dense_adapter": 0,
+            "memory_gate": 0,
+            "memory_index": 0,
+            "memory_projection": 0,
+            "memory_values": 0,
+            "router": 229376,
+            "specialist_down": 117440512,
+            "specialist_gate": 117440512,
+            "specialist_up": 117440512
+          },
+          "total": 352550912
+        },
+        "finished_utc": "2026-11-15T10:17:02Z",
+        "log": "results/artifacts/train/smoke-t2/X/train.jsonl",
+        "profile": "t2",
+        "router_phase": null,
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 50,
+        "tokens": 3276800,
+        "tokens_per_second": 5034.916308603965,
+        "total_accessible": 948600832,
+        "train_seconds": 650.815187215805,
+        "trainable_elements": 352550912,
+        "vram_peak_gib": 8.817173480987549,
+        "wall_seconds": 740.2016372680664,
+        "warmup_steps": 10
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 28,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "X",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    }
+  },
+  "calibration_windows": 2,
+  "command": "oracle/train/smoke.py --profile t2 --arms D,M,X --steps 50 --determinism-steps 5 --resume-split 25 --warmup-steps 10 --calibration-windows 2 --router-steps 10 --load-balance --deterministic --grad-checkpoint-arms ",
+  "determinism_steps": 5,
+  "finished_utc": "2026-11-15T10:33:25Z",
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "grad_checkpoint": false,
+  "profile": "t2",
+  "revision": "7561a94cc2f12c3c5f05ce38af70933c4fa15d9f",
+  "schema": "selvedge/train-smoke/v1",
+  "stamp": "20261115T103325Z",
+  "steps": 50,
+  "tokens_per_step": 65536,
+  "torch": "2.15.0+cu132",
+  "warmup_steps": 10
+}

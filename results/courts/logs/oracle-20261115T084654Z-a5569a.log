@@ -1,0 +1,165 @@
+smoke: arm D training 5 steps
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/5 loss=1.4752 tok/s=7900 vram=5.46GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:47:47Z",
+  "log": "results/artifacts/train/smoke-t2/D/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 7954.159746845132,
+  "total_accessible": 772210688,
+  "train_seconds": 41.19605469703674,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 44.25335383415222,
+  "warmup_steps": 0
+}
+train: step 1/5 loss=1.4752 tok/s=8000 vram=5.46GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:48:50Z",
+  "log": "results/artifacts/train/smoke-t2/D-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 8019.565266699606,
+  "total_accessible": 772210688,
+  "train_seconds": 40.86007022857666,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 62.307724475860596,
+  "warmup_steps": 0
+}
+train: step 1/5 loss=1.4752 tok/s=8013 vram=6.78GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:49:35Z",
+  "log": "results/artifacts/train/smoke-t2/D-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 8022.917551629989,
+  "total_accessible": 772210688,
+  "train_seconds": 40.842997312545776,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 43.48174452781677,
+  "warmup_steps": 0
+}
+train: step 1/3 loss=1.4752 tok/s=8015 vram=6.78GiB
+Traceback (most recent call last):
+  File "/work/oracle/train/smoke.py", line 313, in <module>
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:50:10Z",
+  "log": "results/artifacts/train/smoke-t2/D-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 3,
+  "tokens": 196608,
+  "tokens_per_second": 8021.464592926929,
+  "total_accessible": 772210688,
+  "train_seconds": 24.510237216949463,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 32.635430335998535,
+  "warmup_steps": 0
+}
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/smoke.py", line 245, in main
+    run_loop(arm, config, admission, resume_out, args.steps, checkpoint, False,
+  File "/work/oracle/train/smoke.py", line 96, in run_loop
+    loop.main(argv)
+  File "/work/oracle/train/loop.py", line 387, in main
+    state = load_checkpoint(args.resume, device)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/loop.py", line 197, in load_checkpoint
+    sidecar = json.load(open(path + ".sha256", encoding="utf-8"))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/artifacts/train/smoke-t2/D-resume/step-000003.pt.sha256'

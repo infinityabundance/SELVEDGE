@@ -1,0 +1,7 @@
+inline allp -1.4449406862258911
+module entropy 175676.265625 ptail 0.055034004151821136
+Traceback (most recent call last):
+  File "/work/results/artifacts/train/probe/dbg_instr2.py", line 26, in <module>
+    print('implied H', float((-a/got['p_tail']+got['p_tail'].log()).mean()))
+                              ~~^~~~~~~~~~~~~~
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!

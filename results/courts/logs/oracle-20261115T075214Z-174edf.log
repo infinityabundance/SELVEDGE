@@ -1,0 +1,116 @@
+.F.F..F......F.                                                          [100%]
+=================================== FAILURES ===================================
+__________________________ test_hash_index_is_causal ___________________________
+
+    def test_hash_index_is_causal():
+        tokens = _tokens()
+        order = 3
+        base = memory.ngram_index(tokens, layer=10, order=order, rows=ROWS)
+        changed = tokens.clone()
+        changed[0, 5] = (changed[0, 5] + 1) % 100_000
+        other = memory.ngram_index(changed, layer=10, order=order, rows=ROWS)
+        # Position t depends on tokens[t-order+1 .. t] only.
+        assert torch.equal(base[0, :6 - order + 1], other[0, :6 - order + 1])
+>       assert not torch.equal(base[0, 5], other[0, 5])
+E       assert not True
+E        +  where True = <built-in method equal of type object at 0x7fcab4f572e0>(tensor(192383), tensor(192383))
+E        +    where <built-in method equal of type object at 0x7fcab4f572e0> = torch.equal
+
+oracle/tests/test_t2_capacity.py:61: AssertionError
+______________ test_memory_active_accounting_matches_the_contract ______________
+
+    def test_memory_active_accounting_matches_the_contract():
+        geometry = memory.MemoryGeometry()
+        report = geometry.active_report(insertions=4)
+        assert report["value_elements_per_layer"] == 512
+        assert report["projection_elements_per_layer"] == 524_288
+        assert report["gate_elements_per_layer"] == 1_024
+        assert report["index_elements_per_layer"] == 0
+        assert report["active_per_layer"] == 525_824
+        assert report["active_total"] == 2_103_296
+        assert report["table_elements_per_layer"] == 67_108_864
+        assert report["table_elements_total"] == 268_435_456
+>       assert report["total_accessible_added"] == 270_536_704
+E       assert 270538752 == 270536704
+
+oracle/tests/test_t2_capacity.py:94: AssertionError
+______ test_memory_is_exactly_zero_at_init_and_cold_starts_the_projection ______
+
+    def test_memory_is_exactly_zero_at_init_and_cold_starts_the_projection():
+        module = _memory_module()
+        context = memory.TokenContext()
+        module.context = context
+        hidden = torch.randn(1, 4, 1024)
+        context.set(torch.randint(1, 1000, (1, 4), dtype=torch.int64))
+        output = module(hidden)
+        assert torch.equal(output, torch.zeros_like(output))
+        output.pow(2).sum().backward()
+        assert module.proj.weight.grad is not None
+>       assert float(module.proj.weight.grad.abs().sum()) > 0
+E       assert 0.0 > 0
+E        +  where 0.0 = float(tensor(0.))
+E        +    where tensor(0.) = <built-in method sum of Tensor object at 0x7fca54422940>()
+E        +      where <built-in method sum of Tensor object at 0x7fca54422940> = tensor([[0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]...       [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]]).sum
+E        +        where tensor([[0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]...       [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]]) = <built-in method abs of Tensor object at 0x7fca54422760>()
+E        +          where <built-in method abs of Tensor object at 0x7fca54422760> = tensor([[0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]...       [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]]).abs
+E        +            where tensor([[0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]...       [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]]) = Parameter containing:\ntensor([[0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0.,... ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]], requires_grad=True).grad
+E        +              where Parameter containing:\ntensor([[0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0.,... ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.],\n        [0., 0., 0.,  ..., 0., 0., 0.]], requires_grad=True) = Linear(in_features=512, out_features=1024, bias=False).weight
+E        +                where Linear(in_features=512, out_features=1024, bias=False) = HashedMemory(\n  (proj): Linear(in_features=512, out_features=1024, bias=False)\n  (gate): Linear(in_features=1024, out_features=1, bias=False)\n).proj
+
+oracle/tests/test_t2_capacity.py:138: AssertionError
+_______________ test_t2_arm_ledger_matches_the_admission_config ________________
+
+    def test_t2_arm_ledger_matches_the_admission_config():
+        """The real modules' element counts equal the declared slices."""
+        hidden, layers, width, experts, k = 1024, 28, 512, 8, 4
+        router = modeling._router(hidden, experts, seed=1)
+        bank = modeling.SpecialistBank(hidden, width, experts, k, router)
+        assert bank.gate.numel() == experts * width * hidden
+        assert bank.up.numel() == experts * width * hidden
+        assert bank.down.numel() == experts * hidden * width
+        assert (bank.gate.numel() + bank.up.numel() + bank.down.numel()
+                == experts * 3 * width * hidden)
+        assert router.weight.numel() == hidden * experts
+    
+        context = memory.TokenContext()
+        module = memory.HashedMemory(hidden, 3, context)
+        assert module.table.numel() == ROWS * 256
+        assert module.proj.weight.numel() == 512 * hidden
+        assert module.gate.weight.numel() == hidden
+    
+        for name in ("X", "H", "H*"):
+            config = arms.build_config(arms.T2_ARMS[name])
+            per_layer = 3 * width * hidden
+            slots = [use for use in config["execution_uses"]
+                     if ".specialists." in use["identity"]["tensor"]]
+            assert sum(use["identity"]["elements"]["end"]
+                       - use["identity"]["elements"]["start"] for use in slots) == \
+                layers * k * per_layer, name
+>           assert sum(use["elements"] for use in config["selector_uses"]) == \
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                layers * hidden * experts, name
+
+oracle/tests/test_t2_capacity.py:261: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7fca55995a50>
+
+>   assert sum(use["elements"] for use in config["selector_uses"]) == \
+               ^^^^^^^^^^^^^^^
+        layers * hidden * experts, name
+E   KeyError: 'elements'
+
+oracle/tests/test_t2_capacity.py:261: KeyError
+=============================== warnings summary ===============================
+oracle/tests/test_t2_capacity.py::test_load_balance_is_finite_and_non_negative
+  /work/oracle/tests/test_t2_capacity.py:219: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert value is not None and torch.isfinite(value) and float(value) >= 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t2_capacity.py::test_hash_index_is_causal - assert n...
+FAILED oracle/tests/test_t2_capacity.py::test_memory_active_accounting_matches_the_contract
+FAILED oracle/tests/test_t2_capacity.py::test_memory_is_exactly_zero_at_init_and_cold_starts_the_projection
+FAILED oracle/tests/test_t2_capacity.py::test_t2_arm_ledger_matches_the_admission_config
+4 failed, 11 passed, 1 warning in 2.62s

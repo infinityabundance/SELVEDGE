@@ -1,0 +1,220 @@
+smoke: arm H training 50 steps
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/50 loss=1.9298 tok/s=4722 vram=10.22GiB
+train: step 10/50 loss=1.8042 tok/s=4702 vram=10.85GiB
+train: step 20/50 loss=1.7881 tok/s=4796 vram=10.85GiB
+train: step 30/50 loss=1.7121 tok/s=4787 vram=10.86GiB
+train: step 40/50 loss=1.7180 tok/s=4777 vram=10.86GiB
+train: step 50/50 loss=1.7694 tok/s=4798 vram=10.86GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T10:48:45Z",
+  "log": "results/artifacts/train/smoke-t2/H/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 50,
+  "tokens": 3276800,
+  "tokens_per_second": 4781.277669872283,
+  "total_accessible": 1219137536,
+  "train_seconds": 685.3398246765137,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.857304096221924,
+  "wall_seconds": 904.1845157146454,
+  "warmup_steps": 10
+}
+train: step 1/5 loss=1.9298 tok/s=4789 vram=10.22GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T10:50:40Z",
+  "log": "results/artifacts/train/smoke-t2/H-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 4787.362038201747,
+  "total_accessible": 1219137536,
+  "train_seconds": 68.44688105583191,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.856292247772217,
+  "wall_seconds": 112.13496541976929,
+  "warmup_steps": 10
+}
+train: step 1/5 loss=1.9298 tok/s=4797 vram=10.86GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T10:52:36Z",
+  "log": "results/artifacts/train/smoke-t2/H-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 4786.362625199475,
+  "total_accessible": 1219137536,
+  "train_seconds": 68.46117305755615,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.856292247772217,
+  "wall_seconds": 111.50977325439453,
+  "warmup_steps": 10
+}
+train: step 1/25 loss=1.9298 tok/s=4751 vram=10.86GiB
+train: step 10/25 loss=1.8042 tok/s=4784 vram=10.86GiB
+train: step 20/25 loss=1.7881 tok/s=4752 vram=10.86GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:00:18Z",
+  "log": "results/artifacts/train/smoke-t2/H-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 25,
+  "tokens": 1638400,
+  "tokens_per_second": 4782.087731757023,
+  "total_accessible": 1219137536,
+  "train_seconds": 342.6118657588959,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.859172344207764,
+  "wall_seconds": 458.11666345596313,
+  "warmup_steps": 10
+}
+train: resumed from results/artifacts/train/smoke-t2/H-resume/step-000025.pt at step 25
+train: step 30/50 loss=1.7121 tok/s=4774 vram=12.69GiB
+train: step 40/50 loss=1.7180 tok/s=4717 vram=12.69GiB
+train: step 50/50 loss=1.7694 tok/s=4773 vram=12.69GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:09:03Z",
+  "log": "results/artifacts/train/smoke-t2/H-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 50,
+  "tokens": 3276800,
+  "tokens_per_second": 4748.5743339384335,
+  "total_accessible": 1219137536,
+  "train_seconds": 345.0298731327057,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 12.687121868133545,
+  "wall_seconds": 516.9862849712372,
+  "warmup_steps": 10
+}
+Traceback (most recent call last):
+  File "/work/oracle/train/smoke.py", line 319, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/smoke.py", line 272, in main
+    eval_result = evaluate_checkpoint(arm, config, admission, final,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/smoke.py", line 130, in evaluate_checkpoint
+    result = harness.smoke(arm_model.model, teacher, tokenizer,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/harness.py", line 310, in smoke
+    "distributional": distributional(student, teacher, subset, device),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/harness.py", line 101, in distributional
+    stats = window_stats(student, teacher, item["tokens"], device)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 158, in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/harness.py", line 84, in window_stats
+    kl = (p_t * (logp_t - logp_s)).sum(dim=-1)
+          ~~~~^~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 298.00 MiB. GPU 0 has a total capacity of 15.61 GiB of which 343.88 MiB is free. Including non-PyTorch memory, this process has 13.97 GiB memory in use. Of the allocated memory 13.34 GiB is allocated by PyTorch, and 288.16 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)

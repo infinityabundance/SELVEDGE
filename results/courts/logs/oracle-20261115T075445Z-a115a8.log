@@ -1,0 +1,51 @@
+...............F                                                         [100%]
+=================================== FAILURES ===================================
+______ test_instrument_targets_match_a_float64_full_vocabulary_reference _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc35e8cb9e0>
+
+    def test_instrument_targets_match_a_float64_full_vocabulary_reference(monkeypatch):
+        import instrument_check
+    
+        monkeypatch.setattr(instrument_check, "CHUNK", 7)  # exercise chunk boundaries
+        torch.manual_seed(23)
+        positions, vocab, top_k = 6, 96, 16
+        teacher = torch.randn(positions, vocab)
+        student = torch.randn(positions, vocab)
+        got = instrument_check.window_targets(student, teacher)
+    
+        teacher64 = teacher.double()
+        student64 = student.double()
+        log_p_t = torch.log_softmax(teacher64, dim=-1)
+        log_p_s = torch.log_softmax(student64, dim=-1)
+        p_t = log_p_t.exp()
+        values, ids = torch.topk(teacher64, top_k, dim=-1)
+        support = torch.zeros_like(p_t, dtype=torch.bool)
+        support.scatter_(1, ids, True)
+        tail_mask = ~support
+        p_tail = (p_t * tail_mask).sum(-1)
+        q_support = log_p_s.exp().gather(1, ids).sum(-1)
+        q_tail = 1.0 - q_support
+        compact = -(p_t.gather(1, ids) * log_p_s.gather(1, ids)).sum(-1) \
+            - p_tail * q_tail.log()
+        full = -(p_t * log_p_s).sum(-1)
+        r = (p_t * tail_mask) / p_tail.unsqueeze(-1)
+        s = (log_p_s.exp() * tail_mask) / q_tail.unsqueeze(-1)
+        entropy = -(r * r.clamp_min(1e-300).log()).sum(-1)
+        kl = (r * (r.clamp_min(1e-300).log()
+                   - s.clamp_min(1e-300).log())).sum(-1)
+        assert torch.allclose(got["compact"].double(), compact, atol=1e-9)
+        assert torch.allclose(got["full"].double(), full, atol=1e-9)
+        assert torch.allclose(got["bias"].double(), compact - full, atol=1e-9)
+        assert torch.allclose(got["bias"].double(), -p_tail * (entropy + kl), atol=1e-7)
+>       assert torch.allclose(got["tail_entropy"].double(), entropy, atol=1e-7)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7fc3bed572e0>(tensor([4.8597, 4.3423, 4.7290, 4.9979, 5.2684, 4.9378], dtype=torch.float64), tensor([4.1472, 4.1637, 4.0925, 4.1979, 4.1913, 4.1949], dtype=torch.float64), atol=1e-07)
+E        +    where <built-in method allclose of type object at 0x7fc3bed572e0> = torch.allclose
+E        +    and   tensor([4.8597, 4.3423, 4.7290, 4.9979, 5.2684, 4.9378], dtype=torch.float64) = <built-in method double of Tensor object at 0x7fc35e222d50>()
+E        +      where <built-in method double of Tensor object at 0x7fc35e222d50> = tensor([4.8597, 4.3423, 4.7290, 4.9979, 5.2684, 4.9378]).double
+
+oracle/tests/test_t2_capacity.py:326: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t2_capacity.py::test_instrument_targets_match_a_float64_full_vocabulary_reference
+1 failed, 15 passed in 2.69s

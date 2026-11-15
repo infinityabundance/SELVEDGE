@@ -1,0 +1,189 @@
+smoke: arm D training 5 steps
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/5 loss=1.4752 tok/s=7902 vram=5.46GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:51:20Z",
+  "log": "results/artifacts/train/smoke-t2/D/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 7976.613016571168,
+  "total_accessible": 772210688,
+  "train_seconds": 41.080092430114746,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 44.14610838890076,
+  "warmup_steps": 0
+}
+train: step 1/5 loss=1.4752 tok/s=8009 vram=5.46GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:52:05Z",
+  "log": "results/artifacts/train/smoke-t2/D-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 8023.926748977579,
+  "total_accessible": 772210688,
+  "train_seconds": 40.837860345840454,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 43.5584659576416,
+  "warmup_steps": 0
+}
+train: step 1/5 loss=1.4752 tok/s=8009 vram=6.78GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:52:52Z",
+  "log": "results/artifacts/train/smoke-t2/D-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 8021.047652628425,
+  "total_accessible": 772210688,
+  "train_seconds": 40.852518796920776,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 43.9787802696228,
+  "warmup_steps": 0
+}
+train: step 1/2 loss=1.4752 tok/s=8011 vram=6.78GiB
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:53:16Z",
+  "log": "results/artifacts/train/smoke-t2/D-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 2,
+  "tokens": 131072,
+  "tokens_per_second": 8018.99879301305,
+  "total_accessible": 772210688,
+  "train_seconds": 16.34518265724182,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 6.775661468505859,
+  "wall_seconds": 21.590115308761597,
+  "warmup_steps": 0
+}
+train: resumed from results/artifacts/train/smoke-t2/D-resume/step-000002.pt at step 2
+{
+  "admitted_active_unique": 772210688,
+  "arm": "D",
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 28,
+    "memory_layers": 0,
+    "roles": {
+      "dense_adapter": 176160768,
+      "memory_gate": 0,
+      "memory_index": 0,
+      "memory_projection": 0,
+      "memory_values": 0,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 176160768
+  },
+  "finished_utc": "2026-11-15T08:53:48Z",
+  "log": "results/artifacts/train/smoke-t2/D-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 8016.478398423274,
+  "total_accessible": 772210688,
+  "train_seconds": 24.525482416152954,
+  "trainable_elements": 176160768,
+  "vram_peak_gib": 7.43243932723999,
+  "wall_seconds": 29.53570556640625,
+  "warmup_steps": 0
+}
+smoke: arm D tok/s=7977 vram=6.78GiB zero_point=True resume_delta=0.000e+00 deterministic=True
+smoke: receipt=results/train/smoke-20261115T085348Z.json

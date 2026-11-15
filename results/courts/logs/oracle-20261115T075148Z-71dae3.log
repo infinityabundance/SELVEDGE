@@ -1,0 +1,207 @@
+FFFF..F......F.                                                          [100%]
+=================================== FAILURES ===================================
+____________ test_hash_index_is_deterministic_and_seed_independent _____________
+
+    def test_hash_index_is_deterministic_and_seed_independent():
+        tokens = _tokens()
+>       first = memory.ngram_index(tokens, layer=3, order=2, rows=ROWS)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_t2_capacity.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = tensor([[44893, 23657, 59219, 88986, 72113, 77362, 90360, 41847, 74993, 17991,
+         45287, 27965]])
+layer = 3, order = 2, rows = 262144
+
+    def ngram_index(tokens: torch.Tensor, layer: int, order: int, rows: int) -> torch.Tensor:
+        """Address of the `order`-gram ending at each position.
+    
+        `tokens` is `[B, T]` int64. Returns `[B, T]` int64 in `[0, rows)`.
+        Position `t` is addressed by `tokens[0..t]` only, so the index is causal.
+        Positions with an incomplete n-gram are left-padded with token id 0.
+        """
+        if tokens.dim() != 2:
+            raise ValueError(f"tokens must be [B, T], got {tuple(tokens.shape)}")
+        if order < 1:
+            raise ValueError("order must be >= 1")
+        rows = int(rows)
+        if rows <= 0 or rows & (rows - 1):
+            raise ValueError("rows must be a positive power of two")
+        tokens = tokens.to(torch.int64)
+        batch, length = tokens.shape
+        padded = F.pad(tokens, (order - 1, 0), value=0)
+>       key = torch.full((batch, length), salt(layer, order), dtype=torch.int64,
+                         device=tokens.device)
+E       RuntimeError: value cannot be converted to type int64_t without overflow
+
+oracle/train/memory.py:68: RuntimeError
+__________________________ test_hash_index_is_causal ___________________________
+
+    def test_hash_index_is_causal():
+        tokens = _tokens()
+        order = 3
+>       base = memory.ngram_index(tokens, layer=10, order=order, rows=ROWS)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_t2_capacity.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = tensor([[44893, 23657, 59219, 88986, 72113, 77362, 90360, 41847, 74993, 17991,
+         45287, 27965]])
+layer = 10, order = 3, rows = 262144
+
+    def ngram_index(tokens: torch.Tensor, layer: int, order: int, rows: int) -> torch.Tensor:
+        """Address of the `order`-gram ending at each position.
+    
+        `tokens` is `[B, T]` int64. Returns `[B, T]` int64 in `[0, rows)`.
+        Position `t` is addressed by `tokens[0..t]` only, so the index is causal.
+        Positions with an incomplete n-gram are left-padded with token id 0.
+        """
+        if tokens.dim() != 2:
+            raise ValueError(f"tokens must be [B, T], got {tuple(tokens.shape)}")
+        if order < 1:
+            raise ValueError("order must be >= 1")
+        rows = int(rows)
+        if rows <= 0 or rows & (rows - 1):
+            raise ValueError("rows must be a positive power of two")
+        tokens = tokens.to(torch.int64)
+        batch, length = tokens.shape
+        padded = F.pad(tokens, (order - 1, 0), value=0)
+>       key = torch.full((batch, length), salt(layer, order), dtype=torch.int64,
+                         device=tokens.device)
+E       RuntimeError: value cannot be converted to type int64_t without overflow
+
+oracle/train/memory.py:68: RuntimeError
+____________ test_hash_index_is_bounded_and_handles_short_sequences ____________
+
+    def test_hash_index_is_bounded_and_handles_short_sequences():
+        tokens = torch.tensor([[5]], dtype=torch.int64)
+        for order in (2, 3):
+>           index = memory.ngram_index(tokens, layer=3, order=order, rows=ROWS)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_t2_capacity.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = tensor([[5]]), layer = 3, order = 2, rows = 262144
+
+    def ngram_index(tokens: torch.Tensor, layer: int, order: int, rows: int) -> torch.Tensor:
+        """Address of the `order`-gram ending at each position.
+    
+        `tokens` is `[B, T]` int64. Returns `[B, T]` int64 in `[0, rows)`.
+        Position `t` is addressed by `tokens[0..t]` only, so the index is causal.
+        Positions with an incomplete n-gram are left-padded with token id 0.
+        """
+        if tokens.dim() != 2:
+            raise ValueError(f"tokens must be [B, T], got {tuple(tokens.shape)}")
+        if order < 1:
+            raise ValueError("order must be >= 1")
+        rows = int(rows)
+        if rows <= 0 or rows & (rows - 1):
+            raise ValueError("rows must be a positive power of two")
+        tokens = tokens.to(torch.int64)
+        batch, length = tokens.shape
+        padded = F.pad(tokens, (order - 1, 0), value=0)
+>       key = torch.full((batch, length), salt(layer, order), dtype=torch.int64,
+                         device=tokens.device)
+E       RuntimeError: value cannot be converted to type int64_t without overflow
+
+oracle/train/memory.py:68: RuntimeError
+______________ test_memory_active_accounting_matches_the_contract ______________
+
+    def test_memory_active_accounting_matches_the_contract():
+        geometry = memory.MemoryGeometry()
+        report = geometry.active_report(insertions=4)
+        assert report["value_elements_per_layer"] == 512
+        assert report["projection_elements_per_layer"] == 524_288
+        assert report["gate_elements_per_layer"] == 1_024
+        assert report["index_elements_per_layer"] == 0
+        assert report["active_per_layer"] == 525_824
+        assert report["active_total"] == 2_103_296
+        assert report["table_elements_per_layer"] == 67_108_864
+        assert report["table_elements_total"] == 268_435_456
+>       assert report["total_accessible_added"] == 270_536_704
+E       assert 270538752 == 270536704
+
+oracle/tests/test_t2_capacity.py:94: AssertionError
+______ test_memory_is_exactly_zero_at_init_and_cold_starts_the_projection ______
+
+    def test_memory_is_exactly_zero_at_init_and_cold_starts_the_projection():
+        module = _memory_module()
+        context = memory.TokenContext()
+        module.context = context
+        hidden = torch.randn(1, 4, 1024)
+        context.set(torch.randint(1, 1000, (1, 4), dtype=torch.int64))
+>       output = module(hidden)
+                 ^^^^^^^^^^^^^^
+
+oracle/tests/test_t2_capacity.py:134: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/train/memory.py:231: in forward
+    index = self.indices(tokens)
+            ^^^^^^^^^^^^^^^^^^^^
+oracle/train/memory.py:225: in indices
+    return torch.stack([ngram_index(tokens, self.layer, order, self.rows)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = tensor([[858, 415, 446, 129]]), layer = 3, order = 2, rows = 262144
+
+    def ngram_index(tokens: torch.Tensor, layer: int, order: int, rows: int) -> torch.Tensor:
+        """Address of the `order`-gram ending at each position.
+    
+        `tokens` is `[B, T]` int64. Returns `[B, T]` int64 in `[0, rows)`.
+        Position `t` is addressed by `tokens[0..t]` only, so the index is causal.
+        Positions with an incomplete n-gram are left-padded with token id 0.
+        """
+        if tokens.dim() != 2:
+            raise ValueError(f"tokens must be [B, T], got {tuple(tokens.shape)}")
+        if order < 1:
+            raise ValueError("order must be >= 1")
+        rows = int(rows)
+        if rows <= 0 or rows & (rows - 1):
+            raise ValueError("rows must be a positive power of two")
+        tokens = tokens.to(torch.int64)
+        batch, length = tokens.shape
+        padded = F.pad(tokens, (order - 1, 0), value=0)
+>       key = torch.full((batch, length), salt(layer, order), dtype=torch.int64,
+                         device=tokens.device)
+E       RuntimeError: value cannot be converted to type int64_t without overflow
+
+oracle/train/memory.py:68: RuntimeError
+_______________ test_t2_arm_ledger_matches_the_admission_config ________________
+
+    def test_t2_arm_ledger_matches_the_admission_config():
+        """The real modules' element counts equal the declared slices."""
+        hidden, layers, width, experts, k = 1024, 28, 512, 8, 4
+        router = modeling._router(hidden, experts, seed=1)
+        bank = modeling.SpecialistBank(hidden, width, experts, k, router)
+>       assert bank.gate.numel() == width * hidden
+E       assert 4194304 == (512 * 1024)
+E        +  where 4194304 = <built-in method numel of Parameter object at 0x7f8d1f44a3f0>()
+E        +    where <built-in method numel of Parameter object at 0x7f8d1f44a3f0> = Parameter containing:\ntensor([[[-2.8940e-02,  1.9686e-02, -1.9000e-02,  ...,  1.9700e-02,\n          -4.9222e-02,  9.06...  [ 4.8930e-03, -1.8476e-02,  2.0850e-03,  ...,  7.9477e-03,\n          -2.8485e-02, -1.1727e-04]]], requires_grad=True).numel
+E        +      where Parameter containing:\ntensor([[[-2.8940e-02,  1.9686e-02, -1.9000e-02,  ...,  1.9700e-02,\n          -4.9222e-02,  9.06...  [ 4.8930e-03, -1.8476e-02,  2.0850e-03,  ...,  7.9477e-03,\n          -2.8485e-02, -1.1727e-04]]], requires_grad=True) = SpecialistBank(\n  (router): Linear(in_features=1024, out_features=8, bias=False)\n).gate
+
+oracle/tests/test_t2_capacity.py:240: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_t2_capacity.py::test_combine_is_bitwise_repeatable
+  /work/oracle/tests/test_t2_capacity.py:162: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(first.abs().sum()) > 0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t2_capacity.py::test_hash_index_is_deterministic_and_seed_independent
+FAILED oracle/tests/test_t2_capacity.py::test_hash_index_is_causal - RuntimeE...
+FAILED oracle/tests/test_t2_capacity.py::test_hash_index_is_bounded_and_handles_short_sequences
+FAILED oracle/tests/test_t2_capacity.py::test_memory_active_accounting_matches_the_contract
+FAILED oracle/tests/test_t2_capacity.py::test_memory_is_exactly_zero_at_init_and_cold_starts_the_projection
+FAILED oracle/tests/test_t2_capacity.py::test_t2_arm_ledger_matches_the_admission_config
+6 failed, 9 passed, 1 warning in 2.49s

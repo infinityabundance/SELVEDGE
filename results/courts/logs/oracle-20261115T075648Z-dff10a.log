@@ -1,0 +1,22 @@
+/work/results/artifacts/train/probe/dbg_x.py:12: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print('down max',float(bank.down.abs().max()))
+AdditiveFFN
+down max 0.0
+Traceback (most recent call last):
+  File "/work/results/artifacts/train/probe/dbg_x.py", line 15, in <module>
+    out=bank(x)
+        ^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 255, in forward
+    probs, straight_through, top_index, pair_weight = self.routing(
+                                                      ^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 71, in routing
+    logits = F.linear(flat, router_weight)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Expected all tensors to be on the same device, but got mat2 is on cpu, different from other tensors on cuda:0 (when checking argument in method wrapper_CUDA_mm)

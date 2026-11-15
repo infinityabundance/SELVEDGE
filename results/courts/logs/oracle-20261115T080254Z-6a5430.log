@@ -1,0 +1,15 @@
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/3 loss=1.4752 tok/s=6582 vram=12.72GiB
+router-phase: start allocated=10.40GiB; labelling 28 layers on 1024 tokens (9 passes per layer)
+router-phase: done allocated=10.40GiB
+Traceback (most recent call last):
+  File "/work/oracle/train/loop.py", line 543, in <module>
+    raise SystemExit(main(__import__("sys").argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/loop.py", line 509, in main
+    report = run_router_phase(arm_model, targets, stream, device, args,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/loop.py", line 235, in run_router_phase
+    "labels_manifest": payload["manifest"],
+                       ^^^^^^^
+UnboundLocalError: cannot access local variable 'payload' where it is not associated with a value

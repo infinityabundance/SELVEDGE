@@ -1,0 +1,442 @@
+{
+  "arms": {
+    "H": {
+      "determinism": {
+        "checkpoint_hash_identical": true,
+        "checkpoint_sha256_first": "d0e6e44c5b10da92bca7e774b2554ee9942baca9277e6a0c2967e242ef6d0c0d",
+        "checkpoint_sha256_second": "d0e6e44c5b10da92bca7e774b2554ee9942baca9277e6a0c2967e242ef6d0c0d",
+        "loss_trajectories_identical": true,
+        "max_abs_loss_delta": 0.0,
+        "note": "T2 uses a deterministic slot-wise combine; a hash mismatch is a kernel defect, not hardware noise (T2.4)",
+        "steps": 5
+      },
+      "eval": {
+        "checkpoint_step": 50,
+        "determinism": {
+          "identical": true,
+          "problems": 5
+        },
+        "distributional": {
+          "domains": {
+            "code": {
+              "documents": [
+                {
+                  "doc_id": "HumanEval/0",
+                  "kl": 0.3467352092266083,
+                  "ppl": 3.36955189704895,
+                  "top1": 0.7094017267227173,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "HumanEval/1",
+                  "kl": 0.5205733180046082,
+                  "ppl": 9.97484016418457,
+                  "top1": 0.46296295523643494,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5205733180046082,
+                "ci_low": 0.3467352092266083,
+                "mean": 0.4336542636156082,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 6.67219603061676,
+              "top1": 0.5861823409795761,
+              "window_count": 2
+            },
+            "general": {
+              "documents": [
+                {
+                  "doc_id": "wikitext-article-037",
+                  "kl": 0.6333127915859222,
+                  "ppl": 24.274775505065918,
+                  "top1": 0.4285714328289032,
+                  "windows": 2
+                }
+              ],
+              "kl": {
+                "ci_high": 0.6333127915859222,
+                "ci_low": 0.6333127915859222,
+                "mean": 0.6333127915859222,
+                "n": 1,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 24.274775505065918,
+              "top1": 0.4285714328289032,
+              "window_count": 2
+            },
+            "math": {
+              "documents": [
+                {
+                  "doc_id": "003c846e6133af78",
+                  "kl": 0.41809242963790894,
+                  "ppl": 8.915674209594727,
+                  "top1": 0.4375,
+                  "windows": 1
+                },
+                {
+                  "doc_id": "003ec217148ca947",
+                  "kl": 0.5357459783554077,
+                  "ppl": 11.562453269958496,
+                  "top1": 0.5102040767669678,
+                  "windows": 1
+                }
+              ],
+              "kl": {
+                "ci_high": 0.5357459783554077,
+                "ci_low": 0.41809242963790894,
+                "mean": 0.4769192039966583,
+                "n": 2,
+                "resamples": 10000,
+                "seed": 20261115
+              },
+              "ppl": 10.239063739776611,
+              "top1": 0.4738520383834839,
+              "window_count": 2
+            }
+          },
+          "mixed": {
+            "kl": {
+              "ci_high": 0.5632106959819794,
+              "ci_low": 0.4660468101501465,
+              "mean": 0.5146287530660629,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            },
+            "top1": {
+              "ci_high": 0.549392412106196,
+              "ci_low": 0.44301146268844604,
+              "mean": 0.49620193739732105,
+              "n": 5,
+              "resamples": 10000,
+              "seed": 20261115
+            }
+          },
+          "per_window": {
+            "code": [
+              {
+                "doc_id": "HumanEval/0",
+                "kl": 0.3467352092266083,
+                "nll": 1.2147797346115112,
+                "positions": 117,
+                "ppl": 3.36955189704895,
+                "top1": 0.7094017267227173,
+                "window_index": 0
+              },
+              {
+                "doc_id": "HumanEval/1",
+                "kl": 0.5205733180046082,
+                "nll": 2.3000659942626953,
+                "positions": 108,
+                "ppl": 9.97484016418457,
+                "top1": 0.46296295523643494,
+                "window_index": 0
+              }
+            ],
+            "general": [
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6125615239143372,
+                "nll": 2.9989795684814453,
+                "positions": 511,
+                "ppl": 20.065052032470703,
+                "top1": 0.45009785890579224,
+                "window_index": 0
+              },
+              {
+                "doc_id": "wikitext-article-037",
+                "kl": 0.6540640592575073,
+                "nll": 3.3493599891662598,
+                "positions": 511,
+                "ppl": 28.484498977661133,
+                "top1": 0.40704500675201416,
+                "window_index": 1
+              }
+            ],
+            "math": [
+              {
+                "doc_id": "003c846e6133af78",
+                "kl": 0.41809242963790894,
+                "nll": 2.1878108978271484,
+                "positions": 48,
+                "ppl": 8.915674209594727,
+                "top1": 0.4375,
+                "window_index": 0
+              },
+              {
+                "doc_id": "003ec217148ca947",
+                "kl": 0.5357459783554077,
+                "nll": 2.447762966156006,
+                "positions": 49,
+                "ppl": 11.562453269958496,
+                "top1": 0.5102040767669678,
+                "window_index": 0
+              }
+            ]
+          }
+        },
+        "humaneval": {
+          "items": [
+            {
+              "completion": "    if not numbers:\n        return False\n    if len(numbers) < 2:\n        return False\n    for i in range(len(numbers) - 1):\n        if abs(numbers[i] - numbers[i + 1]) < threshold:\n            return True\n    return False\n\n",
+              "id": "HumanEval/0",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-8mr_8tfi/candidate.py\", line 40, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-8mr_8tfi/candidate.py\", line 33, in check\n    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.95) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # We need to find all the balanced parentheses in the string\n    # We can use a stack to track the indices of the balanced parentheses\n    stack = []\n    result = []\n    for i, char in enumerate(paren_string):\n        if char == '(':\n            stack.append(i)\n        elif char == ')':\n            if stack:\n                stack.pop()\n                result.append(paren_string[stack[-1]:i])\n    return result\n",
+              "id": "HumanEval/1",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-oanaxam5/candidate.py\", line 45, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-oanaxam5/candidate.py\", line 34, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/selvedge-he-oanaxam5/candidate.py\", line 22, in separate_paren_groups\n    result.append(paren_string[stack[-1]:i])\n                               ~~~~~^^^^\nIndexError: list index out of range\n",
+              "timeout": false
+            },
+            {
+              "completion": "    # Find the longest prefix of the string that is a palindrome.\n    # Then, the rest of the string is the suffix.\n    # The rest of the string is the suffix, which is the reverse of the prefix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n",
+              "id": "HumanEval/10",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-gr512y7u/candidate.py\", line 53, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-gr512y7u/candidate.py\", line 47, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            },
+            {
+              "completion": "    if n == 0:\n        return []\n    res = []\n    for i in range(n):\n        if i % 2 == 0:\n            res.append(i + 1)\n        else:\n            res.append(i + 1)\n    return res\n",
+              "id": "HumanEval/100",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-xh5_juub/candidate.py\", line 39, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-xh5_juub/candidate.py\", line 29, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+              "timeout": false
+            },
+            {
+              "completion": "    words = s.split(',')\n    words = [w.strip() for w in words]\n    return words\n",
+              "id": "HumanEval/101",
+              "passed": false,
+              "returncode": 1,
+              "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-y9_eqced/candidate.py\", line 30, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-y9_eqced/candidate.py\", line 19, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+              "timeout": false
+            }
+          ],
+          "pass_at_1": 0.0,
+          "pass_at_1_ci": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n": 5,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "timeouts": 0
+        },
+        "probes": {
+          "gsm8k": "Question: A company's HR hires 20 new employees every month to add to its total workforce. If the company's initial employee number is 200, and each employee is paid a $4000 salary per month, calculate the total amount of money the company pays to its employees after three months?\nAnswer:",
+          "truthfulqa": "Q: What is the smallest country in the world that is at least one square mile in area?\nA: "
+        },
+        "resources": {
+          "active_unique_params": 774543360,
+          "arm": "H",
+          "dtype_bytes": 2,
+          "experts": {
+            "active_elements_per_token": 176160768,
+            "bank_total_elements": 352321536,
+            "basis": "modelled",
+            "k": 4,
+            "layers": 28,
+            "m": 8,
+            "router_elements": 229376,
+            "weight_bytes_per_token_modelled": 352780288,
+            "width": 512
+          },
+          "extra_ledger": {
+            "bank_layers": 28,
+            "dense_adapter_layers": 0,
+            "memory_layers": 4,
+            "roles": {
+              "dense_adapter": 0,
+              "memory_gate": 4096,
+              "memory_index": 0,
+              "memory_projection": 2097152,
+              "memory_values": 268435456,
+              "router": 229376,
+              "specialist_down": 117440512,
+              "specialist_gate": 117440512,
+              "specialist_up": 117440512
+            },
+            "total": 623087616
+          },
+          "memory": {
+            "active": {
+              "active_per_layer": 525824,
+              "active_total": 2103296,
+              "gate_elements_per_layer": 1024,
+              "index_elements_per_layer": 0,
+              "insertions": 4,
+              "kind": "hashed_memory_active",
+              "projection_elements_per_layer": 524288,
+              "reads_per_layer": 2,
+              "rows_total": 1048576,
+              "table_elements_per_layer": 67108864,
+              "table_elements_total": 268435456,
+              "total_accessible_added": 270536704,
+              "value_elements_per_layer": 512,
+              "values_total": 268435456
+            },
+            "bytes": {
+              "dtype_bytes": 2,
+              "kind": "hashed_memory_bytes",
+              "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+              "read_bytes_per_token": 4206592,
+              "read_bytes_per_token_basis": "modelled",
+              "resident_table_bytes_deployment": 536870912,
+              "resident_table_bytes_fp32_equivalent": 1073741824
+            },
+            "insertions": 4,
+            "layers": [
+              3,
+              10,
+              17,
+              24
+            ]
+          },
+          "profile": "t2",
+          "total_accessible": 1219137536,
+          "trainable_elements": 623087616
+        },
+        "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366",
+        "vram_peak_gib": 13.62696123123169
+      },
+      "resume": {
+        "full_losses": {
+          "26": 1.7635313933715224,
+          "27": 1.7559705055318773,
+          "28": 1.7319078627042472,
+          "29": 1.7634378857910633,
+          "30": 1.7120634950697422,
+          "31": 1.7515229787677526,
+          "32": 1.7642642692662776,
+          "33": 1.654232704313472,
+          "34": 1.7727849683724344,
+          "35": 1.7438577832654119,
+          "36": 1.7103822603821754,
+          "37": 1.781184728257358,
+          "38": 1.7192925405688584,
+          "39": 1.7585194115526974,
+          "40": 1.7179811666719615,
+          "41": 1.7071213792078197,
+          "42": 1.74185115005821,
+          "43": 1.684568286407739,
+          "44": 1.6891969670541584,
+          "45": 1.7363073751330376,
+          "46": 1.7474392824806273,
+          "47": 1.7430140329524875,
+          "48": 1.7148159639909863,
+          "49": 1.7285599205642939,
+          "50": 1.769417020957917
+        },
+        "max_abs_loss_delta": 0.0,
+        "mean_abs_loss_delta": 0.0,
+        "note": "T2 continuation must be bitwise identical after a resume; any delta is reported verbatim",
+        "resumed_losses": {
+          "26": 1.7635313933715224,
+          "27": 1.7559705055318773,
+          "28": 1.7319078627042472,
+          "29": 1.7634378857910633,
+          "30": 1.7120634950697422,
+          "31": 1.7515229787677526,
+          "32": 1.7642642692662776,
+          "33": 1.654232704313472,
+          "34": 1.7727849683724344,
+          "35": 1.7438577832654119,
+          "36": 1.7103822603821754,
+          "37": 1.781184728257358,
+          "38": 1.7192925405688584,
+          "39": 1.7585194115526974,
+          "40": 1.7179811666719615,
+          "41": 1.7071213792078197,
+          "42": 1.74185115005821,
+          "43": 1.684568286407739,
+          "44": 1.6891969670541584,
+          "45": 1.7363073751330376,
+          "46": 1.7474392824806273,
+          "47": 1.7430140329524875,
+          "48": 1.7148159639909863,
+          "49": 1.7285599205642939,
+          "50": 1.769417020957917
+        },
+        "steps_compared": 25
+      },
+      "train": {
+        "admitted_active_unique": 774543360,
+        "arm": "H",
+        "extra_ledger": {
+          "bank_layers": 28,
+          "dense_adapter_layers": 0,
+          "memory_layers": 4,
+          "roles": {
+            "dense_adapter": 0,
+            "memory_gate": 4096,
+            "memory_index": 0,
+            "memory_projection": 2097152,
+            "memory_values": 268435456,
+            "router": 229376,
+            "specialist_down": 117440512,
+            "specialist_gate": 117440512,
+            "specialist_up": 117440512
+          },
+          "total": 623087616
+        },
+        "finished_utc": "2026-11-15T11:26:12Z",
+        "log": "results/artifacts/train/smoke-t2/H/train.jsonl",
+        "profile": "t2",
+        "router_phase": null,
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 50,
+        "tokens": 3276800,
+        "tokens_per_second": 4767.466546135241,
+        "total_accessible": 1219137536,
+        "train_seconds": 687.3252215385437,
+        "trainable_elements": 623087616,
+        "vram_peak_gib": 10.857304096221924,
+        "wall_seconds": 920.3894560337067,
+        "warmup_steps": 10
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 32,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "H",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    }
+  },
+  "calibration_windows": 2,
+  "command": "oracle/train/smoke.py --profile t2 --arms H --steps 50 --determinism-steps 5 --resume-split 25 --warmup-steps 10 --calibration-windows 2 --router-steps 10 --load-balance --deterministic --grad-checkpoint-arms ",
+  "determinism_steps": 5,
+  "finished_utc": "2026-11-15T11:49:08Z",
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "grad_checkpoint": false,
+  "profile": "t2",
+  "revision": "7561a94cc2f12c3c5f05ce38af70933c4fa15d9f",
+  "schema": "selvedge/train-smoke/v1",
+  "stamp": "20261115T114908Z",
+  "steps": 50,
+  "tokens_per_step": 65536,
+  "torch": "2.15.0+cu132",
+  "warmup_steps": 10
+}

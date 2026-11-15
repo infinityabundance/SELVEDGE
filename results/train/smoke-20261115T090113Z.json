@@ -1,0 +1,98 @@
+{
+  "arms": {
+    "X": {
+      "determinism": {
+        "checkpoint_hash_identical": true,
+        "checkpoint_sha256_first": "72ae53109eac7dc7bdeadfc618312a6476d4843cfb88bf280eec7fcb8ed6e2bc",
+        "checkpoint_sha256_second": "72ae53109eac7dc7bdeadfc618312a6476d4843cfb88bf280eec7fcb8ed6e2bc",
+        "loss_trajectories_identical": true,
+        "max_abs_loss_delta": 0.0,
+        "note": "T2 uses a deterministic slot-wise combine; a hash mismatch is a kernel defect, not hardware noise (T2.4)",
+        "steps": 5
+      },
+      "eval": null,
+      "resume": {
+        "full_losses": {
+          "3": 1.4164324831217527,
+          "4": 1.3537607798352838,
+          "5": 1.4338239338248968
+        },
+        "max_abs_loss_delta": 0.0,
+        "mean_abs_loss_delta": 0.0,
+        "note": "T2 continuation must be bitwise identical after a resume; any delta is reported verbatim",
+        "resumed_losses": {
+          "3": 1.4164324831217527,
+          "4": 1.3537607798352838,
+          "5": 1.4338239338248968
+        },
+        "steps_compared": 3
+      },
+      "train": {
+        "admitted_active_unique": 772440064,
+        "arm": "X",
+        "extra_ledger": {
+          "bank_layers": 28,
+          "dense_adapter_layers": 0,
+          "memory_layers": 0,
+          "roles": {
+            "dense_adapter": 0,
+            "memory_gate": 0,
+            "memory_index": 0,
+            "memory_projection": 0,
+            "memory_values": 0,
+            "router": 229376,
+            "specialist_down": 117440512,
+            "specialist_gate": 117440512,
+            "specialist_up": 117440512
+          },
+          "total": 352550912
+        },
+        "finished_utc": "2026-11-15T08:55:47Z",
+        "log": "results/artifacts/train/smoke-t2/X/train.jsonl",
+        "profile": "t2",
+        "router_phase": null,
+        "schema": "selvedge/train-summary/v1",
+        "seed": 1001,
+        "steps": 5,
+        "tokens": 327680,
+        "tokens_per_second": 6126.334505341013,
+        "total_accessible": 948600832,
+        "train_seconds": 53.48712182044983,
+        "trainable_elements": 352550912,
+        "vram_peak_gib": 10.55573844909668,
+        "wall_seconds": 102.32376956939697,
+        "warmup_steps": 0
+      },
+      "zero_point": {
+        "adapter_zero": {
+          "kind": "adapter_zero_init",
+          "max_abs": 0.0,
+          "modules": 28,
+          "ok": true,
+          "tolerance": 0.0
+        },
+        "arm": "X",
+        "device": "cuda:0",
+        "kind": "end_to_end_bf16_identity",
+        "max_abs_logit_delta": 0.0,
+        "mean_abs_logit_delta": 0.0,
+        "ok": true,
+        "tolerance": 0.001
+      }
+    }
+  },
+  "calibration_windows": 32,
+  "command": "oracle/train/smoke.py --profile t2 --arms X --steps 5 --determinism-steps 5 --resume-split 2 --warmup-steps 0 --skip-eval --deterministic --grad-checkpoint-arms ",
+  "determinism_steps": 5,
+  "finished_utc": "2026-11-15T09:01:13Z",
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "grad_checkpoint": false,
+  "profile": "t2",
+  "revision": "1ed50de33adc55732f48c0551452a22bdfb046d0",
+  "schema": "selvedge/train-smoke/v1",
+  "stamp": "20261115T090113Z",
+  "steps": 5,
+  "tokens_per_step": 65536,
+  "torch": "2.15.0+cu132",
+  "warmup_steps": 0
+}

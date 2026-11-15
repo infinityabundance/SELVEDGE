@@ -1,0 +1,134 @@
+{
+  "argv": [
+    "python3",
+    "-c",
+    "\nimport sys; sys.path[:0]=['oracle/train','oracle/eval']\nimport torch, instrument_check as ic\ntorch.manual_seed(23)\nP,V,K=6,96,16\nt=torch.randn(P,V); s=torch.randn(P,V)\ngot=ic.window_targets(s,t)\nt64=t.double(); s64=s.double()\nlt=torch.log_softmax(t64,-1); ls=torch.log_softmax(s64,-1); p=lt.exp()\nv,ids=torch.topk(t64,K,-1)\nsup=torch.zeros_like(p,dtype=torch.bool).scatter_(1,ids,True)\ntail=~sup; pt=(p*tail).sum(-1)\nr=(p*tail)/pt.unsqueeze(-1)\nH=-(r*r.clamp_min(1e-300).log()).sum(-1)\nA=(p*tail*lt).sum(-1)\nH2=-(A/pt)+pt.log()\nprint('Href',H); print('Hmine',got['tail_entropy']); print('H2',H2)\nprint('A/pt',A/pt,'logpt',pt.log())\nprint('sum r log p',(r*lt).sum(-1))\n"
+  ],
+  "container_exit_code": 0,
+  "container_id": "2b345cd70112bee7b20d99ffb966ced68e2a26e255ba82bd50747576813b4d61",
+  "container_name": "selvedge-oracle-court-20261115T075502Z-ebe78a",
+  "court": "oracle",
+  "duration_ms": 4878,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 8589934592,
+        "expected": 8589934592
+      },
+      "memory_swap_bytes": {
+        "actual": 8589934592,
+        "expected": 8589934592
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-15T07:55:07Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_ref": "selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "8g",
+    "memory_bytes": 8589934592,
+    "memory_swap": "8g",
+    "memory_swap_bytes": 8589934592,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/oracle-20261115T075502Z-ebe78a.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "1ed50de33adc55732f48c0551452a22bdfb046d0",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261115T075502Z",
+  "started_utc": "2026-11-15T07:55:02Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

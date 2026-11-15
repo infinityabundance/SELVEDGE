@@ -1,0 +1,202 @@
+smoke: arm H training 50 steps (resident 0.00GiB)
+train: zero-point max|delta|=0.000e+00 ok=True kind=end_to_end_bf16_identity
+train: step 1/50 loss=1.9298 tok/s=4722 vram=10.22GiB
+train: step 10/50 loss=1.8042 tok/s=4752 vram=10.85GiB
+train: step 20/50 loss=1.7881 tok/s=4791 vram=10.85GiB
+train: step 30/50 loss=1.7121 tok/s=4785 vram=10.86GiB
+train: step 40/50 loss=1.7180 tok/s=4588 vram=10.86GiB
+train: step 50/50 loss=1.7694 tok/s=4756 vram=10.86GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:26:12Z",
+  "log": "results/artifacts/train/smoke-t2/H/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 50,
+  "tokens": 3276800,
+  "tokens_per_second": 4767.466546135241,
+  "total_accessible": 1219137536,
+  "train_seconds": 687.3252215385437,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.857304096221924,
+  "wall_seconds": 920.3894560337067,
+  "warmup_steps": 10
+}
+train: step 1/5 loss=1.9298 tok/s=4737 vram=10.22GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:28:03Z",
+  "log": "results/artifacts/train/smoke-t2/H-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 4767.557050061326,
+  "total_accessible": 1219137536,
+  "train_seconds": 68.73121738433838,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.856292247772217,
+  "wall_seconds": 108.05167651176453,
+  "warmup_steps": 10
+}
+train: step 1/5 loss=1.9298 tok/s=4778 vram=10.86GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:30:02Z",
+  "log": "results/artifacts/train/smoke-t2/H-determinism/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 5,
+  "tokens": 327680,
+  "tokens_per_second": 4780.08844949086,
+  "total_accessible": 1219137536,
+  "train_seconds": 68.55103278160095,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.856292247772217,
+  "wall_seconds": 113.28894066810608,
+  "warmup_steps": 10
+}
+train: step 1/25 loss=1.9298 tok/s=4757 vram=10.86GiB
+train: step 10/25 loss=1.8042 tok/s=4792 vram=10.86GiB
+train: step 20/25 loss=1.7881 tok/s=4756 vram=10.86GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:39:07Z",
+  "log": "results/artifacts/train/smoke-t2/H-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 25,
+  "tokens": 1638400,
+  "tokens_per_second": 4779.806918131956,
+  "total_accessible": 1219137536,
+  "train_seconds": 342.77535223960876,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.859172344207764,
+  "wall_seconds": 538.918093919754,
+  "warmup_steps": 10
+}
+train: resumed from results/artifacts/train/smoke-t2/H-resume/step-000025.pt at step 25
+train: step 30/50 loss=1.7121 tok/s=4777 vram=10.86GiB
+train: step 40/50 loss=1.7180 tok/s=4774 vram=10.87GiB
+train: step 50/50 loss=1.7694 tok/s=4764 vram=10.87GiB
+{
+  "admitted_active_unique": 774543360,
+  "arm": "H",
+  "extra_ledger": {
+    "bank_layers": 28,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 229376,
+      "specialist_down": 117440512,
+      "specialist_gate": 117440512,
+      "specialist_up": 117440512
+    },
+    "total": 623087616
+  },
+  "finished_utc": "2026-11-15T11:47:46Z",
+  "log": "results/artifacts/train/smoke-t2/H-resume/train.jsonl",
+  "profile": "t2",
+  "router_phase": null,
+  "schema": "selvedge/train-summary/v1",
+  "seed": 1001,
+  "steps": 50,
+  "tokens": 3276800,
+  "tokens_per_second": 4786.067580981173,
+  "total_accessible": 1219137536,
+  "train_seconds": 342.3269672393799,
+  "trainable_elements": 623087616,
+  "vram_peak_gib": 10.86539888381958,
+  "wall_seconds": 512.2357120513916,
+  "warmup_steps": 10
+}
+eval: generated 5/5
+eval: generated 5/5
+eval: generated 5/5
+smoke: arm H tok/s=4767 vram=10.86GiB zero_point=True resume_delta=0.000e+00 deterministic=True
+smoke: receipt=results/train/smoke-20261115T114908Z.json
