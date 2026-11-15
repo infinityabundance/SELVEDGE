@@ -1,0 +1,310 @@
+{
+  "commands": {
+    "audit": "scripts/court oracle -- python3 oracle/eval/dispatch_audit.py --out results/t2/dispatch-audit-<stamp>.json",
+    "tests": "scripts/court oracle -- python3 -m pytest oracle/tests/test_p12_1_dispatch.py -q"
+  },
+  "created_utc": "2026-11-15T23:50:14Z",
+  "decode_exposure": {
+    "batched_mean_per_expert_1024": 512,
+    "batched_window_capacity_1024": 640,
+    "note": "capacity per expert at a single-token decode forward is max(1, ceil(1*4/8*1.25)) = 1, so no overflow is reachable; a batched prefill of W tokens has capacity ceil(W*4/8*1.25) = 0.625*W against a mean of 0.5*W per expert, so overflow is reachable there and is not recorded by the evaluation receipts written before this audit",
+    "single_token_capacity": 1
+  },
+  "pilot": {
+    "X": {
+      "dropped_fraction": 0.008964474461659664,
+      "dropped_pairs": 26217,
+      "dropped_percent": 0.896,
+      "layer_samples": 1428,
+      "layer_samples_with_overflow": 555,
+      "layers_per_sample": 28,
+      "log": "results/t2/X/train.jsonl",
+      "log_sha256": "a58fb1ee09a2daa1be44e301c9d8df80f4db082b5a14f1520fff4fd7ee588975",
+      "misassignment_model": {
+        "assumption": "uniform random pairing of token-major pairs to sorted positions, conditional on the recorded expert counts",
+        "draws_per_sample": 32,
+        "misassigned_fraction_analytic": 0.01652080438384155,
+        "misassigned_fraction_mean": 0.016525332667246585,
+        "misassigned_percent": 1.653,
+        "retained_overflow_pairs_mean": 16.9,
+        "seed": 20261115,
+        "silently_dropped_pairs_mean": 16.9
+      },
+      "pairs": 2924544,
+      "sampled_forwards": 51,
+      "worst_sampled_layer": {
+        "capacity": 320,
+        "counts": [
+          484,
+          477,
+          25,
+          24,
+          491,
+          173,
+          35,
+          339
+        ],
+        "dropped": 511,
+        "dropped_fraction": 0.24951171875,
+        "dropped_percent": 24.95,
+        "layer": "144",
+        "pairs": 2048,
+        "step": 660
+      }
+    }
+  },
+  "revision": "f13581f58a872b4a7315410f9e83f0ec3df49b74",
+  "schema": "selvedge/p12.1-dispatch-audit/v1",
+  "stamp": "20261115T235014Z",
+  "toy": {
+    "agreements": {
+      "dispatch_halves_bitwise_equal": true,
+      "legacy_placement_matches_reference_sorted": true,
+      "pair_placement_matches_reference": true,
+      "placements_agree_without_overflow": true,
+      "placements_separate_under_overflow": 5
+    },
+    "cases": [
+      {
+        "both_placements_agree": true,
+        "capacity": 4,
+        "capacity_factor": 1.25,
+        "case": "no-overflow",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 0,
+        "experts": 4,
+        "k": 2,
+        "pairs": 10,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 5
+      },
+      {
+        "both_placements_agree": false,
+        "capacity": 1,
+        "capacity_factor": 0.5,
+        "case": "overflow-one-expert",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 4,
+        "experts": 4,
+        "k": 2,
+        "pairs": 8,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 4
+      },
+      {
+        "both_placements_agree": false,
+        "capacity": 1,
+        "capacity_factor": 0.5,
+        "case": "overflow-last-expert-clamps",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 2,
+        "experts": 4,
+        "k": 2,
+        "pairs": 6,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 3
+      },
+      {
+        "both_placements_agree": false,
+        "capacity": 1,
+        "capacity_factor": 0.5,
+        "case": "ties",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 6,
+        "experts": 4,
+        "k": 2,
+        "pairs": 8,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 4
+      },
+      {
+        "both_placements_agree": false,
+        "capacity": 2,
+        "capacity_factor": 0.75,
+        "case": "duplicate-ids",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 4,
+        "experts": 4,
+        "k": 3,
+        "pairs": 9,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 3
+      },
+      {
+        "both_placements_agree": true,
+        "capacity": 1,
+        "capacity_factor": 0.5,
+        "case": "k-one",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 2,
+        "experts": 3,
+        "k": 1,
+        "pairs": 4,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 4
+      },
+      {
+        "both_placements_agree": false,
+        "capacity": 1,
+        "capacity_factor": 0.5,
+        "case": "k-equals-experts",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 3,
+        "experts": 3,
+        "k": 3,
+        "pairs": 6,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 2
+      },
+      {
+        "both_placements_agree": true,
+        "capacity": 1,
+        "capacity_factor": 0.25,
+        "case": "single-token",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 0,
+        "experts": 4,
+        "k": 2,
+        "pairs": 2,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 1
+      },
+      {
+        "both_placements_agree": true,
+        "capacity": 1,
+        "capacity_factor": 1.25,
+        "case": "empty-tokens",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 0,
+        "experts": 4,
+        "k": 2,
+        "pairs": 0,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 0
+      },
+      {
+        "both_placements_agree": true,
+        "capacity": 1,
+        "capacity_factor": 1.25,
+        "case": "k-zero",
+        "dispatch_halves_bitwise_equal": true,
+        "dropped": 0,
+        "experts": 4,
+        "k": 0,
+        "pairs": 0,
+        "placements": {
+          "pair": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          },
+          "sorted": {
+            "agrees_with_reference": true,
+            "max_abs_difference": 0.0
+          }
+        },
+        "tokens": 3
+      }
+    ],
+    "headline": {
+      "capacity": 1,
+      "capacity_factor": 0.5,
+      "dispatch_halves_bitwise_equal": true,
+      "experts": 4,
+      "k": 2,
+      "max_abs_difference": 0.005556371062994003,
+      "overflow_pair_receives_another_tokens_activation": true,
+      "overflow_pairs": 2,
+      "tokens": 3,
+      "valid_pair_dropped_by_the_legacy_mask": true
+    },
+    "reference": "oracle/train/reference_dispatch.py"
+  },
+  "verdict": {
+    "corrected_default": false,
+    "corrected_mask_order": "pair",
+    "default_mask_order": "legacy",
+    "is_a_defect": true,
+    "summary": "the shipped combine applies the sorted-order validity mask to token-major positions; with any expert overflow it drops pairs that were kept and keeps pairs that overflowed, the latter reading a clamped buffer row that can hold another token's activation"
+  }
+}
