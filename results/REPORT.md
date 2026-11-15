@@ -125,15 +125,16 @@ number has been measured, and none is claimed.
   <!-- BEGIN GENERATED: report-17b-payload -->
 4227858432
   <!-- END GENERATED: report-17b-payload -->
-- Best compliant arm (greedy-uniform5) active unique parameters:
+- Best logical-selection arm (greedy-uniform5, dense masked execution)
+  active unique parameters:
   <!-- BEGIN GENERATED: report-best-active -->
 998630400
   <!-- END GENERATED: report-best-active -->
-- Best compliant arm mean teacher KL, nats/token:
+- Best logical-selection arm mean teacher KL, nats/token:
   <!-- BEGIN GENERATED: report-best-kl -->
 7.706657
   <!-- END GENERATED: report-best-kl -->
-- Best compliant arm PPL ratio:
+- Best logical-selection arm PPL ratio:
   <!-- BEGIN GENERATED: report-best-ppl -->
 1196.792
   <!-- END GENERATED: report-best-ppl -->

@@ -11,6 +11,13 @@ means the sparse model's next-token distribution differs from the dense
 teacher's on the measured text. It does not measure code generation, arithmetic,
 reasoning or factuality.
 
+> **Accounting note (2026-11-15).** In this M1 report, "compliant" means the
+> **logical** active unique element count at or below the ceiling. The M1
+> instrument executed dense projections with a channel mask and did not count
+> selector reads; the physical accounting correction is in
+> `docs/M2-CORRECTION.md`. The M1 quality numbers and the rejection of H1 stand
+> as logical-omission results.
+
 ## Registered threshold
 
 At realized active unique parameters `<= 1e9`, a configuration is **acceptable**
