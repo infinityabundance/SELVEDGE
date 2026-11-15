@@ -1999,9 +1999,35 @@ note naming the mask's semantics and a test that the mask is applied to the righ
 tokens; a reference-implementation receipt; a dated correction entry in
 `docs/WORK-LOG.md` if anything is wrong, explicitly not folding into T2's registered
 numbers.
-**Status.** running (pilot `running`: `D` and `M` evaluated, `X` evaluating, `H` and
-`H*` pending).
+**Status.** running (pilot `running`: `D` and `M` evaluated, `X` evaluated, `H` and
+`H*` pending). **Audit outcome (2026-11-15, revision `642a32b`): the defect is
+real and reproduced.** `valid` is built in capacity-sorted pair order and applied
+after the restore, so pair `p` is gated by another pair's validity whenever an
+expert overflowed; an overflowing pair is retained and reads a clamped buffer row
+that can hold another token's activation. The finished routed arm's own log shows
+the overflow is routine. The correction is `mask_order="pair"`, default **off**,
+recorded in every run receipt; the registered arms and thresholds are untouched.
+See `docs/P12.1-DISPATCH-AUDIT.md` and
+`results/t2/dispatch-audit-20261115T234953Z.json`.
 **Effort.** S (audit) + M (reference implementation).
+
+### P12.1a — The corrected-dispatch sensitivity run (successor to P12.1, registered separately)
+
+**What.** Two steps, both GPU, neither replacing a registered number:
+
+1. **evaluation only** — evaluate the trained `X` checkpoint with
+   `--mask-order pair` and compare the receipt to `results/eval/t2-X.json`;
+2. **training** — the T2.8 replication tier (`H*`, `H`, `X` at one quarter of the
+   budget, three seeds) with `--mask-order pair`, published as **V2**.
+
+**Why.** The audit measures that the overflow happened and how many pairs it
+mis-assigned, not whether the registered comparison moved. Only a corrected run
+can answer that, and the decisive pair is cheap.
+**Depends.** P12.1, T2's published verdict. **Acceptance evidence.** two
+receipts (evaluation, V2 training) with `dispatch_mask_order: pair`, and a
+decision note that states whether the registered verdict survives, in the
+registered words, without editing it. **Status.** open (blocked on the GPU the
+pilot owns). **Effort.** M.
 
 ### P12.2 — Diagnose H*'s target: leave-one-out, per-expert normalisation, deployed-budget utility
 
@@ -2021,7 +2047,11 @@ about that target, not about utility routing.
 **Acceptance evidence.** one diagnostic receipt with the rank correlation between
 the full-bank and deployed-budget utilities per layer, and the target definition
 written into the successor pre-registration.
-**Status.** open. **Effort.** M.
+**Status.** tooling complete, measurement blocked on `H*`'s Phase U.
+`oracle/eval/t2_diagnostics.py` implements all three diagnostics and is tested on
+synthetic ground truth; the label artifact does not exist yet, so no gap number
+is claimed. The corrected target is registered as **P12.17**.
+**Effort.** M.
 
 ### P12.3 — T3: latent-geometry court (P10.2)
 
@@ -2220,6 +2250,47 @@ licence to start everything into an ordering constraint.
 `WORK-LOG` entry for any exception with the operator's reason. **Status.** open.
 **Effort.** S.
 
+### P12.17 — The successor utility target: interaction-aware, deployed-budget, absolute utility retained
+
+**What.** Register the corrected `H*` target before the successor experiment. It has
+three parts, each addressing one measured property of the current target
+(`docs/T2-DIAGNOSTICS.md` §3–§5):
+
+1. **Deployed-budget reference set.** Labels are measured against the router's own
+top-`k` set, not the full bank:
+   `u^dep_e(t) = L(S(t) \ {e}) - L(S(t))` for `e ∈ S(t)` and `0` otherwise, with
+   `S(t) = top-k(z(t))`; a second pass measures the held-out re-selection after the
+   router is frozen, so the target cannot chase its own current choice.
+2. **Absolute utility retained; only the noise sets the temperature.** No per-expert
+   standardisation. The router is `z_e(t) = a_e + w_e · h_t` with `a_e` initialised
+   from the measured mean deployed utility (in nats) and trained; the listwise
+   target is `softmax(u^dep / tau_u)` with `tau_u` fixed to the **measured label
+   noise** (median per-expert standard deviation), not to 1 standardised unit. This
+   keeps the magnitude the deployed decision actually reads and uses the spread as
+   calibration instead of deleting it.
+3. **Interaction-aware set value.** There is no additive utility for a top-`k` set,
+   so measure the pairwise residual on a calibration subset,
+   `I_{e,e'} = L(S \ {e,e'}) - L(S) - u^dep_e - u^dep_e'`, fit a rank-`r` model of
+   `U(S) = sum_{e in S} a_e + half sum_{e != e' in S} I_{e,e'}`, and train the
+   router against the *set* value with a listwise loss over candidate sets (or a
+   differentiable greedy top-`k` surrogate). `I` is reported, not hidden: a near-zero
+   `I` says the additive target was adequate and the miss was elsewhere.
+
+**Why.** The current target measures the marginal value of omitting an expert from
+a full bank, then asks a top-4 router to choose which experts to *add*. It uses full
+standardisation, so it deletes the absolute utility, and it assumes additivity. Each
+of those is measurable from the label artifact, and each has a specific failure mode
+named in `docs/T2-DIAGNOSTICS.md`; the successor target is the smallest one that
+addresses all three without changing the arms' geometry.
+**Depends.** P12.2 (the diagnostics decide whether each part is needed: drop part 1 if
+the full-bank and deployed-budget utilities rank identically, drop part 3 if `I` is
+inside its noise, drop part 2's offset if the identity term is not what the router
+uses). **Acceptance evidence.** the pre-registered target written into the successor
+contract with its label recipe, pass count and cost; a label receipt; and a
+pre-registered kill condition that says what an additive-only target would have to
+achieve for the interaction term to be declared unnecessary.
+**Status.** open, written before any measurement of the successor. **Effort.** M.
+
 ---
 
 ## 16. Dependency-ordered execution queue
@@ -2262,7 +2333,9 @@ flowchart TD
 Hard order:
 
 1. **P12.1** — the running pilot decides what exists; nothing scales before its
-   verdict and its overflow audit.
+   verdict and its overflow audit. **P12.1a** follows it (evaluation-only first,
+   then the corrected-dispatch replication tier) and publishes a sensitivity
+   note, never a replacement number.
 2. **P12.2 + P12.15** — the two pre-scaling problems, both diagnosable without a GPU
    run.
 3. **Doctrine (WS7) + P7.5/P7.6** — the constraints and the plan record, because

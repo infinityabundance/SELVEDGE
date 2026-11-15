@@ -1,0 +1,83 @@
+FF...FFF...                                                              [100%]
+=================================== FAILURES ===================================
+___________ test_identity_dominated_labels_are_explained_by_identity ___________
+
+    def test_identity_dominated_labels_are_explained_by_identity():
+        utilities = _identity_utilities()
+        result = diagnostics.analyse_layer(_features(utilities.shape[0]), utilities,
+                                           _router())
+        assert result["identity_argmax_share"] > 0.99
+        assert result["margin_over_noise"] > 5.0
+>       assert result["mean_pairwise_utility_correlation"] > 0.9
+E       assert 0.009287386238229747 > 0.9
+
+oracle/tests/test_t2_diagnostics.py:78: AssertionError
+___________ test_rank_one_labels_are_dominated_by_one_common_factor ____________
+
+    def test_rank_one_labels_are_dominated_by_one_common_factor():
+        utilities = _rank_one_utilities()
+        result = diagnostics.analyse_layer(_features(utilities.shape[0]), utilities,
+                                           _router())
+        assert result["first_component_energy_share"] > 0.95
+>       assert abs(result["mean_pairwise_utility_correlation"]) > 0.9
+E       assert 0.14285523255849517 > 0.9
+E        +  where 0.14285523255849517 = abs(-0.14285523255849517)
+
+oracle/tests/test_t2_diagnostics.py:88: AssertionError
+____ test_margin_over_noise_separates_indistinguishable_from_clearly_better ____
+
+    def test_margin_over_noise_separates_indistinguishable_from_clearly_better():
+        positions, experts = 600, 8
+        generator = torch.Generator().manual_seed(19)
+        noise = torch.randn(positions, experts, generator=generator)
+        # experts 4 and 5 differ by 0.1 standard deviations: inside the noise.
+        close = noise.clone()
+        close[:, 4] += 0.1
+        result_close = diagnostics.analyse_layer(_features(positions), close, _router())
+        assert result_close["margin_over_noise"] < 1.0
+        # experts 4 and 5 differ by 5 standard deviations: outside the noise.
+        far = noise.clone()
+        far[:, 4] += 5.0
+        result_far = diagnostics.analyse_layer(_features(positions), far, _router())
+>       assert result_far["margin_over_noise"] > 1.0
+E       assert 0.2653831114055472 > 1.0
+
+oracle/tests/test_t2_diagnostics.py:144: AssertionError
+__________ test_router_split_is_exact_and_reports_identity_dominance ___________
+
+    def test_router_split_is_exact_and_reports_identity_dominance():
+        features = _features(300, 16, seed=23)
+        router = torch.zeros(8, 16)
+        for expert in range(8):
+            router[expert, expert] = 1.0
+        # features varying only outside the router's span -> no token term at all
+        features = torch.cat([torch.zeros(300, 8), _features(300, 8, seed=29)], dim=1)
+        result = diagnostics.analyse_layer(features, _independent_utilities(300), router)
+>       assert result["router_identity_bias_share"] > 0.999
+E       assert 0.0 > 0.999
+
+oracle/tests/test_t2_diagnostics.py:160: AssertionError
+_______ test_router_that_matches_the_utility_oracle_captures_everything ________
+
+    def test_router_that_matches_the_utility_oracle_captures_everything():
+        positions, experts, hidden = 200, 8, 16
+        generator = torch.Generator().manual_seed(37)
+        features = torch.randn(positions, hidden, generator=generator)
+        # utilities whose ranking is exactly the router's ranking
+        router = torch.randn(experts, hidden, generator=generator)
+        logits = features @ router.T
+        utilities = logits + torch.randn(positions, experts, generator=generator) * 1e-6
+        result = diagnostics.analyse_layer(features, utilities, router, k=4)
+        assert result["router_top4_overlap_with_utility"] == 1.0
+        assert abs(result["router_additive_gap_mean"]) < 1e-4
+>       assert result["router_chosen_marginal_negative_share"] == 0.0
+E       assert 0.17 == 0.0
+
+oracle/tests/test_t2_diagnostics.py:181: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t2_diagnostics.py::test_identity_dominated_labels_are_explained_by_identity
+FAILED oracle/tests/test_t2_diagnostics.py::test_rank_one_labels_are_dominated_by_one_common_factor
+FAILED oracle/tests/test_t2_diagnostics.py::test_margin_over_noise_separates_indistinguishable_from_clearly_better
+FAILED oracle/tests/test_t2_diagnostics.py::test_router_split_is_exact_and_reports_identity_dominance
+FAILED oracle/tests/test_t2_diagnostics.py::test_router_that_matches_the_utility_oracle_captures_everything
+5 failed, 6 passed in 1.88s

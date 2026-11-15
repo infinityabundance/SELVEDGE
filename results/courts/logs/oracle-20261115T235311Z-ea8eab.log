@@ -1,0 +1,43 @@
+......FF...                                                              [100%]
+=================================== FAILURES ===================================
+__________ test_router_split_is_exact_and_reports_identity_dominance ___________
+
+    def test_router_split_is_exact_and_reports_identity_dominance():
+        router = torch.zeros(8, 16)
+        for expert in range(8):
+            router[expert, expert] = 1.0
+        # features constant in the router's span and varying outside it: the router's
+        # logits are then a pure expert constant with no token term.
+        features = torch.cat([torch.ones(300, 8), _features(300, 8, seed=29)], dim=1)
+        result = diagnostics.analyse_layer(features, _independent_utilities(300), router)
+>       assert result["router_identity_bias_share"] > 0.999
+E       assert 0.0 > 0.999
+
+oracle/tests/test_t2_diagnostics.py:164: AssertionError
+_______ test_router_that_matches_the_utility_oracle_captures_everything ________
+
+    def test_router_that_matches_the_utility_oracle_captures_everything():
+        positions, experts, hidden = 200, 8, 16
+        generator = torch.Generator().manual_seed(37)
+        features = torch.randn(positions, hidden, generator=generator)
+        # utilities whose ranking is exactly the router's ranking
+        router = torch.randn(experts, hidden, generator=generator)
+        logits = features @ router.T
+        utilities = logits + torch.randn(positions, experts, generator=generator) * 1e-6
+        result = diagnostics.analyse_layer(features, utilities, router, k=4)
+        assert result["router_top4_overlap_with_utility"] == 1.0
+        assert abs(result["router_additive_gap_mean"]) < 1e-4
+        # the chosen set contains a negative marginal exactly when the fourth largest
+        # utility is negative: the "least harmful omission" quantity, checked
+        # against a direct computation.
+        ranked = utilities.sort(dim=-1, descending=True).values
+        expected = float((ranked[:, 3] < 0).double().mean())
+>       assert abs(result["router_chosen_marginal_negative_share"] - expected) < 1e-9
+E       assert 0.26 < 1e-09
+E        +  where 0.26 = abs((0.17 - 0.43))
+
+oracle/tests/test_t2_diagnostics.py:190: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t2_diagnostics.py::test_router_split_is_exact_and_reports_identity_dominance
+FAILED oracle/tests/test_t2_diagnostics.py::test_router_that_matches_the_utility_oracle_captures_everything
+2 failed, 9 passed in 1.80s
