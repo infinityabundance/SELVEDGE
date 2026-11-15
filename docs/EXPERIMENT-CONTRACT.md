@@ -452,6 +452,13 @@ ceiling that decides whether the inference-only branch is viable at all.
 
 ## M2.1 Question
 
+> **Amendment A4 (2026-11-15, after the formal review):** the `deployable` flag
+> used in the M2 text below is superseded by two independent typed verdicts,
+> `CausalAvailability` and `PhysicalCompliance`, in every receipt. "Deployable
+> arm" in the K6 and M2.13 text is read as "causally available arm"; it never
+> meant physically compliant. The correction of record, including the measured
+> selector and execution reads, is `docs/M2-CORRECTION.md`.
+
 M1 measured **static, token-independent** whole-group omission: one mask per
 layer for every token. It rejected H1 at the ceiling for Qwen3-1.7B. The
 measured masks used calibration statistics only; no per-token, causal,

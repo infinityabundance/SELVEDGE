@@ -120,7 +120,11 @@ budget: the selector's own read is `28 * 2 * 2048 * 6144` elements, which
 alone is 70% of the ceiling and leaves no room for the backbone
 and the selected FFN. The oracle arms cannot be compliant either; their search
 evaluates dense group contributions. No arm in the measured family is both
-causally available, physically compliant and better than chance.
+causally available, physically compliant and better than `token-magnitude`.
+The compliant static/greedy masks were selected offline with teacher KL on
+calibration text; that one-time search is not a per-token runtime process and
+is not charged as per-token work, but it means those masks are oracle-derived
+constants rather than a learned compliant controller.
 
 ## 3. The oracle bound survives as a counterfactual result
 
