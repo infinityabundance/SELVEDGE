@@ -676,10 +676,10 @@ sequence).
 
 ### P5.8 — Sequence-level masked-expert bank plus adaptive depth
 
-**What.** Combine a masked-expert bank over frozen weights (MASKerade-style:
-experts are learned sparse subnetworks of a frozen FFN, selected per token) with
-adaptive recursive depth (Mixture-of-Recursions-style) and recursion-wise KV
-caching. Use a staged curriculum.
+**What.** Combine a masked-expert bank over frozen weights (MASKerade-style
+per-token masks) whose mask *set* is predicted at sequence level
+(SparseInfer-style), with adaptive recursive depth (Mixture-of-Recursions-style)
+and recursion-wise KV caching. Use a staged curriculum.
 
 **Why.** Both halves are verified prior art. The combination is attractive
 because masks are cheap to store and depth is a second, orthogonal budget knob.
