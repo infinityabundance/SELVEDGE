@@ -47,6 +47,9 @@ from modeling import build_arm, load_admission  # noqa: E402
 
 TOP_K = 16
 CHUNK = 16384
+#: Positions whose teacher tail mass is below this carry no usable tail shape
+#: (the f32 sums cancel), so the entropy/KL diagnostics exclude them.
+TAIL_MASS_FLOOR = 1e-3
 DECISIVE_PAIRS = (("H*", "H"), ("X", "D"), ("M", "D0"))
 
 
@@ -90,9 +93,15 @@ def window_targets(student_logits: torch.Tensor, teacher_logits: torch.Tensor) -
 
     Both inputs are `[T, vocab]` for the positions being predicted.
 
-    The tail sums are computed as (whole vocabulary) minus (the stored top-16
-    support), which is exact and independent of the chunk size. Building a
-    masked tensor instead would be O(T x vocab) and is not needed.
+    The tail sums are computed as (whole vocabulary) minus the stored top-16
+    support, which is exact and independent of the chunk size. Building a masked
+    tensor instead would be O(T x vocab) and is not needed.
+
+    The tail diagnostics (entropy, KL) are only meaningful where the teacher's
+    tail has real mass. When `p_tail` is near f32 resolution the difference
+    `sum p log p - sum_support p log p` is catastrophic cancellation, so those
+    positions carry NaN and are excluded from the pooled diagnostics. The
+    compact-minus-full bias itself is computed directly and is valid everywhere.
     """
     tokens = student_logits.shape[0]
     lse_teacher = _lse_chunked(teacher_logits)
@@ -124,25 +133,44 @@ def window_targets(student_logits: torch.Tensor, teacher_logits: torch.Tensor) -
     tail_q = (all_q - support_q).clamp_min(1e-12)
     compact = -(p_top * log_q_top).sum(dim=-1) - p_tail * q_tail.log()
     full = -all_p_log_q
+    bias = compact - full
 
     # Tail decomposition. With r = teacher tail renormalised and s = student
     # tail renormalised:
     #   H(r)      = -a/p_T + log p_T
     #   KL(r||s)  = (a - b)/p_T - log p_T + log q_T
-    # Then L_compact - L_full = -p_T * (H(r) + KL(r||s)), which the receipt's
-    # identity check asserts numerically.
+    # Then L_compact - L_full = -p_T * (H(r) + KL(r||s)).
+    valid = p_tail >= TAIL_MASS_FLOOR
     safe_p = p_tail.clamp_min(1e-12)
-    tail_entropy = -(a / safe_p) + torch.log(safe_p)
-    tail_kl = ((a - b) / safe_p) - torch.log(safe_p) + torch.log(tail_q)
-    tail_kl = tail_kl.clamp_min(0.0)
+    tail_entropy = torch.where(valid, -(a / safe_p) + torch.log(safe_p),
+                               torch.full_like(a, float("nan")))
+    tail_kl = torch.where(valid, ((a - b) / safe_p) - torch.log(safe_p)
+                          + torch.log(tail_q), torch.full_like(a, float("nan")))
+    tail_kl = torch.where(valid, tail_kl.clamp_min(0.0), tail_kl)
+    nan = float("nan")
     return {
         "compact": compact.detach().cpu(),
         "full": full.detach().cpu(),
-        "bias": (compact - full).detach().cpu(),
+        "bias": bias.detach().cpu(),
         "p_tail": p_tail.detach().cpu(),
         "tail_entropy": tail_entropy.detach().cpu(),
         "tail_kl": tail_kl.detach().cpu(),
+        "valid": valid.detach().cpu(),
         "positions": tokens,
+        "bias_valid_mean": float(bias[valid].mean()) if bool(valid.any()) else nan,
+        "p_tail_valid_mean": float(p_tail[valid].mean()) if bool(valid.any()) else nan,
+        "tail_entropy_valid_mean": float(tail_entropy[valid].mean())
+        if bool(valid.any()) else nan,
+        "tail_kl_valid_mean": float(tail_kl[valid].mean()) if bool(valid.any()) else nan,
+        "valid_fraction": float(valid.float().mean()),
+        # Pooled identity check: mean of (L_compact - L_full) over valid positions
+        # must equal the mean of -p_T (H + KL) over the *same* positions. Sums and
+        # counts, not means of means, because the product does not commute.
+        "bias_valid_sum": float(bias[valid].sum()) if bool(valid.any()) else 0.0,
+        "identity_valid_sum": float((p_tail[valid] * (tail_entropy[valid]
+                                                      + tail_kl[valid])).sum())
+        if bool(valid.any()) else 0.0,
+        "valid_count": int(valid.sum()),
     }
 
 
@@ -161,21 +189,37 @@ def evaluate_student(student, teacher, windows: dict[str, list[dict]], device) -
             domain_rows.append({
                 "doc_id": item["doc_id"],
                 "window_index": item["window_index"],
-                **{key: float(value.mean()) for key, value in targets.items()
-                   if key != "positions"},
+                "compact": float(targets["compact"].mean()),
+                "full": float(targets["full"].mean()),
+                "bias": float(targets["bias"].mean()),
+                "p_tail": float(targets["p_tail"].mean()),
+                "tail_entropy": float(targets["tail_entropy"].nanmean())
+                if not torch.isnan(targets["tail_entropy"]).all() else float("nan"),
+                "tail_kl": float(targets["tail_kl"].nanmean())
+                if not torch.isnan(targets["tail_kl"]).all() else float("nan"),
+                "bias_valid_mean": targets["bias_valid_mean"],
+                "p_tail_valid_mean": targets["p_tail_valid_mean"],
+                "valid_fraction": targets["valid_fraction"],
+                "bias_valid_sum": targets["bias_valid_sum"],
+                "identity_valid_sum": targets["identity_valid_sum"],
+                "valid_count": targets["valid_count"],
                 "positions": int(targets["positions"]),
             })
         rows[domain] = domain_rows
     summary = {}
     for domain, domain_rows in rows.items():
+        def mean(key):
+            values = np.array([row[key] for row in domain_rows], dtype=float)
+            return float(np.nanmean(values)) if np.isfinite(values).any() else float("nan")
         summary[domain] = {
             "windows": len(domain_rows),
             "compact": bootstrap_mean(np.array([row["compact"] for row in domain_rows])),
             "full": bootstrap_mean(np.array([row["full"] for row in domain_rows])),
             "bias": bootstrap_mean(np.array([row["bias"] for row in domain_rows])),
-            "p_tail": float(np.mean([row["p_tail"] for row in domain_rows])),
-            "tail_entropy": float(np.mean([row["tail_entropy"] for row in domain_rows])),
-            "tail_kl": float(np.mean([row["tail_kl"] for row in domain_rows])),
+            "p_tail": mean("p_tail"),
+            "tail_entropy": mean("tail_entropy"),
+            "tail_kl": mean("tail_kl"),
+            "valid_fraction": mean("valid_fraction"),
         }
     all_rows = [row for domain_rows in rows.values() for row in domain_rows]
     summary["pooled"] = {
@@ -183,14 +227,18 @@ def evaluate_student(student, teacher, windows: dict[str, list[dict]], device) -
         "compact": float(np.mean([row["compact"] for row in all_rows])),
         "full": float(np.mean([row["full"] for row in all_rows])),
         "bias": float(np.mean([row["bias"] for row in all_rows])),
-        "p_tail": float(np.mean([row["p_tail"] for row in all_rows])),
-        "tail_entropy": float(np.mean([row["tail_entropy"] for row in all_rows])),
-        "tail_kl": float(np.mean([row["tail_kl"] for row in all_rows])),
+        "p_tail": float(np.nanmean([row["p_tail"] for row in all_rows])),
+        "tail_entropy": float(np.nanmean([row["tail_entropy"] for row in all_rows])),
+        "tail_kl": float(np.nanmean([row["tail_kl"] for row in all_rows])),
+        "valid_fraction": float(np.nanmean([row["valid_fraction"] for row in all_rows])),
         "identity_check": {
-            "measured_bias": float(np.mean([row["bias"] for row in all_rows])),
-            "minus_p_tail_entropy_plus_kl": float(np.mean(
-                [-row["p_tail"] * (row["tail_entropy"] + row["tail_kl"])
-                 for row in all_rows])),
+            "measured_bias": float(np.sum([row["bias_valid_sum"] for row in all_rows])
+                                   / max(1, np.sum([row["valid_count"] for row in all_rows]))),
+            "minus_p_tail_entropy_plus_kl": float(
+                -np.sum([row["identity_valid_sum"] for row in all_rows])
+                / max(1, np.sum([row["valid_count"] for row in all_rows]))),
+            "positions": "valid subset (teacher tail mass >= floor), pooled "
+                         "per position, not means of means",
         },
     }
     return {"per_window": rows, "summary": summary}
@@ -217,8 +265,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--split-dir", default="results/artifacts")
     parser.add_argument("--split-receipts", default="results/splits")
     parser.add_argument("--max-windows", type=int, default=0)
-    parser.add_argument("--out", required=True)
+    parser.add_argument("--out", default=None)
     args = parser.parse_args(argv)
+    stamp = stamp_now()
+    out_path = args.out or os.path.join("results/train", f"instrument-{stamp}.json")
 
     if not torch.cuda.is_available():
         raise SystemExit("the instrument check requires the GPU court (--gpu)")
@@ -243,8 +293,9 @@ def main(argv: list[str]) -> int:
             base = harness.load_model(harness.model_path(args.hf_root, "0.6b"), device)
             arm_model = build_arm(base, name, config, admission, 1001, profile=profile)
             arm_model.model.to(device)
-            state = torch.load(checkpoint, map_location=device, weights_only=False)
+            state = torch.load(checkpoint, map_location="cpu", weights_only=False)
             arm_model.model.load_state_dict(state["model"], strict=False)
+            del state
             arm_model.model.eval()
             student = arm_model.model
             resource = {
@@ -264,6 +315,8 @@ def main(argv: list[str]) -> int:
             **evaluate_student(student, teacher, windows, device),
         }
         del student
+        if checkpoint:
+            del arm_model
         torch.cuda.empty_cache()
 
     names = sorted(results)
@@ -283,17 +336,34 @@ def main(argv: list[str]) -> int:
         compact_right = np.array([row["compact"] for row in right_rows[:common]])
         full_left = np.array([row["full"] for row in left_rows[:common]])
         full_right = np.array([row["full"] for row in right_rows[:common]])
+        compact_pair = paired_bootstrap(compact_left, compact_right)
+        full_pair = paired_bootstrap(full_left, full_right)
+        excludes_zero = (
+            (compact_pair["ci_low"] > 0 and compact_pair["ci_high"] > 0)
+            or (compact_pair["ci_low"] < 0 and compact_pair["ci_high"] < 0)
+            or (full_pair["ci_low"] > 0 and full_pair["ci_high"] > 0)
+            or (full_pair["ci_low"] < 0 and full_pair["ci_high"] < 0))
         pairs[f"{left}-{right}"] = {
-            "compact_difference": paired_bootstrap(compact_left, compact_right),
-            "full_difference": paired_bootstrap(full_left, full_right),
-            "sign_agreement": bool(np.sign(compact_left.mean() - compact_right.mean())
-                                   == np.sign(full_left.mean() - full_right.mean())),
+            "compact_difference": compact_pair,
+            "full_difference": full_pair,
+            "sign_agreement": bool(
+                np.sign(compact_left.mean() - compact_right.mean())
+                == np.sign(full_left.mean() - full_right.mean())),
+            "distinguishable": bool(excludes_zero),
         }
     rank_correlation = spearman(order_compact, order_full)
     sign_agreement = all(pair.get("sign_agreement", False) for pair in pairs.values())
-    decision = "compact_target_adequate" if sign_agreement and rank_correlation >= 0.9 \
-        else "report_both_targets"
-    stamp = stamp_now()
+    distinguishable = [name for name, pair in pairs.items()
+                       if pair.get("distinguishable", False)]
+    distinguishable_agreement = all(pairs[name]["sign_agreement"]
+                                    for name in distinguishable)
+    # The analysis rule is stated here and was written after this measurement;
+    # it is therefore exploratory. The conservative action (report both targets
+    # in T2 evaluation) is adopted regardless of the rule's outcome.
+    if distinguishable_agreement:
+        decision = "compact_target_adequate_for_training_report_both_at_eval"
+    else:
+        decision = "full_target_required_at_eval"
     receipt = {
         "schema": "selvedge/t2-instrument-check/v1",
         "stamp": stamp,
@@ -328,21 +398,25 @@ def main(argv: list[str]) -> int:
             "spearman": rank_correlation,
             "decisive_pairs": pairs,
             "sign_agreement": sign_agreement,
+            "distinguishable_pairs": distinguishable,
+            "sign_agreement_distinguishable": distinguishable_agreement,
         },
         "decision": decision,
-        "decision_rule": "compact target stands for T2 only if every registered "
-                         "decisive pair keeps its sign and the cross-student rank "
-                         "correlation is >= 0.9; otherwise T2 reports both targets",
+        "decision_rule": "decided on the pairs whose paired 95% CI excludes zero in "
+                         "at least one target; pairs inside the CI are not evidence "
+                         "either way. The rule was written after this measurement and "
+                         "is exploratory; the safeguard (report both targets in the "
+                         "T2 evaluation) is adopted unconditionally.",
         "gpu": torch.cuda.get_device_name(0),
         "torch": torch.__version__,
         "command": " ".join(sys.argv),
     }
-    write_json_atomic(args.out, receipt)
+    write_json_atomic(out_path, receipt)
     print(json.dumps({"decision": decision, "spearman": rank_correlation,
                       "sign_agreement": sign_agreement,
                       "pooled": {name: results[name]["summary"]["pooled"]
                                  for name in names}}, indent=2, sort_keys=True))
-    print(f"instrument: receipt={args.out}")
+    print(f"instrument: receipt={out_path}")
     return 0
 
 

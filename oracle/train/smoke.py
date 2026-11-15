@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(HERE), "eval"))
 import harness  # noqa: E402
 import loop  # noqa: E402
 import tasks  # noqa: E402
-from modeling import build_arm, load_admission  # noqa: E402
+from modeling import build_arm, load_admission, resource_report  # noqa: E402
 
 
 def utc_now() -> str:
@@ -136,9 +136,13 @@ def evaluate_checkpoint(arm: str, config: str, admission: str, checkpoint: str,
     second = harness.generate_texts(arm_model.model, tokenizer, prompts, 32,
                                     harness.GEN_BATCH, device)
     result["determinism"] = {"problems": len(prompts), "identical": first == second}
+    result["resources"] = resource_report(arm_model)
     result["checkpoint_step"] = int(state["step"])
     result["split_sha256"] = split_sha
     result["vram_peak_gib"] = torch.cuda.max_memory_allocated() / (1024 ** 3)
+    del teacher, base, arm_model, tokenizer
+    gc.collect()
+    torch.cuda.empty_cache()
     return result
 
 
@@ -212,7 +216,9 @@ def main(argv: list[str]) -> int:
                                        (t2 and arm in args.grad_checkpoint_arms.split(","))),
                       deterministic=args.deterministic,
                       micro_positions=args.micro_positions or (512 if t2 else 1024))
-        print(f"smoke: arm {arm} training {args.steps} steps", flush=True)
+        print(f"smoke: arm {arm} training {args.steps} steps "
+              f"(resident {torch.cuda.memory_allocated() / (1024 ** 3):.2f}GiB)",
+              flush=True)
         torch.cuda.reset_peak_memory_stats()
         run_loop(arm, config, admission, out, args.steps, None, True,
                  args.micro_batch, args.accum, **common)

@@ -53,13 +53,18 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--smoke", nargs="+", required=True)
     parser.add_argument("--index", default="results/artifacts/train/train.index.json")
     parser.add_argument("--window-hours", type=float, default=10.0)
+    parser.add_argument("--registered", type=int, default=None,
+                        help="token budget to test; default is the stream's registered budget")
+    parser.add_argument("--common", action="store_true",
+                        help="derive one common budget from the slowest arm")
     parser.add_argument("--out", default=None)
     args = parser.parse_args(argv)
 
     index_path = os.path.join(REPO, args.index)
     with open(index_path, encoding="utf-8") as handle:
         index = json.load(handle)
-    registered = int(index["registered_budget_tokens"])
+    registered = int(args.registered if args.registered is not None
+                     else index["registered_budget_tokens"])
 
     paths: list[str] = []
     for pattern in args.smoke:
@@ -103,6 +108,30 @@ def main(argv: list[str]) -> int:
             }
 
     stamp = stamp_now()
+    common = None
+    if args.common and arms:
+        slowest = min(payload["tokens_per_second"] for payload in arms.values())
+        slowest_arm = min(arms, key=lambda name: arms[name]["tokens_per_second"])
+        seconds = args.window_hours * 3600.0
+        common = {
+            "slowest_arm": slowest_arm,
+            "slowest_tokens_per_second": slowest,
+            "window_hours": args.window_hours,
+            "max_tokens_in_window": int(slowest * seconds),
+            "common_budget_largest_power_of_two": largest_power_of_two(
+                slowest * seconds * 0.9),
+            "arithmetic": f"largest power of two <= 0.9 * {args.window_hours}h "
+                          f"* 3600 * {slowest:.1f} tokens/s",
+            "every_arm_fits": all(
+                payload["tokens_per_second"] * seconds
+                >= largest_power_of_two(slowest * seconds * 0.9)
+                for payload in arms.values()),
+            "slowest_arm_hours_at_common_budget": (
+                largest_power_of_two(slowest * seconds * 0.9) / slowest / 3600.0),
+            "total_gpu_hours_at_common_budget": sum(
+                largest_power_of_two(slowest * seconds * 0.9) / payload["tokens_per_second"]
+                / 3600.0 for payload in arms.values()),
+        }
     receipt = {
         "schema": "selvedge/train-budget/v1",
         "stamp": stamp,
@@ -112,6 +141,7 @@ def main(argv: list[str]) -> int:
         "registered_budget_tokens": registered,
         "stream_tokens": index["tokens"],
         "arms": arms,
+        "common": common,
         "verdict": {
             arm: ("fits" if payload["fits_registered_budget"] else "does not fit")
             for arm, payload in arms.items()

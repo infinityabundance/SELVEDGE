@@ -388,11 +388,17 @@ def main(argv: list[str]) -> int:
                                   weight_decay=0.0)
     start_step = 0
     if args.resume:
-        state = load_checkpoint(args.resume, device)
+        # Load to CPU and copy: loading straight to the device would hold a
+        # second copy of every parameter and of the optimiser state on the GPU.
+        state = load_checkpoint(args.resume, "cpu")
         arm_model.model.load_state_dict(state["model"], strict=False)
         optimizer.load_state_dict(state["optimizer"])
-        set_seed(args.seed + state["step"])
-        start_step = state["step"]
+        step = int(state["step"])
+        del state
+        gc.collect()
+        torch.cuda.empty_cache()
+        set_seed(args.seed + step)
+        start_step = step
         print(f"train: resumed from {args.resume} at step {start_step}")
     if (args.profile == "t2" and args.arm == "H*" and args.warmup_steps > 0
             and start_step >= args.warmup_steps):
