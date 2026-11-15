@@ -1659,13 +1659,17 @@ extended to T2 and stops the arm. The per-arm report is
 
 **Deterministic dispatch (T2 execution detail).** T1's `combine` accumulated
 routed outputs with `index_add_`, whose CUDA atomics are not bitwise
-reproducible (T1.15 A6/A7). T2 replaces it with a slot-wise combine: the
-capacity-sorted buffer output is re-indexed per (token, slot) pair and summed
-over the `k` slots with tensor writes at unique indices and a reduction over a
-fixed slot order. The mathematics is unchanged (the same terms are summed); the
-result is bitwise deterministic. Recorded here because it changes T1's execution
-kernel and therefore cannot be inherited silently. The T1 arms keep the T1
-kernel; T2 arms use the deterministic one.
+reproducible (T1.15 A6/A7). The shared dispatch class now uses a slot-wise
+combine instead: the capacity-sorted buffer output is re-indexed per
+(token, slot) pair and summed over the `k` slots with tensor writes at unique
+indices and a reduction over a fixed slot order. The terms are unchanged and
+the forward value is identical up to summation order; the result is bitwise
+deterministic. **The change applies to every arm, T1's included**, because they
+share `_RoutedDispatch`; T1's recorded smoke receipts predate it and are not
+re-measured. T1's A6/A7 determination — that grouped routing is not bitwise
+reproducible — is therefore superseded for any future T1 run under the same
+deterministic-kernel configuration, and is retained as the historical reason the
+change was made.
 
 ## T2.5 Error-directed signal (P3.3)
 
