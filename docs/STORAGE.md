@@ -108,8 +108,8 @@ and therefore wastes
 28311552
 <!-- END GENERATED: storage-06b-prefetch-wasted -->
 
-**Raw JSONL is not tracked.** The per-request files are about 20 MiB per repeat
-(`results/store/metrics-*`), so `.gitignore` excludes
+**Raw JSONL is not tracked.** The per-request files are tens of MiB per
+repeat (`results/store/metrics-*`), so `.gitignore` excludes
 `results/store/metrics-*/` and `results/store/*.tmp.json`. The tracked inputs are
 the JSON receipts and the variance summaries; `scripts/storage-summary.py`
 regenerates the summaries from the receipts. Reproduce with:
@@ -136,7 +136,7 @@ bimodal.
 
 ### 5.1 Exact-mode bundle reads (whole bundle, verified)
 
-The 0.6B bundle is 1008 MiB and the 1.7B bundle is 4032 MiB. `plan-order` cold
+The two bundles are the real Qwen3 FFN group bundles. `plan-order` cold
 median on the 0.6B bundle:
 <!-- BEGIN GENERATED: storage-06b-plan-tp -->
 612.012
@@ -223,14 +223,13 @@ ns.
 
 Reading:
 
-- The cold device rate is roughly 600-700 MiB/s on both bundles. The
+- The cold device rate is reported in the generated medians above; the
   `none-warm` control (page cache left populated) is much faster on its second
   pass, which is the page-cache effect and is not attributed to the store.
-- Coalescing adjacent extents helps in the fast device state (about 24% on the
-  0.6B bundle in an earlier same-state run and about 8% on the 1.7B bundle),
-  but the three post-fix repeats show a wide range, so the honest claim is
-  "coalescing is at least neutral and sometimes faster; the device state
-  dominates". The range and CV are reported, not hidden.
+- Coalescing adjacent extents can help in the fast device state, but the three
+  post-fix repeats show a wide range, so the honest claim is "coalescing is at
+  least neutral and sometimes faster; the device state dominates". The range
+  and CV are reported, not hidden.
 - SHA-256 verification is not free: it accounts for most of the per-shard
   stall. The coalesced and plan paths both spend the same verify time (the
   earlier coalesced path failed to increment the counter; that bookkeeping bug
@@ -317,8 +316,19 @@ Three repeats, page cache dropped for each cold measurement:
 <!-- BEGIN GENERATED: storage-17b-io-overread-amp -->
 2.66667
 <!-- END GENERATED: storage-17b-io-overread-amp -->
-  on the 1.7B bundle). The 4 KiB-aligned and 512-byte-offset cases were 1.0 and
-  1.0013, so at these sizes the device does not penalise sub-page offsets;
+  on the 1.7B bundle). The 64 KiB-aligned case measured
+<!-- BEGIN GENERATED: storage-06b-io-align64k-amp -->
+1
+<!-- END GENERATED: storage-06b-io-align64k-amp -->
+  , the 4 KiB-aligned case
+<!-- BEGIN GENERATED: storage-06b-io-align4k-amp -->
+1
+<!-- END GENERATED: storage-06b-io-align4k-amp -->
+  and the 512-byte-offset case
+<!-- BEGIN GENERATED: storage-06b-io-align512-amp -->
+1.0013
+<!-- END GENERATED: storage-06b-io-align512-amp -->
+  , so at these sizes the device does not penalise sub-page offsets;
   over-reading does.
 - Checksum: SHA-256 through the store measured
 <!-- BEGIN GENERATED: storage-06b-io-checksum -->
