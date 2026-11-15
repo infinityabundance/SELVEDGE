@@ -1,0 +1,47 @@
+Diff in /work/crates/selvedge-cli/tests/t2_admission.rs:62:
+         assert!(path.is_file(), "missing T2 config {}", path.display());
+         let config: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+         assert_eq!(config["arm"], json!(arm));
+-        assert_eq!(config["total_accessible"].as_u64().unwrap(), *total, "{arm}");
++        assert_eq!(
++            config["total_accessible"].as_u64().unwrap(),
++            *total,
++            "{arm}"
++        );
+         let output = selvedge(&["admit", "--config", path.to_str().unwrap(), "--json"]);
+         assert!(
+             output.status.success(),
+Diff in /work/crates/selvedge-cli/tests/t2_admission.rs:72:
+         let record = stdout_json(&output);
+         assert_eq!(record["schema"], "selvedge/admission-record/v1");
+         assert_eq!(record["admitted"], true, "{arm}");
+-        assert_eq!(record["active_unique_params"].as_u64().unwrap(), *active, "{arm}");
+-        assert_eq!(record["total_accessible"].as_u64().unwrap(), *total, "{arm}");
++        assert_eq!(
++            record["active_unique_params"].as_u64().unwrap(),
++            *active,
++            "{arm}"
++        );
++        assert_eq!(
++            record["total_accessible"].as_u64().unwrap(),
++            *total,
++            "{arm}"
++        );
+         assert!(record["active_unique_params"].as_u64().unwrap() <= 1_000_000_000);
+         assert_eq!(record["verdict"]["kind"], "within");
+     }
+Diff in /work/crates/selvedge-cli/tests/t2_admission.rs:107:
+             "--out",
+             record_path.to_str().unwrap(),
+         ]);
+-        assert!(!output.status.success(), "{arm}: over-budget config was admitted");
+-        let record: Value =
+-            serde_json::from_slice(&std::fs::read(&record_path).unwrap()).unwrap();
++        assert!(
++            !output.status.success(),
++            "{arm}: over-budget config was admitted"
++        );
++        let record: Value = serde_json::from_slice(&std::fs::read(&record_path).unwrap()).unwrap();
+         assert_eq!(record["admitted"], false, "{arm}");
+         // No admitted path exists for an over-budget arm: the verdict is absent.
+         assert!(record["verdict"].is_null(), "{arm}");

@@ -62,7 +62,11 @@ fn every_t2_arm_is_admitted_at_its_design_count() {
         assert!(path.is_file(), "missing T2 config {}", path.display());
         let config: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
         assert_eq!(config["arm"], json!(arm));
-        assert_eq!(config["total_accessible"].as_u64().unwrap(), *total, "{arm}");
+        assert_eq!(
+            config["total_accessible"].as_u64().unwrap(),
+            *total,
+            "{arm}"
+        );
         let output = selvedge(&["admit", "--config", path.to_str().unwrap(), "--json"]);
         assert!(
             output.status.success(),
@@ -72,8 +76,16 @@ fn every_t2_arm_is_admitted_at_its_design_count() {
         let record = stdout_json(&output);
         assert_eq!(record["schema"], "selvedge/admission-record/v1");
         assert_eq!(record["admitted"], true, "{arm}");
-        assert_eq!(record["active_unique_params"].as_u64().unwrap(), *active, "{arm}");
-        assert_eq!(record["total_accessible"].as_u64().unwrap(), *total, "{arm}");
+        assert_eq!(
+            record["active_unique_params"].as_u64().unwrap(),
+            *active,
+            "{arm}"
+        );
+        assert_eq!(
+            record["total_accessible"].as_u64().unwrap(),
+            *total,
+            "{arm}"
+        );
         assert!(record["active_unique_params"].as_u64().unwrap() <= 1_000_000_000);
         assert_eq!(record["verdict"]["kind"], "within");
     }
@@ -107,9 +119,11 @@ fn every_t2_arm_config_is_refused_when_it_is_pushed_over_the_ceiling() {
             "--out",
             record_path.to_str().unwrap(),
         ]);
-        assert!(!output.status.success(), "{arm}: over-budget config was admitted");
-        let record: Value =
-            serde_json::from_slice(&std::fs::read(&record_path).unwrap()).unwrap();
+        assert!(
+            !output.status.success(),
+            "{arm}: over-budget config was admitted"
+        );
+        let record: Value = serde_json::from_slice(&std::fs::read(&record_path).unwrap()).unwrap();
         assert_eq!(record["admitted"], false, "{arm}");
         // No admitted path exists for an over-budget arm: the verdict is absent.
         assert!(record["verdict"].is_null(), "{arm}");

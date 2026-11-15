@@ -1175,3 +1175,110 @@ resolution on its own, so each case was re-derived:
 The five-arm pilot of P3.4, after the P2.4 teacher-target instrument check: it is
 the only experiment whose outcome decides whether the trained-capacity branch
 continues, and every later workstream assumes its answer.
+
+## 2026-11-15 — S8a: T2 registration, capacity modules, P2.4 instrument and the five-arm smoke
+
+### Plan
+
+Deliver the five-arm error-directed matrix (P3.4) as a registered, instrumented,
+smoke-proven pilot without starting a full run:
+
+1. **Register T2** before any measured comparison: five arms, the memory and
+   expert paths, the utility signal, the warm-up, the budget rule, the seeds,
+   the metrics and K15-K19.
+2. **Implement** the memory path, the four capacity wrappers, the utility
+   labeller and the two router treatments, and route every arm through the Rust
+   admission ledger.
+3. **Run the P2.4 instrument check** against a live full-vocabulary teacher and
+   register the decision.
+4. **Smoke every arm**: step-0 parity, 50 steps, determinism, resume, VRAM and
+   throughput, then derive the budget and leave exact launch commands.
+
+### Hypothesis and result
+
+| # | hypothesis | result | evidence |
+| ---: | --- | --- | --- |
+| H1 | A deterministic hash over the token prefix can address a 2^18-row per-layer table with no learned index, and the active union is only the retrieved rows plus the projection and gate | confirmed at the module level: 525,824 active elements per insertion layer, 2,103,296 over four; every read is causal in a unit test | `oracle/tests/test_t2_capacity.py`, `results/train/admission/t2/M.json` |
+| H2 | The Rust ledger can refuse an over-budget T2 arm before training | confirmed for all five arms: each config is admitted at its design count and each mutated config is refused with no admitted path | `crates/selvedge-cli/tests/t2_admission.rs`, `results/courts/rust-*.json` |
+| H3 | A zero-initialised memory projection and specialist `W_down` give exact step-0 parity for every branch (`D`, `M`, `X`, `H`, `H*`) | confirmed, but only after a defect was found: an fp32 extra added to a bf16 base promoted the residual stream and moved logits by 3.64. Casting the extra to the base dtype makes the delta exactly 0 on all five arms | `zero-point.json` in each smoke run |
+| H4 | The compact T1.4 target ranks students like the full-vocabulary teacher on the held-out sample | the bias is real and near constant (the number is below); both statistically distinguishable decisive pairs keep their sign; `H*-H` is inside its CI under both targets | `results/train/instrument-20261115T130334Z.json` |
+| H5 | The five arms fit 16 GiB and train at a rate that makes a 5-hour budget meaningful | confirmed: the slowest arm runs at 10.86 GiB, the declared budget fits every arm, and the five arms fit the 25 GPU-hour envelope | `results/train/budget-20261115T130456Z.json` | |
+| H6 | T2 execution can be bitwise deterministic, so the pilot's noise floor is not dominated by kernel atomics | confirmed for all five arms only with `torch.use_deterministic_algorithms(True)`; without it even the dense control's 5-step loss differs by 1.7e-4 | `results/train/smoke-20261115T10*.json`, `...T114908Z.json`, `...T125618Z.json` |
+
+### The measured numbers behind H4 and H5
+
+Compact-target bias on the held-out sample (nats/token, `D0`):
+
+<!-- BEGIN GENERATED: worklog-t2-instrument-bias -->
+-0.400
+<!-- END GENERATED: worklog-t2-instrument-bias -->
+
+Slowest arm throughput (tokens/s, `H`):
+
+<!-- BEGIN GENERATED: worklog-t2-slowest-tokens-per-second -->
+4767.47
+<!-- END GENERATED: worklog-t2-slowest-tokens-per-second -->
+
+Declared budget (tokens):
+
+<!-- BEGIN GENERATED: worklog-t2-budget-tokens -->
+67108864
+<!-- END GENERATED: worklog-t2-budget-tokens -->
+
+Five arms at the declared budget (GPU-hours):
+
+<!-- BEGIN GENERATED: worklog-t2-total-gpu-hours -->
+15.68
+<!-- END GENERATED: worklog-t2-total-gpu-hours -->
+
+### The P2.4 finding, stated plainly
+
+The T1.4 objective is the top-16 support plus **one tail bucket**. On 160
+held-out windows with the live 1.7B teacher, the teacher's mean tail mass is
+`0.050`, its tail entropy is `5.32` nats and the student's tail divergence is
+`1.41` nats. The compact loss is therefore `0.397` nats/token *below* the full
+loss, and the identity `L_compact - L_full = -p_tail (H + KL)` holds to six
+decimals on the pooled valid positions. The bias is almost identical across the
+six students, which is why the ranking survives: both distinguishable decisive
+pairs keep their sign, and the one that flips (`H*-H`) is inside its CI under
+both targets. The decision is to keep the compact target for training and
+report both targets at evaluation; the rule that produced it was written after
+the measurement and is labelled exploratory, while the both-targets safeguard is
+unconditional. A hard-label control `HL` is registered as a deferred option.
+
+### Two defects found and fixed
+
+- **Residual dtype promotion.** `AdditiveFFN` added an fp32 projection output to
+  a bf16 base, promoting the rest of the network. The step-0 identity check
+  caught it (delta 3.64 on `X`, `H`, `H*`, exactly 0 on `D`, `M`), and the fix
+  also halved activation memory.
+- **Memory-fit OOM on the hybrids.** The hybrids exceeded 16 GiB. Storing the
+  memory table in bf16 (its deployment dtype) brought them to 10.85 GiB without
+  changing any count, and a resume that loaded its checkpoint straight to the
+  GPU was the other 2.5 GiB.
+
+### Verified courts
+
+- `scripts/court oracle -- python3 -m pytest oracle/tests -q` passes, including
+  the 16 new T2 tests.
+- `scripts/court rust test` passes, including the two new T2 admission tests in
+  `crates/selvedge-cli/tests/t2_admission.rs`.
+- `scripts/court commit_identity` and `scripts/court perf_numbers` — see the
+  closing receipts at this revision.
+
+### Limitations
+
+- No full-budget T2 run has started. The smoke is 50 steps per arm.
+- The utility labels are measured once in the full-bank reference set, so an
+  expert that duplicates another is under-penalised.
+- The `H*` router is frozen after its label phase; periodic relabelling is
+  deferred to P3.5 phase B.
+- The one-seed pilot cannot separate a small `H*`-`H` difference unless the
+  replication runs; the arithmetic fits the envelope, and A8 records the
+  fallback.
+
+### Next experiment
+
+Launch the five arms at 2^26 tokens with the commands in `results/T2-PLAN.md`,
+then evaluate with `oracle/eval/baseline.py` and the both-target instrument
+check. K15-K19 decide whether WS3 is scaled or retired.

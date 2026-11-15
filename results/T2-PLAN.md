@@ -33,13 +33,138 @@ only, deterministic kernels, 512-position micro-forwards. `hours` is the time
 the declared 67,108,864-token budget needs at that rate; `resume delta` is
 `max |loss_full - loss_resumed|` over 25 continuation steps.
 
-| arm | tokens/s | VRAM peak (GiB) | hours at budget | resume delta |
-| --- | ---: | ---: | ---: | ---: |
-| `D` | <!-- BEGIN GENERATED: t2-plan-D-tokens-per-second -->0<!-- END GENERATED: t2-plan-D-tokens-per-second --> | <!-- BEGIN GENERATED: t2-plan-D-vram -->0<!-- END GENERATED: t2-plan-D-vram --> | <!-- BEGIN GENERATED: t2-plan-D-hours -->0<!-- END GENERATED: t2-plan-D-hours --> | <!-- BEGIN GENERATED: t2-plan-D-resume-delta -->0<!-- END GENERATED: t2-plan-D-resume-delta --> |
-| `M` | <!-- BEGIN GENERATED: t2-plan-M-tokens-per-second -->0<!-- END GENERATED: t2-plan-M-tokens-per-second --> | <!-- BEGIN GENERATED: t2-plan-M-vram -->0<!-- END GENERATED: t2-plan-M-vram --> | <!-- BEGIN GENERATED: t2-plan-M-hours -->0<!-- END GENERATED: t2-plan-M-hours --> | <!-- BEGIN GENERATED: t2-plan-M-resume-delta -->0<!-- END GENERATED: t2-plan-M-resume-delta --> |
-| `X` | <!-- BEGIN GENERATED: t2-plan-X-tokens-per-second -->0<!-- END GENERATED: t2-plan-X-tokens-per-second --> | <!-- BEGIN GENERATED: t2-plan-X-vram -->0<!-- END GENERATED: t2-plan-X-vram --> | <!-- BEGIN GENERATED: t2-plan-X-hours -->0<!-- END GENERATED: t2-plan-X-hours --> | <!-- BEGIN GENERATED: t2-plan-X-resume-delta -->0<!-- END GENERATED: t2-plan-X-resume-delta --> |
-| `H` | <!-- BEGIN GENERATED: t2-plan-H-tokens-per-second -->0<!-- END GENERATED: t2-plan-H-tokens-per-second --> | <!-- BEGIN GENERATED: t2-plan-H-vram -->0<!-- END GENERATED: t2-plan-H-vram --> | <!-- BEGIN GENERATED: t2-plan-H-hours -->0<!-- END GENERATED: t2-plan-H-hours --> | <!-- BEGIN GENERATED: t2-plan-H-resume-delta -->0<!-- END GENERATED: t2-plan-H-resume-delta --> |
-| `H*` | <!-- BEGIN GENERATED: t2-plan-Hstar-tokens-per-second -->0<!-- END GENERATED: t2-plan-Hstar-tokens-per-second --> | <!-- BEGIN GENERATED: t2-plan-Hstar-vram -->0<!-- END GENERATED: t2-plan-Hstar-vram --> | <!-- BEGIN GENERATED: t2-plan-Hstar-hours -->0<!-- END GENERATED: t2-plan-Hstar-hours --> | <!-- BEGIN GENERATED: t2-plan-Hstar-resume-delta -->0<!-- END GENERATED: t2-plan-Hstar-resume-delta --> |
+Each number is a generated region sourced from
+`results/train/budget-20261115T130456Z.json`; the receipt is the single source.
+
+**D** (dense control)
+
+- tokens/s:
+
+  <!-- BEGIN GENERATED: t2-plan-D-tokens-per-second -->
+7943
+  <!-- END GENERATED: t2-plan-D-tokens-per-second -->
+
+- VRAM peak (GiB):
+
+  <!-- BEGIN GENERATED: t2-plan-D-vram -->
+5.45
+  <!-- END GENERATED: t2-plan-D-vram -->
+
+- hours at the declared budget:
+
+  <!-- BEGIN GENERATED: t2-plan-D-hours -->
+2.35
+  <!-- END GENERATED: t2-plan-D-hours -->
+
+- resume delta:
+
+  <!-- BEGIN GENERATED: t2-plan-D-resume-delta -->
+0.0e+00
+  <!-- END GENERATED: t2-plan-D-resume-delta -->
+
+**M** (memory only)
+
+- tokens/s:
+
+  <!-- BEGIN GENERATED: t2-plan-M-tokens-per-second -->
+9320
+  <!-- END GENERATED: t2-plan-M-tokens-per-second -->
+
+- VRAM peak (GiB):
+
+  <!-- BEGIN GENERATED: t2-plan-M-vram -->
+4.21
+  <!-- END GENERATED: t2-plan-M-vram -->
+
+- hours at the declared budget:
+
+  <!-- BEGIN GENERATED: t2-plan-M-hours -->
+2.00
+  <!-- END GENERATED: t2-plan-M-hours -->
+
+- resume delta:
+
+  <!-- BEGIN GENERATED: t2-plan-M-resume-delta -->
+0.0e+00
+  <!-- END GENERATED: t2-plan-M-resume-delta -->
+
+**X** (expert only)
+
+- tokens/s:
+
+  <!-- BEGIN GENERATED: t2-plan-X-tokens-per-second -->
+5035
+  <!-- END GENERATED: t2-plan-X-tokens-per-second -->
+
+- VRAM peak (GiB):
+
+  <!-- BEGIN GENERATED: t2-plan-X-vram -->
+8.82
+  <!-- END GENERATED: t2-plan-X-vram -->
+
+- hours at the declared budget:
+
+  <!-- BEGIN GENERATED: t2-plan-X-hours -->
+3.70
+  <!-- END GENERATED: t2-plan-X-hours -->
+
+- resume delta:
+
+  <!-- BEGIN GENERATED: t2-plan-X-resume-delta -->
+0.0e+00
+  <!-- END GENERATED: t2-plan-X-resume-delta -->
+
+**H** (naive hybrid)
+
+- tokens/s:
+
+  <!-- BEGIN GENERATED: t2-plan-H-tokens-per-second -->
+4767
+  <!-- END GENERATED: t2-plan-H-tokens-per-second -->
+
+- VRAM peak (GiB):
+
+  <!-- BEGIN GENERATED: t2-plan-H-vram -->
+10.86
+  <!-- END GENERATED: t2-plan-H-vram -->
+
+- hours at the declared budget:
+
+  <!-- BEGIN GENERATED: t2-plan-H-hours -->
+3.91
+  <!-- END GENERATED: t2-plan-H-hours -->
+
+- resume delta:
+
+  <!-- BEGIN GENERATED: t2-plan-H-resume-delta -->
+0.0e+00
+  <!-- END GENERATED: t2-plan-H-resume-delta -->
+
+**H*** (error-directed hybrid)
+
+- tokens/s:
+
+  <!-- BEGIN GENERATED: t2-plan-Hstar-tokens-per-second -->
+5012
+  <!-- END GENERATED: t2-plan-Hstar-tokens-per-second -->
+
+- VRAM peak (GiB):
+
+  <!-- BEGIN GENERATED: t2-plan-Hstar-vram -->
+10.85
+  <!-- END GENERATED: t2-plan-Hstar-vram -->
+
+- hours at the declared budget:
+
+  <!-- BEGIN GENERATED: t2-plan-Hstar-hours -->
+3.72
+  <!-- END GENERATED: t2-plan-Hstar-hours -->
+
+- resume delta:
+
+  <!-- BEGIN GENERATED: t2-plan-Hstar-resume-delta -->
+0.0e+00
+  <!-- END GENERATED: t2-plan-Hstar-resume-delta -->
 
 Total for one seed of all five arms: **15.68 GPU-hours** (the receipt's
 `/common/total_gpu_hours_at_common_budget`). The full smoke evidence, including

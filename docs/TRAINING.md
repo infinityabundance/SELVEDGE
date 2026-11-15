@@ -131,3 +131,74 @@ scripts/court --gpu oracle -- python3 oracle/train/teacher_cache.py verify
 
 The court writes a receipt under `results/courts/` for every run; a claim in
 this document that is not backed by such a receipt is labelled as design intent.
+
+## 6. T2 modules (error-directed capacity matrix)
+
+The T2 contract is `docs/EXPERIMENT-CONTRACT.md` T2 (with amendments A8 and A9).
+This section describes what exists, not what it proves. No full-budget T2 run
+has started; the evidence here is a five-arm smoke.
+
+| module | role | status |
+| --- | --- | --- |
+| `oracle/train/memory.py` | deterministic hashed memory: two n-gram heads, 2^18-row 256-dim tables at four insertion layers, two reads per token per layer, a 512->1024 projection and a sigmoid gate | implemented, CPU-tested |
+| `oracle/train/modeling.py` | `build_arm(..., profile="t2")` for `D`, `M`, `X`, `H`, `H*`; deterministic slot-wise combine; extra-parameter ledger; resource report | implemented, CPU-tested |
+| `oracle/train/utility.py` | leave-one-expert-out utility labels, checkpointed with a manifest; the listwise-KL router head | implemented, exercised in the H* smoke |
+| `oracle/train/loop.py` | T2 phases: warm-up, utility labelling, frozen-router joint phase; deterministic kernels; micro-position sub-batching | implemented, exercised |
+| `oracle/eval/instrument_check.py` | P2.4: the compact target against a live full-vocabulary teacher | implemented, receipted |
+| `oracle/eval/baseline.py` | evaluates any arm through the T1.7 harness and adds the bytes/token resource block | implemented, exercised |
+| `crates/selvedge-cli/tests/t2_admission.rs` | admits every T2 config at its design count and refuses each when pushed over the ceiling | implemented, passing |
+
+### 6.1 Memory accounting, exactly
+
+Per insertion layer the active union is the two retrieved 256-element rows, the
+`512x1024` projection and the `1024x1` gate:
+
+```
+active/layer = 2*256 + 512*1024 + 1024 = 525,824
+four layers  = 2,103,296
+```
+
+The table itself is **not** charged; a read touches two rows. Total accessible
+memory state is `4 * 2^18 * 256 = 268,435,456` values plus the projection and
+gates, i.e. `270,536,704` added elements. `HashedMemory.active_parameter_report()`
+emits this, and `results/train/admission-configs/t2/{M,H}.json` declares exactly
+the same slices, which the Rust ledger admits and a test cross-checks.
+
+Bytes are kept separate and labelled: resident table = `536,870,912` bytes at
+bf16 (the stored and trained dtype; `1,073,741,824` is the fp32-equivalent size)
+and modelled read bytes per token = `4,206,592` at bf16. The read figure is a
+modelled lower bound on distinct identities read, never measured I/O.
+
+### 6.2 The utility pipeline
+
+`utility.label_utilities` measures, per layer and specialist,
+`u_e(t) = L(without e) - L(with e)` over a fixed calibration slice, with the
+full bank as the reference set: one pass for the reference and one per
+specialist, 9 passes per layer over 28 layers. The pre-expert hidden state is
+captured by a forward pre-hook under `torch.no_grad()` and stored with the
+labels; `utility.train_router` then fits the layer's router to
+`softmax(standardised utilities)` with a listwise KL, never running the core
+again. Leakage is argued three ways in the contract (T2.5) and tested: the
+features are bitwise identical under two different expert masks, the labels
+never enter a forward, and the calibration range is inside the
+contamination-filtered training stream.
+
+### 6.3 Throughput and budget
+
+The measured per-arm throughput, VRAM peak, hours at the declared budget and
+resume deltas are generated in `results/T2-PLAN.md` §2 from
+`results/train/budget-20261115T130456Z.json`. The declared budget is 2^26
+tokens, derived from the slowest arm by T2.7; the arithmetic is in contract A8.
+No number is repeated here, because a repeated measurement would have to be
+regenerated anyway.
+
+### 6.4 What the T2 infrastructure does not establish
+
+- **No T2 arm has been trained at budget.** The smoke is 50 steps per arm.
+- **The utility labels are one-shot** and measured in the full-bank reference
+  set; an expert that duplicates another is under-penalised.
+- **The compact target is optimistic by a measured amount** (A9), and the
+  safeguard is to report both targets rather than to retrain on a full target.
+- **Determinism is a kernel property.** It holds here with
+  `torch.use_deterministic_algorithms(True)`; without the flag the dense control
+  itself is not reproducible.
