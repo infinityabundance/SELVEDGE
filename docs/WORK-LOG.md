@@ -1283,3 +1283,79 @@ unconditional. A hard-label control `HL` is registered as a deferred option.
 Launch the five arms at 2^26 tokens with the commands in `results/T2-PLAN.md`,
 then evaluate with `oracle/eval/baseline.py` and the both-target instrument
 check. K15-K19 decide whether WS3 is scaled or retired.
+
+## 2026-11-15 — S8b: the T2 pilot, launched detached
+
+### Plan
+
+Run the pre-registered five-arm matrix at the A8 budget, evaluate every arm on
+completion with the registered harness, and apply the T2.9/T2.10 decision rule.
+The pilot is a long GPU job, so the plan has two halves:
+
+1. make a run survive a lost session, and make every step leave a receipt;
+2. only then spend the GPU time.
+
+### What changed in the courts
+
+- `scripts/docker-court.sh` gains `--detach` and a `wait` court. The detached
+  launch uses `docker run -d` with *exactly* the same limits, mounts, GPU mode,
+  network policy and environment as the foreground path — the receipt argument
+  list is built once and shared — and `wait` blocks on the container, captures
+  its log, inspects the applied limits and writes the same receipt. A dead
+  client therefore no longer loses a run, and a detached run cannot drift from a
+  supervised one.
+- A detached run does not use `--rm`: the container is inspected and removed by
+  `wait`, so the enforcement comparison still runs. A container that has
+  disappeared is a hard error, not a missing receipt.
+- The wait path takes the container's exit code from `docker wait`'s *stdout*
+  (`docker wait` itself exits 0 when it successfully waited); a non-numeric
+  answer fails closed. This was found by launching a container that exits 7 and
+  observing the wait report success.
+- `scripts/run-t2-pilot.sh` orchestrates: launch guard, shared target cache,
+  the five arms strictly sequentially, evaluation on completion, the P2.4 check
+  and the decision. `scripts/poll-t2-pilot.sh` reports progress, ETA and what
+  remains. `scripts/t2_pilot.py` does the bookkeeping and never touches a model.
+
+### Disk, honestly
+
+The repository filesystem could not hold the pilot next to the recorded
+50-step smoke checkpoints: the guard's arithmetic (in
+`results/t2/launch-guard.json` at the launch stamp and revision) put the target
+cache, the retained checkpoint pairs and the H\* utility checkpoint well beyond
+the free space. The smoke checkpoints at `results/artifacts/train/smoke-t2/`
+were **moved, not deleted**, to a separate filesystem and a symlink keeps the
+paths resolving; the numbers behind that run are in the smoke receipts, which
+are tracked. Nothing that a receipt cites was removed. The guard now runs
+before every launch and refuses rather than filling the disk.
+
+### Defects found while exercising the receipts
+
+Three defects were found by running the real receipt paths against the recorded
+smoke artifacts, before any GPU time was spent on them:
+
+- the admission record's `total_flops` is an object of three components, not a
+  scalar, so `flops * tokens` would have raised on the first arm to finish;
+- `loop.save_checkpoint` writes a JSON sidecar, so a bare first-token parse
+  produced `{` as a checkpoint hash;
+- the eval summary lacked the `revision` field the perf-numbers court requires.
+
+All three are fixed in `scripts/t2_pilot.py`.
+
+### A defect found and not silently fixed
+
+`results/T2-PLAN.md` §2 tabulates "expert weight bytes (+router)" for `X`, `H`
+and `H*` as `352,550,912`. That number is the specialist bank's **element
+count**, not its size in bytes, and it counts all eight specialists rather than
+the four the router reads: at bf16 the deployed k=4 read is `352,780,288` bytes
+and the whole bank is `705,101,824`. The cell is hand-written, so the
+perf-numbers court never saw it. It is not edited here, because a registered
+plan is not rewritten after a measurement; the generated figures in
+`results/T2-PILOT.md` are the ones to use, and the table is corrected in a
+separate, dated change that cites the decision receipt.
+
+### What is running
+
+`scripts/run-t2-pilot.sh` was launched with `setsid nohup` at revision
+`1dd7270f3959a3e0ce15f670a03997467235d04b`. It records every transition in
+`results/t2/pilot-state.json`. Progress and the resume command are printed by
+`scripts/poll-t2-pilot.sh`.
