@@ -820,6 +820,11 @@ def cmd_progress(args) -> int:
     print()
     print("resume:  scripts/run-t2-pilot.sh --resume")
     print("monitor: scripts/poll-t2-pilot.sh --follow")
+    if state.get("status") == "done":
+        print("publish: scripts/finish-t2-pilot.sh   "
+              "# renders results/T2-PILOT.md and runs the courts")
+    elif state.get("status") == "partial":
+        print("some arms are missing: rerun with scripts/run-t2-pilot.sh --resume")
     return 0
 
 

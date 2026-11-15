@@ -79,6 +79,8 @@ report() {
   echo "  scripts/court wait results/courts/pending/<container>.json"
   echo "otherwise:"
   echo "  scripts/run-t2-pilot.sh --resume"
+  echo "once the pilot is done (status done):"
+  echo "  scripts/finish-t2-pilot.sh    # render results/T2-PILOT.md, run the courts"
 }
 
 if ((follow)); then

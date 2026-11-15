@@ -1325,8 +1325,12 @@ cache, the retained checkpoint pairs and the H\* utility checkpoint well beyond
 the free space. The smoke checkpoints at `results/artifacts/train/smoke-t2/`
 were **moved, not deleted**, to a separate filesystem and a symlink keeps the
 paths resolving; the numbers behind that run are in the smoke receipts, which
-are tracked. Nothing that a receipt cites was removed. The guard now runs
-before every launch and refuses rather than filling the disk.
+are tracked. The same was done, while the pilot ran, to the remaining 50-step
+smoke trees and the H\* route probe (`results/artifacts/train/smoke` and
+`.../probe-hstar`): each was copied, byte-size and file-count checked, then
+replaced by a symlink to the archive. Nothing that a receipt cites was removed,
+and the guard runs before every launch and refuses rather than filling the
+disk.
 
 ### Defects found while exercising the receipts
 
