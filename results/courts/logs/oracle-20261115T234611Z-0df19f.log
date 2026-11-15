@@ -1,0 +1,30 @@
+{
+  "agreements": {
+    "dispatch_halves_bitwise_equal": true,
+    "legacy_placement_matches_reference_sorted": true,
+    "pair_placement_matches_reference": true,
+    "placements_agree_without_overflow": true,
+    "placements_separate_under_overflow": 5
+  },
+  "headline": {
+    "capacity": 1,
+    "capacity_factor": 0.5,
+    "dispatch_halves_bitwise_equal": true,
+    "experts": 4,
+    "k": 2,
+    "max_abs_difference": 0.004252306185662746,
+    "overflow_pair_receives_another_tokens_activation": true,
+    "overflow_pairs": 2,
+    "tokens": 3,
+    "valid_pair_dropped_by_the_legacy_mask": true
+  },
+  "out": "results/t2/dispatch-audit-20261115T234610Z.json",
+  "pilot": {
+    "X": {
+      "dropped_fraction": 0.008964,
+      "misassigned_fraction_mean": 0.016525,
+      "samples": 51
+    }
+  },
+  "verdict": "the shipped combine applies the sorted-order validity mask to token-major positions; with any expert overflow it drops pairs that were kept and keeps pairs that overflowed, the latter reading a clamped buffer row that can hold another token's activation"
+}

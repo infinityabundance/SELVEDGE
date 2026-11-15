@@ -1,0 +1,104 @@
+.FFFF...............F                                                    [100%]
+=================================== FAILURES ===================================
+_____________ test_top_k_above_the_expert_count_is_refused_by_both _____________
+
+    def test_top_k_above_the_expert_count_is_refused_by_both():
+        with pytest.raises(ValueError):
+            reference.capacity(2, 5, 4, 1.25)
+        with pytest.raises(ValueError):
+            reference.plan(torch.zeros(2, 5, dtype=torch.long), experts=4, factor=1.25)
+        bank = _ForcedBank(4, 2, 4, 5, torch.zeros(2, 5, dtype=torch.long))
+>       with pytest.raises(RuntimeError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+oracle/tests/test_p12_1_dispatch.py:102: Failed
+______ test_reference_reproduces_the_documented_semantics_on_a_hand_case _______
+
+    def test_reference_reproduces_the_documented_semantics_on_a_hand_case():
+        # tokens=2, k=1, experts=2, factor=1.0 -> capacity 1, no overflow.
+        flat = torch.tensor([[1.0, 0.0], [0.0, 2.0]])
+        top_index = torch.tensor([[0], [1]])
+        weight = torch.tensor([3.0, 5.0])
+        # expert e multiplies its input by (e + 1)
+        got = reference.contribution(flat, top_index, weight,
+                                     lambda expert, tokens: flat.index_select(0, tokens) * (expert + 1),
+                                     experts=2, factor=1.0)
+        expected = torch.tensor([[3.0, 0.0], [0.0, 10.0]])
+>       assert torch.allclose(got, expected)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7fcece5572e0>(tensor([[ 3.,  0.],\n        [ 0., 20.]]), tensor([[ 3.,  0.],\n        [ 0., 10.]]))
+E        +    where <built-in method allclose of type object at 0x7fcece5572e0> = torch.allclose
+
+oracle/tests/test_p12_1_dispatch.py:122: AssertionError
+_______ test_reference_pair_and_sorted_modes_differ_only_under_overflow ________
+
+    def test_reference_pair_and_sorted_modes_differ_only_under_overflow():
+        flat = torch.arange(4.0).reshape(4, 1)
+        top_index = torch.tensor([[2], [2], [0], [1]])  # expert 2 overflows, others empty
+        weight = torch.ones(4)
+        factor = 0.25  # capacity = ceil(4*1/3*0.25) = 1
+        specification = reference.plan(top_index, experts=3, factor=factor)
+        assert specification.capacity == 1
+>       assert specification.valid == (True, False, False, True)
+E       assert (True, True, True, False) == (True, False, False, True)
+E         
+E         At index 1 diff: True != False
+E         Use -v to get more diff
+
+oracle/tests/test_p12_1_dispatch.py:132: AssertionError
+______ test_legacy_mask_lets_an_overflow_pair_read_another_tokens_output _______
+
+    def test_legacy_mask_lets_an_overflow_pair_read_another_tokens_output():
+        hidden, width, experts, k, tokens = 4, 2, 4, 2, 3
+        factor = 0.5  # capacity = ceil(3*2/4*0.5) = 1
+        top_index = torch.tensor([[3, 0], [3, 1], [3, 2]])
+        weight = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        bank = _ForcedBank(hidden, width, experts, k, top_index, weight)
+        flat = torch.randn(tokens, hidden, generator=torch.Generator().manual_seed(11))
+    
+        specification = reference.plan(top_index, experts=experts, factor=factor)
+        assert specification.capacity == 1
+        # experts 0, 1, 2 hold one pair each; expert 3 holds three (positions 3-5).
+        assert specification.order == (1, 3, 5, 0, 2, 4)
+        assert specification.valid == (True, True, True, True, False, False)
+        # the pair at sorted position 4 (token 1, slot 0, expert 3) overflows and its
+        # row is clamped onto the last buffer row, which holds a *different* pair.
+        assert specification.row[4] == experts * specification.capacity - 1
+        assert specification.row[4] == specification.row[3]
+        assert specification.order[3] == 0 and specification.order[4] == 2
+    
+        buffer, row, order, valid = _module_buffer(bank, flat, top_index)
+        reference_buffer = reference.build_buffer(flat, specification)
+>       assert torch.equal(buffer, reference_buffer), "dispatch halves disagree"
+E       AssertionError: dispatch halves disagree
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7fcece5572e0>(tensor([[[ 0.7376,  1.9459, -0.6995, -1.3023],\n         [ 0.0000,  0.0000,  0.0000,  0.0000]],\n\n        [[-0.5133, -0....0,  0.0000,  0.0000]],\n\n        [[ 0.7376,  1.9459, -0.6995, -1.3023],\n         [-0.5133, -0.2696,  0.2462,  0.4839]]]), tensor([[[ 0.7376,  1.9459, -0.6995, -1.3023]],\n\n        [[-0.5133, -0.2696,  0.2462,  0.4839]],\n\n        [[ 0.4504, -0.9568,  1.5012, -0.3136]],\n\n        [[ 0.7376,  1.9459, -0.6995, -1.3023]]]))
+E        +    where <built-in method equal of type object at 0x7fcece5572e0> = torch.equal
+
+oracle/tests/test_p12_1_dispatch.py:174: AssertionError
+_____________ test_the_default_placement_is_legacy_and_is_recorded _____________
+
+    def test_the_default_placement_is_legacy_and_is_recorded():
+        bank = modeling.SpecialistBank(8, 4, 4, 2, modeling._router(8, 4, seed=1))
+        assert bank.mask_order == modeling.MASK_ORDER_LEGACY
+        assert bank.capacity_factor == modeling.CAPACITY_FACTOR == 1.25
+        holder = modeling.ArmModel(model=torch.nn.Sequential(), arm="X", kind="specialists",
+                                   router_modules=[bank.router], extra_modules=[bank],
+                                   admission={}, config={}, profile="t2")
+        assert holder.mask_order() == modeling.MASK_ORDER_LEGACY
+        holder.set_mask_order(modeling.MASK_ORDER_PAIR)
+>       assert bank.mask_order == modeling.MASK_ORDER_PAIR
+E       AssertionError: assert 'legacy' == 'pair'
+E         
+E         - pair
+E         + legacy
+
+oracle/tests/test_p12_1_dispatch.py:372: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p12_1_dispatch.py::test_top_k_above_the_expert_count_is_refused_by_both
+FAILED oracle/tests/test_p12_1_dispatch.py::test_reference_reproduces_the_documented_semantics_on_a_hand_case
+FAILED oracle/tests/test_p12_1_dispatch.py::test_reference_pair_and_sorted_modes_differ_only_under_overflow
+FAILED oracle/tests/test_p12_1_dispatch.py::test_legacy_mask_lets_an_overflow_pair_read_another_tokens_output
+FAILED oracle/tests/test_p12_1_dispatch.py::test_the_default_placement_is_legacy_and_is_recorded
+5 failed, 16 passed in 1.89s

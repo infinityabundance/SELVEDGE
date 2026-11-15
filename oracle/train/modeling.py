@@ -28,6 +28,17 @@ distillation loss and the router receives no gradient from it: that is the
 (T2.5). `soft_mixture` is an evaluation-only ablation that computes all experts
 weighted by the softmax; it is reported as a non-compliant routing gap, never
 as a compliant arm.
+
+**Overflow validity mask (P12.1).** `_RoutedDispatch.dispatch` returns `valid`
+indexed by *sorted* position (the capacity-sorted pair order), while `combine`
+restores the pair outputs to *token-major* order before gating them. Applying a
+sorted-order mask to token-order positions is only correct when the sort
+permutation happens to be the identity. `mask_order="legacy"` keeps that
+shipped behaviour byte for byte, because the registered T2 arms were trained and
+evaluated with it; `mask_order="pair"` applies the mask before the restore, to
+the pair it describes. The corrected path is opt-in, recorded in every run
+receipt, and audited by `oracle/eval/dispatch_audit.py` against
+`oracle/train/reference_dispatch.py` (see `docs/P12.1-DISPATCH-AUDIT.md`).
 """
 
 from __future__ import annotations
@@ -43,6 +54,11 @@ import torch.nn.functional as F
 from memory import HashedMemory, MemoryGeometry, TokenContext
 
 CAPACITY_FACTOR = 1.25
+#: Overflow-mask placements (P12.1). `legacy` is the shipped behaviour and the
+#: default so no registered arm changes; `pair` is the corrected placement.
+MASK_ORDER_LEGACY = "legacy"
+MASK_ORDER_PAIR = "pair"
+MASK_ORDERS = (MASK_ORDER_LEGACY, MASK_ORDER_PAIR)
 #: 0-based depths of the four memory insertions (T2.2).
 T2_MEMORY_LAYERS = (3, 10, 17, 24)
 #: T2 arm names in their registered spelling (T2.1).
@@ -56,16 +72,23 @@ def _capacity(tokens: int, k: int, experts: int, factor: float = CAPACITY_FACTOR
 class _RoutedDispatch(nn.Module):
     """Shared top-k capacity dispatch and scatter bookkeeping."""
 
-    def __init__(self, hidden: int, experts: int, k: int):
+    def __init__(self, hidden: int, experts: int, k: int,
+                 mask_order: str = MASK_ORDER_LEGACY):
         super().__init__()
         self.hidden = hidden
         self.experts = experts
         self.k = k
         self.soft_mixture = False
         self.router_grad = True
+        self.mask_order = mask_order
+        self.capacity_factor = CAPACITY_FACTOR
         self.last_routing: torch.Tensor | None = None
         self.last_probs: torch.Tensor | None = None
         self._dropped_pairs = torch.zeros((), dtype=torch.long)
+        #: Running count of dropped pairs over the whole run (P12.1 exposure
+        #: counter; a Python int, so it never changes the compute graph).
+        self.dropped_pairs_total = 0
+        self.pairs_total = 0
 
     def routing(self, flat: torch.Tensor, router_weight: torch.Tensor):
         logits = F.linear(flat, router_weight)
@@ -99,9 +122,11 @@ class _RoutedDispatch(nn.Module):
         start = torch.cumsum(counts, dim=0) - counts
         slot = torch.arange(pairs, device=device, dtype=torch.long) - start.index_select(
             0, sorted_expert)
-        capacity = _capacity(tokens, self.k, self.experts)
+        capacity = _capacity(tokens, self.k, self.experts, self.capacity_factor)
         valid = slot < capacity
         self._dropped_pairs = (~valid).sum()
+        self.dropped_pairs_total += int(self._dropped_pairs)
+        self.pairs_total += pairs
         # Invalid (overflow) pairs would index past the buffer; clamp their row
         # so the gather is in range. Their contribution is masked out later.
         row = (sorted_expert * capacity + slot).clamp(max=self.experts * capacity - 1)
@@ -119,17 +144,39 @@ class _RoutedDispatch(nn.Module):
         to token-major pair order with the inverse permutation. Pairs were built
         token-major (`pair = token * k + slot`), so the reshape is
         `[tokens, k, hidden]` and the reduction over slots is in a fixed order.
-        Overflow pairs are zeroed by `valid`; their incoming gradient is zero,
-        so the clamped duplicate rows cannot introduce an order-dependent sum.
+        Overflow pairs are zeroed; their incoming gradient is zero, so the
+        clamped duplicate rows cannot introduce an order-dependent sum.
+
+        `self.mask_order` decides *where* the zeroing happens (P12.1):
+
+        * `"pair"` — `valid` is indexed by sorted position, so it is applied
+          **before** the restore, when the tensor is still in sorted order.
+          Each pair is gated by its own slot.
+        * `"legacy"` — the shipped behaviour: `valid` is applied after the
+          restore, so token-major pair `p` is gated by the validity of sorted
+          position `p`. That is a different pair whenever any expert overflowed;
+          it silently drops a kept pair and keeps an overflowing one, which then
+          reads a clamped buffer row (possibly another token's activation).
         """
         pairs = tokens * self.k
         flat_out = output.reshape(-1, self.hidden).index_select(0, row)
         inverse = torch.empty_like(order)
         inverse.scatter_(0, order, torch.arange(pairs, device=order.device,
                                                 dtype=order.dtype))
-        flat_out = flat_out.index_select(0, inverse)
-        flat_out = flat_out * pair_weight.unsqueeze(-1).to(flat_out.dtype)
-        flat_out = flat_out * valid.unsqueeze(-1).to(flat_out.dtype)
+        if self.mask_order == MASK_ORDER_PAIR:
+            # Sorted order: the mask and the weight both describe the pair this
+            # tensor slot holds (`order[j]` is the pair at sorted position `j`).
+            # Restore afterwards.
+            weight = pair_weight.index_select(0, order).unsqueeze(-1)
+            flat_out = flat_out * weight.to(flat_out.dtype)
+            flat_out = flat_out * valid.unsqueeze(-1).to(flat_out.dtype)
+            flat_out = flat_out.index_select(0, inverse)
+        elif self.mask_order == MASK_ORDER_LEGACY:
+            flat_out = flat_out.index_select(0, inverse)
+            flat_out = flat_out * pair_weight.unsqueeze(-1).to(flat_out.dtype)
+            flat_out = flat_out * valid.unsqueeze(-1).to(flat_out.dtype)
+        else:  # pragma: no cover - refused at construction
+            raise ValueError(f"unknown mask_order {self.mask_order!r}")
         return flat_out.view(tokens, self.k, self.hidden).sum(dim=1)
 
 
@@ -142,8 +189,8 @@ class RoutedGroupFFN(_RoutedDispatch):
     """
 
     def __init__(self, mlp: nn.Module, groups: int, k: int, adapter_rank: int,
-                 router: nn.Linear):
-        super().__init__(mlp.gate_proj.weight.shape[1], groups, k)
+                 router: nn.Linear, mask_order: str = MASK_ORDER_LEGACY):
+        super().__init__(mlp.gate_proj.weight.shape[1], groups, k, mask_order=mask_order)
         self.rank = adapter_rank
         gate = mlp.gate_proj.weight
         up = mlp.up_proj.weight
@@ -219,8 +266,10 @@ class SpecialistBank(_RoutedDispatch):
     """
 
     def __init__(self, hidden: int, width: int, specialists: int, k: int,
-                 router: nn.Linear):
-        super().__init__(hidden, specialists, k)
+                 router: nn.Linear, mask_order: str = MASK_ORDER_LEGACY):
+        if mask_order not in MASK_ORDERS:
+            raise ValueError(f"mask_order must be one of {MASK_ORDERS}, got {mask_order!r}")
+        super().__init__(hidden, specialists, k, mask_order=mask_order)
         self.width = width
         self.full_bank = False
         self.exclude: int | None = None
@@ -379,6 +428,41 @@ class ArmModel:
             if isinstance(module, _RoutedDispatch):
                 module.router_grad = value
 
+    def set_mask_order(self, value: str) -> None:
+        """Select the overflow-mask placement (P12.1).
+
+        `"legacy"` is the shipped behaviour and the default; `"pair"` is the
+        corrected placement. A registered run must record which one it used.
+        """
+        if value not in MASK_ORDERS:
+            raise ValueError(f"mask_order must be one of {MASK_ORDERS}, got {value!r}")
+        for module in self.model.modules():
+            if isinstance(module, _RoutedDispatch):
+                module.mask_order = value
+
+    def mask_order(self) -> str:
+        orders = {module.mask_order for module in self.model.modules()
+                  if isinstance(module, _RoutedDispatch)}
+        if len(orders) > 1:
+            raise RuntimeError(f"mixed mask orders in one arm: {sorted(orders)}")
+        return orders.pop() if orders else MASK_ORDER_LEGACY
+
+    def dispatch_exposure(self) -> dict:
+        """Dropped-pair exposure over the whole run (P12.1 accounting).
+
+        `_dropped_pairs` is per forward pass; these totals accumulate. The
+        counters change no value, so an arm's numbers are unaffected by reading
+        them.
+        """
+        dropped = 0
+        pairs = 0
+        for module in self.model.modules():
+            if isinstance(module, _RoutedDispatch):
+                dropped += int(module.dropped_pairs_total)
+                pairs += int(module.pairs_total)
+        return {"mask_order": self.mask_order(), "dropped_pairs": dropped,
+                "pairs": pairs, "dropped_fraction": (dropped / pairs) if pairs else 0.0}
+
     def forward(self, input_ids: torch.Tensor, **kwargs):
         """Uniform step/forward API for every T1 and T2 arm."""
         return self.model(input_ids=input_ids, use_cache=False, **kwargs)
@@ -466,13 +550,17 @@ def _router(hidden: int, outputs: int, seed: int | None) -> nn.Linear:
 
 
 def build_arm(model, arm: str, config: dict, admission: dict, seed: int,
-              profile: str = "t1") -> ArmModel:
+              profile: str = "t1", mask_order: str = MASK_ORDER_LEGACY) -> ArmModel:
     """Wrap a loaded base model in the arm's trainable modules.
 
     `profile="t1"` keeps T1's arm letters exactly. `profile="t2"` registers the
     five T2 arms; T2's `D` is T1's `C` (the parameter-matched dense control),
-    not T1's untrained `D` (T2.1).
+    not T1's untrained `D` (T2.1). `mask_order` selects the overflow-mask
+    placement of `_RoutedDispatch.combine` (P12.1); the default is the shipped
+    behaviour so a registered run is unchanged.
     """
+    if mask_order not in MASK_ORDERS:
+        raise ValueError(f"mask_order must be one of {MASK_ORDERS}, got {mask_order!r}")
     layers = model.model.layers
     hidden = model.config.hidden_size
     router_modules: list[nn.Module] = []
@@ -527,6 +615,7 @@ def build_arm(model, arm: str, config: dict, admission: dict, seed: int,
                              context=context, memory_layers=memory_layers)
         if arm == "H*":
             trainable.set_router_grad(False)
+        trainable.set_mask_order(mask_order)
         trainable.declared_active = admission["active_unique_params"]
         trainable.trainable_names = [name for name, parameter
                                      in model.named_parameters()
@@ -566,6 +655,7 @@ def build_arm(model, arm: str, config: dict, admission: dict, seed: int,
     trainable = ArmModel(model=model, arm=arm, kind=kind,
                          router_modules=router_modules, extra_modules=extra_modules,
                          admission=admission, config=config)
+    trainable.set_mask_order(mask_order)
     trainable.declared_active = admission["active_unique_params"]
     trainable.trainable_names = [name for name, parameter
                                  in model.named_parameters() if parameter.requires_grad]

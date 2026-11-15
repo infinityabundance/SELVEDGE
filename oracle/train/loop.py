@@ -32,6 +32,7 @@ import torch.nn.functional as F
 from transformers import AutoModelForCausalLM
 
 import utility
+import modeling
 from modeling import base_logits_for, build_arm, load_admission, zero_point_report
 
 WINDOW = 1024
@@ -272,6 +273,11 @@ def main(argv: list[str]) -> int:
                              "arms need it to fit 16 GiB (recorded in the receipt)")
     parser.add_argument("--deterministic", action="store_true",
                         help="request deterministic kernels (T2 determinism test)")
+    parser.add_argument("--mask-order", choices=list(modeling.MASK_ORDERS),
+                        default=modeling.MASK_ORDER_LEGACY,
+                        help="overflow validity-mask placement (P12.1); `legacy` is "
+                             "the shipped behaviour every registered run used, `pair` "
+                             "is the corrected placement and must be recorded")
     parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     parser.add_argument("--artifact-dir", default="results/artifacts/train")
     parser.add_argument("--out", required=True)
@@ -350,7 +356,7 @@ def main(argv: list[str]) -> int:
         probe_ids = torch.from_numpy(stream_probe).to(device)
         probe_base = base_logits_for(base, probe_ids)
     arm_model = build_arm(base, args.arm, config, admission, args.seed,
-                          profile=args.profile)
+                          profile=args.profile, mask_order=args.mask_order)
     arm_model.model.to(device)
     for parameter in arm_model.trainable_parameters():
         parameter.requires_grad_(True)
@@ -435,6 +441,7 @@ def main(argv: list[str]) -> int:
         "gpu": torch.cuda.get_device_name(0),
         "torch": torch.__version__,
         "grad_checkpoint": bool(args.grad_checkpoint),
+        "dispatch_mask_order": arm_model.mask_order(),
     }
     if args.profile == "t2":
         meta["profile"] = args.profile
@@ -568,6 +575,8 @@ def main(argv: list[str]) -> int:
         "admitted_active_unique": admission["active_unique_params"],
         "finished_utc": utc_now(),
         "log": log_path,
+        "dispatch_mask_order": arm_model.mask_order(),
+        "dispatch": arm_model.dispatch_exposure(),
     }
     if args.profile == "t2":
         summary["profile"] = args.profile

@@ -81,6 +81,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--skip-truthfulqa", action="store_true")
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--determinism-check", action="store_true")
+    parser.add_argument("--mask-order", choices=["legacy", "pair"], default="legacy",
+                        help="overflow validity-mask placement (P12.1); `legacy` is "
+                             "what every registered arm was trained and evaluated "
+                             "with, `pair` is the corrected placement")
     args = parser.parse_args(argv)
 
     if not torch.cuda.is_available():
@@ -107,7 +111,7 @@ def main(argv: list[str]) -> int:
 
             config, admission = load_admission(args.config, args.admission)
             arm_model = build_arm(base, args.arm, config, admission, args.seed,
-                                  profile=args.profile)
+                                  profile=args.profile, mask_order=args.mask_order)
             arm_model.model.to(device)
             state = torch.load(args.checkpoint, map_location=device, weights_only=False)
             _missing, unexpected = arm_model.model.load_state_dict(state["model"],
@@ -239,8 +243,11 @@ def main(argv: list[str]) -> int:
             "kl": "KL(teacher || student) in nats/token, f32 logits",
             "precision": "bf16 forward, f32 logits for metrics",
             "seed": 20261115,
+            "dispatch_mask_order": (
+                built.mask_order() if built is not None else args.mask_order),
         },
         "determinism": determinism,
+        "dispatch": built.dispatch_exposure() if built is not None else None,
         "resources": resources,
         "results": results,
     }

@@ -1,0 +1,33 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_reference_pair_and_sorted_modes_differ_only_under_overflow ________
+
+    def test_reference_pair_and_sorted_modes_differ_only_under_overflow():
+        flat = torch.tensor([[1.0], [10.0], [100.0], [1000.0]])
+        top_index = torch.tensor([[2], [2], [0], [1]])  # expert 2 overflows, others empty
+        weight = torch.ones(4)
+        factor = 0.25  # capacity = max(1, ceil(4*1/3*0.25)) = 1
+        specification = reference.plan(top_index, experts=3, factor=factor)
+        assert specification.capacity == 1
+        # expert 0 holds pair 2, expert 1 holds pair 3, expert 2 holds pairs 0 and 1
+        assert specification.order == (2, 3, 0, 1)
+        assert specification.valid == (True, True, True, False)
+        assert specification.row[3] == 3 * 1 - 1  # clamped onto expert 2's only row
+    
+        identity = lambda expert, tokens: flat.index_select(0, tokens)  # noqa: E731
+        pair_mode = reference.contribution(flat, top_index, weight, identity,
+                                           experts=3, factor=factor, mask_mode="pair")
+        sorted_mode = reference.contribution(flat, top_index, weight, identity,
+                                             experts=3, factor=factor, mask_mode="sorted")
+        # pair mode: token 0 (pair 0) and token 2 (pair 2) contribute, token 3 no.
+>       assert torch.allclose(pair_mode, torch.tensor([[1.0], [0.0], [100.0], [0.0]]))
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7f53051572e0>(tensor([[   1.],\n        [   0.],\n        [ 100.],\n        [1000.]]), tensor([[  1.],\n        [  0.],\n        [100.],\n        [  0.]]))
+E        +    where <built-in method allclose of type object at 0x7f53051572e0> = torch.allclose
+E        +    and   tensor([[  1.],\n        [  0.],\n        [100.],\n        [  0.]]) = <built-in method tensor of type object at 0x7f53051572e0>([[1.0], [0.0], [100.0], [0.0]])
+E        +      where <built-in method tensor of type object at 0x7f53051572e0> = torch.tensor
+
+oracle/tests/test_p12_1_dispatch.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p12_1_dispatch.py::test_reference_pair_and_sorted_modes_differ_only_under_overflow
+1 failed in 1.67s
