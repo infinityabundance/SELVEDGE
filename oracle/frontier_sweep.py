@@ -980,7 +980,10 @@ def command_greedy(args) -> int:
             "articles": 6,
             "positions_per_article": 128,
             "total_positions": 768,
-            "kind": "exact teacher KL on the calibration probe; non-deployable",
+            "kind": (
+                "exact teacher KL on the calibration probe; a calibration search, "
+                "not a per-token runtime process"
+            ),
         },
         "start_kl": {"greedy-uniform5": base5, "greedy-swap4": base4},
         "final_kl": {

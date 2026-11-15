@@ -1,0 +1,462 @@
+{
+  "accounting_source": "results/accounting/20261114T201402Z-qwen3-1.7b.json",
+  "comparisons": [
+    {
+      "ci_high": -0.3092875927686692,
+      "ci_low": -0.5575380325317383,
+      "mean_kl_difference_online_minus_offline": -0.4257868528366089,
+      "offline": "offline-iterated-magnitude-B140",
+      "online": "online-one-pass-magnitude-B140",
+      "paired_bootstrap_resamples": 10000,
+      "windows": 8
+    },
+    {
+      "ci_high": -0.10113758593797685,
+      "ci_low": -0.281566858291626,
+      "mean_kl_difference_online_minus_offline": -0.18769341707229614,
+      "offline": "offline-iterated-magnitude-B142",
+      "online": "online-one-pass-magnitude-B142",
+      "paired_bootstrap_resamples": 10000,
+      "windows": 8
+    }
+  ],
+  "created_utc": "2026-11-15T04:37:09Z",
+  "environment": {
+    "arithmetic": {
+      "allow_bf16_reduced_precision_reduction": false,
+      "allow_tf32_cudnn": false,
+      "allow_tf32_matmul": false,
+      "dtype": "float32",
+      "float32_matmul_precision": "highest"
+    },
+    "cudnn_deterministic": false,
+    "device": "cuda",
+    "device_capability": "8.9",
+    "device_name": "NVIDIA GeForce RTX 4080 SUPER",
+    "device_total_memory_bytes": 16765091840,
+    "driver": "620.70.06",
+    "numpy": "2.5.4",
+    "platform": "Linux-7.3.3-1-cachyos-x86_64-with-glibc2.41",
+    "python": "3.12.16",
+    "seed": 20261114,
+    "torch": "2.15.0+cu132",
+    "torch_cuda_runtime": "13.2",
+    "transformers": "5.23.0"
+  },
+  "model": {
+    "groups": 16,
+    "id": "Qwen/Qwen3-1.7B",
+    "layers": 28,
+    "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "notes": [
+    "online-one-pass makes one decision per layer from the state that layer receives under the arm's own earlier masks; no dense capture, no re-forward",
+    "offline-iterated is the M2 two-pass arm: pass 1 states, then a second forward",
+    "the magnitude arms are causally available but physically non-compliant: group norms read every gate/up channel and the execution path is masked dense",
+    "online-one-pass-random reads no learned parameters; its failure is the dense masked execution, not a selector read outside the active set",
+    "online-one-pass-random's selector_seconds is the naive scalar splitmix baseline generator, not a controller-cost claim",
+    "seconds is the forward time; for the online arm the selector hooks run inside that forward, while for the other arms the selector runs outside it, so execution_seconds and total_seconds disambiguate the two conventions"
+  ],
+  "preregistration_commit": "a0b107adc23f23cbda43a09cbd6d229b0ea024a1",
+  "revision": "20002a4aa0482f373ddd95a2af295194842b2381",
+  "rows": [
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1478353920,
+        "execution_elements_read": 8455716864,
+        "execution_flops": 8658654068736,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 5772436045824,
+        "selector_elements_read": 5637144576,
+        "selector_parameter_elements": 0,
+        "tokens": 4096,
+        "windows": 8
+      },
+      "budget": "B140",
+      "controller_parameter_elements": 0,
+      "execution_seconds": 0.5022664237767458,
+      "forwards": 8,
+      "groups_per_token": 140,
+      "id": "online-one-pass-magnitude-B140",
+      "kl_mean": 6.529974937438965,
+      "kl_per_window": [
+        6.085619926452637,
+        6.978121280670166,
+        6.321491718292236,
+        5.870676040649414,
+        6.652792930603027,
+        6.946136951446533,
+        6.376186847686768,
+        7.0087738037109375
+      ],
+      "mode": "online",
+      "positions": 4088,
+      "ppl_ratio": 26.344627130498782,
+      "seconds": 1.2416338599286973,
+      "selector_seconds": 0.7393674361519516,
+      "top1_agreement": 0.08268101699650288,
+      "total_seconds": 1.2416338599286973,
+      "verdict": {
+        "causal": {
+          "evidence": {
+            "allowed_inputs": [
+              "current_hidden_state",
+              "current_layer_activations",
+              "own_earlier_masks"
+            ],
+            "audit": "oracle/m2_selectors.py::online_one_pass_select",
+            "decision_record": "arm/online-one-pass-magnitude-B140",
+            "one_pass": true
+          },
+          "status": "available"
+        },
+        "physical": {
+          "detail": "the selector reads all gate/up channels to rank groups, outside the claimed active set, and the execution also runs the dense masked path",
+          "evidence": {
+            "backbone_elements": 663610368,
+            "ceiling": 1000000000,
+            "executed_unique_elements": 1478353920,
+            "execution_elements_read": 8455716864,
+            "execution_flops": 8658654068736,
+            "read_measurement": {
+              "kind": "constructed",
+              "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+            },
+            "selection_flops": 5772436045824,
+            "selector_elements_read": 5637144576,
+            "selector_parameter_elements": 0,
+            "tokens": 4096,
+            "windows": 8
+          },
+          "reason": "selection_reads_outside_active_set",
+          "status": "non_compliant"
+        }
+      },
+      "windows": 8
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 8455716864,
+        "execution_flops": 8658654068736,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 5772436045824,
+        "selector_elements_read": 5637144576,
+        "selector_parameter_elements": 0,
+        "tokens": 4096,
+        "windows": 8
+      },
+      "budget": "B142",
+      "controller_parameter_elements": 0,
+      "execution_seconds": 0.07865269458852708,
+      "forwards": 8,
+      "groups_per_token": 142,
+      "id": "online-one-pass-magnitude-B142",
+      "kl_mean": 6.423736572265625,
+      "kl_per_window": [
+        5.718430995941162,
+        6.889710426330566,
+        6.341682434082031,
+        5.7914347648620605,
+        6.452383041381836,
+        6.845812797546387,
+        6.444254398345947,
+        6.90618371963501
+      ],
+      "mode": "online",
+      "positions": 4088,
+      "ppl_ratio": 25.4249111010227,
+      "seconds": 0.7783744840417057,
+      "selector_seconds": 0.6997217894531786,
+      "top1_agreement": 0.09295499045401812,
+      "total_seconds": 0.7783744840417057,
+      "verdict": {
+        "causal": {
+          "evidence": {
+            "allowed_inputs": [
+              "current_hidden_state",
+              "current_layer_activations",
+              "own_earlier_masks"
+            ],
+            "audit": "oracle/m2_selectors.py::online_one_pass_select",
+            "decision_record": "arm/online-one-pass-magnitude-B142",
+            "one_pass": true
+          },
+          "status": "available"
+        },
+        "physical": {
+          "detail": "the selector reads all gate/up channels to rank groups, outside the claimed active set, and the execution also runs the dense masked path",
+          "evidence": {
+            "backbone_elements": 663610368,
+            "ceiling": 1000000000,
+            "executed_unique_elements": 1479926784,
+            "execution_elements_read": 8455716864,
+            "execution_flops": 8658654068736,
+            "read_measurement": {
+              "kind": "constructed",
+              "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+            },
+            "selection_flops": 5772436045824,
+            "selector_elements_read": 5637144576,
+            "selector_parameter_elements": 0,
+            "tokens": 4096,
+            "windows": 8
+          },
+          "reason": "selection_reads_outside_active_set",
+          "status": "non_compliant"
+        }
+      },
+      "windows": 8
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 993911808,
+        "execution_elements_read": 8455716864,
+        "execution_flops": 8658654068736,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 14680064,
+        "selector_elements_read": 0,
+        "selector_parameter_elements": 0,
+        "tokens": 4096,
+        "windows": 8
+      },
+      "budget": "B140",
+      "controller_parameter_elements": 0,
+      "execution_seconds": 0.22318422107491642,
+      "forwards": 8,
+      "groups_per_token": 140,
+      "id": "online-one-pass-random-B140",
+      "kl_mean": 10.439899325370789,
+      "kl_per_window": [
+        9.179252624511719,
+        11.537627220153809,
+        10.255724906921387,
+        10.593426704406738,
+        9.873692512512207,
+        10.291894912719727,
+        10.638340950012207,
+        11.149234771728516
+      ],
+      "mode": "online-random",
+      "positions": 4088,
+      "ppl_ratio": 110.68569194057562,
+      "seconds": 0.22318422107491642,
+      "selector_seconds": 6.319545524078421,
+      "top1_agreement": 0.00978473573923111,
+      "total_seconds": 6.542729745153338,
+      "verdict": {
+        "causal": {
+          "evidence": {
+            "allowed_inputs": [
+              "token_prefix",
+              "layer_index",
+              "position_index"
+            ],
+            "audit": "oracle/m2_selectors.py::random_selection",
+            "decision_record": "arm/online-one-pass-random-B140",
+            "one_pass": true
+          },
+          "status": "available"
+        },
+        "physical": {
+          "detail": "the selector reads no learned parameters, but the execution runs a dense masked forward and computes every channel",
+          "evidence": {
+            "backbone_elements": 663610368,
+            "ceiling": 1000000000,
+            "executed_unique_elements": 993911808,
+            "execution_elements_read": 8455716864,
+            "execution_flops": 8658654068736,
+            "read_measurement": {
+              "kind": "constructed",
+              "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+            },
+            "selection_flops": 14680064,
+            "selector_elements_read": 0,
+            "selector_parameter_elements": 0,
+            "tokens": 4096,
+            "windows": 8
+          },
+          "reason": "dense_computation_masked",
+          "status": "non_compliant"
+        }
+      },
+      "windows": 8
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1478353920,
+        "execution_elements_read": 8455716864,
+        "execution_flops": 8658654068736,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 11544872091648,
+        "selector_elements_read": 11274289152,
+        "selector_parameter_elements": 0,
+        "tokens": 4096,
+        "windows": 8
+      },
+      "budget": "B140",
+      "controller_parameter_elements": 0,
+      "execution_seconds": 1.2396515045166014,
+      "forwards": 16,
+      "groups_per_token": 140,
+      "id": "offline-iterated-magnitude-B140",
+      "kl_mean": 6.955761790275574,
+      "kl_per_window": [
+        6.243393421173096,
+        7.369399070739746,
+        6.715948581695557,
+        6.469334602355957,
+        6.962696552276611,
+        7.38785982131958,
+        7.162317752838135,
+        7.335144519805908
+      ],
+      "mode": "offline",
+      "positions": 4088,
+      "ppl_ratio": 30.898350626149554,
+      "seconds": 1.2396515045166014,
+      "selector_seconds": 0.06690216006245464,
+      "top1_agreement": 0.06506849266588688,
+      "total_seconds": 1.306553664579056,
+      "verdict": {
+        "causal": {
+          "evidence": {
+            "allowed_inputs": [
+              "current_hidden_state",
+              "current_layer_activations",
+              "own_earlier_masks"
+            ],
+            "audit": "oracle/m2_selectors.py::online_one_pass_select",
+            "decision_record": "arm/offline-iterated-magnitude-B140",
+            "one_pass": false
+          },
+          "status": "available"
+        },
+        "physical": {
+          "detail": "the selector reads all gate/up channels to rank groups, outside the claimed active set, and the execution also runs the dense masked path",
+          "evidence": {
+            "backbone_elements": 663610368,
+            "ceiling": 1000000000,
+            "executed_unique_elements": 1478353920,
+            "execution_elements_read": 8455716864,
+            "execution_flops": 8658654068736,
+            "read_measurement": {
+              "kind": "constructed",
+              "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+            },
+            "selection_flops": 11544872091648,
+            "selector_elements_read": 11274289152,
+            "selector_parameter_elements": 0,
+            "tokens": 4096,
+            "windows": 8
+          },
+          "reason": "selection_reads_outside_active_set",
+          "status": "non_compliant"
+        }
+      },
+      "windows": 8
+    },
+    {
+      "accounting": {
+        "backbone_elements": 663610368,
+        "ceiling": 1000000000,
+        "executed_unique_elements": 1479926784,
+        "execution_elements_read": 8455716864,
+        "execution_flops": 8658654068736,
+        "read_measurement": {
+          "kind": "constructed",
+          "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+        },
+        "selection_flops": 11544872091648,
+        "selector_elements_read": 11274289152,
+        "selector_parameter_elements": 0,
+        "tokens": 4096,
+        "windows": 8
+      },
+      "budget": "B142",
+      "controller_parameter_elements": 0,
+      "execution_seconds": 1.231348258972168,
+      "forwards": 16,
+      "groups_per_token": 142,
+      "id": "offline-iterated-magnitude-B142",
+      "kl_mean": 6.611429989337921,
+      "kl_per_window": [
+        5.904856204986572,
+        6.978207111358643,
+        6.345591068267822,
+        6.134422779083252,
+        6.539899826049805,
+        7.066225528717041,
+        6.8654608726501465,
+        7.056776523590088
+      ],
+      "mode": "offline",
+      "positions": 4088,
+      "ppl_ratio": 26.619548426483593,
+      "seconds": 1.231348258972168,
+      "selector_seconds": 0.5135723110288382,
+      "top1_agreement": 0.07069471571594477,
+      "total_seconds": 1.7449205700010062,
+      "verdict": {
+        "causal": {
+          "evidence": {
+            "allowed_inputs": [
+              "current_hidden_state",
+              "current_layer_activations",
+              "own_earlier_masks"
+            ],
+            "audit": "oracle/m2_selectors.py::online_one_pass_select",
+            "decision_record": "arm/offline-iterated-magnitude-B142",
+            "one_pass": false
+          },
+          "status": "available"
+        },
+        "physical": {
+          "detail": "the selector reads all gate/up channels to rank groups, outside the claimed active set, and the execution also runs the dense masked path",
+          "evidence": {
+            "backbone_elements": 663610368,
+            "ceiling": 1000000000,
+            "executed_unique_elements": 1479926784,
+            "execution_elements_read": 8455716864,
+            "execution_flops": 8658654068736,
+            "read_measurement": {
+              "kind": "constructed",
+              "method": "dense masked forward reads I*(2H+O) per layer; dense selector reads 2*H*I per layer per pass; unique set is the union of selector and execution parameter identities"
+            },
+            "selection_flops": 11544872091648,
+            "selector_elements_read": 11274289152,
+            "selector_parameter_elements": 0,
+            "tokens": 4096,
+            "windows": 8
+          },
+          "reason": "selection_reads_outside_active_set",
+          "status": "non_compliant"
+        }
+      },
+      "windows": 8
+    }
+  ],
+  "sample": "oracle: first 512-token window of eight held-out general articles",
+  "schema": "selvedge/selectors/onepass-v1",
+  "stamp": "20261115T044200Z"
+}

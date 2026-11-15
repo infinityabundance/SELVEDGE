@@ -161,8 +161,8 @@ section 2. On the same eight-window oracle sample:
 | online-one-pass | B142 |
 | offline-iterated | B142 |
 
-Top-1 agreement and measured selector seconds for each row are in
-`results/selectors/onepass-20261115T012700Z.json`; the KL values and the paired
+Top-1 agreement, per-row accounting and measured times for each row are in
+`results/selectors/onepass-20261115T044200Z.json`; the KL values and the paired
 differences are generated below.
 
 The online KL is
@@ -225,13 +225,43 @@ general claim.
 
 Controller cost: the one-pass controller has zero learned parameters; the
 controller is the hand-written norm/top-k rule. Its parameter reads are the same
-dense gate/up reads that make the arm non-compliant. Its measured selector time
-is
+dense gate/up reads that make the arm non-compliant. The timing fields are
+separated so two conventions cannot be confused: for the online arm the selector
+hooks run inside the timed forward and synchronise the device, so the recorded
+forward time already contains the selector; for the offline arm the selector
+runs outside the timed forward, so the two add. At B140 over the eight-window
+sample on the RTX 4080 SUPER the online arm spends
 <!-- BEGIN GENERATED: m2c-onepass-b140-seconds-2 -->
-0.734
+0.739
 <!-- END GENERATED: m2c-onepass-b140-seconds-2 -->
-seconds over the oracle sample on the RTX 4080 SUPER, and it holds the GPU
-synchronisation inside the hook, so this is a conservative measurement.
+seconds in selection,
+<!-- BEGIN GENERATED: m2c-onepass-b140-execution-seconds -->
+0.502
+<!-- END GENERATED: m2c-onepass-b140-execution-seconds -->
+seconds in execution, and
+<!-- BEGIN GENERATED: m2c-onepass-b140-total-seconds -->
+1.242
+<!-- END GENERATED: m2c-onepass-b140-total-seconds -->
+seconds in total. The offline arm spends
+<!-- BEGIN GENERATED: m2c-offline-b140-execution-seconds -->
+1.240
+<!-- END GENERATED: m2c-offline-b140-execution-seconds -->
+seconds in execution over its two forwards and
+<!-- BEGIN GENERATED: m2c-offline-b140-total-seconds -->
+1.307
+<!-- END GENERATED: m2c-offline-b140-total-seconds -->
+seconds in total, with a selector time that is not nested in the forward. The
+online selector time is conservative because it includes a per-layer device
+synchronisation; the offline selector is measured on already-captured states in
+a batch. The random baseline is not a controller-cost claim: its selector is a
+naive scalar splitmix generator and reads no learned parameters (its measured
+time is
+<!-- BEGIN GENERATED: m2c-random-b140-selector-seconds -->
+6.320
+<!-- END GENERATED: m2c-random-b140-selector-seconds -->
+seconds), so its physical failure is the dense masked execution, not a selector
+read outside the active set. Its corrected receipt records that reason
+explicitly instead of copying the magnitude arm's reason.
 
 ## 5. Tensor-access audit of the sparse path
 
@@ -288,7 +318,10 @@ profiled FLOPs.
   `results/selectors/eval-full-20261115T005000Z.json`
 - Analysis and corrected table: `results/selectors/selectors.json`,
   `results/selectors/table.md`
-- One-pass comparison: `results/selectors/onepass-20261115T012700Z.json`
+- One-pass comparison: `results/selectors/onepass-20261115T044200Z.json`
+  (supersedes `onepass-20261115T012700Z.json`, whose random-arm failing reason
+  contradicted its zero selector reads and whose `seconds` field mixed two
+  timing conventions; the KL values are unchanged and reproduce exactly)
 - Sparse-read audit: `results/selectors/sparse-audit-20261115T002900Z.json`
 - Rust parity/accounting: `results/selectors/atlas-compare.json`
 - Court receipts: `results/courts/` (oracle, rust, io, commit_identity,

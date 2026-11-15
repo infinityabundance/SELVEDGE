@@ -160,6 +160,17 @@ into a stronger claim without evidence. The findings and dispositions:
 | M2 `deployable` flag | one boolean for causality and physical cost | deleted from the Python harness; replaced by `ArmVerdict` (`CausalAvailability` + `PhysicalCompliance`) in every receipt and table |
 | `PhysicalEvidence` constructed counts | a formula could be called a measurement | `PhysicalCompliance::compliant` rejects `ReadMeasurement::Constructed`; the sparse oracle path reports `Measured` only after a counter and a per-op audit |
 | `atlas::TwoViewDecision` | a missing cost could be treated as zero | `DecisionStatus::CostUnavailable` is a separate variant; it is never a numeric zero |
+| `NativeComputationSet::declare` | a caller could declare a set equal to its own arbitrary execution and then "prove" exactness against it | a residual trust boundary, stated rather than hidden: the declaration must be derived from the validated bundle manifest. The witness proves equality with the declaration, not that the declaration is the model's true native computation. No runtime consumes the witness yet; Court E must source the declaration from the manifest |
+| `PhysicalEvidence` / `ReadMeasurement::Measured` | the counts and the audit string are caller-supplied, so a fabricated receipt could claim compliance | the type forces the measured-versus-constructed distinction and names the audit, but cannot verify that the audit happened. The receipt and the named audit are the trust input; the sparse path's counter is cross-checked against a per-op `torch.profiler` audit and the receipt is committed |
+
+Two residual trust boundaries remain and are stated rather than hidden. First, a
+`NativeSetWitness` proves that the executed set equals the *declared* native set;
+it cannot prove that the declaration is honest, so the declaration must come from
+the validated bundle manifest. Second, a `PhysicalCompliance::Compliant` verdict
+proves that the counts were labelled measured rather than constructed; the
+measurement itself is a receipt, and the receipt is what a reader must audit.
+Neither limitation is a reason to weaken the types: the types make the honest
+path the only ergonomic one and force a fabricated claim to be explicit.
 
 ## Two verdicts, not one deployable boolean
 

@@ -140,3 +140,28 @@ def test_task_static_selection_has_the_registered_budget() -> None:
     )
     assert sum(len(row) for row in selection) == 142
     assert all(len(set(row)) == len(row) for row in selection)
+
+
+def test_onepass_physical_reason_follows_the_evidence() -> None:
+    magnitude_reason, magnitude_detail = m2_selectors.onepass_physical_verdict(
+        {"selector_elements_read": 4096}
+    )
+    assert magnitude_reason == "selection_reads_outside_active_set"
+    assert "gate/up" in magnitude_detail
+    random_reason, random_detail = m2_selectors.onepass_physical_verdict(
+        {"selector_elements_read": 0}
+    )
+    assert random_reason == "dense_computation_masked"
+    assert "reads no learned parameters" in random_detail
+    assert m2_selectors.onepass_physical_verdict(None)[0] == "dense_computation_masked"
+
+
+def test_physical_unique_text_never_invents_a_number() -> None:
+    assert (
+        m2_selectors.physical_unique_text(
+            {"accounting": {"executed_unique_elements": 7}}
+        )
+        == "7"
+    )
+    assert m2_selectors.physical_unique_text({"accounting": None}) == "absent"
+    assert m2_selectors.physical_unique_text({}) == "absent"

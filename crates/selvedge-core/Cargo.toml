@@ -15,5 +15,10 @@ thiserror.workspace = true
 sha2.workspace = true
 toml.workspace = true
 
+[dev-dependencies]
+# The compile-fail barrier must use the *real* `ExecutionScope`, not a local
+# lookalike. A dev-dependency does not create a normal-dependency cycle.
+selvedge-store = { path = "../selvedge-store" }
+
 [lints]
 workspace = true

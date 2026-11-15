@@ -229,6 +229,28 @@ def physical_verdict(reason: str | None, detail: str, evidence: dict | None) -> 
     return {"status": "compliant", "evidence": evidence}
 
 
+def onepass_physical_verdict(accounting: dict | None) -> tuple[str, str]:
+    """The failing reason for a one-pass arm, derived from its own evidence.
+
+    A random baseline reads no parameters to make its selection, so its failure
+    is the dense masked execution. Copying a magnitude arm's reason would name a
+    selector read that did not happen, which is exactly the kind of accounting
+    defect this receipt corrects.
+    """
+    reads = (accounting or {}).get("selector_elements_read", 0)
+    if reads > 0:
+        return (
+            "selection_reads_outside_active_set",
+            "the selector reads all gate/up channels to rank groups, outside the "
+            "claimed active set, and the execution also runs the dense masked path",
+        )
+    return (
+        "dense_computation_masked",
+        "the selector reads no learned parameters, but the execution runs a dense "
+        "masked forward and computes every channel",
+    )
+
+
 def selection_channel_counts(selection: list[torch.Tensor], bounds) -> list[int]:
     counts = []
     for layer_selection in selection:
@@ -3419,6 +3441,19 @@ def svg_bar_chart(rows: list[dict], path: str, title: str) -> None:
         handle.write("\n".join(lines) + "\n")
 
 
+def physical_unique_text(row: dict) -> str:
+    """The physically accounted union, or `absent` when the arm has none.
+
+    The reported `active unique` figure is a logical allocation. The physical
+    union can be larger: a selector that reads weights outside its claimed set
+    adds them, so an over-ceiling arm is visible in the table rather than only
+    in the prose.
+    """
+    accounting = row.get("accounting") or {}
+    value = accounting.get("executed_unique_elements")
+    return str(value) if value is not None else "absent"
+
+
 def command_analyze(args) -> int:
     prepare = load_json(args.prepare)
     evaluation = load_json(args.eval)
@@ -3801,12 +3836,12 @@ def command_analyze(args) -> int:
     write_json_atomic(json_path, analysis)
     table_path = os.path.join(args.out_dir, "table.md")
     with open(table_path, "w", encoding="utf-8") as handle:
-        handle.write("| arm | causal | physical | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |\n")
-        handle.write("| --- | --- | --- | --- | ---: | ---: | --- | ---: | ---: |\n")
+        handle.write("| arm | causal | physical | budget | logical active unique | physical unique | KL mean | KL 95% CI | PPL ratio | top-1 |\n")
+        handle.write("| --- | --- | --- | --- | ---: | ---: | ---: | --- | ---: | ---: |\n")
         for row in sorted(table, key=lambda item: item["kl_mean"]):
             handle.write(
                 f"| {row['id']} | {row['causal_status']} | {row['physical_status']} | {row['budget']} | "
-                f"{row['active_unique_elements']} | {row['kl_mean']:.6f} | "
+                f"{row['active_unique_elements']} | {physical_unique_text(row)} | {row['kl_mean']:.6f} | "
                 f"[{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
                 f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} |\n"
             )
@@ -3832,11 +3867,11 @@ def command_analyze(args) -> int:
         if begin in lines and end in lines:
             start = lines.index(begin)
             stop = lines.index(end)
-            block = [begin, "", "| arm | causal | physical | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 |", "| --- | --- | --- | --- | ---: | ---: | --- | ---: | ---: |"]
+            block = [begin, "", "| arm | causal | physical | budget | logical active unique | physical unique | KL mean | KL 95% CI | PPL ratio | top-1 |", "| --- | --- | --- | --- | ---: | ---: | ---: | --- | ---: | ---: |"]
             for row in sorted(table, key=lambda item: item["kl_mean"]):
                 block.append(
                     f"| {row['id']} | {row['causal_status']} | {row['physical_status']} | {row['budget']} | "
-                    f"{row['active_unique_elements']} | {row['kl_mean']:.6f} | "
+                    f"{row['active_unique_elements']} | {physical_unique_text(row)} | {row['kl_mean']:.6f} | "
                     f"[{row['kl_ci_low']:.6f}, {row['kl_ci_high']:.6f}] | "
                     f"{row['ppl_ratio']:.6g} | {row['top1']:.4f} |"
                 )
@@ -3864,7 +3899,7 @@ def command_analyze(args) -> int:
         if oracle_begin in lines and oracle_end in lines:
             start = lines.index(oracle_begin)
             stop = lines.index(oracle_end)
-            block = [oracle_begin, "", "| oracle | budget | active unique | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 | forwards | GPU seconds |", "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
+            block = [oracle_begin, "", "| oracle | budget | logical active unique | KL mean | KL 95% CI | PPL ratio | top-1 | frac KL<=0.05 | frac KL<=0.25 | forwards | GPU seconds |", "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
             for row in sorted(oracle_rows, key=lambda item: item["kl_mean"]):
                 block.append(
                     f"| {row['id']} | {row['budget']} | {row['active_unique_elements']} | "
@@ -4358,18 +4393,21 @@ def command_onepass(args) -> int:
                 spec["mode"] == "online",
                 "oracle/m2_selectors.py::online_one_pass_select",
             )
-        physical = physical_verdict(
-            (
-                "dense_computation_masked"
-                if spec["mode"] != "online-random"
-                else "selection_reads_outside_active_set"
-            ),
-            (
-                "the one-pass arm still reads all gate/up channels to rank groups and "
-                "executes through the dense masked path"
-            ),
-            accounting_row,
-        )
+        physical_reason, physical_detail = onepass_physical_verdict(accounting_row)
+        physical = physical_verdict(physical_reason, physical_detail, accounting_row)
+        # `seconds` is the measured forward time. For the online arm the selector
+        # hooks run inside that forward (and sync the device), so the selector
+        # time is already included; for the random and offline arms the selector
+        # runs outside the timed forward. `execution_seconds` and
+        # `total_seconds` make the two conventions explicit so a selector time
+        # can never be mistaken for, or exceed, the time it was nested in.
+        selector_seconds = row["selector_seconds"]
+        if spec["mode"] == "online":
+            execution_seconds = max(row["seconds"] - selector_seconds, 0.0)
+            total_seconds = row["seconds"]
+        else:
+            execution_seconds = row["seconds"]
+            total_seconds = row["seconds"] + selector_seconds
         entry_row = {
             "id": spec["id"],
             "mode": spec["mode"],
@@ -4386,7 +4424,9 @@ def command_onepass(args) -> int:
             ),
             "positions": row["positions"],
             "seconds": row["seconds"],
-            "selector_seconds": row["selector_seconds"],
+            "selector_seconds": selector_seconds,
+            "execution_seconds": execution_seconds,
+            "total_seconds": total_seconds,
             "forwards": row["forwards"],
             "controller_parameter_elements": 0,
             "accounting": accounting_row,
@@ -4437,8 +4477,15 @@ def command_onepass(args) -> int:
             "online-one-pass makes one decision per layer from the state that layer "
             "receives under the arm's own earlier masks; no dense capture, no re-forward",
             "offline-iterated is the M2 two-pass arm: pass 1 states, then a second forward",
-            "both arms are causally available; neither is physically compliant because "
-            "group norms require dense gate/up reads and the execution path is masked dense",
+            "the magnitude arms are causally available but physically non-compliant: "
+            "group norms read every gate/up channel and the execution path is masked dense",
+            "online-one-pass-random reads no learned parameters; its failure is the dense "
+            "masked execution, not a selector read outside the active set",
+            "online-one-pass-random's selector_seconds is the naive scalar splitmix "
+            "baseline generator, not a controller-cost claim",
+            "seconds is the forward time; for the online arm the selector hooks run "
+            "inside that forward, while for the other arms the selector runs outside it, "
+            "so execution_seconds and total_seconds disambiguate the two conventions",
         ],
     }
     os.makedirs(args.receipt_dir, exist_ok=True)
@@ -4447,7 +4494,8 @@ def command_onepass(args) -> int:
     for row in output:
         print(
             f"onepass: {row['id']:<38} budget={row['budget']} kl={row['kl_mean']:.6f} "
-            f"top1={row['top1_agreement']:.4f} selector_s={row['selector_seconds']:.3f}"
+            f"top1={row['top1_agreement']:.4f} selector_s={row['selector_seconds']:.3f} "
+            f"execution_s={row['execution_seconds']:.3f} total_s={row['total_seconds']:.3f}"
         )
     for comparison in comparisons:
         print(

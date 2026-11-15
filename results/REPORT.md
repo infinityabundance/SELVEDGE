@@ -1,6 +1,6 @@
 # SELVEDGE results — honest current state
 
-Status: **M2 complete**. The pre-registered M1 frontier and the M2 per-token
+Status: **M2 complete; M3 part 1 (storage) measured**. The pre-registered M1 frontier and the M2 per-token
 selector/oracle experiment have been measured. M1 rejected static whole-group
 omission. M2 rejects the inference-only, post-hoc per-token selection branch:
 even a causally unavailable per-token oracle at the compliant budget is far
@@ -157,9 +157,12 @@ number has been measured, and none is claimed.
   distilled smaller teacher, quantization and a learned memory layer are
   untested. The negative result bounds post-hoc inference-only selection, not
   sparsity in general.
-- **No measured speed, latency, storage bandwidth or FLOPs.** FLOP values are
-  derived from realized channel counts, not hardware counters. Arm wall clock
-  is a cost observation, not a benchmark.
+- **No end-to-end model latency and no hardware-counter FLOPs.** FLOP values
+  are derived from realized channel counts, not hardware counters. Arm wall
+  clock is a cost observation, not a benchmark. M3 part 1 does measure
+  host-RAM/NVMe storage throughput and per-shard latency, repeated three times
+  with variance reported (`docs/STORAGE.md`); those are storage baselines, not
+  model speed, and this report contains no GPU transfer number.
 - **No scheduler or runtime.** `selvedge-atlas` and `selvedge-store` exist;
   `selvedge-sim`, `selvedge-runtime` and GPU staging do not. The Atlas cost head
   is explicitly unavailable until the M3 trace scheduler has real traces, and

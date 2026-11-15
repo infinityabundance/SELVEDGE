@@ -1029,3 +1029,52 @@ selector tuning without a new oracle bound.
 The trained/upcycled branch, as stated at the end of the M2 entry. Do not
 resume inference-only selector tuning without a new oracle bound and without a
 physically compliant controller whose selection reads fit the budget headroom.
+
+### Second-session verification pass (2026-11-15, after the WIP checkpoint)
+
+The S5b work above was audited against the mandates rather than trusted. The
+Rust fmt/clippy/workspace-test courts, the oracle Court B tests, and the
+`perf_numbers` and `commit_identity` courts all passed at HEAD before any edit.
+The audit then found two accounting defects and one weak barrier, all fixed:
+
+- **One-pass receipt accounting.** In `onepass-20261115T012700Z.json` the
+  online-random row reported a physical failing reason of
+  `selection_reads_outside_active_set` with detail about gate/up reads even
+  though its measured `selector_elements_read` was zero, and its
+  `selector_seconds` (a naive scalar splitmix generator) exceeded its forward
+  time because the online rows nested selection inside the timed forward while
+  the other rows did not. The reason is now derived from the row's own evidence
+  by `onepass_physical_verdict`, and every row carries `selector_seconds`,
+  `execution_seconds` and `total_seconds` with the convention stated. The
+  measurement was re-run; the KL values reproduce exactly, the corrected receipt
+  is `results/selectors/onepass-20261115T044200Z.json`, and the old receipt is
+  retained. Two Court B tests pin the reason mapping and the table helper.
+- **Logical versus physical counts in the generated table.** The main M2 table
+  still had one column named `active unique` holding the logical allocation whose
+  misreading the correction exists to prevent. The generator now prints
+  `logical active unique` and `physical unique` (the selector-plus-execution
+  union). The token-magnitude family is visibly over the ceiling in the second
+  column. The analysis was regenerated (`selectors.json`, `table.md`, the table
+  in `results/M2-SELECTORS.md`) against the same measurement receipt.
+- **Scope compile-fail case used a local lookalike.** The barrier now imports the
+  real `selvedge_store::ExecutionScope` (added as a dev-dependency, which does not
+  create a normal-dependency cycle) and fails to compile when it is passed to
+  `ExactSelection::from_witness`.
+
+Documentation was corrected where it had drifted: `results/REPORT.md` had
+claimed that no latency or throughput had been measured while
+`docs/STORAGE.md` reports measured NVMe/host-RAM baselines; the report now
+distinguishes storage baselines from model speed and hardware-counter FLOPs.
+The two residual trust boundaries the types cannot close (the honesty of a
+native-set declaration, and the receipt behind a `Measured` label) are now
+stated in `docs/ARCHITECTURE.md` and `docs/LIMITATIONS.md`. The remaining
+`non-deployable` prose in the oracle helpers was replaced with the causal and
+physical vocabulary.
+
+A fresh `io` court smoke sweep ran at this HEAD as a reproducibility check
+(`results/courts/io-20261115T043846Z-978215.json`); it is not a new benchmark
+and no storage number in `docs/STORAGE.md` was changed by it. One attempt to
+re-run the one-pass measurement at the default court memory limit was killed
+with exit 137 (out of memory); the receipt is retained as
+`results/courts/oracle-20261115T043608Z-0848fe.json` and the run was repeated
+with an explicit, still-enforced larger limit.

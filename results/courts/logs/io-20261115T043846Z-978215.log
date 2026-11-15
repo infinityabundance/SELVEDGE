@@ -1,0 +1,14 @@
+io-scan: file=results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv bytes=1057882112 mount=/work (ext4) free=192470925312 bytes cache_dropped=true ratio=613.4
+  seq      4096 B   1446.9 MiB/s p50=131 p95=291 p99=3877 ns dev_amp=1.00
+  seq     65536 B   1493.0 MiB/s p50=2274 p95=349762 p99=557490 ns dev_amp=1.03
+  seq-nr   4096 B     84.7 MiB/s p50=19806 p95=185075 p99=228025 ns dev_amp=1.00
+  seq-nr  65536 B    141.0 MiB/s p50=387653 p95=791025 p99=975589 ns dev_amp=1.00
+  rnd      4096 B p50=165148 p95=274402 p99=279331 ns dev_amp=1.00
+  rnd     65536 B p50=372053 p95=792788 p99=901401 ns dev_amp=1.00
+  qd   1           129.9 MiB/s p50=404645 p99=1533319 ns
+  qd   4           507.5 MiB/s p50=382653 p99=1064705 ns
+  align shard-extent offset aligned at 512     req=1048576 useful=1048576 dev=1052672 amp=1.004
+  align shard-extent offset aligned at 4096    req=1048576 useful=1048576 dev=1048576 amp=1.000
+  align shard-extent offset aligned at 65536   req=1048576 useful=1048576 dev=1048576 amp=1.000
+  align over-read 2097152 bytes to use 1048576 req=2097152 useful=1048576 dev=2097152 amp=2.000
+  sha256 2229.2 MiB/s warm, 459365312 ns/GiB, shard 1048576 B in 409754 ns

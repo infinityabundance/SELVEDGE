@@ -27,15 +27,16 @@ fn target_dir() -> PathBuf {
         .map_or_else(|| workspace_root().join("target"), PathBuf::from)
 }
 
-fn core_rlibs() -> Vec<PathBuf> {
+fn crate_rlibs(crate_name: &str) -> Vec<PathBuf> {
     let deps = target_dir().join("debug/deps");
+    let prefix = format!("lib{crate_name}-");
     let mut found: Vec<PathBuf> = std::fs::read_dir(&deps)
         .unwrap_or_else(|err| panic!("cannot read {deps:?}: {err}"))
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| {
             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-            name.starts_with("libselvedge_core-") && name.ends_with(".rlib")
+            name.starts_with(&prefix) && name.ends_with(".rlib")
         })
         .collect();
     found.sort();
@@ -55,12 +56,20 @@ fn expected_error(source: &str) -> String {
 #[test]
 fn ui_cases_fail_to_compile() {
     let ui_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/ui");
-    let rlibs = core_rlibs();
+    let rlibs = crate_rlibs("selvedge_core");
     assert!(
         !rlibs.is_empty(),
         "no selvedge_core rlib under {:?}; run cargo test after cargo build",
         target_dir()
     );
+    let store_rlibs = crate_rlibs("selvedge_store");
+    assert!(
+        !store_rlibs.is_empty(),
+        "no selvedge_store rlib under {:?}; the scope-is-not-exactness case needs the real \
+         ExecutionScope, so the dev-dependency must be built",
+        target_dir()
+    );
+    let store_rlib = &store_rlibs[0];
     let deps = target_dir().join("debug/deps");
     let out_dir = std::env::temp_dir().join(format!("selvedge-ui-{}", std::process::id()));
     std::fs::create_dir_all(&out_dir).expect("create UI output dir");
@@ -88,6 +97,8 @@ fn ui_cases_fail_to_compile() {
                 .arg(format!("ui_{stem}"))
                 .arg("--extern")
                 .arg(format!("selvedge_core={}", rlib.display()))
+                .arg("--extern")
+                .arg(format!("selvedge_store={}", store_rlib.display()))
                 .arg("-L")
                 .arg(format!("dependency={}", deps.display()))
                 .arg("--out-dir")

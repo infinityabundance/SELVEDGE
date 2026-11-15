@@ -343,7 +343,7 @@ class MaskedMlp(torch.nn.Module):
     `track_activation` is off by default. When it is on, the pre-mask
     intermediate activation is made a leaf that requires grad and retains it,
     and is stored as `last_activation`. This is used only for the labelled
-    non-deployable gradient x activation attribution arms.
+    causally unavailable gradient x activation attribution arms.
     """
 
     def __init__(self, original: torch.nn.Module) -> None:

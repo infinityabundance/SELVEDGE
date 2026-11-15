@@ -167,6 +167,20 @@ the inference-only, post-hoc selection family.
   `ExactSelection` types exist and are tested, but no end-to-end exact-mode
   runtime consumes them yet. M1-M3 measurements use the approximate masked
   path.
+- **Two trust boundaries the types cannot close.** A `NativeSetWitness` proves
+  equality with the *declared* native set, not that the declaration is the
+  model's true native computation; the declaration must come from the validated
+  bundle manifest, and no runtime does that yet. A `PhysicalCompliance::Compliant`
+  verdict proves that the reads are labelled measured and names the audit, not
+  that the audit was performed; the committed receipt is the evidence a reader
+  must check.
+- **The one-pass and offline timings use different conventions.** For the online
+  arm the selector hooks run inside the timed forward; for the offline and
+  random arms the selector runs outside it. `selector_seconds`,
+  `execution_seconds` and `total_seconds` are recorded separately so a selector
+  time is never compared against a forward time that already contains it. The
+  online selector time includes a per-layer device synchronisation and is
+  therefore conservative.
 - **The oracle is local, not globally optimal.** It exactly minimises a
   one-layer squared-output error per token and then applies the map; it does
   not solve the joint per-token combinatorial problem over all layers and
