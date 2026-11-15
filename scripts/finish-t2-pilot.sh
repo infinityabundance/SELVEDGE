@@ -49,7 +49,7 @@ say "re-rendering and comparing"
 python3 scripts/t2_report.py --check --receipt "$receipt"
 
 say "staging receipts, document and manifest"
-git add results/t2 results/eval "$receipt" results/T2-PILOT.md docs/perf-numbers.json 2>/dev/null || true
+git add results/t2 results/eval results/courts results/T2-PILOT.md docs/perf-numbers.json 2>/dev/null || true
 
 say "court: commit_identity"
 scripts/court commit_identity
