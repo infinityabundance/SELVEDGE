@@ -1,0 +1,83 @@
+{
+  "accum": 64,
+  "active_extra_elements": 2103296,
+  "admission": "results/train/admission/t2/M.json",
+  "admission_active_unique": 598153216,
+  "admitted_execution_unique": 598153216,
+  "admitted_selector_unique": 0,
+  "arm": "M",
+  "config": "results/train/admission-configs/t2/M.json",
+  "config_sha256": "16830ac92c2405582612a69d06edf3428dc08c0bcbd5934c7c6764fbb4090a1b",
+  "declared_active": 598153216,
+  "extra_ledger": {
+    "bank_layers": 0,
+    "dense_adapter_layers": 0,
+    "memory_layers": 4,
+    "roles": {
+      "dense_adapter": 0,
+      "memory_gate": 4096,
+      "memory_index": 0,
+      "memory_projection": 2097152,
+      "memory_values": 268435456,
+      "router": 0,
+      "specialist_down": 0,
+      "specialist_gate": 0,
+      "specialist_up": 0
+    },
+    "total": 270536704
+  },
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "grad_checkpoint": false,
+  "load_balance": false,
+  "memory": {
+    "active": {
+      "active_per_layer": 525824,
+      "active_total": 2103296,
+      "gate_elements_per_layer": 1024,
+      "index_elements_per_layer": 0,
+      "insertions": 4,
+      "kind": "hashed_memory_active",
+      "projection_elements_per_layer": 524288,
+      "reads_per_layer": 2,
+      "rows_total": 1048576,
+      "table_elements_per_layer": 67108864,
+      "table_elements_total": 268435456,
+      "total_accessible_added": 270536704,
+      "value_elements_per_layer": 512,
+      "values_total": 268435456
+    },
+    "bytes": {
+      "dtype_bytes": 2,
+      "kind": "hashed_memory_bytes",
+      "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+      "read_bytes_per_token": 4206592,
+      "read_bytes_per_token_basis": "modelled",
+      "resident_table_bytes_deployment": 536870912,
+      "resident_table_bytes_fp32_equivalent": 1073741824
+    },
+    "insertions": 4,
+    "layers": [
+      3,
+      10,
+      17,
+      24
+    ]
+  },
+  "micro_batch": 1,
+  "profile": "t2",
+  "registered_budget_tokens": 67108864,
+  "revision": "cb44aded37aa64e09597e55fb3276dc35c6f6aa7",
+  "schema": "selvedge/train-run/v1",
+  "seed": 1001,
+  "started_utc": "2026-11-15T17:05:34Z",
+  "steps": 1024,
+  "stream_sha256": "fddc1656462bcaf8000f129848ffd544c0754076e431f2d8c05ba7175050309c",
+  "targets_tokens": 67108864,
+  "teacher_manifest": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "tokens_per_step": 65536,
+  "torch": "2.15.0+cu132",
+  "total_accessible": 866586624,
+  "trainable_elements": 270536704,
+  "warmup_steps": 0,
+  "window": 1024
+}

@@ -1,0 +1,202 @@
+{
+  "arm": "M",
+  "checkpoint_sha256": "331e797ac23fb2913c5c35ee3aaeb5772a46bf65754ea0d6202aaf50e2824e34",
+  "command": "oracle/eval/baseline.py --profile t2 --arm M --seed 1001 --checkpoint results/artifacts/train/t2/M/step-001024.pt --config results/train/admission-configs/t2/M.json --admission results/train/admission/t2/M.json --out results/eval/t2-M.json",
+  "compliance_label": "compliant_hashed_memory",
+  "config_sha256": "16830ac92c2405582612a69d06edf3428dc08c0bcbd5934c7c6764fbb4090a1b",
+  "determinism": null,
+  "eval_receipt": "results/eval/t2-M.json",
+  "eval_receipt_stamp": "20261115T192008Z",
+  "eval_revision": "8ef0981731f3d764cac613d2ab5a7bde71883557",
+  "instrument": {
+    "decoding": "greedy (do_sample=false, num_beams=1)",
+    "gsm8k_extractor": "last number after '####' else last number",
+    "gsm8k_max_new_tokens": 512,
+    "humaneval_address_space_bytes": 1500000000,
+    "humaneval_max_new_tokens": 256,
+    "humaneval_stop_strings": [
+      "\nclass ",
+      "\ndef ",
+      "\n#",
+      "\nif __name__",
+      "\nprint("
+    ],
+    "humaneval_timeout_seconds": 3.0,
+    "kl": "KL(teacher || student) in nats/token, f32 logits",
+    "precision": "bf16 forward, f32 logits for metrics",
+    "seed": 20261115,
+    "truthfulqa_scoring": "length-normalised log-likelihood, argmax"
+  },
+  "mixed": {
+    "kl": {
+      "ci_high": 0.5483300701311479,
+      "ci_low": 0.5013935921527446,
+      "mean": 0.5239290225009124,
+      "n": 120,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "top1": {
+      "ci_high": 0.5434312326150637,
+      "ci_low": 0.5218389114954819,
+      "mean": 0.5324857950210572,
+      "n": 120,
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "per_domain": {
+    "code": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.37469569050706925,
+        "ci_low": 0.315818526558578,
+        "mean": 0.34444079287350177,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 5.115357673168182,
+      "top1": 0.6662900432944298,
+      "window_count": 40
+    },
+    "general": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.6655977419670671,
+        "ci_low": 0.608194585610181,
+        "mean": 0.6358348038047552,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 26.12542426586151,
+      "top1": 0.4163257725536823,
+      "window_count": 80
+    },
+    "math": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.6529094839096069,
+        "ci_low": 0.537202084492892,
+        "mean": 0.5915114708244801,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 9.792653584480286,
+      "top1": 0.5148415692150593,
+      "window_count": 40
+    }
+  },
+  "per_task": {
+    "gsm8k_exact_match": 0.21,
+    "humaneval_pass_at_1": 0.12804878048780488,
+    "truthfulqa_mc1": 0.30354957160342716
+  },
+  "per_task_ci": {
+    "gsm8k": {
+      "ci_high": 0.25666666666666665,
+      "ci_low": 0.16333333333333333,
+      "mean": 0.21,
+      "n": 300,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "humaneval": {
+      "ci_high": 0.18292682926829268,
+      "ci_low": 0.07926829268292683,
+      "mean": 0.12804878048780488,
+      "n": 164,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "truthfulqa": {
+      "ci_high": 0.3353733170134639,
+      "ci_low": 0.2729498164014688,
+      "mean": 0.30354957160342716,
+      "n": 817,
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "pooled": {
+    "kl": null,
+    "ppl": null,
+    "top1": null
+  },
+  "primary_composite_pc": 0.21386611736374403,
+  "primary_kl_mixed_p1": {
+    "ci_high": 0.5483300701311479,
+    "ci_low": 0.5013935921527446,
+    "mean": 0.5239290225009124,
+    "n": 120,
+    "resamples": 10000,
+    "seed": 20261115
+  },
+  "resources": {
+    "active_unique_params": 598153216,
+    "arm": "M",
+    "dtype_bytes": 2,
+    "extra_ledger": {
+      "bank_layers": 0,
+      "dense_adapter_layers": 0,
+      "memory_layers": 4,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 4096,
+        "memory_index": 0,
+        "memory_projection": 2097152,
+        "memory_values": 268435456,
+        "router": 0,
+        "specialist_down": 0,
+        "specialist_gate": 0,
+        "specialist_up": 0
+      },
+      "total": 270536704
+    },
+    "memory": {
+      "active": {
+        "active_per_layer": 525824,
+        "active_total": 2103296,
+        "gate_elements_per_layer": 1024,
+        "index_elements_per_layer": 0,
+        "insertions": 4,
+        "kind": "hashed_memory_active",
+        "projection_elements_per_layer": 524288,
+        "reads_per_layer": 2,
+        "rows_total": 1048576,
+        "table_elements_per_layer": 67108864,
+        "table_elements_total": 268435456,
+        "total_accessible_added": 270536704,
+        "value_elements_per_layer": 512,
+        "values_total": 268435456
+      },
+      "bytes": {
+        "dtype_bytes": 2,
+        "kind": "hashed_memory_bytes",
+        "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+        "read_bytes_per_token": 4206592,
+        "read_bytes_per_token_basis": "modelled",
+        "resident_table_bytes_deployment": 536870912,
+        "resident_table_bytes_fp32_equivalent": 1073741824
+      },
+      "insertions": 4,
+      "layers": [
+        3,
+        10,
+        17,
+        24
+      ]
+    },
+    "profile": "t2",
+    "total_accessible": 866586624,
+    "trainable_elements": 270536704
+  },
+  "revision": "8ef0981731f3d764cac613d2ab5a7bde71883557",
+  "schema": "selvedge/t2-eval-summary/v1",
+  "seconds": 354.266,
+  "stamp": "20261115T192010Z",
+  "utc": "2026-11-15T19:20:10Z",
+  "vram_peak_gib": 8.373
+}

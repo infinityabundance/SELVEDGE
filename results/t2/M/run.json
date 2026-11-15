@@ -1,0 +1,230 @@
+{
+  "admission": {
+    "active_unique_params": 598153216,
+    "declared_active": 598153216,
+    "execution_unique_params": 598153216,
+    "path": "results/train/admission/t2/M.json",
+    "selector_unique_params": 0
+  },
+  "arm": "M",
+  "budget": {
+    "accum": 64,
+    "micro_batch": 1,
+    "registered_budget_tokens": 67108864,
+    "steps": 1024,
+    "tokens_per_step": 65536,
+    "window": 1024
+  },
+  "checkpoint": {
+    "bytes": 1635842957,
+    "name": "step-001024.pt",
+    "path": "results/artifacts/train/t2/M/step-001024.pt",
+    "sha256": "331e797ac23fb2913c5c35ee3aaeb5772a46bf65754ea0d6202aaf50e2824e34",
+    "sha256_source": "sidecar"
+  },
+  "compute": {
+    "declared_flops_breakdown": {
+      "controller_flops": 0,
+      "matmul_flops": 1196302336,
+      "other_flops": 9562112
+    },
+    "declared_flops_trained": 80924193243267072,
+    "declared_total_flops_per_token": 1205864448,
+    "note": "FLOPs are the admission record's declared per-token count; the receipt stores the declared value rather than a counter",
+    "tokens_per_second": 8756.781223962025,
+    "training_flops": null,
+    "training_tokens": 67108864
+  },
+  "config": {
+    "path": "results/train/admission-configs/t2/M.json",
+    "sha256": "16830ac92c2405582612a69d06edf3428dc08c0bcbd5934c7c6764fbb4090a1b"
+  },
+  "data_order": {
+    "stream_sha256": "fddc1656462bcaf8000f129848ffd544c0754076e431f2d8c05ba7175050309c",
+    "targets_tokens": 67108864,
+    "teacher_manifest_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "evidence": {
+    "latest.json": {
+      "bytes": 104,
+      "path": "results/t2/M/latest.json",
+      "sha256": "8b8bd6e689eb6f04f3fa497adb5d7fc98107579646d9758c5a4de81e42ae7f16"
+    },
+    "run-meta.json": {
+      "bytes": 2573,
+      "path": "results/t2/M/run-meta.json",
+      "sha256": "467440672a804cf22c53c9c92506b34d74872b55646d251f307deb34e27cb6f5"
+    },
+    "summary.json": {
+      "bytes": 929,
+      "path": "results/t2/M/summary.json",
+      "sha256": "7e8138151a574b2851c580a0c4421c73fa32f464834696ed5b1d62d489c3aaa2"
+    },
+    "train.jsonl": {
+      "bytes": 361756,
+      "path": "results/t2/M/train.jsonl",
+      "sha256": "497552a3dcc384851f74d886b97271d9ec8a27ce91660b32e4b359a922329f34"
+    },
+    "zero-point.json": {
+      "bytes": 307,
+      "path": "results/t2/M/zero-point.json",
+      "sha256": "20a568a927cfcae02162e3d47bb36e192660592a8ce6c3dee1c722472f142abc"
+    }
+  },
+  "git_sha_at_launch": "8ef0981731f3d764cac613d2ab5a7bde71883557",
+  "measured": {
+    "gpu_hours": 2.1427,
+    "last_grad_norm": 0.0081555787473917,
+    "last_loss": 1.4398463759571314,
+    "tokens": 67108864,
+    "tokens_per_second": 8756.781223962025,
+    "train_seconds": 7663.645154953003,
+    "vram_peak_gib": 4.207472801208496,
+    "vram_peak_source": "cuda.max_memory_allocated over the whole run",
+    "wall_seconds": 7713.549780845642
+  },
+  "phases": {
+    "load_balance": false,
+    "router_phase": null,
+    "warmup_steps": 0
+  },
+  "resource": {
+    "active_extra_elements": 2103296,
+    "extra_ledger": {
+      "bank_layers": 0,
+      "dense_adapter_layers": 0,
+      "memory_layers": 4,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 4096,
+        "memory_index": 0,
+        "memory_projection": 2097152,
+        "memory_values": 268435456,
+        "router": 0,
+        "specialist_down": 0,
+        "specialist_gate": 0,
+        "specialist_up": 0
+      },
+      "total": 270536704
+    },
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+    "grad_checkpoint": false,
+    "memory": {
+      "active": {
+        "active_per_layer": 525824,
+        "active_total": 2103296,
+        "gate_elements_per_layer": 1024,
+        "index_elements_per_layer": 0,
+        "insertions": 4,
+        "kind": "hashed_memory_active",
+        "projection_elements_per_layer": 524288,
+        "reads_per_layer": 2,
+        "rows_total": 1048576,
+        "table_elements_per_layer": 67108864,
+        "table_elements_total": 268435456,
+        "total_accessible_added": 270536704,
+        "value_elements_per_layer": 512,
+        "values_total": 268435456
+      },
+      "bytes": {
+        "dtype_bytes": 2,
+        "kind": "hashed_memory_bytes",
+        "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+        "read_bytes_per_token": 4206592,
+        "read_bytes_per_token_basis": "modelled",
+        "resident_table_bytes_deployment": 536870912,
+        "resident_table_bytes_fp32_equivalent": 1073741824
+      },
+      "insertions": 4,
+      "layers": [
+        3,
+        10,
+        17,
+        24
+      ]
+    },
+    "torch": "2.15.0+cu132"
+  },
+  "revision": "cb44aded37aa64e09597e55fb3276dc35c6f6aa7",
+  "run": {
+    "argv": [
+      "python3",
+      "oracle/train/loop.py",
+      "--arm",
+      "M",
+      "--profile",
+      "t2",
+      "--config",
+      "results/train/admission-configs/t2/M.json",
+      "--admission",
+      "results/train/admission/t2/M.json",
+      "--out",
+      "results/artifacts/train/t2/M",
+      "--steps",
+      "1024",
+      "--seed",
+      "1001",
+      "--micro-batch",
+      "1",
+      "--accum",
+      "64",
+      "--micro-positions",
+      "512",
+      "--checkpoint-every",
+      "100",
+      "--zero-point",
+      "--deterministic"
+    ],
+    "container": "selvedge-oracle-court-20261115T170524Z-f6ee18",
+    "court_log": null,
+    "court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T170524Z-f6ee18.json",
+    "directory": "results/artifacts/train/t2/M",
+    "exit_code": 0,
+    "final_step": 1024,
+    "finished_utc": "2026-11-15T19:14:08Z",
+    "started_utc": "2026-11-15T17:05:24Z",
+    "steps_logged": 1024,
+    "summary": {
+      "admitted_active_unique": 598153216,
+      "arm": "M",
+      "extra_ledger": {
+        "bank_layers": 0,
+        "dense_adapter_layers": 0,
+        "memory_layers": 4,
+        "roles": {
+          "dense_adapter": 0,
+          "memory_gate": 4096,
+          "memory_index": 0,
+          "memory_projection": 2097152,
+          "memory_values": 268435456,
+          "router": 0,
+          "specialist_down": 0,
+          "specialist_gate": 0,
+          "specialist_up": 0
+        },
+        "total": 270536704
+      },
+      "finished_utc": "2026-11-15T19:14:07Z",
+      "log": "results/artifacts/train/t2/M/train.jsonl",
+      "profile": "t2",
+      "router_phase": null,
+      "schema": "selvedge/train-summary/v1",
+      "seed": 1001,
+      "steps": 1024,
+      "tokens": 67108864,
+      "tokens_per_second": 8756.781223962025,
+      "total_accessible": 866586624,
+      "train_seconds": 7663.645154953003,
+      "trainable_elements": 270536704,
+      "vram_peak_gib": 4.207472801208496,
+      "wall_seconds": 7713.549780845642,
+      "warmup_steps": 0
+    }
+  },
+  "schema": "selvedge/t2-arm-receipt/v1",
+  "seed": 1001,
+  "stamp": "20261115T191408Z",
+  "total_accessible": 866586624,
+  "trainable_elements": 270536704,
+  "utc": "2026-11-15T19:14:08Z"
+}
