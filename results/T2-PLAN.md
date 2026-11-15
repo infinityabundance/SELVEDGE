@@ -184,18 +184,24 @@ the identical-checkpoint determinism result and the resource blocks, is in
 `results/train/smoke-20261115T114908Z.json` and
 `results/train/smoke-20261115T125618Z.json`.
 
-Bytes per token (modelled at bf16, never presented as measured I/O):
+Bytes per token (modelled at bf16, never presented as measured I/O) are
+generated per arm in `results/T2-PILOT.md` §2 from the decision receipt.
+They follow from the declared slices: `8 x 256 x 2` value bytes,
+`4 x 524,288 x 2` projection bytes, `4 x 1,024 x 2` gate bytes, and the
+`k = 4` expert-plus-router read at bf16. The memory table is resident at
+`536,870,912` bytes (bf16) and is **not** charged per token.
 
-| arm | memory value bytes | memory projection bytes | memory gate bytes | expert weight bytes (+router) |
-| --- | ---: | ---: | ---: | ---: |
-| `M` | 4,096 | 4,194,304 | 8,192 | 0 |
-| `X` | 0 | 0 | 0 | 352,550,912 |
-| `H`, `H*` | 4,096 | 4,194,304 | 8,192 | 352,550,912 |
-
-These follow from the declared slices: `8 x 256 x 2` value bytes,
-`4 x 524,288 x 2` projection bytes, `4 x 1,024 x 2` gate bytes, and
-`(28 x 4 x 3 x 512 x 1024 + 229,376) x 2` expert-plus-router bytes. The memory
-table is resident at 536,870,912 bytes (bf16) and is **not** charged per token.
+**Correction, 2026-11-15 (S8b), after this plan was committed and the pilot
+launched.** The table that stood here listed `352,550,912` in its "expert weight
+bytes (+router)" column for `X`, `H` and `H*`. That quantity is the specialist
+bank's *element count* at the full eight-specialist width: not a byte count, and
+not the read the deployed `k = 4` router performs. The column is removed rather
+than restated, because a byte figure is a measurement of a declared dtype and
+belongs in a generated region — which `results/T2-PILOT.md` §2 provides, with
+the whole-bank figure reported separately from the per-token read. The cells
+escaped the perf-numbers court precisely because they were hand-written. No arm,
+threshold, budget, seed or kill condition is changed by this correction; see the
+S8b entry in `docs/WORK-LOG.md`.
 
 ## 3. Exact launch commands
 
