@@ -312,13 +312,15 @@ def pilot_arm(log_path: str, k: int, draws: int, seed: int) -> dict:
                     worst_fraction = fraction
                     worst_step = {"step": record["step"], "layer": key,
                                   "counts": counts, "capacity": capacity,
-                                  "dropped": dropped, "pairs": pairs}
+                                  "dropped": dropped, "pairs": pairs,
+                                  "dropped_fraction": fraction,
+                                  "dropped_percent": round(100.0 * fraction, 2)}
                 per_sample.append((counts, capacity, record["step"]))
     models = [misassignment(counts, capacity, draws, seed + index)
               for index, (counts, capacity, _step) in enumerate(per_sample)]
     models = [model for model in models if model.get("draws")]
     return {
-        "log": log_path,
+        "log": os.path.relpath(log_path, REPO),
         "log_sha256": sha256_file(log_path),
         "sampled_forwards": samples,
         "layers_per_sample": layers,
@@ -327,21 +329,26 @@ def pilot_arm(log_path: str, k: int, draws: int, seed: int) -> dict:
         "pairs": pairs_total,
         "dropped_pairs": dropped_total,
         "dropped_fraction": (dropped_total / pairs_total) if pairs_total else 0.0,
+        "dropped_percent": round(100.0 * dropped_total / pairs_total, 3)
+        if pairs_total else 0.0,
         "worst_sampled_layer": worst_step,
         "misassignment_model": {
             "draws_per_sample": draws,
             "seed": seed,
             "assumption": "uniform random pairing of token-major pairs to sorted "
                           "positions, conditional on the recorded expert counts",
-            "retained_overflow_pairs_mean": (
+            "retained_overflow_pairs_mean": round(
                 sum(model["retained_overflow_mean"] for model in models) / len(models)
-                if models else 0.0),
-            "silently_dropped_pairs_mean": (
+                if models else 0.0, 1),
+            "silently_dropped_pairs_mean": round(
                 sum(model["silently_dropped_mean"] for model in models) / len(models)
-                if models else 0.0),
+                if models else 0.0, 1),
             "misassigned_fraction_mean": (
                 sum(model["misassigned_fraction_mean"] for model in models) / len(models)
                 if models else 0.0),
+            "misassigned_percent": round(
+                100.0 * sum(model["misassigned_fraction_mean"] for model in models)
+                / len(models), 3) if models else 0.0,
             "misassigned_fraction_analytic": (
                 sum(model["misassigned_fraction_analytic"] for model in models) / len(models)
                 if models else 0.0),
