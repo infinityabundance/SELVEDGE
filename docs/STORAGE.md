@@ -173,19 +173,19 @@ ns.
 
 The full stall distribution for the 0.6B bundle is p50
 <!-- BEGIN GENERATED: storage-06b-plan-p50 -->
-1435636
+1235158
 <!-- END GENERATED: storage-06b-plan-p50 -->
 ns and p99
 <!-- BEGIN GENERATED: storage-06b-plan-p99 -->
-1681869
+1882608
 <!-- END GENERATED: storage-06b-plan-p99 -->
 ns (p95 is above); for the 1.7B bundle p50
 <!-- BEGIN GENERATED: storage-17b-plan-p50 -->
-4725656
+4259757
 <!-- END GENERATED: storage-17b-plan-p50 -->
 ns and p99
 <!-- BEGIN GENERATED: storage-17b-plan-p99 -->
-5494788
+6438878
 <!-- END GENERATED: storage-17b-plan-p99 -->
 ns. Per pass the 0.6B plan-order arm requests
 <!-- BEGIN GENERATED: storage-06b-plan-requested -->
@@ -240,11 +240,11 @@ ns, verify time
 <!-- END GENERATED: storage-06b-coalesced-verify -->
 ns. Its p50 is
 <!-- BEGIN GENERATED: storage-06b-coalesced-p50 -->
-1977775
+993748
 <!-- END GENERATED: storage-06b-coalesced-p50 -->
 ns and p99
 <!-- BEGIN GENERATED: storage-06b-coalesced-p99 -->
-2459540
+6701056
 <!-- END GENERATED: storage-06b-coalesced-p99 -->
 ns. On the 1.7B bundle: median
 <!-- BEGIN GENERATED: storage-17b-coalesced-tp -->
@@ -272,11 +272,11 @@ ns, verify time
 <!-- END GENERATED: storage-17b-coalesced-verify -->
 ns; p50
 <!-- BEGIN GENERATED: storage-17b-coalesced-p50 -->
-6175000
+4669542
 <!-- END GENERATED: storage-17b-coalesced-p50 -->
 ns and p99
 <!-- BEGIN GENERATED: storage-17b-coalesced-p99 -->
-8648000
+38985594
 <!-- END GENERATED: storage-17b-coalesced-p99 -->
 ns.
 
