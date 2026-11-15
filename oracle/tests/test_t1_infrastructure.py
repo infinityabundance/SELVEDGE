@@ -47,9 +47,30 @@ def test_python_mirror_unions_overlapping_and_adjacent_ranges():
         ],
     }
     mirror = arms.python_mirror(config)
+    # Union: router 100 + ffn [0,200) 200 + norm 10 = 310. The three ffn
+    # execution uses overlap, so their sum (300) is not the union.
     assert mirror["active_unique_params"] == 310
     assert mirror["selector_elements"] == 100
     assert mirror["execution_elements"] == 310
+    assert mirror["identities"] == 3
+
+
+def test_python_mirror_reports_union_below_sum_for_one_identity():
+    config = {
+        "selector_uses": [
+            {"identity": {"tensor": "router", "elements": {"start": 0, "end": 40}}},
+        ],
+        "execution_uses": [
+            {"identity": {"tensor": "ffn", "elements": {"start": 0, "end": 100}}},
+            {"identity": {"tensor": "ffn", "elements": {"start": 0, "end": 100}}},
+            {"identity": {"tensor": "ffn", "elements": {"start": 0, "end": 100}}},
+        ],
+    }
+    mirror = arms.python_mirror(config)
+    # Three identical reads of the same 100 elements are one unique identity.
+    assert mirror["execution_elements"] == 300
+    assert mirror["active_unique_params"] == 140
+    assert mirror["identities"] == 2
 
 
 def test_every_arm_config_matches_its_design_count():
@@ -108,12 +129,15 @@ def test_pack_unpack_round_trip_is_exact():
     indices = generator.integers(0, 151936, size=(4, 3, 16), dtype=np.int32)
     logsumexp = generator.normal(size=(4, 3)).astype(np.float32)
     packed = teacher_cache.pack(values, indices, logsumexp)
+    assert len(packed) == 4 * 3 * teacher_cache.RECORD_BYTES
     got_values, got_indices, got_lse = teacher_cache.unpack(np.frombuffer(packed,
                                                                         dtype=np.uint8))
     assert np.array_equal(got_indices, indices.reshape(-1, 16))
     assert np.array_equal(got_lse, logsumexp.reshape(-1))
     expected = teacher_cache.bf16_to_float32(values.reshape(-1, 16))
-    # Random bf16 bit patterns include NaNs, so compare bits, not values.
+    # Random bf16 bit patterns include NaNs, and NaN != NaN under value
+    # equality, so the round trip is asserted on the bit patterns. The packer
+    # stores logits as raw bf16 bits, so bit equality is the strictest form.
     assert np.array_equal(got_values.view(np.uint32), expected.view(np.uint32))
 
 
@@ -190,32 +214,84 @@ def test_adapter_zero_report_is_strict():
                              admission={}, config={})
     report = modeling.adapter_zero_report(fake)
     assert report["ok"] and report["max_abs"] == 0.0
+    assert report["modules"] == 1 and report["tolerance"] == 0.0
+    # Leaf Parameters require grad, so the perturbation needs its own no_grad.
     with torch.no_grad():
-        model[0].down.normal_()
+        model[0].down[0, 0] = 1e-12
     assert not modeling.adapter_zero_report(fake)["ok"]
 
 
 # ---------------------------------------------------------------------------
 # loss
+#
+# The registered objective is T1.4: top-k support cross-entropy with ONE tail
+# bucket. It is not the full-vocabulary cross-entropy, because the compact
+# teacher cache stores only the top-16 logits and the tail MASS, never the
+# teacher's tail distribution. An earlier version of these tests asserted
+# equality with the full-vocabulary cross-entropy and failed (KL 3.4980 vs
+# 4.0765 on the fixture). That expectation was wrong: it contradicted the
+# registered target. The tests below now pin the registered objective, and
+# `test_distillation_loss_equals_full_cross_entropy_at_full_support` proves
+# that the implementation is the exact support term when the support is the
+# whole vocabulary. See docs/TRAINING.md.
 
 
-def test_distillation_loss_matches_bruteforce():
+def _bruteforce_topk_tail(logits: torch.Tensor, teacher: torch.Tensor,
+                          ids: torch.Tensor) -> torch.Tensor:
+    """Independent float64 transcription of the T1.4 objective."""
+    logits = logits.double()
+    teacher = teacher.double()
+    student_logp = torch.log_softmax(logits, dim=-1)
+    teacher_p = torch.softmax(teacher, dim=-1)
+    support_teacher = teacher_p.gather(1, ids)
+    tail_teacher = 1.0 - support_teacher.sum(-1)
+    support_student = student_logp.gather(1, ids)
+    tail_student = (1.0 - support_student.exp().sum(-1)).clamp_min(1e-7)
+    return -((support_teacher * support_student).sum(-1)
+             + tail_teacher * tail_student.log()).mean()
+
+
+def test_distillation_loss_matches_registered_topk_tail_objective():
     torch.manual_seed(5)
     vocab, top_k, positions = 32, 16, 4
     logits = torch.randn(positions, vocab)
     teacher = torch.randn(positions, vocab)
     values, ids = torch.topk(teacher, top_k, dim=-1)
     lse = torch.logsumexp(teacher, dim=-1)
-    student_logp = F.log_softmax(logits, dim=-1)
-    teacher_p = teacher.softmax(dim=-1)
-    support_teacher = teacher_p.gather(1, ids)
-    tail_teacher = (1.0 - support_teacher.sum(-1)).clamp_min(0.0)
-    support_student = student_logp.gather(1, ids)
-    tail_student = (1.0 - support_student.exp().sum(-1)).clamp_min(1e-7)
-    expected = -((support_teacher * support_student).sum(-1)
-                 + tail_teacher * tail_student.log()).mean()
     got = loop.distillation_loss(logits, values, ids, lse)
-    assert torch.allclose(got, expected, atol=1e-5)
+    expected = _bruteforce_topk_tail(logits, teacher, ids)
+    assert torch.allclose(got.double(), expected, atol=1e-9)
+
+
+def test_distillation_loss_is_invariant_to_support_order():
+    torch.manual_seed(11)
+    vocab, top_k, positions = 48, 16, 6
+    logits = torch.randn(positions, vocab)
+    teacher = torch.randn(positions, vocab)
+    values, ids = torch.topk(teacher, top_k, dim=-1)
+    lse = torch.logsumexp(teacher, dim=-1)
+    permutation = torch.randperm(top_k)
+    shuffled = loop.distillation_loss(logits, values[:, permutation], ids[:, permutation], lse)
+    plain = loop.distillation_loss(logits, values, ids, lse)
+    assert torch.allclose(shuffled, plain, atol=1e-9)
+
+
+def test_distillation_loss_equals_full_cross_entropy_at_full_support():
+    """With the whole vocabulary as support the tail is empty and the
+    registered objective is the ordinary cross-entropy. This is the check that
+    the support term is exact rather than merely self-consistent."""
+    torch.manual_seed(7)
+    vocab, positions = 64, 5
+    logits = torch.randn(positions, vocab, requires_grad=True)
+    teacher = torch.randn(positions, vocab)
+    values, ids = torch.topk(teacher, vocab, dim=-1)
+    lse = torch.logsumexp(teacher, dim=-1)
+    got = loop.distillation_loss(logits, values, ids, lse)
+    expected = -(torch.softmax(teacher, dim=-1)
+                 * torch.log_softmax(logits, dim=-1)).sum(-1).mean()
+    assert torch.allclose(got, expected, atol=1e-9)
+    got.backward()
+    assert logits.grad is not None and torch.isfinite(logits.grad).all()
 
 
 def test_distillation_loss_is_finite_for_concentrated_support():
