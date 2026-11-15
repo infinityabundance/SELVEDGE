@@ -1968,11 +1968,11 @@ one-seed consequence applies; the decision is recorded in the run receipts.
 **3. Deterministic kernels.** T2 runs train with
 `torch.use_deterministic_algorithms(True)` and
 `CUBLAS_WORKSPACE_CONFIG=:4096:8`. Without them the dense control itself is not
-bitwise reproducible (measured 5-step loss spread 1.7e-4 on `D`), so bitwise
-determinism would be untestable. With them, all five arms produce **identical
-loss trajectories and identical checkpoint hashes** on two same-seed runs, and
-a resume reproduces the uninterrupted continuation exactly (all five receipts
-report `0.0`). This is a difference from T1's kernel configuration and is
+bitwise reproducible, so bitwise determinism would be untestable. With them, all
+five arms produce **identical loss trajectories and identical checkpoint
+hashes** on two same-seed runs, and a resume reproduces the uninterrupted
+continuation exactly; the per-arm resume deltas are generated in
+`results/T2-PLAN.md`. This is a difference from T1's kernel configuration and is
 recorded, not inherited silently.
 
 **4. Micro-batch partition.** Each accumulation step is split into
