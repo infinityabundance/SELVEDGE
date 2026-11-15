@@ -185,6 +185,8 @@ impl StoreCounters {
         let get = |counter: &AtomicU64| counter.load(Ordering::Relaxed);
         let used = get(&self.bytes_used);
         let device = get(&self.device_bytes);
+        let prefetch_read = get(&self.prefetch_bytes_read);
+        let prefetch_used = get(&self.prefetch_bytes_used);
         StoreStats {
             reads: get(&self.reads),
             hits: get(&self.hits),
@@ -206,8 +208,9 @@ impl StoreCounters {
             prefetch_requests: get(&self.prefetch_requests),
             prefetch_admitted: get(&self.prefetch_admitted),
             prefetch_rejected: get(&self.prefetch_rejected),
-            prefetch_bytes_read: get(&self.prefetch_bytes_read),
-            prefetch_bytes_used: get(&self.prefetch_bytes_used),
+            prefetch_bytes_read: prefetch_read,
+            prefetch_bytes_used: prefetch_used,
+            prefetch_bytes_wasted: prefetch_read.saturating_sub(prefetch_used),
             cancellations: 0,
             checksum_failures: get(&self.checksum_failures),
             backpressure_rejections: get(&self.backpressure_rejections),
@@ -255,6 +258,8 @@ pub struct StoreStats {
     pub prefetch_bytes_read: u64,
     /// Prefetched bytes later delivered.
     pub prefetch_bytes_used: u64,
+    /// Prefetched bytes never delivered: the measured prefetch waste.
+    pub prefetch_bytes_wasted: u64,
     /// Transfers cancelled (a ticket or in-flight owner was dropped).
     pub cancellations: u64,
     /// Checksum failures observed.

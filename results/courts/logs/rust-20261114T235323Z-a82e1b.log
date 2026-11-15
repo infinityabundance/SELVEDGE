@@ -1,0 +1,55 @@
+   Compiling selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.84s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_store-614b4019990fe443)
+
+running 17 tests
+test cache::tests::lfu_prefers_the_least_frequently_used_entry ... ok
+test cache::tests::least_stale_protects_the_current_sequence_entry ... ok
+test cache::tests::no_cache_counts_every_lookup_as_a_miss ... ok
+test cache::tests::lru_evicts_least_recently_used_deterministically ... ok
+test cache::tests::pinned_cache_refuses_rather_than_evicting ... ok
+test io_scan::tests::aligned_offsets_stay_inside_the_file ... ok
+test io_scan::tests::sampler_is_deterministic_and_bounded ... ok
+test cache::tests::waste_is_counted_for_evicted_unused_bytes ... ok
+test io_scan::tests::timestamp_formatting_is_utc_and_compact_variant_is_stable ... ok
+test layout::tests::a_gap_start_new_run_unless_permitted ... ok
+test layout::tests::adjacent_extents_coalesce_and_long_runs_split_by_shard ... ok
+test layout::tests::bounded_runs_never_split_a_shard ... ok
+test sysfs::tests::deltas_saturate_at_zero ... ok
+test layout::tests::physical_order_is_independent_of_manifest_order ... ok
+test sysfs::tests::partition_names_map_to_block_devices ... ok
+test sysfs::tests::mount_lookup_finds_the_repository_filesystem ... ok
+test io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report ... FAILED
+
+failures:
+
+---- io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report stdout ----
+
+thread 'io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report' (160) panicked at crates/selvedge-store/src/io_scan.rs:1227:35:
+called `Result::unwrap()` on an `Err` value: Io(Error { kind: UnexpectedEof, message: "failed to fill whole buffer" })
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_store::io_scan::IoScanReport, selvedge_store::error::StoreError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: selvedge_store::io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report
+             at ./src/io_scan.rs:1227:35
+   5: selvedge_store::io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report::{closure#0}
+             at ./src/io_scan.rs:1199:60
+   6: <selvedge_store::io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    io_scan::tests::small_scan_over_a_synthetic_file_produces_a_report
+
+test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+error: test failed, to rerun pass `-p selvedge-store --lib`

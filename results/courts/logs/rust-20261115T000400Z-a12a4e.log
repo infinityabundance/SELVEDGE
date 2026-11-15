@@ -1,0 +1,51 @@
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+error[E0425]: cannot find type `AdviceReport` in this scope
+   --> crates/selvedge-store/src/store_bench.rs:154:22
+    |
+154 |     pub drop: Option<AdviceReport>,
+    |                      ^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct through its public re-export
+    |
+ 20 + use crate::AdviceReport;
+    |
+
+error[E0599]: no method named `read_exact_at` found for struct `std::fs::File` in the current scope
+   --> crates/selvedge-store/src/store_bench.rs:708:14
+    |
+708 |         file.read_exact_at(&mut buffer[..want], offset)?;
+    |              ^^^^^^^^^^^^^
+    |
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/os/unix/fs.rs:117:7
+    |
+    = note: the method is available for `std::fs::File` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: there is a method `read_exact` with a similar name, but with different arguments
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/io/mod.rs:1031:4
+help: trait `FileExt` which provides `read_exact_at` is implemented but not in scope; perhaps you want to import it
+    |
+ 20 + use rustix::fs::FileExt;
+    |
+
+Some errors have detailed explanations: E0425, E0599.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `selvedge-store` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0599]: no method named `read_exact_at` found for struct `std::fs::File` in the current scope
+   --> crates/selvedge-store/src/store_bench.rs:708:14
+    |
+708 |         file.read_exact_at(&mut buffer[..want], offset)?;
+    |              ^^^^^^^^^^^^^
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: there is a method `read_exact` with a similar name, but with different arguments
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/io/mod.rs:1031:4
+help: the following traits which provide `read_exact_at` are implemented but not in scope; perhaps you want to import one of them
+    |
+ 20 + use rustix::fs::FileExt;
+    |
+ 20 + use selvedge_convert::PositionalRead;
+    |
+
+error: could not compile `selvedge-store` (lib test) due to 2 previous errors

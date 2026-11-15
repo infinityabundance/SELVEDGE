@@ -1,0 +1,13 @@
+store-bench: bundle=swiglu-ad15450e2cc2-76dd1b90442e payload=1056964608 bytes shards=1344 stamp=20261115T001053Z revision=80587dfb5abcde8e37532b7926f32f88df303618
+  none-cold              pass1    355.3 MiB/s p95=4831691 ns st=5581361942 dev=1057218560 B amp 1.00 pass2    365.4 MiB/s hits=0 page_drop=true
+  none-warm              pass1    385.2 MiB/s p95=5372778 ns st=3095622442 dev=1056968704 B amp 1.00 pass2   2053.2 MiB/s hits=0 page_drop=false
+  plan-order             pass1    347.3 MiB/s p95=4081167 ns st=4613745151 dev=1057255424 B amp 1.00 pass2    583.3 MiB/s hits=0 page_drop=true
+  coalesced              pass1    749.0 MiB/s p95=1228746 ns st=2679230341 dev=1056964608 B amp 1.00 pass2    747.3 MiB/s hits=0 page_drop=true
+  lru-1of8               pass1    567.7 MiB/s p95=1721520 ns st=3757837780 dev=1056968704 B amp 1.00 pass2    504.7 MiB/s hits=168 page_drop=true
+  lru-1of4               pass1    474.8 MiB/s p95=2163502 ns st=3954429268 dev=1056964608 B amp 1.00 pass2    546.0 MiB/s hits=336 page_drop=true
+  lru-1of2               pass1    356.4 MiB/s p95=5055820 ns st=4187865955 dev=1131540480 B amp 1.07 pass2    732.1 MiB/s hits=672 page_drop=true
+  lru-2x                 pass1    493.7 MiB/s p95=2188328 ns st=2066917905 dev=1057124352 B amp 1.00 pass2  27470.8 MiB/s hits=1344 page_drop=true
+  lfu-1of4               pass1    286.1 MiB/s p95=11080272 ns st=6641492716 dev=2077319168 B amp 1.97 pass2    321.6 MiB/s hits=336 page_drop=true
+  least-stale-1of4       pass1    209.3 MiB/s p95=19363154 ns st=9383744588 dev=1057472512 B amp 1.00 pass2    219.2 MiB/s hits=336 page_drop=true
+  pinned-all             pass1    449.3 MiB/s p95=2846393 ns st=2266449111 dev=1060909056 B amp 1.00 pass2  29805.5 MiB/s hits=1344 page_drop=true
+  prefetch-layer-waste   pass1     53.3 MiB/s p95=49683 ns st=334230 dev=38141952 B amp 4.04
