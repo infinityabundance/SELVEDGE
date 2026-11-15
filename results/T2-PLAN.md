@@ -22,15 +22,21 @@ the Rust admission records in `results/train/admission/t2/`; T2's `D` is T1's
 | `H` | `X` + `M`, distillation router + load balance | 774,543,360 | 1,219,137,536 | 1024 |
 | `H*` | `H` with a utility-trained router | 774,543,360 | 1,219,137,536 | 1024 |
 
-Budget: **67,108,864 tokens per arm** = 1024 steps x 65,536 tokens, derived by
-T2.7 from the measured slowest arm. Replication: `H*`, `H`, `D` at seeds
-`2001-2003` and 16,777,216 tokens each (A8).
+Budget per arm:
+
+<!-- BEGIN GENERATED: t2-plan-budget-tokens -->
+67108864
+<!-- END GENERATED: t2-plan-budget-tokens -->
+
+tokens = 1024 steps x 65,536 tokens, derived by T2.7 from the measured slowest
+arm. Replication: `H*`, `H`, `D` at seeds `2001-2003` and a quarter budget
+(16,777,216 tokens) each (A8).
 
 ## 2. Measured throughput and memory
 
-Measured on the RTX 4080 SUPER (16,376 MiB) in the GPU court, training steps
-only, deterministic kernels, 512-position micro-forwards. `hours` is the time
-the declared 67,108,864-token budget needs at that rate; `resume delta` is
+Measured on the RTX 4080 SUPER in the GPU court, training steps only,
+deterministic kernels, 512-position micro-forwards. `hours` is the time the
+declared budget needs at that rate; `resume delta` is
 `max |loss_full - loss_resumed|` over 25 continuation steps.
 
 Each number is a generated region sourced from
@@ -166,8 +172,13 @@ Each number is a generated region sourced from
 0.0e+00
   <!-- END GENERATED: t2-plan-Hstar-resume-delta -->
 
-Total for one seed of all five arms: **15.68 GPU-hours** (the receipt's
-`/common/total_gpu_hours_at_common_budget`). The full smoke evidence, including
+Total for one seed of all five arms:
+
+<!-- BEGIN GENERATED: t2-plan-total-gpu-hours -->
+15.68
+<!-- END GENERATED: t2-plan-total-gpu-hours -->
+
+GPU-hours. The full smoke evidence, including
 the identical-checkpoint determinism result and the resource blocks, is in
 `results/train/smoke-20261115T103325Z.json`,
 `results/train/smoke-20261115T114908Z.json` and
@@ -239,6 +250,11 @@ scripts/court --gpu oracle -- python3 oracle/eval/baseline.py \
   --out results/eval/t2-D.json
 ```
 
+The evaluation path itself is exercised by
+`results/eval/t2-M-smoke.json` and `results/eval/t2-Hstar-smoke.json` (five items
+per task, two held-out windows per domain), both of which carry the arm's
+active/accessible counts and the bytes/token resource block.
+
 and the P2.4 safeguard (both targets on the held-out sample) for all five:
 
 ```sh
@@ -287,9 +303,10 @@ restates the mapping from result to consequence.
   but the `D`/`X`/`H`/`H*` active counts differ by up to 2.3M elements (0.3%);
   the comparison is matched on tokens and training compute, not exactly on
   active parameters, and the difference favours the hybrids' cost.
-- **The 16 GiB device.** `H` and `H*` peak at about 10.9 GiB with the bf16
-  memory table; a driver or cuBLAS change that raises the footprint would fail
-  closed (OOM) rather than silently change the run.
-- **Token budget.** 67,108,864 tokens is what 5 hours per arm buys on this GPU.
-  If that is too small for the effect, the result is "budget too small", which
-  T2.11 pre-registers as a distinct outcome from "the architecture fails".
+- **The 16 GiB device.** `H` and `H*` peak near the measured VRAM in §2 with the
+  bf16 memory table; a driver or cuBLAS change that raises the footprint would
+  fail closed (OOM) rather than silently change the run.
+- **Token budget.** The declared budget is what 5 hours per arm buys on this
+  GPU. If that is too small for the effect, the result is "budget too small",
+  which T2.11 pre-registers as a distinct outcome from "the architecture
+  fails".

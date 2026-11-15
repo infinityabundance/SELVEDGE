@@ -1937,8 +1937,8 @@ slowest arm is `H` at
 4767.47
 <!-- END GENERATED: t2-slowest-tokens-per-second -->
 
-tokens/s; `0.9 * 5 h * 3600 s * that rate` is 77,232,958, whose largest power of
-two is the declared budget. The slowest arm therefore needs
+tokens/s; the product of `0.9`, the 5-hour window and that rate, truncated to
+the largest power of two, is the declared budget. The slowest arm therefore needs
 
 <!-- BEGIN GENERATED: t2-slowest-arm-hours -->
 3.91
@@ -1954,10 +1954,10 @@ GPU-hours. The per-arm table (throughput, VRAM peak, hours, resume delta) is
 generated in `results/T2-PLAN.md` from the same receipt.
 
 **2. Replication.** The H*/H/D replication at seeds 2001-2003 and a quarter
-budget (`16,777,216` tokens each) costs 7.50 GPU-hours by the same receipt
-(0.93 + 0.98 + 0.59 h per seed), and three H* label phases add about 0.75 h.
-The total is 23.9 GPU-hours, inside the 25-hour envelope, so the replication is
-**registered as planned**. If launch-time throughput on any of the three arms is
+budget (`16,777,216` tokens each) is derived from the same receipt, and three
+H* label phases are added on top. The derived total is inside the 25-hour
+envelope, so the replication is **registered as planned**; the arithmetic is
+recomputed in the run receipts rather than restated here. If launch-time throughput on any of the three arms is
 below 4,500 tokens/s, the replication is dropped and T2.8's
 one-seed consequence applies; the decision is recorded in the run receipts.
 
@@ -1977,11 +1977,11 @@ The effective batch stays `65,536` tokens, the optimiser step is unchanged, and
 the split is identical for every arm.
 
 **5. Memory table dtype.** The memory value table is stored and trained in
-bf16, its deployment dtype; the projection and gate stay fp32. An fp32 table
-put the hybrid arms at 13.4-13.8 GiB and they failed closed on the 16 GiB
-device; bf16 brings them to 10.85 GiB. The active-parameter union, the
-accessible total and the read-byte figure are unchanged (`read_bytes_per_token`
-was already quoted at the deployment dtype). The fp32 table size
+bf16, its deployment dtype; the projection and gate stay fp32. An fp32 table put
+the hybrid arms over the 16 GiB device; bf16 brings them under it, and the
+per-arm VRAM peaks are generated in `results/T2-PLAN.md`. The active-parameter
+union, the accessible total and the read-byte figure are unchanged
+(`read_bytes_per_token` was already quoted at the deployment dtype). The fp32 table size
 (`1,073,741,824` bytes) is reported as the *equivalent* size, not as the
 training footprint. Activation checkpointing is available
 (`--grad-checkpoint`) and is **not** used: with the bf16 table the arms fit
@@ -2002,7 +2002,7 @@ with the compact T1.4 target computed on the same positions.
 is
 
 <!-- BEGIN GENERATED: t2-instrument-p-tail -->
-0.05
+0.0500
 <!-- END GENERATED: t2-instrument-p-tail -->
 
 of each position's probability, its tail entropy is
@@ -2014,20 +2014,22 @@ of each position's probability, its tail entropy is
 nats, and the student-versus-teacher tail divergence is
 
 <!-- BEGIN GENERATED: t2-instrument-tail-kl -->
-1.41
+1.44
 <!-- END GENERATED: t2-instrument-tail-kl -->
 
-nats (for `D0`; the five arms are within 0.04 of it). The compact target is
+nats (for `D0`; every arm's value is in the receipt and differs from `D0`'s in
+the third decimal). The compact target is
 therefore lower than the full target by
 
 <!-- BEGIN GENERATED: t2-instrument-bias -->
--0.397
+-0.400
 <!-- END GENERATED: t2-instrument-bias -->
 
 nats per token, which is exactly `-p_tail * (H + KL)` on the pooled valid
 positions (the receipt's identity check agrees to six decimals). The bias is
-almost constant across students (`0.3966` to `0.4000` nats), which is the
-condition under which a constant offset cannot reorder them.
+almost constant across students (the six per-student values are in the
+receipt), which is the condition under which a constant offset cannot reorder
+them.
 
 **Ranking.** The cross-student Spearman correlation between the compact and full
 losses is
@@ -2036,12 +2038,17 @@ losses is
 0.829
 <!-- END GENERATED: t2-instrument-spearman -->
 
-with `0.58` of positions above the `1e-3` tail-mass floor. Of the three
-registered decisive pairs, two are statistically distinguishable and keep their
-sign under both targets (`X-D`: compact `+0.00584`, full `+0.00697`; `M-D0`:
-compact `-0.00189`, full `-0.00210`). The third (`H*-H`) is inside its 95% CI
-under **both** targets (compact `[-0.00383, +0.00239]`, full
-`[-0.00251, +0.00396]`), so it is not evidence for either target.
+with
+
+<!-- BEGIN GENERATED: t2-instrument-valid-fraction -->
+0.5806
+<!-- END GENERATED: t2-instrument-valid-fraction -->
+
+of positions above the `1e-3` tail-mass floor. Of the three registered decisive
+pairs, two (`X-D` and `M-D0`) are statistically distinguishable and keep their
+sign under both targets with their paired 95% CIs excluding zero. The third
+(`H*-H`) is inside its 95% CI under **both** targets, so it is not evidence for
+either target. The pair values and CIs are in the receipt.
 
 **Decision.** The T1.4 compact target stands as the **training** objective for
 T2, and T2's evaluation reports **both** the compact and the full-vocabulary

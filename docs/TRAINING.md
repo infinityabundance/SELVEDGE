@@ -187,8 +187,9 @@ contamination-filtered training stream.
 
 The measured per-arm throughput, VRAM peak, hours at the declared budget and
 resume deltas are generated in `results/T2-PLAN.md` §2 from
-`results/train/budget-20261115T130456Z.json`. The declared budget is 2^26
-tokens, derived from the slowest arm by T2.7; the arithmetic is in contract A8.
+`results/train/budget-20261115T130456Z.json`. The declared budget is derived
+from the slowest arm by T2.7; the arithmetic is in contract A8 and the number is
+generated in `results/T2-PLAN.md`.
 No number is repeated here, because a repeated measurement would have to be
 regenerated anyway.
 

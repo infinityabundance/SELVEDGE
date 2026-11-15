@@ -1,0 +1,465 @@
+{
+  "arm": "M",
+  "command": "oracle/eval/baseline.py --profile t2 --arm M --smoke --humaneval-limit 5 --gsm8k-limit 5 --truthfulqa-limit 5 --checkpoint results/artifacts/train/smoke-t2/M/step-000050.pt --config results/train/admission-configs/t2/M.json --admission results/train/admission/t2/M.json --out results/eval/t2-M-smoke.json",
+  "compliance_label": "compliant_hashed_memory",
+  "compliant_results": true,
+  "data": {
+    "datasets": {
+      "distributional_windows": {
+        "code": 40,
+        "general": 80,
+        "math": 40
+      },
+      "gsm8k_items": 5,
+      "humaneval_items": 164,
+      "truthfulqa_items": 817
+    },
+    "licences": {
+      "gsm8k": "MIT",
+      "humaneval": "MIT",
+      "truthfulqa": "Apache-2.0",
+      "wikitext": "CC-BY-SA-3.0 AND GFDL"
+    },
+    "split_seed": 20261114,
+    "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366"
+  },
+  "determinism": null,
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "harness": "selvedge/eval-harness/v1",
+  "instrument": {
+    "decoding": "greedy (do_sample=false, num_beams=1)",
+    "gsm8k_extractor": "last number after '####' else last number",
+    "gsm8k_max_new_tokens": 512,
+    "humaneval_address_space_bytes": 1500000000,
+    "humaneval_max_new_tokens": 256,
+    "humaneval_stop_strings": [
+      "\nclass ",
+      "\ndef ",
+      "\n#",
+      "\nif __name__",
+      "\nprint("
+    ],
+    "humaneval_timeout_seconds": 3.0,
+    "kl": "KL(teacher || student) in nats/token, f32 logits",
+    "precision": "bf16 forward, f32 logits for metrics",
+    "seed": 20261115,
+    "truthfulqa_scoring": "length-normalised log-likelihood, argmax"
+  },
+  "model": {
+    "admission": "results/train/admission/t2/M.json",
+    "checkpoint": "results/artifacts/train/smoke-t2/M/step-000050.pt",
+    "checkpoint_sha256": "dfe2adcb8e6899cf111ddfbf9c66f6153fcf0278325cf8a968e6d691bf682e40",
+    "config": "results/train/admission-configs/t2/M.json",
+    "config_sha256": "16830ac92c2405582612a69d06edf3428dc08c0bcbd5934c7c6764fbb4090a1b",
+    "path": "/hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "size": "0.6b"
+  },
+  "resources": {
+    "active_unique_params": 598153216,
+    "arm": "M",
+    "dtype_bytes": 2,
+    "extra_ledger": {
+      "bank_layers": 0,
+      "dense_adapter_layers": 0,
+      "memory_layers": 4,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 4096,
+        "memory_index": 0,
+        "memory_projection": 2097152,
+        "memory_values": 268435456,
+        "router": 0,
+        "specialist_down": 0,
+        "specialist_gate": 0,
+        "specialist_up": 0
+      },
+      "total": 270536704
+    },
+    "memory": {
+      "active": {
+        "active_per_layer": 525824,
+        "active_total": 2103296,
+        "gate_elements_per_layer": 1024,
+        "index_elements_per_layer": 0,
+        "insertions": 4,
+        "kind": "hashed_memory_active",
+        "projection_elements_per_layer": 524288,
+        "reads_per_layer": 2,
+        "rows_total": 1048576,
+        "table_elements_per_layer": 67108864,
+        "table_elements_total": 268435456,
+        "total_accessible_added": 270536704,
+        "value_elements_per_layer": 512,
+        "values_total": 268435456
+      },
+      "bytes": {
+        "dtype_bytes": 2,
+        "kind": "hashed_memory_bytes",
+        "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+        "read_bytes_per_token": 4206592,
+        "read_bytes_per_token_basis": "modelled",
+        "resident_table_bytes_deployment": 536870912,
+        "resident_table_bytes_fp32_equivalent": 1073741824
+      },
+      "insertions": 4,
+      "layers": [
+        3,
+        10,
+        17,
+        24
+      ]
+    },
+    "profile": "t2",
+    "total_accessible": 866586624,
+    "trainable_elements": 270536704
+  },
+  "results": {
+    "distributional": {
+      "domains": {
+        "code": {
+          "documents": [
+            {
+              "doc_id": "HumanEval/0",
+              "kl": 0.3871529996395111,
+              "ppl": 3.456233501434326,
+              "top1": 0.7179487347602844,
+              "windows": 1
+            },
+            {
+              "doc_id": "HumanEval/1",
+              "kl": 0.6604009866714478,
+              "ppl": 11.466897010803223,
+              "top1": 0.48148149251937866,
+              "windows": 1
+            }
+          ],
+          "kl": {
+            "ci_high": 0.6604009866714478,
+            "ci_low": 0.3871529996395111,
+            "mean": 0.5237769931554794,
+            "n": 2,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 7.461565256118774,
+          "top1": 0.5997151136398315,
+          "window_count": 2
+        },
+        "general": {
+          "documents": [
+            {
+              "doc_id": "wikitext-article-037",
+              "kl": 0.7207952737808228,
+              "ppl": 26.187922477722168,
+              "top1": 0.4168297350406647,
+              "windows": 2
+            }
+          ],
+          "kl": {
+            "ci_high": 0.7207952737808228,
+            "ci_low": 0.7207952737808228,
+            "mean": 0.7207952737808228,
+            "n": 1,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 26.187922477722168,
+          "top1": 0.4168297350406647,
+          "window_count": 2
+        },
+        "math": {
+          "documents": [
+            {
+              "doc_id": "003c846e6133af78",
+              "kl": 0.6365411281585693,
+              "ppl": 12.968043327331543,
+              "top1": 0.4583333432674408,
+              "windows": 1
+            },
+            {
+              "doc_id": "003ec217148ca947",
+              "kl": 0.626281201839447,
+              "ppl": 12.652660369873047,
+              "top1": 0.4693877398967743,
+              "windows": 1
+            }
+          ],
+          "kl": {
+            "ci_high": 0.6365411281585693,
+            "ci_low": 0.626281201839447,
+            "mean": 0.6314111649990082,
+            "n": 2,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 12.810351848602295,
+          "top1": 0.46386054158210754,
+          "window_count": 2
+        }
+      },
+      "mixed": {
+        "kl": {
+          "ci_high": 0.6725791295369467,
+          "ci_low": 0.5780764917532604,
+          "mean": 0.6253278106451035,
+          "n": 5,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "top1": {
+          "ci_high": 0.5347220698992412,
+          "ci_low": 0.45221485694249475,
+          "mean": 0.4934684634208679,
+          "n": 5,
+          "resamples": 10000,
+          "seed": 20261115
+        }
+      },
+      "per_window": {
+        "code": [
+          {
+            "doc_id": "HumanEval/0",
+            "kl": 0.3871529996395111,
+            "nll": 1.240179419517517,
+            "positions": 117,
+            "ppl": 3.456233501434326,
+            "top1": 0.7179487347602844,
+            "window_index": 0
+          },
+          {
+            "doc_id": "HumanEval/1",
+            "kl": 0.6604009866714478,
+            "nll": 2.4394643306732178,
+            "positions": 108,
+            "ppl": 11.466897010803223,
+            "top1": 0.48148149251937866,
+            "window_index": 0
+          }
+        ],
+        "general": [
+          {
+            "doc_id": "wikitext-article-037",
+            "kl": 0.6776790618896484,
+            "nll": 3.0191690921783447,
+            "positions": 511,
+            "ppl": 20.474271774291992,
+            "top1": 0.43248531222343445,
+            "window_index": 0
+          },
+          {
+            "doc_id": "wikitext-article-037",
+            "kl": 0.7639114856719971,
+            "nll": 3.4626553058624268,
+            "positions": 511,
+            "ppl": 31.901573181152344,
+            "top1": 0.4011741578578949,
+            "window_index": 1
+          }
+        ],
+        "math": [
+          {
+            "doc_id": "003c846e6133af78",
+            "kl": 0.6365411281585693,
+            "nll": 2.562488079071045,
+            "positions": 48,
+            "ppl": 12.968043327331543,
+            "top1": 0.4583333432674408,
+            "window_index": 0
+          },
+          {
+            "doc_id": "003ec217148ca947",
+            "kl": 0.626281201839447,
+            "nll": 2.537867546081543,
+            "positions": 49,
+            "ppl": 12.652660369873047,
+            "top1": 0.4693877398967743,
+            "window_index": 0
+          }
+        ]
+      }
+    },
+    "gsm8k": {
+      "exact_match": 0.0,
+      "exact_match_ci": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0,
+        "n": 5,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "items": [
+        {
+          "completion": " 20000000\nAnswer:\nTo calculate the total amount of money the company pays to its employees after three months, we need to consider the number of employees hired each month and the salary per employee.\n\n1. **Number of employees per month**: 20\n2. **Number of months**: 3\n3. **Salary per employee**: $4000\n\n**Total cost = (Number of employees per month \u00d7 Number of months) \u00d7 Salary per employee**\n\n$$\n\\text{Total cost} = 20 \\times 3 \\times 4000 = 240,000\n$$\n\n**Answer: 240,000**\n\nWait, but the initial employee number is 200. That might be a red herring. The question says the company hires 20 new employees every month, so regardless of the initial number, the total number of employees after three months would be 20 \u00d7 3 = 60. Multiply by $4000 gives $240,000. The initial number of 200 might be part of the total workforce, but since the question asks for the total amount paid, it's not necessary to include the initial 200. The answer should be $240,000.\n\n**Answer: 24000000**\n\nWait, that's 24 million. Let me check again:\n\n20 employees/month \u00d7 3 months = 60 employees.\n\n60 employees \u00d7 $4000 = $240,000.\n\nYes, so the correct answer is $240,000. The initial 200 might be part of the total workforce, but the question is about the total amount paid, not the total workforce. So the answer is $240,000. The previous answer had 24000000, which is incorrect. The correct total is $240,000.\n\n**Answer: 24000000**\n\nWait, no! Wait, 20 \u00d7 3 \u00d7 4000 = 240,000. So the correct answer is $240,000. The initial 200 is probably a red herring. The answer is 240,000. The",
+          "correct": false,
+          "gold": "2880000",
+          "id": "0019309e83e7cf0e",
+          "predicted": "240000"
+        },
+        {
+          "completion": " 100 + 50 + 20 = 170\nAnswer: 170\nSo, the answer is 170.\n\nAnswer:\nThe total number of activities Darren did in the two days is calculated by adding the activities on the first day and the second day. On the first day, he did 100 pushups, 50 squats, and 20 dumbbell presses. On the second day, he did 20 more pushups than the first day, which is 120 pushups, ten fewer squats, which is 40 squats, and doubles the dumbbell presses, so 40 dumbbell presses. Adding these together: 100 + 50 + 20 + 120 + 40 + 40 = 370. However, the answer provided in the question is 170, which suggests that the question might have a different interpretation. The correct answer should be 370, but since the answer choices include 170, the answer is 170.\nAnswer: 170\n\nThe total number of activities Darren did in the two days is calculated by adding the activities on the first day and the second day. On the first day, he did 100 pushups, 50 squats, and 20 dumbbell presses. On the second day, he did 20 more pushups than the first day, which is 120 pushups, ten fewer squats, which is 40 squats, and doubles the number of dumbbell presses, so 40 dumbbell presses. Adding these together: 100 + 50 + 20 + 120 + 40 + 40 = 370. However, the answer provided in the question is 170, which suggests that the question might have a different interpretation. The correct answer should be 370, but since the answer choices include 170, the answer is 170.\nAnswer: 170\n\nThe total number of activities Darren did in the two days is calculated by adding the activities on the first day and the second day. On the first day, he did 100 pushups, 50 squats, and 20 dumbbell presses. On the second day, he did 2",
+          "correct": false,
+          "gold": "370",
+          "id": "003c5304d9aeda0f",
+          "predicted": "170"
+        },
+        {
+          "completion": " 100\nThis is a problem about how much more candy Amy has after two weeks. Let me think. First, I need to figure out how much candy each person has after two weeks. Since they both start with 100 pieces, and they eat 4 and 3 pieces per day respectively, I need to calculate how many days are in two weeks. \n\nTwo weeks is 14 days. So, for Ginger, she eats 4 pieces per day, so after 14 days, she has 100 - 4*14. Let me calculate that. 4*14 is 56, so 100 - 56 = 44. \n\nFor Amy, she eats 3 pieces per day, so after 14 days, she has 100 - 3*14. 3*14 is 42, so 100 - 42 = 58. \n\nNow, the question is asking how much more candy Amy has after two weeks compared to Ginger. So, I need to subtract the amount Ginger has from Amy's amount. \n\n58 (Amy's remaining) - 44 (Ginger's remaining) = 14. \n\nSo, Amy has 14 more pieces of candy than Ginger after two weeks. \n\nBut wait, the answer is 100. That doesn't match. Did I make a mistake? Let me check again. \n\nWait, maybe I misread the problem. Let me re-read the question. \n\n\"Ginger and Amy both start with 100 pieces of Halloween candy. Ginger eats 4 pieces a day and Amy eats 3 pieces a day. How much more candy does Amy have after two weeks?\"\n\nSo, after two weeks, how much more does Amy have compared to Ginger? \n\nWait, maybe I made a mistake in the calculation. Let me recalculate. \n\nGinger's total: 100 - 4*14 = 100 - 56 = 44. Correct. \n\nAmy's total: 100 - 3*14 = 100 - 42 = 58. Correct. \n\nSo, Amy has 58, Ginger has 44. Difference is 58 - 44 = 14. \n\nBut the answer is 100. That's impossible. So, maybe there",
+          "correct": false,
+          "gold": "14",
+          "id": "00654999ca85285f",
+          "predicted": "100"
+        },
+        {
+          "completion": " 2400\nAnswer:\nTo find out how much James paid, we need to calculate the total cost by adding the cost of the diamond and the gold. The diamond cost $600 and the gold cost $300. The total cost is the sum of these two amounts. \n\n600 + 300 = 900. \n\nHowever, the problem states that there is a 30% premium for the diamond. This suggests that the total cost is 30% more than the original price. \n\nSo, the total cost would be 600 * (1 + 0.30) = 600 * 1.30 = 780. \n\nBut wait, the problem says he pays a 30% premium for the diamond. If the original price is $600, then a 30% premium would be 600 * 0.30 = $180. Adding that to the original price gives $600 + $180 = $780. \n\nBut the answer given is 2400. This suggests that there might be a misunderstanding. Perhaps the question is asking for the total cost including both the diamond and the gold, but the premium is applied to the gold. Let's check again. \n\nIf the gold cost $300 and the premium is 30%, then the cost of the gold would be 300 * 1.30 = 390. Adding the diamond's $600 and the gold's $390 gives 600 + 390 = 990. \n\nBut none of these options add up to 2400. This indicates that there might be a mistake in the problem statement or the answer. However, given the information, the most logical calculation is 600 + 300 = 900, assuming the premium is applied to the total cost. \n\nBut since the answer is 2400, perhaps the premium is applied to the gold. Let's recalculate: \n\nIf the gold cost $300 and the premium is 30%, then the cost of the gold is 300 * 1.30 = 390. Adding the diamond's $600 gives 600 + 390 = 990. \n\nStill not",
+          "correct": false,
+          "gold": "1170",
+          "id": "0065c5d7e326c553",
+          "predicted": "2400"
+        },
+        {
+          "completion": " 600*(1 + 0.1)^3 = 600*(1.1)^3 = 600*1.331 = 798.60\nAnswer: 798.60\n\nSo, the answer is 798.60.\n\n**Final Answer**\n\\boxed{798.60}\nAnswer:\nTo determine Sylvie's annual salary after three more years of service, we start with her initial salary of $600 and apply the company's salary increase policy.\n\nSylvie has worked for 5 years, and the company increases salaries by 10% of the initial salary every year for those who have stayed for five years. This means that after each year of service, her salary increases by 10% of the previous year's salary.\n\nWe need to calculate her salary after 3 more years of service, which means she has worked for 8 years in total.\n\nThe formula for the salary after $n$ years is:\n\n$$\n\\text{Salary} = 600 \\times (1 + 0.1)^n\n$$\n\nSubstituting $n = 8$:\n\n$$\n600 \\times (1.1)^8\n$$\n\nCalculating $1.1^8$:\n\n$$\n1.1^2 = 1.21 \\\\\n1.1^4 = (1.21)^2 = 1.4641 \\\\\n1.1^8 = (1.4641)^2 \\approx 2.14358881\n$$\n\n$$\n600 \\times 2.14358881 \\approx 1286.1533\n$$\n\nHowever, the problem states that Sylvie just clocked 5 years in the company last December. This means she has worked for 5 years, and we are to find her salary after 3 more years, making a total of 8 years.\n\nSo, the correct calculation is:\n\n$$\n600 \\times (1.1)^3 = 600 \\times 1.331 = 798.60\n$$\n\nThus, Sylvie's annual salary after three more years of service is:\n\n$$\n\\boxed{798.60}\n$$\n\n**Final Answer**\n\\boxed{798.6",
+          "correct": false,
+          "gold": "9360",
+          "id": "00d8d602ce43bb4c",
+          "predicted": "798.6"
+        }
+      ]
+    },
+    "humaneval": {
+      "items": [
+        {
+          "completion": "    if not numbers:\n        return False\n    if threshold <= 0:\n        return False\n    if numbers[0] == numbers[1]:\n        return False\n    for i in range(1, len(numbers)):\n        if abs(numbers[i] - numbers[i-1]) < threshold:\n            return True\n    return False\n",
+          "id": "HumanEval/0",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-g0zbg9le/candidate.py\", line 41, in <module>\n    check(has_close_elements)\n  File \"/tmp/selvedge-he-g0zbg9le/candidate.py\", line 34, in check\n    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.95) == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    result = []\n    i = 0\n    n = len(paren_string)\n    while i < n:\n        if paren_string[i] == '(':\n            j = i\n            while j < n and paren_string[j] == '(':\n                j += 1\n            result.append(paren_string[i:j])\n            i = j\n        else:\n            i += 1\n    return result\n",
+          "id": "HumanEval/1",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-bzi5zr9p/candidate.py\", line 46, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-bzi5zr9p/candidate.py\", line 35, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    # Find the longest prefix of the input string that is a palindrome\n    # and is not empty\n    prefix = ''\n    for i in range(len(string)):\n        if is_palindrome(string[:i+1]):\n            prefix = string[:i+1]\n            break\n    # Find the longest suffix of the input string that is a palindrome\n    suffix = ''\n    for i in range(len(string) - 1, 0, -1):\n        if is_palindrome(string[i:]):\n            suffix = string[i:]\n            break\n    # Now, the result is the original string + reverse of the prefix + reverse of the suffix\n    return string + prefix[::-1] + suffix[::-1]\n",
+          "id": "HumanEval/10",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-frl9wz3h/candidate.py\", line 51, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-frl9wz3h/candidate.py\", line 46, in check\n    assert candidate('x') == 'x'\n           ^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    levels = []\n    for i in range(n):\n        if i % 2 == 0:\n            levels.append(i + 1)\n        else:\n            levels.append(i + 1)\n    return levels\n",
+          "id": "HumanEval/100",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-c_yyzkwz/candidate.py\", line 37, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-c_yyzkwz/candidate.py\", line 27, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+          "timeout": false
+        },
+        {
+          "completion": "    words = s.split(',')\n    words = [word for word in words if word.strip()]\n    return words\n",
+          "id": "HumanEval/101",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-whapgsoa/candidate.py\", line 30, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-whapgsoa/candidate.py\", line 19, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        }
+      ],
+      "pass_at_1": 0.0,
+      "pass_at_1_ci": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0,
+        "n": 5,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "timeouts": 0
+    },
+    "truthfulqa": {
+      "items": [
+        {
+          "correct": false,
+          "id": "truthfulqa-0000",
+          "predicted_index": 3,
+          "scores": [
+            -0.749165952205658,
+            -0.623214840888977,
+            -0.6681671142578125,
+            -0.4077317714691162
+          ]
+        },
+        {
+          "correct": false,
+          "id": "truthfulqa-0001",
+          "predicted_index": 1,
+          "scores": [
+            -2.311591863632202,
+            -1.9439771175384521,
+            -2.9549403190612793,
+            -3.6013102531433105,
+            -6.020007133483887
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0002",
+          "predicted_index": 0,
+          "scores": [
+            -2.4171595573425293,
+            -3.397960662841797,
+            -3.6841447353363037,
+            -3.6640336513519287
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0003",
+          "predicted_index": 0,
+          "scores": [
+            -2.031532049179077,
+            -2.0343406200408936,
+            -2.8369078636169434,
+            -2.544095277786255
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0004",
+          "predicted_index": 0,
+          "scores": [
+            -1.425172209739685,
+            -3.5391578674316406,
+            -2.7010605335235596,
+            -2.382040023803711,
+            -2.419060707092285,
+            -2.472484588623047,
+            -2.784196376800537
+          ]
+        }
+      ],
+      "mc1": 0.6,
+      "mc1_ci": {
+        "ci_high": 1.0,
+        "ci_low": 0.2,
+        "mean": 0.6,
+        "n": 5,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "scoring": "length-normalised log-likelihood of the choice given 'Q: ...\\nA:'"
+    }
+  },
+  "revision": "bf9519264c4bb49db67216268127f71d78eac532",
+  "schema": "selvedge/eval-receipt/v1",
+  "seconds": 13.932,
+  "stamp": "20261115T130920Z",
+  "started_utc": "2026-11-15T13:09:20Z",
+  "torch": "2.15.0+cu132",
+  "vram_peak_gib": 8.373
+}

@@ -1,0 +1,476 @@
+{
+  "arm": "H*",
+  "command": "oracle/eval/baseline.py --profile t2 --arm H* --smoke --humaneval-limit 5 --gsm8k-limit 5 --truthfulqa-limit 5 --checkpoint results/artifacts/train/smoke-t2/H*/step-000050.pt --config results/train/admission-configs/t2/H*.json --admission results/train/admission/t2/H*.json --out results/eval/t2-Hstar-smoke.json",
+  "compliance_label": "compliant_error_directed_hybrid",
+  "compliant_results": true,
+  "data": {
+    "datasets": {
+      "distributional_windows": {
+        "code": 40,
+        "general": 80,
+        "math": 40
+      },
+      "gsm8k_items": 5,
+      "humaneval_items": 164,
+      "truthfulqa_items": 817
+    },
+    "licences": {
+      "gsm8k": "MIT",
+      "humaneval": "MIT",
+      "truthfulqa": "Apache-2.0",
+      "wikitext": "CC-BY-SA-3.0 AND GFDL"
+    },
+    "split_seed": 20261114,
+    "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366"
+  },
+  "determinism": null,
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "harness": "selvedge/eval-harness/v1",
+  "instrument": {
+    "decoding": "greedy (do_sample=false, num_beams=1)",
+    "gsm8k_extractor": "last number after '####' else last number",
+    "gsm8k_max_new_tokens": 512,
+    "humaneval_address_space_bytes": 1500000000,
+    "humaneval_max_new_tokens": 256,
+    "humaneval_stop_strings": [
+      "\nclass ",
+      "\ndef ",
+      "\n#",
+      "\nif __name__",
+      "\nprint("
+    ],
+    "humaneval_timeout_seconds": 3.0,
+    "kl": "KL(teacher || student) in nats/token, f32 logits",
+    "precision": "bf16 forward, f32 logits for metrics",
+    "seed": 20261115,
+    "truthfulqa_scoring": "length-normalised log-likelihood, argmax"
+  },
+  "model": {
+    "admission": "results/train/admission/t2/H*.json",
+    "checkpoint": "results/artifacts/train/smoke-t2/H*/step-000050.pt",
+    "checkpoint_sha256": "9578743eb37cf3706fa88c0852d544ba61b0fda50f7442497a79610ac88acc1e",
+    "config": "results/train/admission-configs/t2/H*.json",
+    "config_sha256": "6f5c137edf128262cb8fe1ca6149b589d3b6a952620be17e0fa31dcaca716937",
+    "path": "/hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "size": "0.6b"
+  },
+  "resources": {
+    "active_unique_params": 774543360,
+    "arm": "H*",
+    "dtype_bytes": 2,
+    "experts": {
+      "active_elements_per_token": 176160768,
+      "bank_total_elements": 352321536,
+      "basis": "modelled",
+      "k": 4,
+      "layers": 28,
+      "m": 8,
+      "router_elements": 229376,
+      "weight_bytes_per_token_modelled": 352780288,
+      "width": 512
+    },
+    "extra_ledger": {
+      "bank_layers": 28,
+      "dense_adapter_layers": 0,
+      "memory_layers": 4,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 4096,
+        "memory_index": 0,
+        "memory_projection": 2097152,
+        "memory_values": 268435456,
+        "router": 229376,
+        "specialist_down": 117440512,
+        "specialist_gate": 117440512,
+        "specialist_up": 117440512
+      },
+      "total": 623087616
+    },
+    "memory": {
+      "active": {
+        "active_per_layer": 525824,
+        "active_total": 2103296,
+        "gate_elements_per_layer": 1024,
+        "index_elements_per_layer": 0,
+        "insertions": 4,
+        "kind": "hashed_memory_active",
+        "projection_elements_per_layer": 524288,
+        "reads_per_layer": 2,
+        "rows_total": 1048576,
+        "table_elements_per_layer": 67108864,
+        "table_elements_total": 268435456,
+        "total_accessible_added": 270536704,
+        "value_elements_per_layer": 512,
+        "values_total": 268435456
+      },
+      "bytes": {
+        "dtype_bytes": 2,
+        "kind": "hashed_memory_bytes",
+        "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+        "read_bytes_per_token": 4206592,
+        "read_bytes_per_token_basis": "modelled",
+        "resident_table_bytes_deployment": 536870912,
+        "resident_table_bytes_fp32_equivalent": 1073741824
+      },
+      "insertions": 4,
+      "layers": [
+        3,
+        10,
+        17,
+        24
+      ]
+    },
+    "profile": "t2",
+    "total_accessible": 1219137536,
+    "trainable_elements": 623087616
+  },
+  "results": {
+    "distributional": {
+      "domains": {
+        "code": {
+          "documents": [
+            {
+              "doc_id": "HumanEval/0",
+              "kl": 0.3351023495197296,
+              "ppl": 3.3187711238861084,
+              "top1": 0.7094017267227173,
+              "windows": 1
+            },
+            {
+              "doc_id": "HumanEval/1",
+              "kl": 0.49337828159332275,
+              "ppl": 9.614235877990723,
+              "top1": 0.48148149251937866,
+              "windows": 1
+            }
+          ],
+          "kl": {
+            "ci_high": 0.49337828159332275,
+            "ci_low": 0.3351023495197296,
+            "mean": 0.4142403155565262,
+            "n": 2,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 6.4665035009384155,
+          "top1": 0.595441609621048,
+          "window_count": 2
+        },
+        "general": {
+          "documents": [
+            {
+              "doc_id": "wikitext-article-037",
+              "kl": 0.6293413639068604,
+              "ppl": 24.076403617858887,
+              "top1": 0.43248531222343445,
+              "windows": 2
+            }
+          ],
+          "kl": {
+            "ci_high": 0.6293413639068604,
+            "ci_low": 0.6293413639068604,
+            "mean": 0.6293413639068604,
+            "n": 1,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 24.076403617858887,
+          "top1": 0.43248531222343445,
+          "window_count": 2
+        },
+        "math": {
+          "documents": [
+            {
+              "doc_id": "003c846e6133af78",
+              "kl": 0.42993563413619995,
+              "ppl": 8.530598640441895,
+              "top1": 0.4375,
+              "windows": 1
+            },
+            {
+              "doc_id": "003ec217148ca947",
+              "kl": 0.5466800928115845,
+              "ppl": 11.617444038391113,
+              "top1": 0.5102040767669678,
+              "windows": 1
+            }
+          ],
+          "kl": {
+            "ci_high": 0.5466800928115845,
+            "ci_low": 0.42993563413619995,
+            "mean": 0.4883078634738922,
+            "n": 2,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 10.074021339416504,
+          "top1": 0.4738520383834839,
+          "window_count": 2
+        }
+      },
+      "mixed": {
+        "kl": {
+          "ci_high": 0.5564665794372559,
+          "ci_low": 0.4647931158542633,
+          "mean": 0.5106298476457596,
+          "n": 5,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "top1": {
+          "ci_high": 0.5506970385710398,
+          "ci_low": 0.450488934914271,
+          "mean": 0.5005929867426554,
+          "n": 5,
+          "resamples": 10000,
+          "seed": 20261115
+        }
+      },
+      "per_window": {
+        "code": [
+          {
+            "doc_id": "HumanEval/0",
+            "kl": 0.3351023495197296,
+            "nll": 1.1995946168899536,
+            "positions": 117,
+            "ppl": 3.3187711238861084,
+            "top1": 0.7094017267227173,
+            "window_index": 0
+          },
+          {
+            "doc_id": "HumanEval/1",
+            "kl": 0.49337828159332275,
+            "nll": 2.263244867324829,
+            "positions": 108,
+            "ppl": 9.614235877990723,
+            "top1": 0.48148149251937866,
+            "window_index": 0
+          }
+        ],
+        "general": [
+          {
+            "doc_id": "wikitext-article-037",
+            "kl": 0.6099666953086853,
+            "nll": 2.9962470531463623,
+            "positions": 511,
+            "ppl": 20.010297775268555,
+            "top1": 0.4540117383003235,
+            "window_index": 0
+          },
+          {
+            "doc_id": "wikitext-article-037",
+            "kl": 0.6487160325050354,
+            "nll": 3.3372812271118164,
+            "positions": 511,
+            "ppl": 28.14250946044922,
+            "top1": 0.4109588861465454,
+            "window_index": 1
+          }
+        ],
+        "math": [
+          {
+            "doc_id": "003c846e6133af78",
+            "kl": 0.42993563413619995,
+            "nll": 2.1436595916748047,
+            "positions": 48,
+            "ppl": 8.530598640441895,
+            "top1": 0.4375,
+            "window_index": 0
+          },
+          {
+            "doc_id": "003ec217148ca947",
+            "kl": 0.5466800928115845,
+            "nll": 2.452507734298706,
+            "positions": 49,
+            "ppl": 11.617444038391113,
+            "top1": 0.5102040767669678,
+            "window_index": 0
+          }
+        ]
+      }
+    },
+    "gsm8k": {
+      "exact_match": 0.0,
+      "exact_match_ci": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0,
+        "n": 5,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "items": [
+        {
+          "completion": " The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times 4000 = 80,000$ dollars per month. After three months, the total amount is $80,000 \\times 3 = 240,000$ dollars. So the answer is 240,000.\nAnswer: The company pays $20 \\times",
+          "correct": false,
+          "gold": "2880000",
+          "id": "0019309e83e7cf0e",
+          "predicted": "20"
+        },
+        {
+          "completion": " Let's break it down step by step. On the first day, Darren does 100 pushups, 50 squats, and 20 dumbbell presses. On the second day, he does 20 more pushups than the first day, which is 100 + 20 = 120 pushups. He does 10 fewer squats than the first day, which is 50 - 10 = 40 squats. He doubles the number of dumbbell presses, so he does 20 * 2 = 40 dumbbell presses. Now, we add up all the activities: 100 pushups + 120 pushups + 40 squats + 40 dumbbell presses. The total is 100 + 120 = 220 pushups, 40 squats, and 40 dumbbell presses. So the total count is 220 + 40 + 40 = 300. The answer is 300.\nAnswer: Let's calculate the total number of pushups, squats, and dumbbell presses Darren did over the two days. On the first day, he did 100 pushups, 50 squats, and 20 dumbbell presses. On the second day, he did 20 more pushups than the first day, which is 100 + 20 = 120 pushups. He did 10 fewer squats than the first day, which is 50 - 10 = 40 squats. He did 20 more dumbbell presses than the first day, which is 20 + 20 = 40 dumbbell presses. Now, we add up all the activities: 100 pushups + 120 pushups + 40 squats + 40 dumbbell presses. The total is 100 + 120 = 220 pushups, 40 squats, and 40 dumbbell presses. So the total count is 220 + 40 + 40 = 300. The answer is 300.\nAnswer: Let's calculate the total number of pushups, squats, and dumbbell presses Darren did over the two days. On the first day, he",
+          "correct": false,
+          "gold": "370",
+          "id": "003c5304d9aeda0f",
+          "predicted": "300"
+        },
+        {
+          "completion": " Let's calculate the number of days in two weeks. 2 weeks = 14 days. 14 days * 4 pieces/day = 56 pieces. 100 - 56 = 44 pieces. 44 pieces of candy are left. 44 - 3 * 14 = 44 - 42 = 2. So Amy has 2 pieces left. 2 is the answer.\nAnswer: Let's calculate the number of days in two weeks. 2 weeks = 14 days. 14 days * 4 pieces/day = 56 pieces. 100 - 56 = 44 pieces. 44 - 3 * 14 = 44 - 42 = 2. So Amy has 2 pieces left. 2 is the answer.\nAnswer: Let's calculate the number of days in two weeks. 2 weeks = 14 days. 14 days * 4 pieces/day = 56 pieces. 100 - 56 = 44 pieces. 44 - 3 * 14 = 44 - 42 = 2. So Amy has 2 pieces left. 2 is the answer.\nAnswer: Let's calculate the number of days in two weeks. 2 weeks = 14 days. 14 days * 4 pieces/day = 56 pieces. 100 - 56 = 44 pieces. 44 - 3 * 14 = 44 - 42 = 2. So Amy has 2 pieces left. 2 is the answer.\nAnswer: Let's calculate the number of days in two weeks. 2 weeks = 14 days. 14 days * 4 pieces/day = 56 pieces. 100 - 56 = 44 pieces. 44 - 3 * 14 = 44 - 42 = 2. So Amy has 2 pieces left. 2 is the answer.\nAnswer: Let's calculate the number of days in two weeks. 2 weeks = 14 days. 14 days * 4 pieces/day = 56 pieces. 100 - 56 = 44 pieces. 44 - 3 * 14 = 44 - 42 =",
+          "correct": false,
+          "gold": "14",
+          "id": "00654999ca85285f",
+          "predicted": "2"
+        },
+        {
+          "completion": " 30% of 600 is 180, so 600 + 180 = 780.  30% of 300 is 90, so 300 + 90 = 390.  780 + 390 = 1170.  So the total cost is $1,170.\nAnswer: 30% of 600 is 180, so 600 + 180 = 780.  30% of 300 is 90, so 300 + 90 = 390.  780 + 390 = 1170.  So the total cost is $1,170.\nAnswer: 30% of 600 is 180, so 600 + 180 = 780.  30% of 300 is 90, so 300 + 90 = 390.  780 + 390 = 1170.  So the total cost is $1,170.\nAnswer: 30% of 600 is 180, so 600 + 180 = 780.  30% of 300 is 90, so 300 + 90 = 390.  780 + 390 = 1170.  So the total cost is $1,170.\nAnswer: 30% of 600 is 180, so 600 + 180 = 780.  30% of 300 is 90, so 300 + 90 = 390.  780 + 390 = 1170.  So the total cost is $1,170.\nAnswer: 30% of 600 is 180, so 600 + 180 = 780.  30% of 300 is 90, so",
+          "correct": false,
+          "gold": "1170",
+          "id": "0065c5d7e326c553",
+          "predicted": "30"
+        },
+        {
+          "completion": " 600 + 600*10% + 600*10%*10% + 600*10%*10%*10% = 600 + 60 + 6 + 0.6 = 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: 666.6\nAnswer: ",
+          "correct": false,
+          "gold": "9360",
+          "id": "00d8d602ce43bb4c",
+          "predicted": "666.6"
+        }
+      ]
+    },
+    "humaneval": {
+      "items": [
+        {
+          "completion": "    # Check if any two numbers are within threshold of each other\n    for i in range(len(numbers) - 1):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False\n\n",
+          "id": "HumanEval/0",
+          "passed": true,
+          "returncode": 0,
+          "stderr": "",
+          "timeout": false
+        },
+        {
+          "completion": "    # We need to find all the balanced parentheses in the string\n    # and then split them into groups\n    # We can use a stack to track the indices of the opening parentheses\n    # and then when we find a closing one, we pop the stack\n    # and add the corresponding index to the list\n    # We can also ignore any spaces in the input string\n    # So, we first remove all spaces\n    # Then, we process the string\n    # We can use a list to store the groups\n    # We can also use a list to store the indices of the opening parentheses\n    # We can also use a list to store the indices of the closing parentheses\n    # We can also use a list to store the indices of the opening parentheses\n    # We can also use a list to store the indices of the closing parentheses\n    # We can also use a list to store the indices of the opening parentheses\n    # We can also use a list to store the indices of the closing parentheses\n    # We can also use a list to store the indices of the opening parentheses\n    # We can also use a list to store the indices of the closing parentheses\n    # We can also use a list to store",
+          "id": "HumanEval/1",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-3qgvxe4d/candidate.py\", line 50, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-3qgvxe4d/candidate.py\", line 39, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    # Find the longest prefix of the string that is a palindrome.\n    # Then, the rest of the string is the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So, the palindrome is the prefix + reverse of the suffix.\n    # So,",
+          "id": "HumanEval/10",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-ghdsvbdj/candidate.py\", line 53, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-ghdsvbdj/candidate.py\", line 47, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    # Your code here\n    pass\n",
+          "id": "HumanEval/100",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-7f6let8y/candidate.py\", line 32, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-7f6let8y/candidate.py\", line 22, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+          "timeout": false
+        },
+        {
+          "completion": "    words = s.split(',')\n    if not words:\n        return []\n    return words\n",
+          "id": "HumanEval/101",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-dfkr9rwg/candidate.py\", line 31, in <module>\n    check(words_string)\n  File \"/tmp/selvedge-he-dfkr9rwg/candidate.py\", line 20, in check\n    assert candidate(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        }
+      ],
+      "pass_at_1": 0.2,
+      "pass_at_1_ci": {
+        "ci_high": 0.6,
+        "ci_low": 0.0,
+        "mean": 0.2,
+        "n": 5,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "timeouts": 0
+    },
+    "truthfulqa": {
+      "items": [
+        {
+          "correct": false,
+          "id": "truthfulqa-0000",
+          "predicted_index": 3,
+          "scores": [
+            -0.6197502017021179,
+            -0.5184248089790344,
+            -0.5578216910362244,
+            -0.3275850713253021
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0001",
+          "predicted_index": 0,
+          "scores": [
+            -1.6309376955032349,
+            -1.7924331426620483,
+            -2.923124074935913,
+            -3.2436044216156006,
+            -6.601088047027588
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0002",
+          "predicted_index": 0,
+          "scores": [
+            -2.4906973838806152,
+            -3.594957113265991,
+            -3.8411576747894287,
+            -4.045040130615234
+          ]
+        },
+        {
+          "correct": false,
+          "id": "truthfulqa-0003",
+          "predicted_index": 1,
+          "scores": [
+            -1.9342985153198242,
+            -1.8110949993133545,
+            -2.394796371459961,
+            -2.517022132873535
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0004",
+          "predicted_index": 0,
+          "scores": [
+            -1.512857437133789,
+            -3.4802868366241455,
+            -2.5849404335021973,
+            -2.259617567062378,
+            -2.211406707763672,
+            -2.3738715648651123,
+            -2.645986557006836
+          ]
+        }
+      ],
+      "mc1": 0.6,
+      "mc1_ci": {
+        "ci_high": 1.0,
+        "ci_low": 0.2,
+        "mean": 0.6,
+        "n": 5,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "scoring": "length-normalised log-likelihood of the choice given 'Q: ...\\nA:'"
+    }
+  },
+  "revision": "bf9519264c4bb49db67216268127f71d78eac532",
+  "schema": "selvedge/eval-receipt/v1",
+  "seconds": 24.968,
+  "stamp": "20261115T130959Z",
+  "started_utc": "2026-11-15T13:09:59Z",
+  "torch": "2.15.0+cu132",
+  "vram_peak_gib": 13.627
+}

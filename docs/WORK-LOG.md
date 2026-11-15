@@ -1200,10 +1200,10 @@ smoke-proven pilot without starting a full run:
 | ---: | --- | --- | --- |
 | H1 | A deterministic hash over the token prefix can address a 2^18-row per-layer table with no learned index, and the active union is only the retrieved rows plus the projection and gate | confirmed at the module level: 525,824 active elements per insertion layer, 2,103,296 over four; every read is causal in a unit test | `oracle/tests/test_t2_capacity.py`, `results/train/admission/t2/M.json` |
 | H2 | The Rust ledger can refuse an over-budget T2 arm before training | confirmed for all five arms: each config is admitted at its design count and each mutated config is refused with no admitted path | `crates/selvedge-cli/tests/t2_admission.rs`, `results/courts/rust-*.json` |
-| H3 | A zero-initialised memory projection and specialist `W_down` give exact step-0 parity for every branch (`D`, `M`, `X`, `H`, `H*`) | confirmed, but only after a defect was found: an fp32 extra added to a bf16 base promoted the residual stream and moved logits by 3.64. Casting the extra to the base dtype makes the delta exactly 0 on all five arms | `zero-point.json` in each smoke run |
+| H3 | A zero-initialised memory projection and specialist `W_down` give exact step-0 parity for every branch (`D`, `M`, `X`, `H`, `H*`) | confirmed, but only after a defect was found: an fp32 extra added to a bf16 base promoted the residual stream and moved the logits far outside the `1e-3` tolerance. Casting the extra to the base dtype makes the delta exactly 0 on all five arms | `zero-point.json` in each smoke run |
 | H4 | The compact T1.4 target ranks students like the full-vocabulary teacher on the held-out sample | the bias is real and near constant (the number is below); both statistically distinguishable decisive pairs keep their sign; `H*-H` is inside its CI under both targets | `results/train/instrument-20261115T130334Z.json` |
-| H5 | The five arms fit 16 GiB and train at a rate that makes a 5-hour budget meaningful | confirmed: the slowest arm runs at 10.86 GiB, the declared budget fits every arm, and the five arms fit the 25 GPU-hour envelope | `results/train/budget-20261115T130456Z.json` | |
-| H6 | T2 execution can be bitwise deterministic, so the pilot's noise floor is not dominated by kernel atomics | confirmed for all five arms only with `torch.use_deterministic_algorithms(True)`; without it even the dense control's 5-step loss differs by 1.7e-4 | `results/train/smoke-20261115T10*.json`, `...T114908Z.json`, `...T125618Z.json` |
+| H5 | The five arms fit 16 GiB and train at a rate that makes a 5-hour budget meaningful | confirmed: the slowest arm stays under the 16 GiB device, the declared budget fits every arm, and the five arms fit the 25 GPU-hour envelope | `results/train/budget-20261115T130456Z.json` | |
+| H6 | T2 execution can be bitwise deterministic, so the pilot's noise floor is not dominated by kernel atomics | confirmed for all five arms only with `torch.use_deterministic_algorithms(True)`; without it even the dense control is not bitwise reproducible | `results/train/smoke-20261115T10*.json`, `...T114908Z.json`, `...T125618Z.json` |
 
 ### The measured numbers behind H4 and H5
 
@@ -1233,12 +1233,13 @@ Five arms at the declared budget (GPU-hours):
 
 ### The P2.4 finding, stated plainly
 
-The T1.4 objective is the top-16 support plus **one tail bucket**. On 160
-held-out windows with the live 1.7B teacher, the teacher's mean tail mass is
-`0.050`, its tail entropy is `5.32` nats and the student's tail divergence is
-`1.41` nats. The compact loss is therefore `0.397` nats/token *below* the full
-loss, and the identity `L_compact - L_full = -p_tail (H + KL)` holds to six
-decimals on the pooled valid positions. The bias is almost identical across the
+The T1.4 objective is the top-16 support plus **one tail bucket**. On every
+held-out window with the live 1.7B teacher, the teacher keeps a small but real
+tail mass, the tail has its own entropy, and the student's tail differs from it;
+the measured bias, tail mass, entropy and divergence are the generated numbers
+above and in contract A9. The compact loss is therefore *below* the full loss,
+and the identity `L_compact - L_full = -p_tail (H + KL)` holds to six decimals
+on the pooled valid positions. The bias is almost identical across the
 six students, which is why the ranking survives: both distinguishable decisive
 pairs keep their sign, and the one that flips (`H*-H`) is inside its CI under
 both targets. The decision is to keep the compact target for training and
@@ -1260,7 +1261,7 @@ unconditional. A hard-label control `HL` is registered as a deferred option.
 ### Verified courts
 
 - `scripts/court oracle -- python3 -m pytest oracle/tests -q` passes, including
-  the 16 new T2 tests.
+  the new T2 tests.
 - `scripts/court rust test` passes, including the two new T2 admission tests in
   `crates/selvedge-cli/tests/t2_admission.rs`.
 - `scripts/court commit_identity` and `scripts/court perf_numbers` — see the
