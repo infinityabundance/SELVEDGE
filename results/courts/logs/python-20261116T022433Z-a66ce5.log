@@ -1,0 +1,62 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+______________ test_the_prompt_does_not_contain_the_hidden_tests _______________
+
+    def test_the_prompt_does_not_contain_the_hidden_tests():
+        import re
+    
+        for task in collections()["suite"] + collections()["trio"]:
+            prompt = suite.render_prompt(task)
+            assert task.initial_files[0] in prompt
+            for relative in task.hidden_files:
+                hidden = task.read_hidden(relative)
+                for name in re.findall(r"fn\s+([a-z0-9_]+)\s*\(", hidden):
+>                   assert f"fn {name}" not in prompt, (task.id, name)
+E                   AssertionError: ('failing-02-empty-input', 'single_value')
+E                   assert 'fn single_value' not in 'The visible...-offline`.\n'
+E                     
+E                     'fn single_value' is contained here:
+E                       test]
+E                           fn single_value_has_no_gap() {
+E                               assert_eq!(max_gap(&[5]), 0);
+E                           }
+E                       }...
+E                     
+E                     ...Full output truncated, use '-vv' to show
+
+oracle/tests/test_capability_suite.py:88: AssertionError
+__________ test_a_failed_category_moves_the_composite_by_one_seventh ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_failed_category_moves_t0')
+
+    def test_a_failed_category_moves_the_composite_by_one_seventh(tmp_path):
+        tasks = suite.load_suite(SUITE_ROOT)["suite"]
+        lifetime = {task.id for task in tasks if task.category == "lifetime-borrow"}
+        _generations, result = run(fail=lifetime, tmp_path=tmp_path, name="crippled")
+        assert result["scores"]["primary_composite"] == pytest.approx(6 / 7)
+        assert result["scores"]["by_category"]["lifetime-borrow"]["mean"] == 0.0
+>       assert result["scores"]["counts"]["test_failed"] == 4
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'test_failed'
+
+oracle/tests/test_capability_court.py:86: KeyError
+________ test_the_control_matrix_rejects_missing_and_unexplained_fields ________
+
+    def test_the_control_matrix_rejects_missing_and_unexplained_fields():
+        with pytest.raises(court.CourtError, match="no reason"):
+            court.control_row("frozen student", {})
+        complete = {field: 1 for field in court.CONTROL_FIELDS}
+        row = court.control_row("frozen student", complete)
+        assert set(row["fields"]) == set(court.CONTROL_FIELDS)
+        faulty = json.loads(json.dumps(row))
+        faulty["fields"]["training_tokens"]["reason"] = None
+>       with pytest.raises(court.CourtError, match="no reason"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE CourtError
+
+oracle/tests/test_capability_court.py:185: Failed
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_suite.py::test_the_prompt_does_not_contain_the_hidden_tests
+FAILED oracle/tests/test_capability_court.py::test_a_failed_category_moves_the_composite_by_one_seventh
+FAILED oracle/tests/test_capability_court.py::test_the_control_matrix_rejects_missing_and_unexplained_fields
+3 failed in 0.27s

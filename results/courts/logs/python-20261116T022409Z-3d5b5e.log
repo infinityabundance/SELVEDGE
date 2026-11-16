@@ -1,0 +1,64 @@
+....F......F..F                                                          [100%]
+=================================== FAILURES ===================================
+______________ test_the_prompt_does_not_contain_the_hidden_tests _______________
+
+    def test_the_prompt_does_not_contain_the_hidden_tests():
+        for task in collections()["suite"] + collections()["trio"]:
+            prompt = suite.render_prompt(task)
+            assert task.initial_files[0] in prompt
+            for relative in task.hidden_files:
+                hidden = task.read_hidden(relative).strip()
+                if hidden:
+                    # The opening marker, not the whole file, is what a leak would show.
+>                   assert hidden.splitlines()[0] not in prompt, task.id
+E                   AssertionError: concurrency-02-lost-update
+E                   assert 'use std::sy..., Ordering};' not in '`bump_pair`...-offline`.\n'
+E                     
+E                     'use std::sync::ato...icUsize, Ordering};' is contained here:
+E                       threads.
+E                       
+E                       use std::sync::atomic::{AtomicUsize, Ordering};
+E                       use std::sync::Barrier;
+E                       ...
+E                     
+E                     ...Full output truncated, use '-vv' to show
+
+oracle/tests/test_capability_suite.py:87: AssertionError
+__________________ test_the_harness_owned_paths_are_rejected ___________________
+
+    def test_the_harness_owned_paths_are_rejected():
+        for path in ("tests/check.rs", "build.rs", ".cargo/config.toml", "../escape.rs",
+                     "/etc/passwd"):
+            text = f"```rust path={path}\nfn x() {{}}\n```"
+            result = extract.extract_files(text, "src/lib.rs", {"src/lib.rs"}, "locked")
+            assert not result.ok, path
+        locked = extract.extract_files("```rust path=Cargo.toml\n[package]\n```",
+                                       "src/lib.rs", {"src/lib.rs"}, "locked")
+        assert not locked.ok
+        arm = extract.extract_files("```rust path=Cargo.toml\n[package]\n```",
+                                    "src/lib.rs", {"src/lib.rs"}, "arm")
+>       assert arm.ok
+E       assert False
+E        +  where False = Extraction(files={}, mode='fenced_paths', rejected=["file is not part of the task's writable set: 'Cargo.toml'"], fence_count=1).ok
+
+oracle/tests/test_capability_suite.py:162: AssertionError
+_________________ test_a_locked_manifest_cannot_be_checked_in __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_locked_manifest_cannot_0')
+
+    def test_a_locked_manifest_cannot_be_checked_in(tmp_path):
+        from capability import checkers
+    
+        task = next(task for task in collections()["suite"]
+                    if task.manifest_policy == "locked")
+>       assert "Cargo.toml" not in task.allowed_paths()
+E       AssertionError: assert 'Cargo.toml' not in {'Cargo.toml', 'src/lib.rs'}
+E        +  where {'Cargo.toml', 'src/lib.rs'} = allowed_paths()
+E        +    where allowed_paths = Task(root='/work/fixtures/capability/tasks/borrow-01-local-reference', metadata={'capability': 'Recognise a reference ...mits=None, initial_files=['Cargo.toml', 'src/lib.rs'], hidden_files=['tests/check.rs'], reference_files=['src/lib.rs']).allowed_paths
+
+oracle/tests/test_capability_suite.py:187: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_suite.py::test_the_prompt_does_not_contain_the_hidden_tests
+FAILED oracle/tests/test_capability_suite.py::test_the_harness_owned_paths_are_rejected
+FAILED oracle/tests/test_capability_suite.py::test_a_locked_manifest_cannot_be_checked_in
+3 failed, 12 passed in 0.08s

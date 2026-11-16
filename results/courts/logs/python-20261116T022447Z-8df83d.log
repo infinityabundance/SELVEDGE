@@ -1,0 +1,22 @@
+..................................F...................                   [100%]
+=================================== FAILURES ===================================
+________ test_the_control_matrix_rejects_missing_and_unexplained_fields ________
+
+    def test_the_control_matrix_rejects_missing_and_unexplained_fields():
+        with pytest.raises(court.CourtError, match="no reason"):
+            court.control_row("frozen student", {})
+        complete = {field: 1 for field in court.CONTROL_FIELDS}
+        row = court.control_row("frozen student", complete)
+        assert set(row["fields"]) == set(court.CONTROL_FIELDS)
+        unexplained = json.loads(json.dumps(row))
+        unexplained["fields"]["training_tokens"] = {"value": None, "reason": None}
+>       with pytest.raises(court.CourtError, match="no reason"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'no reason'
+E         Actual message: "row 'frozen student': field 'training_tokens' is null without a reason"
+
+oracle/tests/test_capability_court.py:188: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_the_control_matrix_rejects_missing_and_unexplained_fields
+1 failed, 53 passed in 5.71s

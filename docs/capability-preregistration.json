@@ -1,0 +1,59 @@
+{
+  "anti_gaming": {
+    "checker_not_visible_at_inference": true,
+    "few_shot_must_be_disjoint_8_word_shingles": true,
+    "prompt_order_invariance": true,
+    "tool_parity": true
+  },
+  "branches": {
+    "pooling": "never pooled",
+    "product": "3B-8B quantised local baseline, reported alone",
+    "research": "1B-class research branch, reported alone"
+  },
+  "capacity_scaling": {
+    "active_tolerance": 0.05,
+    "criterion": "at approximately fixed active unique parameters (within 5% of the smallest rung), fit log(cold bytes per token) against log(total accessible capacity); the slope's 95% CI upper bound must be below 1"
+  },
+  "controls": [
+    "frozen student",
+    "equally trained dense adapter",
+    "plain text retrieval",
+    "Memory Grafting-style latent baseline (2605.20948)",
+    "conventional MoE",
+    "naive hybrid",
+    "utility-trained joint hybrid",
+    "matching library without routing optimisation"
+  ],
+  "no_hidden_teacher": {
+    "criterion": "teacher_calls_at_inference == 0 and a replay-court receipt (P7.5) is named; an external adapter that cannot expose this is recorded as unverified, never as satisfied"
+  },
+  "physical_pareto": {
+    "criterion": "no control row may dominate the arm on success, cold bytes per token, p95 latency and residency simultaneously"
+  },
+  "planned_controls": {
+    "3B-8B quantised local baseline": {
+      "reason": "no such checkpoint is present locally; a row is emitted with unavailable fields and a reason, never a fabricated number",
+      "status": "planned"
+    }
+  },
+  "primary": {
+    "bootstrap": {
+      "kind": "paired percentile, items resampled within category, categories weighted equally",
+      "level": 0.95,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "decision_rule": "improve the composite by at least 10% relative with a paired 95% CI lower bound above zero, and regress no category by more than 0.05 absolute",
+    "definition": "equal weight per category; the arithmetic mean inside each category; three categories are compile-repair and four are behavioural repair",
+    "endpoint": "category-balanced mean verified task success on the 24-task suite",
+    "relative_threshold": 0.1,
+    "secondary_max_category_regression": 0.05
+  },
+  "registered_utc": "2026-11-16T02:26:14Z",
+  "schema": "selvedge/capability-preregistration/v1",
+  "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc",
+  "trio": {
+    "requires_all_surfaces": true,
+    "rule": "a transfer claim requires success on every surface (rust-lifetime-chain, numeric-dependency, quantifier-chain) with the per-surface breakdown reported"
+  }
+}
