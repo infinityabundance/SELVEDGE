@@ -639,8 +639,7 @@ fn compare_pass(store: StorePass, sim: SimPass) -> PassComparison {
         && p95.abs() <= TOLERANCE_P95_PCT
         && p99.abs() <= TOLERANCE_P99_PCT
         && bytes.abs() <= TOLERANCE_BYTES_PCT;
-    let shape_ok = shape_p95.abs() <= TOLERANCE_P50_PCT
-        && shape_p99.abs() <= TOLERANCE_P95_PCT;
+    let shape_ok = shape_p95.abs() <= TOLERANCE_P50_PCT && shape_p99.abs() <= TOLERANCE_P95_PCT;
     PassComparison {
         store,
         sim,

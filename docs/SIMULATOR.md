@@ -278,99 +278,131 @@ Calibration, 0.6B bundle, 768 KiB shards (`results/sim/calibration-06b.json`):
 
 - cold transfer p50 (ns):
   <!-- BEGIN GENERATED: sim-cal-transfer-p50 -->
+930308
   <!-- END GENERATED: sim-cal-transfer-p50 -->
 - cold transfer p95 (ns):
   <!-- BEGIN GENERATED: sim-cal-transfer-p95 -->
+1254064
   <!-- END GENERATED: sim-cal-transfer-p95 -->
 - verification p50 (ns):
   <!-- BEGIN GENERATED: sim-cal-verify-p50 -->
+307905
   <!-- END GENERATED: sim-cal-verify-p50 -->
 - host-RAM hit copy p50 (ns):
   <!-- BEGIN GENERATED: sim-cal-hit-copy-p50 -->
+23164
   <!-- END GENERATED: sim-cal-hit-copy-p50 -->
 - exponential transfer fit, largest relative quantile error:
   <!-- BEGIN GENERATED: sim-cal-transfer-exp-maxerr -->
+1.6581
   <!-- END GENERATED: sim-cal-transfer-exp-maxerr -->
 - lognormal transfer fit, largest relative quantile error:
   <!-- BEGIN GENERATED: sim-cal-transfer-lognormal-maxerr -->
+0.2658
   <!-- END GENERATED: sim-cal-transfer-lognormal-maxerr -->
 - exponential verification fit, largest relative quantile error:
   <!-- BEGIN GENERATED: sim-cal-verify-exp-maxerr -->
+2.9533
   <!-- END GENERATED: sim-cal-verify-exp-maxerr -->
 - lognormal verification fit, largest relative quantile error:
   <!-- BEGIN GENERATED: sim-cal-verify-lognormal-maxerr -->
+0.0739
   <!-- END GENERATED: sim-cal-verify-lognormal-maxerr -->
 
 Held-out replay validation, percentage discrepancy (predicted minus measured):
 
 - 0.6B `lru-1of2` p50 / p95 / p99:
   <!-- BEGIN GENERATED: sim-val-06b-lru1of2-p50 -->
+-7.88%
   <!-- END GENERATED: sim-val-06b-lru1of2-p50 -->
   <!-- BEGIN GENERATED: sim-val-06b-lru1of2-p95 -->
+-7.44%
   <!-- END GENERATED: sim-val-06b-lru1of2-p95 -->
   <!-- BEGIN GENERATED: sim-val-06b-lru1of2-p99 -->
+-15.24%
   <!-- END GENERATED: sim-val-06b-lru1of2-p99 -->
 - 0.6B `lru-1of2` device bytes and hit/miss mismatches:
   <!-- BEGIN GENERATED: sim-val-06b-lru1of2-bytes -->
++0.00%
   <!-- END GENERATED: sim-val-06b-lru1of2-bytes -->
   <!-- BEGIN GENERATED: sim-val-06b-lru1of2-mismatches -->
+0
   <!-- END GENERATED: sim-val-06b-lru1of2-mismatches -->
 - 0.6B `least-stale-1of4` p50 / p95 / p99:
   <!-- BEGIN GENERATED: sim-val-06b-leaststale-p50 -->
+-2.20%
   <!-- END GENERATED: sim-val-06b-leaststale-p50 -->
   <!-- BEGIN GENERATED: sim-val-06b-leaststale-p95 -->
+-0.74%
   <!-- END GENERATED: sim-val-06b-leaststale-p95 -->
   <!-- BEGIN GENERATED: sim-val-06b-leaststale-p99 -->
++1.38%
   <!-- END GENERATED: sim-val-06b-leaststale-p99 -->
 - 0.6B `none-cold` p50 / p95 / p99:
   <!-- BEGIN GENERATED: sim-val-06b-none-p50 -->
+-0.78%
   <!-- END GENERATED: sim-val-06b-none-p50 -->
   <!-- BEGIN GENERATED: sim-val-06b-none-p95 -->
+-6.37%
   <!-- END GENERATED: sim-val-06b-none-p95 -->
   <!-- BEGIN GENERATED: sim-val-06b-none-p99 -->
+-9.88%
   <!-- END GENERATED: sim-val-06b-none-p99 -->
 - 1.7B `lru-1of2` p50 / p95 / p99:
   <!-- BEGIN GENERATED: sim-val-17b-lru1of2-p50 -->
+-3.27%
   <!-- END GENERATED: sim-val-17b-lru1of2-p50 -->
   <!-- BEGIN GENERATED: sim-val-17b-lru1of2-p95 -->
+-2.45%
   <!-- END GENERATED: sim-val-17b-lru1of2-p95 -->
   <!-- BEGIN GENERATED: sim-val-17b-lru1of2-p99 -->
++15.22%
   <!-- END GENERATED: sim-val-17b-lru1of2-p99 -->
 
 Live store comparison (`results/sim/compare-store-06b.json`):
 
 - cold absolute p50 discrepancy (percent):
   <!-- BEGIN GENERATED: sim-compare-cold-abs-p50 -->
+-90.19%
   <!-- END GENERATED: sim-compare-cold-abs-p50 -->
 - cold `p95/p50` shape discrepancy (percent):
   <!-- BEGIN GENERATED: sim-compare-cold-shape-p95 -->
+-0.61%
   <!-- END GENERATED: sim-compare-cold-shape-p95 -->
 - cold device-byte discrepancy (percent):
   <!-- BEGIN GENERATED: sim-compare-cold-bytes -->
++0.00%
   <!-- END GENERATED: sim-compare-cold-bytes -->
 - warm `p95/p50` shape discrepancy (percent):
   <!-- BEGIN GENERATED: sim-compare-warm-shape-p95 -->
++3.91%
   <!-- END GENERATED: sim-compare-warm-shape-p95 -->
 
 Pareto, reconstructed 1.7B M2 trace (`results/sim/pareto-m2-17b.json`):
 
 - no-cache device bytes per record:
   <!-- BEGIN GENERATED: sim-pareto-none-bytes -->
+47185920 B
   <!-- END GENERATED: sim-pareto-none-bytes -->
 - LRU at half the unique payload, device bytes per record:
   <!-- BEGIN GENERATED: sim-pareto-lru05-bytes -->
+23359488 B
   <!-- END GENERATED: sim-pareto-lru05-bytes -->
 - LRU at half the unique payload, p50 stall (ns):
   <!-- BEGIN GENERATED: sim-pareto-lru05-p50 -->
+30269233
   <!-- END GENERATED: sim-pareto-lru05-p50 -->
 - LRU at half the unique payload, hit rate:
   <!-- BEGIN GENERATED: sim-pareto-lru05-hitrate -->
+0.5049
   <!-- END GENERATED: sim-pareto-lru05-hitrate -->
 - LRU at full residency, p50 stall (ns):
   <!-- BEGIN GENERATED: sim-pareto-lru10-p50 -->
+14451972
   <!-- END GENERATED: sim-pareto-lru10-p50 -->
 - LRU at full residency, p95 stall (ns):
   <!-- BEGIN GENERATED: sim-pareto-lru10-p95 -->
+67035390
   <!-- END GENERATED: sim-pareto-lru10-p95 -->
 
 Placement, synthetic alternating trace
@@ -378,15 +410,19 @@ Placement, synthetic alternating trace
 
 - sequential layout p95 stall (ns):
   <!-- BEGIN GENERATED: sim-placement-seq-p95 -->
+4111333
   <!-- END GENERATED: sim-placement-seq-p95 -->
 - co-access-blocked layout p95 stall (ns):
   <!-- BEGIN GENERATED: sim-placement-coaccess-p95 -->
+4062435
   <!-- END GENERATED: sim-placement-coaccess-p95 -->
 - replicated-hot layout p95 stall (ns):
   <!-- BEGIN GENERATED: sim-placement-replicated-p95 -->
+4052190
   <!-- END GENERATED: sim-placement-replicated-p95 -->
 - replicated-hot storage amplification:
   <!-- BEGIN GENERATED: sim-placement-replicated-amp -->
+1.0179
   <!-- END GENERATED: sim-placement-replicated-amp -->
 
 Envelopes, synthetic alternating trace
@@ -394,18 +430,23 @@ Envelopes, synthetic alternating trace
 
 - bytes not transferred:
   <!-- BEGIN GENERATED: sim-envelope-bytes-saved -->
+495452160
   <!-- END GENERATED: sim-envelope-bytes-saved -->
 - exposed p95 time saved (ns):
   <!-- BEGIN GENERATED: sim-envelope-time-saved -->
+312796
   <!-- END GENERATED: sim-envelope-time-saved -->
 - cold bytes charged to phase warm-up:
   <!-- BEGIN GENERATED: sim-envelope-cold-charged -->
+475004928
   <!-- END GENERATED: sim-envelope-cold-charged -->
 - unused-prefetch bytes:
   <!-- BEGIN GENERATED: sim-envelope-unused -->
+0
   <!-- END GENERATED: sim-envelope-unused -->
 - invalidations:
   <!-- BEGIN GENERATED: sim-envelope-invalidations -->
+4
   <!-- END GENERATED: sim-envelope-invalidations -->
 
 Single simulation, reconstructed 1.7B M2 trace, LRU at a quarter of the payload
@@ -413,9 +454,11 @@ Single simulation, reconstructed 1.7B M2 trace, LRU at a quarter of the payload
 
 - p95 stall (ns):
   <!-- BEGIN GENERATED: sim-simulate-m2-p95 -->
+72857039
   <!-- END GENERATED: sim-simulate-m2-p95 -->
 - bytes served from host RAM:
   <!-- BEGIN GENERATED: sim-simulate-m2-hit-bytes -->
+3321888768
   <!-- END GENERATED: sim-simulate-m2-hit-bytes -->
 
 ## 11. Assumptions and threats to validity
