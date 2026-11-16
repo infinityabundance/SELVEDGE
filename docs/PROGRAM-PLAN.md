@@ -152,15 +152,16 @@ Tier index — S24 items: WS15–WS18 (§20–§23) have **60** items — `ACTIV
 | **HYPOTHESIS** | P15.9 (integration) · P16.26 (Braess) · P16.32 (biological control) | 3 |
 
 Tier index — S32 items: WS19 (§24) has **7** items — P19.0–P19.6, all
-`CANDIDATE`. Nothing in WS19 is `ACTIVE`: its prerequisite (P19.0) is new code
-that has not been scheduled, and the tier rule forbids promoting an item whose
-acceptance evidence is not being produced in this phase. WS20 (§25) registers
-**no** new experiments — it is a stop/keep register over existing P-numbers.
+`CANDIDATE`. Nothing in WS19 is `ACTIVE`: P19.0's accounting half landed at S33
+(schema v2, receipts, reference), but its kernel half has not been scheduled, and
+the tier rule forbids promoting an item whose acceptance evidence is not being
+produced in this phase. WS20 (§25) registers **no** new experiments — it is a
+stop/keep register over existing P-numbers.
 
 | tier | items | count |
 | --- | --- | ---: |
 | **ACTIVE** | — | 0 |
-| **CANDIDATE** | P19.0 (blocking prerequisite: the toolchain must accept the anchor) · P19.1 anchor scoreboard · P19.2 grafted token-addressed memory · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass memory (the one narrow novelty) · P19.5 NVMe serving · P19.6 spend headroom and claim | 7 |
+| **CANDIDATE** | P19.0 (blocking prerequisite: the toolchain must accept the anchor — accounting half done at S33, kernel half not started) · P19.1 anchor scoreboard · P19.2 grafted token-addressed memory · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass memory (the one narrow novelty) · P19.5 NVMe serving · P19.6 spend headroom and claim | 7 |
 | **HYPOTHESIS** | — | 0 |
 
 **Assignments that need a reason.**
@@ -4936,13 +4937,11 @@ runtime must be declared and audited as such.
 `model.language_model.*` tensor namespace, the Gated DeltaNet layer (short
 convolution state, gated delta-rule state update, `A_log`/`dt_bias`), gated
 softmax attention with partial RoPE and mRoPE sections, the fused attention output
-gate, and a **fail-closed refusal** for the vision tower and the MTP head with an
-explicit `--language-model-only` selection.
-**Why.** The repository's auditor refuses the checkpoint today (`inspect-model`
-supports `model_type == "qwen3"` and top-level `hidden_size`; the runtime has
-softmax attention, RoPE, RMSNorm and SwiGLU only). Without this stage, "audited
-unique active" is a phrase with no instrument behind it, and no stage below can
-execute the anchor at all.
+gate, and an accounted, explicitly declared path for the vision tower and the MTP
+head.
+**Why.** The repository's auditor refused the checkpoint (S32 receipt), so
+"audited unique active" was a phrase with no instrument behind it, and no stage
+below could execute the anchor at all.
 **Depends.** nothing (this is the gate).
 **Acceptance evidence.** (i) `inspect-model` prints a per-component accounting for
 the real checkpoint that equals the header-derived component counts in
@@ -4958,8 +4957,50 @@ with the header accounting to the element.
 existing parity tolerance, the anchor is not executable by this program and the
 whole of WS19 is re-scoped or abandoned — recorded as a negative, not worked
 around.
-**Effort.** XL. **Tier.** CANDIDATE (it becomes `ACTIVE` when the parity court is
-scheduled).
+
+**Status at S33: the accounting half is DONE; the kernel half is not started.**
+Stated as what a reader can check, not as a percentage:
+
+* **Schema v2 exists and runs on the anchor.** `selvedge inspect-model` dispatches
+  on `model_type`; `qwen3` keeps schema v1 untouched, `qwen3_5` gets a second
+  auditor that classifies every tensor into `text` / `vision` / `mtp`, verifies the
+  tie against the bytes *or* against absence plus config, cross-checks the
+  dtype-aware byte sum against the Hub's `metadata.total_size`, and accepts a
+  declared execution path. Receipts:
+  `results/accounting/20261116T183609Z-qwen35-08b-text-only.json`,
+  `...-text-and-mtp.json`, `...-refused-untied.json`.
+* **Component counts agree to the element**: 752,393,024 text / 100,592,896
+  vision / 20,452,864 MTP / 873,438,784 checkpoint, each pinned as a checked
+  expectation in the court invocation. `--certify-ceiling 1000000000` certifies
+  **752,393,024** with headroom **247,606,976** on the declared text-only path.
+* **Acceptance evidence (i) and (ii) are satisfied.** (ii) is satisfied in the
+  auditor's terms, and in a stronger form than the original wording: the vision
+  tower and the MTP head are not "refused" wholesale, they are **accounted
+  separately and only become part of the active union when the declared path names
+  them**, with namespace-disjointness and cross-tower-read checks computed from
+  the tensor names rather than assumed. Declaring a path the bytes cannot support
+  fails closed (14 offline tests, including a deliberately inconsistent tie
+  declaration).
+* **A reference forward exists and is validated.** `oracle/reference/qwen35.py`
+  re-derives the text path independently; on four pinned prompts it matches
+  `transformers==5.23.0` at argmax equality and 8/8 identical greedy tokens, is
+  bitwise deterministic in-process, and passes the state carry/reset test
+  (`results/reference/20261116T184032Z-qwen35-reference.json`). This is the
+  reference the kernels must match, and it is stronger evidence than the NumPy
+  forward (iii) originally asked for — with the caveat that it is *not* bitwise.
+* **Acceptance evidence (iii) is not satisfied.** The runtime has no delta-rule
+  scan, no conv state, no gated per-head norm, no partial RoPE and no attention
+  output gate. The registered kernel work, the per-kernel test vectors and the
+  three-stage Court E plan are in `docs/RUNTIME.md` §13. **Next step:** implement
+  those four kernels in that order and run E2, then E3.
+* **FLOPs are deliberately absent** from schema v2. A DeltaNet layer is a scan,
+  not a matmul stack, and the v1 formulas would produce a number with no
+  meaning. `--contexts` is refused for `qwen3_5` rather than answered with an
+  invented figure.
+
+**Effort.** XL, of which the accounting and reference half is spent.
+**Tier.** CANDIDATE, unchanged — the tier rule requires the acceptance evidence
+to be produced, and (iii) is not. It becomes `ACTIVE` when Court E is scheduled.
 
 ### P19.1 — Stage 1: the anchor scoreboard
 
@@ -5125,13 +5166,20 @@ post-hoc-chosen family.
    re-derived (not re-typed) before each stage. Before that budget is spent, the
    three cheaper published routes must be run: SPEC-Distill's offline trajectory
    pool, SDPO's self-teacher, and a parameter-matched dense distillation control.
-8. **The claim's instrument is the auditor, and the auditor is new code.** Until
-   P19.0's fail-closed tests exist, every "audited" number in this program is a
-   header sum wearing an auditor's name.
+8. **The claim's instrument is the auditor, and half of that instrument is new
+   code.** S33 gave the anchor a schema-v2 auditor with named receipts and a
+   validated reference forward, so "the unique active union of a declared path" is
+   now a computed number rather than an element sum wearing an auditor's name.
+   What is still missing is the part that watches a *kernel* execute: the auditor
+   proves a declared set is consistent and under the ceiling, it does not observe
+   a read. Until Court E lands, no number in this program is an executed-set
+   proof.
 
 **Distance to the claim, stated honestly.** Six stages, one of which (P19.0) is
-XL and blocking, one of which (P19.4) is expected to fail, and a claim that
-requires a measured gap that does not yet exist. No stage has been started.
+XL and blocking — its accounting and reference half was spent at S33, its kernel
+half is four kernels and a three-stage Court E away — one of which (P19.4) is
+expected to fail, and a claim that requires a measured gap that does not yet
+exist. No capability stage has been started.
 
 ## 25. WS20 — The stop list, and what survives it
 

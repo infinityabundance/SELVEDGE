@@ -334,10 +334,15 @@ checkpoint total alongside it. The vendor page prints neither figure: it says
 "0.8B". Any document that presents the text-tower count as the vendor's stated
 size is inventing a source.
 
-## 5. `selvedge inspect-model` refuses this checkpoint
+## 5. `selvedge inspect-model` accepts this checkpoint (S33)
 
-The mandate asks for the strict tie-aware unique-active count from the repository's
-own auditor. It was run, in the rust court, on the downloaded checkpoint:
+S32 recorded that the auditor refused the anchor. It no longer does. S33 added
+accounting **schema v2**, which is a second auditor rather than a patch to v1:
+v1 refuses a config it does not understand and stays exactly as it was, and the
+CLI dispatches on `model_type` read from `config.json`. There is no fallback, so
+an unknown type still fails closed.
+
+The refusal as S32 recorded it (kept, because it is why v2 exists):
 
 ```
 $ scripts/court rust -- cargo run --release -p selvedge-cli -- \
@@ -346,18 +351,101 @@ $ scripts/court rust -- cargo run --release -p selvedge-cli -- \
  "error":"FFN tensor map is inconsistent: .../config.json is not a readable Qwen3 config: missing field `hidden_size` at line 96 column 1"}
 ```
 
-It failed closed, which is the correct behaviour: the auditor supports
-`model_type == "qwen3"` and reads top-level `hidden_size`; Qwen3.5 nests its
-language config under `text_config` and its tensors under `model.language_model.*`,
-and it also carries a vision tower and an MTP head the auditor has no component for.
-Court receipts: `results/courts/rust-20261116T181516Z-5237e7.json` and its log.
+What v2 does with the same bytes, in the rust court, offline, with the model
+cache mounted read-only:
 
-What this document can therefore claim: **exact element counts by component, with
-the tie verified by the absence of `lm_head.weight` plus `tie_word_embeddings:
-true`** — but not the auditor's own union traversal, and not a per-token executed
-set. The plan must not describe 752,393,024 as "the audited unique-active count"
-until P19.0 lands. The difference matters: the auditor is what proves an executed
-set equals a declared set, and an element sum is not that proof.
+```
+$ scripts/court rust -- cargo run --release -p selvedge-cli -- inspect-model \
+    /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 \
+    --json --active-path text-only --certify-ceiling 1000000000 \
+    --expect-totals text=752393024,vision=100592896,mtp=20452864,checkpoint=873438784
+schema=selvedge/model-accounting/v2  ok=true  verdict=certified
+```
+
+Receipts: `results/accounting/20261116T183609Z-qwen35-08b-text-only.json`,
+`...-text-and-mtp.json` and `...-refused-untied.json`; court receipts
+`results/courts/rust-20261116T183609Z-9be033.json` and
+`results/courts/rust-20261116T183625Z-e0e559.json`.
+
+The four counts S32 derived from the header are reproduced **exactly**, and each
+is now also a checked expectation that fails the run if it drifts:
+
+text tower, unique and tie-aware
+
+<!-- BEGIN GENERATED: qwen35-text-unique -->
+752393024
+<!-- END GENERATED: qwen35-text-unique -->
+
+vision tower
+
+<!-- BEGIN GENERATED: qwen35-vision-elements -->
+100592896
+<!-- END GENERATED: qwen35-vision-elements -->
+
+MTP head
+
+<!-- BEGIN GENERATED: qwen35-mtp-elements -->
+20452864
+<!-- END GENERATED: qwen35-mtp-elements -->
+
+whole checkpoint, elements
+
+<!-- BEGIN GENERATED: qwen35-checkpoint-elements -->
+873438784
+<!-- END GENERATED: qwen35-checkpoint-elements -->
+
+whole checkpoint, dtype-aware bytes
+
+<!-- BEGIN GENERATED: qwen35-checkpoint-bytes -->
+1746882752
+<!-- END GENERATED: qwen35-checkpoint-bytes -->
+
+the Hub's `model.safetensors.index.json` `metadata.total_size`
+
+<!-- BEGIN GENERATED: qwen35-hub-total-bytes -->
+1746882752
+<!-- END GENERATED: qwen35-hub-total-bytes -->
+
+Those last two agreeing is the external check S32 could not make. The byte total
+is dtype-aware — 452 bf16 tensors plus 36 f32 tensors (every `A_log` and every
+`linear_attn.norm.weight`, 2,592 elements at four bytes) — and only that
+arithmetic reproduces the Hub's number to the byte. An element count alone cannot
+distinguish 1,746,877,568 from 1,746,882,752, which is why the receipt carries
+both.
+
+**The tie is verified, not assumed.** There is no `lm_head.weight` tensor in this
+checkpoint. The receipt records `treated_as_shared: true` for a reason that is
+narrower than "the bytes match": it records *tie by absence plus config*, and
+`compared_elements: 0`. A v1-style byte comparison is not available here because
+there is no second matrix to compare. Declaring the pair untied is refused on the
+real checkpoint — `--assume-untied` exits 1 with
+
+```
+the caller declared the weights untied, but no lm_head.weight exists; the only
+output projection is the embedding
+```
+
+**What is declared and checked.** `--active-path` makes the execution path an
+input to the audit instead of a sentence in a plan:
+
+- every tensor must belong to exactly one tower (`text`, `vision`, `mtp`), and an
+  unclassified tensor is a hard error;
+- the declared towers must exist in the bytes — declaring `text-and-mtp` on a
+  checkpoint without MTP weights is refused, with the arithmetic still printed;
+- the declared text-path key set is checked for **namespace disjointness** against
+  the excluded towers (computed, not assumed), so a text tensor living under
+  `model.visual.` or `mtp.` would make the declaration a lie and is refused;
+- cross-tower reads are recorded: `mtp_use_dedicated_embeddings` is false, so the
+  MTP head reads the language model's embedding, and the receipt says so instead
+  of double-counting it;
+- `--certify-ceiling N` prints the component arithmetic and a verdict, and sets
+  the exit code.
+
+**What this does not establish.** It is still not a per-token *executed-set*
+proof. The auditor proves that a declared set of weights is internally consistent
+and that its union is under the ceiling; it does not watch a kernel read a
+pointer. That is what Court E is for, and it needs the kernels registered in
+`docs/RUNTIME.md`.
 
 ## 6. Ceiling arithmetic for the registered 1e9 rule
 
@@ -434,6 +522,91 @@ more. Neither number is a promise that memory will help; it is only the arithmet
 the audit will hold the program to. The arithmetic must be re-run **per token**
 with the ledger once an executor exists, because MTP and vision change the
 executed set, not just the total.
+
+### 6.1 The planned per-token union for P19, computed (S33)
+
+The ceiling rule is not about a checkpoint's total: it is about what one token
+reads. `scripts/s33_budget_union.py` computes that union from the accounting
+receipt above, with the design constants declared in the receipt rather than
+assumed in prose:
+
+| term | declared value |
+| --- | --- |
+| LoRA rank | 16 |
+| LoRA layers | 8 |
+| LoRA sites per layer | the FFN triple, gate + up + down |
+| passes | 4 |
+| memory projections and gates | 2 + 2, each `H x H`, per memory |
+| memory rows read per token | 256 |
+| FFN | dense-active (no sharding credit taken) |
+
+Receipt: `results/accounting/20261116T184127Z-qwen35-budget-union.json`.
+
+The union is a count of **distinct** elements, so reuse across the four passes
+changes the union and the per-token *work* differently. Both readings are
+printed; the honest budget is the larger one.
+
+Shared adapters across the passes:
+
+<!-- BEGIN GENERATED: qwen35-union-text-plan -->
+759405376
+<!-- END GENERATED: qwen35-union-text-plan -->
+
+elements, headroom
+
+<!-- BEGIN GENERATED: qwen35-union-text-plan-headroom -->
+240594624
+<!-- END GENERATED: qwen35-union-text-plan-headroom -->
+
+A distinct adapter set per pass:
+
+<!-- BEGIN GENERATED: qwen35-union-distinct-per-pass -->
+777296704
+<!-- END GENERATED: qwen35-union-distinct-per-pass -->
+
+elements, headroom
+
+<!-- BEGIN GENERATED: qwen35-union-distinct-headroom -->
+222703296
+<!-- END GENERATED: qwen35-union-distinct-headroom -->
+
+If the vision tower were also executed by the path, the union becomes
+
+<!-- BEGIN GENERATED: qwen35-union-plus-vision -->
+859998272
+<!-- END GENERATED: qwen35-union-plus-vision -->
+
+and with vision and MTP both active
+
+<!-- BEGIN GENERATED: qwen35-union-plus-vision-plus-mtp -->
+880451136
+<!-- END GENERATED: qwen35-union-plus-vision-plus-mtp -->
+
+Worst case printed by the receipt — a distinct adapter set per pass, vision and
+MTP both executed — leaves
+
+<!-- BEGIN GENERATED: qwen35-union-worst-headroom -->
+101657536
+<!-- END GENERATED: qwen35-union-worst-headroom -->
+
+elements of headroom.
+
+Three facts follow, and they are the point of the calculation:
+
+1. **The planned design fits the ceiling with room to spare**, on every reading.
+   The anchor is not ceiling-bound; the ceiling does not decide the design. What
+   decides it is whether the mechanism helps.
+2. **Nothing in the union exceeds the ceiling even with the vision tower and the
+   MTP head both executed**, so the ceiling is not a reason to hide either of
+   them from the ledger. The declared path is declared for honesty, not to buy
+   headroom.
+3. **The FFN is counted dense.** That is 264,241,152 elements of the union that a
+   sharded execution could remove, so every headroom printed here is a floor.
+
+What this is not: a measurement. It is arithmetic over declared constants and
+receipted component counts. The design constants are choices; the component
+counts are not. When P19's memory design changes, the receipt changes with it,
+and the numbers above are regenerated rather than edited.
 
 ## 7. Disk arithmetic
 
@@ -562,6 +735,15 @@ a measurement, not a constant.
 - It does not prove the absence of prior art for the per-pass memory idea;
   `docs/PRIOR-ART-AND-NOVELTY.md` §16–§17 records what was searched and what the
   closest matches are.
-- It does not close the `inspect-model` gap. Until P19.0 lands, "unique active" in
-  this document means "elements in the executed component", never "the auditor's
-  audited union".
+- It does not establish an **executed** set. The auditor proves that a declared
+  path is internally consistent and that its union is under the ceiling; it does
+  not observe a kernel reading a pointer. "Audited ≤ 1e9 unique active" still
+  requires Court E, and Court E requires the kernels registered in
+  `docs/RUNTIME.md` §21.
+- It does not establish that the **reference forward agrees with the vendor
+  runtime bitwise**. It agrees to argmax equality and 8/8 greedy tokens on four
+  prompts (`results/reference/20261116T184032Z-qwen35-reference.json`), which is
+  far stronger than a tolerance on one tensor and still short of bitwise.
+- It does not establish any FLOP or latency number for the hybrid path. No FLOP
+  formula is defined for a DeltaNet scan in this repository, so
+  `inspect-model` emits none for this schema rather than inventing one.

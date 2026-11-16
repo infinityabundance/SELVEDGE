@@ -523,3 +523,138 @@ Not implemented, not claimed, and not faked:
 6. **Quality measurement for the approximate path** (perplexity, teacher KL, task
    benchmarks). Court G territory; the selector here is a control, not a
    candidate.
+
+## 13. The Qwen3.5 hybrid path: the registered kernel gap (S33)
+
+This section is a **registration**, not a description of working code. Nothing in
+it is implemented. It exists so the next session does not rediscover, from
+scratch, that the anchor is not a standard transformer and that four kernels are
+missing.
+
+The anchor's identity, revision and per-component accounting are in
+`docs/FRONTIER-TARGET.md`. The arithmetic the kernels must reproduce is
+`oracle/reference/qwen35.py`, and its agreement with `transformers==5.23.0` is
+receipted in `results/reference/20261116T184032Z-qwen35-reference.json`. What
+follows is what this runtime has, what it lacks, and how parity will be judged.
+
+### 13.1 What `crates/selvedge-runtime/src/kernels.rs` has
+
+`dot`, `matvec_into`, `matmul_into`, `matvec_accumulate`, `matmul_accumulate`,
+`rms_norm`, `silu`, `swiglu_act`, `rope_in_place`, `softmax`, `argmax`,
+`rope_inv_freq`. All f32, single-threaded per block, deterministic by
+construction.
+
+### 13.2 What the anchor needs and this runtime does not have
+
+1. **Depthwise causal convolution state.** `linear_attn.conv1d.weight` is
+   `[conv_dim, 1, kernel]` with
+
+   conv kernel width
+
+   <!-- BEGIN GENERATED: runtime-qwen35-conv-kernel -->
+4
+   <!-- END GENERATED: runtime-qwen35-conv-kernel -->
+
+   applied per channel to the concatenated `[q;k;v]` projection, left-padded, then
+   SiLU. It is not a linear layer and cannot be expressed with `matvec_into`. The
+   state is the last `kernel - 1` columns of the *raw* projection: small, exact,
+   and must be carried across token boundaries (and across prefill/decode).
+2. **The gated delta rule.** A per-head recurrent state of `key_dim x value_dim`
+   floats with, per token: decay the state, subtract the state's prediction of
+   the value, add the gated correction, read the result. The reference form is
+   twelve lines of arithmetic; the runtime has no scan, no state buffer, and no
+   reduction order defined for it. This is the piece the plan's kill criterion
+   names.
+3. **Per-head gated RMSNorm.** The DeltaNet output is normalised over each value
+   head's channels and then multiplied by `silu(z)`, with a gain that is used
+   **directly** (that norm is one-initialised) rather than as `1 + gain` like
+   every other norm in this model. `rms_norm` implements only the latter
+   convention.
+4. **Partial-RoPE gated attention.** `head_dim` is larger than the rotated width:
+
+   rotated width per head
+
+   <!-- BEGIN GENERATED: runtime-qwen35-rotary-dim -->
+64
+   <!-- END GENERATED: runtime-qwen35-rotary-dim -->
+
+   of each head is rotated and the remainder passes through untouched;
+   `rope_in_place` rotates a whole vector. The attention output is additionally
+   multiplied by `sigmoid(gate)` where the gate is the second half of the fused
+   `q_proj` output, per head — the runtime has no output gate. Grouped-query
+   sharing is already supported and is unchanged.
+5. **mRoPE bookkeeping.** For a text-only sequence the three mRoPE axes carry the
+   same positions and the rotation degenerates to the standard one, which the
+   reference demonstrates and the parity receipt confirms. A multimodal path is
+   therefore **not** required for the text claim — and a runtime that later reads
+   images must implement the sections, not reuse the degenerate case.
+6. **The MTP head, if drafting is ever executed.** One extra gated-attention layer
+   plus three norms and a `2H -> H` projection. It is registered as *optional* and
+   is not needed for a text-only decode loop; `inspect-model --active-path`
+   accounts it separately so its cost can be priced without executing it.
+
+### 13.3 What must not change
+
+The runtime's existing guarantees are the reason its numbers are quotable, and a
+new kernel is not an excuse to weaken them:
+
+- **bitwise determinism** for a fixed configuration: one reduction order per dot
+  product, stated in the code and covered by Court E;
+- **token-at-a-time execution** for the text path. For the DeltaNet layers this
+  is not a performance choice, it is the definition: the recurrence is over
+  tokens, so a prefill that batches tokens must still produce the same state
+  sequence. A chunked implementation is allowed only if it is provably the same
+  arithmetic;
+- **no hidden allocation growth**: the delta state and conv state are bounded by
+  the config, not by the sequence length.
+
+### 13.4 The Court E parity plan
+
+Court E currently proves streaming invariance on Qwen3-0.6B. For the anchor it
+becomes a three-stage court, and the stages are ordered so a failure is localised:
+
+**E1 — reference-only, no runtime.** Load the checkpoint's text path, run the four
+pinned prompts, and require the runtime's *expected* logits to equal the committed
+artifact `results/reference/20261116T184032Z-qwen35/<prompt-N>.npy`. This stage
+tests the harness, not the kernels; if E1 fails, nothing downstream is meaningful.
+Already satisfied in Python by the committed receipt; what E1 adds is the same
+comparison from the Rust harness.
+
+**E2 — kernel by kernel, against the reference**, in dependency order, each with
+its own tolerance and its own test vector dumped from the reference:
+
+| kernel | test vector | tolerance |
+| --- | --- | --- |
+| causal conv state + SiLU | one real layer's projection, split across chunks | exact for the conv; 1e-6 for the f32 sum |
+| delta-rule scan | one real layer, 12 tokens, state carried across a split | 1e-6 max abs; carried output must equal the unsplit output |
+| gated per-head RMSNorm | one real layer's pre-norm tensor | 1e-6 max abs |
+| partial RoPE + output gate | one real attention layer, 12 tokens | 1e-6 max abs |
+| full layer | one real layer, both types | 1e-5 max abs |
+
+The f32 tolerances are tighter than the repository's existing f32 policy because
+the reference and the runtime both work in f32 here; the bf16 comparison against
+the vendor runtime is a separate, looser claim and must not be conflated with it.
+
+**E3 — end to end, both execution paths.** The full text path on the four pinned
+prompts, greedy, from the real checkpoint, compared to the reference artifacts.
+Acceptance is **argmax equality on every position of every prompt plus an
+identical greedy continuation**, which is what the reference receipt already
+achieves against the vendor runtime. Logit-level agreement is recorded but not
+required: the runtime is f32 and the reference artifacts are bf16, and pretending
+otherwise would be a tolerance chosen to be met.
+
+The state tests are part of E2, not an optional extra:
+
+- **carry:** a sequence processed in two chunks with the conv and delta state
+  carried must equal the one-pass output (the Python reference achieves this
+  exactly — 0.0 max abs — because the arithmetic is identical);
+- **reset:** the second chunk from a fresh state must *differ*, proving the test
+  would catch a kernel that ignored the state it was handed.
+
+### 13.5 Next step, stated as one sentence
+
+Implement `delta_rule_scan`, `causal_conv_state`, `rms_norm_gated` and
+`partial_rope_with_gate` in `kernels.rs` in that order, each with the E2 test
+vector and tolerance above, then wire the hybrid layer into the model loop and run
+E3; do not touch the Qwen3 path, which shares `rms_norm`, `softmax` and the
+matvec kernels and is proven.
