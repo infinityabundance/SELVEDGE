@@ -1829,7 +1829,7 @@ All CPU, in the rust court: the workspace suite passes, including 73 tests in
 `selvedge-sim` (52 unit, 21 engine/property/replay). New named tests include
 `replay_reproduces_hand_computed_schedule`, `coalescing_merges_adjacent_extents`,
 `coalescing_never_bridges_beyond_gap`, `backpressure_wait_and_fail_modes`,
-`cancellation_returns_the_server`, `prefetch_saved_stall_when_it_completes_in_time`,
+`cancellation_returns_the_server`, `prefetch_saves_stall_when_it_completes_in_time`,
 `prefetch_never_changes_the_selected_set`, `deadline_misses_are_counted`,
 `two_timescale_cold_change_is_charged_to_the_phase`,
 `envelope_invalidation_on_excursion`, `envelope_utility_is_bytes_and_time`,
