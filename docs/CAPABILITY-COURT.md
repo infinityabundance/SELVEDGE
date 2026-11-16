@@ -4,8 +4,9 @@ Status: **instrument implemented and CPU-tested; the scored suite is at the size
 recorded in §2, the trio is unchanged, a sealed holdback is frozen behind a
 custody gate, and no arm has been evaluated on it.** The GPU belongs to the
 running H\* training job, so this session extends and proves the measurement
-machinery and records the exact commands for the first real run. The evidence is
-five receipts at revision `2beba67`:
+machinery and records the exact commands for the first real run. The evidence is five receipts at
+revisions `2beba67` (instrument, sealed, contamination, similarity) and
+`5e5543f` (power):
 
 - `results/capability/selftest-20261116T090000Z.json` — every checker outcome,
   the per-task build time and the six sandbox-probe outcomes;
@@ -13,9 +14,9 @@ five receipts at revision `2beba67`:
   instrument self-check, behind its unlock record;
 - `results/capability/contamination-20261116T090400Z.json` — disjointness over
   the scored suite and the sealed set;
-- `results/capability/similarity-20261116T090200Z.json` — the near-duplicate
+- `results/capability/similarity-20261116T090600Z.json` — the near-duplicate
   screen over all 177 authored items;
-- `results/capability/power-20261116T090300Z.json` — the power arithmetic for
+- `results/capability/power-20261116T090700Z.json` — the power arithmetic for
   the registered composite at n = 144.
 
 The original pre-registration is `docs/capability-preregistration.json` (the
@@ -67,7 +68,7 @@ demo; Level 3 without Level 2 is a product demo with no capacity story.
 Suite size, from the self-test receipt:
 
 <!-- BEGIN GENERATED: cap-suite-tasks -->
-72 tasks
+144 tasks
 <!-- END GENERATED: cap-suite-tasks -->
 
 Items are spread across three author-assigned difficulty bands (the label is an
@@ -75,15 +76,15 @@ editorial judgement, not a measured difficulty):
 
 - easy:
 <!-- BEGIN GENERATED: cap-diff-easy -->
-16
+53
 <!-- END GENERATED: cap-diff-easy -->
 - medium:
 <!-- BEGIN GENERATED: cap-diff-medium -->
-52
+85
 <!-- END GENERATED: cap-diff-medium -->
 - hard:
 <!-- BEGIN GENERATED: cap-diff-hard -->
-19
+21
 <!-- END GENERATED: cap-diff-hard -->
 
 Every item is original to this repository, authored in
@@ -96,35 +97,35 @@ Items per category, from the same receipt:
 
 - lifetime-borrow:
 <!-- BEGIN GENERATED: cap-cat-lifetime -->
-9
+18
 <!-- END GENERATED: cap-cat-lifetime -->
 - failing-test:
 <!-- BEGIN GENERATED: cap-cat-failing -->
-9
+18
 <!-- END GENERATED: cap-cat-failing -->
 - api-migration:
 <!-- BEGIN GENERATED: cap-cat-migration -->
-9
+18
 <!-- END GENERATED: cap-cat-migration -->
 - dependency-compat:
 <!-- BEGIN GENERATED: cap-cat-dependency -->
-9
+18
 <!-- END GENERATED: cap-cat-dependency -->
 - concurrency:
 <!-- BEGIN GENERATED: cap-cat-concurrency -->
-9
+18
 <!-- END GENERATED: cap-cat-concurrency -->
 - trait-impl:
 <!-- BEGIN GENERATED: cap-cat-trait -->
-9
+18
 <!-- END GENERATED: cap-cat-trait -->
 - repo-scale:
 <!-- BEGIN GENERATED: cap-cat-repo -->
-9
+18
 <!-- END GENERATED: cap-cat-repo -->
 - semantic-repair:
 <!-- BEGIN GENERATED: cap-cat-semantic -->
-9
+18
 <!-- END GENERATED: cap-cat-semantic -->
 
 The categories are deliberately separate. `failing-test` starts from a red
@@ -234,15 +235,15 @@ are recorded for every item in the receipt (`items[].build.duration_ms` and
 <!-- END GENERATED: cap-build-dependency -->
 - concurrency:
 <!-- BEGIN GENERATED: cap-build-concurrency -->
-164 ms
+1616 ms
 <!-- END GENERATED: cap-build-concurrency -->
 - trait-impl:
 <!-- BEGIN GENERATED: cap-build-trait -->
-164 ms
+114 ms
 <!-- END GENERATED: cap-build-trait -->
 - repo-scale:
 <!-- BEGIN GENERATED: cap-build-repo -->
-164 ms
+114 ms
 <!-- END GENERATED: cap-build-repo -->
 - semantic-repair:
 <!-- BEGIN GENERATED: cap-build-semantic -->
@@ -256,7 +257,7 @@ are recorded for every item in the receipt (`items[].build.duration_ms` and
 The largest build over every scored item is:
 
 <!-- BEGIN GENERATED: cap-max-build-ms -->
-164 ms
+1616 ms
 <!-- END GENERATED: cap-max-build-ms -->
 
 so the 45 s checker bound is not close to binding and every crate is small
@@ -578,13 +579,13 @@ Other recorded properties:
 Largest observed workdir:
 
 <!-- BEGIN GENERATED: cap-max-workdir-mib -->
-15.0 MiB
+15.1 MiB
 <!-- END GENERATED: cap-max-workdir-mib -->
 
 Slowest checker run:
 
 <!-- BEGIN GENERATED: cap-max-check-ms -->
-214 ms
+1025 ms
 <!-- END GENERATED: cap-max-check-ms -->
 
 ## 6. The harness: adapters, scoring and anti-gaming
@@ -616,8 +617,9 @@ equal-weight mean of the eight suite categories, each the arithmetic mean of its
 items; this prevents the category with the most items from setting the score.
 The CI is a paired percentile bootstrap resampling items within category, with
 categories weighted equally, 10,000 resamples, seed `20261115`. Every category
-is also reported with its own interval, its `n`, and the registered 8-item
-minimum; a category below that minimum refuses the result. `--category` on
+is also reported with its own interval, its `n`, and the registered per-category
+minimum (18 in the v4 registration); a category below that minimum refuses the
+result. `--category` on
 `generate` and `check` scores a stratified subset (all selected categories must
 still meet the minimum), and the receipt records `suite.category_filter`. The
 trio is scored separately by surface and never pooled into the primary; the
@@ -667,7 +669,7 @@ the 144-task suite must name v4; a run against the historical suite must name v1
 The hash below is the v4 binding:
 
 <!-- BEGIN GENERATED: cap-suite-sha -->
-3f7933966680a9663b178817e245027bf61895523e094e8f1ef369f6767585d8
+7347e1e94b7ddcd3d04f1580646b392fc1591a25e71b299a663fc7f837f0a207
 <!-- END GENERATED: cap-suite-sha -->
 
 The registered rules:
@@ -723,7 +725,7 @@ The registered rules:
 The expansion was made for power, so the power is reported rather than implied.
 The registered estimand is the category-balanced mean of paired item
 differences; `oracle/capability/power.py` implements the arithmetic and
-`results/capability/power-20261116T090300Z.json` is the receipt. The model is
+`results/capability/power-20261116T090700Z.json` is the receipt. The model is
 stated: each item's paired difference is in {gain, loss, none}, the baseline
 success rate is 0.5, and the "with regressions" case reverses 20% of the gains.
 
@@ -747,6 +749,10 @@ A *single category's* 95% CI half-width on its own success rate (p = 0.5) is:
 
 The paired composite CI is narrower than that marginal interval because the
 comparison is paired; the two are reported separately and never substituted.
+Every category has the per-category n above and therefore the same marginal
+half-width at the same proportion; the receipt records one row per category with
+its name, `n` and half-width, so the per-category intervals are enumerated rather
+than implied.
 
 Analytic minimum detectable effect (normal approximation to the paired
 composite, 95% two-sided, 80% power), absolute:

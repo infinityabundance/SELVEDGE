@@ -189,7 +189,7 @@ def check(root: str) -> list[str]:
         for name in files:
             path = os.path.join(base, name)
             relative = os.path.relpath(path, root).replace(os.sep, "/")
-            if relative == "MANIFEST.json" or relative == "README.md":
+            if relative in ("MANIFEST.json", "README.md", "SEALED.json"):
                 continue
             if path not in expected:
                 problems.append(f"unexpected file {os.path.relpath(path, REPO)}")

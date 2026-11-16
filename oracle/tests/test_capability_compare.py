@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.join(REPO, "oracle"))
 import capability_compare  # noqa: E402
 from capability import court, suite as suite_module  # noqa: E402
 
-PREREG = os.path.join(REPO, "docs", "capability-preregistration-v3.json")
+PREREG = os.path.join(REPO, "docs", "capability-preregistration-v4.json")
 SUITE_ROOT = os.path.join(REPO, "fixtures", "capability")
 CATEGORIES = ("api-migration", "concurrency", "dependency-compat", "failing-test",
               "lifetime-borrow", "repo-scale", "semantic-repair", "trait-impl")

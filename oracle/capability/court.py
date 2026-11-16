@@ -79,7 +79,7 @@ CAPACITY_ACTIVE_TOLERANCE = 0.05
 #: P14.4: a category needs at least this many scored items before its mean is
 #: reported as a category result. With fewer, one item moves the category mean by
 #: more than 1/8 and the stratified interval is too wide to support the claim.
-MIN_CATEGORY_ITEMS = 8
+MIN_CATEGORY_ITEMS = 18
 TRIO_SURFACES = ("rust", "numeric-graph", "logic")
 
 

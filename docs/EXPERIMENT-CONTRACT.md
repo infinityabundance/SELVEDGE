@@ -2590,7 +2590,7 @@ supersedes `docs/capability-preregistration-v3.json` without editing it.
 - **Power, reported not assumed.** The per-category single-proportion 95% CI
   half-width and the registered paired composite's simulated 80%-power minimum
   detectable effect are emitted from
-  `results/capability/power-20261116T090300Z.json` and printed in
+  `results/capability/power-20261116T090700Z.json` and printed in
   `docs/CAPABILITY-COURT.md` §7.1. The simulated MDE is above the registered 10%
   threshold, so **a 10% relative improvement is not resolvable at 80% power at
   this n.** The threshold is unchanged; a null near the threshold is

@@ -351,8 +351,8 @@ tracked variance summaries from the receipts.
 ## Capability court and the fresh Rust suite (S14–S26, CPU-only)
 
 The instrument every frontier claim will use now exists and is larger.
-`docs/CAPABILITY-COURT.md` is the reference. The current evidence, at revision
-`2beba67`, is:
+`docs/CAPABILITY-COURT.md` is the reference. The current evidence, at revisions `2beba67` and
+`5e5543f`, is:
 
 - `results/capability/selftest-20261116T090000Z.json` — every checker outcome
   over the scored suite and the trio, including the naive-fix and sandbox-probe
@@ -363,7 +363,7 @@ The instrument every frontier claim will use now exists and is larger.
   every authored item;
 - `results/capability/similarity-20261116T090600Z.json` — the near-duplicate
   screen, with its counts in the receipt;
-- `results/capability/power-20261116T090300Z.json` — the power arithmetic at the
+- `results/capability/power-20261116T090700Z.json` — the power arithmetic at the
   registered n.
 
 Established, on CPU:

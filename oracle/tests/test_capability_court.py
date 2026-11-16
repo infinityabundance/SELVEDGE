@@ -71,10 +71,10 @@ def test_a_full_pass_yields_a_perfect_balanced_composite(tmp_path):
     _generations, result = run(tmp_path=tmp_path)
     scores = result["scores"]
     assert scores["primary_composite"] == pytest.approx(1.0)
-    assert scores["counts"] == {"pass": 81}
+    assert scores["counts"] == {"pass": 153}
     for category, entry in scores["by_category"].items():
         assert entry["mean"] == pytest.approx(1.0), category
-        assert entry["n"] >= 8
+        assert entry["n"] >= 18
     assert scores["trio_all_surfaces"] is True
     assert result["anti_gaming"]["prompt_hashes_match"] is True
     assert result["anti_gaming"]["checker_visible_to_arm"] is False
@@ -88,9 +88,9 @@ def test_a_failed_category_moves_the_composite_by_one_eighth(tmp_path):
     _generations, result = run(fail=lifetime, tmp_path=tmp_path, name="crippled")
     assert result["scores"]["primary_composite"] == pytest.approx(7 / 8)
     assert result["scores"]["by_category"]["lifetime-borrow"]["mean"] == 0.0
-    assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 9
+    assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 18
     assert result["scores"]["category_minimum_met"] is True
-    assert result["scores"]["counts"]["test_failed"] == 9
+    assert result["scores"]["counts"]["test_failed"] == 18
 
 
 def test_a_category_filter_scores_only_the_selected_category(tmp_path):
@@ -106,7 +106,7 @@ def test_a_category_filter_scores_only_the_selected_category(tmp_path):
         runner=lambda task, files: {"status": "pass"})
     assert result["suite"]["category_filter"] == ["lifetime-borrow"]
     assert result["scores"]["categories"] == ["lifetime-borrow"]
-    assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 9
+    assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 18
     assert result["scores"]["category_minimum_met"] is True
 
 
@@ -116,10 +116,10 @@ def test_a_category_below_the_minimum_is_refused(tmp_path):
     generation_path = os.path.join(str(tmp_path), "gen-tiny.json")
     generations = court.generate(adapter, SUITE_ROOT, generation_path,
                                  categories=["lifetime-borrow"])
-    with pytest.raises(court.CourtError, match="below the 10-item minimum"):
+    with pytest.raises(court.CourtError, match="below the 19-item minimum"):
         court.check(
             generations, SUITE_ROOT, os.path.join(str(tmp_path), "result-tiny.json"),
-            categories=["lifetime-borrow"], min_category_items=10,
+            categories=["lifetime-borrow"], min_category_items=19,
             runner=lambda task, files: {"status": "pass"})
 
 

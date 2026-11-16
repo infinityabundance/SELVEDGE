@@ -50,7 +50,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--suite", default=os.path.join(REPO, "fixtures", "capability"))
     parser.add_argument("--out", required=True)
     parser.add_argument("--baseline", type=float, default=0.5)
-    parser.add_argument("--regression-fraction", type=float, default=0.0)
+    parser.add_argument("--regression-fraction", type=float, default=0.2)
     parser.add_argument("--simulations", type=int, default=120)
     parser.add_argument("--resamples", type=int, default=400)
     args = parser.parse_args(argv)
@@ -73,6 +73,14 @@ def main(argv: list[str]) -> int:
     simulation = power.simulate_power(
         optimistic["absolute"], n_per_category=n_per_category,
         categories=len(categories), regression_fraction=0.0,
+        replications=args.simulations, resamples=args.resamples)
+    empirical = power.empirical_mde(
+        n_per_category=n_per_category, categories=len(categories),
+        regression_fraction=0.0, replications=args.simulations,
+        resamples=args.resamples)
+    empirical_pessimistic = power.empirical_mde(
+        n_per_category=n_per_category, categories=len(categories),
+        regression_fraction=args.regression_fraction,
         replications=args.simulations, resamples=args.resamples)
 
     payload = {
@@ -103,18 +111,27 @@ def main(argv: list[str]) -> int:
             "level": stats.LEVEL,
             "half_width": power.marginal_ci_half_width(
                 n_per_category, proportion=args.baseline, level=stats.LEVEL),
+            "categories": [
+                {"name": name, "n": n_per_category,
+                 "half_width": power.marginal_ci_half_width(
+                     n_per_category, proportion=args.baseline, level=stats.LEVEL)}
+                for name in sorted(categories)
+            ],
             "note": (
                 "single-proportion 95% CI half-width for one category's success "
                 "rate at this n; the paired composite CI is narrower because the "
-                "comparison is paired"),
+                "comparison is paired. Every category has the same n and therefore "
+                "the same marginal half-width at the same proportion."),
         },
         "mde": {
             "optimistic_no_regressions": optimistic,
             "with_regressions": pessimistic,
-            "simulation": simulation,
+            "simulation_at_analytic_mde": simulation,
+            "empirical_optimistic": empirical,
+            "empirical_with_regressions": empirical_pessimistic,
             "relative_threshold": power.REGISTERED_RELATIVE_THRESHOLD,
-            "threshold_met_by_optimistic": (
-                optimistic["relative_to_baseline"] <= power.REGISTERED_RELATIVE_THRESHOLD),
+            "analytic_is_conservative": (
+                simulation["decision_power"] >= 0.8),
         },
     }
     out = args.out if os.path.isabs(args.out) else os.path.join(REPO, args.out)
@@ -131,7 +148,15 @@ def main(argv: list[str]) -> int:
         "mde_absolute": round(optimistic["absolute"], 4),
         "mde_relative": round(optimistic["relative_to_baseline"], 4),
         "mde_relative_with_regressions": round(pessimistic["relative_to_baseline"], 4),
-        "simulated_ci_power": round(simulation["ci_power"], 3),
+        "simulated_decision_power_at_analytic_mde": round(
+            simulation["decision_power"], 3),
+        "empirical_mde_absolute": (None if empirical["absolute"] is None
+                                   else round(empirical["absolute"], 4)),
+        "empirical_mde_relative": (None if empirical["relative_to_baseline"] is None
+                                   else round(empirical["relative_to_baseline"], 4)),
+        "empirical_mde_relative_with_regressions": (
+            None if empirical_pessimistic["relative_to_baseline"] is None
+            else round(empirical_pessimistic["relative_to_baseline"], 4)),
     }, indent=2, sort_keys=True))
     return 0
 
