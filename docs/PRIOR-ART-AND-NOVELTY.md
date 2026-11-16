@@ -91,6 +91,26 @@ is therefore `VERIFIED` 12, `PARTIAL` 2, `UNSUPPORTED` 6, plus one supplementary
 `VERIFIED` (PonderNet). The pre-correction counts above are retained as history,
 not as the current tally.
 
+**Fourth pass, 2026-11-16 (S24, WS15–WS18).** Thirty-five works were added with
+the WS15–WS18 workstreams: ten alternatives to sparse MoE, fifteen storage,
+eviction, scheduling and control-theory works, eight biological control
+principles and the two cross-project repositories. They were fetched in rounds
+19–24 (`results/prior-art/prior-art-fetch-20261116-round{19,20,21,22,23,24}.jsonl`);
+the verdicts are in §14 and their consequences in §15. Tally: `VERIFIED` 17,
+`PARTIAL` 14, `UNSUPPORTED` 4. The row-level arithmetic is checked by
+`scripts/prior_art_audit.py`, which fails closed on drift.
+
+**The fourth pass is weaker evidence than the third, and says so.** Semantic
+Scholar answered one request and then returned HTTP 429 for every later request
+in the pass; `en.wikipedia.org`'s REST summary endpoint did the same twice. No
+row below is `VERIFIED` on a 429: a row is `VERIFIED` only when a primary record
+(an arXiv abstract page, a venue landing page with an abstract, a PMLR page, or a
+NIST publication page) was fetched and supports the mechanism. The eight
+biological rows and three of the control-theory rows are secondary records and
+are marked `PARTIAL` for that reason alone; they support that a principle exists
+and is described as the plan claims, never that it transfers quantitatively to a
+neural system.
+
 **Count discrepancy, recorded not repaired.** The second-pass paragraph above
 says "95 named works" while its own category counts (76 + 9 + 14) sum to 99. The
 eighteen-point row table in §10 and §10.1 is the authoritative record; the prose
@@ -617,3 +637,140 @@ this pass) reproduces that arithmetic and fails closed on future drift.
    verified task success at a fixed active budget, bytes per output token and
    cold-byte p95, with a falsifying control per mechanism. That is the claim to
    make, and it is a claim about evidence, not about novelty of parts.
+
+## 14. Verification table — WS15–WS18 works (fourth pass, 2026-11-16)
+
+This pass covers the works named by the four workstreams appended to
+`docs/PROGRAM-PLAN.md` in S24: the alternatives to sparse MoE (WS15), the storage,
+eviction and control-theory literature WS16 borrows from, the biological control
+principles (P16.32), and the two cross-project repositories (P16.35, WS17). Raw
+evidence: `results/prior-art/prior-art-fetch-20261116-round{19,20,21,22,23,24}.jsonl`.
+
+**Method note for this pass.** Three source classes are recorded separately
+because the class is part of the verdict: a **primary** record (arXiv abstract
+page, ACL Anthology page *with* an abstract, PMLR page, NIST publication page); an
+**index search**, whose hit may be a homonym; and a **secondary** record
+(Wikipedia), which can never carry `VERIFIED` for a mechanism claim. Two request
+faults occurred and are recorded rather than papered over: Semantic Scholar
+answered the first `s2_search` (`kv-evict-s2`, HTTP 200) and returned HTTP 429 for
+the remaining twelve; the Wikipedia REST endpoint returned 429 on two of
+seventeen. Every 429 row is a *finding about the pass*, and the work behind it was
+re-asked through arXiv, its venue, or its repository.
+
+### 14.1 Alternatives to sparse MoE (WS15)
+
+| # | work | id / venue | status | recorded evidence | what it bounds in WS15 |
+| ---: | --- | --- | --- | --- | --- |
+| 136 | **Expert Choice Routing** | arXiv 2202.09368 | **VERIFIED** | fetched 2026-11-16 UTC. "Prior work allocates a fixed number of experts to each token using a top-k function regardless of the relative importance of different tokens. To address this, we propose a heterogeneous mixture-of-experts employing an expert choice" — experts choose tokens, so per-expert load is variable | that compute allocated per *token* may vary is published; P15.1/P15.6 novelty cannot be "variable per-token compute" |
+| 137 | **DA-MoE** | arXiv search `all:"DA-MoE"` | **UNSUPPORTED** | one hit: arXiv 2411.03025, *DA-MoE: Addressing Depth-Sensitivity in Graph-Level Analysis through Mixture of Experts*, whose abstract is about "graph neural networks ... the optimal depth of GNN layers depends on the scale of the graph data". That is a graph-learning mixture, not an LLM mixture. The name is a homonym | no located sparse-MoE system named DA-MoE exists; the plan must not cite it as an LLM alternative |
+| 138 | **DynaMoE** | arXiv search `all:"DynaMoE"` | **UNSUPPORTED** | 25 candidates returned, all solar/stellar **dynamo** physics ("The Complex Magnetic Anatomy of a White Dwarf Chromosphere", "Convergence of Roberts flow dynamos"). The name does not resolve to a neural mixture. `s2_search` for the same name returned HTTP 429 | not located; treat as PROPOSED, or cite the nearest located dynamic-SMoE work instead |
+| 139 | **Mixture-of-Depths** | arXiv 2404.02258 | **VERIFIED** | "transformers can instead learn to dynamically allocate FLOPs ... to specific positions in a sequence ... enforces a total compute budget by capping the number of tokens (k) ... The tokens to be processed are determined by the network using a top-k routing mechanism" | conditional depth under an explicit FLOP budget is published; P15.2 and P16.13 must be FLOP-matched against it, not against a dense baseline alone |
+| 140 | **HyperNetworks** | arXiv 1609.09106 | **VERIFIED** | "an approach of using one network, also known as a hypernetwork, to generate the weights for another network ... trained end-to-end with backpropagation" | generating resident weights from a compact code is published (2016); P15.7 and P10.1 must claim the *accounting* of the generation cost, not generation itself |
+| 141 | **Product-Key Memory** | arXiv **1907.05242** (*Large Memory Layers with Product Keys*) | **VERIFIED** | "The memory is very large by design ... up to a billion parameters with a negligible computational overhead. Its design and access pattern is based on product keys, which enable fast and exact nearest neighbor search." **Identity correction:** the id 1611.01587 recalled for this work resolved to *A Joint Many-Task Model*, a different paper (round 19, row retained in the receipt) | the product-key addressing P15.7 and P16.31 use is published; the plan's citation must be 1907.05242 |
+| 142 | **Titans** | arXiv 2501.00663 | **VERIFIED** | "We present a new neural long-term memory module that learns to memorize historical context and helps attention to attend to the current context" — a learned test-time memory alongside attention | learned test-time memory is published; P15.7's separation of long-term storage from resident compute is the part with no located neighbour |
+| 143 | **Dynamic Expert Sharing (2026)** | arXiv search `all:"expert sharing" AND all:"mixture of experts"` | **UNSUPPORTED** | one hit: 2610.09342, *Shared Low-rank Basis Factorization for Data-free Mixture-of-Experts Compression* — shares a **factorised basis** across experts for compression, which is not dynamic sharing of computation across requests. `s2_search` returned HTTP 429 | not located by name; P16.35's cross-request sharing claim must be stated as PROPOSED |
+| 144 | **DExperts** | ACL 2021 long 522 | **VERIFIED** | "a decoding-time method for controlled text generation that combines a pretrained language model with 'expert' LMs and/or 'anti-expert' LMs in a product of experts. Intuitively ... tokens only get high probability if they are considered likely by the experts, and unlikely by the anti-experts" | subtractive composition at decoding time is exactly the precedent for P15.3 (negative terms in the objective); the mechanism is prior art, the typed evidence-grounded constraints are not |
+| 145 | **PARROT** | PMLR v119 **liu20f**, *An Imitation Learning Approach for Cache Replacement* | **VERIFIED** | "we focus on the problem of cache replacement: choosing which cache line to evict ... we propose an imitation learning approach to automatically learn cache access patterns by leveraging Belady's, an oracle policy" (Evan Liu, Milad Hashemi, Kevin Swersky, Parthasarathy Ranganathan, Junwhan Ahn) | learned eviction with an offline Belady oracle is published (2020). P16.6 and P16.34 must claim the residual/fingerprint features and the safety constraint, not the learned controller or the oracle |
+
+### 14.2 Storage, eviction, scheduling and control theory (WS16)
+
+| # | work | id / venue | status | recorded evidence | what it bounds in WS16 |
+| ---: | --- | --- | --- | --- | --- |
+| 146 | **MoE-Infinity** | arXiv 2401.14361 | **VERIFIED** | "on personal machines ... batch size of one ... MoE models exhibit a high degree of activation sparsity ... we design a sparsity-aware expert cache, which can trace the sparse activation of experts during inference" | activation-aware expert caching/prefetch is published; P16.1's novelty is the joint multi-item risk-constrained objective, not prefetch |
+| 147 | **Learning to Evict from Key-Value Cache** | arXiv **2602.10238** (Moschella, Manduchi, Sener, 2026) | **VERIFIED** | "Existing eviction or compression methods ... rely on heuristics, such as recency or past attention scores, which serve only as indirect proxies for a token's future utility ... We reframe KV cache eviction as an RL problem: learning to rank tokens by their predicted usefulness for future decoding ... KV Policy (KVP), a framework of lightweight per-head RL agents" | learned, future-utility-scored eviction is published; P16.1's *risk constraint* (P(ΔL>ε)<δ) and its cost accounting are the residual claims. Note the title is attested; the Apple affiliation is **not** stated in the fetched abstract and is therefore not asserted |
+| 148 | **LKV** | EMNLP 2026 main 1183 | **VERIFIED** | "LKV (Learned KV Eviction) ... formulates KV compression as an end-to-end differentiable optimization problem. LKV integrates LKV-H to learn task-optimized global budgets, and LKV-T to derive intrinsic KV importance" (Enshuai Zhou et al., 2026) | learned *budgets* as well as selection are published; P16.23 (layerwise error allowances) and P16.1's per-component allocation have a direct neighbour |
+| 149 | **TextNCA** | arXiv 2608.02050 | **VERIFIED** | "Can a strictly local, iterated, weight-shared computation primitive support language modelling ... The model **does not match a parameter-matched Transformer** at this scale (Hier-TextNCA 60.3 vs. ...)" | this is the **negative result** P15.2 cites. It supports the warning, not the mechanism: no fetched record shows an attractor-field computer matching a dense baseline |
+| 150 | **MoE cache paging** | arXiv 2509.02408 (*Cache Management for Mixture-of-Experts LLMs*) | **VERIFIED** | "we introduce and study a new paging problem that models expert management ... frequently used experts should be stored in the fast cache rather than in the slower secondary memory" | the paging abstraction P16.17 formalises is published; the fetch-to-recompute decision under equal outputs is not shown in the abstract |
+| 151 | **MoE cache evaluation** | arXiv 2608.07911 | **VERIFIED** | "we find the measurement fragile. With a trace-driven, event-atomic simulator over three MoE models ... we isolate three evaluation axes that change conclusions, not just numbers. Replay semantics: under a fused-event traffic contract, an inconsistent per-access replay inflates rec..." | external corroboration for P16.34: replay semantics and workload contamination decide conclusions. It also means P16.34's novelty is not "simulate a cache" |
+| 152 | **LLM I/O bottleneck survey (Springer 2026)** | four queries: `s2_search`, Springer search page, two arXiv all-field searches | **UNSUPPORTED** | the Springer search page returns only "Search research articles and books"; `s2_search` returned 429; arXiv returned generative-AI education, vector-database and power-systems works, none a survey of LLM I/O bottlenecks | not located. The plan must not cite it; the primary substitute is row 151 |
+| 153 | **Red-blue pebble game** (Hong & Kung, MIT) | arXiv `all:"red-blue pebble"` | **PARTIAL** | six primary works use the model in their own titles, e.g. *On Fine-Grained I/O Complexity of Attention Backward Passes*, *Red-Blue Pebbling with Multiple Processors: Time, Communication and Memory Trade-offs*, *On the Hardness of Red-Blue Pebble Games*; the 1981 primary record itself was not fetched and `s2_search` returned 429 | the I/O-complexity framing of P16.17 is attested by citing works; the classical attribution is **not** verified in this ledger and the item must say "the red-blue pebble model" rather than cite a page it did not read |
+| 154 | **Rent-or-Buy with expert advice** | PMLR v97 **gollapudi19a** | **VERIFIED** | "we consider the classical rent-or-buy problem (also called ski rental), and obtain algorithms that provably improve their performance over the adversarial scenario by using these predictions. We also prove matching lower bounds" | bounded-regret rent-vs-load with learned advice is published; P16.15's novelty is the *load* arm and the SELVEDGE-specific recovery cost, not the online algorithm |
+| 155 | **Successive refinement** | arXiv 1802.07458 (primary work in that line) | **PARTIAL** | "In the successive refinement problem, a fixed-length sequence ... is encoded into two codewords by two encoders in order to give two reconstructions ... One of two reconstructions is obtained by one of two codewords, and the other reconstruction is obtained by all two codewords" | the coarse-plus-refinement structure P16.13/P16.20 use is attested by a primary work in that line; the attribution to **Cover** is not verified by a fetched record, and the plan must not present it as one |
+| 156 | **CFAR** | Wikipedia REST summary, *Constant false alarm rate* | **PARTIAL** | secondary record only: "Constant false alarm rate (CFAR) detection is a common form of adaptive algorithm" with sections "Principle", "Cell-averaging CFAR", "Sophisticated CFAR approaches". The `s2_search` that would have located a radar primary returned 429 | the principle P16.22 borrows exists and is described as an adaptive threshold; no primary record was read, so the item is an analogy, not a baseline |
+| 157 | **NIST combinatorial interaction testing** | NIST SP 800-142, *Practical Combinatorial Testing* | **VERIFIED** | "The key insight underlying t-way combinatorial testing is that not every parameter contributes to every fault and most faults are caused by interactions between a relatively small number of parameters." (two CSRC project URLs returned 404; the SP page served the text) | t-way covering arrays P16.24/P16.12 use are published **for software**; the transfer to neural capability combinations is exactly what P16.24 says must not be assumed |
+| 158 | **Braess' paradox** | Wikipedia summary + arXiv `all:"Braess" AND all:"paradox"` | **PARTIAL** | secondary: "the observation that adding one or more roads to a road network can slow overall traffic flow"; primary-computing neighbours: *Braess's Paradox in Uniform Affine Grid Networks*, *Braess's Paradox of Generative AI*, *Network Topology That Excludes Braess's Paradox*. The specific **"Springer 2023"** treatment named in the plan was not identified: the Springer search page returned only its chrome | the paradox exists and has computational analogues; the named 2023 citation is unverified, and P16.26 stays HYPOTHESIS for that reason |
+| 159 | **IEA demand response 2026** | iea.org report page | **PARTIAL** | `iea.org` returned **HTTP 403** ("Just a moment..." — Cloudflare bot protection) on two URLs; the secondary record states "Demand response is a change in the power consumption of an electric utility customer to better match the demand for power with the supply" | the demand-shifting principle is attested secondarily; the IEA 2026 report itself is **not read**, so P16.27 must cite the principle, not the report |
+| 160 | **Preisach model** | Wikipedia REST summary, *Preisach model of hysteresis* | **PARTIAL** | secondary: "the Preisach model of hysteresis is a model of magnetic hysteresis" with sections "Nonideal relay", "Discrete Preisach model", "Preisach plane"; `s2_search` returned 429 | the hysteresis model P16.11/P16.22 borrow exists; the superposition-of-relays construction is attested only by the secondary record's section list |
+
+### 14.3 Biological control principles (P16.32) — secondary records only
+
+Every row in this table is a Wikipedia record. That is deliberate and it caps
+the verdict at `PARTIAL`: an encyclopedia entry supports that a principle
+exists and is described as the plan claims. It does not support any quantitative
+transfer to a neural system, and P16.32 is `HYPOTHESIS` for that reason.
+
+| # | principle | record | status | recorded evidence | what it may inform |
+| ---: | --- | --- | --- | --- | --- |
+| 161 | microglial pruning | *Synaptic pruning*, *Microglia* (REST summaries) | **PARTIAL** | "Synaptic pruning is the process of synapse elimination or weakening"; microglia "are constantly scavenging the CNS for plaques, damaged or unnecessary neurons and synapses". The first extract does **not** attribute pruning to microglia, and the second does not name pruning — the attribution is **not** quoted by either | negative selection of capacity (P16.12, P16.32); the attribution is weaker than the plan's wording |
+| 162 | proteasome | *Proteasome* (REST summary) | **PARTIAL** | "Proteasomes are essential protein complexes responsible for the degradation of p..." (tagged/selective degradation) | destroy-before-recompute (P16.32): a selective degradation channel, not a cache |
+| 163 | autophagy | *Autophagy* (REST summary) | **PARTIAL** | "Autophagy is the natural, conserved degradation of a biological cell that remove[s] ..." | bulk degradation under scarcity (P16.32) |
+| 164 | bacterial chemotaxis | *Chemotaxis* (REST summary, section "Bacterial chemotaxis / Signal transduction / Receptor regulation") | **PARTIAL** | "Chemotaxis is the movement of an organism or entity in response to a chemical st..."; the section list attests receptor regulation | adaptive thresholding (P16.22): the analogy for a threshold that tracks a background level |
+| 165 | quorum sensing | *Quorum sensing* (REST summary) | **PARTIAL** | "quorum sensing or quorum signaling (QS) is the process of cell-to-ce[ll communication]" | agreement-gated action (P16.10): the analogy for requiring independent signals to agree |
+| 166 | microbial dormancy | *Dormancy*, *Persister cells* (REST summaries) | **PARTIAL** | "Dormancy is a period in an organism's life cycle when growth, development, and p[hysical activity] are temporarily suspended"; "Persister cells are subpopulations of cells that survive under lethal treatment" | the dormant state in P16.9 and the rare-capability reserve in P16.29 |
+| 167 | sleep replay | *Hippocampal replay* (REST summary) | **PARTIAL** | "During sleep or awake rest, replay refers to the re-occurrence of a sequence of cell[s] ..." | offline consolidation in P16.27 (compute peak shaving) |
+| 168 | immune negative selection | *Central tolerance* (REST summary) | **PARTIAL** | "central tolerance is the process of eliminating any developing T or B lymphocytes that are autoreactive, i.e. reactive to the body itself" | the negative-selection rule in P16.12 and P16.32 |
+
+### 14.4 Cross-project repositories (P16.35, WS17)
+
+| # | repository | record | status | recorded evidence | what it actually implements |
+| ---: | --- | --- | --- | --- | --- |
+| 169 | **DSFB** | `github.com/infinityabundance/dsfb` + README via GitHub API | **VERIFIED** | README: "DSFB - Drift-Slew Fusion Bootstrap ... **DSFB creates human readable structure from usually discarded residuals**. Information from the signatures or fingerprints of noise. And it does it **without ML or LLM (AI)**, meaning it is white-box and can run on the edge ... DSFB doesn't replace existing, proven, tried and tested sensors and methods, it **augments** them ... as a **read-only observer**. ... it changes the status of residual exhaust from disposable diagnostic byproduct into replayable forensic evidence." Repository description: "Drift–Slew Fusion Bootstrap (DSFB)"; cited works are navigation, plasma state estimation and multi-sensor fusion (Zenodo DOIs) | a deterministic, read-only, provenance-carrying **residual diagnostics** framework for sensor fusion. It does **not** contain neural-cache code, an eviction controller, or the ten motifs of P16.2. The transfer is PROPOSED: what SELVEDGE borrows is the *stance* (deterministic observer, no mutation, replayable evidence), not code |
+| 170 | **Phenom** | `github.com/infinityabundance/phenom` + README via GitHub API | **VERIFIED** | README: "**Phenomenological Workspace monorepo** ... the full phase-by-phase implementation of the **conversation operating system**"; crates `phenom-core` ("phenomenological system semantics, learning, empirical and alignment layers"), `phenom-storage` ("5-tier storage and lifecycle movement"), `phenom-graph`, `phenom-crdt`, `phenom-render`, `phenom-ui`; "Determinism first ... **Reason codes required:** policy decisions, degraded modes ..." | a Rust workspace/OS: storage tiers, event sourcing, graph, CRDT, rendering. The README contains **no** occurrence of "obligation" or "compartment". WS17's `phenom-obligation` boundary and the six compartments are therefore **SELVEDGE proposals about** Phenom, not descriptions of it |
+
+## 15. Consequential findings from the fourth pass
+
+1. **Three of the ten named WS15 works do not resolve to the mechanism the plan
+   names.** DA-MoE (row 137) is a graph-learning mixture, not an LLM mixture;
+   DynaMoE (row 138) resolves to solar dynamo physics; Dynamic Expert Sharing
+   (row 143) has no located work, only a shared-basis *compression* paper. None
+   may appear in the plan as a sparse-MoE alternative. They are removed from the
+   comparison set and kept as `PROPOSED` vocabulary.
+2. **Two identities were repaired, one of them load-bearing.** Product-Key
+   Memory is 1907.05242, not the recalled 1611.01587 (row 141); the wrong id
+   resolved to *A Joint Many-Task Model* and is retained in the receipt. PARROT
+   is PMLR v119 `liu20f`, *An Imitation Learning Approach for Cache Replacement*
+   — the plan's use of the name is correct, but the paper is a **cache-replacement**
+   imitation learner, not a generic RL-labelled controller (row 145).
+3. **Learned eviction is not a novelty surface.** Three independent published
+   works learn eviction: PARROT with a Belady oracle (row 145), KV Policy with
+   per-head RL agents (row 147), and LKV with end-to-end learned budgets and
+   selection (row 148). P16.6, P16.23, P16.34 and P16.1 must therefore claim the
+   *residual-conditioned, risk-constrained, non-mutating* part — and P16.34's
+   learned arm is a reproduction of published baselines, not an invention.
+4. **TextNCA is a negative result and is cited only as one.** The fetched abstract
+   says the model "does not match a parameter-matched Transformer at this scale".
+   No fetched record supports attractor-field computation as competitive, so
+   P15.2's experiment is a falsification test, not a transfer of a known win.
+5. **Every component of WS15 has a published neighbour.** Variable per-token
+   compute (row 136), conditional depth (139), weight generation (140),
+   product-key addressing (141), test-time memory (142), subtractive decoding
+   (144). The WS15 novelty is the *obligation/constraint/evidence coupling and its
+   measurement*, which is what P18.1–P18.5 test. Stated as a mechanism claim, none
+   of P15.1–P15.8 would survive review.
+6. **Four classic citations are analogues, not baselines.** Red-blue pebbling
+   (153), successive refinement (155), CFAR (156) and Braess (158) are each
+   supported only by citing works or secondary records; the Braess `Springer 2023`
+   reference named in the plan was not identified at all. These items must say
+   "the model of" and never "as measured by".
+7. **The biological set cannot carry a mechanism claim.** Eight rows, all
+   secondary (161–168), one of them (microglial pruning) weaker than the plan's
+   wording: neither fetched extract attributes pruning to microglia. P16.32 is
+   `HYPOTHESIS` and its text now says so.
+8. **DSFB exists and is not what P16.2 needs it to be.** It is a deterministic,
+   read-only residual diagnostics framework for sensor fusion with no ML and no
+   neural-cache code (row 169). The ten motifs are SELVEDGE's, and the correct
+   claim is "a DSFB-style observer", with the interface specified (P16.35) rather
+   than assumed.
+9. **Phenom exists and is a workspace OS, not an obligation computer.** Its README
+   has no occurrence of "obligation" or "compartment" (row 170). WS17 is written
+   as a *boundary proposal to* Phenom, and P17.2's compartment mapping is labelled
+   a cross-project hypothesis, not a description.
+10. **The most consequential `UNSUPPORTED` is the one the plan would have used to
+    justify its measurement instrument.** No Springer 2026 LLM I/O bottleneck
+    survey was located (row 152). The substitute is a primary measurement study
+    (row 151) that says the measurement itself is fragile — which is a stronger
+    reason to build P16.34's deterministic lab than the survey would have been.
+11. **A 429 is not a verdict, and this pass marks it as such.** The Semantic
+    Scholar rate limit and two Wikipedia 429s are recorded in the receipts; the
+    affected rows were re-asked elsewhere or left `PARTIAL`/`UNSUPPORTED` with the
+    queries named. No row in §14 rests on a response the script did not record.

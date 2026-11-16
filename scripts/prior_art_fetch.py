@@ -16,8 +16,12 @@ Methods:
   arxiv_html_search   arxiv.org/search HTML results, same fallback purpose
   arxiv_search        exact-title search; all candidate titles are recorded, so a
                       near-miss cannot silently become a citation
+  s2_search           Semantic Scholar title search; records every candidate with
+                      venue, year and abstract, so a homonym cannot become a citation
   page                HTML landing page; title, meta description and a text snippet
   github              repository landing page; title, description and default branch
+  github_readme       repository README through the GitHub API (raw media type),
+                      so what a repository *implements* is quoted, not inferred
 
 Usage:
   scripts/court --net python -- python3 scripts/prior_art_fetch.py \
@@ -702,6 +706,273 @@ SOURCES = [
     ("recode-robustness-search", "arxiv_html_search",
      'all:"robustness evaluation" AND all:"code generation"',
      "ReCode: semantics-preserving code rewrites as a robustness evaluation"),
+    # --- round 19 (S24): the WS15-WS18 literature list. Three source classes are
+    # asked for separately and the class is part of the verdict: a primary record
+    # (arXiv page / ACL / PMLR), an index search that may return homonyms, and a
+    # secondary or encyclopedic record, which can never carry a VERIFIED verdict
+    # for a mechanism claim (see the ledger's §15 method note).
+    #
+    # WS15 alternates to sparse MoE.
+    ("expert-choice-page", "arxiv_page", "2202.09368",
+     "Expert Choice Routing: experts choose tokens, variable per-expert load"),
+    ("da-moe-search", "arxiv_html_search", 'all:"DA-MoE"',
+     "DA-MoE: the named dynamic/dense-alternative mixture"),
+    ("dynamoe-search", "arxiv_html_search", 'all:"DynaMoE"',
+     "DynaMoE: the named dynamic mixture"),
+    ("mod-page", "arxiv_page", "2404.02258",
+     "Mixture-of-Depths: per-token conditional depth under a FLOP budget"),
+    ("hypernetworks-page", "arxiv_page", "1609.09106",
+     "HyperNetworks: one network generates another network's weights"),
+    ("product-key-page", "arxiv_page", "1611.01587",
+     "Product-Key Memory: key retrieval by a product of sub-keys"),
+    ("titans-page", "arxiv_page", "2501.00663",
+     "Titans: learned test-time memory with surprise-driven updates"),
+    ("dynamic-expert-sharing-search", "arxiv_html_search",
+     'all:"expert sharing" AND all:"mixture of experts"',
+     "Dynamic Expert Sharing (2026): shared expert computation across requests"),
+    ("dexperts-page", "page", "https://aclanthology.org/2021.acl-long.522/",
+     "DExperts: decoding-time composition of an expert and an anti-expert"),
+    ("parrot-page", "page", "https://proceedings.mlr.press/v119/liu20f.html",
+     "PARROT (PMLR v119 liu20f): the paper the plan names by that id"),
+    # WS16 storage, eviction and scheduling.
+    ("moe-infinity-page", "arxiv_page", "2401.14361",
+     "MoE-Infinity: expert offloading with activation-aware prefetch and caching"),
+    ("kv-evict-search", "arxiv_html_search",
+     'all:"KV cache" AND all:"evict"',
+     "Learning to Evict from KV Cache (Apple 2026) or its nearest located work"),
+    ("kv-evict-s2", "s2_search", "learning to evict key value cache",
+     "Learning to Evict from KV Cache: learned rather than heuristic eviction"),
+    ("lkv-page", "page", "https://aclanthology.org/2026.emnlp-main.1183/",
+     "LKV (EMNLP 2026 main 1183): the paper the plan names by that id"),
+    ("textnca-page", "arxiv_page", "2608.02050",
+     "TextNCA: neural cellular automata for text, the negative result WS15.2 cites"),
+    ("moe-paging-page", "arxiv_page", "2509.02408",
+     "MoE cache paging: paged expert storage and its measured effect"),
+    ("moe-cache-eval-page", "arxiv_page", "2608.07911",
+     "MoE cache evaluation: measured cache behaviour rather than hit rate alone"),
+    ("llm-io-s2", "s2_search",
+     "I/O bottleneck large language model inference survey",
+     "LLM I/O bottleneck survey (Springer 2026) or its nearest located work"),
+    ("llm-io-springer", "page",
+     "https://link.springer.com/search?query=large%20language%20model%20inference%20I%2FO%20bottleneck",
+     "Springer search page for the 2026 LLM I/O bottleneck survey"),
+    ("red-blue-pebble-s2", "s2_search",
+     "I/O complexity the red-blue pebble game",
+     "Hong & Kung red-blue pebble game: I/O-complexity lower bounds"),
+    ("rent-or-buy-page", "page", "https://proceedings.mlr.press/v97/gollapudi19a.html",
+     "Rent-or-Buy with predictions: online rent-vs-buy with learned advice"),
+    ("successive-refinement-s2", "s2_search",
+     "successive refinement of information",
+     "Cover & Equitz successive refinement: a coarse code plus refinements"),
+    ("cfar-s2", "s2_search", "constant false alarm rate detection adaptive threshold",
+     "CFAR: an adaptive threshold that holds a false-alarm rate under a noise regime"),
+    ("nist-combinatorial", "page",
+     "https://csrc.nist.gov/projects/automated-combinatorial-testing-for-software-systems",
+     "NIST combinatorial interaction testing: t-way covering arrays"),
+    ("braess-s2", "s2_search", "Braess paradox traffic network",
+     "Braess' paradox: adding a route can worsen the equilibrium"),
+    ("braess-springer", "page",
+     "https://link.springer.com/search?query=Braess%20paradox%202023",
+     "Springer search page for a 2023 Braess' paradox treatment"),
+    ("preisach-s2", "s2_search", "Preisach model of hysteresis",
+     "Preisach model: hysteresis as a superposition of relay elements"),
+    ("iea-demand-response", "page",
+     "https://www.iea.org/energy-system/energy-efficiency-and-demand/demand-response",
+     "IEA demand response: shifting demand away from peak periods"),
+    # Biological control principles (P16.32). Secondary records only, and the
+    # ledger marks them as such: an encyclopedia entry supports the existence of
+    # the principle, not a quantitative transfer to a neural system.
+    ("microglia-pruning-s2", "s2_search", "microglia synaptic pruning",
+     "microglial pruning: activity-dependent synapse elimination"),
+    ("proteasome-autophagy-s2", "s2_search",
+     "autophagy proteasome protein degradation quality control",
+     "proteasome/autophagy: selective degradation before recomputation"),
+    ("chemotaxis-s2", "s2_search", "bacterial chemotaxis adaptation signal transduction",
+     "bacterial chemotaxis: adaptation of a sensor gain to a background level"),
+    ("quorum-sensing-s2", "s2_search", "quorum sensing bacteria collective behaviour",
+     "quorum sensing: action gated on agreement among independent signals"),
+    ("dormancy-s2", "s2_search", "microbial dormancy persister cells",
+     "microbial dormancy: a reversible low-activity state that survives stress"),
+    ("sleep-replay-s2", "s2_search", "hippocampal replay sleep memory consolidation",
+     "sleep replay: offline reactivation of experienced sequences"),
+    ("negative-selection-s2", "s2_search",
+     "negative selection thymocyte self tolerance",
+     "immune negative selection: candidates that react to self are removed"),
+    # Cross-project repositories. The README is quoted, because the question is
+    # what the repository implements, not what its one-line description says.
+    ("dsfb-repo", "github", "https://github.com/infinityabundance/dsfb",
+     "DSFB repository: does it exist and what is it"),
+    ("dsfb-readme", "github_readme", "infinityabundance/dsfb",
+     "DSFB README: what the repository actually implements"),
+    ("phenom-repo", "github", "https://github.com/infinityabundance/phenom",
+     "Phenom repository: does it exist and what is it"),
+    ("phenom-readme", "github_readme", "infinityabundance/phenom",
+     "Phenom README: what the repository actually implements"),
+    # --- round 20 (S24): corrections and fallbacks for round 19. Round 19's
+    # misses are kept as findings; these entries ask the same questions another
+    # way, because a 429 or an unresolvable URL is not a negative verdict.
+    # (a) An id that resolved to a different paper is recorded, and the work is
+    # then located by title. "Product-Key Memory" is *Large Memory Layers with
+    # Product Keys*; 1611.01587 is a joint many-task model.
+    ("product-key-layers-page", "arxiv_page", "1907.05242",
+     "Large Memory Layers with Product Keys: key retrieval by a product of sub-keys"),
+    ("da-moe-page", "arxiv_page", "2411.03025",
+     "the only arXiv work named DA-MoE: is it an LLM mixture at all"),
+    ("dexperts-abstract", "page_abstract", "https://aclanthology.org/2021.acl-long.522/",
+     "DExperts abstract: decoding-time expert minus anti-expert control"),
+    ("lkv-abstract", "page_abstract", "https://aclanthology.org/2026.emnlp-main.1183/",
+     "LKV abstract: learned head-wise budgets and token selection for KV eviction"),
+    ("parrot-abstract", "page_abstract", "https://proceedings.mlr.press/v119/liu20f.html",
+     "PARROT abstract: imitation-learned cache replacement as a learned eviction baseline"),
+    ("moe-paging-abstract", "page_abstract", "https://arxiv.org/abs/2509.02408",
+     "MoE cache paging abstract"),
+    ("rent-or-buy-abstract", "page_abstract", "https://proceedings.mlr.press/v97/gollapudi19a.html",
+     "Rent-or-Buy with expert advice abstract"),
+    # (b) Scheduling and complexity classics, asked for by phrase and by index.
+    ("red-blue-search", "arxiv_html_search", 'all:"red-blue pebble"',
+     "red-blue pebble game: I/O-complexity lower bounds"),
+    ("red-blue-s2", "s2_search", "I/O complexity red-blue pebble game",
+     "Hong and Kung 1981 red-blue pebble game"),
+    ("successive-refinement-wiki", "page",
+     "https://en.wikipedia.org/wiki/Successive_refinement",
+     "successive refinement: a coarse description plus refinements at a rate"),
+    ("cfar-wiki", "page", "https://en.wikipedia.org/wiki/Constant_false_alarm_rate",
+     "CFAR: an adaptive threshold holding a false-alarm rate under a noise regime"),
+    ("nist-combinatorial-alt", "page",
+     "https://www.nist.gov/itl/ssd/software-quality-group/automated-combinatorial-testing-software-systems",
+     "NIST combinatorial interaction testing project page"),
+    ("braess-wiki", "page", "https://en.wikipedia.org/wiki/Braess%27s_paradox",
+     "Braess' paradox: an added route can worsen the equilibrium"),
+    ("preisach-wiki", "page",
+     "https://en.wikipedia.org/wiki/Preisach_model_of_hysteresis",
+     "Preisach model: hysteresis as a superposition of relay elements"),
+    ("iea-dr-report", "page", "https://www.iea.org/reports/demand-response",
+     "IEA demand response report"),
+    ("demand-response-wiki", "page", "https://en.wikipedia.org/wiki/Demand_response",
+     "demand response: shifting demand away from peak periods"),
+    ("llm-io-search", "arxiv_html_search",
+     'all:"I/O bottleneck" AND all:"language model"',
+     "LLM inference I/O bottleneck survey"),
+    ("llm-io-storage-search", "arxiv_html_search",
+     'all:"storage" AND all:"large language model" AND all:"survey"',
+     "LLM storage/I-O survey"),
+    ("dynamoe-s2", "s2_search", "DynaMoE dynamic mixture of experts",
+     "DynaMoE: the named dynamic mixture"),
+    ("dynamic-expert-sharing-s2", "s2_search",
+     "dynamic expert sharing mixture of experts",
+     "Dynamic Expert Sharing (2026)"),
+    # (c) Biological control principles, secondary records. The ledger records
+    # these as secondary: an encyclopedia entry supports that the principle
+    # exists, never that it transfers quantitatively to a neural system.
+    ("microglia-pruning-wiki", "page", "https://en.wikipedia.org/wiki/Synaptic_pruning",
+     "synaptic pruning by microglia: activity-dependent elimination"),
+    ("autophagy-wiki", "page", "https://en.wikipedia.org/wiki/Autophagy",
+     "autophagy: bulk degradation of a cell's own components"),
+    ("proteasome-wiki", "page", "https://en.wikipedia.org/wiki/Proteasome",
+     "proteasome: selective degradation of tagged proteins"),
+    ("chemotaxis-wiki", "page", "https://en.wikipedia.org/wiki/Chemotaxis",
+     "chemotaxis: adaptation of a sensor's gain to a background level"),
+    ("quorum-sensing-wiki", "page", "https://en.wikipedia.org/wiki/Quorum_sensing",
+     "quorum sensing: action gated on agreement among independent signals"),
+    ("dormancy-wiki", "page", "https://en.wikipedia.org/wiki/Dormancy",
+     "dormancy: a reversible low-activity state"),
+    ("persister-wiki", "page", "https://en.wikipedia.org/wiki/Persister_cells",
+     "persister cells: a dormant subpopulation that survives stress"),
+    ("sleep-replay-wiki", "page", "https://en.wikipedia.org/wiki/Hippocampal_replay",
+     "hippocampal replay: offline reactivation of experienced sequences"),
+    ("negative-selection-wiki", "page",
+     "https://en.wikipedia.org/wiki/Negative_selection_(immunology)",
+     "negative selection: self-reactive candidates are removed"),
+    # --- round 21 (S24): the five questions round 20 left open, plus a slower
+    # Semantic Scholar pass. Round 19's and 20's 429s are recorded as findings.
+    ("nist-covering-arrays", "page",
+     "https://csrc.nist.gov/projects/automated-combinatorial-testing-for-software-systems/covering-arrays",
+     "NIST covering arrays: t-way combinations with far fewer tests than exhaustive"),
+    ("nist-sp800-142", "page", "https://csrc.nist.gov/pubs/sp/800/142/final",
+     "NIST SP 800-142: practical combinatorial testing"),
+    ("nist-project-alt", "page",
+     "https://www.nist.gov/projects/automated-combinatorial-testing-software-systems",
+     "NIST automated combinatorial testing project page"),
+    ("successive-refinement-search", "arxiv_html_search",
+     'all:"successive refinement"',
+     "successive refinement: a coarse description plus refinements"),
+    ("braess-arxiv", "arxiv_html_search", 'all:"Braess" AND all:"paradox"',
+     "Braess' paradox in routing and computing"),
+    ("dynamoe-alt", "arxiv_html_search", 'all:"dynamic mixture of experts"',
+     "DynaMoE: a dynamic mixture under that name or its nearest neighbours"),
+    ("expert-sharing-alt", "arxiv_html_search", 'all:"expert sharing"',
+     "Dynamic Expert Sharing (2026)"),
+    ("llm-io-alt", "arxiv_html_search",
+     'all:"I/O" AND all:"LLM" AND all:"inference"',
+     "LLM I/O bottleneck survey"),
+    ("braess-s2b", "s2_search", "Braess paradox networks",
+     "Braess' paradox: the primary treatments and their venues"),
+    ("successive-refinement-s2b", "s2_search",
+     "Equitz Cover successive refinement of information",
+     "Cover and Equitz 1991 successive refinement of information"),
+    ("dynamoe-s2b", "s2_search", "DynaMoE", "DynaMoE by name"),
+    ("expert-sharing-s2b", "s2_search", "dynamic expert sharing LLM serving",
+     "Dynamic Expert Sharing (2026)"),
+    ("red-blue-s2b", "s2_search", "Hong Kung I/O complexity red-blue pebble game",
+     "Hong and Kung 1981 I/O complexity"),
+    ("llm-io-s2b", "s2_search", "I/O bottleneck LLM inference survey",
+     "LLM I/O bottleneck survey (Springer 2026)"),
+    # --- round 22 (S24): quotable extracts for the secondary principles, and the
+    # last locator for successive refinement. A nav-only encyclopedia page is an
+    # identity record; these ask for the summary extract, which is a sentence.
+    ("microglia-pruning-extract", "wiki_summary", "Synaptic pruning",
+     "synaptic pruning by microglia: activity-dependent elimination of synapses"),
+    ("autophagy-extract", "wiki_summary", "Autophagy",
+     "autophagy: a cell degrades and recycles its own components"),
+    ("proteasome-extract", "wiki_summary", "Proteasome",
+     "proteasome: selective degradation of ubiquitin-tagged proteins"),
+    ("chemotaxis-extract", "wiki_summary", "Chemotaxis",
+     "bacterial chemotaxis: adaptation of the response to a background level"),
+    ("quorum-sensing-extract", "wiki_summary", "Quorum sensing",
+     "quorum sensing: gene expression gated on population density signals"),
+    ("dormancy-extract", "wiki_summary", "Dormancy",
+     "dormancy: a reversible state of reduced metabolic activity"),
+    ("persister-extract", "wiki_summary", "Persister cells",
+     "persisters: a dormant subpopulation tolerant to antibiotic stress"),
+    ("sleep-replay-extract", "wiki_summary", "Hippocampal replay",
+     "replay: offline reactivation of experienced sequences"),
+    ("negative-selection-extract", "wiki_summary", "Central tolerance",
+     "negative selection: self-reactive lymphocytes are removed"),
+    ("cfar-extract", "wiki_summary", "Constant false alarm rate",
+     "CFAR: threshold adapts so the false-alarm rate stays constant"),
+    ("preisach-extract", "wiki_summary", "Preisach model of hysteresis",
+     "Preisach: hysteresis as a weighted superposition of relay elements"),
+    ("braess-extract", "wiki_summary", "Braess's paradox",
+     "Braess: adding a road to a congested network can slow every driver"),
+    ("demand-response-extract", "wiki_summary", "Demand response",
+     "demand response: end users shift or shed load away from peak periods"),
+    ("successive-refinement-distortion", "arxiv_html_search",
+     'all:"successive refinement" AND all:"distortion"',
+     "successive refinement: a coarse description plus refinements"),
+    ("nist-sp800-142-description", "wiki_summary", "Combinatorial testing",
+     "combinatorial testing: t-way covering arrays instead of exhaustive tests"),
+    # --- round 23 (S24): two rate-limited secondary records retried, and the
+    # successive-refinement statement read from one primary abstract rather than
+    # inferred from a title.
+    ("demand-response-extract-2", "wiki_summary", "Demand response",
+     "demand response: end users shift or shed load away from peak periods"),
+    ("nist-sp800-142-description-2", "wiki_summary", "Combinatorial testing",
+     "combinatorial testing: t-way covering arrays instead of exhaustive tests"),
+    ("successive-refinement-page", "arxiv_page", "1802.07458",
+     "successive refinement: the rate-distortion region of a coarse description "
+     "plus refinements, stated by a primary work in that line"),
+    # --- round 24 (S24): primary record for the Apple KV-eviction work (its id
+    # came from the Semantic Scholar record), the microglial attribution itself,
+    # and two secondary extracts retried after HTTP 429.
+    ("kv-evict-page", "arxiv_page", "2602.10238",
+     "Learning to Evict from Key-Value Cache: learned ranking of tokens by "
+     "predicted future usefulness"),
+    ("microglia-extract", "wiki_summary", "Microglia",
+     "microglia: the glial cells that eliminate synapses during pruning"),
+    ("demand-response-extract-3", "wiki_summary", "Demand response",
+     "demand response: end users shift or shed load away from peak periods"),
+    ("nist-sp800-142-description-3", "wiki_summary", "Combinatorial testing",
+     "combinatorial testing: t-way covering arrays instead of exhaustive tests"),
 ]
 
 
@@ -1081,6 +1352,107 @@ def arxiv_query_record(key: str, query: str, claim: str) -> dict:
     }
 
 
+def s2_search_record(key: str, query: str, claim: str) -> dict:
+    """Semantic Scholar title search.
+
+    Used for works whose author-year identity is not known to this script, and
+    for classic results whose arXiv id does not exist. Every candidate is
+    recorded with its venue and year, because a search that returns a homonym is
+    a finding about the name, not evidence that the target does not exist.
+    """
+    url = ("https://api.semanticscholar.org/graph/v1/paper/search?query="
+           + urllib.parse.quote(query)
+           + "&limit=6&fields=title,abstract,venue,year,authors,externalIds")
+    status, body, final = get(url, accept="application/json")
+    candidates: list[dict] = []
+    if status == 200:
+        try:
+            payload = json.loads(body.decode("utf-8", "replace"))
+        except json.JSONDecodeError:
+            payload = {}
+        for item in payload.get("data", [])[:6]:
+            candidates.append({
+                "title": (item.get("title") or "")[:220],
+                "venue": item.get("venue") or "",
+                "year": item.get("year"),
+                "abstract": (item.get("abstract") or "")[:700],
+                "authors": [a.get("name", "") for a in (item.get("authors") or [])][:6],
+                "external_ids": item.get("externalIds") or {},
+            })
+    return {
+        "key": key,
+        "claim": claim,
+        "method": "s2_search",
+        "query": query,
+        "url": url,
+        "final_url": final,
+        "http_status": status,
+        "candidates": candidates,
+        "found": len(candidates),
+        "title": candidates[0]["title"] if candidates else "",
+        "abstract": candidates[0]["abstract"] if candidates else "",
+        "error": "" if status == 200 else body[:200].decode("utf-8", "replace"),
+        "retrieved_utc": RETRIEVED,
+    }
+
+
+def github_readme_record(key: str, repo: str, claim: str) -> dict:
+    """Read a repository's README through the GitHub API, as raw text."""
+    url = f"https://api.github.com/repos/{repo}/readme"
+    status, body, final = get(url, accept="application/vnd.github.raw")
+    text = body.decode("utf-8", "replace")
+    title = ""
+    for line in text.splitlines():
+        if line.startswith("#"):
+            title = line.lstrip("#").strip()
+            break
+    return {
+        "key": key,
+        "claim": claim,
+        "method": "github_readme",
+        "url": url,
+        "final_url": final,
+        "http_status": status,
+        "bytes": len(body),
+        "title": title[:300],
+        "abstract": text[:4000],
+        "error": "" if status == 200 else text[:200],
+        "retrieved_utc": RETRIEVED,
+    }
+
+
+def wiki_summary_record(key: str, title: str, claim: str) -> dict:
+    """Read a Wikipedia REST summary, which carries a real extract sentence.
+
+    Used only for the biological and control-theory principles in P16.32, and the
+    ledger marks every such row as a *secondary* record: it supports that the
+    principle exists and is described as claimed, never that it transfers
+    quantitatively to a neural system.
+    """
+    url = ("https://en.wikipedia.org/api/rest_v1/page/summary/"
+           + urllib.parse.quote(title.replace(" ", "_")))
+    status, body, final = get(url, accept="application/json")
+    payload: dict = {}
+    if status == 200:
+        try:
+            payload = json.loads(body.decode("utf-8", "replace"))
+        except json.JSONDecodeError:
+            payload = {}
+    return {
+        "key": key,
+        "claim": claim,
+        "method": "wiki_summary",
+        "url": url,
+        "final_url": final,
+        "http_status": status,
+        "title": (payload.get("title") or "")[:300],
+        "abstract": (payload.get("extract") or "")[:1600],
+        "description": (payload.get("description") or "")[:300],
+        "error": "" if status == 200 else body[:200].decode("utf-8", "replace"),
+        "retrieved_utc": RETRIEVED,
+    }
+
+
 def main(argv: list[str]) -> int:
     global RETRIEVED
     parser = argparse.ArgumentParser(description=__doc__)
@@ -1120,6 +1492,19 @@ def main(argv: list[str]) -> int:
         elif method == "github":
             record = github_record(key, target, claim)
             summary = f"{record['http_status']} {record['title'][:90]}"
+        elif method == "github_readme":
+            record = github_readme_record(key, target, claim)
+            summary = f"{record['http_status']} {record['bytes']}B {record['title'][:70]}"
+        elif method == "s2_search":
+            record = s2_search_record(key, target, claim)
+            titles = " | ".join(
+                f"{c['title'][:50]} ({(c['venue'] or '')[:24]},{c['year']})"
+                for c in record["candidates"]) or "(none)"
+            summary = f"{record['http_status']} found={record['found']} {titles}"
+        elif method == "wiki_summary":
+            record = wiki_summary_record(key, target, claim)
+            summary = (f"{record['http_status']} {record['title'][:60]} :: "
+                       f"{record['abstract'][:80]}")
         elif method == "html_grep":
             record = html_grep_record(key, target, claim)
             summary = f"{record['http_status']} matched={record['matched']} {record.get('pattern','')}"

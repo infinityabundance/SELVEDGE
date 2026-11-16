@@ -3,8 +3,8 @@
 
 `scripts/prior_art_fetch.py` fetches sources; it does not audit the ledger. This
 script does. It parses the numbered rows of the verification tables (§12 named
-works and §12.3 supplementary works), extracts each row's declared status, and
-fails closed if:
+works, §12.3 supplementary works and §14 WS15–WS18 works), extracts each row's
+declared status, and fails closed if:
 
   * a §12 row has no recognised status;
   * a row's status cell still says "not located"/"title-only"/"identity-only"
@@ -22,6 +22,7 @@ import sys
 
 EXPECTED_TABLE12 = {"VERIFIED": 12, "PARTIAL": 2, "UNSUPPORTED": 6}
 EXPECTED_SUPPLEMENTARY = {"VERIFIED": 1}
+EXPECTED_TABLE14 = {"VERIFIED": 17, "PARTIAL": 14, "UNSUPPORTED": 4}
 STATUSES = ("VERIFIED", "PARTIAL", "UNSUPPORTED")
 
 ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|(.+)$")
@@ -89,18 +90,26 @@ def main(argv: list[str]) -> int:
 
     table12 = parse_rows(lines, "## 12. Verification table", "### 12.3")
     supp = parse_rows(lines, "### 12.3", "## 13.")
+    table14 = parse_rows(lines, "## 14. Verification table", "## 15.")
     if not table12:
         print(f"FAIL: no §12 rows parsed from {args.doc}", file=sys.stderr)
+        return 1
+    if not table14:
+        print(f"FAIL: no §14 rows parsed from {args.doc}", file=sys.stderr)
         return 1
 
     c12, p12 = tally(table12)
     cs, ps = tally(supp)
-    problems = p12 + ps
+    c14, p14 = tally(table14)
+    problems = p12 + ps + p14
 
     ok = True
     if c12 != EXPECTED_TABLE12:
         ok = False
         problems.append(f"§12 tally {c12} != expected {EXPECTED_TABLE12}")
+    if c14 != EXPECTED_TABLE14:
+        ok = False
+        problems.append(f"§14 tally {c14} != expected {EXPECTED_TABLE14}")
     nonzero_supp = {k: v for k, v in cs.items() if v}
     if nonzero_supp != EXPECTED_SUPPLEMENTARY:
         ok = False
@@ -110,6 +119,7 @@ def main(argv: list[str]) -> int:
 
     print(f"§12 named rows: {len(table12)} -> {c12}")
     print(f"§12.3 supplementary rows: {len(supp)} -> {cs}")
+    print(f"§14 named rows: {len(table14)} -> {c14}")
     if problems:
         for p in problems:
             print(f"DRIFT: {p}", file=sys.stderr)
