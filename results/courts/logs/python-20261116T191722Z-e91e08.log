@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/s35_frontier_arithmetic.py", line 310, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s35_frontier_arithmetic.py", line 260, in main
+    payload = compute(root)
+              ^^^^^^^^^^^^^
+  File "/work/scripts/s35_frontier_arithmetic.py", line 106, in compute
+    vram_bytes = int(hardware["gpu"]["devices"][0]["vram_total"])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: '16376 MiB'

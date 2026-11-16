@@ -1,0 +1,142 @@
+{
+ "created_utc": "2026-11-16T19:17:32Z",
+ "design_constants": {
+  "cache_bytes_per_entry_u32_id_plus_bf16_logit": 6,
+  "cache_bytes_per_token_header": 4,
+  "memory_passes": 4,
+  "memory_rows": [
+   65536,
+   1048576,
+   8388608
+  ],
+  "memory_rows_read_per_token_per_pass": 8,
+  "optional_eval_cache_tokens": 5000000,
+  "passes": 4,
+  "state_bytes_per_element": 2,
+  "state_contexts": [
+   8192,
+   32768
+  ],
+  "teacher_corpus_tokens_k32": 250000000,
+  "teacher_corpus_tokens_k64": 100000000,
+  "teacher_forward_fraction_of_training_step": 0.3333333333333333,
+  "teacher_k_fidelity": 64,
+  "teacher_k_primary": 32
+ },
+ "inputs": {
+  "accounting": "results/accounting/20261116T183609Z-qwen35-08b-text-only.json",
+  "ceiling": "results/frontier-models/20261116-ceiling.json",
+  "disk": "results/frontier-models/20261116-disk.json",
+  "hardware": "results/hardware/probe-20261114T184849Z.json",
+  "verdict": "results/t2-verdict.json"
+ },
+ "memory_scale": {
+  "development_configuration": {
+   "parameters": 67108864,
+   "rows": 65536,
+   "statement": "one configuration, not the architecture: the architecture question is how quality and memory traffic move with rows, measured at every registered scale"
+  },
+  "passes": 4,
+  "read_bytes_are": "modelled distinct-identity reads at the declared dtype, not measured DRAM or PCIe traffic",
+  "rows_read_per_token_per_pass": 8,
+  "scales": [
+   {
+    "active_elements_per_token": 32768,
+    "active_read_bytes_per_token_bf16": 65536,
+    "active_read_bytes_per_token_fp32": 131072,
+    "distinct_rows_read_per_token": 32,
+    "parameters": 67108864,
+    "resident_bytes_bf16": 134217728,
+    "resident_gib_bf16": 0.125,
+    "rows": 65536,
+    "table_over_checkpoint": 0.07683293349153592,
+    "width": 1024
+   },
+   {
+    "active_elements_per_token": 32768,
+    "active_read_bytes_per_token_bf16": 65536,
+    "active_read_bytes_per_token_fp32": 131072,
+    "distinct_rows_read_per_token": 32,
+    "parameters": 1073741824,
+    "resident_bytes_bf16": 2147483648,
+    "resident_gib_bf16": 2.0,
+    "rows": 1048576,
+    "table_over_checkpoint": 1.2293269358645746,
+    "width": 1024
+   },
+   {
+    "active_elements_per_token": 32768,
+    "active_read_bytes_per_token_bf16": 65536,
+    "active_read_bytes_per_token_fp32": 131072,
+    "distinct_rows_read_per_token": 32,
+    "parameters": 8589934592,
+    "resident_bytes_bf16": 17179869184,
+    "resident_gib_bf16": 16.0,
+    "rows": 8388608,
+    "table_over_checkpoint": 9.834615486916597,
+    "width": 1024
+   }
+  ]
+ },
+ "pass_state": {
+  "contexts": [
+   {
+    "all_pass_state_bytes_bf16": 440401920,
+    "all_pass_state_gib": 0.41015625,
+    "context_tokens": 8192,
+    "delta_state_elements_per_pass": 4718592,
+    "extra_bytes_vs_shared_state": 330301440,
+    "extra_gib_vs_shared_state": 0.3076171875,
+    "kv_elements_per_pass": 50331648,
+    "passes": 4,
+    "single_pass_state_bytes_bf16": 110100480,
+    "single_pass_state_gib": 0.1025390625
+   },
+   {
+    "all_pass_state_bytes_bf16": 1648361472,
+    "all_pass_state_gib": 1.53515625,
+    "context_tokens": 32768,
+    "delta_state_elements_per_pass": 4718592,
+    "extra_bytes_vs_shared_state": 1236271104,
+    "extra_gib_vs_shared_state": 1.1513671875,
+    "kv_elements_per_pass": 201326592,
+    "passes": 4,
+    "single_pass_state_bytes_bf16": 412090368,
+    "single_pass_state_gib": 0.3837890625
+   }
+  ],
+  "delta_state_elements_all_linear_layers": 4718592,
+  "delta_state_elements_per_layer": 262144,
+  "kv_elements_per_token": 6144,
+  "note": "measured device memory must include this; it is not part of the per-token unique-active weight union, which counts weights",
+  "requirement": "each pass carries its own recurrent state; no pass may read another pass's DeltaNet state or KV, and a chunked forward must reproduce the token-by-token state exactly"
+ },
+ "revision": "099018e1a05e4fb880d9afe0667cc3d279838519",
+ "schema": "selvedge/frontier-arithmetic/v1",
+ "stamp": "20261116T191732Z",
+ "teacher_route": {
+  "cache_free_bytes_at_registration": 22066839552,
+  "cache_removed_bytes_k32": 49000000000,
+  "cache_removed_bytes_k64": 38800000000,
+  "cache_removed_gib_k32": 45.63480615615845,
+  "cache_removed_gib_k64": 36.135315895080566,
+  "device_vram_gib": 15.9921875,
+  "disk_saving_fraction_of_k32_cache": 0.98,
+  "estimate_note": "arithmetic over a measured student rate and declared parameter ratios; no teacher forward has been timed on this device, so the requirement is an estimate and the first stage must measure the teacher's actual rate",
+  "k32_cache_fits_without_online_teacher": false,
+  "optional_eval_cache_bytes": 980000000,
+  "optional_eval_cache_gib": 0.912696123123169,
+  "required_teacher_tokens_per_second_2b": 6584.576497163879,
+  "required_teacher_tokens_per_second_4b_8bit": 14716.08137926904,
+  "student_text_elements": 752393024,
+  "student_tokens_per_second_measured": 7897.954152145608,
+  "teacher_2b_fits_device": true,
+  "teacher_2b_text_elements": 1881825088,
+  "teacher_4b_8bit_fits_device": true,
+  "teacher_4b_text_elements": 4205751296,
+  "teacher_vram_bytes_2b_bf16": 3763650176,
+  "teacher_vram_bytes_4b_8bit": 4205751296,
+  "teacher_vram_gib_2b_bf16": 3.505172371864319,
+  "teacher_vram_gib_4b_8bit": 3.9169111251831055
+ }
+}

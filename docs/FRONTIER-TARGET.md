@@ -221,7 +221,8 @@ Two housekeeping facts, recorded so nobody looks for them later: the anchor has
 a harness must pin sampling explicitly rather than inherit it), and none of these
 checkpoints is in `models/model-spec.json` yet. That file pins the **teacher**
 candidates the oracle lock verifies; adding a frontier checkpoint there before
-P19.0 can execute it would create a lock entry nothing in the program can run.
+the kernel half of P19.0 can execute it would create a lock entry nothing in the
+serving path can run.
 
 1. The anchor is **not a 752M checkpoint**; it is an 873M multimodal checkpoint
    whose *text tower* is 752,393,024 elements (§4).
@@ -312,7 +313,9 @@ with RoPE applied to a quarter of each head, and the attention path has mRoPE
 sections. The repository's runtime implements softmax attention, RoPE, RMSNorm and
 SwiGLU only (`crates/selvedge-runtime/src/kernels.rs`); there is no delta-rule
 scan, no convolution state, no mRoPE and no output gate. That is registered as a
-blocking prerequisite (P19.0) and not hand-waved.
+prerequisite for the **serving** stages (P19.0, kernel half) and not hand-waved;
+stages 1–4 execute the validated PyTorch reference instead, so the quality
+question does not wait on a Rust kernel.
 
 ## 4. Is the claimed ~752M correct?
 
@@ -707,6 +710,19 @@ digest overhead. This is why the plan budgets one derived bundle for the anchor,
 not one per stage.
 
 ### Recommendation
+
+**Superseded 2026-11-16 (S35): the route is online teacher forwards, not a cache.**
+
+The recommendation below was made against the cache route and is retained as
+history. The program changed route for a measured reason: the cache was the only
+binding disk constraint, and an online teacher removes it (2B bf16 is 3.5 GiB of
+weights against a 49 GB cache; 4B at 8-bit is 3.9 GiB). The saving, the remaining
+throughput requirement and the residency are generated in
+`docs/PROGRAM-PLAN.md` §24 ("The teacher route") from
+`results/frontier-models/20261116T193500Z-frontier-arithmetic.json`. What survives
+from this section: the **formula** below, the reserved-headroom rule, and the
+requirement that any cache that is reinstated be re-derived here rather than
+budgeted from prose.
 
 Adopt **0.25B tokens at k = 32** as the teacher-cache budget for the first claim
 attempt:
