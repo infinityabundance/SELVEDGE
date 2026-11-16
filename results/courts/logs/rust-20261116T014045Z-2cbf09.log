@@ -1,0 +1,155 @@
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+   Compiling selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+error[E0432]: unresolved import `crate::modes`
+  --> crates/selvedge-runtime/src/run.rs:44:12
+   |
+44 | use crate::modes::{GroupChoice, ModeState, READ_AUDIT};
+   |            ^^^^^ could not find `modes` in the crate root
+
+error[E0432]: unresolved import `run::TokenRecord`
+  --> crates/selvedge-runtime/src/lib.rs:51:41
+   |
+51 | pub use run::{LogitsComparison, Runner, TokenRecord};
+   |                                         ^^^^^^^^^^^ no `TokenRecord` in `run`
+
+error[E0277]: `Scratch` doesn't implement `Debug`
+   --> crates/selvedge-runtime/src/model.rs:223:5
+    |
+207 | #[derive(Debug)]
+    |          ----- in this derive macro expansion
+...
+223 |     scratch: Scratch,
+    |     ^^^^^^^^^^^^^^^^ the trait `Debug` is not implemented for `Scratch`
+    |
+help: consider annotating `Scratch` with `#[derive(Debug)]`
+    |
+194 + #[derive(Debug)]
+195 | struct Scratch {
+    |
+
+error[E0277]: `?` couldn't convert the error to `RuntimeError`
+   --> crates/selvedge-runtime/src/model.rs:253:70
+    |
+253 |         if backbone.embed.len() != usize::try_from(config.vocab_size)? * hidden {
+    |                                    ----------------------------------^ the trait `From<TryFromIntError>` is not implemented for `RuntimeError`
+    |                                    |
+    |                                    this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `RuntimeError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-runtime/src/error.rs:15:1
+    |
+ 15 | pub enum RuntimeError {
+    | ^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+    = help: `RuntimeError` implements trait `From<T>`:
+              From<ConvertError>
+              From<CoreError>
+              From<FormatError>
+              From<StoreError>
+              From<serde_json::Error>
+              From<std::io::Error>
+
+error[E0277]: `?` couldn't convert the error to `RuntimeError`
+   --> crates/selvedge-runtime/src/model.rs:258:78
+    |
+258 |         if backbone.layers.len() != usize::try_from(config.num_hidden_layers)? {
+    |                                     -----------------------------------------^ the trait `From<TryFromIntError>` is not implemented for `RuntimeError`
+    |                                     |
+    |                                     this can't be annotated with `?` because it has type `Result<_, TryFromIntError>`
+    |
+note: `RuntimeError` needs to implement `From<TryFromIntError>`
+   --> crates/selvedge-runtime/src/error.rs:15:1
+    |
+ 15 | pub enum RuntimeError {
+    | ^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+    = help: `RuntimeError` implements trait `From<T>`:
+              From<ConvertError>
+              From<CoreError>
+              From<FormatError>
+              From<StoreError>
+              From<serde_json::Error>
+              From<std::io::Error>
+
+error[E0308]: mismatched types
+   --> crates/selvedge-runtime/src/model.rs:474:48
+    |
+474 |             trace.add_other(5 * heads as u64 * positions)?;
+    |                                                ^^^^^^^^^ expected `u64`, found `usize`
+
+error[E0277]: cannot multiply `u64` by `usize`
+   --> crates/selvedge-runtime/src/model.rs:474:46
+    |
+474 |             trace.add_other(5 * heads as u64 * positions)?;
+    |                                              ^ no implementation for `u64 * usize`
+    |
+    = help: the trait `Mul<usize>` is not implemented for `u64`
+    = help: the following other types implement trait `Mul<Rhs>`:
+              `&u64` implements `Mul<u64>`
+              `&u64` implements `Mul`
+              `u64` implements `Mul<&u64>`
+              `u64` implements `Mul<zerocopy::byteorder::U64<O>>`
+              `u64` implements `Mul`
+
+error[E0308]: mismatched types
+   --> crates/selvedge-runtime/src/model.rs:475:49
+    |
+475 |             trace.add_other(2 * kv_dim as u64 * positions)?;
+    |                                                 ^^^^^^^^^ expected `u64`, found `usize`
+
+error[E0277]: cannot multiply `u64` by `usize`
+   --> crates/selvedge-runtime/src/model.rs:475:47
+    |
+475 |             trace.add_other(2 * kv_dim as u64 * positions)?;
+    |                                               ^ no implementation for `u64 * usize`
+    |
+    = help: the trait `Mul<usize>` is not implemented for `u64`
+    = help: the following other types implement trait `Mul<Rhs>`:
+              `&u64` implements `Mul<u64>`
+              `&u64` implements `Mul`
+              `u64` implements `Mul<&u64>`
+              `u64` implements `Mul<zerocopy::byteorder::U64<O>>`
+              `u64` implements `Mul`
+
+error[E0609]: no field `bytes_device` on type `StoreStats`
+   --> crates/selvedge-runtime/src/run.rs:751:39
+    |
+751 |                 "bytes_device": stats.bytes_device,
+    |                                       ^^^^^^^^^^^^ unknown field
+    |
+help: a field with a similar name exists
+    |
+751 -                 "bytes_device": stats.bytes_device,
+751 +                 "bytes_device": stats.device_bytes,
+    |
+
+error[E0599]: no method named `descriptor` found for reference `&CheckpointSource` in the current scope
+   --> crates/selvedge-runtime/src/weights.rs:285:29
+    |
+285 |     let descriptor = source.descriptor(key)?;
+    |                             ^^^^^^^^^^ method not found in `&CheckpointSource`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `TensorSource` which provides `descriptor` is implemented but not in scope; perhaps you want to import it
+    |
+ 13 + use selvedge_convert::TensorSource;
+    |
+
+error[E0599]: no method named `descriptor` found for reference `&CheckpointSource` in the current scope
+   --> crates/selvedge-runtime/src/weights.rs:313:29
+    |
+313 |     let descriptor = source.descriptor(key)?;
+    |                             ^^^^^^^^^^ method not found in `&CheckpointSource`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `TensorSource` which provides `descriptor` is implemented but not in scope; perhaps you want to import it
+    |
+ 13 + use selvedge_convert::TensorSource;
+    |
+
+Some errors have detailed explanations: E0277, E0308, E0432, E0599, E0609.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `selvedge-runtime` (lib) due to 12 previous errors
+warning: build failed, waiting for other jobs to finish...

@@ -17,7 +17,9 @@
 //! - `selvedge simulate`: trace-driven execution and deadline simulation;
 //! - `selvedge envelope build|apply`: execution envelopes and their utility;
 //! - `selvedge sim calibrate|validate|compare-store|pareto|placement`: the
-//!   calibration, validation and comparison receipts.
+//!   calibration, validation and comparison receipts;
+//! - `selvedge run`: one-device Qwen3 inference with bundle-backed MLP groups,
+//!   exact or approximate, with per-token accounting.
 
 #![forbid(unsafe_code)]
 
@@ -33,6 +35,7 @@ mod court;
 mod doctor;
 mod inspect;
 mod inspect_model_cmd;
+mod run_cmd;
 mod sim_cmd;
 mod store_cmd;
 mod validate_cmd;
@@ -84,6 +87,8 @@ enum Commands {
     Envelope(sim_cmd::EnvelopeArgs),
     /// Calibration, validation, Pareto and placement receipts.
     Sim(sim_cmd::SimArgs),
+    /// Execute Qwen3 on one device with bundle-backed MLP groups.
+    Run(run_cmd::RunArgs),
 }
 
 #[derive(Debug, Args)]
@@ -119,6 +124,7 @@ fn main() -> ExitCode {
         Commands::Simulate(args) => sim_cmd::run_simulate(&args),
         Commands::Envelope(args) => sim_cmd::run_envelope(&args),
         Commands::Sim(args) => sim_cmd::run_sim(&args),
+        Commands::Run(args) => run_cmd::run(&args),
     };
     match result {
         Ok(code) => code,

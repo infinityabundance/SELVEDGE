@@ -1,0 +1,70 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_runtime-c51017fe6b8963c9)
+
+running 14 tests
+test account::tests::disabled_writer_counts_nothing ... ok
+test account::tests::latency_percentiles_are_index_based ... 
+thread 'account::tests::latency_percentiles_are_index_based' (56) panicked at crates/selvedge-runtime/src/account.rs:365:9:
+assertion `left == right` failed
+  left: 51
+ right: 50
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: selvedge_runtime::account::tests::latency_percentiles_are_index_based
+             at ./src/account.rs:365:9
+   5: selvedge_runtime::account::tests::latency_percentiles_are_index_based::{closure#0}
+             at ./src/account.rs:361:45
+   6: <selvedge_runtime::account::tests::latency_percentiles_are_index_based::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+test bundle::tests::channel_keys_are_unambiguous ... ok
+test config::tests::pinned_architecture_validates_and_splits_heads ... ok
+test config::tests::unsupported_architecture_is_rejected_not_approximated ... ok
+test kernels::tests::dot_matches_naive_in_ascending_order_for_short_vectors ... ok
+test kernels::tests::matvec_is_independent_of_thread_count ... ok
+test kernels::tests::rms_norm_scales_by_root_mean_square ... ok
+test kernels::tests::rope_rotates_a_pair_by_the_position_angle ... 
+thread 'kernels::tests::rope_rotates_a_pair_by_the_position_angle' (89) panicked at crates/selvedge-runtime/src/kernels.rs:407:9:
+assertion failed: (v[1] - 0.5_f32.cos()).abs() < 1e-6
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:150:5
+   3: selvedge_runtime::kernels::tests::rope_rotates_a_pair_by_the_position_angle
+             at ./src/kernels.rs:407:9
+   4: selvedge_runtime::kernels::tests::rope_rotates_a_pair_by_the_position_angle::{closure#0}
+             at ./src/kernels.rs:401:51
+   5: <selvedge_runtime::kernels::tests::rope_rotates_a_pair_by_the_position_angle::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   6: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+test kernels::tests::softmax_sums_to_one_and_argmax_breaks_ties_low ... ok
+test modes::tests::projection_is_deterministic_and_seed_dependent ... ok
+test modes::tests::splitmix_is_not_constant ... ok
+test run::tests::logits_digest_notices_one_bit ... ok
+test run::tests::stop_tokens_are_read_from_the_generation_config ... ok
+
+failures:
+
+failures:
+    account::tests::latency_percentiles_are_index_based
+    kernels::tests::rope_rotates_a_pair_by_the_position_angle
+
+test result: FAILED. 12 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p selvedge-runtime --lib`

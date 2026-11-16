@@ -1,0 +1,57 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.73s
+     Running tests/tiny_parity.rs (target/debug/deps/tiny_parity-ab0986307ab5b9df)
+
+running 4 tests
+test accounting_row_is_valid_jsonl_and_reports_every_required_field ... ok
+test exact_mode_classifies_as_proven_and_approximate_does_not ... 
+thread 'exact_mode_classifies_as_proven_and_approximate_does_not' (358) panicked at crates/selvedge-runtime/tests/tiny_parity.rs:146:42:
+open exact runner: Config { field: "max_new_tokens", reason: "must be at least one" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_runtime::run::Runner, selvedge_runtime::error::RuntimeError>>::expect
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1183:23
+   4: tiny_parity::exact_mode_classifies_as_proven_and_approximate_does_not
+             at ./tests/tiny_parity.rs:146:42
+   5: tiny_parity::exact_mode_classifies_as_proven_and_approximate_does_not::{closure#0}
+             at ./tests/tiny_parity.rs:140:62
+   6: <tiny_parity::exact_mode_classifies_as_proven_and_approximate_does_not::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+test rust_forward_matches_the_numpy_reference_on_the_tiny_fixture ... 
+thread 'rust_forward_matches_the_numpy_reference_on_the_tiny_fixture' (359) panicked at crates/selvedge-runtime/tests/tiny_parity.rs:97:13:
+position 0 index 0: reference -0.027573012 vs -0.10933066 (abs 0.08175764977931976 rel 2.9651330919612504)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: tiny_parity::rust_forward_matches_the_numpy_reference_on_the_tiny_fixture
+             at ./tests/tiny_parity.rs:97:13
+   3: tiny_parity::rust_forward_matches_the_numpy_reference_on_the_tiny_fixture::{closure#0}
+             at ./tests/tiny_parity.rs:47:66
+   4: <tiny_parity::rust_forward_matches_the_numpy_reference_on_the_tiny_fixture::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+test tokenizer_round_trips_the_pinned_vocabulary ... ok
+
+failures:
+
+failures:
+    exact_mode_classifies_as_proven_and_approximate_does_not
+    rust_forward_matches_the_numpy_reference_on_the_tiny_fixture
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+
+error: test failed, to rerun pass `-p selvedge-runtime --test tiny_parity`

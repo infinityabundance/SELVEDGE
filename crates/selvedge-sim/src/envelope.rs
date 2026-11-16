@@ -527,11 +527,15 @@ mod tests {
 
     #[test]
     fn invalid_parameters_are_rejected() {
-        let mut params = EnvelopeParams::default();
-        params.build_fraction = 1.0;
+        let params = EnvelopeParams {
+            build_fraction: 1.0,
+            ..EnvelopeParams::default()
+        };
         assert!(params.validate().is_err());
-        let mut params = EnvelopeParams::default();
-        params.max_candidates = 0;
+        let params = EnvelopeParams {
+            max_candidates: 0,
+            ..EnvelopeParams::default()
+        };
         assert!(params.validate().is_err());
     }
 }

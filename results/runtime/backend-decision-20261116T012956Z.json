@@ -1,0 +1,52 @@
+{
+  "schema": "selvedge/runtime-backend-decision/v1",
+  "stamp": "20261116T012956Z",
+  "revision": "2180546efebf24e3135d9383f21ff8283d011f8c",
+  "question": "Candle versus a minimal in-repo f32 kernel backend for M4 part 1 (f32 CPU correctness now, CUDA later)",
+  "decision": "minimal in-repo f32 kernels; pin `tokenizers =0.23.2` for the tokenizer only",
+  "why": [
+    "Court E's claim is bitwise parity across streaming variants, so the reduction order must be ours and stated: rows are independent and each dot product reduces over k with eight interleaved f32 accumulators, so the bits never depend on the thread count, the cache policy or the fetch order.",
+    "The workspace forbids unsafe in our code; candle-core brings its own unsafe, a tensor allocator and (by default in its examples) mmap-backed loading, which would put an unaudited surface under the exactness claim.",
+    "OOM discipline requires allocations we size and account for; a tensor library's internal allocation strategy is outside that accounting.",
+    "Op coverage needed is seven operations (matvec, RMSNorm, RoPE, softmax, SwiGLU, residual add, argmax); candle's breadth is unused.",
+    "Build weight is measurably large for that coverage: 159 dependency edges, 25.70 s cold build, 1.83 GiB peak RSS, 457,960-byte probe binary."
+  ],
+  "measurements": {
+    "candle": {
+      "crates": "candle-core =0.11.1, candle-nn =0.11.1, default-features = false",
+      "dependency_edges": 159,
+      "build_wall_seconds": 25.7,
+      "peak_rss_bytes": 1970229248,
+      "probe_binary_bytes": 457960,
+      "court": "results/courts/rust-20261116T012956Z-7e8cd5.json",
+      "log": "results/courts/logs/rust-20261116T012956Z-7e8cd5.log",
+      "command": "SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/docker-court.sh rust --net -- sh -c 'CARGO_TARGET_DIR=/work/target/probe cargo build --manifest-path /tmp/probe/Cargo.toml --release'"
+    },
+    "tokenizers": {
+      "crate": "tokenizers =0.23.2 with default-features=false, features=[onig]",
+      "dependency_packages": 93,
+      "build_wall_seconds": 12.94,
+      "peak_rss_bytes": 1540362240,
+      "roundtrip": {
+        "text": "Hello, world",
+        "ids": [9707, 11, 1879],
+        "decoded": "Hello, world"
+      },
+      "court": "results/courts/rust-20261116T013034Z-b1a0a6.json",
+      "log": "results/courts/logs/rust-20261116T013034Z-b1a0a6.log",
+      "command": "SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/docker-court.sh rust --net -- sh -c 'CARGO_TARGET_DIR=/work/target/tok cargo build --manifest-path /tmp/tok/Cargo.toml --release && /work/target/tok/release/tokprobe'"
+    },
+    "in_repo_kernels": {
+      "dependencies_added": 0,
+      "unsafe": "none (`unsafe_code = \"forbid\"` applies to the crate)",
+      "operations": 7,
+      "reduction_order": "eight interleaved f32 accumulators per dot product, combined in ascending order, tail ascending; rows parallelised only"
+    }
+  },
+  "consequences": [
+    "A CUDA backend is added later behind the same `MlpExecutor` seam and the same `Backend`-shaped contract; the model code does not change.",
+    "Token ids match the teacher by construction: the Rust `tokenizers` crate at 0.23.2 with the vendored Oniguruma engine is the same engine the Python `tokenizers` wheel uses.",
+    "If a future phase needs an operator this backend does not have, the decision must be re-opened with a measurement, not silently widened."
+  ],
+  "note": "Numbers here are transcribed from the two court logs named above; the logs are the primary evidence and are tracked in the repository."
+}

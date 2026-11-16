@@ -1,0 +1,7 @@
+lm_head present: True
+keys tail: ['model.layers.9.self_attn.q_proj.weight', 'model.layers.9.self_attn.v_proj.weight', 'model.norm.weight']
+Traceback (most recent call last):
+  File "/work/target/check_lmhead.py", line 9, in <module>
+    a = h.get_tensor("model.embed_tokens.weight")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: data type 'bfloat16' not understood

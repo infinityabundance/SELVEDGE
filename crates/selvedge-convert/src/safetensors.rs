@@ -530,6 +530,27 @@ impl<R: PositionalRead> Safetensors<R> {
         self.source.read_exact_at(&mut bytes, offset)?;
         Ok(bytes)
     }
+
+    /// Read a whole tensor as f32 in logical row-major order.
+    ///
+    /// Unlike [`TensorSource::read_region_f32`] this accepts rank-1 tensors,
+    /// which is what a normalization gain is, and it decodes a transposed
+    /// rank-2 tensor through its storage order instead of reinterpreting bytes.
+    ///
+    /// # Errors
+    ///
+    /// Rejects an unknown key, a rank above two, an unsupported dtype, an
+    /// extent above `max_bytes` and short reads.
+    pub fn read_tensor_f32(&self, key: &str, max_bytes: u64) -> Result<Vec<f32>> {
+        let descriptor = self
+            .index
+            .tensors
+            .get(key)
+            .map(TensorEntry::descriptor)
+            .ok_or_else(|| ConvertError::MissingTensor(key.to_owned()))?;
+        let bytes = self.read_tensor_bytes(key, max_bytes)?;
+        crate::tensor_source::decode_tensor_f32(&descriptor, &bytes)
+    }
 }
 
 impl<R: PositionalRead> TensorSource for Safetensors<R> {
@@ -733,6 +754,28 @@ impl MultiSafetensors {
     pub fn is_empty(&self) -> bool {
         self.files.is_empty()
     }
+
+    /// Read a whole tensor as f32 in logical row-major order.
+    ///
+    /// Unlike [`TensorSource::read_region_f32`] this accepts rank-1 tensors,
+    /// which is what a normalization gain is.
+    ///
+    /// # Errors
+    ///
+    /// Rejects an unknown key, a rank above two, an unsupported dtype and short
+    /// reads.
+    pub fn read_tensor_f32(&self, key: &str, max_bytes: u64) -> Result<Vec<f32>> {
+        let file = self
+            .index
+            .get(key)
+            .copied()
+            .ok_or_else(|| ConvertError::MissingTensor(key.to_owned()))?;
+        let (_, opened) = self
+            .files
+            .get(file)
+            .ok_or_else(|| ConvertError::MissingTensor(key.to_owned()))?;
+        opened.read_tensor_f32(key, max_bytes)
+    }
 }
 
 impl TensorSource for MultiSafetensors {
@@ -818,6 +861,19 @@ impl CheckpointSource {
         match self {
             Self::Single(store) => store.index.tensors.keys().cloned().collect(),
             Self::Multi(store) => store.index.keys().cloned().collect(),
+        }
+    }
+
+    /// Read a whole tensor as f32 in logical row-major order.
+    ///
+    /// # Errors
+    ///
+    /// Rejects an unknown key, a rank above two, an unsupported dtype and short
+    /// reads.
+    pub fn read_tensor_f32(&self, key: &str, max_bytes: u64) -> Result<Vec<f32>> {
+        match self {
+            Self::Single(store) => store.read_tensor_f32(key, max_bytes),
+            Self::Multi(store) => store.read_tensor_f32(key, max_bytes),
         }
     }
 

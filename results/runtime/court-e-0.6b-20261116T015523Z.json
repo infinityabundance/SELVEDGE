@@ -1,0 +1,151 @@
+{
+  "schema": "selvedge/runtime-court-e/v1",
+  "stamp": "20261116T015523Z",
+  "revision": "2180546efebf24e3135d9383f21ff8283d011f8c",
+  "ok": true,
+  "failures": [],
+  "claim": "exact-mode logits are bitwise identical under different cache capacity, cache policy, prefetch setting, fetch order, injected device delay and kernel thread count",
+  "parity_basis": "SHA-256 over each token's exact f32 logits, plus the sequence digest",
+  "variants": [
+    {
+      "name": "court-e-cold",
+      "receipt": "results/runtime/court-e-cold-20261116T015523Z.json",
+      "stream": {
+        "policy": "none",
+        "cache_bytes": 0,
+        "prefetch": false,
+        "read_order": "plan",
+        "injected_read_delay_ns": 0,
+        "verification": "always"
+      },
+      "mode": "exact",
+      "exactness": "proven",
+      "generated_tokens": [
+        12095,
+        13
+      ],
+      "sequence_digest": "e55b4f889bd2628ce23d8dc111514f2ca79273a6dceb22f02be0c2a0cfd11c59",
+      "logits_digests": [
+        "7d022264a5d6540e0a0729ee3a534dc16e83e521e4c6db0c0b835d635fce4a3f",
+        "20321887377ce6211ce5b21b29c5665709ba3b5948c999a5e0c993eb0fa9e11f",
+        "e7ec55066d33633b82425bc213c4c94bc4e975ad6dc2eaef104dad3f96419d68",
+        "a1f8ad5ee0b4fd417c71683c8ae008e50641ea41e095bc4bcd6f3bf8bd4a43ca",
+        "3eaf11059458acd15e0e5f77de457a58a79113c64f1854b742aecca5c8c9ebb5",
+        "4e0e87006a515c05fea04f25820d2e969eb85efa4fb1f8e8ef951fb12655eafc",
+        "f4dc508c63a1af24cc34034330c680b5f47882164234c2b2a06cb93579d9ecf7"
+      ],
+      "device_bytes": 7398752256,
+      "bytes_device_per_token": 1056964608,
+      "active_unique_max": 596049920,
+      "prefill_p50_ns": 700806147,
+      "decode_p50_ns": 706293299,
+      "memory_peak_bytes": 1658781696,
+      "threads": 8
+    },
+    {
+      "name": "court-e-warm",
+      "receipt": "results/runtime/court-e-warm-20261116T015523Z.json",
+      "stream": {
+        "policy": "lru",
+        "cache_bytes": 1200000000,
+        "prefetch": false,
+        "read_order": "plan",
+        "injected_read_delay_ns": 0,
+        "verification": "always"
+      },
+      "mode": "exact",
+      "exactness": "proven",
+      "generated_tokens": [
+        12095,
+        13
+      ],
+      "sequence_digest": "e55b4f889bd2628ce23d8dc111514f2ca79273a6dceb22f02be0c2a0cfd11c59",
+      "logits_digests": [
+        "7d022264a5d6540e0a0729ee3a534dc16e83e521e4c6db0c0b835d635fce4a3f",
+        "20321887377ce6211ce5b21b29c5665709ba3b5948c999a5e0c993eb0fa9e11f",
+        "e7ec55066d33633b82425bc213c4c94bc4e975ad6dc2eaef104dad3f96419d68",
+        "a1f8ad5ee0b4fd417c71683c8ae008e50641ea41e095bc4bcd6f3bf8bd4a43ca",
+        "3eaf11059458acd15e0e5f77de457a58a79113c64f1854b742aecca5c8c9ebb5",
+        "4e0e87006a515c05fea04f25820d2e969eb85efa4fb1f8e8ef951fb12655eafc",
+        "f4dc508c63a1af24cc34034330c680b5f47882164234c2b2a06cb93579d9ecf7"
+      ],
+      "device_bytes": 1056964608,
+      "bytes_device_per_token": 150994944,
+      "active_unique_max": 596049920,
+      "prefill_p50_ns": 275632378,
+      "decode_p50_ns": 269700346,
+      "memory_peak_bytes": 2460905472,
+      "threads": 8
+    },
+    {
+      "name": "court-e-prefetch",
+      "receipt": "results/runtime/court-e-prefetch-20261116T015523Z.json",
+      "stream": {
+        "policy": "lru",
+        "cache_bytes": 1200000000,
+        "prefetch": true,
+        "read_order": "reverse",
+        "injected_read_delay_ns": 0,
+        "verification": "always"
+      },
+      "mode": "exact",
+      "exactness": "proven",
+      "generated_tokens": [
+        12095,
+        13
+      ],
+      "sequence_digest": "e55b4f889bd2628ce23d8dc111514f2ca79273a6dceb22f02be0c2a0cfd11c59",
+      "logits_digests": [
+        "7d022264a5d6540e0a0729ee3a534dc16e83e521e4c6db0c0b835d635fce4a3f",
+        "20321887377ce6211ce5b21b29c5665709ba3b5948c999a5e0c993eb0fa9e11f",
+        "e7ec55066d33633b82425bc213c4c94bc4e975ad6dc2eaef104dad3f96419d68",
+        "a1f8ad5ee0b4fd417c71683c8ae008e50641ea41e095bc4bcd6f3bf8bd4a43ca",
+        "3eaf11059458acd15e0e5f77de457a58a79113c64f1854b742aecca5c8c9ebb5",
+        "4e0e87006a515c05fea04f25820d2e969eb85efa4fb1f8e8ef951fb12655eafc",
+        "f4dc508c63a1af24cc34034330c680b5f47882164234c2b2a06cb93579d9ecf7"
+      ],
+      "device_bytes": 1056964608,
+      "bytes_device_per_token": 150994944,
+      "active_unique_max": 596049920,
+      "prefill_p50_ns": 277181423,
+      "decode_p50_ns": 276611418,
+      "memory_peak_bytes": 2456272896,
+      "threads": 4
+    },
+    {
+      "name": "court-e-delay",
+      "receipt": "results/runtime/court-e-delay-20261116T015523Z.json",
+      "stream": {
+        "policy": "lru",
+        "cache_bytes": 67108864,
+        "prefetch": false,
+        "read_order": "plan",
+        "injected_read_delay_ns": 200000,
+        "verification": "always"
+      },
+      "mode": "exact",
+      "exactness": "proven",
+      "generated_tokens": [
+        12095,
+        13
+      ],
+      "sequence_digest": "e55b4f889bd2628ce23d8dc111514f2ca79273a6dceb22f02be0c2a0cfd11c59",
+      "logits_digests": [
+        "7d022264a5d6540e0a0729ee3a534dc16e83e521e4c6db0c0b835d635fce4a3f",
+        "20321887377ce6211ce5b21b29c5665709ba3b5948c999a5e0c993eb0fa9e11f",
+        "e7ec55066d33633b82425bc213c4c94bc4e975ad6dc2eaef104dad3f96419d68",
+        "a1f8ad5ee0b4fd417c71683c8ae008e50641ea41e095bc4bcd6f3bf8bd4a43ca",
+        "3eaf11059458acd15e0e5f77de457a58a79113c64f1854b742aecca5c8c9ebb5",
+        "4e0e87006a515c05fea04f25820d2e969eb85efa4fb1f8e8ef951fb12655eafc",
+        "f4dc508c63a1af24cc34034330c680b5f47882164234c2b2a06cb93579d9ecf7"
+      ],
+      "device_bytes": 7398752256,
+      "bytes_device_per_token": 1056964608,
+      "active_unique_max": 596049920,
+      "prefill_p50_ns": 1033113378,
+      "decode_p50_ns": 1031694680,
+      "memory_peak_bytes": 1667473408,
+      "threads": 2
+    }
+  ]
+}

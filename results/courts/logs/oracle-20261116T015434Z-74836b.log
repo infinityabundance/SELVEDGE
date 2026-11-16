@@ -1,0 +1,24 @@
+/work/oracle/qwen3_numpy_reference.py:193: RuntimeWarning: overflow encountered in exp
+  act = (gate / (np.float32(1.0) + np.exp(-gate)) * up).astype(np.float32)
+{
+  "schema": "selvedge/qwen3-numpy-reference/v1",
+  "fixture_model_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+  "model": "/hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca",
+  "prompt_ids": [
+    785,
+    6722,
+    315,
+    9625,
+    374
+  ],
+  "generated_ids": [],
+  "positions": 5,
+  "vocab": 151936,
+  "dtype": "float32",
+  "implementation": "numpy f32; np.matmul uses NumPy's own reduction order",
+  "numpy_version": "2.5.4",
+  "logits_sha256": "d2572fe63ab73a4d3cec49874e1b4cd86b21a720d6de2385d975d1bab50f34ae",
+  "note": "Reference logits for the SELVEDGE runtime parity court; regenerate with `scripts/court oracle -- python3 oracle/qwen3_numpy_reference.py`.",
+  "bin": "/work/results/runtime/qwen3-0.6b-ref-logits.bin",
+  "bin_bytes": 3038720
+}

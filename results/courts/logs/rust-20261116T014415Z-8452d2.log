@@ -1,0 +1,36 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running tests/debug_dump.rs (target/debug/deps/debug_dump-131c8079294fb737)
+
+running 1 test
+
+thread 'dump_first_positions' (79) panicked at crates/selvedge-runtime/tests/debug_dump.rs:16:43:
+open: Config { field: "max_new_tokens", reason: "must be at least one" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_runtime::run::Runner, selvedge_runtime::error::RuntimeError>>::expect
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1183:23
+   4: debug_dump::dump_first_positions
+             at ./tests/debug_dump.rs:16:43
+   5: debug_dump::dump_first_positions::{closure#0}
+             at ./tests/debug_dump.rs:11:26
+   6: <debug_dump::dump_first_positions::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test dump_first_positions ... FAILED
+
+failures:
+
+failures:
+    dump_first_positions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p selvedge-runtime --test debug_dump`

@@ -48,9 +48,14 @@ selvedge-convert  -> produces Manifest + payload (S2, implemented)
 selvedge-atlas    -> consumes SelectionDecision / produces selectors (S3)
 selvedge-store    -> implements CostModel / Backend / residency (S4+, implemented)
 selvedge-sim      -> replays ExecutionTrace against CostModel (S4+, implemented)
-selvedge-runtime  -> executes exact or approximate plans (later)
+selvedge-runtime  -> executes exact or approximate plans (M4 part 1, implemented)
 selvedge-bench    -> measurement harness (later)
 ```
+
+`selvedge-runtime` is the first crate that executes a model. It depends on core,
+format, convert and store, owns the Qwen3 forward pass and the in-repo f32
+kernels, and is the only crate that calls `NativeSetWitness::compare` at run time.
+Its method document is `docs/RUNTIME.md`.
 
 `selvedge-sim` owns the trace boundary and the simulator. It depends on core,
 format and store, and is the only crate that consumes an `ExecutionTrace`. Its
@@ -519,7 +524,8 @@ the value later benchmark rows must carry.
 | GGUF | **not implemented** | later; packed block boundaries must not be sliced as floats |
 | teacher oracle, attribution, selectors | **partially implemented** | teacher oracle, accounting, real-activation parity and the static group-omission frontier exist; per-token attribution and selectors do not |
 | execution traces, simulator, scheduler | **implemented (M3 part 2)** | `selvedge-sim`: versioned traces, calibrated event simulation, envelopes, placement, validation against the measured store; see `docs/SIMULATOR.md`. GPU staging is still declared only |
-| real inference backend, CUDA kernels | **not implemented** | the Rust build compiles no CUDA; the oracle image only uses the pinned CUDA torch for teacher instrumentation |
+| real inference backend (CPU) | **implemented (M4 part 1)** | `selvedge-runtime` + `selvedge run`: Qwen3-0.6B with bundle-backed MLP groups, exact mode proven per token, per-token accounting, Court E parity and a Court F CPU baseline; see `docs/RUNTIME.md` |
+| CUDA kernels | **not implemented** | the Rust build compiles no CUDA; the oracle image only uses the pinned CUDA torch for teacher instrumentation. GPU integration is M4 part 2 |
 | quality measurements | **partially implemented** | the KL/PPL/top-1 frontier in `results/M1-FRONTIER.md` is measured and receipted; no capability benchmark exists, and no latency or I/O measurement exists |
 
 No capability, speed, memory-savings or novelty claim is made. The M1 frontier
@@ -538,6 +544,41 @@ The exactness gates, the registered contract and the frontier report are
 `results/M1-FRONTIER.md`. Every sweep receipt records the model revision,
 tokenizer identity, dataset hashes, split hash, device, driver, torch/CUDA
 versions, precision flags, seed, realized active count and per-article metrics.
+
+## Runtime backend decision (M4 part 1)
+
+The mandate requires an explicit Candle-versus-alternatives decision with the
+reasons recorded. It is recorded here and measured in
+`results/runtime/backend-decision-20261116T012956Z.json`, which transcribes the
+two court logs named in it.
+
+**Decision: a minimal in-repo f32 kernel backend. Candle was measured and
+rejected for this phase; `tokenizers` 0.23.2 is pinned for the tokenizer only.**
+
+| candidate | measured weight | verdict |
+| --- | --- | --- |
+| `candle-core` + `candle-nn` 0.11.1 (CPU features) | dependency-edge count, cold-build time and peak RSS measured in the rust court; the generated values are in `docs/RUNTIME.md` §2 | rejected for part 1 |
+| `tokenizers` 0.23.2 (`default-features = false`, `onig`) | dependency-package count and cold-build time measured the same way | accepted: it is the teacher's engine and reproduces its ids |
+| in-repo f32 kernels | zero dependencies added, no `unsafe` | accepted |
+
+Reasons, in order of weight:
+
+1. **Court E's claim is bitwise.** Identical bits under different cache policies,
+   prefetch settings and thread counts require a reduction order we can state and
+   test. The kernels here reduce each dot product over `k` with eight interleaved
+   f32 accumulators and parallelise rows only, so an output element's bits cannot
+   depend on the thread count or on the order rows were visited. Under a tensor
+   library that property would be an inference about someone else's kernels.
+2. **`unsafe`, allocation shape and OOM accounting.** The workspace forbids
+   `unsafe` in our code; Candle brings its own, an internal allocator and
+   mmap-backed loading. The OOM discipline needs allocations we size and can
+   attribute to a token.
+3. **Coverage.** Seven operations cover Qwen3 completely: matrix-vector product,
+   RMSNorm, RoPE, softmax, SwiGLU, residual add, argmax.
+4. **Build weight.** The measured cost above buys breadth this phase does not use.
+
+The CUDA backend planned for M4 part 2 slots in behind the same `MlpExecutor`
+seam, so the model code does not change when the device does.
 
 ## Interfaces for the next phases
 

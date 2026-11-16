@@ -1855,3 +1855,72 @@ in `calibration::normal_quantile` and is pinned by
 - No trained-router trace exists. Locality, envelope and placement conclusions
   are conditional on a trained model's routing statistics.
 - `--compute-ns` is an assumption supplied by the caller, never a measurement.
+
+
+## S13a — M4 part 1: a real single-device inference runtime (CPU)
+
+Status: **implemented and measured on CPU**, GPU deferred to part 2 by design.
+
+### What was built
+
+- `crates/selvedge-runtime`: Qwen3 forward (tied embeddings with a verified
+  `lm_head`, RMSNorm, RoPE, GQA with per-head q/k norm, SwiGLU MLP read from the
+  bundle, tied output projection), an in-repo f32 kernel backend, the two
+  execution modes as types, the budget gate with the within-budget fallback, and
+  per-token accounting written as JSONL.
+- `selvedge run` in `crates/selvedge-cli`: typed flags, `--json`, nonzero exit on
+  any validation, budget, witness or parity failure.
+- `selvedge-convert`: a whole-tensor `read_tensor_f32` on the safetensors reader
+  plus the rank-any `decode_tensor_f32` it needs, so the runtime can load rank-1
+  normalization gains through the same validated reader.
+- Fixture and oracle: `fixtures/tiny-qwen3` (deterministic tiny Qwen3, committed)
+  and `oracle/qwen3_numpy_reference.py` (independent f32 NumPy forward, used for
+  both the tiny fixture and the pinned 0.6B).
+
+### Backend decision (mandate requirement)
+
+Candle was measured in the rust court and rejected for this phase: its dependency
+edges, cold-build time and peak RSS are recorded in the generated block in
+`docs/RUNTIME.md` §2 and in
+`results/runtime/backend-decision-20261116T012956Z.json`. The reasons are bitwise
+parity (we must own the reduction order), `unsafe`/allocation shape under the OOM
+and no-unsafe rules, seven required operations, and build weight. `tokenizers`
+0.23.2 is pinned because the tokenizer must be the teacher's engine.
+
+### Evidence
+
+- Tiny parity against NumPy: `cargo test -p selvedge-runtime --test tiny_parity`
+  (six positions including two greedy steps; the test asserts a tolerance and a
+  tighter observed bound).
+- Court E, tiny fixture: `tests/court_e.rs` — all cache policies, capacities,
+  prefetch settings, fetch orders, injected delays and thread counts produce
+  bitwise identical logits, and the cold run reads strictly more device bytes.
+- Court E, real checkpoint: `results/runtime/court-e-0.6b-*.json`, produced by
+  `scripts/runtime-courts.sh court-e`; all variants share one sequence digest.
+- Real-model parity: `results/runtime/court-e-parity-0.6b-*.json`; the observed
+  maximum absolute logit difference and the top-1 agreement are generated into
+  `docs/RUNTIME.md` §1.
+- Court F, CPU baseline: `results/runtime/court-f-cpu-*.json` and the generated
+  table in `docs/RUNTIME.md` §10.
+
+### What is not true
+
+- The native-set declaration is a trust input derived from the validated
+  manifest; the witness proves equality with it, not that it is honest. Stated in
+  `docs/RUNTIME.md` §1 and §5, and in `docs/ARCHITECTURE.md`.
+- Bitwise identity is claimed within one build across streaming variants, not
+  against NumPy or PyTorch.
+- Approximate mode's selector is a control with no learned parameters; no quality
+  claim is made for it.
+- No GPU number exists. No GPU kernel exists. GPU integration is part 2.
+- Eight kernel threads are slower than one at batch 1 in this implementation; the
+  numbers are measured, the explanation (per-call scoped-thread spawn) is a
+  hypothesis, and a persistent worker pool is not implemented.
+
+### Pre-existing clippy lints fixed
+
+`cargo clippy --workspace --all-targets -- -D warnings` failed on
+`selvedge-sim`'s own test code (`useless_vec` in `tests/engine.rs`,
+`field_reassign_with_default` in `src/envelope.rs` and `src/synthetic.rs`) once
+the workspace was relinted. The fixes are mechanical and behaviour-preserving;
+they are listed here so the change is not mistaken for part of the runtime work.

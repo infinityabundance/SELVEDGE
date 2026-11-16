@@ -320,3 +320,32 @@ by the strategy note could not be located and are marked `UNSUPPORTED`; one
 paper; and one (mHC) is published with an analysis showing its *effective*
 stream count is low, which forbids reading it as a capacity win. See
 `docs/PRIOR-ART-AND-NOVELTY.md` §10–§11 before quoting any of them.
+
+
+## M4 part 1 — the first real inference runtime (S13a)
+
+`selvedge run` executes the pinned Qwen3-0.6B control on one device with every
+SwiGLU group read from a SELVEDGE bundle. Exact mode executes the complete native
+shard set and proves, per token, that the executed set equals the set the
+validated manifest declares; approximate mode executes a selector-chosen subset
+and records both verdicts. Every executed token carries a JSONL accounting row.
+
+The backend decision the mandate requires was taken with measurements: Candle was
+built in the rust court, its dependency and build weight recorded, and rejected
+for this phase in favour of an in-repo f32 kernel backend whose reduction order we
+can state and test — which is what makes the Court E parity claim bitwise rather
+than approximate. `tokenizers` 0.23.2 is pinned because it is the teacher's own
+tokenizer engine.
+
+Evidence: `docs/RUNTIME.md` (method, modes, witness, accounting, tolerances,
+generated CPU numbers, and the explicit boundary of what is proven),
+`results/runtime/court-e-0.6b-*.json` (parity across streaming variants),
+`results/runtime/court-e-parity-0.6b-*.json` (real-model agreement with an
+independent NumPy forward), `results/runtime/court-f-cpu-*.json` (CPU latency and
+bytes per token), and `crates/selvedge-runtime/tests/` (tiny parity and the
+twelve-variant Court E matrix).
+
+What is not claimed: no GPU kernel, no GPU number, no quality result for the
+approximate path, and no claim that the manifest's declaration is honest — the
+witness proves equality with the declaration, and the declaration is a documented
+trust input.

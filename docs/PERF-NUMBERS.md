@@ -102,3 +102,18 @@ stamp or revision no longer matches the receipt, when the receipt's revision is
 not a commit in this repository, when the region text is stale, when a numeric
 source renders no digits, or when a generated region in any tracked document has
 no manifest block.
+
+
+## Runtime numbers (M4 part 1)
+
+The CPU latency, throughput, byte-traffic and parity numbers of the single-device
+runtime are generated into the document that carries their method:
+
+- `docs/RUNTIME.md` §2 (backend decision weights),
+- `docs/RUNTIME.md` §1 (real-model parity against the independent NumPy forward),
+- `docs/RUNTIME.md` §10 (cold and warm CPU latency, bytes per token, memory peak,
+  active-unique and bundle size).
+
+`docs/perf-numbers.json` names the receipt and JSON pointer for each of them, with
+`doc` set to `docs/RUNTIME.md`, so `--check` validates them exactly as it
+validates the numbers below.

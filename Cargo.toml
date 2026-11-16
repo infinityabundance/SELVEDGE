@@ -8,6 +8,7 @@ members = [
     "crates/selvedge-atlas",
     "crates/selvedge-store",
     "crates/selvedge-sim",
+    "crates/selvedge-runtime",
 ]
 resolver = "3"
 
@@ -27,6 +28,13 @@ selvedge-fixtures = { path = "crates/selvedge-fixtures" }
 selvedge-atlas = { path = "crates/selvedge-atlas" }
 selvedge-store = { path = "crates/selvedge-store" }
 selvedge-sim = { path = "crates/selvedge-sim" }
+selvedge-runtime = { path = "crates/selvedge-runtime" }
+# Pinned per docs/RUNTIME.md. `default-features = false` drops the training-only
+# `esaxx_fast` (vendored C++) and the `progressbar` feature; `onig` is required
+# because Qwen3's `tokenizer.json` uses a `Regex` pre-tokenizer split. The
+# vendored Oniguruma C build is the same engine the reference Python tokenizer
+# uses, so token ids match the teacher by construction.
+tokenizers = { version = "=0.23.2", default-features = false, features = ["onig"] }
 serde = { version = "1.0.219", features = ["derive"] }
 # `float_roundtrip` makes float parsing exactly round-trip. Receipts carry f64
 # statistics, and a 1-ULP parse difference would make an honest receipt fail an

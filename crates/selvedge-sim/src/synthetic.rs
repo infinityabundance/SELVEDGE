@@ -392,14 +392,16 @@ mod tests {
 
     #[test]
     fn chunk_union_creates_physical_adjacency() {
-        let mut spec = SyntheticSpec::default();
-        spec.requests = 1;
-        spec.tokens_per_request = 1;
-        spec.layers = 1;
-        spec.groups_per_layer = 16;
-        spec.groups_per_token = 1;
-        spec.hot_share = 0.0;
-        spec.chunk_union = 3;
+        let spec = SyntheticSpec {
+            requests: 1,
+            tokens_per_request: 1,
+            layers: 1,
+            groups_per_layer: 16,
+            groups_per_token: 1,
+            hot_share: 0.0,
+            chunk_union: 3,
+            ..SyntheticSpec::default()
+        };
         let generated = generate(spec.clone(), "rev", "stamp").unwrap();
         let record = &generated.trace.records[0];
         assert!(record.selected.len() >= 2);
@@ -425,14 +427,20 @@ mod tests {
 
     #[test]
     fn invalid_specs_are_rejected() {
-        let mut spec = SyntheticSpec::default();
-        spec.groups_per_token = 100;
+        let spec = SyntheticSpec {
+            groups_per_token: 100,
+            ..SyntheticSpec::default()
+        };
         assert!(spec.validate().is_err());
-        let mut spec = SyntheticSpec::default();
-        spec.hot_share = 2.0;
+        let spec = SyntheticSpec {
+            hot_share: 2.0,
+            ..SyntheticSpec::default()
+        };
         assert!(spec.validate().is_err());
-        let mut spec = SyntheticSpec::default();
-        spec.requests = MAX_SYNTHETIC_RECORDS;
+        let spec = SyntheticSpec {
+            requests: MAX_SYNTHETIC_RECORDS,
+            ..SyntheticSpec::default()
+        };
         assert!(spec.validate().is_err());
     }
 }

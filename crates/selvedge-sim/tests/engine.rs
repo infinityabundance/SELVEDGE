@@ -26,7 +26,7 @@ fn id(tag: u8) -> ShardId {
 }
 
 fn stats(value: u64) -> SampleStats {
-    SampleStats::of(&vec![value; 16]).unwrap()
+    SampleStats::of(&[value; 16]).unwrap()
 }
 
 fn calibration() -> Calibration {

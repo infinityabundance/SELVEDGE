@@ -494,6 +494,100 @@ pub(crate) fn read_region_from_bytes(
     Ok(out)
 }
 
+/// Read a whole tensor as f32 in logical row-major order, for any rank of one
+/// or two.
+///
+/// [`read_region_from_bytes`] handles rank-2 regions; this is its whole-tensor
+/// counterpart, used by the inference runtime for rank-1 normalization gains.
+/// The physical-to-logical mapping uses [`physical_index`], so a transposed
+/// rank-2 source is decoded correctly rather than reinterpreted as row-major.
+///
+/// # Errors
+///
+/// Rejects a rank above two, a byte length that disagrees with the descriptor,
+/// an unsupported dtype and arithmetic overflow.
+pub fn decode_tensor_f32(descriptor: &TensorDescriptor, data: &[u8]) -> Result<Vec<f32>> {
+    if descriptor.byte_len != data.len() as u64 {
+        return Err(ConvertError::ByteLengthMismatch {
+            tensor: descriptor.key.clone(),
+            extent: data.len() as u64,
+            expected: descriptor.byte_len,
+            elements: descriptor.elements,
+            dtype: descriptor.dtype.stable_name(),
+        });
+    }
+    let bytes_per = u64::from(dtype_bytes(&descriptor.dtype)?);
+    let mut out: Vec<f32> = Vec::new();
+    reserve_elements(&mut out, descriptor.elements)?;
+    match descriptor.rank() {
+        1 => {
+            if descriptor.storage_order != StorageOrder::RowMajor {
+                return Err(ConvertError::RankMismatch {
+                    tensor: descriptor.key.clone(),
+                    rank: descriptor.rank(),
+                });
+            }
+            for index in 0..descriptor.elements {
+                let start =
+                    usize::try_from(index * bytes_per).map_err(|_| ConvertError::Allocation {
+                        bytes: index * bytes_per,
+                        reason: "element offset does not fit usize".to_owned(),
+                    })?;
+                let end = start + usize::try_from(bytes_per).unwrap_or(0);
+                let slice =
+                    data.get(start..end)
+                        .ok_or_else(|| ConvertError::ByteLengthMismatch {
+                            tensor: descriptor.key.clone(),
+                            extent: data.len() as u64,
+                            expected: descriptor.byte_len,
+                            elements: descriptor.elements,
+                            dtype: descriptor.dtype.stable_name(),
+                        })?;
+                out.push(decode_one(&descriptor.dtype, slice)?);
+            }
+        }
+        2 => {
+            let (rows, cols) = (descriptor.shape[0], descriptor.shape[1]);
+            for row in 0..rows {
+                for col in 0..cols {
+                    let index =
+                        physical_index(&descriptor.shape, &descriptor.storage_order, row, col)?;
+                    let start = usize::try_from(index * bytes_per).map_err(|_| {
+                        ConvertError::Allocation {
+                            bytes: index * bytes_per,
+                            reason: "element offset does not fit usize".to_owned(),
+                        }
+                    })?;
+                    let end = start + usize::try_from(bytes_per).unwrap_or(0);
+                    let slice =
+                        data.get(start..end)
+                            .ok_or_else(|| ConvertError::ByteLengthMismatch {
+                                tensor: descriptor.key.clone(),
+                                extent: data.len() as u64,
+                                expected: descriptor.byte_len,
+                                elements: descriptor.elements,
+                                dtype: descriptor.dtype.stable_name(),
+                            })?;
+                    out.push(decode_one(&descriptor.dtype, slice)?);
+                }
+            }
+        }
+        rank => {
+            return Err(ConvertError::RankMismatch {
+                tensor: descriptor.key.clone(),
+                rank,
+            });
+        }
+    }
+    if out.len() as u64 != descriptor.elements {
+        return Err(ConvertError::Allocation {
+            bytes: descriptor.byte_len,
+            reason: "decoded length disagrees with the descriptor".to_owned(),
+        });
+    }
+    Ok(out)
+}
+
 /// Compute the physical element index of a logical coordinate.
 ///
 /// # Errors

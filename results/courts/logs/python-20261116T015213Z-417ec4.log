@@ -1,0 +1,12 @@
+{
+  "schema": "selvedge/runtime-court-e/v1",
+  "stamp": "20261116T015108Z",
+  "ok": true,
+  "failures": [],
+  "claim": "exact-mode logits are bitwise identical under different cache capacity, cache policy, prefetch setting, fetch order, injected device delay and kernel thread count",
+  "parity_basis": "SHA-256 over each token's exact f32 logits, plus the sequence digest"
+}
+court-e-cold       threads=8 device_bytes/token=1056964608 decode_p50=694937089 ns peak=1668759552 digest=e55b4f889bd2628c
+court-e-warm       threads=8 device_bytes/token=150994944 decode_p50=271749910 ns peak=2459643904 digest=e55b4f889bd2628c
+court-e-prefetch   threads=4 device_bytes/token=150994944 decode_p50=286755163 ns peak=2456731648 digest=e55b4f889bd2628c
+court-e-delay      threads=2 device_bytes/token=1056964608 decode_p50=1022363723 ns peak=1666768896 digest=e55b4f889bd2628c
