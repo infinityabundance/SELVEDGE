@@ -2549,3 +2549,90 @@ the GPU was not free.
   measurement). No exception was requested.
 - No capability, performance or frontier claim, and no revision of any T2 arm,
   threshold or kill condition.
+
+## 2026-11-16 — S25: P18.6 cut-set discovery from stored omission artifacts
+
+### Plan
+
+P18.6 is the only `ACTIVE` item in WS15–WS18 and the only diagnostic the tier
+gate permits before it opens. This session executes it on CPU over the stored
+M1/M2 artifacts, with no model execution and no GPU work; `H*` owns the GPU and
+was polled read-only. The analysis was pre-registered in a dated section of
+`docs/EXPERIMENT-CONTRACT.md` and committed before any headline statistic was
+computed (commit `1a8ad21`).
+
+### What was built
+
+- `docs/EXPERIMENT-CONTRACT.md` P18.6.1–P18.6.8: data sources with stamps,
+  revisions and hashes; an internal discovery/replication split by document;
+  the exact statistics; the decision thresholds D1–D4; the P18.6 kill
+  condition; the GPU experiment that would follow the gate; and the reproduction
+  command.
+- `scripts/p18_6_cutset.py`: a deterministic, standard-library-only analysis.
+  It verifies the registered input hashes and refuses to run on a mismatch. It
+  writes one JSON receipt and one generated Markdown report.
+- `results/P18.6-CUTSET.md` and its stamped JSON receipt under `results/p18.6/`.
+
+### What was measured
+
+The primary artifact is the stored M2 interaction receipt: 160 calibration
+contexts, each measuring the retained masks `S`, `S+g`, `S+j`, `S+g+j` and the
+exact teacher KL. The analysis reports the pairwise non-additivity distribution,
+the marginal-magnitude asymmetry and cross-window sign instability, the
+unary-only versus pairwise-additive explanation in sample and out of sample, the
+monotonicity/submodularity violation counts, the measured-minimal destructive
+set test, a covering-array-versus-random coverage simulation over the stored
+design, and a secondary layer-omission additivity check from the M1 frontier.
+The numbers are in the receipt and the generated report; this log does not
+repeat them.
+
+### Decisions
+
+- **D1 passed:** the stored interactions are large, not second-order.
+- **D2 failed:** the sign of the pair interaction does not replicate across the
+discovery/replication split, so a cell-level interaction estimate is worse than
+the unary-only model out of sample.
+- **D3 failed, and the test is structurally degenerate on this instrument:**
+every measured KL value is far above the usable-tier bound, because every
+non-probed layer keeps the static top-5 magnitude mask. No measured immediate
+subset can be safe at the registered `epsilon`, so the zero minimal count says
+nothing about trained models. P18.6's kill condition therefore fires and
+nothing is fed to P16.12.
+- **D4 failed:** on this population a strength-2 covering array over the stored
+design factors shows no measured recall advantage over random sampling.
+
+### Instrument gap and recommendation
+
+The trained banks `X` and `H` have no combination measurements at all, and `H*`
+has only single-expert full-bank leave-one-out labels. The stored M2 instrument
+is a degraded, non-deployed selection regime on eight calibration windows, five
+layers and four fixed pairs; it cannot supply a cut set for a trained model.
+Because D1 or D2 failed, the registered rule does not justify a GPU
+covering-array experiment from this evidence. The receipt records the minimal
+pass that would close the gap (full-bank, pairwise and triple omissions on the
+trained banks, with a discovery/replication split and random plus additive
+controls) and its cost estimate from the measured forward time; that pass may
+not run before the §20.0 gate opens.
+
+### Verification
+
+- The analysis ran in the Python court with `SELVEDGE_MEM=8g`,
+  `SELVEDGE_CPUS=8`, `SELVEDGE_PIDS=1024`, `SELVEDGE_TMP=2g`; the court
+  re-inspected the applied cgroup limits and recorded an enforcement match. No
+  OOM, no new model forwards, no GPU.
+- The first run failed closed on a hash-check error in the script (it hashed the
+  label sidecar file instead of the artifact hash the sidecar declares); the
+  failure is retained and the fix is a separate commit. Every subsequent run
+  reproduces the same decisions.
+- `commit_identity` and `perf_numbers` are run through the court; the receipts
+  are under `results/courts/`.
+
+### What this entry does not claim
+
+- No cut set, capability result or trained-model result. The report is a
+  negative result about the stored instrument, not about SELVEDGE's trained
+  models.
+- No new model pass was run, no threshold was changed, and no M1/M2 result was
+  revised.
+- The discovery/replication split is internal to calibration text; no result
+  replicated on the held-out corpus.
