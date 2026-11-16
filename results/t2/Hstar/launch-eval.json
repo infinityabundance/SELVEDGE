@@ -1,0 +1,84 @@
+{
+  "alloc_conf": "expandable_segments:True",
+  "arm": "H*",
+  "components": {
+    "logit_chunk_f32": {
+      "bytes": 77791232,
+      "note": "two chunk tensors (student, teacher); log-softmax and p_t add at most two more of the same size inside a chunk",
+      "per_tensor_bytes": 38895616,
+      "positions": 64,
+      "tensors": 2
+    },
+    "memory_table_bf16": {
+      "bytes": 536870912,
+      "note": "4 insertion layers x 2^18 rows x 256 values, resident and included in the student's accessible count; listed separately because it is the largest single added tensor"
+    },
+    "student_weights_bf16": {
+      "bytes": 2438275072,
+      "elements": 1219137536,
+      "source": "results/train/admission-configs/t2/H*.json total_accessible"
+    },
+    "teacher_weights_bf16": {
+      "bytes": 3441149952,
+      "elements": 1720574976,
+      "source": "results/accounting/*-qwen3-1.7b.json"
+    }
+  },
+  "components_note": "weights and chunked logits only; the runtime's CUDA context, cuBLAS workspaces and load transients are named by the measured peak, not by this sum",
+  "created_utc": "2026-11-16T05:05:27Z",
+  "device": {
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "total_gib": 15.99,
+    "usable_basis": "device total less the desktop compositor's resident allocation; the binding constraint on this host",
+    "usable_gib": 15.6
+  },
+  "fits_with_headroom": true,
+  "headroom_factor": 1.5,
+  "headroom_required_gib": 9.591,
+  "host_limits": {
+    "SELVEDGE_CPUS": "8",
+    "SELVEDGE_MEM": "24g",
+    "SELVEDGE_PIDS": "1024",
+    "SELVEDGE_TMP": "8g",
+    "note": "host RAM limit for the court container; VRAM is not a cgroup resource and is bounded by the arithmetic above"
+  },
+  "kill_condition": "abort if torch.cuda.max_memory_allocated at any stage exceeds 12.5 GiB; the instrument logs it per stage",
+  "measured": {
+    "peak_allocated_gib": 6.394,
+    "peak_reserved_gib": 6.439,
+    "source": "results/eval/t2-H.json",
+    "stage_peaks": {
+      "distributional": {
+        "allocated_gib": 6.394,
+        "in_use_gib": 6.136,
+        "reserved_gib": 6.439
+      },
+      "gsm8k": {
+        "allocated_gib": 3.553,
+        "in_use_gib": 2.931,
+        "reserved_gib": 3.713
+      },
+      "humaneval": {
+        "allocated_gib": 3.504,
+        "in_use_gib": 2.931,
+        "reserved_gib": 3.564
+      },
+      "models_loaded": {
+        "allocated_gib": 6.136,
+        "in_use_gib": 6.136,
+        "reserved_gib": 6.154
+      },
+      "truthfulqa": {
+        "allocated_gib": 3.553,
+        "in_use_gib": 2.932,
+        "reserved_gib": 3.713
+      }
+    }
+  },
+  "predicted_peak_gib": 6.394,
+  "revision": "6ac1e989c4919bede1e791192bfbcf8dd09ba22a",
+  "schema": "selvedge/t2-gpu-launch/v1",
+  "stage": "eval",
+  "unit": "selvedge-t2-Hstar-train",
+  "verdict": "fits with the declared headroom"
+}
