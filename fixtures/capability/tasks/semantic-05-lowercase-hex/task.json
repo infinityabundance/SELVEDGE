@@ -1,0 +1,28 @@
+{
+  "capability": "Use the documented lowercase hex alphabet where digits-only examples pass.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-05-lowercase-hex",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"{byte:02x}\")",
+    "replace": "format!(\"{byte:02X}\")"
+  },
+  "observed_failure": "the crate builds and tests pass; hex(&[0xab, 0x0f]) is \"AB0F\" where the\ncontract requires lowercase \"ab0f\"",
+  "prompt_intro": "The hex encoder builds and its visible test passes because it uses only digits. The contract is lowercase hexadecimal with two digits per byte: `hex(&[0xab, 0x0f])` is `ab0f`. Fix the encoder; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

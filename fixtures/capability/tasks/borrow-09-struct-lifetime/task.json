@@ -1,0 +1,28 @@
+{
+  "capability": "Add a lifetime parameter to a borrowing struct and its impl.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-09-struct-lifetime",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0106"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.text",
+    "replace": "\"x\""
+  },
+  "observed_failure": "error[E0106]: missing lifetime specifier\n --> src/lib.rs:3:24\n  |\n3 |     pub text: &str,\n  |              ^ expected named lifetime parameter",
+  "prompt_intro": "This crate does not compile. `View` stores a `&str` without a lifetime parameter. Add the lifetime to the struct, the impl and the constructor so a `View` can borrow from a caller's `String`. Keep the API `View::new(&str)`, `text(&self) -> &str`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Match a trait method's parameter type in its implementation.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-08-method-signature",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0053"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"{value:x}\")",
+    "replace": "format!(\"{value:X}\")"
+  },
+  "observed_failure": "error[E0053]: method `encode` has an incompatible type for trait\n --> src/lib.rs:9:26\n  |\n9 |     fn encode(&self, value: u64) -> String {\n  |                          ^^^ expected `u32`, found `u64`",
+  "prompt_intro": "This crate does not compile. `Hex::encode` takes `u64`, but the trait declares `u32`. Correct the implementation's signature; keep `Hex`, the trait and the lowercase hex output.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

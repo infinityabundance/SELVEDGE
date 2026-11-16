@@ -1,0 +1,28 @@
+{
+  "capability": "Hold a mutex across the whole read-modify-write, not across a barrier.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-04-mutex-critical-section",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*counter.lock().unwrap() += 1;",
+    "replace": "*counter.lock().unwrap() += 2;"
+  },
+  "observed_failure": "thread 'both_threads_increment' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: 1\n right: 2",
+  "prompt_intro": "The hidden test fails. Two threads read the mutex-protected counter, meet at a barrier, and then each writes `read + 1`, so one update is lost. Move the barrier before the critical section and perform the increment under a single lock. Keep the signature and the barrier.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

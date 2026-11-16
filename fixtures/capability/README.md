@@ -46,6 +46,7 @@ SELVEDGE_MEM=4g SELVEDGE_CPUS=2 scripts/court rust -- \
 ```
 
 Do not edit the materialised files by hand: `--check` fails closed on drift.
-`MANIFEST.json` is the hash record a run is bound to; the pre-registration in
-`docs/capability-preregistration-v2.json` pins the expanded suite hash (v1 pins
-the historical 24-task suite and is retained unchanged).
+`MANIFEST.json` is the hash record a run is bound to; the final expanded suite is
+pinned by `docs/capability-preregistration-v3.json` (v2 registered the first
+72-task pass and is superseded after the near-duplicate audit; v1 pins the
+historical 24-task suite; both are retained unchanged).

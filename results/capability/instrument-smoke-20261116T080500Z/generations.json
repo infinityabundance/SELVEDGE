@@ -1,0 +1,1134 @@
+{
+  "adapter": {
+    "accounting": {
+      "active_unique_params": null,
+      "gpu_residency_bytes": null,
+      "host_residency_bytes": null,
+      "measured_io": null,
+      "offline_teacher_construction_cost": null,
+      "optimizer_flops": null,
+      "task_success": null,
+      "total_accessible_capacity": null,
+      "training_tokens": null
+    },
+    "kind": "fake",
+    "name": "fake-reference",
+    "null_reasons": {
+      "active_unique_params": "scripted fake model; no such measurement exists",
+      "gpu_residency_bytes": "scripted fake model; no such measurement exists",
+      "host_residency_bytes": "scripted fake model; no such measurement exists",
+      "measured_io": "scripted fake model; no such measurement exists",
+      "offline_teacher_construction_cost": "scripted fake model; no such measurement exists",
+      "optimizer_flops": "scripted fake model; no such measurement exists",
+      "total_accessible_capacity": "scripted fake model; no such measurement exists",
+      "training_tokens": "scripted fake model; no such measurement exists"
+    },
+    "provenance": {
+      "checkpoint_sha256": null,
+      "source_model_revision": null
+    },
+    "tools": false
+  },
+  "command": "scripts/capability_court.py generate --adapter-spec /work/target/cap-spec.json --preregistration docs/capability-preregistration-v3.json --out results/capability/instrument-smoke-20261116T080500Z/generations.json",
+  "created_utc": "2026-11-16T06:24:00Z",
+  "decoding": {
+    "category_filter": null,
+    "feedback": "none",
+    "few_shot_texts": [],
+    "greedy": true,
+    "max_new_tokens": 3072,
+    "order": "sorted",
+    "seed": 20261115,
+    "stops": [
+      "\n```\n\n## "
+    ]
+  },
+  "few_shot": null,
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-01-local-reference",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Label construction.\n\npub fn label(prefix: &str) -> String {\n    format!(\"{prefix}:ready\")\n}\n```",
+        "tokens_out": 15
+      },
+      "prompt_sha256": "eddc8f05bd5e6509dc2dcdc5fc778336b7ead72419d01d76d34e7b1667e45f67"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-02-mutate-while-borrowed",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(0);\n    values.push(value);\n    last\n}\n```",
+        "tokens_out": 33
+      },
+      "prompt_sha256": "cd3d9d546522140b243c11943aadbb76f4acbb8c7ecc236cfceb168671097674"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-03-self-referential-window",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n```",
+        "tokens_out": 57
+      },
+      "prompt_sha256": "09ee624675c5112dd319220e9006f41149ca8bd86b22f376129d38b619608fd2"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-04-iterator-invalidation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Remove every key longer than a bound.\n\nuse std::collections::BTreeMap;\n\npub fn drop_long_keys(map: &mut BTreeMap<String, i32>, max_len: usize) -> usize {\n    let doomed: Vec<String> = map\n        .keys()\n        .filter(|key| key.len() > max_len)\n        .cloned()\n        .collect();\n    for key in &doomed {\n        map.remove(key);\n    }\n    doomed.len()\n}\n```",
+        "tokens_out": 45
+      },
+      "prompt_sha256": "b2961141ca1e7cc6d3216335fbbd98b17096ec3568a13179f7f3c70d7e804c3a"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-05-temporary-lifetime",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}\n```",
+        "tokens_out": 34
+      },
+      "prompt_sha256": "23968c14c12a9565289481b04f1056bd14afcc6fbabdbee8c2f1751b4e91f31f"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-06-move-while-borrowed",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Split the first token length from an owned string.\n\npub fn split_first(text: String) -> (String, usize) {\n    let len = text.split_whitespace().next().unwrap_or(\"\").len();\n    (text, len)\n}\n```",
+        "tokens_out": 28
+      },
+      "prompt_sha256": "aabe8e1558de85672a82888cebb7a7749cf07082ac219cd877fecb85d6ab8c39"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-07-overlapping-mut-borrows",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        *first += 1;\n        let second = self.value_mut();\n        *second += 1;\n    }\n}\n```",
+        "tokens_out": 72
+      },
+      "prompt_sha256": "489f22515bc8948fea18bcebb450b25c4493b98163a71f3127ac1da73079b433"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-08-iterator-outlives-local",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Even numbers below a limit.\n\npub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 2 == 0)\n}\n```",
+        "tokens_out": 26
+      },
+      "prompt_sha256": "e09785376d3c29d3dbed4678b71aa167bad7130687052859b902aa7c92d309be"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-09-struct-lifetime",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A view with an explicit lifetime.\n\npub struct View<'a> {\n    pub text: &'a str,\n}\n\nimpl<'a> View<'a> {\n    pub fn new(text: &'a str) -> View<'a> {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        self.text\n    }\n}\n```",
+        "tokens_out": 44
+      },
+      "prompt_sha256": "dee99429a796514100bcd5af50f849414d0391ce689d3ff20e7f9addb09a9cb1"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-01-lock-order-deadlock",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Two accounts with one global lock order.\n\nuse std::sync::{Barrier, Mutex, MutexGuard};\n\nfn lock_pair<'a>(\n    a: &'a Mutex<i64>,\n    b: &'a Mutex<i64>,\n) -> (MutexGuard<'a, i64>, MutexGuard<'a, i64>) {\n    if (a as *const Mutex<i64>) < (b as *const Mutex<i64>) {\n        let guard_a = a.lock().unwrap();\n        let guard_b = b.lock().unwrap();\n        (guard_a, guard_b)\n    } else {\n        let guard_b = b.lock().unwrap();\n        let guard_a = a.lock().unwrap();\n        (guard_a, guard_b)\n    }\n}\n\npub fn transfer_a_to_b(a: &Mutex<i64>, b: &Mutex<i64>, amount: i64) {\n    let (mut guard_a, mut guard_b) = lock_pair(a, b);\n    *guard_a -= amount;\n    *guard_b += amount;\n}\n\npub fn transfer_b_to_a(b: &Mutex<i64>, a: &Mutex<i64>, amount: i64) {\n    let (mut guard_a, mut guard_b) = lock_pair(a, b);\n    *guard_a += amount;\n    *guard_b -= amount;\n}\n\npub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}\n```",
+        "tokens_out": 158
+      },
+      "prompt_sha256": "2a9318df4c5e5eb092fc76a6e27de86629b664e17f207c0e90cf17cb895c00ae"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-02-lost-update",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A counter incremented atomically from two threads.\n\nuse std::sync::atomic::{AtomicUsize, Ordering};\nuse std::sync::Barrier;\n\npub fn bump_pair(counter: &AtomicUsize) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n}\n\npub fn bump_all(counter: &AtomicUsize, threads: usize, per_thread: usize) {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                for _ in 0..per_thread {\n                    counter.fetch_add(1, Ordering::Relaxed);\n                }\n            });\n        }\n    });\n}\n```",
+        "tokens_out": 71
+      },
+      "prompt_sha256": "c9ecc6a28f7f1028b8563937ce96a9dd2e2091a8fad24dc16fad2647b51c3b3c"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-03-send-boundary",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n```",
+        "tokens_out": 79
+      },
+      "prompt_sha256": "62ba57362c113a4cd5d529de8297e797a17b422adcb2fcd22ea99ec3bc567995"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-04-mutex-critical-section",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Two synchronized increments under one lock.\n\nuse std::sync::{Arc, Barrier, Mutex};\nuse std::thread;\n\npub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                barrier.wait();\n                *counter.lock().unwrap() += 1;\n            });\n        }\n    });\n}\n```",
+        "tokens_out": 51
+      },
+      "prompt_sha256": "3b97992ffe43ca56f4f981f5c30c4892637f82ae8e8a768b2690a61d26050455"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-05-swallowed-panic",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    let result = thread::scope(|scope| -> Result<(), String> {\n        let handles: Vec<_> = jobs\n            .iter()\n            .map(|job| {\n                scope.spawn(move || {\n                    if *job < 0 {\n                        panic!(\"negative job\");\n                    }\n                    *job\n                })\n            })\n            .collect();\n        for handle in handles {\n            total += handle.join().map_err(|_| \"worker failed\".to_string())?;\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}\n```",
+        "tokens_out": 72
+      },
+      "prompt_sha256": "0b3de0ab82f011f93c56b3f3e12c6d69355b6112df6a1d77f2d929623062672e"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-06-guard-crosses-thread",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Push from a spawned thread.\n\nuse std::sync::{Arc, Mutex};\nuse std::thread;\n\npub fn push_from_thread(values: &Arc<Mutex<Vec<i32>>>, value: i32) {\n    let values = Arc::clone(values);\n    thread::spawn(move || {\n        values.lock().unwrap().push(value);\n    })\n    .join()\n    .unwrap();\n}\n```",
+        "tokens_out": 33
+      },
+      "prompt_sha256": "dc73197b66fbaa4985cdc70ef1cc77d39e952fc02fa8983c2ec8dd0907bdcd97"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-07-silent-channel-drop",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Send every value and report saturation.\n\nuse std::sync::mpsc::{SyncSender, TrySendError};\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}\n```",
+        "tokens_out": 51
+      },
+      "prompt_sha256": "4c3ebe481caab73b9fe9e076c8cd0c18d17228db078300b7ec9fba35f959a422"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-08-borrowed-thread",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    thread::scope(|scope| {\n        let handles: Vec<_> = values\n            .chunks(2)\n            .map(|chunk| scope.spawn(move || chunk.iter().sum::<i32>()))\n            .collect();\n        handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n    })\n}\n```",
+        "tokens_out": 35
+      },
+      "prompt_sha256": "f72b7a6b3faae2c53b48f860b7ba72f6374863d96575c596b17dbe198be824aa"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-09-shared-input",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Sum of squares, computed twice by two workers.\n\nuse std::sync::Arc;\nuse std::thread;\n\npub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}\n```",
+        "tokens_out": 73
+      },
+      "prompt_sha256": "2020074499d00f110a2e19c3b6c390ace38a73be0cdf94dc75e84c05d5e2fc2e"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-01-version-requirement",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_01_version_requirement\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\nscaling = { path = \"dep\", version = \"2\" }\n```\n```rust path=src/lib.rs\n//! Percentage scaling through the vendored crate.\n\npub fn scale_percent(value: f64, percent: i64) -> f64 {\n    scaling::scale(value, percent as f64 / 100.0)\n}\n\npub fn dependency_label() -> &'static str {\n    scaling::label()\n}\n```",
+        "tokens_out": 68
+      },
+      "prompt_sha256": "fca09da501226f767aa8e927968d5981e3b0b993712a6a70db6ef3d7f0278b5b"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-02-edition-2024",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Edition 2024.\n\npub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some {inner}\"),\n        None => \"none\".to_string(),\n    }\n}\n\npub fn next_value(seed: u64) -> u64 {\n    let state = seed.wrapping_mul(6364136223846793005).wrapping_add(1);\n    state % 100\n}\n```",
+        "tokens_out": 40
+      },
+      "prompt_sha256": "14dbbcaaeb57071fdca492b42d27c4b96c4a6ad3b347cad463b6bfcc293b6753"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-03-optional-feature",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_03_optional_feature\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ntextkit = { path = \"dep\", features = [\"fast\"] }\n```",
+        "tokens_out": 33
+      },
+      "prompt_sha256": "86ccc970b215438f733759843bbd062e7c2bc0a59685f5f5daa1b3ea8bf865e8"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-04-unknown-feature",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_04_unknown_feature\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", features = [\"json\"] }\n```\n```rust path=src/lib.rs\n//! Encode through the vendored crate.\n\npub fn encode(value: &str) -> String {\n    codec::json::to_json(value)\n}\n```",
+        "tokens_out": 51
+      },
+      "prompt_sha256": "8df55dcf52f544a7df739786b6f046946698c52f466dfc161c5b1dbe9c6ecbf8"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-05-workspace-member",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_05_workspace_member\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\" }\n```\n```rust path=src/lib.rs\n//! Encode through the vendored crate.\n\npub fn encode(value: &str) -> String {\n    codec::to_json(value)\n}\n```",
+        "tokens_out": 48
+      },
+      "prompt_sha256": "30e76721781e9f45d26d970cbc8b9831a3b0b7fc4920f968e3f94d89f6b7c033"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-06-edition-unsafe-block",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n#![deny(unsafe_op_in_unsafe_fn)]\n\n//! Raw-pointer access under edition 2024.\n\n/// # Safety\n///\n/// `pointer` must be valid for one read.\npub unsafe fn read_byte(pointer: *const u8) -> u8 {\n    unsafe { *pointer }\n}\n```",
+        "tokens_out": 36
+      },
+      "prompt_sha256": "6bab589bac978d8e890edba720a14e2817d835c76da589d8a49cc23ff424c0e8"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-07-feature-conflict",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_07_feature_conflict\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", features = [\"safe\"] }\n```\n```rust path=src/lib.rs\n//! Select the vendored mode.\n\npub fn selected() -> &'static str {\n    codec::mode()\n}\n```",
+        "tokens_out": 50
+      },
+      "prompt_sha256": "6c692ba83abfbfce7f49b7a06d17554c8af8747decd1c9ff75e0f2b1c31c3030"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-08-renamed-package",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_08_renamed_package\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ntextkit = { path = \"dep\", package = \"textkit-impl\" }\n```\n```rust path=src/lib.rs\n//! Normalise through the vendored package.\n\npub fn normalise(value: &str) -> String {\n    textkit::normalise(value)\n}\n```",
+        "tokens_out": 51
+      },
+      "prompt_sha256": "3a6ae14325df97349eaa736fac14016f692f2ac1de1825b34dc42f4371efb784"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-09-disable-default-features",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_09_disable_default_features\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", default-features = false, features = [\"modern\"] }\n```\n```rust path=src/lib.rs\n//! Render through the vendored crate.\n\npub fn render(value: &str) -> String {\n    codec::render(value)\n}\n```",
+        "tokens_out": 54
+      },
+      "prompt_sha256": "fc2e3fb3c38af7016fb6381546a436f17a2e4e34381fec3310f6f749cf5c90df"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-01-chunk-boundary",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}\n```",
+        "tokens_out": 25
+      },
+      "prompt_sha256": "ad24d404a6640d5b6cbfb4c40eab1fd55bd46eeecdf27cdb0eb88d8536ca333b"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-02-empty-input",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Largest gap between consecutive values.\n\npub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .max()\n        .unwrap_or(0)\n}\n```",
+        "tokens_out": 25
+      },
+      "prompt_sha256": "edc0608e8ba9f68195f785668e56e0424081174df2d27943d8e4f09591dc2671"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-03-overflow-boundary",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.saturating_add(*value))\n}\n```",
+        "tokens_out": 22
+      },
+      "prompt_sha256": "45913306504e98f1ef592f30110768c37a4e142c940a5081406631caa8189e5d"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-04-nan-ordering",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Greater,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}\n```",
+        "tokens_out": 43
+      },
+      "prompt_sha256": "c834a0923beb1cef1d0e91b2bb5114dd38f98d5547f71033bc849beb324579be"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-05-inclusive-range",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Inclusive range sums.\n\npub fn range_sum(start: i32, end: i32) -> i32 {\n    (start..=end).sum()\n}\n```",
+        "tokens_out": 18
+      },
+      "prompt_sha256": "512eeac803907f3f0b7f5ef78386ff85bdd83192777c1bdfd79645722f08f1bc"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-06-integer-precision",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Percentage arithmetic.\n\npub fn percent_of(cents: u64, percent: u64) -> u64 {\n    cents * percent / 100\n}\n```",
+        "tokens_out": 21
+      },
+      "prompt_sha256": "31fb305f94955b41fec625f86f97b6bd27e07c46ab5766c47e5df27f332a80df"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-07-common-prefix",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Longest common prefix.\n\npub fn common_prefix(values: &[&str]) -> String {\n    let Some(first) = values.first() else {\n        return String::new();\n    };\n    let mut prefix = first.to_string();\n    for value in &values[1..] {\n        while !value.starts_with(&prefix) {\n            prefix.pop();\n            if prefix.is_empty() {\n                return prefix;\n            }\n        }\n    }\n    prefix\n}\n```",
+        "tokens_out": 47
+      },
+      "prompt_sha256": "dd87b68d43b9c51fb798d6e3e27a7fbcbb591cd5a27d7fc191f921a6fbebe034"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-08-lower-bound",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Lower-bound search.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] < target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    low\n}\n```",
+        "tokens_out": 58
+      },
+      "prompt_sha256": "6308a96176e43d09ccf8e8ba937236ddf7e286319f84821b580bfd534baa712d"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-09-state-cycle",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Traffic-light transitions.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Yellow,\n        Light::Yellow => Light::Red,\n    }\n}\n```",
+        "tokens_out": 40
+      },
+      "prompt_sha256": "2e6520f0f624053221b71ad7c65b06ca12f8a23be276a55bf787ae9ef6244fa9"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-01-signature",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}\n```",
+        "tokens_out": 26
+      },
+      "prompt_sha256": "d9a2884af29a00aa31488cfeaf7d61dd7f7c3c5e600371f05d6b31fa9f316e33"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-02-builder",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Connect and build an endpoint.\n\npub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"empty host\".to_string())\n}\n```",
+        "tokens_out": 31
+      },
+      "prompt_sha256": "b8d52ddda5ea9f104da2cec41f326c9b54322f6406dbc8e98f68055cd1ab730d"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-03-error-conversion",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Count fields, converting the dependency error into the application\n//! error.\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Empty,\n    Invalid { field: usize },\n}\n\nimpl From<tokens::Error> for AppError {\n    fn from(error: tokens::Error) -> Self {\n        match error {\n            tokens::Error::Empty => AppError::Empty,\n            tokens::Error::Malformed(field) => AppError::Invalid { field },\n        }\n    }\n}\n\npub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text)?;\n    Ok(tokens.len())\n}\n```",
+        "tokens_out": 68
+      },
+      "prompt_sha256": "388352628190f91ca82457e7f40601c40c75510e8dda5228e07f63c4546f2006"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-04-trait-import",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Render a document via the extension trait.\n\nuse documents::Render;\n\npub fn render_doc(title: &str) -> String {\n    documents::doc(title).render()\n}\n```",
+        "tokens_out": 22
+      },
+      "prompt_sha256": "4e7be1e58822933457486ebaa5716f569eac70fcd88edea58097d1b57fe1dc89"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-05-iterator-api",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_string()));\n    names\n}\n```",
+        "tokens_out": 29
+      },
+      "prompt_sha256": "0af895e5ca2f93f3b4475f84cea3ca9375173743765918c2708c99c05b336d81"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-06-error-variant",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty key\".to_string()),\n    }\n}\n```",
+        "tokens_out": 43
+      },
+      "prompt_sha256": "ee5fc59e58eadbd0599330eeb46faf16aac275902b045047fc9785b1c5e9fed7"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-07-display-method",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Render a label.\n\npub fn render(value: &str) -> String {\n    let label = labels::Label::new(value);\n    label.to_string()\n}\n```",
+        "tokens_out": 20
+      },
+      "prompt_sha256": "db9fdaa6008c814f940bb017189a666bf4e546e5977069e04238f13f7b7d7975"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-08-path-api",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! File stems through the vendored crate.\n\nuse std::path::Path;\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(Path::new(name))\n}\n```",
+        "tokens_out": 21
+      },
+      "prompt_sha256": "0eecdd63262dda3faf71a82539fa8aa9a30c1455e6474157e7b47b32bd81ef6f"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-09-mutable-receiver",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let mut counter = counter::Counter::new();\n    for _ in 0..limit {\n        counter.tick();\n    }\n    counter.value()\n}\n```",
+        "tokens_out": 30
+      },
+      "prompt_sha256": "268e389e3558348279eeae2ee07bd23d3c9e5b68ca555b66a017e68bcba51600"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-01-lifetime-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Prices, queries and reports.\n\npub mod model;\npub mod query;\npub mod report;\npub mod store;\n\npub use model::Item;\n\npub fn cheapest_name<'a>(items: &'a [Item], fallback: &'a Item) -> &'a str {\n    query::cheapest(items, fallback).name.as_str()\n}\n```\n```rust path=src/query.rs\n//! The cheapest item.\n\nuse crate::model::Item;\n\npub fn cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> &'a Item {\n    items.iter().min_by_key(|item| item.price).unwrap_or(fallback)\n}\n```\n```rust path=src/report.rs\n//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> String {\n    let item = query::cheapest(items, fallback);\n    format!(\"{} costs {}\", item.name, item.price)\n}\n```",
+        "tokens_out": 96
+      },
+      "prompt_sha256": "3ea2f8597da96d22cda21751542dc56a6397b2450a8a587322bd121a922b4725"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-02-error-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/error.rs\n//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n```",
+        "tokens_out": 86
+      },
+      "prompt_sha256": "9fe5e01a20e462617a6b7bdd5bc2a72a307440bd6a170dcd70ff0863a5bd273b"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-03-generic-bounds",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/stats.rs\n//! Flooring mean.\n\nuse crate::traits::AsI64;\n\npub fn mean_floor<T: AsI64>(items: &[T]) -> i64 {\n    if items.is_empty() {\n        return 0;\n    }\n    let total: i64 = items.iter().map(|value| value.as_i64()).sum();\n    total.div_euclid(items.len() as i64)\n}\n```\n```rust path=src/traits.rs\n//! The conversion trait shared by the modules.\n\npub trait AsI64 {\n    fn as_i64(&self) -> i64;\n}\n\nimpl AsI64 for i32 {\n    fn as_i64(&self) -> i64 {\n        i64::from(*self)\n    }\n}\n\nimpl AsI64 for i64 {\n    fn as_i64(&self) -> i64 {\n        *self\n    }\n}\n\nimpl AsI64 for u32 {\n    fn as_i64(&self) -> i64 {\n        i64::from(*self)\n    }\n}\n```",
+        "tokens_out": 91
+      },
+      "prompt_sha256": "be515daf5b2018fecc6633e3dc8112709f1dee8f3627cec4f00cbf4c68b31bd0"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-04-module-visibility",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/model.rs\n//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\npub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}\n```",
+        "tokens_out": 31
+      },
+      "prompt_sha256": "877e175468c714ec84db3ee395e34c0dfe8f633ccfb749a9b1629ccc966f8203"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-05-variant-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/audit.rs\n//! Audit descriptions.\n\nuse crate::event::Event;\n\npub fn describe(event: &Event) -> String {\n    match event {\n        Event::Start => \"S\".to_string(),\n        Event::Stop => \"T\".to_string(),\n        Event::Pause => \"P\".to_string(),\n    }\n}\n```\n```rust path=src/handler.rs\n//! Event handling.\n\nuse crate::event::Event;\n\npub fn handle(event: &Event) -> &'static str {\n    match event {\n        Event::Start => \"start\",\n        Event::Stop => \"stop\",\n        Event::Pause => \"pause\",\n    }\n}\n```",
+        "tokens_out": 59
+      },
+      "prompt_sha256": "01636a1856c3ff5e861cbcbfba9a3d7ebdb20ae0420c88a842184540e51cf5da"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-06-moved-module-import",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/report.rs\n//! Report formatting.\n\nuse crate::store::load;\n\npub fn describe(key: &str, data: &[(&str, i32)]) -> String {\n    match load(key, data) {\n        Some(value) => format!(\"{key}={value}\"),\n        None => format!(\"{key}=missing\"),\n    }\n}\n```\n```rust path=src/service.rs\n//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).filter(|value| *value > 0)\n}\n```",
+        "tokens_out": 54
+      },
+      "prompt_sha256": "55f8f0427b8131411797d8832c72dd229bc9f63e49c58cb0bdb3682638049743"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-07-field-rename",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/config.rs\n//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.to_string(), retries }\n    }\n}\n```",
+        "tokens_out": 37
+      },
+      "prompt_sha256": "97f0d55207eda4231e74c8898d3b2b5db9ec4028974be8b62254c851265fae23"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-08-mutability-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A state pipeline.\n\npub mod report;\npub mod state;\npub mod update;\n\npub fn run() -> i32 {\n    let mut state = state::initial();\n    update::bump(&mut state, 1);\n    update::bump(&mut state, 1);\n    report::count(&state)\n}\n```\n```rust path=src/update.rs\n//! State updates.\n\nuse crate::state::State;\n\npub fn bump(state: &mut State, by: i32) {\n    state.count += by;\n}\n```",
+        "tokens_out": 55
+      },
+      "prompt_sha256": "4408582ed70975713aea930255c5295990553bd081bbed7dc4f884bfa61d3533"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-09-result-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/cache.rs\n//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 0,\n    }\n}\n```\n```rust path=src/report.rs\n//! Report formatting.\n\nuse crate::api;\n\npub fn describe(key: &str) -> String {\n    match api::fetch(key) {\n        Ok(value) => format!(\"{key}={value}\"),\n        Err(_) => format!(\"{key}=missing\"),\n    }\n}\n```",
+        "tokens_out": 52
+      },
+      "prompt_sha256": "05724c25e0ac3f10d33c4ea9a752a2fedb83fc92a113af1cd7f3d40c68b136a9"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-01-overlapping-count",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Overlapping occurrence counting.\n\npub fn count_occurrences(haystack: &str, needle: &str) -> usize {\n    if needle.is_empty() {\n        return 0;\n    }\n    haystack\n        .as_bytes()\n        .windows(needle.len())\n        .filter(|window| *window == needle.as_bytes())\n        .count()\n}\n```",
+        "tokens_out": 31
+      },
+      "prompt_sha256": "d440e0f315a2fbe24b2404408237eeb62d6a9fbf3dbb7fd78ab88ea849792426"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-02-rounded-average",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Integer averages with half-up rounding.\n\npub fn average(values: &[u32]) -> u32 {\n    if values.is_empty() {\n        return 0;\n    }\n    let len = values.len() as u32;\n    (values.iter().sum::<u32>() + len / 2) / len\n}\n```",
+        "tokens_out": 36
+      },
+      "prompt_sha256": "36f4039854bf6ab9bf18d032f82c296256f4cc5ad274fc8af685db45457020b9"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-03-case-insensitive-first-word",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Case-insensitive command detection.\n\npub fn is_command(text: &str, name: &str) -> bool {\n    if name.is_empty() {\n        return false;\n    }\n    text.split_whitespace()\n        .next()\n        .map(|word| word.eq_ignore_ascii_case(name))\n        .unwrap_or(false)\n}\n```",
+        "tokens_out": 28
+      },
+      "prompt_sha256": "2d06a8f3be39f18c31ad2a7b0b4f673222a871d6759562a7a50f185eb46902d9"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-04-stable-score-sort",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Score ranking with a deterministic tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| {\n        right.1.cmp(&left.1).then(left.0.cmp(&right.0))\n    });\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}\n```",
+        "tokens_out": 32
+      },
+      "prompt_sha256": "aeb8a70cfe3cb24442f218c87a3f738cdc61d3984949270d7a1de3e2e15a1895"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-05-lowercase-hex",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Lowercase hex encoding.\n\npub fn hex(bytes: &[u8]) -> String {\n    bytes.iter().map(|byte| format!(\"{byte:02x}\")).collect()\n}\n```",
+        "tokens_out": 17
+      },
+      "prompt_sha256": "c3e32081b42a8f0ec4abc8410269544ee3ac5d0dd31f51f9e85c0cb4da769703"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-06-order-preserving-unique",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}\n```",
+        "tokens_out": 38
+      },
+      "prompt_sha256": "6e60ddd431f8d22558d11b32da9f336b96959628254727f1ed46e472bbfa1d79"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-07-csv-quoting",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! CSV field quoting.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"\\\"\\\"\"))\n    } else {\n        value.to_string()\n    }\n}\n```",
+        "tokens_out": 30
+      },
+      "prompt_sha256": "0066b37b65523db0c2f1d01ac3cb1941f02922f0873f5ef09da1111281525992"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-08-char-truncate",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Truncation by character count.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    text.chars().take(max_chars).collect()\n}\n```",
+        "tokens_out": 19
+      },
+      "prompt_sha256": "cbdb0ce11259bfc260baeb1eed7d760e316ede0a9507a82f5a55373ab56e0fb9"
+    },
+    {
+      "category": "semantic-repair",
+      "id": "semantic-09-token-bucket-refill",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Proportional, capped token-bucket refill.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity)\n}\n```",
+        "tokens_out": 33
+      },
+      "prompt_sha256": "abe619ac6658c0b3a54c9c0260aa6b64c5da7466712943396f0d7b475046cfff"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-01-associated-type",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}\n```",
+        "tokens_out": 85
+      },
+      "prompt_sha256": "4ff48cea4b5f4bb4fe66905db6a2c6142da9acb702e2b70194410cf85033a86f"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-02-coherence",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n```",
+        "tokens_out": 83
+      },
+      "prompt_sha256": "aa7d71b8c7b169fb2fdce90db8c9477eb9c8d45ed572bb9a71ae98014874b014"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-03-object-safety",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A small key-value store used through dynamic dispatch.\n\nuse std::collections::BTreeMap;\n\npub trait Store {\n    fn get(&self, key: &str) -> Option<i64>;\n    fn put(&mut self, key: &str, value: i64);\n    fn len(&self) -> usize;\n}\n\n#[derive(Default)]\npub struct MemoryStore {\n    items: BTreeMap<String, i64>,\n}\n\nimpl Store for MemoryStore {\n    fn get(&self, key: &str) -> Option<i64> {\n        self.items.get(key).copied()\n    }\n\n    fn put(&mut self, key: &str, value: i64) {\n        self.items.insert(key.to_string(), value);\n    }\n\n    fn len(&self) -> usize {\n        self.items.len()\n    }\n}\n\npub fn count(store: &dyn Store) -> usize {\n    store.len()\n}\n```",
+        "tokens_out": 88
+      },
+      "prompt_sha256": "ef0d01f3a6af67db969df86c71a22a8345cacdba73ea7435700343d4da71d40e"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-04-missing-method",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side * self.side\n    }\n\n    fn name(&self) -> &'static str {\n        \"square\"\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}\n```",
+        "tokens_out": 62
+      },
+      "prompt_sha256": "cdc30e214679a54f9ae024358eef02b6526662f97fb23b5a98c270ac5b4c06a7"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-05-supertrait-bound",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Nodes that can be debug-formatted.\n\nuse core::fmt::Debug;\n\npub trait Node: Debug {\n    fn id(&self) -> u32;\n}\n\n#[derive(Debug)]\npub struct Leaf {\n    pub id: u32,\n}\n\nimpl Node for Leaf {\n    fn id(&self) -> u32 {\n        self.id\n    }\n}\n\npub fn summarise(nodes: &[Box<dyn Node>]) -> String {\n    nodes\n        .iter()\n        .map(|node| format!(\"{:?}:{}\", node, node.id()))\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\n```",
+        "tokens_out": 60
+      },
+      "prompt_sha256": "215f800688d1cb4c10307bab47b9b042a59418f62a79c56610fff1d7c8c121e0"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-06-method-ambiguity",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Left::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}\n```",
+        "tokens_out": 78
+      },
+      "prompt_sha256": "161129ac4dfafaaf680650d630098ad8a854568c20d82d79a52e066c7d09d2cf"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-07-add-impl",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n```",
+        "tokens_out": 48
+      },
+      "prompt_sha256": "450f46738b508bfb2f605e8a7b899756d8da349862e081726ef0907b27a00d04"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-08-method-signature",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A hex codec.\n\npub trait Codec {\n    fn encode(&self, value: u32) -> String;\n}\n\npub struct Hex;\n\nimpl Codec for Hex {\n    fn encode(&self, value: u32) -> String {\n        format!(\"{value:x}\")\n    }\n}\n\npub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n    values.iter().map(|value| codec.encode(*value)).collect()\n}\n```",
+        "tokens_out": 49
+      },
+      "prompt_sha256": "10e678beed4627913f05237e3e9586d932c5727a6f0e162d2d28cfdfcf7f5de6"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-09-orphan-rule",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Render bytes as decimal text through a local newtype.\n\npub struct Bytes(pub Vec<u8>);\n\nimpl core::fmt::Display for Bytes {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .0\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\",\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}\n```",
+        "tokens_out": 53
+      },
+      "prompt_sha256": "958cccada25bf1c6a238a8ecb65c3d52667b76b823d5288bac989739f76d24c2"
+    },
+    {
+      "category": "trio",
+      "id": "trio-01-lifetime-chain",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A table, an alias table, and a resolution chain.\n\npub type Table = [(&'static str, &'static str)];\n\npub fn lookup<'a>(table: &'a Table, key: &str) -> Option<&'a str> {\n    table\n        .iter()\n        .find(|(name, _value)| *name == key)\n        .map(|(_name, value)| *value)\n}\n\npub fn resolve<'a>(\n    table: &'a Table,\n    aliases: &[(&'static str, &'static str)],\n    key: &str,\n) -> Option<&'a str> {\n    if let Some(value) = lookup(table, key) {\n        return Some(value);\n    }\n    aliases\n        .iter()\n        .find(|(alias, _target)| *alias == key)\n        .and_then(|(_alias, target)| lookup(table, target))\n}\n\npub fn chain<'a>(\n    table: &'a Table,\n    aliases: &[(&'static str, &'static str)],\n    key: &str,\n) -> Option<&'a str> {\n    resolve(table, aliases, key)\n}\n```",
+        "tokens_out": 105
+      },
+      "prompt_sha256": "77630c2d66234566bb8c65413ae72fead574f442b35327dfdf1ac323e26e87a1"
+    },
+    {
+      "category": "trio",
+      "id": "trio-02-math-dependency",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Recompute planning over declared rules.\n\n#[derive(Debug, Clone, Copy)]\npub struct Rule {\n    pub output: &'static str,\n    pub inputs: &'static [&'static str],\n}\n\n#[derive(Debug, PartialEq)]\npub enum PlanError {\n    Unknown(&'static str),\n    Cycle(&'static str),\n}\n\nfn visit(\n    rules: &[Rule],\n    known: &[&str],\n    node: &'static str,\n    done: &mut Vec<&'static str>,\n    visiting: &mut Vec<&'static str>,\n    plan: &mut Vec<&'static str>,\n) -> Result<(), PlanError> {\n    if known.contains(&node) || done.contains(&node) {\n        return Ok(());\n    }\n    if visiting.contains(&node) {\n        return Err(PlanError::Cycle(node));\n    }\n    let rule = rules\n        .iter()\n        .find(|rule| rule.output == node)\n        .ok_or(PlanError::Unknown(node))?;\n    visiting.push(node);\n    for input in rule.inputs {\n        visit(rules, known, input, done, visiting, plan)?;\n    }\n    visiting.pop();\n    done.push(node);\n    plan.push(node);\n    Ok(())\n}\n\npub fn minimal_recompute(\n    rules: &[Rule],\n    known: &[&str],\n    target: &'static str,\n) -> Result<Vec<&'static str>, PlanError> {\n    if known.contains(&target) {\n        return Ok(Vec::new());\n    }\n    let mut plan = Vec::new();\n    let mut done = Vec::new();\n    let mut visiting = Vec::new();\n    visit(rules, known, target, &mut done, &mut visiting, &mut plan)?;\n    Ok(plan)\n}\n```",
+        "tokens_out": 153
+      },
+      "prompt_sha256": "f00d733fa061441c4057e8a9e1d0f953e05e066b8c785dd5b54e33b4d75fff74"
+    },
+    {
+      "category": "trio",
+      "id": "trio-03-logic-quantifier",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Quantified premise chains.\n\nuse std::collections::VecDeque;\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum Quantifier {\n    All,\n    Some,\n}\n\n#[derive(Debug, Clone, Copy)]\npub struct Premise {\n    pub subject: &'static str,\n    pub quantifier: Quantifier,\n    pub object: &'static str,\n}\n\n#[derive(Debug, PartialEq)]\npub struct Repair {\n    pub path: Vec<usize>,\n    pub strengthened: Vec<usize>,\n}\n\npub fn repair_path(\n    premises: &[Premise],\n    from: &'static str,\n    to: &'static str,\n) -> Option<Repair> {\n    if from == to {\n        return Some(Repair { path: Vec::new(), strengthened: Vec::new() });\n    }\n    let mut queue: VecDeque<(&'static str, Vec<usize>)> = VecDeque::new();\n    let mut seen: Vec<&'static str> = vec![from];\n    queue.push_back((from, Vec::new()));\n    while let Some((node, path)) = queue.pop_front() {\n        for (index, premise) in premises.iter().enumerate() {\n            if premise.subject != node || seen.contains(&premise.object) {\n                continue;\n            }\n            let mut next_path = path.clone();\n            next_path.push(index);\n            if premise.object == to {\n                let strengthened = next_path\n                    .iter()\n                    .copied()\n                    .filter(|index| premises[*index].quantifier == Quantifier::Some)\n                    .collect();\n                return Some(Repair { path: next_path, strengthened });\n            }\n            seen.push(premise.object);\n            queue.push_back((premise.object, next_path));\n        }\n    }\n    None\n}\n```",
+        "tokens_out": 158
+      },
+      "prompt_sha256": "7f1ce15be2d0bb1c419472af415becf9f866bb8c89e1dd2d632781a5918c8306"
+    },
+    {
+      "category": "trio",
+      "id": "trio-04-invariant-ledger",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A ledger that preserves its invariant.\n\n#[derive(Debug)]\npub struct Ledger {\n    entries: Vec<i64>,\n    total: i64,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Ledger { entries: Vec::new(), total: 0 }\n    }\n\n    pub fn deposit(&mut self, amount: i64) {\n        self.entries.push(amount);\n        self.total += amount;\n    }\n\n    pub fn withdraw(&mut self, amount: i64) -> Result<(), String> {\n        if amount <= 0 {\n            return Err(\"invalid amount\".to_string());\n        }\n        if amount > self.balance() {\n            return Err(\"insufficient funds\".to_string());\n        }\n        self.entries.push(-amount);\n        self.total -= amount;\n        Ok(())\n    }\n\n    pub fn total(&self) -> i64 {\n        self.total\n    }\n\n    pub fn balance(&self) -> i64 {\n        self.entries.iter().sum()\n    }\n\n    pub fn entries(&self) -> &[i64] {\n        &self.entries\n    }\n}\n```",
+        "tokens_out": 108
+      },
+      "prompt_sha256": "d1b5124d99921d95a1c034611c0ca72045128a10ec05d085c310c7d68c0bbcf1"
+    },
+    {
+      "category": "trio",
+      "id": "trio-05-invariant-graph",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A graph that preserves its degree-sum invariant.\n\n#[derive(Debug, PartialEq)]\npub enum GraphError {\n    OutOfRange,\n    SelfLoop,\n    Missing,\n}\n\n#[derive(Debug)]\npub struct Graph {\n    nodes: usize,\n    edges: Vec<(u32, u32)>,\n    degrees: Vec<u32>,\n}\n\nimpl Graph {\n    pub fn new(nodes: usize) -> Self {\n        Graph { nodes, edges: Vec::new(), degrees: vec![0; nodes] }\n    }\n\n    pub fn add_edge(&mut self, from: u32, to: u32) -> Result<(), GraphError> {\n        if from as usize >= self.nodes || to as usize >= self.nodes {\n            return Err(GraphError::OutOfRange);\n        }\n        if from == to {\n            return Err(GraphError::SelfLoop);\n        }\n        self.edges.push((from, to));\n        self.degrees[from as usize] += 1;\n        self.degrees[to as usize] += 1;\n        Ok(())\n    }\n\n    pub fn remove_edge(&mut self, from: u32, to: u32) -> Result<(), GraphError> {\n        if let Some(position) = self.edges.iter().position(|edge| *edge == (from, to)) {\n            self.edges.remove(position);\n            self.degrees[from as usize] -= 1;\n            self.degrees[to as usize] -= 1;\n            Ok(())\n        } else {\n            Err(GraphError::Missing)\n        }\n    }\n\n    pub fn degree(&self, node: u32) -> u32 {\n        self.degrees[node as usize]\n    }\n\n    pub fn edge_count(&self) -> usize {\n        self.edges.len()\n    }\n\n    pub fn conserved(&self) -> bool {\n        self.degrees.iter().sum::<u32>() as usize == 2 * self.edges.len()\n    }\n}\n```",
+        "tokens_out": 179
+      },
+      "prompt_sha256": "2991266175a2d05a1170540164af1a41ec1000275e50c8717d204e69e6fa0f41"
+    },
+    {
+      "category": "trio",
+      "id": "trio-06-invariant-substitution",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Capture-avoiding substitution.\n\n#[derive(Clone, Debug, PartialEq)]\npub enum Term {\n    Var(String),\n    App(String, Vec<Term>),\n    Lam(String, Box<Term>),\n}\n\npub fn free_vars(term: &Term) -> Vec<String> {\n    fn collect(term: &Term, bound: &mut Vec<String>, out: &mut Vec<String>) {\n        match term {\n            Term::Var(name) => {\n                if !bound.contains(name) {\n                    out.push(name.clone());\n                }\n            }\n            Term::App(_function, arguments) => {\n                for argument in arguments {\n                    collect(argument, bound, out);\n                }\n            }\n            Term::Lam(binder, body) => {\n                bound.push(binder.clone());\n                collect(body, bound, out);\n                bound.pop();\n            }\n        }\n    }\n    let mut out = Vec::new();\n    collect(term, &mut Vec::new(), &mut out);\n    out.sort();\n    out.dedup();\n    out\n}\n\npub fn substitute(term: &Term, name: &str, replacement: &Term) -> Option<Term> {\n    Some(match term {\n        Term::Var(variable) if variable == name => replacement.clone(),\n        Term::Var(variable) => Term::Var(variable.clone()),\n        Term::App(function, arguments) => Term::App(\n            function.clone(),\n            arguments\n                .iter()\n                .map(|argument| substitute(argument, name, replacement))\n                .collect::<Option<Vec<_>>>()?,\n        ),\n        Term::Lam(binder, body) => {\n            if binder == name {\n                return Some(term.clone());\n            }\n            if free_vars(replacement).iter().any(|variable| variable == binder) {\n                return None;\n            }\n            Term::Lam(\n                binder.clone(),\n                Box::new(substitute(body, name, replacement)?),\n            )\n        }\n    })\n}\n```",
+        "tokens_out": 155
+      },
+      "prompt_sha256": "e34cefe5b753533d93fba17ea6bcd420cf31acb8276eb96f137926ac1ba176fc"
+    },
+    {
+      "category": "trio",
+      "id": "trio-07-scope-resolver",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Nearest-binding scope resolution.\n\n#[derive(Clone, Debug, PartialEq)]\npub struct Scope {\n    pub bindings: Vec<String>,\n    pub parent: Option<Box<Scope>>,\n}\n\nimpl Scope {\n    pub fn root() -> Self {\n        Scope { bindings: Vec::new(), parent: None }\n    }\n\n    pub fn push(&self, binding: &str) -> Self {\n        Scope {\n            bindings: vec![binding.to_string()],\n            parent: Some(Box::new(self.clone())),\n        }\n    }\n}\n\npub fn resolve(scope: &Scope, name: &str) -> Option<usize> {\n    let mut current = Some(scope);\n    let mut depth = 0;\n    while let Some(node) = current {\n        if node.bindings.iter().any(|binding| binding == name) {\n            return Some(depth);\n        }\n        depth += 1;\n        current = node.parent.as_deref();\n    }\n    None\n}\n```",
+        "tokens_out": 98
+      },
+      "prompt_sha256": "1ed24b9b2b6a92c134d6b1877b6a4c861c013f5c866d233dd523238c90f3100c"
+    },
+    {
+      "category": "trio",
+      "id": "trio-08-scoped-quantifier-eval",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Scoped arithmetic evaluation with nearest-binding resolution.\n\n#[derive(Clone, Debug, PartialEq)]\npub enum Expr {\n    Const(i64),\n    Var(String),\n    Add(Box<Expr>, Box<Expr>),\n    Mul(Box<Expr>, Box<Expr>),\n    Sum { variable: String, low: i64, high: i64, body: Box<Expr> },\n}\n\npub fn eval(expr: &Expr, environment: &[(String, i64)]) -> Result<i64, String> {\n    match expr {\n        Expr::Const(value) => Ok(*value),\n        Expr::Var(name) => environment\n            .iter()\n            .rev()\n            .find(|(binding, _value)| binding == name)\n            .map(|(_binding, value)| *value)\n            .ok_or_else(|| format!(\"unbound {name}\")),\n        Expr::Add(left, right) => Ok(eval(left, environment)? + eval(right, environment)?),\n        Expr::Mul(left, right) => Ok(eval(left, environment)? * eval(right, environment)?),\n        Expr::Sum { variable, low, high, body } => {\n            let mut total = 0;\n            let mut inner = environment.to_vec();\n            for value in *low..=*high {\n                inner.push((variable.clone(), value));\n                total += eval(body, &inner)?;\n            }\n            Ok(total)\n        }\n    }\n}\n```",
+        "tokens_out": 119
+      },
+      "prompt_sha256": "11454236d77166df5332c39f6305af09503f9e5d45a37049fd337424b0f8867b"
+    },
+    {
+      "category": "trio",
+      "id": "trio-09-quantifier-occurrences",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Occurrence classification by the nearest matching binder.\n\n#[derive(Clone, Debug, PartialEq)]\npub enum Occurrence {\n    Free,\n    Bound(u32),\n}\n\n#[derive(Clone, Debug, PartialEq)]\npub enum Formula {\n    Var(String),\n    Atom(String),\n    Not(Box<Formula>),\n    And(Box<Formula>, Box<Formula>),\n    Forall(String, Box<Formula>),\n    Exists(String, Box<Formula>),\n}\n\npub fn occurrences(formula: &Formula, name: &str) -> Vec<Occurrence> {\n    fn walk(formula: &Formula, name: &str, depth: u32, out: &mut Vec<Occurrence>) {\n        match formula {\n            Formula::Var(variable) => {\n                if variable == name {\n                    out.push(if depth == 0 {\n                        Occurrence::Free\n                    } else {\n                        Occurrence::Bound(depth - 1)\n                    });\n                }\n            }\n            Formula::Atom(_) => {}\n            Formula::Not(inner) => walk(inner, name, depth, out),\n            Formula::And(left, right) => {\n                walk(left, name, depth, out);\n                walk(right, name, depth, out);\n            }\n            Formula::Forall(binder, body) => {\n                let next = if binder == name { depth + 1 } else { depth };\n                walk(body, name, next, out);\n            }\n            Formula::Exists(binder, body) => {\n                let next = if binder == name { depth + 1 } else { depth };\n                walk(body, name, next, out);\n            }\n        }\n    }\n    let mut out = Vec::new();\n    walk(formula, name, 0, &mut out);\n    out\n}\n```",
+        "tokens_out": 170
+      },
+      "prompt_sha256": "bdbc24db635071f7587ba5ea5e03afcf1d6254b6a7eee276d4194416acc3dade"
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-preregistration-v3.json",
+    "sha256": "33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b"
+  },
+  "revision": "572f6e4e3a3da114e0550407918b13a7ef6eb499",
+  "schema": "selvedge/capability-generations/v1",
+  "stage": "generate",
+  "stamp": "20261116T062400Z",
+  "suite": {
+    "counts": {
+      "by_category": {
+        "api-migration": 9,
+        "concurrency": 9,
+        "dependency-compat": 9,
+        "failing-test": 9,
+        "lifetime-borrow": 9,
+        "probe": 6,
+        "repo-scale": 9,
+        "semantic-repair": 9,
+        "trait-impl": 9,
+        "trio": 9
+      },
+      "probes": 6,
+      "suite": 72,
+      "total": 87,
+      "trio": 9
+    },
+    "prompt_hashes": {
+      "borrow-01-local-reference": "eddc8f05bd5e6509dc2dcdc5fc778336b7ead72419d01d76d34e7b1667e45f67",
+      "borrow-02-mutate-while-borrowed": "cd3d9d546522140b243c11943aadbb76f4acbb8c7ecc236cfceb168671097674",
+      "borrow-03-self-referential-window": "09ee624675c5112dd319220e9006f41149ca8bd86b22f376129d38b619608fd2",
+      "borrow-04-iterator-invalidation": "b2961141ca1e7cc6d3216335fbbd98b17096ec3568a13179f7f3c70d7e804c3a",
+      "borrow-05-temporary-lifetime": "23968c14c12a9565289481b04f1056bd14afcc6fbabdbee8c2f1751b4e91f31f",
+      "borrow-06-move-while-borrowed": "aabe8e1558de85672a82888cebb7a7749cf07082ac219cd877fecb85d6ab8c39",
+      "borrow-07-overlapping-mut-borrows": "489f22515bc8948fea18bcebb450b25c4493b98163a71f3127ac1da73079b433",
+      "borrow-08-iterator-outlives-local": "e09785376d3c29d3dbed4678b71aa167bad7130687052859b902aa7c92d309be",
+      "borrow-09-struct-lifetime": "dee99429a796514100bcd5af50f849414d0391ce689d3ff20e7f9addb09a9cb1",
+      "concurrency-01-lock-order-deadlock": "2a9318df4c5e5eb092fc76a6e27de86629b664e17f207c0e90cf17cb895c00ae",
+      "concurrency-02-lost-update": "c9ecc6a28f7f1028b8563937ce96a9dd2e2091a8fad24dc16fad2647b51c3b3c",
+      "concurrency-03-send-boundary": "62ba57362c113a4cd5d529de8297e797a17b422adcb2fcd22ea99ec3bc567995",
+      "concurrency-04-mutex-critical-section": "3b97992ffe43ca56f4f981f5c30c4892637f82ae8e8a768b2690a61d26050455",
+      "concurrency-05-swallowed-panic": "0b3de0ab82f011f93c56b3f3e12c6d69355b6112df6a1d77f2d929623062672e",
+      "concurrency-06-guard-crosses-thread": "dc73197b66fbaa4985cdc70ef1cc77d39e952fc02fa8983c2ec8dd0907bdcd97",
+      "concurrency-07-silent-channel-drop": "4c3ebe481caab73b9fe9e076c8cd0c18d17228db078300b7ec9fba35f959a422",
+      "concurrency-08-borrowed-thread": "f72b7a6b3faae2c53b48f860b7ba72f6374863d96575c596b17dbe198be824aa",
+      "concurrency-09-shared-input": "2020074499d00f110a2e19c3b6c390ace38a73be0cdf94dc75e84c05d5e2fc2e",
+      "deps-01-version-requirement": "fca09da501226f767aa8e927968d5981e3b0b993712a6a70db6ef3d7f0278b5b",
+      "deps-02-edition-2024": "14dbbcaaeb57071fdca492b42d27c4b96c4a6ad3b347cad463b6bfcc293b6753",
+      "deps-03-optional-feature": "86ccc970b215438f733759843bbd062e7c2bc0a59685f5f5daa1b3ea8bf865e8",
+      "deps-04-unknown-feature": "8df55dcf52f544a7df739786b6f046946698c52f466dfc161c5b1dbe9c6ecbf8",
+      "deps-05-workspace-member": "30e76721781e9f45d26d970cbc8b9831a3b0b7fc4920f968e3f94d89f6b7c033",
+      "deps-06-edition-unsafe-block": "6bab589bac978d8e890edba720a14e2817d835c76da589d8a49cc23ff424c0e8",
+      "deps-07-feature-conflict": "6c692ba83abfbfce7f49b7a06d17554c8af8747decd1c9ff75e0f2b1c31c3030",
+      "deps-08-renamed-package": "3a6ae14325df97349eaa736fac14016f692f2ac1de1825b34dc42f4371efb784",
+      "deps-09-disable-default-features": "fc2e3fb3c38af7016fb6381546a436f17a2e4e34381fec3310f6f749cf5c90df",
+      "failing-01-chunk-boundary": "ad24d404a6640d5b6cbfb4c40eab1fd55bd46eeecdf27cdb0eb88d8536ca333b",
+      "failing-02-empty-input": "edc0608e8ba9f68195f785668e56e0424081174df2d27943d8e4f09591dc2671",
+      "failing-03-overflow-boundary": "45913306504e98f1ef592f30110768c37a4e142c940a5081406631caa8189e5d",
+      "failing-04-nan-ordering": "c834a0923beb1cef1d0e91b2bb5114dd38f98d5547f71033bc849beb324579be",
+      "failing-05-inclusive-range": "512eeac803907f3f0b7f5ef78386ff85bdd83192777c1bdfd79645722f08f1bc",
+      "failing-06-integer-precision": "31fb305f94955b41fec625f86f97b6bd27e07c46ab5766c47e5df27f332a80df",
+      "failing-07-common-prefix": "dd87b68d43b9c51fb798d6e3e27a7fbcbb591cd5a27d7fc191f921a6fbebe034",
+      "failing-08-lower-bound": "6308a96176e43d09ccf8e8ba937236ddf7e286319f84821b580bfd534baa712d",
+      "failing-09-state-cycle": "2e6520f0f624053221b71ad7c65b06ca12f8a23be276a55bf787ae9ef6244fa9",
+      "migrate-01-signature": "d9a2884af29a00aa31488cfeaf7d61dd7f7c3c5e600371f05d6b31fa9f316e33",
+      "migrate-02-builder": "b8d52ddda5ea9f104da2cec41f326c9b54322f6406dbc8e98f68055cd1ab730d",
+      "migrate-03-error-conversion": "388352628190f91ca82457e7f40601c40c75510e8dda5228e07f63c4546f2006",
+      "migrate-04-trait-import": "4e7be1e58822933457486ebaa5716f569eac70fcd88edea58097d1b57fe1dc89",
+      "migrate-05-iterator-api": "0af895e5ca2f93f3b4475f84cea3ca9375173743765918c2708c99c05b336d81",
+      "migrate-06-error-variant": "ee5fc59e58eadbd0599330eeb46faf16aac275902b045047fc9785b1c5e9fed7",
+      "migrate-07-display-method": "db9fdaa6008c814f940bb017189a666bf4e546e5977069e04238f13f7b7d7975",
+      "migrate-08-path-api": "0eecdd63262dda3faf71a82539fa8aa9a30c1455e6474157e7b47b32bd81ef6f",
+      "migrate-09-mutable-receiver": "268e389e3558348279eeae2ee07bd23d3c9e5b68ca555b66a017e68bcba51600",
+      "repo-01-lifetime-propagation": "3ea2f8597da96d22cda21751542dc56a6397b2450a8a587322bd121a922b4725",
+      "repo-02-error-propagation": "9fe5e01a20e462617a6b7bdd5bc2a72a307440bd6a170dcd70ff0863a5bd273b",
+      "repo-03-generic-bounds": "be515daf5b2018fecc6633e3dc8112709f1dee8f3627cec4f00cbf4c68b31bd0",
+      "repo-04-module-visibility": "877e175468c714ec84db3ee395e34c0dfe8f633ccfb749a9b1629ccc966f8203",
+      "repo-05-variant-propagation": "01636a1856c3ff5e861cbcbfba9a3d7ebdb20ae0420c88a842184540e51cf5da",
+      "repo-06-moved-module-import": "55f8f0427b8131411797d8832c72dd229bc9f63e49c58cb0bdb3682638049743",
+      "repo-07-field-rename": "97f0d55207eda4231e74c8898d3b2b5db9ec4028974be8b62254c851265fae23",
+      "repo-08-mutability-propagation": "4408582ed70975713aea930255c5295990553bd081bbed7dc4f884bfa61d3533",
+      "repo-09-result-propagation": "05724c25e0ac3f10d33c4ea9a752a2fedb83fc92a113af1cd7f3d40c68b136a9",
+      "semantic-01-overlapping-count": "d440e0f315a2fbe24b2404408237eeb62d6a9fbf3dbb7fd78ab88ea849792426",
+      "semantic-02-rounded-average": "36f4039854bf6ab9bf18d032f82c296256f4cc5ad274fc8af685db45457020b9",
+      "semantic-03-case-insensitive-first-word": "2d06a8f3be39f18c31ad2a7b0b4f673222a871d6759562a7a50f185eb46902d9",
+      "semantic-04-stable-score-sort": "aeb8a70cfe3cb24442f218c87a3f738cdc61d3984949270d7a1de3e2e15a1895",
+      "semantic-05-lowercase-hex": "c3e32081b42a8f0ec4abc8410269544ee3ac5d0dd31f51f9e85c0cb4da769703",
+      "semantic-06-order-preserving-unique": "6e60ddd431f8d22558d11b32da9f336b96959628254727f1ed46e472bbfa1d79",
+      "semantic-07-csv-quoting": "0066b37b65523db0c2f1d01ac3cb1941f02922f0873f5ef09da1111281525992",
+      "semantic-08-char-truncate": "cbdb0ce11259bfc260baeb1eed7d760e316ede0a9507a82f5a55373ab56e0fb9",
+      "semantic-09-token-bucket-refill": "abe619ac6658c0b3a54c9c0260aa6b64c5da7466712943396f0d7b475046cfff",
+      "traits-01-associated-type": "4ff48cea4b5f4bb4fe66905db6a2c6142da9acb702e2b70194410cf85033a86f",
+      "traits-02-coherence": "aa7d71b8c7b169fb2fdce90db8c9477eb9c8d45ed572bb9a71ae98014874b014",
+      "traits-03-object-safety": "ef0d01f3a6af67db969df86c71a22a8345cacdba73ea7435700343d4da71d40e",
+      "traits-04-missing-method": "cdc30e214679a54f9ae024358eef02b6526662f97fb23b5a98c270ac5b4c06a7",
+      "traits-05-supertrait-bound": "215f800688d1cb4c10307bab47b9b042a59418f62a79c56610fff1d7c8c121e0",
+      "traits-06-method-ambiguity": "161129ac4dfafaaf680650d630098ad8a854568c20d82d79a52e066c7d09d2cf",
+      "traits-07-add-impl": "450f46738b508bfb2f605e8a7b899756d8da349862e081726ef0907b27a00d04",
+      "traits-08-method-signature": "10e678beed4627913f05237e3e9586d932c5727a6f0e162d2d28cfdfcf7f5de6",
+      "traits-09-orphan-rule": "958cccada25bf1c6a238a8ecb65c3d52667b76b823d5288bac989739f76d24c2",
+      "trio-01-lifetime-chain": "77630c2d66234566bb8c65413ae72fead574f442b35327dfdf1ac323e26e87a1",
+      "trio-02-math-dependency": "f00d733fa061441c4057e8a9e1d0f953e05e066b8c785dd5b54e33b4d75fff74",
+      "trio-03-logic-quantifier": "7f1ce15be2d0bb1c419472af415becf9f866bb8c89e1dd2d632781a5918c8306",
+      "trio-04-invariant-ledger": "d1b5124d99921d95a1c034611c0ca72045128a10ec05d085c310c7d68c0bbcf1",
+      "trio-05-invariant-graph": "2991266175a2d05a1170540164af1a41ec1000275e50c8717d204e69e6fa0f41",
+      "trio-06-invariant-substitution": "e34cefe5b753533d93fba17ea6bcd420cf31acb8276eb96f137926ac1ba176fc",
+      "trio-07-scope-resolver": "1ed24b9b2b6a92c134d6b1877b6a4c861c013f5c866d233dd523238c90f3100c",
+      "trio-08-scoped-quantifier-eval": "11454236d77166df5332c39f6305af09503f9e5d45a37049fd337424b0f8867b",
+      "trio-09-quantifier-occurrences": "bdbc24db635071f7587ba5ea5e03afcf1d6254b6a7eee276d4194416acc3dade"
+    },
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "3f7933966680a9663b178817e245027bf61895523e094e8f1ef369f6767585d8"
+  }
+}

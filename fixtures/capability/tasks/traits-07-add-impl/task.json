@@ -1,0 +1,28 @@
+{
+  "capability": "Implement the operator trait a newtype needs to participate in arithmetic.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-07-add-impl",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0369"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Money(self.0 + right.0)",
+    "replace": "Money(self.0 + right.0 + 1)"
+  },
+  "observed_failure": "error[E0369]: cannot add `Money` to `Money`\n --> src/lib.rs:5:44\n  |\n5 | pub fn total(left: Money, right: Money) -> Money { left + right }\n  |                                                    ^^^^ ------- Money\n  |                                                    |\n  |                                                    Money",
+  "prompt_intro": "This crate does not compile. `Money` cannot be added because it does not implement `std::ops::Add`. Implement it for `Money + Money`; keep the newtype and `total`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

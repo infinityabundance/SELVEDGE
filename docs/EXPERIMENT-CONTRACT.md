@@ -2495,15 +2495,16 @@ historical measurement.
 
 - The original registration `docs/capability-preregistration.json` remains
   byte-for-byte as written and continues to bind the historical 24-task suite.
-- The expanded suite is registered separately in
-  `docs/capability-preregistration-v2.json` with the same 10% relative primary
+- The expanded suite is registered in
+  `docs/capability-preregistration-v3.json` with the same 10% relative primary
   threshold, the same paired category-stratified bootstrap (seed `20261115`,
   10,000 resamples), an 8-item per-category minimum, and three reported trio
-  surfaces (`rust`, `numeric-graph`, `logic`). Its suite binding is the hash in
-  `fixtures/capability/MANIFEST.json`.
+  surfaces (`rust`, `numeric-graph`, `logic`). v2 registered the first pass and
+  was superseded without being edited after the near-duplicate audit. The final
+  suite binding is the hash in `fixtures/capability/MANIFEST.json`.
 - P8.2.6's "fresh task set and its contamination receipt are copied by
   reference (hash)" now means the expanded manifest and the contamination
-  receipt `results/capability/contamination-20261116T065000Z.json`.
+  receipt `results/capability/contamination-20261116T080000Z.json`.
 - P11.1.1's 200-item P12.9 failure artifact and its target-layer registration are
   unaffected and still do not exist at this revision; the expansion does not
   supply that artifact.

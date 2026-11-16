@@ -1,0 +1,31 @@
+{
+  "capability": "Migrate a call site to a dependency that now takes a path type.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "migrate-08-path-api",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Path::new(name)",
+    "replace": "Path::new(\"fixed\")"
+  },
+  "observed_failure": "error[E0308]: mismatched types\n --> src/lib.rs:3:19\n  |\n3 |     storage::stem(name)\n  |                  ^^^^ expected `&Path`, found `&str`",
+  "prompt_intro": "The crate does not build against the vendored `storage` 2.0.0. Version 1 took `&str`; version 2 takes `&std::path::Path`. Do not modify `dep/`. Keep `pub fn stem_of(name: &str) -> Option<String>`; the returned stem is the file name without its final extension.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

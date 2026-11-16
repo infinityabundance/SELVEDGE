@@ -1,0 +1,28 @@
+{
+  "capability": "End one mutable borrow before starting the next one.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-07-overlapping-mut-borrows",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0499"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*first += 1;",
+    "replace": "*first += 2;"
+  },
+  "observed_failure": "error[E0499]: cannot borrow `self.value` as mutable more than once at a time\n  --> src/lib.rs:12:22\n   |\n11 |         let first = self.value_mut();\n   |                     ---------------- first mutable borrow occurs here\n12 |         let second = self.value_mut();\n   |                      ^^^^^^^^^^^^^^^^ second mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. `bump_twice` holds two mutable borrows of the same field at once. Use each borrow to completion before taking the next. Keep the public API and make `bump_twice` add two.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

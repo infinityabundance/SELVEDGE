@@ -3370,9 +3370,10 @@ updated contamination receipt, and a **new** pre-registration that supersedes
 (does not edit) the current one.
 **Depends.** P12.9. **Status.** partial: S21 expanded the suite from 24 to 72
 scored tasks plus a 9-task trio, re-hashed it, re-ran contamination and wrote
-`docs/capability-preregistration-v2.json` as an append-only supersession. The
-"hundreds" target and the sealed set (P14.7) remain open. **Effort.** XL.
-**Tier.** CANDIDATE.
+`docs/capability-preregistration-v3.json` as an append-only supersession (v2
+registered the first pass and was itself superseded after the near-duplicate
+audit). The "hundreds" target and the sealed set (P14.7) remain open. **Effort.**
+XL. **Tier.** CANDIDATE.
 
 ### P14.5 — Strengthen checker coverage and scale for Rust cases
 

@@ -4,17 +4,18 @@ Status: **instrument implemented and CPU-tested; the suite is authored, hashed
 and contamination-checked; no arm has been evaluated on it.** The GPU belongs to
 the running T2 pilot, so this session builds and proves the measurement machinery
 and records the exact commands for the first real run. The evidence is two
-receipts at revision `b2f861f`:
+receipts at revision `572f6e4`:
 
-- `results/capability/selftest-20261116T064500Z.json` — every checker outcome,
+- `results/capability/selftest-20261116T074000Z.json` — every checker outcome,
   the per-task build time and the six sandbox-probe outcomes;
-- `results/capability/contamination-20261116T065000Z.json` — disjointness over the
+- `results/capability/contamination-20261116T080000Z.json` — disjointness over the
   expanded suite.
 
 The original pre-registration is `docs/capability-preregistration.json` (the
-24-task suite, retained unchanged). The expanded suite is registered separately
-in `docs/capability-preregistration-v2.json`, written before any arm run against
-it and bound to the new suite hash.
+24-task suite, retained unchanged). The first expansion was registered in v2;
+a same-session near-duplicate audit replaced sixteen tasks and the final fixture
+is registered in `docs/capability-preregistration-v3.json`, written before any
+arm run against it and bound to the final suite hash.
 
 This document implements `docs/PROGRAM-PLAN.md` P12.8 (three levels), P12.9
 (fresh Rust suite), P12.10 (control matrix), P12.11 (thresholds) and P11.21
@@ -66,15 +67,15 @@ editorial judgement, not a measured difficulty):
 
 - easy:
 <!-- BEGIN GENERATED: cap-diff-easy -->
-19
+16
 <!-- END GENERATED: cap-diff-easy -->
 - medium:
 <!-- BEGIN GENERATED: cap-diff-medium -->
-42
+52
 <!-- END GENERATED: cap-diff-medium -->
 - hard:
 <!-- BEGIN GENERATED: cap-diff-hard -->
-26
+19
 <!-- END GENERATED: cap-diff-hard -->
 
 Every item is original to this repository, authored in
@@ -161,7 +162,7 @@ Three anti-gaming properties are structural, not procedural:
    by reverting the dependency: `dep/` is restored after the arm writes.
 
 The self-test proves each task discriminates before the suite can be used. At the
-receipt stamp `20261116T061200Z` (revision `b2f861f`):
+receipt stamp `20261116T062343Z` (revision `572f6e4`):
 
 - failing states that fail exactly as declared:
 <!-- BEGIN GENERATED: cap-initial-ok -->
@@ -218,7 +219,7 @@ are recorded for every item in the receipt (`items[].build.duration_ms` and
 <!-- END GENERATED: cap-build-trait -->
 - repo-scale:
 <!-- BEGIN GENERATED: cap-build-repo -->
-114 ms
+164 ms
 <!-- END GENERATED: cap-build-repo -->
 - semantic-repair:
 <!-- BEGIN GENERATED: cap-build-semantic -->
@@ -313,7 +314,7 @@ Method, in the two units the brief requires:
   item against the pinned held-out windows the KL metric uses.
 
 Items compared per source, from
-`results/capability/contamination-20261116T065000Z.json`:
+`results/capability/contamination-20261116T080000Z.json`:
 
 - HumanEval items (prompt, solution, test):
 <!-- BEGIN GENERATED: cap-contam-humaneval -->
@@ -469,7 +470,7 @@ Largest observed workdir:
 Slowest checker run:
 
 <!-- BEGIN GENERATED: cap-max-check-ms -->
-165 ms
+214 ms
 <!-- END GENERATED: cap-max-check-ms -->
 
 ## 6. The harness: adapters, scoring and anti-gaming
@@ -536,15 +537,18 @@ null.
 
 The original registration is `docs/capability-preregistration.json`, written for
 the 24-task suite. It is retained byte-for-byte. **Dated addition, 2026-11-16
-(S21, P14.4):** the expanded 72-task suite is registered separately in
+(S21, P14.4):** the first expansion was registered in
 `docs/capability-preregistration-v2.json` with the same 10% relative threshold,
-the same paired bootstrap and seed, plus the 8-item per-category minimum and the
-three shared surfaces. The v1 file is not edited; a run against the expanded
-suite must name v2, and a run against the historical 24-task suite must name v1.
-The hash below is the v2 binding:
+the same paired bootstrap and seed, the 8-item per-category minimum and the
+three shared surfaces. **Dated correction, same day (S21, QA):** a near-duplicate
+audit replaced sixteen tasks that reused an existing capability; the corrected
+72-task fixture is registered in `docs/capability-preregistration-v3.json` and
+supersedes v2 without editing it. A run against the expanded suite must name v3;
+a run against the historical 24-task suite must name v1. The hash below is the
+v3 binding:
 
 <!-- BEGIN GENERATED: cap-suite-sha -->
-c45275173e6787ef390e62255d6dfeecf7d9da4f1b59ea57c621bf0706911c84
+3f7933966680a9663b178817e245027bf61895523e094e8f1ef369f6767585d8
 <!-- END GENERATED: cap-suite-sha -->
 
 The registered rules:
@@ -682,7 +686,7 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-admission "results/train/admission/t2/$ARM.json" \
   --t2-training-receipt "results/t2/$ARM/run.json" \
   --t2-mask-order legacy \
-  --preregistration docs/capability-preregistration-v2.json \
+  --preregistration docs/capability-preregistration-v3.json \
   --out "results/capability/runs/t2-$ARM/generations.json"
 
 # the same for D, M, X, and H* with
@@ -718,7 +722,7 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-training-receipt "results/t2/X/run.json" \
   --t2-mask-order legacy \
   --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json \
-  --preregistration docs/capability-preregistration-v2.json \
+  --preregistration docs/capability-preregistration-v3.json \
   --out "results/capability/runs/t2-X/generations.json"
 ```
 
@@ -738,7 +742,7 @@ Step 2, check (CPU, rust court; the court needs `cargo` and the checker sandbox)
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py check \
   --generations "results/capability/runs/t2-$ARM/generations.json" \
-  --preregistration docs/capability-preregistration-v2.json \
+  --preregistration docs/capability-preregistration-v3.json \
   --out "results/capability/runs/t2-$ARM/result.json"
 ```
 
@@ -749,7 +753,7 @@ SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py check \
   --generations "results/capability/runs/t2-$ARM/generations.json" \
   --category lifetime-borrow \
-  --preregistration docs/capability-preregistration-v2.json \
+  --preregistration docs/capability-preregistration-v3.json \
   --out "results/capability/runs/t2-$ARM/result-lifetime.json"
 ```
 
@@ -773,7 +777,7 @@ SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py generate \
   --adapter-spec results/capability/adapters/rust-exact.json \
   --only borrow-01-local-reference,failing-01-chunk-boundary,trio-01-lifetime-chain \
-  --preregistration docs/capability-preregistration-v2.json \
+  --preregistration docs/capability-preregistration-v3.json \
   --out results/capability/runs/rust-exact-subset/generations.json
 ```
 
@@ -842,16 +846,16 @@ STAMP=$(date -u +%Y%m%dT%H%M%SZ)
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- sh -c "
   python3 scripts/capability_court.py fake-reference --out /tmp/cap-spec.json &&
   python3 scripts/capability_court.py generate --adapter-spec /tmp/cap-spec.json \
-    --preregistration docs/capability-preregistration-v2.json \
+    --preregistration docs/capability-preregistration-v3.json \
     --out results/capability/instrument-smoke-$STAMP/generations.json &&
   python3 scripts/capability_court.py check \
     --generations results/capability/instrument-smoke-$STAMP/generations.json \
-    --preregistration docs/capability-preregistration-v2.json \
+    --preregistration docs/capability-preregistration-v3.json \
     --out results/capability/instrument-smoke-$STAMP/result.json"
 ```
 
-The committed v2 smoke run is
-`results/capability/instrument-smoke-20261116T070500Z/`: the scripted arm emits
+The committed v3 smoke run is
+`results/capability/instrument-smoke-20261116T080500Z/`: the scripted arm emits
 the reference solutions, every real checker runs, the composite and all eight
 per-category intervals are printed, and the category minimum is met. Its receipt
 is evidence that the pipeline works, not evidence about any model. The historical

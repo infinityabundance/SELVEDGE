@@ -1,0 +1,28 @@
+{
+  "capability": "Propagate a return-type change from an API module to its consumers.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-09-result-propagation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/cache.rs",
+    "find": "Ok(value) => value",
+    "replace": "Ok(value) => value + 1"
+  },
+  "observed_failure": "error[E0308]: mismatched types\n --> src/cache.rs:5:11\n  |\n4 |     match api::fetch(key) {\n  |           --------------- this expression has type `Result<i32, String>`\n5 |         Some(value) => value,\n  |         ^^^^^^^^^^^ expected `Result<i32, String>`, found `Option<_>`",
+  "prompt_intro": "This crate does not compile. `api::fetch` changed from `Option<i32>` to `Result<i32, String>`, but `cache` and `report` still match `Some`/`None`. Update both consumers: a cache miss and an error both fall back to 0, and a report error renders `missing`. Keep `run` and the signatures.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

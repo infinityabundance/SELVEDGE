@@ -1,0 +1,28 @@
+{
+  "capability": "Disambiguate a method provided by two traits.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-06-method-ambiguity",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0034"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Left::value(item)",
+    "replace": "Right::value(item)"
+  },
+  "observed_failure": "error[E0034]: multiple applicable items in scope\n --> src/lib.rs:15:25\n  |\n15 | pub fn left(item: &Item) -> u32 { item.value() }\n  |                                       ^^^^^ multiple `value` found",
+  "prompt_intro": "This crate does not compile. `Item` implements two traits that both provide `value`, so `item.value()` is ambiguous. Use fully-qualified trait syntax in `left`; keep `right` and the trait definitions.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

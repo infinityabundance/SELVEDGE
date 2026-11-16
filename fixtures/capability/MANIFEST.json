@@ -20,7 +20,7 @@
   "license": "MIT OR Apache-2.0",
   "root": "/work/fixtures/capability",
   "schema": "selvedge/capability-manifest/v1",
-  "suite_sha256": "c45275173e6787ef390e62255d6dfeecf7d9da4f1b59ea57c621bf0706911c84",
+  "suite_sha256": "3f7933966680a9663b178817e245027bf61895523e094e8f1ef369f6767585d8",
   "tasks": [
     {
       "capability": "Sandbox probe: a compile error is classified as a failure.",
@@ -367,7 +367,7 @@
       "tree_sha256": "f931504db1f1b7ee5a3082d8ed97b8618c96cd50942abba49dcec837295d999f"
     },
     {
-      "capability": "Return owned data for a string that is normalised locally.",
+      "capability": "Bind a temporary before borrowing it so the borrow outlives the statement.",
       "category": "lifetime-borrow",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -378,15 +378,15 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "easy",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "borrow-05-return-normalized",
+      "id": "borrow-05-temporary-lifetime",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0515"
+          "E0716"
         ]
       },
       "initial_files": [
@@ -400,7 +400,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "108ac1898ee247eb38801c8de3cad0a9363acbfc4e20a13b42297a317a8abf38"
+      "tree_sha256": "8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c"
     },
     {
       "capability": "Compute from a borrow before moving the owned value.",
@@ -439,7 +439,7 @@
       "tree_sha256": "b33e67e8dec3cb458cfa3da6e5821c37eca381efb2e10236dca53815c265acf6"
     },
     {
-      "capability": "Collect the additions before mutating the vector under iteration.",
+      "capability": "End one mutable borrow before starting the next one.",
       "category": "lifetime-borrow",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -450,15 +450,15 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "hard",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "borrow-07-extend-while-iterating",
+      "id": "borrow-07-overlapping-mut-borrows",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0502"
+          "E0499"
         ]
       },
       "initial_files": [
@@ -472,7 +472,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "652e7d5d3cbcf92e9c8b09f87ce504e5472b8cd2422685a23c5f943706ea3ae3"
+      "tree_sha256": "584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3"
     },
     {
       "capability": "Recognise that a returned iterator cannot borrow a local collection.",
@@ -511,7 +511,7 @@
       "tree_sha256": "a6068073570ac5c175bbad0c5c740836e626837281857b4ac85b18ebe1bbc215"
     },
     {
-      "capability": "Replace a struct field that points at a local with an owned field.",
+      "capability": "Add a lifetime parameter to a borrowing struct and its impl.",
       "category": "lifetime-borrow",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -522,15 +522,15 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "hard",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "borrow-09-owned-excerpt",
+      "id": "borrow-09-struct-lifetime",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0597"
+          "E0106"
         ]
       },
       "initial_files": [
@@ -544,7 +544,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "9a66a64068052681e800ba5c5e33cd9c6a0223db7468b2a9f44e4f0144943b22"
+      "tree_sha256": "fc38c23479abeb54eaaf63c4127b3116de809efdfad0a1d12b172bb7ebd93499"
     },
     {
       "capability": "Remove a lock-order deadlock by imposing one global acquisition order.",
@@ -655,7 +655,7 @@
       "tree_sha256": "f47f6d33df6112c557ec08ae569172b9343afa9f6fcef285b62a3b7862f15048"
     },
     {
-      "capability": "Replace a non-atomic load-and-store pair with an atomic read-modify-write.",
+      "capability": "Hold a mutex across the whole read-modify-write, not across a barrier.",
       "category": "concurrency",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -670,7 +670,7 @@
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "concurrency-04-deterministic-lost-update",
+      "id": "concurrency-04-mutex-critical-section",
       "initial_failure": {
         "kind": "test_failure",
         "must_contain": [
@@ -688,7 +688,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "5ce86edaf254be90d1058e5645a6d4c91a31e71ce0289fc8415489f249af50a5"
+      "tree_sha256": "b3b593bc4e25704b284832d82f05a18eb3d8d4a7f58902f046b62a99ae47b9cd"
     },
     {
       "capability": "Propagate a worker panic instead of discarding the join error.",
@@ -984,7 +984,7 @@
       "tree_sha256": "80b207922de8f2e9aeb6f2d4cd1b8a78b03086878761e8d42cb0c22ab0728164"
     },
     {
-      "capability": "Diagnose a version requirement that excludes the only vendored version.",
+      "capability": "Diagnose a misspelled feature name that the dependency does not declare.",
       "category": "dependency-compat",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -999,11 +999,11 @@
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "deps-04-path-version-requirement",
+      "id": "deps-04-unknown-feature",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "failed to select a version"
+          "jason"
         ]
       },
       "initial_files": [
@@ -1020,10 +1020,10 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "8425f792bc64446886a95ce48bd65c9007c3a98bfcc91efc3b9aab935233bf3f"
+      "tree_sha256": "7d63d8059bbcca0f4507b044b9dfa79592b50933d912445a8afa95e55d71e173"
     },
     {
-      "capability": "Read a dependency's feature declaration and enable the optional API.",
+      "capability": "Remove a workspace member that has no directory, without touching the dependency.",
       "category": "dependency-compat",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -1038,11 +1038,11 @@
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "deps-05-enable-feature",
+      "id": "deps-05-workspace-member",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "could not find"
+          "missing-tool"
         ]
       },
       "initial_files": [
@@ -1059,10 +1059,10 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "3384e8519ae785dc83f899a6ad568b76f4862f386ef604078e2705578c089f61"
+      "tree_sha256": "64bf070ae5d73dd2d0a10d1ead3dd29f8e387f04954b22ce2f66f78d15afe766"
     },
     {
-      "capability": "Repair an identifier that edition 2024 reserves.",
+      "capability": "Wrap an unsafe operation in an unsafe block under edition 2024.",
       "category": "dependency-compat",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -1073,15 +1073,15 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "easy",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "deps-06-edition-reserved-keyword",
+      "id": "deps-06-edition-unsafe-block",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "reserved keyword"
+          "E0133"
         ]
       },
       "initial_files": [
@@ -1095,7 +1095,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "a358fc833ea0e6238489ce8b01ccc2c19043d49adf8bd85baa44aa3679414820"
+      "tree_sha256": "db572da31405be855244a26c68dd2a8422daec46012d40f3412bd7bcd68943c4"
     },
     {
       "capability": "Resolve two mutually exclusive features by selecting the registered one.",
@@ -1431,7 +1431,7 @@
       "tree_sha256": "59f21b2688c48d4e982607837fd8a28cb4b1c039717b2d178ca0175a351f79e6"
     },
     {
-      "capability": "Match the first word case-insensitively and reject an empty needle.",
+      "capability": "Replace a shortest-length shortcut with a real common-prefix scan.",
       "category": "failing-test",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -1442,11 +1442,11 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "easy",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "failing-07-case-insensitive-word",
+      "id": "failing-07-common-prefix",
       "initial_failure": {
         "kind": "test_failure",
         "must_contain": [
@@ -1464,7 +1464,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "12ecd9a36436f0eed217dd94fd1f98eeebd37c290b61bb1ee93417ecda65302c"
+      "tree_sha256": "c9df3173edd0f5ea9e44054bb8e191ef2afa87e4467c3f23705b2e8313aa7371"
     },
     {
       "capability": "Fix a binary-search return value without breaking insertion points.",
@@ -1805,7 +1805,7 @@
       "tree_sha256": "b82e674f505a44baecd695adfae28dcb9d9310101b18f1f061f8bf5bee01245a"
     },
     {
-      "capability": "Migrate a direct constructor to a fallible builder chain.",
+      "capability": "Migrate a call site to a dependency that now takes a path type.",
       "category": "api-migration",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -1816,15 +1816,15 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "hard",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "migrate-08-builder-result",
+      "id": "migrate-08-path-api",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0599"
+          "E0308"
         ]
       },
       "initial_files": [
@@ -1840,7 +1840,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "3e83a3c50d8acf4462ce9fcdf27135322ca6b084196b15ed57adb078196bcaf3"
+      "tree_sha256": "d1ec274210dab395885893b1aba3524e3e3d1dc4775b7e47eab63e178852b17b"
     },
     {
       "capability": "Bind a value mutably when the new API requires a mutable receiver.",
@@ -2081,7 +2081,7 @@
       "tree_sha256": "090a1a0cdb7f2b2a4d6095c00eff45c7917313315480018ac5834bd570d82a0b"
     },
     {
-      "capability": "Add the From conversion that lets ? cross a module error boundary.",
+      "capability": "Propagate a module move through every importing module.",
       "category": "repo-scale",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -2092,21 +2092,21 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "hard",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "repo-06-error-conversion",
+      "id": "repo-06-moved-module-import",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0277"
+          "E0432"
         ]
       },
       "initial_files": [
         "Cargo.toml",
-        "src/error.rs",
         "src/lib.rs",
+        "src/report.rs",
         "src/service.rs",
         "src/store.rs"
       ],
@@ -2114,10 +2114,11 @@
       "license": "MIT OR Apache-2.0",
       "probe_expectation": null,
       "reference_files": [
-        "src/error.rs"
+        "src/report.rs",
+        "src/service.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "95fd7c48a42fedaadf7f329b55d35b14132796faecb66b7418f77f48871f61bd"
+      "tree_sha256": "55243c8e36586aa66971eb8a8f6ef89712b2c1c7b71ac356a77ece78d059b302"
     },
     {
       "capability": "Rename a shared struct field without changing its callers' contract.",
@@ -2199,7 +2200,7 @@
       "tree_sha256": "9e3434ec7b83786747ab9458fd129f17efef6dc584bcb8077f6b1c4b79b45e52"
     },
     {
-      "capability": "Add a required trait method and implement it in every module.",
+      "capability": "Propagate a return-type change from an API module to its consumers.",
       "category": "repo-scale",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -2210,36 +2211,36 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "hard",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "repo-09-trait-method-propagation",
+      "id": "repo-09-result-propagation",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0046"
+          "E0308"
         ]
       },
       "initial_files": [
         "Cargo.toml",
-        "src/csv.rs",
-        "src/json.rs",
+        "src/api.rs",
+        "src/cache.rs",
         "src/lib.rs",
-        "src/pipeline.rs"
+        "src/report.rs"
       ],
       "kind": "suite",
       "license": "MIT OR Apache-2.0",
       "probe_expectation": null,
       "reference_files": [
-        "src/csv.rs",
-        "src/json.rs"
+        "src/cache.rs",
+        "src/report.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "5573d73f6f479ddc6abc12eb3e2cc6b0001dd9135f7332975dcf385ff1025f7c"
+      "tree_sha256": "8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915"
     },
     {
-      "capability": "Notice an excluded endpoint that the visible test encoded as correct.",
+      "capability": "Count overlapping occurrences where a non-overlapping matcher passes the visible case.",
       "category": "semantic-repair",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -2250,11 +2251,11 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "easy",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "semantic-01-inclusive-range",
+      "id": "semantic-01-overlapping-count",
       "initial_failure": {
         "kind": "hidden_test_failure",
         "must_contain": [
@@ -2272,7 +2273,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "4d8b9659882183bb157a3553a430c3dfdc7a37238097dde710a552eb83b7abad"
+      "tree_sha256": "9811318c23c7353a2752adc06c73093e2436695471f98d4fc8d027e949c96d87"
     },
     {
       "capability": "Replace truncating division with the documented half-up rounding.",
@@ -2383,7 +2384,7 @@
       "tree_sha256": "8096024420690f3ee468d8286c1269155030ed484ea4c0b78fe46fad1fbe291d"
     },
     {
-      "capability": "Saturate a multiplication that the small visible example never pushes to the bound.",
+      "capability": "Use the documented lowercase hex alphabet where digits-only examples pass.",
       "category": "semantic-repair",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -2394,11 +2395,11 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "medium",
+      "difficulty": "easy",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "semantic-05-saturating-multiply",
+      "id": "semantic-05-lowercase-hex",
       "initial_failure": {
         "kind": "hidden_test_failure",
         "must_contain": [
@@ -2416,7 +2417,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "8247dfbf142b1cd934b1cf2cda64039c826f0fccd903a2e129c2ccc82d80e1eb"
+      "tree_sha256": "7aaed3538875256b00764cbed809e200f96933d818df6605eb3aed71a242afd2"
     },
     {
       "capability": "Preserve first-occurrence order where sorting happens to pass the visible case.",
@@ -2743,7 +2744,43 @@
       "tree_sha256": "070732ead0d2fce3d78a27ed53d8c924c112c2c904f28e9580e3c171ec0611d2"
     },
     {
-      "capability": "Add the bound that makes a generic helper call a trait method.",
+      "capability": "Disambiguate a method provided by two traits.",
+      "category": "trait-impl",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "difficulty": "medium",
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "traits-06-method-ambiguity",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0034"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "8de0243c2f1475b07591f17128b5555299019173b145d169b7c72080a8d3f240"
+    },
+    {
+      "capability": "Implement the operator trait a newtype needs to participate in arithmetic.",
       "category": "trait-impl",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -2758,11 +2795,11 @@
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "traits-06-missing-generic-bound",
+      "id": "traits-07-add-impl",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0599"
+          "E0369"
         ]
       },
       "initial_files": [
@@ -2776,10 +2813,10 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "6aa486043f41901c06fb106e85770e3c1b586c2eb6b4f5e7ba8c6a14b3a544f2"
+      "tree_sha256": "4ba9e710d2b445fb27d3af49d66ba7b2c2d5086d8a28812e2b036f7719c57c9d"
     },
     {
-      "capability": "Make a trait object-safe by moving an associated constant to a method.",
+      "capability": "Match a trait method's parameter type in its implementation.",
       "category": "trait-impl",
       "checker": {
         "address_space_bytes": 3221225472,
@@ -2790,15 +2827,15 @@
         "open_files": 256,
         "timeout_seconds": 45.0
       },
-      "difficulty": "hard",
+      "difficulty": "medium",
       "hidden_files": [
         "tests/check.rs"
       ],
-      "id": "traits-07-associated-const-object-safety",
+      "id": "traits-08-method-signature",
       "initial_failure": {
         "kind": "compile_error",
         "must_contain": [
-          "E0038"
+          "E0053"
         ]
       },
       "initial_files": [
@@ -2812,43 +2849,7 @@
         "src/lib.rs"
       ],
       "run_limits": null,
-      "tree_sha256": "70cce0bf1d37c7121c7b6cbc0135ecb307530fd9764efdd2bef919a453327bf7"
-    },
-    {
-      "capability": "Resolve an overlapping blanket From impl by keeping concrete conversions.",
-      "category": "trait-impl",
-      "checker": {
-        "address_space_bytes": 3221225472,
-        "cpu_seconds": 60,
-        "file_bytes": 67108864,
-        "kind": "cargo_test",
-        "manifest_policy": "locked",
-        "open_files": 256,
-        "timeout_seconds": 45.0
-      },
-      "difficulty": "hard",
-      "hidden_files": [
-        "tests/check.rs"
-      ],
-      "id": "traits-08-conflicting-from",
-      "initial_failure": {
-        "kind": "compile_error",
-        "must_contain": [
-          "E0119"
-        ]
-      },
-      "initial_files": [
-        "Cargo.toml",
-        "src/lib.rs"
-      ],
-      "kind": "suite",
-      "license": "MIT OR Apache-2.0",
-      "probe_expectation": null,
-      "reference_files": [
-        "src/lib.rs"
-      ],
-      "run_limits": null,
-      "tree_sha256": "72dc24e01ceb8809606167dd716242a1b160b2d397d947dd18c3c51b02b6938c"
+      "tree_sha256": "12162d51209b4bada4ba35b9af58f8c20dd7c85f8aedc5760705d3121eb3f60a"
     },
     {
       "capability": "Respect the orphan rule with a local newtype wrapper.",

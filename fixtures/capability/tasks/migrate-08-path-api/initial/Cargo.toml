@@ -1,0 +1,13 @@
+[package]
+name = "migrate_08_path_api"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+storage = { path = "dep" }

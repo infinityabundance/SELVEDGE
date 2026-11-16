@@ -1,0 +1,28 @@
+{
+  "capability": "Wrap an unsafe operation in an unsafe block under edition 2024.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "deps-06-edition-unsafe-block",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0133"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unsafe { *pointer }",
+    "replace": "unsafe { *pointer + 1 }"
+  },
+  "observed_failure": "error[E0133]: dereference of raw pointer is unsafe and requires unsafe block\n --> src/lib.rs:5:5\n  |\n5 |     *pointer\n  |     ^^^^^^^^ dereference of raw pointer\n  |\n  = note: unsafe function bodies are now required to use an explicit unsafe block",
+  "prompt_intro": "This crate does not build under edition 2024. It denies `unsafe_op_in_unsafe_fn`, and edition 2024 requires an explicit `unsafe` block inside an `unsafe fn` for each unsafe operation. Wrap the dereference; keep the signature, the safety comment, the lint and the edition.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

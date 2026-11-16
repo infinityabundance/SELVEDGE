@@ -1,0 +1,28 @@
+{
+  "capability": "Propagate a module move through every importing module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-06-moved-module-import",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/service.rs",
+    "find": "load(key, data).filter(|value| *value > 0)",
+    "replace": "load(key, data).filter(|value| *value >= 0)"
+  },
+  "observed_failure": "error[E0432]: unresolved import `crate::storage`\n --> src/service.rs:1:12\n  |\n1 | use crate::storage::load;\n  |            ^^^^^^^ could not find `storage` in the crate root",
+  "prompt_intro": "This crate does not compile. `load` moved from a removed `storage` module to `store`, but `service` and `report` still import the old path. Update both imports; do not add a compatibility module and do not change the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

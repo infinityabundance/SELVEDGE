@@ -1,0 +1,28 @@
+{
+  "capability": "Bind a temporary before borrowing it so the borrow outlives the statement.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-05-temporary-lifetime",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0716"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"item {number}\")",
+    "replace": "format!(\"item-{number}\")"
+  },
+  "observed_failure": "error[E0716]: temporary value dropped while borrowed\n --> src/lib.rs:8:23\n  |\n8 |     let word = first_word(&format!(\"item {number}\"));\n  |                       ^^^^^^^^^^^^^^^^^^^^^^^ creates a temporary value which is freed while still in use\n9 |     word.to_string()\n  |     ---- borrow later used here",
+  "prompt_intro": "This crate does not compile. `label` borrows a `format!` temporary through `first_word` and then uses the result on the next line. Bind the formatted string first so its borrow is valid. Keep the signatures and the `item <number>` wording.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

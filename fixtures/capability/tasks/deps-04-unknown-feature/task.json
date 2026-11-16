@@ -1,0 +1,31 @@
+{
+  "capability": "Diagnose a misspelled feature name that the dependency does not declare.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-04-unknown-feature",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "jason"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec::json::to_json(value)",
+    "replace": "codec::json::to_json(value).to_uppercase()"
+  },
+  "observed_failure": "error: failed to select a version for `codec`.\nthe package depends on `codec`, with features: `jason` but `codec` does\nnot have these features.",
+  "prompt_intro": "This crate does not build. The manifest asks the vendored `codec` 2.0.0 for feature `jason`, but the crate declares `json`. Correct the feature name; do not modify `dep/`. Keep `pub fn encode(value: &str) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

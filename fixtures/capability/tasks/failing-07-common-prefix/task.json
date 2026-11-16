@@ -1,0 +1,28 @@
+{
+  "capability": "Replace a shortest-length shortcut with a real common-prefix scan.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "failing-07-common-prefix",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "let mut prefix = first.to_string();",
+    "replace": "let mut prefix = first.to_uppercase();"
+  },
+  "observed_failure": "thread 'tests::prefix_of_three_words' panicked at src/lib.rs:16:9:\nassertion `left == right` failed\n  left: \"flow\"\n right: \"fl\"\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. `common_prefix` must return the longest string that is a prefix of every input. An empty slice, or inputs with no common first character, return an empty string. Keep the signature `pub fn common_prefix(values: &[&str]) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

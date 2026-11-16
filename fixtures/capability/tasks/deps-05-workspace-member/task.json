@@ -1,0 +1,31 @@
+{
+  "capability": "Remove a workspace member that has no directory, without touching the dependency.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-05-workspace-member",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "missing-tool"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec::to_json(value)",
+    "replace": "codec::to_json(value).to_uppercase()"
+  },
+  "observed_failure": "error: failed to load manifest for workspace member `/work/.../missing-tool`\nCaused by:\n  failed to read `/work/.../missing-tool/Cargo.toml`\nCaused by:\n  No such file or directory (os error 2)",
+  "prompt_intro": "This crate does not build. The workspace lists a member `missing-tool` that has no directory. Remove that member from the workspace; keep the `codec` dependency and do not modify `dep/`. Keep `pub fn encode(value: &str) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}
