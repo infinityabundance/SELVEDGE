@@ -6,6 +6,12 @@ item from the strategy review is omitted. An item is only "done" when the
 acceptance evidence named in it exists in the repository; a prose claim is not
 evidence.
 
+**Third extension, 2026-11-16 (S16C).** The plan is now **tiered** (§0.1),
+an ordering inversion in the §16 queue is corrected and recorded (§0.2), and two
+new workstreams are appended: **WS13** (published mechanisms to reproduce and
+sixteen inventions, 21 items) and **WS14** (runtime and evaluation corrections,
+7 items). No existing P-ID is renumbered, retitled or removed.
+
 Companion documents: `docs/MANDATE.md` (requirements),
 `docs/EXPERIMENT-CONTRACT.md` (registered thresholds; T1 is the current
 section), `docs/PRIOR-ART-AND-NOVELTY.md` (what is actually prior art),
@@ -54,6 +60,112 @@ evaluated, `X` evaluating, `H` and `H*` pending) and against the extended
 prior-art ledger; every mechanism item whose novelty is contested carries the
 ledger entry that contests it. Section 7's sequencing diagram remains the order
 for WS1–WS6; section 16 supersedes it only for the new items.
+
+---
+
+## 0.1 Tier structure and status legend (2026-11-16)
+
+A tier states **how much the program is committed to an item and how much
+evidence it has**, not how interesting it is. Tiers are orthogonal to the
+`Status` field: an item can be `open` in any tier.
+
+| tier | meaning | what an item in this tier must carry |
+| --- | --- | --- |
+| **ACTIVE** | the current decisive path plus the instruments and constraints that bind it now | a scheduled next action; acceptance evidence that exists or is being produced in this phase; for an experiment, a registered contract |
+| **CANDIDATE** | rigorously defined, **not yet justified** | a cheap decisive experiment, an explicit falsifying control, and a kill criterion that says what result retires it |
+| **HYPOTHESIS** | retained for the long horizon, **no implementation commitment** | a statement of the question and why the program keeps it; no schedule, no budget, no claim |
+
+Rules:
+
+1. An item moves **up** a tier only when the acceptance evidence of the tier
+   below exists. It moves **down** when its kill criterion fires; the negative
+   result is kept (P6.5), never deleted.
+2. A tier is revisable at a checkpoint and must be revised then. It is a record
+   of commitment, not a verdict on the item's merit.
+3. Tiers do **not** renumber anything. WS1–WS12 keep their IDs and text; WS13 and
+   WS14 continue the numbering with P13.x and P14.x.
+4. The tier index below is the authoritative statement. The table lists ranges
+   only where the range is contiguous and every item inside it has the same tier.
+
+### Tier index — 112 existing items (WS1–WS12)
+
+| tier | items by workstream section | count |
+| --- | --- | ---: |
+| **ACTIVE** | §1 (WS1): P1.1–P1.4 · §2 (WS2): P2.1, P2.3–P2.4 · §3 (WS3): P3.4 · §6 (WS6): P6.1–P6.5 · §10 (WS7): P7.1, P7.3, P7.5, P7.7 · §15 (WS12): P12.1, P12.1a, P12.2, P12.9–P12.11, P12.15–P12.17 | 26 |
+| **CANDIDATE** | §2: P2.2 · §3: P3.1–P3.3, P3.5–P3.7 · §4 (WS4): P4.1–P4.5 · §5 (WS5): P5.1–P5.10 · §10 (WS7): P7.2, P7.4, P7.6 · §11 (WS8): P8.1–P8.5 · §12 (WS9): P9.1–P9.7 · §13 (WS10): P10.1–P10.13, P10.15, P10.17–P10.18 · §14 (WS11): P11.1–P11.21 · §15 (WS12): P12.3–P12.6 | 78 |
+| **HYPOTHESIS** | §5: P5.11 · §13: P10.14, P10.16 · §15: P12.7–P12.8, P12.12–P12.14 | 8 |
+
+Tier index — new items: WS13 (§18) has **21** items — P13.1–P13.4 and
+P13.6–P13.21 `CANDIDATE` (20), P13.5 `HYPOTHESIS` (1). WS14 (§19) has **7**
+items — P14.1–P14.3 `ACTIVE` (they gate the first capability run) and
+P14.4–P14.7 `CANDIDATE`.
+
+**Assignments that need a reason, not just a row.**
+
+- **P12.10 and P12.11 are ACTIVE although their content is "infrastructure".**
+  They are *decision criteria* — the row set every comparison is reported against
+  and the thresholds a frontier run is scored against. §0.2 records why they may
+  not be scheduled after the experiments.
+- **P3.4 is ACTIVE** because it is running as the registered T2 pilot (P12.1);
+  the five-arm matrix is the T2 matrix, not a second experiment.
+- **P12.3–P12.6 (T3–T6) are CANDIDATE, not HYPOTHESIS**, even though they are the
+  next courts: each has a registration and a kill condition, but none may start
+  before the pilot's verdict (P12.1) and the two blockers (P12.15).
+- **P12.7, P12.8, P12.12–P12.14 are HYPOTHESIS**: they commit the program to a
+  *shape* of claim (a joint court, three levels, a transfer test) with no
+  implementation commitment in this phase. P12.11's thresholds still bind them.
+- **P5.11, P10.14, P10.16 are HYPOTHESIS** because each is explicitly deferred in
+  its own text (recurrent latent computation; shortcut-connected specialists;
+  learned reasoning length).
+- **P1.x, P6.x and four of the seven WS7 doctrine items are ACTIVE** as standing
+  constraints: they bind how the current experiments are registered, measured and
+  reported, which is what makes them active rather than background.
+
+## 0.2 P-correction — the ordering inversion, recorded and fixed
+
+**The inversion.** The §16 queue as written on 2026-11-15 ended with
+
+```
+V[P12.8 levels 1-3] --> W[P12.10 control matrix P12.11 thresholds]
+```
+
+and its hard-order list put step 7 "**T7 and P12.8** — only winners, then the
+three levels" before step 8 "**P12.10–P12.12** — the control matrix and the
+claims". The diagram therefore scheduled the **control matrix** (P12.10) and the
+**frontier thresholds** (P12.11) *after* the experiments they govern.
+
+**Why that is a defect and not a preference.** P12.10 fixes the row set every
+comparison is reported in, including the two rows the item itself says kill most
+results ("Memory Grafting-style latent baseline" and "matching library without
+routing optimisation"). P12.11 fixes the ≥10% threshold, the capacity-scaling
+criterion, the replay court, the Pareto requirement and the branch split. If both
+are built after T7, then T3–T6 are designed, run and read without the controls
+that would have falsified them, and the frontier run is scored against
+thresholds that were written after its numbers existed. That is the exact
+post-hoc-threshold failure P6.5 and P12.11 exist to prevent, appearing inside the
+plan that forbids it.
+
+The dependency text was already correct and only the diagram was wrong: P12.10's
+`Depends` is "P12.9, P7.7" and P12.11's is "P12.10" — neither names T7 or P12.8.
+The edge was drawn from a "experiments, then claims" narrative rather than from
+the `Depends` fields.
+
+**The correction.** *Decision criteria and the measurement instrument move before
+the experiments they govern; infrastructure may still be finalised later.*
+
+| established before the first governed experiment | may be finalised later |
+| --- | --- |
+| the fresh suite (P12.9) — exists | residency tiers, GPU staging, kernels (P14.1–P14.3, WS4) |
+| the control matrix's schema **and row set** (P12.10) — schema exists; each run fills its row | the Level-2 capacity ladder and Level-3 assembly (P12.8, P2.2) |
+| the frontier thresholds and gating checks (P12.11) — pre-registered | the joint court's ablation matrix (P12.7) |
+| the two pre-scaling blockers closed (P12.15) | the transfer test (P12.13) and the wildcards (P12.14) |
+| the successor utility target registered (P12.17) | the third achievement claim (P12.12, Level 3 wording) |
+| the anti-pattern guard in force (P12.16) | |
+
+The rule this leaves behind, for every future edit to this plan: **a threshold, a
+row set, a control, or a kill criterion may never be written after the numbers it
+judges; an engineer, a kernel, a residency tier or an additional claim may be.**
+§16 is redrawn accordingly.
 
 ---
 
@@ -2320,11 +2432,15 @@ cheaper or more interesting.
 ```mermaid
 flowchart TD
     A[P12.1 finish T2 and audit overflow mask] --> B[P12.2 H* target diagnostics]
-    A --> C[P7.1 P7.3 P7.7 doctrine amendments]
+    B --> SU[P12.17 successor target registered]
+    A --> C[P7.1 P7.3 P7.5 P7.7 doctrine amendments]
     C --> D[P12.15 blockers closed]
-    B --> D
-    D --> E[P12.9 fresh Rust suite]
-    E --> F[P11.21 anti-specialisation suite]
+    SU --> D
+    N9[P12.9 fresh Rust suite] --> CM[P12.10 control matrix and row set]
+    AC[P7.7 accounting triple] --> CM
+    CM --> TH[P12.11 frontier thresholds fixed]
+    TH --> D
+    D --> E[P11.21 anti-specialisation suite]
     D --> G[P12.3 T3 latent geometry]
     G --> H[P12.4 T4 generated weights]
     G --> I[P10.6 P10.13 allocation]
@@ -2333,19 +2449,19 @@ flowchart TD
     K --> L[P11.11 leasing P11.19 transactionality]
     D --> M[P12.6 T6 latent reasoning]
     M --> N[P11.14 state compression]
-    F --> O[P8.1 task-level D/M]
+    E --> O[P8.1 task-level D/M]
     O --> P[P8.2 compositional residuals]
     P --> Q[P9.3 combination utility]
     Q --> R[P9.7 recurrent selection]
-    P --> S[P8.3 two timescales]
-    S --> T[P8.4 sublinearity P8.5 coherence]
+    P --> TS[P8.3 two timescales]
+    TS --> SB[P8.4 sublinearity P8.5 coherence]
     H --> U[P12.7 joint court]
     I --> U
     L --> U
     N --> U
-    T --> U
+    SB --> U
     U --> V[P12.8 levels 1-3]
-    V --> W[P12.10 control matrix P12.11 thresholds]
+    V --> W[P12.12-P12.14 claim wording]
 ```
 
 Hard order:
@@ -2354,20 +2470,613 @@ Hard order:
    verdict and its overflow audit. **P12.1a** follows it (evaluation-only first,
    then the corrected-dispatch replication tier) and publishes a sensitivity
    note, never a replacement number.
-2. **P12.2 + P12.15** — the two pre-scaling problems, both diagnosable without a GPU
-   run.
+2. **P12.2 + P12.17 + P12.15** — the target diagnostics and the successor target,
+   then the two pre-scaling blockers; all diagnosable without a GPU run.
 3. **Doctrine (WS7) + P7.5/P7.6** — the constraints and the plan record, because
    every later receipt must carry them.
-4. **P12.9 + P11.21** — the verifiable domain and the anti-specialisation suite,
-   because every WS9/WS11 item needs both.
-5. **T3–T6 (P12.3–P12.6)** — the four cheapest architecture decisions.
-6. **WS8 → P9.3** — composition, then the interaction-aware target.
-7. **T7 and P12.8** — only winners, then the three levels.
-8. **P12.10–P12.12** — the control matrix and the claims.
+4. **Decision criteria before any governed experiment (the P-correction): P12.9,
+   P12.10, P12.11.** The suite exists; the control matrix's schema and its row
+   set must be fixed, and the thresholds pre-registered, **before** the first
+   experiment they judge. On 2026-11-15 this step was last (old step 8); it is
+   now step 4. See §0.2.
+5. **P11.21** — the anti-specialisation suite, because every WS9/WS11 item needs
+   it.
+6. **T3–T6 (P12.3–P12.6)** — the four cheapest architecture decisions.
+7. **WS8 → P9.3** — composition, then the interaction-aware target.
+8. **T7 and P12.8** — only winners, then the three levels. Infrastructure may be
+   finalised here; no criterion may be.
+9. **P12.12–P12.14** — the claim wording and the wildcards. Thresholds, controls
+   and kill criteria are **read** at this point, never rewritten.
 
 ## 17. NOW
 
 **The pilot is running: do not start a GPU job.** The single next *program* step is
 P12.1's overflow audit plus P12.2's three H*-target diagnostics, both CPU-only, while
-the pilot's remaining arms (`X` evaluating, then `H`, then `H*`) finish on the GPU.
-The single next *implementation* step after the pilot's verdict is T3 (P12.3).
+the pilot's remaining arm (`H*`) trains and is evaluated on the GPU. The single next
+*implementation* step after the pilot's verdict is T3 (P12.3).
+
+Tier reading (S16C, §0.1): the ACTIVE work is the T2 pilot (P12.1) and the one next
+decisive test — the successor utility target P12.17 applied to a single registered
+run against the dense control — plus the criteria that must exist before it
+(P12.10, P12.11) and the two blockers that gate its registration (P12.15).
+Everything in WS13 is CANDIDATE: defined, with a cheap decisive experiment and a
+kill criterion, and **not started**. Nothing in WS13 may be registered as a run
+before P12.1's verdict and the P12.15 blockers.
+
+---
+
+## 18. WS13 — Published mechanisms and sixteen inventions, run as competing alternatives
+
+**Phase rule.** Each item below is a separate programme with its own registered
+court. Integration happens **only** after the individual winners report
+(P13.5), never as an automatic combination of plausible parts. The failure mode
+this forbids is the one P12.16 names: breadth without attribution.
+
+**Accounting rule for every item in this workstream.** The ledger counts
+*reused* parameters **once per output token** (an expert read once and used at
+three layers is one parameter read for that token), and counts the *FLOPs* of
+every repeated use **separately**. Accessible capacity, active unique parameters,
+bytes moved and cold bytes are four different numbers and are never merged
+(P7.7). Bits spent on depth embeddings, routers, compensators and compilers are
+counted in the *active* ledger, not the accessible one.
+
+**Evidence status (from `docs/PRIOR-ART-AND-NOVELTY.md` §12).** Of the four
+published mechanisms, one is verified at abstract level (MoRE), two are
+identity-only because the landing pages serve no abstract (GMoE, TYLER), and one
+could not be located at all (MoSE). Of the sixteen inventions, nine have a
+verified nearest neighbour, one partial, and six have none located. **No item in
+this workstream may be described as a reproduction of MoSE**, and P13.3/P13.4
+may cite GMoE and TYLER for framing only.
+
+### P13.1 — Adaptive expert widths: nested slimmable experts under one budget
+
+**What.** Each expert is a nested stack at **25 / 50 / 75 / 100%** of its width,
+trained so every prefix is usable. Width tiers must be **aligned to shard
+boundaries** (the current store reads whole shards; a tier that is not
+expressible as whole shards needs a partial-read path and its cost in the same
+receipt, or it is not executable under the ledger). Width is allocated per
+expert under one global active-parameter and I/O budget.
+**Why.** A single width per expert spends the same on a rarely-needed expert as
+on an always-needed one, and the T2 pilot's whole question is whether *active*
+bytes can buy capability. Width turns the bank from a fixed set of experts into a
+per-token allocation along an axis the reader already controls.
+**Decisive experiment.** Mixed-width vs fixed-width banks at **matched bytes and
+matched compute** (same active unique parameters per token, same bytes/token,
+same training tokens) on the T2 instrument and the fresh suite.
+**Falsifying control.** (a) a fixed-width bank at the same *mean* width; (b) a
+mixed-width bank whose widths are **hash-allocated**, so any gain from mere
+heterogeneity is separated from a gain from *allocated* width.
+**Kill criterion.** If mixed-width does not beat both controls by the registered
+margin at matched bytes and compute, in two of three seeds, the width axis is a
+reallocation and not a capacity gain: retire P13.1 and record the negative.
+**Depends.** P12.1, P12.9, P12.10, P14.1. **Acceptance evidence.** one paired
+receipt per control with the bytes/compute equality printed; a shard-alignment
+proof for every tier used. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P13.2 — Cross-layer expert reuse: shared pools over 2 / 4 / 7 layers
+
+**What.** A shared expert pool spanning groups of adjacent layers, each layer
+keeping its own router, plus a learnable depth embedding so a shared expert can
+distinguish which layer is calling it. The comparison is pool size 2 / 4 / 7
+against an **independent per-layer bank** matched on total accessible capacity,
+and against MoRE's published shape at 4.
+**Why.** MoRE's abstract is verified: sharing pools across adjacent layers
+"expand[s] the diversity of routing combinations without additional parameters".
+If that holds on SELVEDGE's byte-accounted execution, an expert can be paid for
+once and used at several depths, which is the cheapest capacity this program can
+buy. If it does not hold, reuse is a memory trick that costs quality.
+**Decisive experiment.** Independent bank vs 2/4/7-layer pools at matched
+accessible capacity and matched active bytes per token, on the fresh suite.
+**Ledger requirement.** Reused parameters count **once per output token**;
+repeated FLOPs count **per use**; the depth embeddings count as active.
+**Falsifying control.** The independent bank at the *same* accessible capacity,
+plus a pool with **no depth embedding** (which must lose if the embedding is
+load-bearing).
+**Kill criterion.** Retire at pool size 4 if it does not beat the independent
+bank at matched accessible capacity and bytes, or if routing entropy across the
+grouped layers shows the depth embedding changes nothing (measured, not asserted).
+**Depends.** P12.1, P12.9, P12.10. **Acceptance evidence.** the four-arm receipt
+with the reuse-aware ledger and the routing-entropy measurement. **Status.** open.
+**Effort.** L. **Tier.** CANDIDATE.
+
+### P13.3 — Global experts plus a recurrent routing state
+
+**What.** A small set of **global** experts available at every layer, one **local**
+expert per layer, and a router that carries routing state forward across layers
+(a recurrent hidden state over routing decisions). Compare against MoRE-style
+pools and against independent per-layer experts.
+**Why.** Global experts amortise a capability that every layer needs; a recurrent
+router lets a layer's choice depend on the path taken to reach it, which a
+per-token independent router cannot express.
+**Evidence boundary.** GMoE is verified **by title only** ("Global Mixture of
+Experts with Logit Propagation"); the *recurrent routing state* is **PROPOSED**,
+not a reproduction. This item must say so in its own receipt.
+**Decisive experiment.** Three arms at matched active parameters: global+local
+with a recurrent router, global+local with a stateless router, and an independent
+bank. Measure **useful computation** (the drop when the global experts are
+removed, and the drop when routing state is reset per layer), not only parameter
+duplication.
+**Falsifying control.** The stateless router **at the same parameter count** — the
+recurrent state's parameters must not be the gain.
+**Kill criterion.** If resetting the routing state per layer changes task success
+by less than the registered margin, the state is decorative: retire the recurrent
+part and keep only the global/local split.
+**Depends.** P13.2 (shares the pool machinery). **Acceptance evidence.** the three
+receipts plus the state-reset ablation. **Status.** open. **Effort.** XL.
+**Tier.** CANDIDATE.
+
+### P13.4 — Typed latent reasoning with a learned allocation budget
+
+**What.** A bounded set of internal operators with declared types — **planning**,
+**state update**, **procedural abstraction** — applied for a variable number of
+steps, with a learned allocation budget that decides which operator runs and how
+much of the budget it gets.
+**Why.** Ordinary recurrence applies the same operator at every step, and
+explicit chain-of-thought spends output tokens. A typed operator set with a
+budget is the smallest architecture that can spend *internal* compute differently
+per problem.
+**Evidence boundary.** TYLER is verified by title only ("… When to Think, What to
+Compute, and How Much to Allocate"); that the operator set is exactly these three
+and that the budget is *learned* is **PROPOSED**.
+**Decisive experiment.** Typed operators vs explicit chain-of-thought vs ordinary
+recurrence, matched on **latency, learned-parameter usage and task success**, on
+the fresh suite.
+**Falsifying control.** Ordinary recurrence with the **same** number of steps and
+the same parameter count; and a CoT arm given the same latency budget.
+**Kill criterion.** If typed operators do not beat both controls in at least two
+of the seven categories at matched latency, or the learned budget collapses to a
+constant across tasks (measured by budget variance), retire P13.4.
+**Depends.** P12.1, P12.9, P12.6 (shares the T6 instrument). **Acceptance
+evidence.** the three-arm matched-clock receipt and the budget-variance
+measurement. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P13.5 — Integration controller (only after the individual winners report)
+
+**What.** One controller that jointly chooses **capability** (which module),
+**width** (P13.1), **depth** (P13.4 / recurrence), **reuse** (P13.2/P13.3) and
+**residency** under the 1e9 active-parameter ceiling, a latency target and a
+bytes-per-token budget.
+**Why.** The individual items each buy one axis. A joint controller is the only
+thing that can trade them, and it is also the easiest way to build an
+uninterpretable system, which is why it is last.
+**Acceptance evidence.** a joint receipt with a **leave-one-axis-out ablation**
+(each axis removed in turn) showing the controller's gain is attributable, and no
+axis whose removal is within noise.
+**Depends.** every reporting item among P13.1–P13.4 and the sixteen below.
+**Status.** open, deliberately unscheduled. **Effort.** XL. **Tier.** HYPOTHESIS.
+
+### The sixteen inventions (P13.6–P13.21)
+
+Each entry states the mechanism, why it could work, the **decisive experiment**,
+the **falsifying control** (the comparison that can kill it), and the **kill
+criterion** (what result retires it). None is a commitment to implement; all are
+CANDIDATE with a registered court before any run.
+
+#### P13.6 — Capability Seed Compilation
+
+**What.** Compile a specialist **once** into a compact *task seed* (a small set of
+tensors plus a conditioning vector) that is reused across all output tokens,
+instead of executing the specialist per token. Prefill counts the compiler's
+parameters; inference counts the seed's. Report the **task-level causal parameter
+footprint** (what the seed actually depends on).
+**Why.** A 0.6B specialist executed per token is unaffordable under the ceiling;
+compiled once per task it may be affordable. Task vectors (2212.04089, VERIFIED)
+say a task is carried by a direction in weight space, which is the premise.
+**Decisive experiment.** Four arms at matched active bytes: (a) full specialist per
+token, (b) specialist resident per token, (c) learned seed, (d) prefix
+conditioning only.
+**Falsifying control.** Prefix conditioning alone — if a 32-token prefix matches
+the seed, the seed is a prompt in disguise.
+**Kill criterion.** If the seed does not beat prefix conditioning at matched bytes
+while staying within the ceiling, retire.
+**Depends.** P12.1, P9.1. **Acceptance evidence.** the four-arm receipt with the
+causal-footprint measurement. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.7 — Constraint-Debt Reasoning
+
+**What.** A persistent **obligations register**: as the model plans, it records
+constraints it has taken on (borrow that must end, generic bound that must be
+satisfied, invariant that must hold) and carries them across steps; it is trained
+against an **executable verifier** that says whether each obligation was
+discharged.
+**Why.** Many failures are not reasoning errors but forgotten obligations.
+Reflexion (2303.11366, VERIFIED) shows verbal feedback persists across attempts;
+the register makes the persistence structured and checkable rather than prose.
+**Decisive experiment.** Register-equipped arm vs (a) more context and (b) more
+recurrence, at matched cost; measure **constraint violations per task**.
+**Falsifying control.** A register that is recorded but never read back (same
+parameter count, same training signal).
+**Kill criterion.** If violations do not fall by the registered margin against
+both controls, or the never-read control matches, retire.
+**Depends.** P12.9, P12.10. **Acceptance evidence.** the violation-rate receipt
+with per-category counts. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+#### P13.8 — Metamorphic Quotient Routing
+
+**What.** Learn an **address invariant to semantics-preserving transformations**:
+renamed identifiers, reordered independent statements, reformatted output all map
+to the same routing decision; deceptive **near**-equivalences (a rewrite that
+changes behaviour) must map elsewhere.
+**Why.** A router keyed on surface form wastes capacity re-learning the same
+expert under a new name, and fails when a deceptive rewrite looks equivalent.
+**Evidence boundary.** The intended citation (robustness ReCode) could not be
+located; no verified prior art for this routing claim. **PROPOSED.**
+**Decisive experiment.** Train with a metamorphic objective; test on **unseen**
+rewrite families (not seen at training) and on a held-out deceptive set.
+**Falsifying control.** An augmentation-only arm (same rewrites in training, no
+invariance term) — the standard way to get this effect without the mechanism.
+**Kill criterion.** If the invariant arm does not beat augmentation-only on unseen
+rewrite families, retire; transfer across rust/numeric/logic is reported per
+domain and a single-domain win is not a transfer claim.
+**Depends.** P12.9, P14.5 (executable Rust cases). **Acceptance evidence.** the
+unseen-family receipt and the deceptive-set false-accept count. **Status.** open.
+**Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.9 — Semantic Refinement Ladders
+
+**What.** An ordered ladder of representational **ΔE** steps, each trained on the
+*marginal verified gain* it buys, so the model chooses depth by expected benefit
+per byte.
+**Why.** MatFormer (2310.07707, VERIFIED) shows nested granularity works; the
+missing part is spending the next increment only where a verifier says it buys
+something.
+**Decisive experiment.** Fixed-width vs progressive-quantised vs ladder, **at
+matched bytes**, on the fresh suite.
+**Falsifying control.** A ladder whose rungs are selected **randomly** at the same
+expected depth — its result is the value of depth alone.
+**Kill criterion.** If the ladder does not beat the random-rung control at matched
+bytes, the ordering carries no information: retire.
+**Depends.** P12.9. **Acceptance evidence.** the matched-byte three-arm receipt
+plus the per-rung marginal-gain table. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+#### P13.10 — Verified Constraint Distillation
+
+**What.** Train on the **difference** between a failing and a corrected program:
+extract the violated constraint, generate varied examples of that constraint class,
+and distil on those rather than on correct solutions.
+**Why.** Self-Debugging (2304.05128, VERIFIED) shows execution feedback teaches
+repair; the difference signal is more targeted than an answer.
+**Decisive experiment.** Constraint-distilled arm vs **correct-solution**
+distillation at matched tokens, on **held-out structural families**.
+**Falsifying control.** Correct-solution distillation at matched tokens — the
+standard baseline and the one that usually wins.
+**Kill criterion.** If the gain does not survive on held-out structural families
+(only on the families whose constraints were extracted), retire: it memorised
+constraints, not the constraint discipline.
+**Depends.** P12.9, P14.5. **Acceptance evidence.** the held-out-family receipt
+with per-family deltas. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.11 — Certified Read Elision
+
+**What.** A **conservative bound** ε on the effect of omitted computation; a read
+is skipped only when the proven margin exceeds 2ε. The bound must be a **real
+bound** (interval or Lipschitz-style), **not a confidence interval**.
+**Why.** Every omission result in this repository's history is post-hoc and
+unbounded (M1, M2). A real bound is what makes skipping *safe* rather than
+*measured to be lucky*.
+**Evidence boundary.** No certified-bound work could be located by the recorded
+searches (CROWN unlocated). The machinery is PROPOSED until read.
+**Decisive experiment.** Bound tightness measured first (fraction of tokens whose
+ε is small enough to certify anything); then how many reads can actually be
+certified on real held-out windows, and task success under certification.
+**Falsifying control.** The **same skip rule with ε from a bootstrap CI** — if the
+CI version performs identically, the "certified" claim is cosmetic and must be
+dropped.
+**Kill criterion.** If the certified fraction is ~0 at a useful quality level, or
+the CI control matches, retire the certification and report the bound as too
+loose.
+**Depends.** P12.1, P12.10. **Acceptance evidence.** the tightness receipt and the
+certified-read count. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.12 — Interaction Compilation
+
+**What.** Compile a **measured pairwise synergy** into a compact residual operator
+that is executed once, rather than executing both modules.
+**Why.** P9.3 measures pairwise interaction; if a pair's interaction is stable, it
+can be compiled. SMEAR (2306.03745) already compiles a weighted mixture of expert
+parameters into one merged expert, so the *shape* is published; conditioning the
+compiled operator on a **measured interaction** is the invention.
+**Decisive experiment.** Compiled-pair arm vs executing both modules, at matched
+bytes and matched FLOPs, on items where P8.1/P9.3 measured positive synergy.
+**Falsifying control.** Executing both modules **is** the control; a second
+control compiles pairs whose interaction was measured to be **zero** (which must
+show no gain).
+**Kill criterion.** If compiled pairs that were measured as synergistic do not
+beat executing both at matched bytes, or zero-interaction pairs gain too, retire.
+**Depends.** P9.3, P8.2. **Acceptance evidence.** the compiled-vs-executed receipt
+split by measured interaction sign. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+#### P13.13 — Conditional Representation Expansion
+
+**What.** A temporary higher-dimensional working state, opened only for selected
+layers and closed again, so width is a per-token rental rather than a permanent
+cost.
+**Why.** CoLT5-style conditional width is the published shape (unlocated here;
+PROPOSED); SELVEDGE's version is sized by the active ledger, so the rental is
+paid in bytes on the same row as the rest of the token.
+**Decisive experiment.** Expansion arm vs a **width-matched dense adapter** at
+matched active parameters and bytes.
+**Falsifying control.** The width-matched adapter; plus an arm that opens the
+state at **random** layers at the same expected cost.
+**Kill criterion.** If expansion does not beat the adapter at matched bytes, or
+the random-layer control matches, retire.
+**Depends.** P12.1, P12.10. **Acceptance evidence.** the matched-byte receipt and
+the layer-selection distribution. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+#### P13.14 — Omission-Conditioned Recovery
+
+**What.** A compensator conditioned on **which** computation was omitted, trained
+to recover the omitted contribution. Its parameters count in the **active**
+ledger.
+**Why.** Skipping a group changes the residual stream in a way a fixed model
+cannot undo; a compensator that knows what is missing is the cheapest repair. The
+baseline is the hard one: **strong layer-wise distribution alignment**, which is
+exactly what GPTQ (2210.17323, VERIFIED) does for quantisation error.
+**Decisive experiment.** Compensated omission vs layer-wise distribution
+alignment, at matched bytes (compensator included) and matched omission rate.
+**Falsifying control.** The alignment baseline; and a compensator conditioned on a
+**shuffled** omission set (knows the rate, not the identity).
+**Kill criterion.** If the conditioned compensator does not beat alignment at
+matched bytes, or only matches the shuffled condition, retire.
+**Depends.** P12.1, P4.3. **Acceptance evidence.** the matched-byte receipt with
+the shuffled-condition ablation. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.15 — Counterexample-Preserving Compression
+
+**What.** Allocate compression bits to rare, **verifier-confirmed** distinctions
+(the cases where a small weight difference changes the answer) rather than to
+average logit error.
+**Why.** The M1/M2 negative results say the loss is concentrated in a small
+number of cases; average-error allocation (weight-error or average-logit) spends
+bits where they do not matter.
+**Evidence boundary.** HAWQ-style mixed precision is standard but unlocated by
+the recorded searches; the *counterexample-conditioned allocation* is PROPOSED.
+**Decisive experiment.** Equal-bytes comparison against (a) weight-error
+allocation and (b) average-logit-error allocation; report **flip rate on the
+rare distinctions** and overall task success.
+**Falsifying control.** The two allocation baselines at exactly equal bytes.
+**Kill criterion.** If the rare-distinction flip rate does not improve at equal
+bytes, or overall success drops, retire.
+**Depends.** P12.9, P4.3. **Acceptance evidence.** the equal-byte receipt with the
+flip-rate table. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+#### P13.16 — Latent Branch-and-Reconcile
+
+**What.** At a **genuine ambiguity** (measured, not guessed), fork the latent state
+into branches, let them proceed, and **merge consistent findings** back into one
+state.
+**Why.** Sampling and voting (2203.11171, VERIFIED) pays output tokens for every
+branch and cannot merge partial findings; a latent fork can.
+**Decisive experiment.** Fork/merge vs sampling, vs beam search and vs more
+recurrence, at **equal wall-clock cost**, on items with a detected ambiguity.
+**Falsifying control.** Two independent samples reconciled by a vote at the same
+cost; and a fork that is **not** merged (to show merging matters).
+**Kill criterion.** If fork/merge does not beat sampling at equal cost, or the
+unmerged fork matches it, retire.
+**Depends.** P12.9, P12.6. **Acceptance evidence.** the equal-cost receipt and the
+ambiguity-detection precision. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.17 — Resident-Side-Information Coding
+
+**What.** Encode **cold** modules as conditional differences against resident
+weights, including decode cost, instead of storing them standalone.
+**Why.** LoRA (2106.09685, VERIFIED) shows a module can be carried as a low-rank
+factorisation. If cold modules are correlated with resident ones, a difference
+code is smaller than the module, and cold bytes are the quantity that decides
+whether capacity is affordable.
+**Decisive experiment.** Difference-coded cold modules vs standalone: **NVMe
+traffic per token** and quality, with decode CPU time included.
+**Falsifying control.** Standalone storage of the same modules at the same
+precision; and a difference code against a **random** resident basis (which must
+lose).
+**Kill criterion.** If NVMe bytes do not fall, or decode cost eats the gain at the
+measured p95, retire.
+**Depends.** P4.4, P14.1. **Acceptance evidence.** the traffic receipt with decode
+cost in the same row. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+#### P13.18 — Phase-Transition Capability Switching
+
+**What.** Switch capability at **learned phase boundaries** of a generation (a
+measured change in the task regime), not at every token and not once per task.
+**Why.** Token routing pays a decision per token and thrashes; task-level
+selection cannot adapt inside a long task. A phase boundary is between them.
+**Evidence boundary.** No located prior art supports learned phase-boundary
+switching; the per-token conditional-depth family is the control this must beat.
+**PROPOSED.**
+**Decisive experiment.** Phase switching vs (a) token-level routing and (b) fixed
+task-level selection, at matched bytes, with the **number of switches** reported.
+**Falsifying control.** Token-level routing at matched bytes; and a phase detector
+that fires at **fixed** positions.
+**Kill criterion.** If phase switching does not beat both, or the learned boundary
+is indistinguishable from a fixed schedule, retire.
+**Depends.** P12.1, P12.9. **Acceptance evidence.** the three-arm receipt with the
+switch count and boundary-position statistics. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+#### P13.19 — Executable Capability Contracts
+
+**What.** Each module ships an **applicability test** and bounded **pre/post
+conditions** that are executed, so a module cannot be activated outside its stated
+envelope.
+**Why.** Selective classification (1705.08500, VERIFIED) is the published analogue
+for abstention at a declared risk; the executable contract extends it to
+composition: two modules may only compose if the postcondition of one satisfies
+the precondition of the other.
+**Decisive experiment.** Measure **harmful activations** (activations where the
+module runs outside its envelope) and safe-composition rate, with and without
+contracts.
+**Falsifying control.** A **confidence threshold** at matched coverage (the
+standard alternative that needs no contract).
+**Kill criterion.** If contracts do not reduce harmful activations against the
+threshold control at matched coverage, or safe-composition rate does not rise,
+retire.
+**Depends.** P12.9, P12.10. **Acceptance evidence.** the activation-envelope
+receipt and the composition matrix. **Status.** open. **Effort.** M.
+**Tier.** CANDIDATE.
+
+#### P13.20 — Training for Future Locality
+
+**What.** Train routing to be **both accurate and predictable** — a router that
+optimises accuracy *and* the predictability of its own future needs — so the
+prefetcher can act before the need.
+**Why.** SeqMoE (2609.12978, VERIFIED) treats prediction as sequence modelling;
+the gap is that accuracy and predictability are usually traded silently. Making
+predictability a training term is the invention.
+**Decisive experiment.** Joint-objective router vs accuracy-only router at matched
+quality: **cold bytes per token and p95 latency**, with quality loss reported, not
+hidden.
+**Falsifying control.** Accuracy-only router at matched quality; and a router with
+a **predictability term on a shuffled label** (surface-level regularisation).
+**Kill criterion.** If cold bytes and p95 do not fall at **no** quality loss
+(within the registered margin), retire: predictability bought at quality is the
+current behaviour, not an advance.
+**Depends.** P3.7, P4.4, P14.2. **Acceptance evidence.** the cold-byte/p95 receipt
+with paired quality CIs. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+#### P13.21 — Verifier-Calibrated Internal Stopping
+
+**What.** Stop internal computation when **independent evidence** indicates the
+obligations are discharged (a verifier or an executable check), rather than when
+the model's own distribution converges or its confidence is high.
+**Why.** PonderNet (2107.05407, VERIFIED) learns halting, and DEER-style work uses
+convergence/uncertainty — but both read the model's own state, which is exactly
+what is wrong when the model is confidently wrong.
+**Decisive experiment.** Verifier-calibrated stopping vs (a) convergence-only
+halting and (b) confidence-only halting, on the fresh suite, with **task success
+per unit compute** reported.
+**Falsifying control.** The two halting baselines above at matched expected
+compute; plus a verifier-check arm that runs the verifier but **ignores** its
+answer (to separate the cost of verification from its benefit).
+**Kill criterion.** If verifier-calibrated stopping does not beat both baselines
+at matched compute, or the ignore-answer control matches, retire.
+**Depends.** P12.9, P14.5. **Acceptance evidence.** the matched-compute receipt
+with the verifier-cost row. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+---
+
+## 19. WS14 — Runtime and evaluation corrections that must land before capability runs
+
+These seven items are not new mechanisms. They are the corrections that decide
+whether a capability run measures the model or the instrument. Each is
+CPU-testable today.
+
+### P14.1 — Decoded-weight residency: stop re-decoding on every read
+
+**What.** `GroupReader::read_group` (`crates/selvedge-runtime/src/bundle.rs`)
+fills a byte buffer per shard and calls `decode_f32_in_place`, which converts
+little-endian f32 bytes into a `Vec<f32>` — **on every call, including cache
+hits**. Every shard the exact 0.6B token reads is decoded again
+(arithmetic, not a measurement: 28 layers × 48 groups = 1,344 reads per token,
+the structure recorded in `docs/RUNTIME.md`). Add (a) an **execution-ready
+decoded representation** that
+the compute step consumes directly, and (b) a **separation of the storage cache
+from execution residency**, so "cached" and "resident as f32" are different,
+separately measured states.
+**Why.** Until this is fixed, a cache hit saves I/O but not conversion, and every
+bytes/token and latency comparison is measuring the decode loop as much as the
+model. It also blocks P13.1 (width tiers) and P13.20 (cold-byte p95), both of
+which need to distinguish a byte saved from a decode avoided.
+**Acceptance evidence.** a CPU receipt with (i) exact-mode numerical parity
+against the current path (bitwise where the reduction order is unchanged),
+(ii) decode passes per token before/after, (iii) peak decoded residency bytes,
+and (iv) the existing Court E parity matrix still passing.
+**Depends.** none. **Status.** open. **Effort.** M. **Tier.** ACTIVE.
+
+### P14.2 — Prefetch is synchronous: separate fetch and compute timelines
+
+**What.** In `crates/selvedge-runtime/src/run.rs` the prefetch is a blocking loop
+over every fragment of the layer (`self.reader.prefetch(...)`), followed by the
+compute loop; there is no overlap and no bounded staging buffer. Add separate
+**fetch** and **compute** timelines, **bounded staging buffers** (with a declared
+high-water mark), and a **measured readiness dependency** (what compute may start
+before which shard is ready), so a stall is attributed to a named dependency
+instead of to "the loop".
+**Why.** The simulator already models overlap (`docs/SIMULATOR.md`) and the live
+comparison was recorded as inconclusive because the host was saturated; the
+runtime-side claim of overlap is currently unmeasurable because the runtime has no
+overlap. Without this, p95 latency claims (P8.4, P13.20) measure a serial loop.
+**Acceptance evidence.** a CPU receipt with per-token fetch and compute intervals,
+the staging high-water bytes, the number of stalls attributable to each
+dependency, and byte/cache-hit parity with the synchronous path.
+**Depends.** P14.1. **Status.** open. **Effort.** L. **Tier.** ACTIVE.
+
+### P14.3 — Token-at-a-time prefill: keep the scalar oracle, add a batched path
+
+**What.** Prefill is executed token by token through the same scalar path as
+decode. Keep the scalar path **as the reference oracle** (it is what Court E
+proves against) and add a **batched prefill** path with a numerical-parity test
+against that oracle on real windows.
+**Why.** Any prefill/throughput comparison against an external system is
+meaningless while prefill is a scalar loop, and the compiler/seed items (P13.6)
+count prefill cost explicitly. The scalar path must survive as the oracle, or the
+parity evidence disappears.
+**Acceptance evidence.** a CPU receipt with prefill latency per token and per
+batch, max-abs/max-rel parity against the scalar oracle on the published windows,
+and a statement of the reduction order the batch path uses.
+**Depends.** P14.1. **Status.** open. **Effort.** L. **Tier.** ACTIVE.
+
+### P14.4 — Expand the evaluation suite beyond 24 tasks
+
+**What.** Grow the fresh suite from 24 items (plus the 3-item anti-specialisation
+trio) toward **hundreds of independently authored tasks**, with the same
+authoring-source discipline, hash binding and per-item verifier. `docs/
+CAPABILITY-COURT.md` records the current count; the target is stated as a range
+and reached incrementally, with the suite hash re-bound in a new pre-registration
+at each expansion (never re-bound in place).
+**Why.** A 24-item suite cannot support a 10% relative claim with category
+stratification: one item moves a category by 25–33%, and the paired CI is wide by
+construction. The current registered threshold stays valid for the current suite;
+the *frontier* claim needs the larger one.
+**Acceptance evidence.** the expanded authoring source, its manifest and hash, an
+updated contamination receipt, and a **new** pre-registration that supersedes
+(does not edit) the current one.
+**Depends.** P12.9. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P14.5 — Execute Rust cases through `rustc`/tests, not only through a checker
+
+**What.** Every suite item whose verifier is a Rust test must be **executed** —
+compiled and run by `rustc`/`cargo test` in the bounded sandbox — with the
+compiler's exit status and the test result recorded as the correctness signal.
+**Why.** Part of the current instrument scores reference-continuation likelihood
+(or a checker's structural comparison) rather than executing the submitted code.
+Those are different measurements, and only execution supports a correctness
+claim. The sandbox already records compile error, assertion failure, timeout and
+allocation failure as distinct outcomes (`docs/CAPABILITY-COURT.md`); this item
+makes execution the rule for every Rust case, not the exception.
+**Acceptance evidence.** a receipt showing, per item, the executed command, the
+exit status, and the outcome class; plus the count of items still scored without
+execution, with a reason for each.
+**Depends.** P12.9. **Status.** partial (the sandbox executes; coverage is not
+complete). **Effort.** L. **Tier.** CANDIDATE (gates each new suite expansion).
+
+### P14.6 — Keep correctness separate from reference-continuation likelihood
+
+**What.** Report two numbers that are never merged: **verified correctness**
+(executed verifier outcome) and **reference-continuation likelihood** (KL/NLL
+against the teacher's next-token distribution, the T2 instrument's metric). Every
+capability table carries both columns, or explains why one is null.
+**Why.** The T2 instrument is a distillation metric; the capability court is a
+correctness metric. A single "score" that mixes them is how a distillation gain
+is reported as a capability gain. The M1/M2 results are all likelihood results and
+must never be read as capability results.
+**Acceptance evidence.** the schema change in the result receipt (two named
+fields), a test that refuses a capability table whose rows omit either, and a
+paragraph in `docs/LIMITATIONS.md` naming the distinction.
+**Depends.** P12.9, P14.5. **Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+### P14.7 — A sealed evaluation set for external comparison
+
+**What.** Hold back a **sealed** portion of the expanded suite, authored by the
+same process, never used for development, opened only for a declared external
+comparison and reported once per revision.
+**Why.** An externally comparable number requires a set the program did not tune
+against. Without it, every comparison is in-sample by construction, and the
+contamination receipt (which currently covers public corpora) says nothing about
+SELVEDGE's own development loop.
+**Acceptance evidence.** the sealed set's hash recorded in the contract before any
+arm sees it, a custody record, and a rule that a sealed result is published once
+and never re-run for tuning.
+**Depends.** P14.4. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.

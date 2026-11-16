@@ -61,6 +61,12 @@ def main(argv: list[str]) -> int:
     generate.add_argument("--t2-config", default=None)
     generate.add_argument("--t2-admission", default=None)
     generate.add_argument("--t2-accounting", default=None)
+    generate.add_argument("--t2-training-receipt", default=None,
+                          help="results/t2/<arm>/run.json; required for a verifiable "
+                               "checkpoint (arm, config, admission, step, mask order)")
+    generate.add_argument("--t2-mask-order", default="legacy",
+                          help="the dispatch mask placement the arm was trained with "
+                               "(legacy or pair)")
     generate.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     generate.add_argument("--device", default=None)
     generate.add_argument("--batch", type=int, default=4)
@@ -168,7 +174,9 @@ def main(argv: list[str]) -> int:
             adapter = adapters.T2ArmAdapter(
                 args.t2_arm, args.t2_checkpoint, args.t2_config, args.t2_admission,
                 args.hf_root, device=args.device, batch=args.batch,
-                accounting=args.t2_accounting)
+                accounting=args.t2_accounting,
+                training_receipt=args.t2_training_receipt,
+                mask_order=args.t2_mask_order)
         elif args.adapter_spec:
             spec = load_json(args.adapter_spec)
             adapter = adapters.adapter_from_spec(spec)

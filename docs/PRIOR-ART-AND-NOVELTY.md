@@ -76,6 +76,20 @@ the recorded searches (§8). The distinction matters for this pass because 12 of
 the 42 names could not be located at all, and several of them are load-bearing
 citations for a proposed experiment.
 
+**Third pass, 2026-11-16 (S16C, WS13).** Twenty named works were added with the
+eleven P13.6–P13.21 inventions and the four published mechanisms WS13 stages.
+They were fetched in rounds 18–18d
+(`results/prior-art/prior-art-fetch-20261116-round18{,b,c,d}.jsonl`); the verdicts
+are in §12. New rows: `VERIFIED` 9, `PARTIAL` 4, `UNSUPPORTED` 7, plus
+one supplementary `VERIFIED` (PonderNet).
+
+**Count discrepancy, recorded not repaired.** The second-pass paragraph above
+says "95 named works" while its own category counts (76 + 9 + 14) sum to 99. The
+eighteen-point row table in §10 and §10.1 is the authoritative record; the prose
+total in §1 is short by four. This pass does not rewrite the earlier arithmetic
+(it would be editing a previous verdict's bookkeeping without re-reading its
+receipts). Counting rows instead: 114 numbered rows before this pass, 135 after.
+
 ## 2. Verification table — novelty-boundary list
 
 | # | work | id / venue | status | recorded evidence | overlap with SELVEDGE |
@@ -437,3 +451,100 @@ tried** are listed in the "does not support" column — that list is the evidenc
     returned HTTP 429 for most queries. The ledger now uses two HTML fallbacks and
     records the 429s. Any future refresh must expect this and must not read a 429
     as "no such paper".
+
+---
+
+## 12. Verification table — WS13 mechanisms and the sixteen inventions (third pass, 2026-11-16)
+
+This pass covers the four published mechanisms that `docs/PROGRAM-PLAN.md` §18
+stages (P13.1–P13.4) and the nearest prior art for each of the sixteen P13.6–
+P13.21 inventions. Raw evidence:
+`results/prior-art/prior-art-fetch-20261116-round18{,b,c,d}.jsonl`.
+
+**Method addendum, and why there are four round-18 files.** Six arXiv ids were
+recalled from memory in round 18 and resolved to *different papers* (one to a
+physics paper on dilepton final states, one to a Heun-algebra paper). Those
+wrong-page records are kept: an id that resolves to another work is evidence
+that the id was wrong, not evidence that the work does not exist. Round 18b then
+asked for the same works with `ti:` field queries; the HTML search endpoint this
+script uses does not accept `ti:`, so 18b's zeros are a query artefact and are
+recorded as such. Rounds 18c/18d re-asked with all-field phrases, which is the
+form that worked in rounds 1–17. Where a work is still missing after that, the
+status is `UNSUPPORTED` and the queries attempted are listed in the row.
+
+### 12.1 The four published mechanisms WS13 stages
+
+| # | work | id / venue | status | recorded evidence | what it supports |
+| ---: | --- | --- | --- | --- | --- |
+| 115 | **MoSE** (claimed: adaptive expert widths, ICML 2026) | ICML 2026 as cited; **not located** | **UNSUPPORTED** | three queries: `all:"MoSE" AND all:"slimmable"` (0 hits), `all:"adaptive expert width" OR all:"adaptive widths for experts"` (0 hits), `all:"MoSE" AND all:"experts"` (6 hits, none about widths — the MOsE hits are "Mixture-of-Shape-Experts" 2504.09601, a shape-dictionary prompt method for SAM, and "Swin2-MoSE" 2404.18924, image super-resolution) | **Nothing about slimmable expert widths.** The *mechanism* is nonetheless published as MatFormer's nested granularity (row 118) and slimmable networks; only the name is unfound. P13.1 must be framed as "nested-width experts (MatFormer-style) applied to a sharded expert bank", never as a reproduction of MoSE |
+| 116 | **MoRE** — Mixture of Reused Experts | arXiv 2609.18176 (COLM 2026 as cited; the arXiv record does not name a venue) | **VERIFIED** | abstract: "shares expert pools across groups of adjacent layers. Each layer retains its own router but selects from a larger shared pool, expanding the diversity of routing combinations without additional parameters"; "lightweight learnable depth embeddings" let shared experts distinguish layers | exactly the P13.2 mechanism: shared pool over adjacent layers + per-layer router + depth embeddings |
+| 117 | **GMoE** — Global Mixture of Experts with Logit Propagation | ACL 2026 long 2065 (`aclanthology.org/2026.acl-long.2065/`) | **PARTIAL** | landing page: title "GMoE: Global Mixture of Experts with Logit Propagation", Geonwoo Hong and Taehwan Kim, Proceedings of the 64th ACL (Vol. 1: Long Papers), 2026. **The page serves no abstract** | the title supports *global experts* and *logit propagation*. It does **not** evidence a **recurrent router that propagates routing state across layers**, which is the P13.3 claim. P13.3's state-carrying router is PROPOSED until the full text is read |
+| 118 | **TYLER** — Typed Latent Reasoning for Language Models | EMNLP 2026 main 2004 (`aclanthology.org/2026.emnlp-main.2004/`) | **PARTIAL** | landing page: title "TYLER: Typed Latent Reasoning for Language Models —— When to Think, What to Compute, and How Much to Allocate", Hanyu Lin, Min Cai, Jiawei Wen, Haodi Zhang, EMNLP 2026. **No abstract on the page** | the title supports *typed latent reasoning* plus a *when/what/how-much* allocation decision. It does **not** evidence the specific operator set (planning, state update, procedural abstraction) or that the budget is *learned*. P13.4 may cite TYLER for the framing only |
+
+**Verdict on the WS13 premise.** "Reproduce four published mechanisms" is
+supported for **one** of the four at full evidence (MoRE), *identity-only* for two
+(GMoE, TYLER), and **not locatable** for one (MoSE). WS13 is therefore written as
+four competing programmes with their own controls, not as a replication of a
+known result set.
+
+### 12.2 Nearest prior art for the sixteen inventions (P13.6–P13.21)
+
+| # | invention | nearest prior art | id | status | recorded evidence |
+| ---: | --- | --- | --- | --- | --- |
+| 119 | P13.6 Capability Seed Compilation | task vectors / task arithmetic | arXiv 2212.04089 | **VERIFIED** | "A task vector specifies a direction in the weight space of a pre-trained model, such that movement in that direction improves performance on the task" |
+| 120 | P13.7 Constraint-Debt Reasoning | Reflexion | arXiv 2303.11366 | **VERIFIED** | "reinforce language agents not by updating weights, but instead through linguistic feedback"; agents "maintain" a verbal reflection across attempts |
+| 121 | P13.8 Metamorphic Quotient Routing | ReCode (robustness under code rewrites) | not located | **UNSUPPORTED** | three queries; the only ReCode hit is a different paper, "ReCode: Updating Code API Knowledge with Reinforcement Learning" 2506.20495, which is not about semantics-preserving transforms. The nearest *located* relative is a code-generation benchmark (EvoCodeBench, 2404.00599) that appears only as a search candidate, identity only, and is not a robustness study |
+| 122 | P13.9 Semantic Refinement Ladders | MatFormer (nested granularity, elastic inference) | arXiv 2310.07707 | **VERIFIED** | "MatFormer ... provide[s] elastic inference across diverse deployment constraints"; nested submodels at several granularities trained jointly |
+| 123 | P13.10 Verified Constraint Distillation | Self-Debugging | arXiv 2304.05128 | **VERIFIED** | teaches a model to debug "its predicted program" from execution feedback ("rubber duck debugging") |
+| 124 | P13.11 Certified Read Elision | CROWN (certified bounds) | not located | **UNSUPPORTED** | four queries over three rounds (a recalled id resolved to a Heun-algebra paper; two phrase searches returned unrelated works). The *concept* of certified bound propagation is standard and the item's requirement "must be a real bound, not a CI" is stricter than the ledger can currently evidence. Treat the bound machinery as PROPOSED until read |
+| 125 | P13.12 Interaction Compilation | SMEAR (soft merging of experts into one operator); function vectors (composition) | arXiv 2306.03745; function vectors not located | **PARTIAL** | SMEAR: "avoids discrete routing by using a single `merged` expert constructed via a weighted average of all of the experts' parameters" — a *published* compilation of a mixture into one executed operator, which is exactly the shape of P13.12's mechanism. What it does **not** do is condition the compiled operator on a *measured pairwise interaction*; that residual is the invention. The two `function vectors` queries located only "Improving Activation Steering ... with Mean-Centring" 2312.03813 |
+| 126 | P13.13 Conditional Representation Expansion | CoLT5 (conditional token-selective width) | not located | **UNSUPPORTED** | three queries, including `all:CoLT5` bare (0 hits). The conditional-computation idea is supported elsewhere in this ledger (§3: DejaVu, MoD-adjacent works); *this specific reference* is unverified |
+| 127 | P13.14 Omission-Conditioned Recovery | GPTQ (layer-wise output reconstruction with error compensation) | arXiv 2210.17323 | **VERIFIED** | post-training quantisation that minimises layer-wise output error; the exact "strong layer-wise distribution alignment" baseline P13.14 must beat |
+| 128 | P13.15 Counterexample-Preserving Compression | HAWQ (sensitivity-driven mixed precision) | not located | **UNSUPPORTED** | two queries (a recalled id resolved to a dilepton physics paper; the phrase search found an unrelated spectral-flatness quantisation paper). Mixed-precision-by-sensitivity is standard; the *citation* is unverified |
+| 129 | P13.16 Latent Branch-and-Reconcile | self-consistency | arXiv 2203.11171 | **VERIFIED** | "samples a diverse set of reasoning paths ... and then selects the most consistent answer by marginalizing out the sampled reasoning paths" — sampling + reconcile, the baseline P13.16 must beat at equal cost |
+| 130 | P13.17 Resident-Side-Information Coding | LoRA | arXiv 2106.09685 | **VERIFIED** | "injects trainable rank decomposition matrices into each layer"; a module delta carried as a low-rank factorisation |
+| 131 | P13.18 Phase-Transition Capability Switching | SMEAR (nearest *located* work; different mechanism) | arXiv 2306.03745 | **UNSUPPORTED** | the located SMEAR is 2306.03745 (2310.17680 is CodeFusion), and its abstract is about *soft merging of expert parameters*, **not** sequence-level or phase-boundary routing. No fetched record supports "switch at learned phase boundaries"; the per-token conditional-depth family (§3 domain) is per-token by construction, which is the control P13.18 exists to beat. The mechanism is PROPOSED |
+| 132 | P13.19 Executable Capability Contracts | selective classification (reject option at a declared risk) | arXiv 1705.08500 | **VERIFIED** | "allow[s] a user to set a desired risk level. At test time, the classifier rejects instances as needed, to grant the desired risk (with high probability)" — the abstain-on-violation analogue of a pre/postcondition contract |
+| 133 | P13.20 Training for Future Locality | SeqMoE (predictability as a training target) | arXiv 2609.12978 | **PARTIAL** | carried from §2 row 5 (verified there): recasts expert prediction as sequence modelling, with deadline scheduling. It supports *predictive loading*; it does **not** evidence a router trained to be **both accurate and predictable with cold bytes and p95 as the acceptance metric**, which is P13.20's claim. That joint objective is PROPOSED |
+| 134 | P13.21 Verifier-Calibrated Internal Stopping | DEER (early exit from convergence/uncertainty) | not located | **UNSUPPORTED** | three queries (a recalled id resolved to a cooperative-society paper; two phrase searches returned unrelated works). The *adjacent* verified prior art is PonderNet |
+
+### 12.3 Supplementary work located in this pass
+
+| # | work | id | status | why it matters |
+| ---: | --- | --- | --- | --- |
+| 135 | PonderNet | 2107.05407 | VERIFIED | "learns end-to-end the number of computational steps to achieve an effective compromise between training prediction accuracy, computational cost and generalization"; bounded expected computation is already published, so P13.21's claim must be the **independent verifier evidence**, not halting itself |
+
+## 13. Consequential findings from the third pass
+
+1. **MoSE is the weakest citation in the strategy note and it is load-bearing.**
+   Three searches find no work matching "adaptive expert widths" under that name;
+   the only MoSE in the corpus is a shape-dictionary prompt method for image
+   segmentation. P13.1 stays in the plan, but as a **MatFormer-style nested-width
+   expert** experiment with a MatFormer citation, not as a MoSE reproduction.
+2. **Two of the four "published" WS13 mechanisms are title-only.** GMoE and TYLER
+   are verified by title, venue and authors and by nothing else: their landing
+   pages serve no abstract. The strategy note's descriptions of them (a *recurrent
+   routing state*; a *learned* typed-operator budget) are stronger than the fetched
+   record and are now marked PROPOSED parts of P13.3 and P13.4.
+3. **Six of the sixteen nearest-prior-art citations could not be located.**
+   CROWN, CoLT5, function vectors, HAWQ, DEER and the robustness ReCode are all
+   standard works; the ledger nonetheless cannot cite them, and the plan must not
+   present them as verified baselines. Each affected item (P13.8, P13.11–P13.13,
+   P13.15, P13.21) says so in its own text. P13.18 is the seventh: its mechanism
+   has no located prior art at all, and the work chosen as its neighbour (SMEAR)
+   turned out to be about soft expert merging, not phase switching.
+4. **Two homonyms are live hazards.** "MoSE" = Mixture-of-Shape-Experts
+   (2504.09601); "ReCode" = Updating Code API Knowledge (2506.20495). Both would
+   read as a correct citation to a casual check and neither supports the claim.
+5. **Two strategy-note identities were wrong.** SMEAR is 2306.03745 (soft merging
+   of experts); 2310.17680 is CodeFusion, a diffusion code model. MoSE could not be
+   matched to any work about widths. In both cases the mechanism may still be real;
+   the citation was not.
+6. **The most defensible novelty in the sixteen is the conjunction, not any one
+   mechanism.** Every invention has a located neighbour for its *component*
+   (task vectors, Reflexion, MatFormer, GPTQ, self-consistency, LoRA, selective
+   classification, PonderNet, SMEAR) or no neighbour at all (six of sixteen). What
+   no fetched record shows is the specific *measured* target SELVEDGE sets —
+   verified task success at a fixed active budget, bytes per output token and
+   cold-byte p95, with a falsifying control per mechanism. That is the claim to
+   make, and it is a claim about evidence, not about novelty of parts.

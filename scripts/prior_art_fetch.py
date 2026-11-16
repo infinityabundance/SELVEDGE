@@ -561,6 +561,147 @@ SOURCES = [
     ("onetoken-verifier-search", "arxiv_html_search",
      'all:"token" AND all:"verifier" AND all:"confidence" AND all:"reasoning"',
      "one-token verification via a confidence read-out"),
+    # --- round 18 (S16C): the four published mechanisms named for WS13 and the
+    # nearest prior art for each of the sixteen P13.6-P13.21 inventions.
+    # The four named mechanisms come first; a 429 or a missing landing page is a
+    # finding and is recorded, not retried into a citation.
+    ("mose-search", "arxiv_html_search",
+     'all:"MoSE" AND all:"slimmable"',
+     "MoSE: adaptive expert widths via nested slimmable experts"),
+    ("more-page", "arxiv_page", "2609.18176",
+     "MoRE: cross-layer expert reuse with shared expert pools"),
+    ("gmoe-page", "page", "https://aclanthology.org/2026.acl-long.2065/",
+     "GMoE: global experts plus recurrent routing state"),
+    ("tyler-page", "page", "https://aclanthology.org/2026.emnlp-main.2004/",
+     "TYLER: typed latent reasoning operators under a learned budget"),
+    # P13.6 capability seed compilation -- nearest: task arithmetic / task vectors.
+    ("task-arithmetic-page", "arxiv_page", "2212.04089",
+     "task vectors: a task is carried by a weight delta that can be reused"),
+    # P13.7 constraint-debt reasoning -- nearest: verbal self-reflection memory.
+    ("reflexion-page", "arxiv_page", "2303.11366",
+     "Reflexion: persistent verbal self-feedback across attempts"),
+    # P13.8 metamorphic quotient routing -- nearest: semantics-preserving code
+    # transformations as a robustness test.
+    ("recode-page", "arxiv_page", "2308.10620",
+     "robustness to semantics-preserving code transformations"),
+    # P13.9 semantic refinement ladders -- nearest: nested any-precision widths.
+    ("matformer-page", "arxiv_page", "2310.07707",
+     "MatFormer: nested submodels at several granularities trained jointly"),
+    # P13.10 verified constraint distillation -- nearest: repair from execution
+    # feedback on failing programs.
+    ("self-debug-page", "arxiv_page", "2304.05128",
+     "Self-Debug: learning from a failing program plus its execution feedback"),
+    # P13.11 certified read elision -- nearest: certified bound propagation.
+    ("crown-page", "arxiv_page", "1811.11407",
+     "CROWN: certified output bounds by linear relaxation, not a CI"),
+    # P13.12 interaction compilation -- nearest: composable functional vectors.
+    ("function-vectors-page", "arxiv_page", "2210.10742",
+     "function vectors: a task is carried by an activation direction that composes"),
+    # P13.13 conditional representation expansion -- nearest: token-conditional
+    # width (heavy/light branches) for long inputs.
+    ("colt5-page", "arxiv_page", "2302.06675",
+     "CoLT5: conditional (token-selective) width expansion at fixed cost"),
+    # P13.14 omission-conditioned recovery -- nearest: layer-wise reconstruction
+    # error compensation, the strong alignment baseline the item names.
+    ("gptq-page", "arxiv_page", "2210.17323",
+     "GPTQ: layer-wise output reconstruction with error compensation"),
+    # P13.15 counterexample-preserving compression -- nearest: sensitivity-based
+    # mixed-precision bit allocation.
+    ("hawq-page", "arxiv_page", "2006.12946",
+     "HAWQ: sensitivity-driven mixed-precision bit allocation"),
+    # P13.16 latent branch-and-reconcile -- nearest: sample-then-vote.
+    ("self-consistency-page", "arxiv_page", "2203.11171",
+     "self-consistency: independent samples reconciled by a vote"),
+    # P13.17 resident-side-information coding -- nearest: low-rank weight deltas.
+    ("lora-page", "arxiv_page", "2106.09685",
+     "LoRA: a module delta carried as a low-rank factorisation"),
+    # P13.18 phase-transition capability switching -- nearest: sequence-level
+    # routing (one routing decision per sequence, not per token).
+    ("smear-page", "arxiv_page", "2310.17680",
+     "SMEAR: parameter-efficient MoE with token- and sequence-level routing"),
+    # P13.19 executable capability contracts -- nearest: selective prediction
+    # with a risk guarantee at a declared coverage.
+    ("selective-classification-page", "arxiv_page", "1705.08500",
+     "selective classification: abstain when a calibrated risk bound is violated"),
+    # P13.20 training for future locality -- nearest: expert-prediction training
+    # objectives (the mechanism itself was verified in round 9, SeqMoE).
+    ("expert-prediction-search", "arxiv_html_search",
+     'all:"expert prediction" AND all:"training"',
+     "training a router to be predictable as well as accurate"),
+    # P13.21 verifier-calibrated internal stopping -- nearest: early exit from an
+    # internal convergence/uncertainty signal rather than a fixed depth.
+    ("deer-page", "arxiv_page", "2404.16698",
+     "DEER: early exit from internal uncertainty and convergence criteria"),
+    ("pondernet-page", "arxiv_page", "2107.05407",
+     "PonderNet: learned halting with a bounded expected computation budget"),
+    # --- round 18b (S16C): the four ids in round 18 whose page was a different
+    # paper, plus MoSE, re-located by title. Round 18's wrong-page records are
+    # kept: a recalled id that resolves to another work is a finding.
+    ("mose-slimmable-search", "arxiv_html_search",
+     'all:"mixture of slimmable experts"',
+     "MoSE: a mixture whose experts are nested slimmable widths"),
+    ("mose-width-search", "arxiv_html_search",
+     'all:"adaptive expert width" OR all:"adaptive widths for experts"',
+     "MoSE: per-expert width allocated under one budget"),
+    ("crown-title-search", "arxiv_html_search",
+     'ti:"Efficient Neural Network Robustness Certification"',
+     "CROWN: certified output bounds, not a confidence interval"),
+    ("function-vectors-title-search", "arxiv_html_search",
+     'ti:"Function Vectors"',
+     "function vectors: composable task activation directions"),
+    ("colt5-title-search", "arxiv_html_search", 'ti:"CoLT5"',
+     "CoLT5: conditional token-selective width at fixed cost"),
+    ("hawq-title-search", "arxiv_html_search", 'ti:"HAWQ"',
+     "HAWQ: Hessian-aware mixed-precision bit allocation"),
+    ("recode-title-search", "arxiv_html_search", 'ti:"ReCode"',
+     "ReCode: semantics-preserving code transformations as a robustness test"),
+    ("smear-title-search", "arxiv_html_search", 'ti:"SMEAR"',
+     "SMEAR: sequence-level (not token-level) mixture-of-experts routing"),
+    ("deer-title-search", "arxiv_html_search",
+     'all:"DEER" AND all:"early exit"',
+     "DEER: early exit driven by internal convergence and uncertainty"),
+    # --- round 18c (S16C): the `ti:` field prefix is not accepted by the HTML
+    # search endpoint this script uses, so round 18b's zero hits are a query
+    # artefact, not a missing paper. These are the same six works asked for with
+    # all-field phrases, which is the form that worked in rounds 1-17.
+    ("colt5-all-search", "arxiv_html_search", 'all:CoLT5', "CoLT5"),
+    ("crown-all-search", "arxiv_html_search",
+     'all:"CROWN" AND all:"certification"',
+     "CROWN: certified robustness bounds by linear relaxation"),
+    ("smear-all-search", "arxiv_html_search",
+     'all:"SMEAR" AND all:"experts"',
+     "SMEAR: sequence-level mixture-of-experts routing"),
+    ("deer-all-search", "arxiv_html_search",
+     'all:"DEER" AND all:"uncertainty"',
+     "DEER: early exit from an internal convergence/uncertainty criterion"),
+    ("recode-all-search", "arxiv_html_search",
+     'all:"ReCode" AND all:"code generation"',
+     "ReCode: robustness under semantics-preserving code rewrites"),
+    ("function-vectors-all-search", "arxiv_html_search",
+     'all:"function vectors" AND all:"large language models"',
+     "function vectors: composable task activation directions"),
+    ("mose-all-search", "arxiv_html_search", 'all:"MoSE" AND all:"experts"',
+     "MoSE: adaptive expert widths"),
+    # --- round 18d (S16C): SMEAR's real id is in round 18c's candidates, and four
+    # works are asked for by phrase rather than by recalled id or abbreviation.
+    ("smear-soft-merging-page", "arxiv_page", "2306.03745",
+     "SMEAR: Soft Merging of Experts with Adaptive Routing, per-token and "
+     "per-sequence routing"),
+    ("crown-relaxation-search", "arxiv_html_search",
+     'all:"linear relaxation" AND all:"certification"',
+     "CROWN: certified bounds via linear relaxation of activation functions"),
+    ("colt5-long-range-search", "arxiv_html_search",
+     'all:"conditional computation" AND all:"long-range"',
+     "CoLT5: conditional computation for long-range transformers"),
+    ("deer-early-exit-search", "arxiv_html_search",
+     'all:"early exit" AND all:"uncertainty" AND all:"entropy"',
+     "DEER: convergence-and-uncertainty early exit"),
+    ("function-vectors-full-title-search", "arxiv_html_search",
+     'all:"Function Vectors in Large Language Models"',
+     "function vectors: task activation directions that compose"),
+    ("recode-robustness-search", "arxiv_html_search",
+     'all:"robustness evaluation" AND all:"code generation"',
+     "ReCode: semantics-preserving code rewrites as a robustness evaluation"),
 ]
 
 

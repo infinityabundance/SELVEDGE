@@ -2194,3 +2194,115 @@ arms. `H*` had not run when this entry was written.
 - No T2 verdict, and no cross-arm ordering.
 - Nothing about P8.1/P8.2; neither was run in this session.
 - The capability court was not re-run.
+
+## S16C — the plan is tiered and re-ordered, WS13/WS14 registered, the court made honest
+
+No GPU work. `H*` ran untouched for the whole session and was polled read-only.
+Everything below is CPU, documentation, or network fetches in a limited court.
+
+### The ordering inversion (P-correction)
+
+The §16 queue ended with `P12.8 → P12.10/P12.11`, i.e. the control matrix and the
+frontier thresholds were scheduled **after** the experiments they govern. The
+`Depends.` fields were already correct (P12.10 depends on P12.9 and P7.7; P12.11
+depends on P12.10); the diagram had been drawn from an "experiments, then claims"
+narrative instead. This is the post-hoc-threshold failure P6.5 exists to prevent,
+inside the plan that forbids it. §0.2 records the inversion, why it is a defect,
+and the rule it leaves behind: *a threshold, a row set, a control or a kill
+criterion may never be written after the numbers it judges; an engineer, a kernel,
+a residency tier or an additional claim may be.* The queue now puts P12.9,
+P12.10, P12.11 at step 4, before every governed experiment.
+
+### Tiers
+
+`docs/PROGRAM-PLAN.md` §0.1 defines ACTIVE / CANDIDATE / HYPOTHESIS and indexes
+all existing items by tier, with the assignments that need a reason named. No P-ID
+was renumbered, retitled or deleted. ACTIVE is the T2 pilot, the one next decisive
+test and the criteria and blockers that bind it; CANDIDATE is the defined mechanism
+space with a cheap experiment and a kill criterion each; HYPOTHESIS is retained
+with no implementation commitment.
+
+### WS13 and WS14
+
+- **WS13 (§18), 21 items.** Four published mechanisms staged as competing
+  alternatives (adaptive expert widths, cross-layer expert reuse, global experts
+  with a recurrent router, typed latent reasoning) plus the sixteen inventions, each
+  with what / why / decisive experiment / falsifying control / kill criterion /
+  depends / acceptance / status / effort / tier. The workstream accounting rule is
+  stated once: reused parameters count **once per output token**, repeated FLOPs
+  count **per use**.
+- **WS14 (§19), 7 items.** Three runtime bottlenecks registered as execution-ready
+  work — decoded-weight residency (`read_group` re-decodes every read, cache hits
+  included), synchronous prefetch (no fetch/compute timelines, no bounded staging),
+  token-at-a-time prefill (keep the scalar oracle, add a batched path) — and four
+  evaluation corrections (suite scale toward hundreds of tasks, executed Rust
+  verifiers, correctness separated from reference-continuation likelihood, a sealed
+  evaluation set).
+
+### Literature, third pass
+
+Rounds 18–18d added twenty named works: the four WS13 mechanisms and the nearest
+prior art for each of the sixteen inventions. Verdicts: 9 VERIFIED, 4 PARTIAL, 7
+UNSUPPORTED, plus PonderNet as a supplementary VERIFIED. Consequential findings:
+
+- **MoSE could not be located.** Three searches; the only MoSE in the corpus is
+  "Mixture-of-Shape-Experts", an image-segmentation prompt method. The *mechanism*
+  (nested slimmable widths) is published as MatFormer, so P13.1 is framed against
+  MatFormer, not as a MoSE reproduction.
+- **GMoE and TYLER are title-only.** Their ACL/EMNLP landing pages serve no
+  abstract, so "recurrent routing state" and "learned typed-operator budget" are
+  PROPOSED parts of P13.3/P13.4, not reproductions.
+- **SMEAR's identity in the strategy note was wrong** (2306.03745 is Soft Merging of
+  Experts; 2310.17680 is CodeFusion), and its abstract is about soft expert merging,
+  not sequence-level routing — so P13.18's phase-boundary switching has no located
+  prior art at all.
+- Six of sixteen nearest-art citations could not be located (CROWN, CoLT5, function
+  vectors, HAWQ, DEER, robustness ReCode), and two live homonyms are recorded
+  (MoSE, ReCode).
+- Six arXiv ids recalled from memory resolved to different papers (a dilepton
+  physics paper, a Heun-algebra paper among them). Those records are kept: an id
+  that resolves elsewhere is evidence about the id.
+
+### Court corrections (all CPU-tested, before any arm was scored)
+
+1. `compare()` computed the category-regression limit and ignored it in the
+   verdict. The verdict is now conjunctive; `improvement_met` and `threshold_met`
+   are separate; the verdict text names the regressing categories.
+2. A missing recorded pre-registration digest used to skip the binding entirely.
+   A registered run now requires a nonempty matching digest, the contract is
+   verified against the suite hash and its threshold before the digest, and
+   `compare()` takes the threshold from the receipt — refusing an external value, a
+   tampered recorded value, and any registered/unregistered mix.
+3. `T2ArmAdapter` no longer loads with an unchecked `strict=False`. The allowlist is
+   exact and derived (trainable tensors present, frozen base omitted, nothing else),
+   shapes are checked, and a supplied training receipt must agree on arm, config
+   digest, admission identity, checkpoint name/digest/step and — for routed arms —
+   the recorded dispatch mask placement. The checkpoint is staged on the host
+   instead of being mapped onto the device.
+
+Recorded consequence: the four finished T2 `run.json` receipts do not record
+`dispatch_mask_order`, so the routed arms (`X`, `H`) cannot yet be scored through
+the capability court with a verified dispatch identity, and the adapter refuses
+them rather than guessing. `D` and `M` have no dispatch and are unaffected.
+
+### Documents
+
+- `results/REPORT.md`: the stale "no trained model is evaluated" claim is replaced.
+  `D`, `M`, `X`, `H` are trained **and** evaluated on the likelihood instrument;
+  what does not exist is a T2 verdict or any capability/frontier advantage. The
+  M1/M2 negatives stay in the "Established" list and stay first.
+- `README.md`: rewritten around four questions — what SELVEDGE is attempting, what
+  has been measured, what is running, what blocks a frontier claim — with links and
+  no new numbers.
+- `docs/CAPABILITY-COURT.md`: the pre-registration section now records that the code
+  enforces what the text always said, and the first-real-run commands carry the new
+  receipt and mask-order arguments.
+
+### What this entry does not claim
+
+- No T2 verdict and no cross-arm ordering. `H*` was training throughout; its
+  progress is reported to the operator, not interpreted here.
+- No capability result: no arm has been scored on the suite.
+- No performance number. The runtime items are registered, not implemented.
+- The new tier assignments are a plan state, revisable at the next checkpoint; they
+  are not verdicts on any mechanism's merit.

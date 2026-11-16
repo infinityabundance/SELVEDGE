@@ -315,11 +315,16 @@ which receipt.
 - **No capability claim.** The frontier measures next-token distributions on
   pinned text. KL on Wikipedia is not a code, math, reasoning or factuality
   benchmark. See `docs/LIMITATIONS.md`.
-- **No trained or upcycled model is evaluated in this report.** The M2 result
-  bounds post-hoc inference-only selection, not sparsity in general. A model
-  trained or upcycled to tolerate the sparse FFN is the T2 branch, which is
-  running; a distilled smaller teacher, quantization and a learned memory layer
-  at scale remain untested.
+- **Not: a complete T2 verdict, or any frontier advantage.** Four of the five
+  trained arms (`D`, `M`, `X`, `H`) have finished training *and* been evaluated on
+  the registered T2 instrument; `H*` is training. What does **not** exist is a
+  T2 verdict (it requires all five summaries and `oracle/eval/t2_decision.py`),
+  and no arm has been evaluated on the fresh Rust capability suite, so there is no
+  capability number and no frontier advantage in either the likelihood or the
+  correctness sense. The M2 result still bounds post-hoc inference-only selection,
+  not sparsity in general: a model trained or upcycled to tolerate the sparse FFN
+  is the T2 branch, and a distilled smaller teacher, quantisation and a learned
+  memory layer at scale remain untested.
 - **No end-to-end model latency and no hardware-counter FLOPs.** FLOP values
   are derived from realized channel counts, not hardware counters. Arm wall
   clock is a cost observation, not a benchmark. M3 part 1 does measure
@@ -369,33 +374,88 @@ Established, on CPU:
   structural separation between the model process and the checker process;
 - the pre-registration, bound to the suite hash before any arm run.
 
+### Instrument corrections before any arm run (S16C, CPU-only)
+
+Three defects in the same instrument were found and fixed before it scored a
+single arm, each with a regression test that fails on the old behaviour:
+
+1. **The verdict was not conjunctive.** `compare()` computed the ≤5 pp
+   category-regression limit and then ignored it: an arm that cleared the 10%
+   primary threshold while wrecking one category was reported as a win. The
+   verdict now requires both conditions, names the regressing categories, and
+   reports `improvement_met` separately from `threshold_met`.
+   Test: `test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win`.
+2. **A missing pre-registration digest skipped the binding.** `check()` only
+   compared the recorded digest when one was present, so a run could be checked
+   against a registration it was never made against. A registered run now requires
+   a nonempty matching digest, the contract is verified against the suite hash and
+   its threshold first, and `compare()` takes the threshold from the receipt —
+   refusing an externally supplied value, a tampered recorded value, and a
+   registered/unregistered mix. Tests:
+   `test_a_registered_check_requires_a_recorded_digest`,
+   `test_a_registered_check_refuses_a_contract_that_changed_after_generation`,
+   `test_compare_refuses_a_threshold_supplied_after_the_results`,
+   `test_compare_refuses_a_tampered_registered_threshold`,
+   `test_compare_refuses_to_mix_a_registered_and_an_unregistered_result`.
+3. **T2 checkpoints loaded with an unchecked `strict=False`.** The allowlist is
+   now exact and derived: a checkpoint may contain exactly the arm's trainable
+   tensors and may omit exactly the frozen base. A supplied training receipt is
+   checked for arm, config digest, admission identity, checkpoint
+   name/digest/step, and (for routed arms) the recorded dispatch mask placement.
+   Tests: `test_a_matching_checkpoint_verifies_against_its_receipt`,
+   `test_a_checkpoint_from_another_arm_is_refused`,
+   `test_a_checkpoint_with_an_unexpected_tensor_is_refused`,
+   `test_a_checkpoint_missing_a_trainable_tensor_is_refused`,
+   `test_a_routed_arm_without_a_recorded_mask_placement_is_refused`,
+   `test_a_checkpoint_digest_that_does_not_match_the_receipt_is_refused`.
+
+One consequence is recorded rather than worked around: the four finished T2
+`run.json` receipts do not record `dispatch_mask_order`, so a routed T2 arm cannot
+yet be handed to the capability court with a verified dispatch identity, and the
+adapter refuses it instead of guessing. That is the honest state, and it is why
+no capability number exists for those arms.
+
 Not established: any capability result. No model has been evaluated on the
-suite. The trio is below P11.21's item count, feedback loops are not
+correctness suite — the four evaluated T2 arms were scored on the *likelihood*
+instrument (KL/NLL/top-1 against the teacher), which is a distillation measurement
+and not a correctness measurement; P14.6 records that separation as a required
+receipt field. The trio is below P11.21's item count, feedback loops are not
 implemented, the corpus contamination comparison is a bounded sample, and no
 3B-8B quantised baseline exists locally. Each is recorded as a gap rather than
 papered over.
 
 ## Next
 
-Move to the trained/upcycled branch with a fresh pre-registration: a dense
-compliant Qwen3-0.6B base plus external capacity, an UpIT/SIMoE-style
-dense-to-sparse upcycle of Qwen3-1.7B trained to tolerate the compliant group
-budget, and a distilled smaller teacher, matched for active parameters, FLOPs
-and training tokens. The M2 oracle bound says post-hoc selection cannot close
-the gap; the next question is whether training can change the model so the same
-budget is usable. Do not resume inference-only selector tuning without a new
-oracle bound.
+The trained branch now exists: T2 (above) is the upcycled/sparse-budget branch the
+previous version of this section asked for, and `H*` is its last arm. What comes
+next is fixed by `docs/PROGRAM-PLAN.md` and is, in order: a T2 verdict; the
+`H*`-target diagnostics (P12.2) and the successor utility target (P12.17) as a
+single registered run against the dense control; T3 (P12.3). The M2 oracle bound
+still says post-hoc selection cannot close the gap, so no inference-only selector
+tuning is resumed without a new bound.
 
-### Where the next two phases are written down
+### Where the next phases are written down
 
-The staged program after T2 is `docs/PROGRAM-PLAN.md` §10–§17 (WS7–WS12: design
-doctrine, complementarity and two-timescale organisation, deficit-directed
-capability construction, eighteen mechanisms with kill criteria, twenty-one
-original proposals with decisive experiments, and the staged frontier claim),
-with a dependency-ordered queue in §16 and a single NEXT in §17. That plan's
-first step is deliberately not a new training run: it is the routed-overflow
-audit and the two H\*-target diagnostics (P12.1/P12.2), because either can
-invalidate a scale-up and both are diagnosable without the GPU.
+The plan of record is `docs/PROGRAM-PLAN.md`:
+
+- **§0.1** the three tiers (ACTIVE / CANDIDATE / HYPOTHESIS) and the tier index
+  for all 140 items;
+- **§0.2** the ordering inversion that put the control matrix and thresholds
+  after the experiments they judge, and its correction;
+- **§10–§17** WS7–WS12 (doctrine, complementarity, deficit-directed capability,
+  eighteen mechanisms, twenty-one proposals, the staged frontier claim), with the
+  dependency-ordered queue in §16 and the single NEXT in §17;
+- **§18** WS13 — 21 items: MoRE-style expert reuse and three other published
+  mechanisms as competing alternatives, plus sixteen inventions, each with a
+  decisive experiment, a falsifying control and a kill criterion;
+- **§19** WS14 — 7 items: the three runtime corrections (decoded-weight
+  residency, synchronous prefetch, token-at-a-time prefill) and the four
+  evaluation corrections (suite scale, executed Rust verifiers, correctness
+  separated from likelihood, a sealed set).
+
+That plan's first step is deliberately not a new training run: it is the
+routed-overflow audit and the `H*`-target diagnostics (P12.1/P12.2), because
+either can invalidate a scale-up and both are diagnosable without the GPU.
 
 The citations those items rely on changed in the same pass. Twelve works named
 by the strategy note could not be located and are marked `UNSUPPORTED`; one

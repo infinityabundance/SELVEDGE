@@ -1,59 +1,120 @@
 # SELVEDGE
 
-SELVEDGE is a research program measuring how much useful neural computation can
-be obtained from a learned substrate under a hard **1,000,000,000 unique active
-learned-parameter ceiling per output token**. Storage may live on NVMe or host
-RAM; the active ceiling is independent of how large the substrate is.
+## 1. What SELVEDGE is attempting
 
-The scientific question, stated so it can fail:
+Buy useful neural computation with **bytes, not FLOPs**. The active budget is a
+hard ceiling of **1,000,000,000 unique learned parameters per output token**;
+the substrate behind it may be as large as storage allows (NVMe, host RAM,
+VRAM). The scientific question is stated so that it can fail:
 
-> Can a causal, interaction-aware, physically costed shard selector and
-> execution scheduler improve the task-quality / active-parameter / wall-clock /
-> physical-I/O Pareto frontier over the strongest existing sparse inference and
-> offloading baselines?
+> Does a *learned*, causally available, physically costed selection and execution
+> path put the quality / active-parameter / bytes-per-token / latency frontier
+> beyond what post-hoc sparse inference and offloading already achieve?
 
-This repository contains the reproducible execution and evidence
-infrastructure, the Rust data contracts (`selvedge-core`), the versioned shard
-container (`selvedge-format`), exact SwiGLU conversion (`selvedge-convert`), the
-`selvedge` CLI, deterministic fixtures, a pinned Hugging Face teacher oracle,
-measured real-checkpoint accounting and reconstruction, and a pre-registered,
-receipted measurement of the quality-versus-active-parameter frontier under
-exact FFN group omission. Nothing here is a demonstrated new architecture, and
-no capability, speed or latency claim has been measured.
+Three claims are kept apart and are never merged into one number: a **neural
+architecture** claim (a mechanism beats matched controls on verified tasks), a
+**local inference** claim (the assembled system beats a quantised local baseline
+at equal residency), and a **system capability** claim (the system finishes work
+of a declared class offline). Every comparison carries active unique parameters,
+accessible capacity, bytes moved and cold bytes separately
+(`docs/PROGRAM-PLAN.md` P7.7).
 
-## Current result (M2)
+The plan is tiered: ACTIVE work is the running T2 pilot and the single next
+decisive test; CANDIDATE work has a cheap decisive experiment and a kill
+criterion; HYPOTHESIS work is retained with no implementation commitment. The
+tier index and the legend are in `docs/PROGRAM-PLAN.md` §0.1.
 
-The registered experiments (`docs/EXPERIMENT-CONTRACT.md`) asked whether static
-whole-group omission, and then a per-token causal selector, can keep
-Qwen3-1.7B within the `<=1e9` unique-active-parameter ceiling without changing
-its next-token distribution. **Neither can, in the measured family.** Static
-masks are a cliff near the dense model. Per-token selection helps: activation
-magnitude at matched realized parameters beats the best static M1 arm. But
-every causally available per-token arm is still orders of magnitude outside the
-acceptable tier, and none of the arms that beat activation magnitude is
-physically compliant: their selectors read all gate/up channels and the
-original execution was masked dense. **Even a causally unavailable per-token
-oracle at the compliant budget cannot reach the usable tier.** The 64-group
-oracle is the best and is still far outside it. The inference-only, post-hoc
-selection branch is dead for this teacher at this granularity. The corrected
-accounting, the six physically compliant (static/random) arms and the one-pass
-comparison are in `docs/M2-CORRECTION.md`.
+## 2. What has actually been measured
 
-The result is bounded and honest: it covers post-hoc selection on a dense
-checkpoint, at 16-64 equal contiguous groups, with no retraining. It does not
-bound trained or upcycled sparse models. The reports are
-`results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; limitations are in
-`docs/LIMITATIONS.md`.
+**Two negative results, both reproducible.**
 
-## Current state of the trained branch (T1)
+- **Static whole-group omission is a cliff** (`results/M1-FRONTIER.md`).
+  Uniform, magnitude, frequency, whole-layer and greedy allocations were measured
+  on a pinned, hash-split held-out set with paired bootstrap CIs. Every arm at or
+  below the ceiling is far outside the registered acceptable and usable tiers.
+  Two complete runs produced bitwise-identical aggregates, and the failed
+  attempts are retained.
+- **Per-token post-hoc selection does not escape it** (`results/M2-SELECTORS.md`,
+  `docs/M2-CORRECTION.md`). Activation magnitude at matched realized parameters
+  beats the best static arm, and every other causally available per-token arm is
+  worse than magnitude. Even a causally *unavailable* per-token oracle at the
+  compliant budget is outside the usable tier. The selectors that score best read
+  all gate/up channels, so they are not physically compliant. The inference-only
+  branch is closed for this teacher at this granularity.
 
-T1 is **pre-registered and instrumented, but not trained.** The architecture
-arms, the teacher-target format, the corpus materialisation rules, the
-accounting-admission path and the CPU infrastructure court exist
-(`docs/TRAINING.md`); no training run has been executed and no T1 quality number
-is claimed. The next phase, its ordering and its acceptance evidence are in
-`docs/PROGRAM-PLAN.md`. The prior-art ledger required by the mandate is
-`docs/PRIOR-ART-AND-NOVELTY.md`.
+**Infrastructure that exists and is measured** (each with receipts; see
+`results/REPORT.md` for the list and `docs/` for the method):
+
+- a hash-pinned teacher oracle that runs offline after one documented fetch
+  (`docs/MODELS.md`, `docs/TRAINING.md`);
+- exact accounting and bit-exact shard reconstruction on the real Qwen3-0.6B and
+  Qwen3-1.7B checkpoints (`docs/ARCHITECTURE.md`, `docs/SHARD-FORMAT.md`);
+- measured host-RAM/NVMe baselines with three-repeat variance (`docs/STORAGE.md`);
+- a trace-driven execution simulator calibrated from those measurements and
+  validated on held-out arms (`docs/SIMULATOR.md`);
+- a real CPU inference runtime with a per-token witness and accounting row
+  (`docs/RUNTIME.md`);
+- a capability court: a fresh Rust suite, a bounded checker sandbox, paired
+  category-stratified CIs, a ten-field control matrix, a pre-registration bound
+  to the suite hash, and anti-gaming checks that are tested
+  (`docs/CAPABILITY-COURT.md`).
+
+**The trained branch (T2).** Five arms — dense adapter `D`, hashed memory `M`,
+routed specialists `X`, naive hybrid `H`, error-directed hybrid `H*` — train from
+one frozen Qwen3-0.6B core at one budget and one seed (`docs/EXPERIMENT-CONTRACT.md`
+T2). `D`, `M`, `X` and `H` have finished training **and** been evaluated on the
+registered next-token instrument (KL/NLL/top-1 against the teacher). `H*` is
+training. **There is no T2 verdict**: the decision rule needs all five summaries,
+and a partial pilot is not a result. Those evaluations are *likelihood*
+measurements, not correctness measurements; no arm has run the capability suite.
+
+So: **no capability result and no frontier advantage exists yet.** The M1/M2
+negatives stand and are the strongest measured statements in the repository.
+
+## 3. What is currently running
+
+`H*` (the error-directed hybrid) is training unattended on the GPU: 1,024
+registered steps, one seed, checkpointing and label extraction included. It owns
+the device; nothing else may run there while it does. Read-only monitoring:
+
+```bash
+scripts/poll-t2-pilot.sh          # one report; writes nothing to the run
+scripts/poll-t2-pilot.sh --follow  # the same, repeated
+```
+
+The per-arm state is `results/t2/pilot-state.json`; the per-arm receipts are
+`results/t2/<arm>/run.json` and `results/eval/t2-<arm>.json`. The published report
+will be `results/T2-PILOT.md`, generated by `scripts/t2_report.py` from the
+decision receipt — never written by hand.
+
+## 4. What still blocks a frontier claim
+
+1. **A T2 verdict.** All five arms evaluated, then
+   `oracle/eval/t2_decision.py` and `scripts/finish-t2-pilot.sh`.
+2. **A capability measurement.** The court exists and no arm has been scored on
+   it. Two prerequisites are now enforced in code: a conjunctive verdict
+   (improvement **and** no category beyond the registered margin) and a
+   pre-registration the comparison cannot re-threshold
+   (`results/REPORT.md`, "Instrument corrections").
+3. **The two pre-scaling blockers** (`docs/PROGRAM-PLAN.md` P12.15): the
+   routed-overflow mask defect (`docs/P12.1-DISPATCH-AUDIT.md`) and the `H*`
+   target/deployment mismatch (`docs/T2-DIAGNOSTICS.md`).
+4. **The control matrix rows and the thresholds** must exist before the
+   experiments they govern — the ordering inversion corrected in
+   `docs/PROGRAM-PLAN.md` §0.2.
+5. **Runtime corrections** (P14.1–P14.3): the exact path still re-decodes every
+   cached shard to `f32` on each read (every shard the token reads: 28 layers ×
+   48 groups = 1,344 reads, arithmetic), prefetch is synchronous, and prefill is
+   token-at-a-time. Latency and
+   cold-byte claims are not comparable across systems until these land.
+6. **Evaluation scale and separation** (P14.4–P14.7): 24 suite items cannot
+   support a 10% relative claim; correctness must be reported separately from
+   reference-continuation likelihood; and an external comparison needs a sealed
+   set.
+
+What is deliberately *not* claimed anywhere: a Pareto win over any external
+system, a capability number, a speed or latency number, or a trained-model
+advantage. See `docs/LIMITATIONS.md`.
 
 ## Rules this repository enforces mechanically
 
@@ -244,7 +305,10 @@ results/                       court receipts, logs, hardware probes
 ```
 
 The implementation mandate this program follows is tracked at
-`docs/MANDATE.md`. The plan and current status are in `docs/WORK-LOG.md`.
+`docs/MANDATE.md`. Status is `results/REPORT.md`; the working record is
+`docs/WORK-LOG.md`; the plan of record (tiers, WS1–WS14, the dependency queue) is
+`docs/PROGRAM-PLAN.md`; what is and is not prior art is
+`docs/PRIOR-ART-AND-NOVELTY.md`.
 
 ## License
 

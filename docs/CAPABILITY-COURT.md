@@ -438,6 +438,22 @@ The registered rules:
   paired 95% CI lower bound above zero, and no category regressing by more than
   0.05 absolute. A single-item difference is not a win (the CPU test asserts
   the decision rule rejects it).
+
+  **Correction, 2026-11-16 (S16C).** This rule was written correctly and the code
+  did not enforce it: `court.compare()` computed the regression set and then
+  decided on the primary condition alone, so an aggregate winner that wrecked one
+  category was reported as a win. The verdict is now **conjunctive**, the result
+  reports `improvement_met` separately from `threshold_met`, and the verdict text
+  names the regressing categories. Regression test:
+  `oracle/tests/test_capability_court.py::test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win`.
+
+  **Registration binding, same revision.** A comparison is now *registered* when
+  either result carries a pre-registration digest. For a registered run the
+  threshold comes from the receipt, the contract is checked against the suite hash
+  and the registered threshold, `check()` refuses a run with no recorded digest
+  (it used to skip the comparison), and `compare()` refuses an externally
+  supplied threshold, a tampered recorded threshold, and any registered /
+  unregistered mix.
 - **Trio.** A transfer claim requires success on every surface, reported
   per surface.
 - **Capacity scaling (Level 2).** At approximately fixed active unique
@@ -529,12 +545,29 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-checkpoint "$CKPT" \
   --t2-config "results/train/admission-configs/t2/$ARM.json" \
   --t2-admission "results/train/admission/t2/$ARM.json" \
+  --t2-training-receipt "results/t2/$ARM/run.json" \
+  --t2-mask-order legacy \
   --preregistration docs/capability-preregistration.json \
   --out "results/capability/runs/t2-$ARM/generations.json"
 
 # the same for D, M, X, and H* with
 #   ARM=Hstar; --t2-arm 'H*'  --t2-config 'results/train/admission-configs/t2/H*.json'
 ```
+
+**Load-time refusal (S16C).** The adapter no longer loads a checkpoint with an
+unchecked `strict=False`. The allowlist is exact: the checkpoint must contain
+exactly the arm's trainable tensors (shapes checked) and may omit exactly the
+frozen base parameters. With `--t2-training-receipt`, the receipt must also agree
+on the arm letter, the config digest, the admission identity, the checkpoint name
+and digest, the checkpoint step, and — for routed arms (`X`, `H`, `H*`) — the
+recorded `dispatch_mask_order`.
+
+**Consequence for the four finished arms.** Their `run.json` receipts predate the
+`dispatch_mask_order` field, so the routed ones (`X`, `H`) are refused by this
+check until a receipt that records the mask placement exists. That is deliberate:
+the P12.1 audit showed the mask placement changes what the arm computed, so an
+arm scored through this court must prove which placement produced it. `D` and `M`
+carry no dispatch and are not subject to the rule.
 
 Step 2, check (CPU, rust court; the court needs `cargo` and the checker sandbox):
 
