@@ -1,0 +1,49 @@
+........F.........F                                                      [100%]
+=================================== FAILURES ===================================
+_______________ test_an_ambiguous_answer_is_not_read_as_a_choice _______________
+
+    def test_an_ambiguous_answer_is_not_read_as_a_choice():
+        task = _patch_task()
+        outputs = {task.id: "A\nB\nC"}
+        collapse = forensics.answer_collapse([task], outputs, formats.FORMAT_PATCH)
+>       assert collapse["by_letter"] == {}
+E       AssertionError: assert {'A': 1} == {}
+E         
+E         Left contains 1 more item:
+E         {'A': 1}
+E         Use -v to get more diff
+
+oracle/tests/test_capability_forensics.py:151: AssertionError
+__________ test_the_ladder_verdict_calls_a_copied_example_what_it_is ___________
+
+    def test_the_ladder_verdict_calls_a_copied_example_what_it_is():
+        rows = [
+            {"name": "mcq_answer_at_A", "kind": "mcq", "letter": "A",
+             "correct": True, "correct_letter": "A", "example_letter": None},
+            {"name": "mcq_example_wrong", "kind": "mcq", "letter": "A", "correct": False,
+             "correct_letter": "C", "example_letter": "A"},
+        ]
+        mapping = {"A": {"reference": False, "original_index": 0},
+                   "B": {"reference": True, "original_index": 1},
+                   "C": {"reference": False, "original_index": 2}}
+        for name, letter in (("control_registered_prompt", "C"),
+                             ("no_example_letter", "A"),
+                             ("explicit_single_letter", "A"),
+                             ("permutation_0", "A"), ("permutation_1", "A"),
+                             ("permutation_2", "A")):
+            rows.append({"name": f"item:{name}", "kind": "patch", "letter": letter,
+                         "mapping": mapping, "reference_letter": "B",
+                         "chosen_is_reference": letter == "B",
+                         "equals_example": letter == "C",
+                         "example_letter": "C" if name.startswith("control") else None})
+        verdict = ladder.ladder_verdict(rows)
+        assert verdict["parrots_the_example"] is True
+        assert verdict["patch"]["item"]["permutation_letter_stable"] is True
+>       assert verdict["patch"]["item"]["permutation_content_stable"] is False
+E       assert True is False
+
+oracle/tests/test_capability_forensics.py:292: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_forensics.py::test_an_ambiguous_answer_is_not_read_as_a_choice
+FAILED oracle/tests/test_capability_forensics.py::test_the_ladder_verdict_calls_a_copied_example_what_it_is
+2 failed, 17 passed in 0.20s

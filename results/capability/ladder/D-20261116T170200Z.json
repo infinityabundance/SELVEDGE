@@ -1,0 +1,1248 @@
+{
+  "adapter": {
+    "accounting": {
+      "active_unique_params": 772210688,
+      "gpu_residency_bytes": null,
+      "host_residency_bytes": null,
+      "measured_io": null,
+      "offline_teacher_construction_cost": null,
+      "optimizer_flops": null,
+      "task_success": null,
+      "total_accessible_capacity": 772210688,
+      "training_tokens": null
+    },
+    "kind": "t2-arm",
+    "name": "t2-D",
+    "null_reasons": {
+      "gpu_residency_bytes": "measured after the first generation",
+      "host_residency_bytes": "not instrumented for the training-model path",
+      "measured_io": "the PyTorch path does not expose device read counters",
+      "offline_teacher_construction_cost": "no teacher at inference",
+      "optimizer_flops": "not recorded in the arm's admission record",
+      "task_success": "filled by the check stage",
+      "training_tokens": "not recorded in the arm's admission record"
+    },
+    "provenance": {
+      "admission": "results/train/admission/t2/D.json",
+      "admission_revision": null,
+      "admission_stamp": null,
+      "arm": "D",
+      "checkpoint": "results/artifacts/train/t2/D/step-001024.pt",
+      "checkpoint_sha256": "20059ad65ea891125802dc8b6818ab27d6465b22b6532c6f4e7e8783cc06f6f2",
+      "checkpoint_step": 1024,
+      "checkpoint_verification": {
+        "checked": true,
+        "mask_order": "legacy",
+        "provenance_amendment": null,
+        "receipt": "results/t2/D/run.json",
+        "receipt_sha256": "0d29e6ef6fe632875d55ff86ff8198c9beb5a9b149edde129ce731d015348fcf",
+        "step": 1024
+      },
+      "config": "results/train/admission-configs/t2/D.json",
+      "dispatch_mask_order": "legacy",
+      "provenance_amendment": null,
+      "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+    },
+    "tools": false
+  },
+  "command": "scripts/capability_ladder.py --arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --out results/capability/ladder/D-20261116T170200Z.json",
+  "conditions": [
+    {
+      "correct": "A",
+      "example_letter": null,
+      "kind": "mcq",
+      "name": "mcq_answer_at_A",
+      "note": "a trivial MCQ whose correct option is at A",
+      "prompt": "What is 2 + 3?\n\nA. 5\nB. 4\nC. 6\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+      "prompt_sha256": "fed5dd505bdbec34636d9bb5fce3079be81a9ee807a5bbff850eda3dbcd2f2d2",
+      "rendered_prompt": "What is 2 + 3?\n\nA. 5\nB. 4\nC. 6\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it."
+    },
+    {
+      "correct": "B",
+      "example_letter": null,
+      "kind": "mcq",
+      "name": "mcq_answer_at_B",
+      "note": "a trivial MCQ whose correct option is at B",
+      "prompt": "What is 2 + 3?\n\nA. 4\nB. 5\nC. 6\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+      "prompt_sha256": "342854e926a2d452a7825ccf79da91e3fe6363ea4eeff7589dc98db5ef9b3964",
+      "rendered_prompt": "What is 2 + 3?\n\nA. 4\nB. 5\nC. 6\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it."
+    },
+    {
+      "correct": "C",
+      "example_letter": null,
+      "kind": "mcq",
+      "name": "mcq_answer_at_C",
+      "note": "a trivial MCQ whose correct option is at C",
+      "prompt": "What is 2 + 3?\n\nA. 4\nB. 6\nC. 5\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+      "prompt_sha256": "fd745fb91a2077a4710094bd789fd2679295e554e75348c511a744d6d591619a",
+      "rendered_prompt": "What is 2 + 3?\n\nA. 4\nB. 6\nC. 5\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it."
+    },
+    {
+      "correct": "C",
+      "example_letter": "C",
+      "kind": "mcq",
+      "name": "mcq_example_correct",
+      "note": "the correct option is also the instruction's example letter",
+      "prompt": "What is 2 + 3?\n\nA. 4\nB. 6\nC. 5\n\n## Answer format\n\nReturn the single letter of the correct option, for example `C`. Do not repeat it.",
+      "prompt_sha256": "5b55689d10df0201591d3495db77a116cbc0cd5eb24fb79e4c091599291402e2",
+      "rendered_prompt": "What is 2 + 3?\n\nA. 4\nB. 6\nC. 5\n\n## Answer format\n\nReturn the single letter of the correct option, for example `C`. Do not repeat it."
+    },
+    {
+      "correct": "C",
+      "example_letter": "A",
+      "kind": "mcq",
+      "name": "mcq_example_wrong",
+      "note": "the correct option is C and the example is A: emitting A is copying the instruction",
+      "prompt": "What is 2 + 3?\n\nA. 4\nB. 6\nC. 5\n\n## Answer format\n\nReturn the single letter of the correct option, for example `A`. Do not repeat it.",
+      "prompt_sha256": "8e93eece2170e4e6ad9bfa6914bab3a9f7814b16606f90888145a7ec7e2725bd",
+      "rendered_prompt": "What is 2 + 3?\n\nA. 4\nB. 6\nC. 5\n\n## Answer format\n\nReturn the single letter of the correct option, for example `A`. Do not repeat it."
+    },
+    {
+      "example_letter": "C",
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:control_registered_prompt",
+      "note": "the registered v1 prompt, which shows `C` as the example",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose, for example\n`C`. Do not repeat the replacement.\n",
+      "prompt_sha256": "b221bff0421d8e867d1d0fbdd941eb80b0ecab831b507a6efcbb8562cabe531b",
+      "rendered_prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose, for example\n`C`. Do not repeat the replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:no_example_letter",
+      "note": "the same item with the example letter removed",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "2166bb719409ea32dc5346301b0cc12a3949187c797e4dfe701ce087a54533ce",
+      "rendered_prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:explicit_single_letter",
+      "note": "no example letter plus an explicit one-character instruction",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReply with exactly one character: A, B, or C. Nothing else.\n",
+      "prompt_sha256": "0d52aafb328a875e921ba89a355a5bc1121be30ae64a1e82556187e61b78f4bb",
+      "rendered_prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReply with exactly one character: A, B, or C. Nothing else.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:permutation_0",
+      "note": "the same candidates, rotated so the reference content is at position 0",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "2166bb719409ea32dc5346301b0cc12a3949187c797e4dfe701ce087a54533ce",
+      "rendered_prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:permutation_1",
+      "note": "the same candidates, rotated so the reference content is at position 1",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "18cc0fdad11409235b48cc858cb564b459379c9725e33c614c2fc799f0c08b4d",
+      "rendered_prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        },
+        "B": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:permutation_2",
+      "note": "the same candidates, rotated so the reference content is at position 2",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "b181cd47c2ff39c6b08f56c7311d1c4ae0640e3ed439e592a08ef76df1d9de52",
+      "rendered_prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "few_shot": [
+        [
+          "What is 1 + 1?\n\nA. 1\nB. 2\nC. 3\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+          "B"
+        ],
+        [
+          "What colour is a cloudless noon sky?\n\nA. blue\nB. red\nC. green\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+          "A"
+        ]
+      ],
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:two_few_shot_examples",
+      "note": "two answer-format examples appended before the item",
+      "prompt": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "0102aa2615b16edbf5c54a6f0b2f43774035a47fa1a0aa446d138a492cde66ab",
+      "rendered_prompt": "What is 1 + 1?\n\nA. 1\nB. 2\nC. 3\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.\n\nAnswer: B\n\nWhat colour is a cloudless noon sky?\n\nA. blue\nB. red\nC. green\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.\n\nAnswer: A\n\nChoose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! Increment every entry in place.\n\n// TODO(FUNCTION)\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn increments_every_entry_and_sums() {\n        let mut entries = vec![1, 2];\n        assert_eq!(stamp(&mut entries), 5);\n        assert_eq!(entries, vec![2, 3]);\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate B\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n```\n\n### Candidate C\n\n```rust\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": "C",
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:control_registered_prompt",
+      "note": "the registered v1 prompt, which shows `C` as the example",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose, for example\n`C`. Do not repeat the replacement.\n",
+      "prompt_sha256": "5e52c713b42a42fc8fc84fcd1271c959a299421e2399777bfafa7b2bb6e63ee5",
+      "rendered_prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose, for example\n`C`. Do not repeat the replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:no_example_letter",
+      "note": "the same item with the example letter removed",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "6c43907f79df390d6d59b897371048784d7c1946fde55395267beae51a437548",
+      "rendered_prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:explicit_single_letter",
+      "note": "no example letter plus an explicit one-character instruction",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReply with exactly one character: A, B, or C. Nothing else.\n",
+      "prompt_sha256": "550fa2e9ea3fe97c512c6b11def1c5db06b73147e6ccba4d43223120d3435b12",
+      "rendered_prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReply with exactly one character: A, B, or C. Nothing else.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:permutation_0",
+      "note": "the same candidates, rotated so the reference content is at position 0",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "6c43907f79df390d6d59b897371048784d7c1946fde55395267beae51a437548",
+      "rendered_prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "B": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:permutation_1",
+      "note": "the same candidates, rotated so the reference content is at position 1",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "b2df45883f5df09eabcdb883045326557d83fac77fdfdf24336c2db8a98a2780",
+      "rendered_prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:permutation_2",
+      "note": "the same candidates, rotated so the reference content is at position 2",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "66516ecad7db6e18971e58ffc41932f9b48f5e821f9151fe03d82dc34a9cf8d0",
+      "rendered_prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    },
+    {
+      "example_letter": null,
+      "few_shot": [
+        [
+          "What is 1 + 1?\n\nA. 1\nB. 2\nC. 3\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+          "B"
+        ],
+        [
+          "What colour is a cloudless noon sky?\n\nA. blue\nB. red\nC. green\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.",
+          "A"
+        ]
+      ],
+      "kind": "patch",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:two_few_shot_examples",
+      "note": "two answer-format examples appended before the item",
+      "prompt": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n",
+      "prompt_sha256": "b4570e38f7ded448bc0af8ca87733610e83ec9ce2b9df4d63413b32879a8afbf",
+      "rendered_prompt": "What is 1 + 1?\n\nA. 1\nB. 2\nC. 3\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.\n\nAnswer: B\n\nWhat colour is a cloudless noon sky?\n\nA. blue\nB. red\nC. green\n\n## Answer format\n\nReturn the single letter of the correct option. Do not repeat it.\n\nAnswer: A\n\nChoose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.\n\n## Current file (the target function is missing)\n\n```text path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n// TODO(FUNCTION)\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Visible failing test\n\n```rust\n#[cfg(test)]\nmod visible {\n    use super::*;\n\n    #[test]\n    fn first_word() {\n        assert_eq!(Window::new(\"alpha beta\".to_string()).first(), \"alpha\");\n    }\n}\n```\n\n## Candidate replacements\n\nExactly one of these replacements makes the crate build and\nits tests pass. Each is shown in full.\n\n### Candidate A\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n```\n\n### Candidate B\n\n```rust\npub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n```\n\n### Candidate C\n\n```rust\npub fn first(&self) -> &str {\n        self.first\n    }\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n"
+    }
+  ],
+  "created_utc": "2026-11-16T16:40:55Z",
+  "decoding": {
+    "greedy": true,
+    "max_new_tokens": 32,
+    "seed": 20261115,
+    "stops": []
+  },
+  "items": [
+    "borrow-13-mutate-through-shared--patch",
+    "borrow-03-self-referential-window--patch"
+  ],
+  "resources": {
+    "cgroup_memory_peak_bytes": 3341701120,
+    "cgroup_memory_peak_source": "/sys/fs/cgroup/memory.peak",
+    "process_maxrss_bytes": 3706032128,
+    "process_maxrss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss",
+    "vram": {
+      "device": "NVIDIA GeForce RTX 4080 SUPER",
+      "max_memory_allocated_bytes": 1979102720,
+      "max_memory_allocated_gib": 1.843,
+      "max_memory_reserved_bytes": 2059403264,
+      "max_memory_reserved_gib": 1.918,
+      "source": "torch.cuda.max_memory_allocated / max_memory_reserved at receipt time"
+    }
+  },
+  "revision": "e6cb27bc6e05aee4b316339f86ad204127ecbc1c",
+  "rows": [
+    {
+      "correct": true,
+      "correct_letter": "A",
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "mcq",
+      "letter": "A",
+      "name": "mcq_answer_at_A",
+      "note": "a trivial MCQ whose correct option is at A",
+      "text_characters": 111,
+      "text_head": " For example, if the correct answer is A, then return A.\n\n## Explanation\n\nThe correct answer is A. 2 + 3 = 5.\n\n",
+      "tokens_out": 32
+    },
+    {
+      "correct": false,
+      "correct_letter": "B",
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "mcq",
+      "letter": "A",
+      "name": "mcq_answer_at_B",
+      "note": "a trivial MCQ whose correct option is at B",
+      "text_characters": 109,
+      "text_head": " For example, if the correct answer is A, then return A.\n\n## Explanation\n\nThe correct answer is A. 2 + 3 = 5.",
+      "tokens_out": 32
+    },
+    {
+      "correct": false,
+      "correct_letter": "C",
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "mcq",
+      "letter": "A",
+      "name": "mcq_answer_at_C",
+      "note": "a trivial MCQ whose correct option is at C",
+      "text_characters": 108,
+      "text_head": " For example, if the correct answer is A, then return A.\n\n## Explanation\n\nThe correct answer is 6. 2 + 3 = 5",
+      "tokens_out": 32
+    },
+    {
+      "correct": true,
+      "correct_letter": "C",
+      "equals_example": true,
+      "example_letter": "C",
+      "finish_reason": "length",
+      "kind": "mcq",
+      "letter": "C",
+      "name": "mcq_example_correct",
+      "note": "the correct option is also the instruction's example letter",
+      "text_characters": 131,
+      "text_head": " For example, if the correct answer is C, then the answer is `C`.\n\n## Answer\n\nC\n\n## Explanation\n\nThe question is asking for the sum",
+      "tokens_out": 32
+    },
+    {
+      "correct": false,
+      "correct_letter": "C",
+      "equals_example": true,
+      "example_letter": "A",
+      "finish_reason": "length",
+      "kind": "mcq",
+      "letter": "A",
+      "name": "mcq_example_wrong",
+      "note": "the correct option is C and the example is A: emitting A is copying the instruction",
+      "text_characters": 117,
+      "text_head": " For example, if the correct answer is A, then the answer is `A`.\n\n## Answer\n\nA\n\n## Explanation\n\nThe expression 2 + 3",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": true,
+      "equals_example": true,
+      "example_letter": "C",
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "C",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:control_registered_prompt",
+      "note": "the registered v1 prompt, which shows `C` as the example",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "C",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "C"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "C",
+      "reference_letter_from_mapping": "C",
+      "text_characters": 76,
+      "text_head": "```\nC\n```\n```\n\nThe correct answer is `C`.\n```\n```\n```\n```\n```\n```\n```\n```\n``",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:no_example_letter",
+      "note": "the same item with the example letter removed",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "C",
+      "reference_letter_from_mapping": "C",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:explicit_single_letter",
+      "note": "no example letter plus an explicit one-character instruction",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "C",
+      "reference_letter_from_mapping": "C",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:permutation_0",
+      "note": "the same candidates, rotated so the reference content is at position 0",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "C",
+      "reference_letter_from_mapping": "C",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:permutation_1",
+      "note": "the same candidates, rotated so the reference content is at position 1",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "B",
+      "reference_letter_from_mapping": "B",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": true,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        },
+        "B": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:permutation_2",
+      "note": "the same candidates, rotated so the reference content is at position 2",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "A",
+      "reference_letter_from_mapping": "A",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "68e635701a8d3e9d163f9c78256536b094ee599e5ba27aefddf8fbda517a5571",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "54aa764e9508145e1fcadb39e0ae9da40c878fde3705640abb1937ee17d6a41d",
+          "original_index": 1,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "14ef631547f02afe9671a80c5bae0511acea694e67bfc29697c6617be78de621",
+          "original_index": 2,
+          "reference": true
+        }
+      },
+      "name": "borrow-13-mutate-through-shared--patch:two_few_shot_examples",
+      "note": "two answer-format examples appended before the item",
+      "parsed": {
+        "ambiguous": true,
+        "kind": "invalid",
+        "letter": null,
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A",
+          "B"
+        ],
+        "screen": "truncated"
+      },
+      "reference_letter": "C",
+      "reference_letter_from_mapping": "C",
+      "text_characters": 122,
+      "text_head": "```\nA\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n```\nB\n``",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": true,
+      "example_letter": "C",
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "C",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:control_registered_prompt",
+      "note": "the registered v1 prompt, which shows `C` as the example",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "C",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "C"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "B",
+      "reference_letter_from_mapping": "B",
+      "text_characters": 62,
+      "text_head": "```\nC\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:no_example_letter",
+      "note": "the same item with the example letter removed",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "B",
+      "reference_letter_from_mapping": "B",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:explicit_single_letter",
+      "note": "no example letter plus an explicit one-character instruction",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "B",
+      "reference_letter_from_mapping": "B",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:permutation_0",
+      "note": "the same candidates, rotated so the reference content is at position 0",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "B",
+      "reference_letter_from_mapping": "B",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": true,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "B": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:permutation_1",
+      "note": "the same candidates, rotated so the reference content is at position 1",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "A",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "A",
+      "reference_letter_from_mapping": "A",
+      "text_characters": 62,
+      "text_head": "```\nA\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": true,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "C",
+      "mapping": {
+        "A": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "C": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:permutation_2",
+      "note": "the same candidates, rotated so the reference content is at position 2",
+      "parsed": {
+        "ambiguous": false,
+        "kind": "invalid",
+        "letter": "C",
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "C"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "reference_letter": "C",
+      "reference_letter_from_mapping": "C",
+      "text_characters": 62,
+      "text_head": "```\nC\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n```\n",
+      "tokens_out": 32
+    },
+    {
+      "chosen_is_reference": false,
+      "equals_example": false,
+      "example_letter": null,
+      "finish_reason": "length",
+      "kind": "patch",
+      "letter": "A",
+      "mapping": {
+        "A": {
+          "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+          "original_index": 0,
+          "reference": false
+        },
+        "B": {
+          "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+          "original_index": 1,
+          "reference": true
+        },
+        "C": {
+          "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+          "original_index": 2,
+          "reference": false
+        }
+      },
+      "name": "borrow-03-self-referential-window--patch:two_few_shot_examples",
+      "note": "two answer-format examples appended before the item",
+      "parsed": {
+        "ambiguous": true,
+        "kind": "invalid",
+        "letter": null,
+        "parsed_choice": null,
+        "parsed_ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "projected_letters": [
+          "A",
+          "B"
+        ],
+        "screen": "truncated"
+      },
+      "reference_letter": "B",
+      "reference_letter_from_mapping": "B",
+      "text_characters": 122,
+      "text_head": "```\nA\n```\n\n## Answer format\n\nReturn the single letter of the candidate you choose. Do not repeat\nthe replacement.\n```\nB\n``",
+      "tokens_out": 32
+    }
+  ],
+  "schema": "selvedge/capability-ladder/v1",
+  "stage": "ladder",
+  "stamp": "20261116T164055Z",
+  "statement": "a diagnostic ladder: it reports which letter the arm emitted under each prompt condition. It scores no item, changes no registered metric, and is not a capability measurement.",
+  "suite": {
+    "root": "/work/fixtures/capability-calibrated",
+    "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6"
+  },
+  "verdict": {
+    "control_equals_example": null,
+    "control_letter": null,
+    "interpretation": "no single mechanism: the ladder's conditions disagree, and each row is recorded rather than summarised away",
+    "mcq_items": 5,
+    "mcq_varying_letter": 2,
+    "parrots_the_example": true,
+    "permutation_content_stable": null,
+    "permutation_letter_stable": null,
+    "without_the_example": null
+  }
+}

@@ -62,6 +62,11 @@ BODY_MARKER = "todo!()"
 #: The marker a patch-selection template carries where the chosen function goes.
 FUNCTION_MARKER = "// TODO(FUNCTION)"
 
+#: Sentinel for `render_prompt`'s example letter. The default must stay distinct
+#: from every real argument (including None = "show no example") so the
+#: registered v1 prompts are reproduced byte for byte.
+EXAMPLE_DEFAULT = object()
+
 #: Taxonomy classes a *parsed* answer can be screened into before any checker
 #: runs. Checker outcomes are added by `diagnose`, never here.
 SCREEN_EMPTY = "empty_answer"
@@ -412,13 +417,22 @@ def _body_prompt_intro(task, spec, template: str, signature: str,
     return parts
 
 
-def render_prompt(task) -> str:
-    """The exact prompt for a non-legacy format. Deterministic in the fixture."""
+def render_prompt(task, example_letter=EXAMPLE_DEFAULT) -> str:
+    """The exact prompt for a non-legacy format. Deterministic in the fixture.
+
+    `example_letter` controls the concrete letter the answer-format section shows.
+    The default reproduces the registered v1 instrument byte for byte (``C`` for
+    patch-selection, ``B`` for diagnostic-identification); ``None`` omits the
+    example letter, which is the S30 likelihood-selection variant (a model that
+    copies the example token cannot be asked with one).
+    """
     fmt = task_format(task)
     spec = format_spec(task)
     if fmt == FORMAT_FILE:
         raise FormatError("file-replacement is rendered by suite.render_prompt")
     observed = task.metadata.get("observed_failure")
+    if example_letter is EXAMPLE_DEFAULT:
+        example_letter = {FORMAT_PATCH: "C", FORMAT_DIAGNOSTIC: "B"}.get(fmt)
 
     if fmt == FORMAT_BODY:
         template = task.read_initial(spec["template"])
@@ -457,8 +471,11 @@ def render_prompt(task) -> str:
                           body.strip(), "```", ""])
         parts.extend([
             "## Answer format", "",
-            "Return the single letter of the candidate you choose, for example",
-            "`C`. Do not repeat the replacement.",
+            ("Return the single letter of the candidate you choose, for example\n"
+             f"`{example_letter}`. Do not repeat the replacement.")
+            if example_letter is not None else
+            ("Return the single letter of the candidate you choose. Do not repeat\n"
+             "the replacement."),
             "",
         ])
         return "\n".join(parts)
@@ -477,7 +494,10 @@ def render_prompt(task) -> str:
         parts.append(f"{label}. `{option['id']}` — {description}".rstrip())
     parts.extend([
         "", "## Answer format", "",
-        "Return the option letter (for example `B`). The harness will apply that",
+        (f"Return the option letter (for example `{example_letter}`). The harness "
+         "will apply that"
+         if example_letter is not None else
+         "Return the option letter. The harness will apply that"),
         "diagnosis's registered repair and compile it, so a label whose repair does",
         "not resolve the failure is not verified.",
         "",

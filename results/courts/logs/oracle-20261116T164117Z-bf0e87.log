@@ -1,0 +1,21 @@
+capability_ladder: wrote results/capability/ladder/D-20261116T170500Z.json
+  mcq_answer_at_A                                                        letter=A      example=None  ref=None  CORRECT finish=length
+  mcq_answer_at_B                                                        letter=A      example=None  ref=None   finish=length
+  mcq_answer_at_C                                                        letter=A      example=None  ref=None   finish=length
+  mcq_example_correct                                                    letter=C      example=C     ref=None  CORRECT finish=length
+  mcq_example_wrong                                                      letter=A      example=A     ref=None   finish=length
+  borrow-13-mutate-through-shared--patch:control_registered_prompt       letter=C      example=C     ref=C     REF finish=length
+  borrow-13-mutate-through-shared--patch:no_example_letter               letter=A      example=None  ref=C      finish=length
+  borrow-13-mutate-through-shared--patch:explicit_single_letter          letter=A      example=None  ref=C      finish=length
+  borrow-13-mutate-through-shared--patch:permutation_0                   letter=A      example=None  ref=C      finish=length
+  borrow-13-mutate-through-shared--patch:permutation_1                   letter=A      example=None  ref=B      finish=length
+  borrow-13-mutate-through-shared--patch:permutation_2                   letter=A      example=None  ref=A     REF finish=length
+  borrow-13-mutate-through-shared--patch:two_few_shot_examples           letter=A      example=None  ref=C      finish=length
+  borrow-03-self-referential-window--patch:control_registered_prompt     letter=C      example=C     ref=B      finish=length
+  borrow-03-self-referential-window--patch:no_example_letter             letter=A      example=None  ref=B      finish=length
+  borrow-03-self-referential-window--patch:explicit_single_letter        letter=A      example=None  ref=B      finish=length
+  borrow-03-self-referential-window--patch:permutation_0                 letter=A      example=None  ref=B      finish=length
+  borrow-03-self-referential-window--patch:permutation_1                 letter=A      example=None  ref=A     REF finish=length
+  borrow-03-self-referential-window--patch:permutation_2                 letter=C      example=None  ref=C     REF finish=length
+  borrow-03-self-referential-window--patch:two_few_shot_examples         letter=A      example=None  ref=B      finish=length
+  verdict: {"interpretation": "the arm emits the instruction's example letter when one is shown and a fixed position prior when none is; its choice does not follow the candidate content under permutation. The collapse is a prompt-conditioning defect, not evidence about the tasks", "mcq_example_conditions": {"mcq_example_correct": {"correct": true, "correct_letter": "C", "example": "C", "letter": "C"}, "mcq_example_wrong": {"correct": false, "correct_letter": "C", "example": "A", "letter": "A"}}, "mcq_plain_correct": 1, "mcq_plain_items": 3, "mcq_plain_letters": ["A", "A", "A"], "parrots_the_example": true, "patch": {"borrow-03-self-referential-window--patch": {"control_equals_example": true, "control_is_reference": false, "control_letter": "C", "explicit_is_reference": false, "explicit_letter": "A", "no_example_is_reference": false, "no_example_letter": "A", "permutation_chosen_original_indices": [0, 1, 1], "permutation_content_stable": false, "permutation_letter_stable": false, "permutation_letters": ["A", "A", "C"], "permutation_reference_letters": ["B", "A", "C"]}, "borrow-13-mutate-through-shared--patch": {"control_equals_example": true, "control_is_reference": true, "control_letter": "C", "explicit_is_reference": false, "explicit_letter": "A", "no_example_is_reference": false, "no_example_letter": "A", "permutation_chosen_original_indices": [0, 1, 2], "permutation_content_stable": false, "permutation_letter_stable": true, "permutation_letters": ["A", "A", "A"], "permutation_reference_letters": ["C", "B", "A"]}}}

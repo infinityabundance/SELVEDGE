@@ -1,0 +1,20 @@
+['control_registered_prompt', 'no_example_letter', 'explicit_single_letter', 'permutation_0', 'permutation_1', 'permutation_2', 'two_few_shot_examples']
+control_registered_prompt example_line_present= True len= 1469 refletter= ['B']
+no_example_letter example_line_present= False len= 1452 refletter= ['B']
+explicit_single_letter example_line_present= False len= 1427 refletter= ['B']
+permutation_0 example_line_present= False len= 1452 refletter= ['B']
+permutation_1 example_line_present= False len= 1452 refletter= ['A']
+permutation_2 example_line_present= False len= 1452 refletter= ['C']
+two_few_shot_examples example_line_present= False len= 1452 refletter= ['C']
+--- mcq a/b/c
+0 A Return the single letter of the correct option. Do not repeat it.
+1 B Return the single letter of the correct option. Do not repeat it.
+2 C Return the single letter of the correct option. Do not repeat it.
+--- judge with fake generation
+{
+ "name": "no_example_letter",
+ "letter": "C",
+ "reference_letter": "B",
+ "chosen_is_reference": false,
+ "equals_example": false
+}
