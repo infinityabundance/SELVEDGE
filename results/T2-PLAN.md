@@ -369,7 +369,7 @@ scripts/court --gpu oracle -- python3 oracle/train/composition.py --score-compos
   --checkpoint-m results/artifacts/train/t2/M/step-001024.pt \
   --gate-checkpoint results/artifacts/train/p8/composition/gate-000256.pt \
   --hf-root /hf-cache \
-  --out results/p8/composition-eval-20261116T000000Z.json
+  --out "results/p8/composition-eval-$(date -u +%Y%m%dT%H%M%SZ).json"
 ```
 
 The decisive statistic is `gate-minus-sum` in the receipt (contract P8.2.4).
@@ -380,7 +380,7 @@ CPU fixture check (no GPU, writes a fixture receipt):
 
 ```sh
 scripts/court oracle -- python3 oracle/eval/causal_repair.py \
-  --mode self-test --out results/p11/fixture-20261116T000000Z.json
+  --mode self-test --out "results/p11/fixture-$(date -u +%Y%m%dT%H%M%SZ).json"
 ```
 
 The 0.6B run needs the failed-item artifact `--items` (a JSON list of
@@ -394,7 +394,7 @@ scripts/court --gpu oracle -- python3 oracle/eval/causal_repair.py --mode checkp
   --items results/p11/failed-items.json \
   --model-size 0.6b --hf-root /hf-cache \
   --layers all --oracle-variant surrogate --seed 1001 \
-  --out results/p11/causal-repair-20261116T000000Z.json
+  --out "results/p11/causal-repair-$(date -u +%Y%m%dT%H%M%SZ).json"
 ```
 
 ### 6.3 T3 — latent-geometry sweep
@@ -461,7 +461,7 @@ scripts/court --gpu oracle -- python3 oracle/eval/combination_utility.py \
   --config 'results/train/admission-configs/t2/H*.json' \
   --admission 'results/train/admission/t2/H*.json' \
   --calibration-windows 64 --artifact-dir results/artifacts/train \
-  --out results/p9/combination-20261116T000000Z.json
+  --out "results/p9/combination-$(date -u +%Y%m%dT%H%M%SZ).json"
 ```
 
 If `H*` is unavailable, the same command with `--arm H` and the `H` paths. The
