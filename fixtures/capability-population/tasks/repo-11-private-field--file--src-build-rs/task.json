@@ -1,0 +1,86 @@
+{
+  "capability": "Use a constructor instead of constructing a struct with a private field. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-11-private-field",
+    "source_split": "scored",
+    "source_tree_sha256": "250556a6434b48a3b589ef6689cb025893145c8ec8c4367739d48bfb0e3ea455",
+    "target": "src/build.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/build.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Build a configuration.\n\nuse crate::model::Config;\n\npub fn make() -> Config {\n    Config::new(3)\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Build a configuration. This does not compile: it writes a private\n//! field from another module.\n\nuse crate::model::Config;\n\npub fn make() -> Config {\n    Config { value: 2 }\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Build a configuration.\n\nuse crate::model::Config;\n\npub fn make() -> Config {\n    Config { value: 2 }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Build a configuration.\n\nuse crate::model::Config;\n\npub fn make() -> Config {\n    Config::new(2)\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/build.rs"
+  },
+  "id": "repo-11-private-field--file--src-build-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0451"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/build.rs",
+    "find": "//! Build a configuration.\n\nuse crate::model::Config;\n\npub fn make() -> Config {\n    Config::new(2)\n}",
+    "replace": "//! Build a configuration.\n\nuse crate::model::Config;\n\npub fn make() -> Config {\n    Config::new(3)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-11-private-field (tree 250556a6434b48a3b589ef6689cb025893145c8ec8c4367739d48bfb0e3ea455) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

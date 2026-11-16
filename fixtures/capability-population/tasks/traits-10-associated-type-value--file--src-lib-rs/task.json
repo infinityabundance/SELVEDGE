@@ -1,0 +1,94 @@
+{
+  "capability": "Make an associated type agree with the values the method yields. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-10-associated-type-value",
+    "source_split": "scored",
+    "source_tree_sha256": "fe29eb69b9bb6aaac41db8872f520b55470fa741308039088e354959ad21efdb",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 0,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A sequence with an associated item type.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u32;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current += 1;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A sequence with an associated item type.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u64;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current -= 1;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}\n",
+        "kind": "operator-inversion",
+        "label": "B",
+        "provenance": "the accumulation reversed (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! A sequence with an associated item type.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u64;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current += 1;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A sequence with an associated item type.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u64;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current += 2;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A sequence with an associated item type. The crate does not build:\n//! the associated type and the produced value disagree.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u32;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current += 1;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-10-associated-type-value--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A sequence with an associated item type.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u64;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current += 1;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}",
+    "replace": "//! A sequence with an associated item type.\n\npub trait Sequence {\n    type Item;\n    fn next_item(&mut self) -> Option<Self::Item>;\n}\n\npub struct Counter {\n    pub current: u32,\n}\n\nimpl Sequence for Counter {\n    type Item = u64;\n\n    fn next_item(&mut self) -> Option<Self::Item> {\n        self.current += 2;\n        Some(self.current as u64)\n    }\n}\n\npub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-10-associated-type-value (tree fe29eb69b9bb6aaac41db8872f520b55470fa741308039088e354959ad21efdb) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

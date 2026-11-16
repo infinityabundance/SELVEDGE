@@ -1,0 +1,401 @@
+derive.verify: borrow-01-local-reference--diag: initial=compile_error reference=pass
+derive.verify: borrow-01-local-reference--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-02-mutate-while-borrowed--diag: initial=compile_error reference=pass
+derive.verify: borrow-02-mutate-while-borrowed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-02-mutate-while-borrowed--fn--src-lib-rs--push-and-report: initial=compile_error reference=pass
+derive.verify: borrow-03-self-referential-window--diag: initial=compile_error reference=pass
+derive.verify: borrow-03-self-referential-window--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-03-self-referential-window--fn--src-lib-rs--first-2: initial=compile_error reference=pass
+derive.verify: borrow-03-self-referential-window--fn--src-lib-rs--new: initial=compile_error reference=pass
+derive.verify: borrow-03-self-referential-window--fn--src-lib-rs--replace-3: initial=compile_error reference=pass
+derive.verify: borrow-04-iterator-invalidation--diag: initial=compile_error reference=pass
+derive.verify: borrow-04-iterator-invalidation--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-04-iterator-invalidation--fn--src-lib-rs--drop-long-keys: initial=compile_error reference=pass
+derive.verify: borrow-05-temporary-lifetime--diag: initial=compile_error reference=pass
+derive.verify: borrow-05-temporary-lifetime--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-05-temporary-lifetime--fn--src-lib-rs--label: initial=compile_error reference=pass
+derive.verify: borrow-06-move-while-borrowed--diag: initial=compile_error reference=pass
+derive.verify: borrow-06-move-while-borrowed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-06-move-while-borrowed--fn--src-lib-rs--split-first: initial=compile_error reference=pass
+derive.verify: borrow-07-overlapping-mut-borrows--diag: initial=compile_error reference=pass
+derive.verify: borrow-07-overlapping-mut-borrows--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-07-overlapping-mut-borrows--fn--src-lib-rs--bump-twice-4: initial=compile_error reference=pass
+derive.verify: borrow-07-overlapping-mut-borrows--fn--src-lib-rs--new: initial=compile_error reference=pass
+derive.verify: borrow-07-overlapping-mut-borrows--fn--src-lib-rs--value-2: initial=compile_error reference=pass
+derive.verify: borrow-07-overlapping-mut-borrows--fn--src-lib-rs--value-mut-3: initial=compile_error reference=pass
+derive.verify: borrow-08-iterator-outlives-local--diag: initial=compile_error reference=pass
+derive.verify: borrow-08-iterator-outlives-local--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-08-iterator-outlives-local--fn--src-lib-rs--evens: initial=compile_error reference=pass
+derive.verify: borrow-09-struct-lifetime--diag: initial=compile_error reference=pass
+derive.verify: borrow-09-struct-lifetime--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-10-assign-while-borrowed--diag: initial=compile_error reference=pass
+derive.verify: borrow-10-assign-while-borrowed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-10-assign-while-borrowed--fn--src-lib-rs--compare-with-last: initial=compile_error reference=pass
+derive.verify: borrow-11-move-out-of-borrowed--diag: initial=compile_error reference=pass
+derive.verify: borrow-11-move-out-of-borrowed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-11-move-out-of-borrowed--fn--src-lib-rs--sorted-copy: initial=compile_error reference=pass
+derive.verify: borrow-12-move-out-of-drop-type--diag: initial=compile_error reference=pass
+derive.verify: borrow-12-move-out-of-drop-type--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-12-move-out-of-drop-type--fn--src-lib-rs--drop: initial=compile_error reference=pass
+derive.verify: borrow-12-move-out-of-drop-type--fn--src-lib-rs--into-data-2: initial=compile_error reference=pass
+derive.verify: borrow-13-mutate-through-shared--diag: initial=compile_error reference=pass
+derive.verify: borrow-13-mutate-through-shared--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-13-mutate-through-shared--fn--src-lib-rs--stamp: initial=compile_error reference=pass
+derive.verify: borrow-14-borrow-after-move--diag: initial=compile_error reference=pass
+derive.verify: borrow-14-borrow-after-move--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-14-borrow-after-move--fn--src-lib-rs--join-then-measure: initial=compile_error reference=pass
+derive.verify: borrow-15-return-local-table-entry--diag: initial=compile_error reference=pass
+derive.verify: borrow-15-return-local-table-entry--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-15-return-local-table-entry--fn--src-lib-rs--seed: initial=compile_error reference=pass
+derive.verify: borrow-16-closure-borrows-local--diag: initial=compile_error reference=pass
+derive.verify: borrow-16-closure-borrows-local--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-16-closure-borrows-local--fn--src-lib-rs--make-counter: initial=compile_error reference=pass
+derive.verify: borrow-17-two-input-lifetimes--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: borrow-17-two-input-lifetimes--fn--src-lib-rs--longer: initial=compile_error reference=pass
+derive.verify: borrow-18-refcell-double-borrow--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: borrow-18-refcell-double-borrow--fn--src-lib-rs--record: initial=compile_error reference=pass
+derive.verify: concurrency-01-lock-order-deadlock--fn--src-lib-rs--lock-pair: initial=compile_error reference=pass
+derive.verify: concurrency-01-lock-order-deadlock--fn--src-lib-rs--run-pair-4: initial=compile_error reference=pass
+derive.verify: concurrency-01-lock-order-deadlock--fn--src-lib-rs--transfer-a-to-b-2: initial=compile_error reference=pass
+derive.verify: concurrency-01-lock-order-deadlock--fn--src-lib-rs--transfer-b-to-a-3: initial=compile_error reference=pass
+derive.verify: concurrency-02-lost-update--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-02-lost-update--fn--src-lib-rs--bump-all-2: initial=compile_error reference=pass
+derive.verify: concurrency-02-lost-update--fn--src-lib-rs--bump-pair: initial=compile_error reference=pass
+derive.verify: concurrency-03-send-boundary--diag: initial=compile_error reference=pass
+derive.verify: concurrency-03-send-boundary--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: concurrency-03-send-boundary--fn--src-lib-rs--total-in-threads: initial=compile_error reference=pass
+derive.verify: concurrency-04-mutex-critical-section--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-04-mutex-critical-section--fn--src-lib-rs--increment-pair: initial=compile_error reference=pass
+derive.verify: concurrency-05-swallowed-panic--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-05-swallowed-panic--fn--src-lib-rs--run-workers: initial=compile_error reference=pass
+derive.verify: concurrency-06-guard-crosses-thread--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: concurrency-06-guard-crosses-thread--fn--src-lib-rs--push-from-thread: initial=compile_error reference=pass
+derive.verify: concurrency-07-silent-channel-drop--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-08-borrowed-thread--diag: initial=compile_error reference=pass
+derive.verify: concurrency-08-borrowed-thread--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: concurrency-08-borrowed-thread--fn--src-lib-rs--sum-parallel: initial=compile_error reference=pass
+derive.verify: concurrency-09-shared-input--diag: initial=compile_error reference=pass
+derive.verify: concurrency-09-shared-input--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: concurrency-09-shared-input--fn--src-lib-rs--square-sum: initial=compile_error reference=pass
+derive.verify: concurrency-10-condvar-without-predicate--file--src-lib-rs: initial=timeout reference=pass
+derive.verify: concurrency-10-condvar-without-predicate--fn--src-lib-rs--run-2: initial=compile_error reference=pass
+derive.verify: concurrency-10-condvar-without-predicate--fn--src-lib-rs--wait-for-ready: initial=compile_error reference=pass
+derive.verify: concurrency-11-cell-not-sync--diag: initial=compile_error reference=pass
+derive.verify: concurrency-11-cell-not-sync--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: concurrency-11-cell-not-sync--fn--src-lib-rs--count-with: initial=compile_error reference=pass
+derive.verify: concurrency-12-shared-arc-moved--diag: initial=compile_error reference=pass
+derive.verify: concurrency-12-shared-arc-moved--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: concurrency-12-shared-arc-moved--fn--src-lib-rs--chunked-sum: initial=compile_error reference=pass
+derive.verify: concurrency-13-atomic-fetch-or--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-13-atomic-fetch-or--fn--src-lib-rs--accumulate: initial=compile_error reference=pass
+derive.verify: concurrency-14-poisoned-mutex--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-14-poisoned-mutex--fn--src-lib-rs--record-with-panic: initial=compile_error reference=pass
+derive.verify: concurrency-15-mutex-read-modify-write--fn--src-lib-rs--bump-many-2: initial=compile_error reference=pass
+derive.verify: concurrency-15-mutex-read-modify-write--fn--src-lib-rs--bump-pair: initial=compile_error reference=pass
+derive.verify: concurrency-16-non-reentrant-lock--file--src-lib-rs: initial=timeout reference=pass
+derive.verify: concurrency-16-non-reentrant-lock--fn--src-lib-rs--read-twice: initial=compile_error reference=pass
+derive.verify: concurrency-17-compare-exchange-claim--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: concurrency-18-barrier-early-return--file--src-lib-rs: initial=timeout reference=pass
+derive.verify: concurrency-18-barrier-early-return--fn--src-lib-rs--sum-nonzero: initial=compile_error reference=pass
+derive.verify: deps-01-version-requirement--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: deps-01-version-requirement--fn--src-lib-rs--scale-percent: initial=compile_error reference=pass
+derive.verify: deps-01-version-requirement--manifest: initial=compile_error reference=pass
+derive.verify: deps-02-edition-2024--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: deps-02-edition-2024--fn--src-lib-rs--describe: initial=compile_error reference=pass
+derive.verify: deps-02-edition-2024--fn--src-lib-rs--next-value-2: initial=compile_error reference=pass
+derive.verify: deps-03-optional-feature--diag: initial=compile_error reference=pass
+derive.verify: deps-03-optional-feature--manifest: initial=compile_error reference=pass
+derive.verify: deps-04-unknown-feature--manifest: initial=compile_error reference=pass
+derive.verify: deps-05-workspace-member--manifest: initial=compile_error reference=pass
+derive.verify: deps-06-edition-unsafe-block--diag: initial=compile_error reference=pass
+derive.verify: deps-07-feature-conflict--manifest: initial=compile_error reference=pass
+derive.verify: deps-08-renamed-package--manifest: initial=compile_error reference=pass
+derive.verify: deps-09-disable-default-features--diag: initial=compile_error reference=pass
+derive.verify: deps-09-disable-default-features--manifest: initial=compile_error reference=pass
+derive.verify: deps-10-edition-unsafe-attribute--manifest: initial=compile_error reference=pass
+derive.verify: deps-11-lib-name-mismatch--diag: initial=compile_error reference=pass
+derive.verify: deps-11-lib-name-mismatch--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: deps-11-lib-name-mismatch--manifest: initial=pass reference=pass
+derive.verify: deps-12-edition-2015-paths--diag: initial=compile_error reference=pass
+derive.verify: deps-12-edition-2015-paths--manifest: initial=compile_error reference=pass
+derive.verify: deps-13-wrong-lib-path--manifest: initial=compile_error reference=pass
+derive.verify: deps-14-workspace-inheritance--manifest: initial=compile_error reference=pass
+derive.verify: deps-15-missing-package-name--manifest: initial=compile_error reference=pass
+derive.verify: deps-16-missing-dependency-dir--manifest: initial=compile_error reference=pass
+derive.verify: deps-17-invalid-package-name--manifest: initial=compile_error reference=pass
+derive.verify: deps-18-default-features-type--manifest: initial=compile_error reference=pass
+derive.verify: failing-01-chunk-boundary--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-01-chunk-boundary--fn--src-lib-rs--chunk-count: initial=compile_error reference=pass
+derive.verify: failing-02-empty-input--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-02-empty-input--fn--src-lib-rs--max-gap: initial=compile_error reference=pass
+derive.verify: failing-03-overflow-boundary--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-03-overflow-boundary--fn--src-lib-rs--running-total: initial=compile_error reference=pass
+derive.verify: failing-04-nan-ordering--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-04-nan-ordering--fn--src-lib-rs--sort-ascending: initial=compile_error reference=pass
+derive.verify: failing-05-inclusive-range--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-06-integer-precision--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-07-common-prefix--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-07-common-prefix--fn--src-lib-rs--common-prefix: initial=compile_error reference=pass
+derive.verify: failing-08-lower-bound--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-08-lower-bound--fn--src-lib-rs--lower-bound: initial=compile_error reference=pass
+derive.verify: failing-09-state-cycle--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-10-last-duplicate-index--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-10-last-duplicate-index--fn--src-lib-rs--last-index: initial=compile_error reference=pass
+derive.verify: failing-11-wrap-counts-the-space--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-11-wrap-counts-the-space--fn--src-lib-rs--wrap: initial=compile_error reference=pass
+derive.verify: failing-12-roman-subtractive--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-12-roman-subtractive--fn--src-lib-rs--to-roman: initial=compile_error reference=pass
+derive.verify: failing-13-duration-minutes-field--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-13-duration-minutes-field--fn--src-lib-rs--format-duration: initial=compile_error reference=pass
+derive.verify: failing-14-century-leap-year--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-14-century-leap-year--fn--src-lib-rs--days-in-month: initial=compile_error reference=pass
+derive.verify: failing-15-run-length-count--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-15-run-length-count--fn--src-lib-rs--encode: initial=compile_error reference=pass
+derive.verify: failing-16-merge-adjacent--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-16-merge-adjacent--fn--src-lib-rs--merge: initial=compile_error reference=pass
+derive.verify: failing-17-partial-last-page--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-17-partial-last-page--fn--src-lib-rs--page-bounds: initial=compile_error reference=pass
+derive.verify: failing-18-negative-caesar-shift--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: failing-18-negative-caesar-shift--fn--src-lib-rs--shift: initial=compile_error reference=pass
+derive.verify: migrate-01-signature--diag: initial=compile_error reference=pass
+derive.verify: migrate-01-signature--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-01-signature--fn--src-lib-rs--load: initial=compile_error reference=pass
+derive.verify: migrate-02-builder--diag: initial=compile_error reference=pass
+derive.verify: migrate-02-builder--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-02-builder--fn--src-lib-rs--connect: initial=compile_error reference=pass
+derive.verify: migrate-03-error-conversion--diag: initial=compile_error reference=pass
+derive.verify: migrate-03-error-conversion--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-03-error-conversion--fn--src-lib-rs--count-fields: initial=compile_error reference=pass
+derive.verify: migrate-04-trait-import--diag: initial=compile_error reference=pass
+derive.verify: migrate-05-iterator-api--diag: initial=compile_error reference=pass
+derive.verify: migrate-05-iterator-api--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-05-iterator-api--fn--src-lib-rs--names: initial=compile_error reference=pass
+derive.verify: migrate-06-error-variant--diag: initial=compile_error reference=pass
+derive.verify: migrate-06-error-variant--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-07-display-method--diag: initial=compile_error reference=pass
+derive.verify: migrate-07-display-method--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-07-display-method--fn--src-lib-rs--render: initial=compile_error reference=pass
+derive.verify: migrate-08-path-api--diag: initial=compile_error reference=pass
+derive.verify: migrate-08-path-api--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-09-mutable-receiver--diag: initial=compile_error reference=pass
+derive.verify: migrate-09-mutable-receiver--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-09-mutable-receiver--fn--src-lib-rs--count-to: initial=compile_error reference=pass
+derive.verify: migrate-10-method-renamed--diag: initial=compile_error reference=pass
+derive.verify: migrate-10-method-renamed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-10-method-renamed--fn--src-lib-rs--running-total: initial=compile_error reference=pass
+derive.verify: migrate-11-owned-argument--diag: initial=compile_error reference=pass
+derive.verify: migrate-11-owned-argument--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-12-option-result-change--diag: initial=compile_error reference=pass
+derive.verify: migrate-12-option-result-change--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-12-option-result-change--fn--src-lib-rs--next-count: initial=compile_error reference=pass
+derive.verify: migrate-13-const-generic--diag: initial=compile_error reference=pass
+derive.verify: migrate-13-const-generic--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-14-new-enum-variant--diag: initial=compile_error reference=pass
+derive.verify: migrate-14-new-enum-variant--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-14-new-enum-variant--fn--src-lib-rs--code: initial=compile_error reference=pass
+derive.verify: migrate-15-function-renamed--diag: initial=compile_error reference=pass
+derive.verify: migrate-15-function-renamed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-15-function-renamed--fn--src-lib-rs--double: initial=compile_error reference=pass
+derive.verify: migrate-16-required-config-argument--diag: initial=compile_error reference=pass
+derive.verify: migrate-16-required-config-argument--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-17-field-renamed--diag: initial=compile_error reference=pass
+derive.verify: migrate-17-field-renamed--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: migrate-17-field-renamed--fn--src-lib-rs--doubled: initial=compile_error reference=pass
+derive.verify: migrate-18-conversion-bound--diag: initial=compile_error reference=pass
+derive.verify: migrate-18-conversion-bound--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: repo-01-lifetime-propagation--diag: initial=compile_error reference=pass
+derive.verify: repo-01-lifetime-propagation--file--src-query-rs: initial=compile_error reference=pass
+derive.verify: repo-01-lifetime-propagation--fn--src-query-rs--cheapest: initial=compile_error reference=compile_error
+derive.verify: repo-02-error-propagation--diag: initial=compile_error reference=pass
+derive.verify: repo-02-error-propagation--file--src-error-rs: initial=compile_error reference=pass
+derive.verify: repo-02-error-propagation--fn--src-error-rs--fmt: initial=compile_error reference=compile_error
+derive.verify: repo-03-generic-bounds--diag: initial=compile_error reference=pass
+derive.verify: repo-03-generic-bounds--file--src-stats-rs: initial=compile_error reference=pass
+derive.verify: repo-03-generic-bounds--fn--src-stats-rs--mean-floor: initial=compile_error reference=compile_error
+derive.verify: repo-04-module-visibility--diag: initial=compile_error reference=pass
+derive.verify: repo-04-module-visibility--file--src-model-rs: initial=compile_error reference=pass
+derive.verify: repo-04-module-visibility--fn--src-model-rs--load: initial=compile_error reference=compile_error
+derive.verify: repo-05-variant-propagation--diag: initial=compile_error reference=pass
+derive.verify: repo-06-moved-module-import--diag: initial=compile_error reference=pass
+derive.verify: repo-06-moved-module-import--file--src-service-rs: initial=compile_error reference=pass
+derive.verify: repo-06-moved-module-import--fn--src-service-rs--fetch: initial=compile_error reference=pass
+derive.verify: repo-07-field-rename--diag: initial=compile_error reference=pass
+derive.verify: repo-07-field-rename--file--src-config-rs: initial=compile_error reference=pass
+derive.verify: repo-08-mutability-propagation--diag: initial=compile_error reference=pass
+derive.verify: repo-08-mutability-propagation--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: repo-08-mutability-propagation--fn--src-lib-rs--run: initial=compile_error reference=pass
+derive.verify: repo-09-result-propagation--diag: initial=compile_error reference=pass
+derive.verify: repo-09-result-propagation--file--src-cache-rs: initial=compile_error reference=pass
+derive.verify: repo-09-result-propagation--file--src-report-rs: initial=compile_error reference=pass
+derive.verify: repo-09-result-propagation--fn--src-cache-rs--cached: initial=compile_error reference=pass
+derive.verify: repo-10-missing-module-file--diag: initial=compile_error reference=pass
+derive.verify: repo-11-private-field--diag: initial=compile_error reference=pass
+derive.verify: repo-11-private-field--file--src-build-rs: initial=compile_error reference=pass
+derive.verify: repo-12-returned-local-reference--diag: initial=compile_error reference=pass
+derive.verify: repo-12-returned-local-reference--file--src-cache-rs: initial=compile_error reference=pass
+derive.verify: repo-13-undeclared-module-path--diag: initial=compile_error reference=pass
+derive.verify: repo-13-undeclared-module-path--file--src-api-rs: initial=compile_error reference=pass
+derive.verify: repo-14-crossmodule-borrow--diag: initial=compile_error reference=pass
+derive.verify: repo-14-crossmodule-borrow--file--src-sync-rs: initial=compile_error reference=pass
+derive.verify: repo-14-crossmodule-borrow--fn--src-sync-rs--append-all: initial=compile_error reference=pass
+derive.verify: repo-15-caller-not-updated--diag: initial=compile_error reference=pass
+derive.verify: repo-15-caller-not-updated--file--src-report-rs: initial=compile_error reference=pass
+derive.verify: repo-15-caller-not-updated--fn--src-report-rs--line: initial=compile_error reference=pass
+derive.verify: repo-16-missing-associated-item--diag: initial=compile_error reference=pass
+derive.verify: repo-16-missing-associated-item--file--src-memory-rs: initial=compile_error reference=pass
+derive.verify: repo-16-missing-associated-item--fn--src-memory-rs--accept: initial=compile_error reference=pass
+derive.verify: repo-16-missing-associated-item--fn--src-memory-rs--finish-2: initial=compile_error reference=pass
+derive.verify: repo-17-opaque-return-method--diag: initial=compile_error reference=pass
+derive.verify: repo-17-opaque-return-method--file--src-api-rs: initial=compile_error reference=pass
+derive.verify: repo-17-opaque-return-method--fn--src-api-rs--peek: initial=compile_error reference=pass
+derive.verify: repo-18-moved-across-modules--diag: initial=compile_error reference=pass
+derive.verify: repo-18-moved-across-modules--file--src-flow-rs: initial=compile_error reference=pass
+derive.verify: semantic-01-overlapping-count--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-01-overlapping-count--fn--src-lib-rs--count-occurrences: initial=compile_error reference=pass
+derive.verify: semantic-02-rounded-average--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-02-rounded-average--fn--src-lib-rs--average: initial=compile_error reference=pass
+derive.verify: semantic-03-case-insensitive-first-word--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-03-case-insensitive-first-word--fn--src-lib-rs--is-command: initial=compile_error reference=pass
+derive.verify: semantic-04-stable-score-sort--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-04-stable-score-sort--fn--src-lib-rs--ranked: initial=compile_error reference=pass
+derive.verify: semantic-05-lowercase-hex--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-05-lowercase-hex--fn--src-lib-rs--hex: initial=compile_error reference=pass
+derive.verify: semantic-06-order-preserving-unique--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-06-order-preserving-unique--fn--src-lib-rs--unique: initial=compile_error reference=pass
+derive.verify: semantic-07-csv-quoting--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-07-csv-quoting--fn--src-lib-rs--field: initial=compile_error reference=pass
+derive.verify: semantic-08-char-truncate--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-08-char-truncate--fn--src-lib-rs--truncate: initial=compile_error reference=pass
+derive.verify: semantic-09-token-bucket-refill--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-09-token-bucket-refill--fn--src-lib-rs--refill: initial=compile_error reference=pass
+derive.verify: semantic-10-round-half-even--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-10-round-half-even--fn--src-lib-rs--round-half-even: initial=compile_error reference=pass
+derive.verify: semantic-11-leading-zero-id--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-11-leading-zero-id--fn--src-lib-rs--parse-id: initial=compile_error reference=pass
+derive.verify: semantic-12-split-once--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-12-split-once--fn--src-lib-rs--split-key: initial=compile_error reference=pass
+derive.verify: semantic-13-inverted-clamp--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-13-inverted-clamp--fn--src-lib-rs--clamp: initial=compile_error reference=pass
+derive.verify: semantic-14-url-encode-plus--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-15-shorten-with-ellipsis--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-15-shorten-with-ellipsis--fn--src-lib-rs--shorten: initial=compile_error reference=pass
+derive.verify: semantic-16-numeric-string-sort--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-16-numeric-string-sort--fn--src-lib-rs--sorted: initial=compile_error reference=pass
+derive.verify: semantic-17-adjacent-dedup--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-17-adjacent-dedup--fn--src-lib-rs--collapse: initial=compile_error reference=pass
+derive.verify: semantic-18-email-domain-case--file--src-lib-rs: initial=test_failed reference=pass
+derive.verify: semantic-18-email-domain-case--fn--src-lib-rs--normalise: initial=compile_error reference=pass
+derive.verify: traits-01-associated-type--diag: initial=compile_error reference=pass
+derive.verify: traits-01-associated-type--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-01-associated-type--fn--src-lib-rs--first-value-2: initial=compile_error reference=pass
+derive.verify: traits-01-associated-type--fn--src-lib-rs--put: initial=compile_error reference=pass
+derive.verify: traits-02-coherence--diag: initial=compile_error reference=pass
+derive.verify: traits-02-coherence--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-02-coherence--fn--src-lib-rs--fmt: initial=compile_error reference=pass
+derive.verify: traits-02-coherence--fn--src-lib-rs--summary-of-text-2: initial=compile_error reference=pass
+derive.verify: traits-03-object-safety--diag: initial=compile_error reference=pass
+derive.verify: traits-03-object-safety--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-03-object-safety--fn--src-lib-rs--count-4: initial=compile_error reference=pass
+derive.verify: traits-03-object-safety--fn--src-lib-rs--get: initial=compile_error reference=pass
+derive.verify: traits-03-object-safety--fn--src-lib-rs--len-3: initial=compile_error reference=pass
+derive.verify: traits-03-object-safety--fn--src-lib-rs--put-2: initial=compile_error reference=pass
+derive.verify: traits-04-missing-method--diag: initial=compile_error reference=pass
+derive.verify: traits-04-missing-method--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-04-missing-method--fn--src-lib-rs--area: initial=compile_error reference=compile_error
+derive.verify: traits-04-missing-method--fn--src-lib-rs--describe-2: initial=compile_error reference=compile_error
+derive.verify: traits-05-supertrait-bound--diag: initial=compile_error reference=pass
+derive.verify: traits-05-supertrait-bound--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-05-supertrait-bound--fn--src-lib-rs--summarise: initial=compile_error reference=pass
+derive.verify: traits-06-method-ambiguity--diag: initial=compile_error reference=pass
+derive.verify: traits-06-method-ambiguity--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-06-method-ambiguity--fn--src-lib-rs--left: initial=compile_error reference=pass
+derive.verify: traits-06-method-ambiguity--fn--src-lib-rs--right-2: initial=compile_error reference=pass
+derive.verify: traits-07-add-impl--diag: initial=compile_error reference=pass
+derive.verify: traits-07-add-impl--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-07-add-impl--fn--src-lib-rs--add: initial=compile_error reference=pass
+derive.verify: traits-08-method-signature--diag: initial=compile_error reference=pass
+derive.verify: traits-08-method-signature--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-08-method-signature--fn--src-lib-rs--encode: initial=compile_error reference=pass
+derive.verify: traits-08-method-signature--fn--src-lib-rs--encode-all-2: initial=compile_error reference=pass
+derive.verify: traits-09-orphan-rule--diag: initial=compile_error reference=pass
+derive.verify: traits-09-orphan-rule--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-09-orphan-rule--fn--src-lib-rs--fmt: initial=compile_error reference=pass
+derive.verify: traits-09-orphan-rule--fn--src-lib-rs--render-2: initial=compile_error reference=pass
+derive.verify: traits-10-associated-type-value--diag: initial=compile_error reference=pass
+derive.verify: traits-10-associated-type-value--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-10-associated-type-value--fn--src-lib-rs--drain-2: initial=compile_error reference=pass
+derive.verify: traits-10-associated-type-value--fn--src-lib-rs--next-item: initial=compile_error reference=pass
+derive.verify: traits-11-blanket-impl-bound--diag: initial=compile_error reference=pass
+derive.verify: traits-11-blanket-impl-bound--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-12-associated-const--diag: initial=compile_error reference=pass
+derive.verify: traits-12-associated-const--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-13-default-method-missing-item--diag: initial=compile_error reference=pass
+derive.verify: traits-13-default-method-missing-item--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-13-default-method-missing-item--fn--src-lib-rs--render: initial=compile_error reference=pass
+derive.verify: traits-14-extra-type-parameter--diag: initial=compile_error reference=pass
+derive.verify: traits-14-extra-type-parameter--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-15-generic-trait-missing-argument--diag: initial=compile_error reference=pass
+derive.verify: traits-15-generic-trait-missing-argument--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-16-method-arity--diag: initial=compile_error reference=pass
+derive.verify: traits-16-method-arity--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-16-method-arity--fn--src-lib-rs--scale: initial=compile_error reference=pass
+derive.verify: traits-17-method-not-in-trait--diag: initial=compile_error reference=pass
+derive.verify: traits-17-method-not-in-trait--file--src-lib-rs: initial=compile_error reference=pass
+derive.verify: traits-17-method-not-in-trait--fn--src-lib-rs--rename: initial=compile_error reference=pass
+derive.verify: traits-18-duplicate-inherent-method--diag: initial=compile_error reference=pass
+derive.verify: traits-18-duplicate-inherent-method--file--src-lib-rs: initial=compile_error reference=pass
+capability_court: fail; 331/346 derived tasks verified -> results/capability/derivation-verify-population.json
+  deps-01-version-requirement--file--src-lib-rs: the failing state did not fail as declared (compile_error, missing ['failed to select a version'])
+  repo-01-lifetime-propagation--fn--src-query-rs--cheapest: the reference did not pass (compile_error:              ^^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this function
+   |
+11 +     use crate::cheapest_name;
+   |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `repo_01_lifetime_propagation` (lib test) due to 1 previous error
+)
+  repo-02-error-propagation--fn--src-error-rs--fmt: the reference did not pass (compile_error:     use super::*;
+   |         ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `repo_02_error_propagation` (lib test) due to 1 previous error; 1 warning emitted
+)
+  repo-03-generic-bounds--file--src-stats-rs: the failing state did not fail as declared (compile_error, missing ['E0277'])
+  repo-03-generic-bounds--fn--src-stats-rs--mean-floor: the reference did not pass (compile_error: note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `repo_03_generic_bounds` (lib test) due to 2 previous errors; 1 warning emitted
+)
+  repo-04-module-visibility--fn--src-model-rs--load: the reference did not pass (compile_error:     use super::*;
+   |         ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `repo_04_module_visibility` (lib test) due to 1 previous error; 1 warning emitted
+)
+  repo-08-mutability-propagation--file--src-lib-rs: the failing state did not fail as declared (compile_error, missing ['E0594'])
+  traits-04-missing-method--fn--src-lib-rs--area: the reference did not pass (compile_error: 13
+   |
+32 |     fn name(&self) -> &'static str { "triangle" }
+   |             ^^^^^ not semantically valid as function parameter
+   |
+   = note: associated functions are those in `impl` or `trait` definitions
+
+error: could not compile `traits_04_missing_method` (lib test) due to 2 previous errors
+)
+  traits-04-missing-method--fn--src-lib-rs--describe-2: the reference did not pass (compile_error: 13
+   |
+32 |     fn name(&self) -> &'static str { "triangle" }
+   |             ^^^^^ not semantically valid as function parameter
+   |
+   = note: associated functions are those in `impl` or `trait` definitions
+
+error: could not compile `traits_04_missing_method` (lib test) due to 2 previous errors
+)
+  traits-05-supertrait-bound--fn--src-lib-rs--summarise: the mutated reference passed the checker

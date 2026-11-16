@@ -1,0 +1,75 @@
+{
+  "capability": "Recognise a non-Send smart pointer crossing a thread boundary and move to Arc. (format: diagnostic-identification)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-03-send-boundary",
+    "source_split": "scored",
+    "source_tree_sha256": "f47f6d33df6112c557ec08ae569172b9343afa9f6fcef285b62a3b7862f15048",
+    "target": "E0277"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the trait bound is not satisfied",
+        "id": "E0277"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      }
+    ]
+  },
+  "id": "concurrency-03-send-boundary--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "part[start..end].iter().copied().sum::<i64>()",
+    "replace": "part[start..end].iter().copied().take(1).sum::<i64>()"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-03-send-boundary (tree f47f6d33df6112c557ec08ae569172b9343afa9f6fcef285b62a3b7862f15048) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

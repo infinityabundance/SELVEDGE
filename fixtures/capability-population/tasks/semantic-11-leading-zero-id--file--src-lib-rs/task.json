@@ -1,0 +1,86 @@
+{
+  "capability": "Reject a numeric identifier that carries a leading zero. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 15,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-11-leading-zero-id",
+    "source_split": "scored",
+    "source_tree_sha256": "4da735eeb00a3014253be776579f5d4a3d343a676b15373fd407c28457340483",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Canonical identifier parsing.\n\npub fn parse_id(text: &str) -> Option<u32> {\n    text.parse().ok()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Canonical identifier parsing.\n\npub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 1 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Canonical identifier parsing.\n\npub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 3 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Identifier parsing with the standard integer parser.\n\npub fn parse_id(text: &str) -> Option<u32> {\n    text.parse().ok()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::parse_id;\n\n    #[test]\n    fn visible_plain_number() {\n        assert_eq!(parse_id(\"12\"), Some(12));\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-11-leading-zero-id--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Canonical identifier parsing.\n\npub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 1 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}",
+    "replace": "//! Canonical identifier parsing.\n\npub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 3 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-11-leading-zero-id (tree 4da735eeb00a3014253be776579f5d4a3d343a676b15373fd407c28457340483) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

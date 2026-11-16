@@ -1,0 +1,94 @@
+{
+  "capability": "Propagate a module move through every importing module. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-06-moved-module-import",
+    "source_split": "scored",
+    "source_tree_sha256": "55243c8e36586aa66971eb8a8f6ef89712b2c1c7b71ac356a77ece78d059b302",
+    "target": "src/service.rs"
+  },
+  "differing_functions": 0,
+  "difficulty": "medium",
+  "entry": "src/service.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Service reads.\n\nuse crate::storage::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).filter(|value| *value > 0)\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).map(|value| *value > 0)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the filter replaced by a map (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(data, key).filter(|value| *value > 0)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "two call arguments swapped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).filter(|value| *value > 0)\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).filter(|value| *value >= 0)\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/service.rs"
+  },
+  "id": "repo-06-moved-module-import--file--src-service-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/service.rs",
+    "find": "//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).filter(|value| *value > 0)\n}",
+    "replace": "//! Service reads.\n\nuse crate::store::load;\n\npub fn fetch(key: &str, data: &[(&str, i32)]) -> Option<i32> {\n    load(key, data).filter(|value| *value >= 0)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-06-moved-module-import (tree 55243c8e36586aa66971eb8a8f6ef89712b2c1c7b71ac356a77ece78d059b302) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

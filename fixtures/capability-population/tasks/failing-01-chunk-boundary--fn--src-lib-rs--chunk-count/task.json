@@ -1,0 +1,101 @@
+{
+  "capability": "Debug a rounding boundary in a chunk count, including overflow safety. (format: patch-selection; family: patch-function)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-01-chunk-boundary",
+    "source_split": "calibration",
+    "source_tree_sha256": "b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e",
+    "target": "chunk_count"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n    }\n    len.div_ceil(size)\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len / size\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size != 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the equality test inverted to `!=` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 1 {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if !(size == 0) {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "the guard negated (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "chunk_count",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "failing-01-chunk-boundary--fn--src-lib-rs--chunk-count",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+    "replace": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len / size\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `chunk_count` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/failing-01-chunk-boundary (tree b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Resolve a crate-local module path from a sibling module. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-13-undeclared-module-path",
+    "source_split": "scored",
+    "source_tree_sha256": "94af1b28be046bdb7f0d789e84b02d435edf1dcda13cf1c49243a65e12a78c81",
+    "target": "src/api.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/api.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! The public slug API.\n\nuse crate::util::slug;\n\npub fn slugify(text: &str) -> String {\n    util::slug(text)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The public slug API.\n\nuse crate::util::slug;\n\npub fn slugify(text: &str) -> String {\n    slug(text)\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! The public slug API.\n\nuse crate::util::slug;\n\npub fn slugify(text: &str) -> String {\n    text.to_string()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The public slug API. This does not compile: the sibling module is\n//! named as if it were an external crate.\n\npub fn slugify(text: &str) -> String {\n    util::slug(text)\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The public slug API. This does not compile: the sibling module is\n//! named as if it were an external crate.\n\npub fn slugify(text: &str) -> String {\n    slug(text)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/api.rs"
+  },
+  "id": "repo-13-undeclared-module-path--file--src-api-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0433"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/api.rs",
+    "find": "//! The public slug API.\n\nuse crate::util::slug;\n\npub fn slugify(text: &str) -> String {\n    slug(text)\n}",
+    "replace": "//! The public slug API.\n\nuse crate::util::slug;\n\npub fn slugify(text: &str) -> String {\n    text.to_string()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-13-undeclared-module-path (tree 94af1b28be046bdb7f0d789e84b02d435edf1dcda13cf1c49243a65e12a78c81) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

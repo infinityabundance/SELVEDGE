@@ -1,0 +1,86 @@
+{
+  "capability": "Recover the data of a mutex poisoned by a panicking worker. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 19,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-14-poisoned-mutex",
+    "source_split": "calibration",
+    "source_tree_sha256": "78727827716c2b125249b5da7663c9568cc28371f6feb0e569e25baa8bbfd209",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Record bytes and survive a worker panic.\n\nuse std::sync::Mutex;\n\npub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(8);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared\n        .lock()\n        .unwrap_or_else(|poisoned| poisoned.into_inner());\n    guard.len()\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Record bytes and survive a worker panic. The visible test fails:\n//! the poisoned mutex is unwrapped instead of recovered.\n\nuse std::sync::Mutex;\n\npub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(7);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared.lock().unwrap();\n    guard.len()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::record_with_panic;\n    use std::sync::Mutex;\n\n    #[test]\n    fn visible_after_panic() {\n        let shared = Mutex::new(Vec::new());\n        assert_eq!(record_with_panic(&shared), 1);\n    }\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Record bytes and survive a worker panic.\n\nuse std::sync::Mutex;\n\npub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(7);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared.lock().unwrap();\n    guard.len()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Record bytes and survive a worker panic.\n\nuse std::sync::Mutex;\n\npub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(7);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared\n        .lock()\n        .unwrap_or_else(|poisoned| poisoned.into_inner());\n    guard.len()\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-14-poisoned-mutex--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Record bytes and survive a worker panic.\n\nuse std::sync::Mutex;\n\npub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(7);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared\n        .lock()\n        .unwrap_or_else(|poisoned| poisoned.into_inner());\n    guard.len()\n}",
+    "replace": "//! Record bytes and survive a worker panic.\n\nuse std::sync::Mutex;\n\npub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(8);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared\n        .lock()\n        .unwrap_or_else(|poisoned| poisoned.into_inner());\n    guard.len()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-14-poisoned-mutex (tree 78727827716c2b125249b5da7663c9568cc28371f6feb0e569e25baa8bbfd209) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

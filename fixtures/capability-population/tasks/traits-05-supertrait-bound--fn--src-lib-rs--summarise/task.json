@@ -1,0 +1,78 @@
+{
+  "capability": "Implement a supertrait required by a new trait bound. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-05-supertrait-bound",
+    "source_split": "scored",
+    "source_tree_sha256": "070732ead0d2fce3d78a27ed53d8c924c112c2c904f28e9580e3c171ec0611d2",
+    "target": "summarise"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn summarise(nodes: &[Box<dyn Node>]) -> String {\n    nodes\n        .iter()\n        .filter(|node| format!(\"{:?}:{}\", node, node.id()))\n        .collect::<Vec<_>>()\n        .join(\",\")\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn summarise(nodes: &[Box<dyn Node>]) -> String {\n        self.id\n    }",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the body of the sibling function `id` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn summarise(nodes: &[Box<dyn Node>]) -> String {\n    nodes\n        .iter()\n        .map(|node| format!(\"{:?}:{}\", node, node.id()))\n        .collect::<Vec<_>>()\n        .join(\",\")\n}",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "summarise",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-05-supertrait-bound--fn--src-lib-rs--summarise",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn summarise(nodes: &[Box<dyn Node>]) -> String {\n    nodes\n        .iter()\n        .map(|node| format!(\"{:?}:{}\", node, node.id()))\n        .collect::<Vec<_>>()\n        .join(\",\")\n}",
+    "replace": "pub fn summarise(nodes: &[Box<dyn Node>]) -> String {\n    nodes\n        .iter().rev()\n        .map(|node| format!(\"{:?}:{}\", node, node.id()))\n        .collect::<Vec<_>>()\n        .join(\",\")\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `summarise` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-05-supertrait-bound (tree 070732ead0d2fce3d78a27ed53d8c924c112c2c904f28e9580e3c171ec0611d2) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

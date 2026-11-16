@@ -1,0 +1,86 @@
+{
+  "capability": "Add the documented tie-break that the visible data never triggers. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 17,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-04-stable-score-sort",
+    "source_split": "scored",
+    "source_tree_sha256": "8096024420690f3ee468d8286c1269155030ed484ea4c0b78fe46fad1fbe291d",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Score ranking with a deterministic tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| {\n        right.1.cmp(&left.1).then(left.0.cmp(&right.0))\n    });\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Score ranking with a deterministic tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| {\n        right.1.cmp(&left.1).then(right.0.cmp(&left.0))\n    });\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Score ranking without a tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| right.1.cmp(&left.1));\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::ranked;\n\n    #[test]\n    fn orders_distinct_scores() {\n        let entries = vec![(\"low\".to_string(), 1), (\"high\".to_string(), 2)];\n        assert_eq!(ranked(&entries), vec![\"high\", \"low\"]);\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Score ranking with a deterministic tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| right.1.cmp(&left.1));\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-04-stable-score-sort--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Score ranking with a deterministic tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| {\n        right.1.cmp(&left.1).then(left.0.cmp(&right.0))\n    });\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}",
+    "replace": "//! Score ranking with a deterministic tie-break.\n\npub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    let mut sorted = entries.to_vec();\n    sorted.sort_by(|left, right| {\n        right.1.cmp(&left.1).then(right.0.cmp(&left.0))\n    });\n    sorted.into_iter().map(|(name, _score)| name).collect()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-04-stable-score-sort (tree 8096024420690f3ee468d8286c1269155030ed484ea4c0b78fe46fad1fbe291d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

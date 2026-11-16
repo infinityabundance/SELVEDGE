@@ -1,0 +1,13 @@
+[package]
+name = "migrate_01_signature"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+units = { path = "dep" }

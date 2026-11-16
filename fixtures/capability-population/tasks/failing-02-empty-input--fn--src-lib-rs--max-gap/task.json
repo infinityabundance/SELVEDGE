@@ -1,0 +1,101 @@
+{
+  "capability": "Fix a missing empty/short-input case without changing the signature. (format: patch-selection; family: patch-function)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 13,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-02-empty-input",
+    "source_split": "scored",
+    "source_tree_sha256": "acbf059f1c67e56744a161efc3eb29869e3781ff5a45ec8ca591d2a7970a2971",
+    "target": "max_gap"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .min()\n        .unwrap_or(0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the maximum replaced by a minimum (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[1])\n        .max()\n        .unwrap_or(0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[2] - pair[0])\n        .max()\n        .unwrap_or(0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the literal 1 widened to 2 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .max()\n        .unwrap_or(0)\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .max()\n        .unwrap_or(1)\n}",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn max_gap(values: &[i64]) -> i64 {\n    let mut best = values[1] - values[0];\n    for pair in values.windows(2) {\n        let gap = pair[1] - pair[0];\n        if gap > best {\n            best = gap;\n        }\n    }\n    best\n}",
+        "kind": "initial",
+        "label": "F",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "max_gap",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "failing-02-empty-input--fn--src-lib-rs--max-gap",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .max()\n        .unwrap_or(0)\n}",
+    "replace": "pub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .max()\n        .unwrap_or(1)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `max_gap` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/failing-02-empty-input (tree acbf059f1c67e56744a161efc3eb29869e3781ff5a45ec8ca591d2a7970a2971) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

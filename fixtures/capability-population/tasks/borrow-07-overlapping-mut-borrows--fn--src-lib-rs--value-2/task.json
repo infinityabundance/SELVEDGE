@@ -1,0 +1,85 @@
+{
+  "capability": "End one mutable borrow before starting the next one. (format: patch-selection; family: patch-function)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-07-overlapping-mut-borrows",
+    "source_split": "scored",
+    "source_tree_sha256": "584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3",
+    "target": "value"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn value(&self) -> i32 {\n        self.value\n    }",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn value(&self) -> i32 {\n        Counter { value }\n    }",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the body of the sibling function `new` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn value(&self) -> i32 {\n        &mut self.value\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the body of the sibling function `value_mut` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn value(&self) -> i32 {\n        let first = self.value_mut();\n        *first += 1;\n        let second = self.value_mut();\n        *second += 1;\n    }",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the body of the sibling function `bump_twice` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "value",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "borrow-07-overlapping-mut-borrows--fn--src-lib-rs--value-2",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn value(&self) -> i32 {\n        self.value\n    }",
+    "replace": "pub fn value(&self) -> i32 {\n        Counter { value }\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `value` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-07-overlapping-mut-borrows (tree 584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,101 @@
+{
+  "capability": "Apply the century rule of the Gregorian leap year. (format: patch-selection; family: patch-function)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "declared-naive",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "failing-14-century-leap-year",
+    "source_split": "scored",
+    "source_tree_sha256": "d2115425c21284ad98079443d25789999b5805c2a25e717d8eb2e990132a075b",
+    "target": "days_in_month"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0 && (year % 100 != 0 || year % 500 == 0);\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0 && year % 100 != 0;\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+        "kind": "declared-naive",
+        "label": "C",
+        "provenance": "the source's declared naive fix (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0;\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 != 0 && (year % 100 != 0 || year % 400 == 0);\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the equality test inverted to `!=` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0 && (year % 100 == 0 || year % 400 == 0);\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "the inequality test inverted to `==` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "days_in_month",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "failing-14-century-leap-year--fn--src-lib-rs--days-in-month",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}",
+    "replace": "pub fn days_in_month(year: u32, month: u32) -> u32 {\n    let leap = year % 4 == 0 && (year % 100 != 0 || year % 500 == 0);\n    match month {\n        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,\n        4 | 6 | 9 | 11 => 30,\n        2 if leap => 29,\n        2 => 28,\n        _ => 0,\n    }\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `days_in_month` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/failing-14-century-leap-year (tree d2115425c21284ad98079443d25789999b5805c2a25e717d8eb2e990132a075b) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

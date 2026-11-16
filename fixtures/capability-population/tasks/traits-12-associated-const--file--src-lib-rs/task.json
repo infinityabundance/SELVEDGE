@@ -1,0 +1,87 @@
+{
+  "capability": "Supply an associated constant the trait requires. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-12-associated-const",
+    "source_split": "scored",
+    "source_tree_sha256": "d81a052e0ac486d82ab28de872e2a028b4da1184abe334f3f2dde46006e47b83",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A trait with an associated constant.\n\npub trait Limits {\n    const MAX: usize;\n    fn capped(&self, value: usize) -> usize;\n}\n\npub struct Small;\n\nimpl Limits for Small {\n    const MAX: usize = 8;\n\n    fn capped(&self, value: usize) -> usize {\n        value.min(Self::MAX)\n    }\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A trait with an associated constant.\n\npub trait Limits {\n    const MAX: usize;\n    fn capped(&self, value: usize) -> usize;\n}\n\npub struct Small;\n\nimpl Limits for Small {\n    const MAX: usize = 9;\n\n    fn capped(&self, value: usize) -> usize {\n        value.min(Self::MAX)\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A trait with an associated constant. The crate does not build: the\n//! impl omits `MAX`.\n\npub trait Limits {\n    const MAX: usize;\n    fn capped(&self, value: usize) -> usize;\n}\n\npub struct Small;\n\nimpl Limits for Small {\n    fn capped(&self, value: usize) -> usize {\n        value.min(8)\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A trait with an associated constant.\n\npub trait Limits {\n    const MAX: usize;\n    fn capped(&self, value: usize) -> usize;\n}\n\npub struct Small;\n\nimpl Limits for Small {\n    fn capped(&self, value: usize) -> usize {\n        value.min(Self::MAX)\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-12-associated-const--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A trait with an associated constant.\n\npub trait Limits {\n    const MAX: usize;\n    fn capped(&self, value: usize) -> usize;\n}\n\npub struct Small;\n\nimpl Limits for Small {\n    const MAX: usize = 8;\n\n    fn capped(&self, value: usize) -> usize {\n        value.min(Self::MAX)\n    }\n}",
+    "replace": "//! A trait with an associated constant.\n\npub trait Limits {\n    const MAX: usize;\n    fn capped(&self, value: usize) -> usize;\n}\n\npub struct Small;\n\nimpl Limits for Small {\n    const MAX: usize = 9;\n\n    fn capped(&self, value: usize) -> usize {\n        value.min(Self::MAX)\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-12-associated-const (tree d81a052e0ac486d82ab28de872e2a028b4da1184abe334f3f2dde46006e47b83) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

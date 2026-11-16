@@ -1,0 +1,75 @@
+{
+  "capability": "Call a top-level function that version 2 renamed. (format: diagnostic-identification)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-15-function-renamed",
+    "source_split": "scored",
+    "source_tree_sha256": "2dfe8858d6514d98c19cdb768b989d602383adab754292bc5f09b1bdd4ebd23f",
+    "target": "E0425"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable more than once at a time",
+        "id": "E0499"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0425"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as immutable while it is also borrowed as mutable",
+        "id": "E0502"
+      }
+    ]
+  },
+  "id": "migrate-15-function-renamed--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value * 2.0",
+    "replace": "value + 2.0"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-15-function-renamed (tree 2dfe8858d6514d98c19cdb768b989d602383adab754292bc5f09b1bdd4ebd23f) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

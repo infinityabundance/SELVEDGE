@@ -1,0 +1,87 @@
+{
+  "capability": "Use scoped threads for borrows that cannot satisfy a 'static spawn. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "operator-inversion",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 12,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-08-borrowed-thread",
+    "source_split": "scored",
+    "source_tree_sha256": "d1f8445fc6b9bfc8a2a8d4bca49d81f53c1920f989cf53a630bd9705aa0037fa",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    thread::scope(|scope| {\n        let handles: Vec<_> = values\n            .chunks(2)\n            .map(|chunk| scope.spawn(move || chunk.iter().count() as i32))\n            .collect();\n        handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n    })\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    let handles: Vec<_> = values\n        .chunks(2)\n        .map(|chunk| thread::spawn(move || chunk.iter().sum::<i32>()))\n        .collect();\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    thread::scope(|scope| {\n        let handles: Vec<_> = values\n            .chunks(2)\n            .map(|chunk| scope.spawn(move && chunk.iter().sum::<i32>()))\n            .collect();\n        handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n    })\n}\n",
+        "kind": "operator-inversion",
+        "label": "C",
+        "provenance": "the disjunction tightened to a conjunction (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    thread::scope(|scope| {\n        let handles: Vec<_> = values\n            .chunks(2)\n            .map(|chunk| scope.spawn(move || chunk.iter().sum::<i32>()))\n            .collect();\n        handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n    })\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-08-borrowed-thread--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0521"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    thread::scope(|scope| {\n        let handles: Vec<_> = values\n            .chunks(2)\n            .map(|chunk| scope.spawn(move || chunk.iter().sum::<i32>()))\n            .collect();\n        handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n    })\n}",
+    "replace": "//! Sum two-element chunks in parallel.\n\nuse std::thread;\n\npub fn sum_parallel(values: &[i32]) -> i32 {\n    thread::scope(|scope| {\n        let handles: Vec<_> = values\n            .chunks(2)\n            .map(|chunk| scope.spawn(move || chunk.iter().count() as i32))\n            .collect();\n        handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n    })\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-08-borrowed-thread (tree d1f8445fc6b9bfc8a2a8d4bca49d81f53c1920f989cf53a630bd9705aa0037fa) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

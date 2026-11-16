@@ -1,0 +1,94 @@
+{
+  "capability": "Match the trait method's generic parameter list exactly. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-14-extra-type-parameter",
+    "source_split": "scored",
+    "source_tree_sha256": "2be2506c20880277eda426f0a0a54b46e5a5ab50fa74b081ca9a496382f9e9f9",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! An encoder trait. The crate does not build: the impl declares a type\n//! parameter the trait does not have.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode<T>(&self) -> String {\n        self.text.clone()\n    }\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! An encoder trait.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode<T>(&self) -> String {\n        self.text.clone()\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! An encoder trait.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode(&self) -> String {\n        self.text\n    }\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the clone dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! An encoder trait.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode(&self) -> String {\n        self.text.clone()\n    }\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! An encoder trait.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode(&self) -> String {\n        self.text.to_uppercase()\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-14-extra-type-parameter--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0049"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! An encoder trait.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode(&self) -> String {\n        self.text.clone()\n    }\n}",
+    "replace": "//! An encoder trait.\n\npub trait Encode {\n    fn encode(&self) -> String;\n}\n\npub struct Doc {\n    pub text: String,\n}\n\nimpl Encode for Doc {\n    fn encode(&self) -> String {\n        self.text.to_uppercase()\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-14-extra-type-parameter (tree 2be2506c20880277eda426f0a0a54b46e5a5ab50fa74b081ca9a496382f9e9f9) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,70 @@
+{
+  "capability": "Return owned data when the producing module owns the buffer. (format: diagnostic-identification)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-12-returned-local-reference",
+    "source_split": "scored",
+    "source_tree_sha256": "d1aa89a0120f38922b5b657d1a5ba36f34611f0c061a32ca744e48bea52335da",
+    "target": "E0515"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      }
+    ]
+  },
+  "id": "repo-12-returned-local-reference--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/repo-12-returned-local-reference (tree d1aa89a0120f38922b5b657d1a5ba36f34611f0c061a32ca744e48bea52335da) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,75 @@
+{
+  "capability": "Add a lifetime parameter to a borrowing struct and its impl. (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-09-struct-lifetime",
+    "source_split": "scored",
+    "source_tree_sha256": "fc38c23479abeb54eaaf63c4127b3116de809efdfad0a1d12b172bb7ebd93499",
+    "target": "E0106"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as immutable while it is also borrowed as mutable",
+        "id": "E0502"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      }
+    ]
+  },
+  "id": "borrow-09-struct-lifetime--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0106"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.text",
+    "replace": "\"x\""
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-09-struct-lifetime (tree fc38c23479abeb54eaaf63c4127b3116de809efdfad0a1d12b172bb7ebd93499) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

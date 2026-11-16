@@ -1,0 +1,101 @@
+{
+  "capability": "Rename a shared struct field without changing its callers' contract. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 6,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-07-field-rename",
+    "source_split": "scored",
+    "source_tree_sha256": "c730685a46231e28b0752749833fa88420cee9d9d9dbee055e2673d5b42b57c9",
+    "target": "src/config.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/config.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.to_string(), retries }\n    }\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.to_uppercase(), retries }\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shared configuration.\n\npub struct Config {\n    pub source: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(source: &str, retries: u32) -> Self {\n        Config { source: source.to_string(), retries }\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shared configuration.\n\npub struct Config {\n    pub source: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.to_string(), retries }\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(source: &str, retries: u32) -> Self {\n        Config { source: source.to_string(), retries }\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.as_str(), retries }\n    }\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/config.rs"
+  },
+  "id": "repo-07-field-rename--file--src-config-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0609"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/config.rs",
+    "find": "//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.to_string(), retries }\n    }\n}",
+    "replace": "//! Shared configuration.\n\npub struct Config {\n    pub path: String,\n    pub retries: u32,\n}\n\nimpl Config {\n    pub fn new(path: &str, retries: u32) -> Self {\n        Config { path: path.to_uppercase(), retries }\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-07-field-rename (tree c730685a46231e28b0752749833fa88420cee9d9d9dbee055e2673d5b42b57c9) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

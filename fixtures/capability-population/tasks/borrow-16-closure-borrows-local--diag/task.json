@@ -1,0 +1,75 @@
+{
+  "capability": "Move captured state into a closure that outlives the call. (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-16-closure-borrows-local",
+    "source_split": "scored",
+    "source_tree_sha256": "bcd299cc42ea5f684c0375c4352419068f25a7fb66477d890f13cbfa14919039",
+    "target": "E0373"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as immutable while it is also borrowed as mutable",
+        "id": "E0502"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0373"
+      }
+    ]
+  },
+  "id": "borrow-16-closure-borrows-local--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0373"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value += 1;",
+    "replace": "value += 2;"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-16-closure-borrows-local (tree bcd299cc42ea5f684c0375c4352419068f25a7fb66477d890f13cbfa14919039) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

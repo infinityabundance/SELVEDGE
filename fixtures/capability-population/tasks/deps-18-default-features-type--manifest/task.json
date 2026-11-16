@@ -1,0 +1,67 @@
+{
+  "capability": "Correct a dependency field whose value has the wrong TOML type. (format: patch-selection)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-fix",
+    "family": "patch-manifest",
+    "fix_lines": 2,
+    "format": "patch-selection",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "deps-18-default-features-type",
+    "source_split": "scored",
+    "source_tree_sha256": "f03e154ff28c61421e892dbc1487b2a75c54469353dd4cfa17647212c0f1c514",
+    "target": "Cargo.toml"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "[package]\nname = \"deps_18_default_features_type\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", default-features = false }\n",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "[package]\nname = \"deps_18_default_features_type\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\n",
+        "label": "B",
+        "provenance": "a dependency removed (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_18_default_features_type\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", default-features = \"false\" }\n",
+        "label": "C",
+        "provenance": "the source's initial manifest (wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "Cargo.toml"
+  },
+  "id": "deps-18-default-features-type--manifest",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "expected a boolean"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "codec = { path = \"dep\", default-features = false }\n",
+    "replace": "codec = { path = \"dep\", default-features = \"false\" }\n"
+  },
+  "prompt_intro": "Choose the one replacement manifest that makes the crate build and its tests pass. The source code is already correct; only the manifest is missing the capability the code needs.",
+  "provenance": "derived from fixtures/capability/tasks/deps-18-default-features-type (tree f03e154ff28c61421e892dbc1487b2a75c54469353dd4cfa17647212c0f1c514) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

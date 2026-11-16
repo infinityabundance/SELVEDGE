@@ -1,0 +1,93 @@
+{
+  "capability": "Migrate to an Option-returning parse API and preserve the caller's error text. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "migrate-01-signature",
+    "source_split": "scored",
+    "source_tree_sha256": "e881374197488b7ff8a32664e28239e4b050bfc4d8fb9f28a7dbbee8657aff03",
+    "target": "load"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".as_str())\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid\".to_string())\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn load(input: &str) -> Result<f64, String> {\n    let measurement = units::parse(input).map_err(|error| error.to_string())?;\n    Ok(measurement.value)\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .filter(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "load",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-01-signature--fn--src-lib-rs--load",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}",
+    "replace": "pub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid\".to_string())\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `load` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-01-signature (tree e881374197488b7ff8a32664e28239e4b050bfc4d8fb9f28a7dbbee8657aff03) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

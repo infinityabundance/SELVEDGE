@@ -1,0 +1,101 @@
+{
+  "capability": "Honour the documented order when a clamp's bounds are inverted. (format: patch-selection; family: patch-function)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 3,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-13-inverted-clamp",
+    "source_split": "scored",
+    "source_tree_sha256": "9378016da562a4993cc62a75c8c0b6958215ffd431af6041dd6d57d7cc9ff910",
+    "target": "clamp"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if !(low > high) {\n        return low;\n    }\n    value.max(low).min(high)\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the guard negated (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return low;\n    }\n    value.max(low).min(high)\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return high;\n    }\n    value.max(low).min(high)\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    value.max(low).min(high)\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return low;\n    }\n    value.max(low).max(high)\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the minimum replaced by a maximum (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return low;\n    }\n    value.min(low).min(high)\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "the maximum replaced by a minimum (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "clamp",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "semantic-13-inverted-clamp--fn--src-lib-rs--clamp",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return low;\n    }\n    value.max(low).min(high)\n}",
+    "replace": "pub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return high;\n    }\n    value.max(low).min(high)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `clamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-13-inverted-clamp (tree 9378016da562a4993cc62a75c8c0b6958215ffd431af6041dd6d57d7cc9ff910) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

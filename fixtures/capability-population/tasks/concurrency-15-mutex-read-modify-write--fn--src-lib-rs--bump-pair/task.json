@@ -1,0 +1,94 @@
+{
+  "capability": "Hold the mutex across a read-modify-write instead of around each half. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 3,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-15-mutex-read-modify-write",
+    "source_split": "scored",
+    "source_tree_sha256": "3ec9785be79aadee3a940eda7585392e5cca6c79499085449f8e53f875ab4804",
+    "target": "bump_pair"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard -= 1;\n            });\n        }\n    });\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the accumulation reversed (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 1..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard += 1;\n            });\n        }\n    });\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard += 1;\n            });\n        }\n    });\n}",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard += 2;\n            });\n        }\n    });\n}",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                let value = { *counter.lock().unwrap() };\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard = value + 1;\n            });\n        }\n    });\n}",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "bump_pair",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-15-mutex-read-modify-write--fn--src-lib-rs--bump-pair",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard += 1;\n            });\n        }\n    });\n}",
+    "replace": "pub fn bump_pair(counter: &Mutex<u64>) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                let mut guard = counter.lock().unwrap();\n                *guard += 2;\n            });\n        }\n    });\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `bump_pair` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-15-mutex-read-modify-write (tree 3ec9785be79aadee3a940eda7585392e5cca6c79499085449f8e53f875ab4804) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,85 @@
+{
+  "capability": "Hold one interior borrow while reading and writing a ledger. (format: patch-selection; family: patch-function)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-18-refcell-double-borrow",
+    "source_split": "scored",
+    "source_tree_sha256": "bfee97f0887c21688f7598aa5df74b592edce2cd698064025c3d8675aaaeb0c5",
+    "target": "entries"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn entries(&self) -> Vec<i64> {\n        Self { entries: RefCell::new(Vec::new()) }\n    }",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the body of the sibling function `new` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn entries(&self) -> Vec<i64> {\n        let mut entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        entries.push(total + value);\n    }",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the body of the sibling function `record` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow()\n    }",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the clone dropped (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "entries",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "borrow-18-refcell-double-borrow--fn--src-lib-rs--entries-2",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }",
+    "replace": "pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow()\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `entries` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-18-refcell-double-borrow (tree bfee97f0887c21688f7598aa5df74b592edce2cd698064025c3d8675aaaeb0c5) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

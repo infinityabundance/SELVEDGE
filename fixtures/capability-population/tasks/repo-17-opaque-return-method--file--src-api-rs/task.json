@@ -1,0 +1,86 @@
+{
+  "capability": "Call a trait method on an opaque return type instead of an absent one. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-17-opaque-return-method",
+    "source_split": "scored",
+    "source_tree_sha256": "540c992746ff34ecb9d2fca89e89382dda39b07c33b9ab10ee9c1c58a0087d8e",
+    "target": "src/api.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/api.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! The public store API.\n\nuse crate::store::{Map, Store};\n\npub fn open() -> impl Store {\n    Map { value: 7 }\n}\n\npub fn peek() -> Option<u8> {\n    open().get(1)\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The public store API. This does not compile: `first` is not a trait\n//! method, so it is not visible on the opaque return type.\n\nuse crate::store::{Map, Store};\n\npub fn open() -> impl Store {\n    Map { value: 7 }\n}\n\npub fn peek() -> Option<u8> {\n    open().first()\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The public store API.\n\nuse crate::store::{Map, Store};\n\npub fn open() -> impl Store {\n    Map { value: 7 }\n}\n\npub fn peek() -> Option<u8> {\n    open().first()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The public store API.\n\nuse crate::store::{Map, Store};\n\npub fn open() -> impl Store {\n    Map { value: 7 }\n}\n\npub fn peek() -> Option<u8> {\n    open().get(0)\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/api.rs"
+  },
+  "id": "repo-17-opaque-return-method--file--src-api-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/api.rs",
+    "find": "//! The public store API.\n\nuse crate::store::{Map, Store};\n\npub fn open() -> impl Store {\n    Map { value: 7 }\n}\n\npub fn peek() -> Option<u8> {\n    open().get(0)\n}",
+    "replace": "//! The public store API.\n\nuse crate::store::{Map, Store};\n\npub fn open() -> impl Store {\n    Map { value: 7 }\n}\n\npub fn peek() -> Option<u8> {\n    open().get(1)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-17-opaque-return-method (tree 540c992746ff34ecb9d2fca89e89382dda39b07c33b9ab10ee9c1c58a0087d8e) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

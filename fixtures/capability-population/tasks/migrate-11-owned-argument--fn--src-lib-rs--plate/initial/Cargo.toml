@@ -1,0 +1,13 @@
+[package]
+name = "migrate_11_owned_argument"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+nameplate = { path = "dep" }

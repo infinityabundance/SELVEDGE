@@ -1,0 +1,86 @@
+{
+  "capability": "Refill proportionally to elapsed time and respect the capacity bound. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 16,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-09-token-bucket-refill",
+    "source_split": "calibration",
+    "source_tree_sha256": "037cbae95f92dad470f01a87cfa23c1174dc03903009f765e31dbb8df248a763",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Token-bucket refill, currently whole-second and uncapped.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms / 1000) * rate_per_sec as u64;\n    tokens.saturating_add(gained as u32)\n}\n\n#[cfg(test)]\nmod tests {\n    use super::refill;\n\n    #[test]\n    fn one_second_refills_the_rate() {\n        assert_eq!(refill(0, 1000, 5, 10), 5);\n    }\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Proportional, capped token-bucket refill.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms / 1000) * rate_per_sec as u64;\n    tokens.saturating_add(gained as u32)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Proportional, capped token-bucket refill.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity)\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Proportional, capped token-bucket refill.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity.saturating_sub(1))\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-09-token-bucket-refill--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Proportional, capped token-bucket refill.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity)\n}",
+    "replace": "//! Proportional, capped token-bucket refill.\n\npub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity.saturating_sub(1))\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-09-token-bucket-refill (tree 037cbae95f92dad470f01a87cfa23c1174dc03903009f765e31dbb8df248a763) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Replace a removed constructor with the builder API, including its error path. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 8,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "migrate-02-builder",
+    "source_split": "scored",
+    "source_tree_sha256": "edb2a844a11b490f474211838b6ee4223d4953af104bcbc82c8f6b13842fad63",
+    "target": "connect"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    let client = client::Client::new(host, port);\n    Ok(client.endpoint(path))\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .filter(|client| client.endpoint(path))\n        .map_err(|_| \"empty host\".to_string())\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"empty host\".as_str())\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"empty host\".to_string())\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"bad host\".to_string())\n}",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "connect",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-02-builder--fn--src-lib-rs--connect",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"empty host\".to_string())\n}",
+    "replace": "pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"bad host\".to_string())\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `connect` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-02-builder (tree edb2a844a11b490f474211838b6ee4223d4953af104bcbc82c8f6b13842fad63) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

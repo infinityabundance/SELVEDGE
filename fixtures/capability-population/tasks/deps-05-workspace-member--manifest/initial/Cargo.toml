@@ -1,0 +1,13 @@
+[package]
+name = "deps_05_workspace_member"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep", "missing-tool"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+codec = { path = "dep" }

@@ -1,0 +1,86 @@
+{
+  "capability": "Encode a literal plus separately from a space in a query value. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 14,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "semantic-14-url-encode-plus",
+    "source_split": "scored",
+    "source_tree_sha256": "f667a46c6311fcbcbb8265a78091cc59c86fc3c807740a5493d1f2f05f260896",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Query-value encoding.\n\npub fn encode(text: &str) -> String {\n    text.replace(' ', \"+\")\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Query-value encoding.\n\npub fn encode(text: &str) -> String {\n    text.replace('+', \"%2B\").replace(' ', \"+\")\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Query-value encoding.\n\npub fn encode(text: &str) -> String {\n    text.replace('+', \"%2b\").replace(' ', \"+\")\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Query-value encoding with the standard space replacement.\n\npub fn encode(text: &str) -> String {\n    text.replace(' ', \"+\")\n}\n\n#[cfg(test)]\nmod tests {\n    use super::encode;\n\n    #[test]\n    fn visible_space_becomes_plus() {\n        assert_eq!(encode(\"a b\"), \"a+b\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-14-url-encode-plus--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Query-value encoding.\n\npub fn encode(text: &str) -> String {\n    text.replace('+', \"%2B\").replace(' ', \"+\")\n}",
+    "replace": "//! Query-value encoding.\n\npub fn encode(text: &str) -> String {\n    text.replace('+', \"%2b\").replace(' ', \"+\")\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-14-url-encode-plus (tree f667a46c6311fcbcbb8265a78091cc59c86fc3c807740a5493d1f2f05f260896) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

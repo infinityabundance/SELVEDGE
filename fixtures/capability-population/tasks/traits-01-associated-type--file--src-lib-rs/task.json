@@ -1,0 +1,93 @@
+{
+  "capability": "Complete an impl that omits an associated type and keep the generic helper valid. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "operator-inversion",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-01-associated-type",
+    "source_split": "scored",
+    "source_tree_sha256": "364100cb161952947e3d87d33a242bc2909cea3bced3152af98ada9c9a4c8f93",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 0,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(1).unwrap_or(0)\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}\n",
+        "kind": "operator-inversion",
+        "label": "D",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(value, id);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "two call arguments swapped (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-01-associated-type--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}",
+    "replace": "//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(1).unwrap_or(0)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-01-associated-type (tree 364100cb161952947e3d87d33a242bc2909cea3bced3152af98ada9c9a4c8f93) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,86 @@
+{
+  "capability": "Widen a module-private helper to crate visibility for a sibling module. (format: patch-selection; family: patch-function)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-04-module-visibility",
+    "source_split": "scored",
+    "source_tree_sha256": "57de02aaac779ae7ead318e5175d3cfa68f88f458872c85ab7b1dc2ad83f1a0c",
+    "target": "load"
+  },
+  "difficulty": "easy",
+  "entry": "src/model.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(1) })\n        .collect()\n}",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .filter(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "load",
+    "kind": "patch-selection",
+    "template": "src/model.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "repo-04-module-visibility--fn--src-model-rs--load",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/model.rs",
+    "find": "pub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}",
+    "replace": "pub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(1) })\n        .collect()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `load` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-04-module-visibility (tree 57de02aaac779ae7ead318e5175d3cfa68f88f458872c85ab7b1dc2ad83f1a0c) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

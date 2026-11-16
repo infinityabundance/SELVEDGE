@@ -1,0 +1,93 @@
+{
+  "capability": "Find the last index of a duplicated value with a correct bound. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 22,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-10-last-duplicate-index",
+    "source_split": "calibration",
+    "source_tree_sha256": "bbb351249b8089b7fe64f9766e9959e54d266bf43ef6fe1505187e4dbf5d8612",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Last index of a value.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] == target {\n            return Some(middle);\n        }\n        if values[middle] < target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] == target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Last index of a value.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    None\n}\n\n#[cfg(test)]\nmod tests {\n    use super::last_index;\n\n    #[test]\n    fn visible_last_position() {\n        assert_eq!(last_index(&[1, 2, 2], 2), Some(2));\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Last index of a value.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] == target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Last index of a value.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] != target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Last index of a value. The visible test fails: the search stops at\n//! the first match.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] == target {\n            return Some(middle);\n        }\n        if values[middle] < target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    None\n}\n\n#[cfg(test)]\nmod tests {\n    use super::last_index;\n\n    #[test]\n    fn visible_last_position() {\n        assert_eq!(last_index(&[1, 2, 2], 2), Some(2));\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-10-last-duplicate-index--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Last index of a value.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] == target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}",
+    "replace": "//! Last index of a value.\n\npub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] != target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-10-last-duplicate-index (tree bbb351249b8089b7fe64f9766e9959e54d266bf43ef6fe1505187e4dbf5d8612) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

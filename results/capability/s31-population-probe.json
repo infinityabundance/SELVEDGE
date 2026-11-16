@@ -1,0 +1,3685 @@
+{
+  "by_category": {
+    "api-migration": {
+      "diagnostic_capacity": 18,
+      "file_patch_capacity": 18,
+      "function_patch_capacity": 19,
+      "hidden_tests": 56,
+      "manifest_patch_capacity": 0,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 37
+    },
+    "concurrency": {
+      "diagnostic_capacity": 5,
+      "file_patch_capacity": 18,
+      "function_patch_capacity": 24,
+      "hidden_tests": 60,
+      "manifest_patch_capacity": 0,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 42
+    },
+    "dependency-compat": {
+      "diagnostic_capacity": 5,
+      "file_patch_capacity": 4,
+      "function_patch_capacity": 12,
+      "hidden_tests": 52,
+      "manifest_patch_capacity": 16,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 32
+    },
+    "failing-test": {
+      "diagnostic_capacity": 0,
+      "file_patch_capacity": 18,
+      "function_patch_capacity": 18,
+      "hidden_tests": 75,
+      "manifest_patch_capacity": 0,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 36
+    },
+    "lifetime-borrow": {
+      "diagnostic_capacity": 16,
+      "file_patch_capacity": 18,
+      "function_patch_capacity": 29,
+      "hidden_tests": 60,
+      "manifest_patch_capacity": 0,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 47
+    },
+    "repo-scale": {
+      "diagnostic_capacity": 18,
+      "file_patch_capacity": 24,
+      "function_patch_capacity": 27,
+      "hidden_tests": 61,
+      "manifest_patch_capacity": 0,
+      "multi_file": 6,
+      "sources": 18,
+      "total_capacity": 51
+    },
+    "semantic-repair": {
+      "diagnostic_capacity": 0,
+      "file_patch_capacity": 18,
+      "function_patch_capacity": 18,
+      "hidden_tests": 76,
+      "manifest_patch_capacity": 0,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 36
+    },
+    "trait-impl": {
+      "diagnostic_capacity": 18,
+      "file_patch_capacity": 18,
+      "function_patch_capacity": 38,
+      "hidden_tests": 59,
+      "manifest_patch_capacity": 0,
+      "multi_file": 0,
+      "sources": 18,
+      "total_capacity": 56
+    }
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0515",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "label"
+          ],
+          "function_count": 1,
+          "functions": [
+            "label"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 2,
+      "id": "borrow-01-local-reference",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0502",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "push_and_report"
+          ],
+          "function_count": 1,
+          "functions": [
+            "push_and_report"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-02-mutate-while-borrowed",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0597",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "first",
+            "new"
+          ],
+          "function_count": 3,
+          "functions": [
+            "first",
+            "new",
+            "replace"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-03-self-referential-window",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0502",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "drop_long_keys"
+          ],
+          "function_count": 1,
+          "functions": [
+            "drop_long_keys"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-04-iterator-invalidation",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0716",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "label"
+          ],
+          "function_count": 2,
+          "functions": [
+            "first_word",
+            "label"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-05-temporary-lifetime",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "easy",
+      "error_code": "E0505",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "split_first"
+          ],
+          "function_count": 1,
+          "functions": [
+            "split_first"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-06-move-while-borrowed",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0499",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "bump_twice"
+          ],
+          "function_count": 4,
+          "functions": [
+            "bump_twice",
+            "new",
+            "value",
+            "value_mut"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-07-overlapping-mut-borrows",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0597",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "evens"
+          ],
+          "function_count": 1,
+          "functions": [
+            "evens"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-08-iterator-outlives-local",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0106",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "new"
+          ],
+          "function_count": 2,
+          "functions": [
+            "new",
+            "text"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-09-struct-lifetime",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "easy",
+      "error_code": "E0506",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "compare_with_last"
+          ],
+          "function_count": 1,
+          "functions": [
+            "compare_with_last"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-10-assign-while-borrowed",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "easy",
+      "error_code": "E0507",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "sorted_copy"
+          ],
+          "function_count": 1,
+          "functions": [
+            "sorted_copy"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-11-move-out-of-borrowed",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0509",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "into_data"
+          ],
+          "function_count": 3,
+          "functions": [
+            "drop",
+            "into_data",
+            "new"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-12-move-out-of-drop-type",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "easy",
+      "error_code": "E0596",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "stamp"
+          ],
+          "function_count": 1,
+          "functions": [
+            "stamp"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-13-mutate-through-shared",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "easy",
+      "error_code": "E0382",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "join_then_measure"
+          ],
+          "function_count": 1,
+          "functions": [
+            "join_then_measure"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-14-borrow-after-move",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0515",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "seed"
+          ],
+          "function_count": 1,
+          "functions": [
+            "seed"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 3,
+      "id": "borrow-15-return-local-table-entry",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": "E0373",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "make_counter"
+          ],
+          "function_count": 1,
+          "functions": [
+            "make_counter"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "borrow-16-closure-borrows-local",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "longer"
+          ],
+          "function_count": 1,
+          "functions": [
+            "longer"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-17-two-input-lifetimes",
+      "manifest_differs": false
+    },
+    {
+      "category": "lifetime-borrow",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "record"
+          ],
+          "function_count": 3,
+          "functions": [
+            "entries",
+            "new",
+            "record"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "borrow-18-refcell-double-borrow",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "timeout",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "lock_pair",
+            "transfer_a_to_b",
+            "transfer_b_to_a"
+          ],
+          "function_count": 4,
+          "functions": [
+            "lock_pair",
+            "run_pair",
+            "transfer_a_to_b",
+            "transfer_b_to_a"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-01-lock-order-deadlock",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "bump_all",
+            "bump_pair"
+          ],
+          "function_count": 2,
+          "functions": [
+            "bump_all",
+            "bump_pair"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-02-lost-update",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "total_in_threads"
+          ],
+          "function_count": 1,
+          "functions": [
+            "total_in_threads"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "concurrency-03-send-boundary",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "increment_pair"
+          ],
+          "function_count": 1,
+          "functions": [
+            "increment_pair"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-04-mutex-critical-section",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "run_workers"
+          ],
+          "function_count": 1,
+          "functions": [
+            "run_workers"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "concurrency-05-swallowed-panic",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "push_from_thread"
+          ],
+          "function_count": 1,
+          "functions": [
+            "push_from_thread"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-06-guard-crosses-thread",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "send_all"
+          ],
+          "function_count": 1,
+          "functions": [
+            "send_all"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-07-silent-channel-drop",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "hard",
+      "error_code": "E0521",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "sum_parallel"
+          ],
+          "function_count": 1,
+          "functions": [
+            "sum_parallel"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "concurrency-08-borrowed-thread",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "hard",
+      "error_code": "E0382",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "square_sum"
+          ],
+          "function_count": 1,
+          "functions": [
+            "square_sum"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "concurrency-09-shared-input",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "timeout",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "wait_for_ready"
+          ],
+          "function_count": 2,
+          "functions": [
+            "run",
+            "wait_for_ready"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-10-condvar-without-predicate",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "easy",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "count_with"
+          ],
+          "function_count": 1,
+          "functions": [
+            "count_with"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-11-cell-not-sync",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "easy",
+      "error_code": "E0382",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "chunked_sum"
+          ],
+          "function_count": 1,
+          "functions": [
+            "chunked_sum"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-12-shared-arc-moved",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "accumulate"
+          ],
+          "function_count": 1,
+          "functions": [
+            "accumulate"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 3,
+      "id": "concurrency-13-atomic-fetch-or",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "record_with_panic"
+          ],
+          "function_count": 1,
+          "functions": [
+            "record_with_panic"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-14-poisoned-mutex",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "bump_many",
+            "bump_pair"
+          ],
+          "function_count": 2,
+          "functions": [
+            "bump_many",
+            "bump_pair"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-15-mutex-read-modify-write",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "timeout",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "read_twice"
+          ],
+          "function_count": 1,
+          "functions": [
+            "read_twice"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "concurrency-16-non-reentrant-lock",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "claim"
+          ],
+          "function_count": 1,
+          "functions": [
+            "claim"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "concurrency-17-compare-exchange-claim",
+      "manifest_differs": false
+    },
+    {
+      "category": "concurrency",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "timeout",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "sum_nonzero"
+          ],
+          "function_count": 1,
+          "functions": [
+            "sum_nonzero"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "concurrency-18-barrier-early-return",
+      "manifest_differs": false
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "scale_percent"
+          ],
+          "function_count": 2,
+          "functions": [
+            "dependency_label",
+            "scale_percent"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "deps-01-version-requirement",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "describe",
+            "next_value"
+          ],
+          "function_count": 2,
+          "functions": [
+            "describe",
+            "next_value"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-02-edition-2024",
+      "manifest_differs": false
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": "E0425",
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 2,
+      "id": "deps-03-optional-feature",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": false,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "encode"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-04-unknown-feature",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": false,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "encode"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-05-workspace-member",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": "E0133",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "read_byte"
+          ],
+          "function_count": 1,
+          "functions": [
+            "read_byte"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-06-edition-unsafe-block",
+      "manifest_differs": false
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": false,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "selected"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-07-feature-conflict",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": false,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "normalise"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-08-renamed-package",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "hard",
+      "error_code": "E0425",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": false,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "render"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-09-disable-default-features",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-10-edition-unsafe-attribute",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": "E0433",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "codec_total"
+          ],
+          "function_count": 1,
+          "functions": [
+            "codec_total"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-11-lib-name-mismatch",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": "E0432",
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 1,
+      "id": "deps-12-edition-2015-paths",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-13-wrong-lib-path",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-14-workspace-inheritance",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-15-missing-package-name",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": false,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "codec_fold"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 3,
+      "id": "deps-16-missing-dependency-dir",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-17-invalid-package-name",
+      "manifest_differs": true
+    },
+    {
+      "category": "dependency-compat",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "compile_error",
+      "files": [],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "deps-18-default-features-type",
+      "manifest_differs": true
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "chunk_count"
+          ],
+          "function_count": 1,
+          "functions": [
+            "chunk_count"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "failing-01-chunk-boundary",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "max_gap"
+          ],
+          "function_count": 1,
+          "functions": [
+            "max_gap"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-02-empty-input",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "running_total"
+          ],
+          "function_count": 1,
+          "functions": [
+            "running_total"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-03-overflow-boundary",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "sort_ascending"
+          ],
+          "function_count": 1,
+          "functions": [
+            "sort_ascending"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-04-nan-ordering",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "range_sum"
+          ],
+          "function_count": 1,
+          "functions": [
+            "range_sum"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-05-inclusive-range",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "percent_of"
+          ],
+          "function_count": 1,
+          "functions": [
+            "percent_of"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "failing-06-integer-precision",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "common_prefix"
+          ],
+          "function_count": 1,
+          "functions": [
+            "common_prefix"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "failing-07-common-prefix",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "lower_bound"
+          ],
+          "function_count": 1,
+          "functions": [
+            "lower_bound"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 6,
+      "id": "failing-08-lower-bound",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "next"
+          ],
+          "function_count": 1,
+          "functions": [
+            "next"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-09-state-cycle",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "last_index"
+          ],
+          "function_count": 1,
+          "functions": [
+            "last_index"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-10-last-duplicate-index",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "wrap"
+          ],
+          "function_count": 1,
+          "functions": [
+            "wrap"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-11-wrap-counts-the-space",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "to_roman"
+          ],
+          "function_count": 1,
+          "functions": [
+            "to_roman"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "failing-12-roman-subtractive",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "format_duration"
+          ],
+          "function_count": 1,
+          "functions": [
+            "format_duration"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-13-duration-minutes-field",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "days_in_month"
+          ],
+          "function_count": 1,
+          "functions": [
+            "days_in_month"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 4,
+      "id": "failing-14-century-leap-year",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "encode"
+          ],
+          "function_count": 1,
+          "functions": [
+            "encode"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-15-run-length-count",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "merge"
+          ],
+          "function_count": 1,
+          "functions": [
+            "merge"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-16-merge-adjacent",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "page_bounds"
+          ],
+          "function_count": 1,
+          "functions": [
+            "page_bounds"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "failing-17-partial-last-page",
+      "manifest_differs": false
+    },
+    {
+      "category": "failing-test",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "shift"
+          ],
+          "function_count": 1,
+          "functions": [
+            "shift"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "failing-18-negative-caesar-shift",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "load"
+          ],
+          "function_count": 1,
+          "functions": [
+            "load"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-01-signature",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "connect"
+          ],
+          "function_count": 1,
+          "functions": [
+            "connect"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 2,
+      "id": "migrate-02-builder",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "from"
+          ],
+          "function_count": 2,
+          "functions": [
+            "count_fields",
+            "from"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-03-error-conversion",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "render_doc"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 2,
+      "id": "migrate-04-trait-import",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "hard",
+      "error_code": "E0425",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "names"
+          ],
+          "function_count": 1,
+          "functions": [
+            "names"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "migrate-05-iterator-api",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "hard",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "read"
+          ],
+          "function_count": 1,
+          "functions": [
+            "read"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-06-error-variant",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "render"
+          ],
+          "function_count": 1,
+          "functions": [
+            "render"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "migrate-07-display-method",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0308",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "stem_of"
+          ],
+          "function_count": 1,
+          "functions": [
+            "stem_of"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "migrate-08-path-api",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0596",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "count_to"
+          ],
+          "function_count": 1,
+          "functions": [
+            "count_to"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-09-mutable-receiver",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "running_total"
+          ],
+          "function_count": 1,
+          "functions": [
+            "running_total"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 3,
+      "id": "migrate-10-method-renamed",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0308",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "plate"
+          ],
+          "function_count": 1,
+          "functions": [
+            "plate"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-11-owned-argument",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0369",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "next_count"
+          ],
+          "function_count": 1,
+          "functions": [
+            "next_count"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-12-option-result-change",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0107",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "make_counter"
+          ],
+          "function_count": 1,
+          "functions": [
+            "make_counter"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "migrate-13-const-generic",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0004",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "code"
+          ],
+          "function_count": 1,
+          "functions": [
+            "code"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-14-new-enum-variant",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0425",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "double"
+          ],
+          "function_count": 1,
+          "functions": [
+            "double"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-15-function-renamed",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0061",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "render_label"
+          ],
+          "function_count": 1,
+          "functions": [
+            "render_label"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-16-required-config-argument",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "easy",
+      "error_code": "E0609",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "doubled"
+          ],
+          "function_count": 1,
+          "functions": [
+            "doubled"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-17-field-renamed",
+      "manifest_differs": false
+    },
+    {
+      "category": "api-migration",
+      "difficulty": "medium",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "scale_units"
+          ],
+          "function_count": 1,
+          "functions": [
+            "scale_units"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "migrate-18-conversion-bound",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0106",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "cheapest_name"
+          ],
+          "function_count": 1,
+          "functions": [
+            "cheapest_name"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [
+            "cheapest"
+          ],
+          "function_count": 1,
+          "functions": [
+            "cheapest"
+          ],
+          "in_initial": true,
+          "path": "src/query.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [
+            "describe_cheapest"
+          ],
+          "function_count": 1,
+          "functions": [
+            "describe_cheapest"
+          ],
+          "in_initial": true,
+          "path": "src/report.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "repo-01-lifetime-propagation",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "fmt",
+            "from"
+          ],
+          "function_count": 2,
+          "functions": [
+            "fmt",
+            "from"
+          ],
+          "in_initial": true,
+          "path": "src/error.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-02-error-propagation",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "mean_floor"
+          ],
+          "function_count": 1,
+          "functions": [
+            "mean_floor"
+          ],
+          "in_initial": true,
+          "path": "src/stats.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "as_i64"
+          ],
+          "in_initial": true,
+          "path": "src/traits.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "repo-03-generic-bounds",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "easy",
+      "error_code": "E0603",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "load"
+          ],
+          "function_count": 1,
+          "functions": [
+            "load"
+          ],
+          "in_initial": true,
+          "path": "src/model.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "repo-04-module-visibility",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "hard",
+      "error_code": "E0004",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "describe"
+          ],
+          "function_count": 1,
+          "functions": [
+            "describe"
+          ],
+          "in_initial": true,
+          "path": "src/audit.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [
+            "handle"
+          ],
+          "function_count": 1,
+          "functions": [
+            "handle"
+          ],
+          "in_initial": true,
+          "path": "src/handler.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-05-variant-propagation",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0432",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "describe"
+          ],
+          "in_initial": true,
+          "path": "src/report.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "fetch"
+          ],
+          "in_initial": true,
+          "path": "src/service.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "repo-06-moved-module-import",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "easy",
+      "error_code": "E0609",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "new"
+          ],
+          "function_count": 1,
+          "functions": [
+            "new"
+          ],
+          "in_initial": true,
+          "path": "src/config.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "repo-07-field-rename",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "hard",
+      "error_code": "E0594",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "run"
+          ],
+          "function_count": 1,
+          "functions": [
+            "run"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [
+            "bump"
+          ],
+          "function_count": 1,
+          "functions": [
+            "bump"
+          ],
+          "in_initial": true,
+          "path": "src/update.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-08-mutability-propagation",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0308",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "cached"
+          ],
+          "function_count": 1,
+          "functions": [
+            "cached"
+          ],
+          "in_initial": true,
+          "path": "src/cache.rs"
+        },
+        {
+          "code_differs": true,
+          "differing": [
+            "describe"
+          ],
+          "function_count": 1,
+          "functions": [
+            "describe"
+          ],
+          "in_initial": true,
+          "path": "src/report.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "repo-09-result-propagation",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0583",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "default"
+          ],
+          "function_count": 1,
+          "functions": [
+            "default"
+          ],
+          "in_initial": false,
+          "path": "src/config.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-10-missing-module-file",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "easy",
+      "error_code": "E0451",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "make"
+          ],
+          "function_count": 1,
+          "functions": [
+            "make"
+          ],
+          "in_initial": true,
+          "path": "src/build.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-11-private-field",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0515",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "cached"
+          ],
+          "function_count": 1,
+          "functions": [
+            "cached"
+          ],
+          "in_initial": true,
+          "path": "src/cache.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-12-returned-local-reference",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "easy",
+      "error_code": "E0433",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "slugify"
+          ],
+          "function_count": 1,
+          "functions": [
+            "slugify"
+          ],
+          "in_initial": true,
+          "path": "src/api.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-13-undeclared-module-path",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0502",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "append_all"
+          ],
+          "function_count": 1,
+          "functions": [
+            "append_all"
+          ],
+          "in_initial": true,
+          "path": "src/sync.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-14-crossmodule-borrow",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "easy",
+      "error_code": "E0061",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "line"
+          ],
+          "function_count": 1,
+          "functions": [
+            "line"
+          ],
+          "in_initial": true,
+          "path": "src/report.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 3,
+      "id": "repo-15-caller-not-updated",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0046",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "finish"
+          ],
+          "function_count": 2,
+          "functions": [
+            "accept",
+            "finish"
+          ],
+          "in_initial": true,
+          "path": "src/memory.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-16-missing-associated-item",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "medium",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "peek"
+          ],
+          "function_count": 2,
+          "functions": [
+            "open",
+            "peek"
+          ],
+          "in_initial": true,
+          "path": "src/api.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-17-opaque-return-method",
+      "manifest_differs": false
+    },
+    {
+      "category": "repo-scale",
+      "difficulty": "easy",
+      "error_code": "E0382",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "register_and_count"
+          ],
+          "function_count": 1,
+          "functions": [
+            "register_and_count"
+          ],
+          "in_initial": true,
+          "path": "src/flow.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "repo-18-moved-across-modules",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "count_occurrences"
+          ],
+          "function_count": 1,
+          "functions": [
+            "count_occurrences"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "semantic-01-overlapping-count",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "average"
+          ],
+          "function_count": 1,
+          "functions": [
+            "average"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "semantic-02-rounded-average",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "is_command"
+          ],
+          "function_count": 1,
+          "functions": [
+            "is_command"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "semantic-03-case-insensitive-first-word",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "ranked"
+          ],
+          "function_count": 1,
+          "functions": [
+            "ranked"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-04-stable-score-sort",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "hex"
+          ],
+          "function_count": 1,
+          "functions": [
+            "hex"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-05-lowercase-hex",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "unique"
+          ],
+          "function_count": 1,
+          "functions": [
+            "unique"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-06-order-preserving-unique",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "field"
+          ],
+          "function_count": 1,
+          "functions": [
+            "field"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "semantic-07-csv-quoting",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "truncate"
+          ],
+          "function_count": 1,
+          "functions": [
+            "truncate"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-08-char-truncate",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "hard",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "refill"
+          ],
+          "function_count": 1,
+          "functions": [
+            "refill"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 5,
+      "id": "semantic-09-token-bucket-refill",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "round_half_even"
+          ],
+          "function_count": 1,
+          "functions": [
+            "round_half_even"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-10-round-half-even",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "parse_id"
+          ],
+          "function_count": 1,
+          "functions": [
+            "parse_id"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-11-leading-zero-id",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "split_key"
+          ],
+          "function_count": 1,
+          "functions": [
+            "split_key"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "semantic-12-split-once",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "clamp"
+          ],
+          "function_count": 1,
+          "functions": [
+            "clamp"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-13-inverted-clamp",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "encode"
+          ],
+          "function_count": 1,
+          "functions": [
+            "encode"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-14-url-encode-plus",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "medium",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "shorten"
+          ],
+          "function_count": 1,
+          "functions": [
+            "shorten"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-15-shorten-with-ellipsis",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "sorted"
+          ],
+          "function_count": 1,
+          "functions": [
+            "sorted"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-16-numeric-string-sort",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "collapse"
+          ],
+          "function_count": 1,
+          "functions": [
+            "collapse"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "semantic-17-adjacent-dedup",
+      "manifest_differs": false
+    },
+    {
+      "category": "semantic-repair",
+      "difficulty": "easy",
+      "error_code": null,
+      "failure_kind": "hidden_test_failure",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "normalise"
+          ],
+          "function_count": 1,
+          "functions": [
+            "normalise"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 4,
+      "id": "semantic-18-email-domain-case",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0046",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 3,
+          "functions": [
+            "first_value",
+            "get",
+            "put"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-01-associated-type",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0119",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 3,
+          "functions": [
+            "fmt",
+            "summary",
+            "summary_of_text"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-02-coherence",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0038",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "put"
+          ],
+          "function_count": 4,
+          "functions": [
+            "count",
+            "get",
+            "len",
+            "put"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-03-object-safety",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0046",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "name"
+          ],
+          "function_count": 3,
+          "functions": [
+            "area",
+            "describe",
+            "name"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "traits-04-missing-method",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 2,
+          "functions": [
+            "id",
+            "summarise"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "traits-05-supertrait-bound",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0034",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "left"
+          ],
+          "function_count": 3,
+          "functions": [
+            "left",
+            "right",
+            "value"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-06-method-ambiguity",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0369",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "add"
+          ],
+          "function_count": 2,
+          "functions": [
+            "add",
+            "total"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "traits-07-add-impl",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0053",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "encode"
+          ],
+          "function_count": 2,
+          "functions": [
+            "encode",
+            "encode_all"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "traits-08-method-signature",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0117",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "fmt",
+            "render"
+          ],
+          "function_count": 2,
+          "functions": [
+            "fmt",
+            "render"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 4,
+      "id": "traits-09-orphan-rule",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0308",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 2,
+          "functions": [
+            "drain",
+            "next_item"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-10-associated-type-value",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0277",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "summary"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-11-blanket-impl-bound",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0046",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "capped"
+          ],
+          "function_count": 1,
+          "functions": [
+            "capped"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-12-associated-const",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0599",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "render"
+          ],
+          "function_count": 2,
+          "functions": [
+            "render",
+            "title"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-13-default-method-missing-item",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0049",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "encode"
+          ],
+          "function_count": 1,
+          "functions": [
+            "encode"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-14-extra-type-parameter",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "medium",
+      "error_code": "E0107",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 2,
+          "functions": [
+            "encode",
+            "encode_byte"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-15-generic-trait-missing-argument",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0050",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "scale"
+          ],
+          "function_count": 2,
+          "functions": [
+            "scale",
+            "scaled"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": true,
+      "hidden_tests": 3,
+      "id": "traits-16-method-arity",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0407",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [
+            "rename"
+          ],
+          "function_count": 2,
+          "functions": [
+            "name",
+            "rename"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-17-method-not-in-trait",
+      "manifest_differs": false
+    },
+    {
+      "category": "trait-impl",
+      "difficulty": "easy",
+      "error_code": "E0592",
+      "failure_kind": "compile_error",
+      "files": [
+        {
+          "code_differs": true,
+          "differing": [],
+          "function_count": 1,
+          "functions": [
+            "ratio"
+          ],
+          "in_initial": true,
+          "path": "src/lib.rs"
+        }
+      ],
+      "has_mutation": true,
+      "has_naive": false,
+      "hidden_tests": 3,
+      "id": "traits-18-duplicate-inherent-method",
+      "manifest_differs": false
+    }
+  ],
+  "schema": "selvedge/s31-population-probe/v2",
+  "sources": 144
+}

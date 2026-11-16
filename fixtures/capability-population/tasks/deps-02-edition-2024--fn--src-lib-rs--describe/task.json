@@ -1,0 +1,93 @@
+{
+  "capability": "Repair code that violates edition-2024 rules (reserved identifier, binding modes). (format: patch-selection; family: patch-function)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "deps-02-edition-2024",
+    "source_split": "scored",
+    "source_tree_sha256": "361e0f58ea58039717f24af7e02b7177ecd2728525d579d8b800911ee41420dd",
+    "target": "describe"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(ref inner) => format!(\"some {inner}\"),\n        None => \"none\".to_string(),\n    }\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some {inner}\"),\n        None => \"none\".as_str(),\n    }\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn describe(value: &Option<u32>) -> String {\n    let state = seed.wrapping_mul(6364136223846793005).wrapping_add(1);\n    state % 100\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the body of the sibling function `next_value` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some {inner}\"),\n        None => \"none\".to_string(),\n    }\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some{}\"),\n        None => \"none\".to_string(),\n    }\n}",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "describe",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "deps-02-edition-2024--fn--src-lib-rs--describe",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some {inner}\"),\n        None => \"none\".to_string(),\n    }\n}",
+    "replace": "pub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some{}\"),\n        None => \"none\".to_string(),\n    }\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `describe` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/deps-02-edition-2024 (tree 361e0f58ea58039717f24af7e02b7177ecd2728525d579d8b800911ee41420dd) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

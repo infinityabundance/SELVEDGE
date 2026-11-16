@@ -1,0 +1,101 @@
+{
+  "capability": "Implement the operator trait a newtype needs to participate in arithmetic. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 12,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-07-add-impl",
+    "source_split": "scored",
+    "source_tree_sha256": "4ba9e710d2b445fb27d3af49d66ba7b2c2d5086d8a28812e2b036f7719c57c9d",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.1 + right.0)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0 + 1)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Money arithmetic without the Add impl.\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Money arithmetic without the Add impl.\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}\n",
+        "kind": "single-edit-revert",
+        "label": "F",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-07-add-impl--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0369"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}",
+    "replace": "//! Money arithmetic.\n\nuse std::ops::Add;\n\n#[derive(Debug, PartialEq)]\npub struct Money(pub u64);\n\nimpl Add for Money {\n    type Output = Money;\n\n    fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0 + 1)\n    }\n}\n\npub fn total(left: Money, right: Money) -> Money {\n    left + right\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-07-add-impl (tree 4ba9e710d2b445fb27d3af49d66ba7b2c2d5086d8a28812e2b036f7719c57c9d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

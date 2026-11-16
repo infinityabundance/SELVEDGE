@@ -1,0 +1,86 @@
+{
+  "capability": "Truncate by characters, not bytes, so multi-byte input is not split. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 18,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-08-char-truncate",
+    "source_split": "scored",
+    "source_tree_sha256": "a0bc336f27790263349456b7b8cc74cff2b6253a7045b899568ac8380fdff751",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Truncation by character count.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    if text.len() <= max_chars {\n        text.to_string()\n    } else {\n        text[..max_chars].to_string()\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Truncation by character count.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    text.chars().take(max_chars).collect()\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Truncation by character count.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    text.chars().take(max_chars + 1).collect()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Truncation by byte index.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    if text.len() <= max_chars {\n        text.to_string()\n    } else {\n        text[..max_chars].to_string()\n    }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::truncate;\n\n    #[test]\n    fn truncates_ascii() {\n        assert_eq!(truncate(\"abcdef\", 3), \"abc\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-08-char-truncate--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Truncation by character count.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    text.chars().take(max_chars).collect()\n}",
+    "replace": "//! Truncation by character count.\n\npub fn truncate(text: &str, max_chars: usize) -> String {\n    text.chars().take(max_chars + 1).collect()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-08-char-truncate (tree a0bc336f27790263349456b7b8cc74cff2b6253a7045b899568ac8380fdff751) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

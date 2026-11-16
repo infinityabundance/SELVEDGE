@@ -1,0 +1,75 @@
+{
+  "capability": "Complete a trait impl that omits a required method. (format: diagnostic-identification)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-04-missing-method",
+    "source_split": "scored",
+    "source_tree_sha256": "d09e5d67ee540665da614f9755695dfaaa9660fc2c9ea34e8e9fb60312823cdd",
+    "target": "E0046"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "the trait bound is not satisfied",
+        "id": "E0277"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0046"
+      }
+    ]
+  },
+  "id": "traits-04-missing-method--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.side * self.side",
+    "replace": "self.side + self.side"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/traits-04-missing-method (tree d09e5d67ee540665da614f9755695dfaaa9660fc2c9ea34e8e9fb60312823cdd) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,94 @@
+{
+  "capability": "Respect the orphan rule with a local newtype wrapper. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 10,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-09-orphan-rule",
+    "source_split": "scored",
+    "source_tree_sha256": "a07b053f94f2bf46eede67867d836eee014b5a651b0a70b79f380ad42c900361",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 2,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Render bytes as decimal text through a local newtype.\n\npub struct Bytes(pub Vec<u8>);\n\nimpl core::fmt::Display for Bytes {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .0\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\",\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Render bytes as decimal text through a local newtype.\n\npub struct Bytes(pub Vec<u8>);\n\nimpl core::fmt::Display for Bytes {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .0\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\"-\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render bytes as decimal text. The Display impl on Vec<u8> violates\n//! the orphan rule.\n\nimpl core::fmt::Display for Vec<u8> {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\",\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    values.to_vec().to_string()\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render bytes as decimal text through a local newtype.\n\nimpl core::fmt::Display for Vec<u8> {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .0\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\",\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render bytes as decimal text through a local newtype.\n\npub struct Bytes(pub Vec<u8>);\n\nimpl core::fmt::Display for Bytes {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\",\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-09-orphan-rule--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0117"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Render bytes as decimal text through a local newtype.\n\npub struct Bytes(pub Vec<u8>);\n\nimpl core::fmt::Display for Bytes {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .0\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\",\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}",
+    "replace": "//! Render bytes as decimal text through a local newtype.\n\npub struct Bytes(pub Vec<u8>);\n\nimpl core::fmt::Display for Bytes {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        let text = self\n            .0\n            .iter()\n            .map(|byte| byte.to_string())\n            .collect::<Vec<_>>()\n            .join(\"-\");\n        write!(formatter, \"{text}\")\n    }\n}\n\npub fn render(values: &[u8]) -> String {\n    Bytes(values.to_vec()).to_string()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-09-orphan-rule (tree a07b053f94f2bf46eede67867d836eee014b5a651b0a70b79f380ad42c900361) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

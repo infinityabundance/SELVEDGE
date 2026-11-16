@@ -1,0 +1,70 @@
+{
+  "capability": "Restore a module file the rest of the crate depends on. (format: diagnostic-identification)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-10-missing-module-file",
+    "source_split": "scored",
+    "source_tree_sha256": "0735ac54a74c267b4c3d8fac06b8a81f967c44d5264621c519ad8291ced0c53c",
+    "target": "E0583"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0583"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed value",
+        "id": "E0505"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as immutable while it is also borrowed as mutable",
+        "id": "E0502"
+      }
+    ]
+  },
+  "id": "repo-10-missing-module-file--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0583"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/repo-10-missing-module-file (tree 0735ac54a74c267b4c3d8fac06b8a81f967c44d5264621c519ad8291ced0c53c) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

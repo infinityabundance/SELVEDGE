@@ -1,0 +1,86 @@
+{
+  "capability": "Include the ellipsis inside the requested character budget. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 17,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "semantic-15-shorten-with-ellipsis",
+    "source_split": "scored",
+    "source_tree_sha256": "878b334c8daea90f31524f874ccfa665b8b9d6ac3d0a07fd5a76fc1c42f7b30b",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Shortening with a trailing ellipsis inside the budget.\n\npub fn shorten(text: &str, limit: usize) -> String {\n    let characters: Vec<char> = text.chars().collect();\n    if characters.len() <= limit {\n        return text.to_string();\n    }\n    let mut out: String = characters.iter().take(limit).collect();\n    out.push('\u2026');\n    out\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shortening with a trailing ellipsis inside the budget.\n\npub fn shorten(text: &str, limit: usize) -> String {\n    let characters: Vec<char> = text.chars().collect();\n    if characters.len() <= limit {\n        return text.to_string();\n    }\n    if limit == 0 {\n        return String::new();\n    }\n    let mut out: String = characters.iter().take(limit - 1).collect();\n    out.push('\u2026');\n    out\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Shortening with a trailing ellipsis inside the budget.\n\npub fn shorten(text: &str, limit: usize) -> String {\n    let characters: Vec<char> = text.chars().collect();\n    if characters.len() <= limit {\n        return text.to_string();\n    }\n    if limit == 0 {\n        return String::new();\n    }\n    let mut out: String = characters.iter().take(limit).collect();\n    out.push('\u2026');\n    out\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shortening with a trailing ellipsis.\n\npub fn shorten(text: &str, limit: usize) -> String {\n    let characters: Vec<char> = text.chars().collect();\n    if characters.len() <= limit {\n        return text.to_string();\n    }\n    let mut out: String = characters.iter().take(limit).collect();\n    out.push('\u2026');\n    out\n}\n\n#[cfg(test)]\nmod tests {\n    use super::shorten;\n\n    #[test]\n    fn visible_exact_fit() {\n        assert_eq!(shorten(\"abc\", 3), \"abc\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-15-shorten-with-ellipsis--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Shortening with a trailing ellipsis inside the budget.\n\npub fn shorten(text: &str, limit: usize) -> String {\n    let characters: Vec<char> = text.chars().collect();\n    if characters.len() <= limit {\n        return text.to_string();\n    }\n    if limit == 0 {\n        return String::new();\n    }\n    let mut out: String = characters.iter().take(limit - 1).collect();\n    out.push('\u2026');\n    out\n}",
+    "replace": "//! Shortening with a trailing ellipsis inside the budget.\n\npub fn shorten(text: &str, limit: usize) -> String {\n    let characters: Vec<char> = text.chars().collect();\n    if characters.len() <= limit {\n        return text.to_string();\n    }\n    if limit == 0 {\n        return String::new();\n    }\n    let mut out: String = characters.iter().take(limit).collect();\n    out.push('\u2026');\n    out\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-15-shorten-with-ellipsis (tree 878b334c8daea90f31524f874ccfa665b8b9d6ac3d0a07fd5a76fc1c42f7b30b) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

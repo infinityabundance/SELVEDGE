@@ -1,0 +1,94 @@
+{
+  "capability": "Migrate to an Option-returning parse API and preserve the caller's error text. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 9,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "migrate-01-signature",
+    "source_split": "scored",
+    "source_tree_sha256": "e881374197488b7ff8a32664e28239e4b050bfc4d8fb9f28a7dbbee8657aff03",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid\".to_string())\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Load a measurement through the unit crate. This does not build: the\n//! crate's `parse` returned a `Result` in version 1 and returns an\n//! `Option` in version 2.\n\npub fn load(input: &str) -> Result<f64, String> {\n    let measurement = units::parse(input).map_err(|error| error.to_string())?;\n    Ok(measurement.value)\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    let measurement = units::parse(input).map_err(|error| error.to_string())?;\n    Ok(measurement.value)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .filter(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-01-signature--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}",
+    "replace": "//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid\".to_string())\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-01-signature (tree e881374197488b7ff8a32664e28239e4b050bfc4d8fb9f28a7dbbee8657aff03) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

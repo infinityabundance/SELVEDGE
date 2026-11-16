@@ -1,0 +1,93 @@
+{
+  "capability": "Add the bound a blanket impl's body requires. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-11-blanket-impl-bound",
+    "source_split": "scored",
+    "source_tree_sha256": "7a350d0da698dc17db017339c34afc8592e8841265c8bb13c40bccd1f06304d6",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 0,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A blanket summary.\n\nuse std::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"{}\", self)\n    }\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A blanket summary.\n\nuse std::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"<{}>\", self)\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A blanket summary. The crate does not build: the impl formats `T`\n//! without requiring `Display`.\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"{}\", self)\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A blanket summary. The crate does not build: the impl formats `T`\n//! without requiring `Display`.\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"{}\", self)\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A blanket summary.\n\nuse std::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"{}\", self)\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-11-blanket-impl-bound--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A blanket summary.\n\nuse std::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"{}\", self)\n    }\n}",
+    "replace": "//! A blanket summary.\n\nuse std::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"<{}>\", self)\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-11-blanket-impl-bound (tree 7a350d0da698dc17db017339c34afc8592e8841265c8bb13c40bccd1f06304d6) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

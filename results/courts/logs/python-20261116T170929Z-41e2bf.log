@@ -1,0 +1,64 @@
+[
+ "borrow-05-temporary-lifetime src/lib.rs first_word: only 0 distinct distractors; 3 are required",
+ "borrow-05-temporary-lifetime src/lib.rs label: only 2 distinct distractors; 3 are required",
+ "borrow-05-temporary-lifetime src/lib.rs: only 2 distinct file distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs count: only 2 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs get: only 0 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs len: only 1 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs put: only 2 distinct distractors; 3 are required"
+]
+{
+ "by_candidates": {
+  "4": 4,
+  "6": 3
+ },
+ "by_category": {
+  "lifetime-borrow": 1,
+  "semantic-repair": 4,
+  "trait-impl": 2
+ },
+ "by_category_difficulty": {
+  "lifetime-borrow": {
+   "medium": 1
+  },
+  "semantic-repair": {
+   "hard": 2,
+   "medium": 2
+  },
+  "trait-impl": {
+   "medium": 2
+  }
+ },
+ "by_difficulty": {
+  "hard": 2,
+  "medium": 5
+ },
+ "by_family": {
+  "diagnostic-identification": 2,
+  "patch-file": 3,
+  "patch-function": 2
+ },
+ "by_source_split": {
+  "calibration": 7
+ },
+ "diagnostic_items": 2,
+ "executable_items": 5,
+ "items": 7,
+ "per_category_executable": {
+  "semantic-repair": 4,
+  "trait-impl": 1
+ }
+}
+[
+ {
+  "code": "E0425",
+  "id": "semantic-01-overlapping-count--fn--src-lib-rs--count-occurrences",
+  "status": "compile_error"
+ },
+ {
+  "code": "E0425",
+  "id": "semantic-07-csv-quoting--fn--src-lib-rs--field",
+  "status": "compile_error"
+ }
+]
+scored_size {'candidate_chars': 692, 'chars': 6072, 'id': 'traits-03-object-safety--file--src-lib-rs', 'prompt_chars': 5380}

@@ -1,0 +1,94 @@
+{
+  "capability": "Propagate a return-type change from an API module to its consumers. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 6,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-09-result-propagation",
+    "source_split": "calibration",
+    "source_tree_sha256": "8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915",
+    "target": "src/cache.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/cache.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Cache reads, still matching the old Option API.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Some(value) => value,\n        None => 0,\n    }\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Some(value) => value,\n        None => 0,\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 1,\n    }\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 0,\n    }\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value + 1,\n        Err(_) => 0,\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/cache.rs"
+  },
+  "id": "repo-09-result-propagation--file--src-cache-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/cache.rs",
+    "find": "//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 0,\n    }\n}",
+    "replace": "//! Cache reads.\n\nuse crate::api;\n\npub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value + 1,\n        Err(_) => 0,\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-09-result-propagation (tree 8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

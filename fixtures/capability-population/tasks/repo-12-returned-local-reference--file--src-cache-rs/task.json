@@ -1,0 +1,86 @@
+{
+  "capability": "Return owned data when the producing module owns the buffer. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 8,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-12-returned-local-reference",
+    "source_split": "scored",
+    "source_tree_sha256": "d1aa89a0120f38922b5b657d1a5ba36f34611f0c061a32ca744e48bea52335da",
+    "target": "src/cache.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/cache.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A cache over the formatter.\n\npub fn cached(text: &str) -> String {\n    crate::format::normalise(text)\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A cache over the formatter.\n\npub fn cached(text: &str) -> String {\n    text.to_string()\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A cache over the formatter. This does not compile: it returns a\n//! reference to a local buffer.\n\npub fn cached<'a>(text: &str) -> &'a str {\n    let value = crate::format::normalise(text);\n    &value\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A cache over the formatter.\n\npub fn cached<'a>(text: &str) -> &'a str {\n    let value = crate::format::normalise(text);\n    &value\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/cache.rs"
+  },
+  "id": "repo-12-returned-local-reference--file--src-cache-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/cache.rs",
+    "find": "//! A cache over the formatter.\n\npub fn cached(text: &str) -> String {\n    crate::format::normalise(text)\n}",
+    "replace": "//! A cache over the formatter.\n\npub fn cached(text: &str) -> String {\n    text.to_string()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-12-returned-local-reference (tree d1aa89a0120f38922b5b657d1a5ba36f34611f0c061a32ca744e48bea52335da) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

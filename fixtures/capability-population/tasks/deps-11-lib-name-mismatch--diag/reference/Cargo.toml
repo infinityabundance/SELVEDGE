@@ -1,0 +1,12 @@
+[package]
+name = "deps_11_lib_name_mismatch"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+codec_impl = { path = "dep", package = "codec" }

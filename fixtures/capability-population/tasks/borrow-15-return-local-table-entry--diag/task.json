@@ -1,0 +1,75 @@
+{
+  "capability": "Return owned data instead of a reference into a local table. (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-15-return-local-table-entry",
+    "source_split": "scored",
+    "source_tree_sha256": "9e3596c1bf1020d37271102433613dda75530b31fb26cf722c1ebb2cd2134dac",
+    "target": "E0515"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "temporary value dropped while borrowed",
+        "id": "E0716"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      }
+    ]
+  },
+  "id": "borrow-15-return-local-table-entry--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"value-{key}\")",
+    "replace": "format!(\"value\")"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-15-return-local-table-entry (tree 9e3596c1bf1020d37271102433613dda75530b31fb26cf722c1ebb2cd2134dac) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

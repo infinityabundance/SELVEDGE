@@ -1,0 +1,86 @@
+{
+  "capability": "Count the separating space when deciding a greedy line break. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 15,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-11-wrap-counts-the-space",
+    "source_split": "scored",
+    "source_tree_sha256": "b311bfbc76a70743ad931c16f95bb343513e5a8746cbae439c49bd7f3e3e6d04",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Greedy word wrapping.\n\npub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Greedy word wrapping. The visible test fails: the space between\n//! words is not counted when a line break is decided.\n\npub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}\n\n#[cfg(test)]\nmod tests {\n    use super::wrap;\n\n    #[test]\n    fn visible_line_breaks() {\n        assert_eq!(wrap(\"aaa bbb\", 6), vec![\"aaa\", \"bbb\"]);\n    }\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Greedy word wrapping.\n\npub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 2 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}\n",
+        "kind": "operator-inversion",
+        "label": "C",
+        "provenance": "the increment widened by one (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! Greedy word wrapping.\n\npub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 1 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-11-wrap-counts-the-space--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Greedy word wrapping.\n\npub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 1 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+    "replace": "//! Greedy word wrapping.\n\npub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-11-wrap-counts-the-space (tree b311bfbc76a70743ad931c16f95bb343513e5a8746cbae439c49bd7f3e3e6d04) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,94 @@
+{
+  "capability": "Bind a value mutably when the new API requires a mutable receiver. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-09-mutable-receiver",
+    "source_split": "scored",
+    "source_tree_sha256": "27433fb3ca0581b16b32b3ce4967983c6d86aeae30bcea53aa28354ee263ee00",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let mut counter = counter::Counter::new();\n    for _ in 1..limit {\n        counter.tick();\n    }\n    counter.value()\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let mut counter = counter::Counter::new();\n    for _ in 0..limit {\n        counter.tick();\n    }\n    counter.value()\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let mut counter = counter::Counter::new();\n    for _ in 0..=limit {\n        counter.tick();\n    }\n    counter.value()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Count through the counter crate. This does not build: version 2\n//! requires a mutable receiver for `tick`.\n\npub fn count_to(limit: u32) -> u32 {\n    let counter = counter::Counter::new();\n    for _ in 0..limit {\n        counter.tick();\n    }\n    counter.value()\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let counter = counter::Counter::new();\n    for _ in 0..limit {\n        counter.tick();\n    }\n    counter.value()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-09-mutable-receiver--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0596"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let mut counter = counter::Counter::new();\n    for _ in 0..limit {\n        counter.tick();\n    }\n    counter.value()\n}",
+    "replace": "//! Count through the counter crate.\n\npub fn count_to(limit: u32) -> u32 {\n    let mut counter = counter::Counter::new();\n    for _ in 0..=limit {\n        counter.tick();\n    }\n    counter.value()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-09-mutable-receiver (tree 27433fb3ca0581b16b32b3ce4967983c6d86aeae30bcea53aa28354ee263ee00) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

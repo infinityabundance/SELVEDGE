@@ -1,0 +1,87 @@
+{
+  "capability": "Match the barrier's participant count to the threads that reach it. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 3,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-18-barrier-early-return",
+    "source_split": "scored",
+    "source_tree_sha256": "c02a22a8ba07411ebb638dab6800d6443538d0e2238762c4b1399f281375c3cc",
+    "target": "sum_nonzero"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn sum_nonzero(values: &[u8]) -> usize {\n    let participants = values.iter().filter(|value| **value != 0).count().max(1);\n    let barrier = Barrier::new(participants);\n    let total = AtomicUsize::new(0);\n    std::thread::scope(|scope| {\n        for value in values {\n            scope.spawn(|| {\n                if *value == 0 {\n                    return;\n                }\n                barrier.wait();\n                total.fetch_add(*value as usize, Ordering::SeqCst);\n            });\n        }\n    });\n    total.load(Ordering::SeqCst)\n}",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn sum_nonzero(values: &[u8]) -> usize {\n    let participants = values.iter().filter(|value| **value != 0).count().max(1);\n    let barrier = Barrier::new(participants);\n    let total = AtomicUsize::new(0);\n    std::thread::scope(|scope| {\n        for value in values {\n            scope.spawn(|| {\n                if *value == 0 {\n                    return;\n                }\n                barrier.wait();\n                total.fetch_add(*value as usize * 2, Ordering::SeqCst);\n            });\n        }\n    });\n    total.load(Ordering::SeqCst)\n}",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sum_nonzero(values: &[u8]) -> usize {\n    let barrier = Barrier::new(values.len());\n    let total = AtomicUsize::new(0);\n    std::thread::scope(|scope| {\n        for value in values {\n            scope.spawn(|| {\n                if *value == 0 {\n                    return;\n                }\n                barrier.wait();\n                total.fetch_add(*value as usize, Ordering::SeqCst);\n            });\n        }\n    });\n    total.load(Ordering::SeqCst)\n}",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sum_nonzero(values: &[u8]) -> usize {\n    let participants = values.iter().filter(|value| **value != 0).count().max(1);\n    let barrier = Barrier::new(participants);\n    let total = AtomicUsize::new(0);\n    std::thread::scope(|scope| {\n        for value in values {\n            scope.spawn(|| {\n                if *value != 0 {\n                    return;\n                }\n                barrier.wait();\n                total.fetch_add(*value as usize, Ordering::SeqCst);\n            });\n        }\n    });\n    total.load(Ordering::SeqCst)\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the equality test inverted to `!=` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "sum_nonzero",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-18-barrier-early-return--fn--src-lib-rs--sum-nonzero",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn sum_nonzero(values: &[u8]) -> usize {\n    let participants = values.iter().filter(|value| **value != 0).count().max(1);\n    let barrier = Barrier::new(participants);\n    let total = AtomicUsize::new(0);\n    std::thread::scope(|scope| {\n        for value in values {\n            scope.spawn(|| {\n                if *value == 0 {\n                    return;\n                }\n                barrier.wait();\n                total.fetch_add(*value as usize, Ordering::SeqCst);\n            });\n        }\n    });\n    total.load(Ordering::SeqCst)\n}",
+    "replace": "pub fn sum_nonzero(values: &[u8]) -> usize {\n    let participants = values.iter().filter(|value| **value != 0).count().max(1);\n    let barrier = Barrier::new(participants);\n    let total = AtomicUsize::new(0);\n    std::thread::scope(|scope| {\n        for value in values {\n            scope.spawn(|| {\n                if *value == 0 {\n                    return;\n                }\n                barrier.wait();\n                total.fetch_add(*value as usize * 2, Ordering::SeqCst);\n            });\n        }\n    });\n    total.load(Ordering::SeqCst)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `sum_nonzero` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-18-barrier-early-return (tree c02a22a8ba07411ebb638dab6800d6443538d0e2238762c4b1399f281375c3cc) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

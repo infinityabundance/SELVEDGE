@@ -1,0 +1,75 @@
+{
+  "capability": "Complete an impl that omits an associated type and keep the generic helper valid. (format: diagnostic-identification)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-01-associated-type",
+    "source_split": "scored",
+    "source_tree_sha256": "364100cb161952947e3d87d33a242bc2909cea3bced3152af98ada9c9a4c8f93",
+    "target": "E0046"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0046"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      }
+    ]
+  },
+  "id": "traits-01-associated-type--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "repo.get(0).unwrap_or(0)",
+    "replace": "repo.get(1).unwrap_or(0)"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/traits-01-associated-type (tree 364100cb161952947e3d87d33a242bc2909cea3bced3152af98ada9c9a4c8f93) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

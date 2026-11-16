@@ -1,0 +1,67 @@
+{
+  "capability": "Alias a vendored package whose package name differs from the import name. (format: patch-selection)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-fix",
+    "family": "patch-manifest",
+    "fix_lines": 2,
+    "format": "patch-selection",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "deps-08-renamed-package",
+    "source_split": "scored",
+    "source_tree_sha256": "c07e0bc765aeef800df32cf5d81acef029122a6416e3ff0788ffe29829e228b3",
+    "target": "Cargo.toml"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "[package]\nname = \"deps_08_renamed_package\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\n",
+        "label": "A",
+        "provenance": "a dependency removed (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_08_renamed_package\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ntextkit = { path = \"dep\", package = \"textkit-impl\" }\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "[package]\nname = \"deps_08_renamed_package\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ntextkit = { path = \"dep\" }\n",
+        "label": "C",
+        "provenance": "the source's initial manifest (wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "Cargo.toml"
+  },
+  "id": "deps-08-renamed-package--manifest",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "no matching package named"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "textkit = { path = \"dep\", package = \"textkit-impl\" }\n",
+    "replace": "textkit = { path = \"dep\" }\n"
+  },
+  "prompt_intro": "Choose the one replacement manifest that makes the crate build and its tests pass. The source code is already correct; only the manifest is missing the capability the code needs.",
+  "provenance": "derived from fixtures/capability/tasks/deps-08-renamed-package (tree c07e0bc765aeef800df32cf5d81acef029122a6416e3ff0788ffe29829e228b3) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

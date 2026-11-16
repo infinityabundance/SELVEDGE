@@ -1,0 +1,75 @@
+{
+  "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references). (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-03-self-referential-window",
+    "source_split": "calibration",
+    "source_tree_sha256": "05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78",
+    "target": "E0597"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed value",
+        "id": "E0505"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      }
+    ]
+  },
+  "id": "borrow-03-self-referential-window--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0597"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unwrap_or(\"\")",
+    "replace": "unwrap_or(\"x\")"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-03-self-referential-window (tree 05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

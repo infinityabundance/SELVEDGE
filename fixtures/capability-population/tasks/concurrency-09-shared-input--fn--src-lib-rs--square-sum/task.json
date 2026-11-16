@@ -1,0 +1,94 @@
+{
+  "capability": "Share an owned input between two threads with Arc instead of moving it twice. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 19,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-09-shared-input",
+    "source_split": "scored",
+    "source_tree_sha256": "0077350c91dfd3de9867e5e23f4af94342b061464bf3b01eff4f625624962025",
+    "target": "square_sum"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().filter(|value| value * value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value + value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let first = thread::spawn(move || {\n        values.iter().map(|value| value * value).sum::<i32>()\n    });\n    let second = thread::spawn(move || {\n        values.iter().map(|value| value * value).sum::<i32>()\n    });\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move && {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the disjunction tightened to a conjunction (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "square_sum",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-09-shared-input--fn--src-lib-rs--square-sum",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}",
+    "replace": "pub fn square_sum(values: Vec<i32>) -> i32 {\n    let values = Arc::new(values);\n    let first = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value + value).sum::<i32>()\n        })\n    };\n    let second = {\n        let values = Arc::clone(&values);\n        thread::spawn(move || {\n            values.iter().map(|value| value * value).sum::<i32>()\n        })\n    };\n    let left = first.join().unwrap();\n    let right = second.join().unwrap();\n    assert_eq!(left, right);\n    left\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `square_sum` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-09-shared-input (tree 0077350c91dfd3de9867e5e23f4af94342b061464bf3b01eff4f625624962025) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

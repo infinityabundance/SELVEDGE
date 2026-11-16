@@ -1,0 +1,101 @@
+{
+  "capability": "Recognise that a returned iterator cannot borrow a local collection. (format: patch-selection; family: patch-function)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 3,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-08-iterator-outlives-local",
+    "source_split": "scored",
+    "source_tree_sha256": "a6068073570ac5c175bbad0c5c740836e626837281857b4ac85b18ebe1bbc215",
+    "target": "evens"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 3 == 0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the literal 2 widened to 3 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 2 == 0)\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 2 == 1)\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    let values: Vec<i32> = (0..limit).collect();\n    values.iter().copied().filter(|value| *value % 2 == 0)\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 2 != 0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the equality test inverted to `!=` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (1..limit).filter(|value| value % 2 == 0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "evens",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "borrow-08-iterator-outlives-local--fn--src-lib-rs--evens",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 2 == 0)\n}",
+    "replace": "pub fn evens(limit: i32) -> impl Iterator<Item = i32> {\n    (0..limit).filter(|value| value % 2 == 1)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `evens` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-08-iterator-outlives-local (tree a6068073570ac5c175bbad0c5c740836e626837281857b4ac85b18ebe1bbc215) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,85 @@
+{
+  "capability": "Complete a trait implementation split across modules. (format: patch-selection; family: patch-function)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 1,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-16-missing-associated-item",
+    "source_split": "scored",
+    "source_tree_sha256": "96dee5531c7a62b50343d0219fffba90ddcd97bcce44cf895f135a845acae1a5",
+    "target": "accept"
+  },
+  "difficulty": "hard",
+  "entry": "src/memory.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Err(())\n    }",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn accept(&self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the mutable borrow downgraded (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        Ok(())\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the body of the sibling function `finish` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "accept",
+    "kind": "patch-selection",
+    "template": "src/memory.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "repo-16-missing-associated-item--fn--src-memory-rs--accept",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/memory.rs",
+    "find": "fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }",
+    "replace": "fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Err(())\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `accept` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-16-missing-associated-item (tree 96dee5531c7a62b50343d0219fffba90ddcd97bcce44cf895f135a845acae1a5) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

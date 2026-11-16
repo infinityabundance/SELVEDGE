@@ -1,0 +1,75 @@
+{
+  "capability": "Hand a field out of a type that implements Drop without moving it. (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-12-move-out-of-drop-type",
+    "source_split": "scored",
+    "source_tree_sha256": "576ccbf606afad96ae353d1a151f52500c141cd3846748b6dcf13a7eb4891122",
+    "target": "E0509"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0509"
+      }
+    ]
+  },
+  "id": "borrow-12-move-out-of-drop-type--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0509"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "std::mem::take(&mut buffer.data)",
+    "replace": "Vec::new()"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-12-move-out-of-drop-type (tree 576ccbf606afad96ae353d1a151f52500c141cd3846748b6dcf13a7eb4891122) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

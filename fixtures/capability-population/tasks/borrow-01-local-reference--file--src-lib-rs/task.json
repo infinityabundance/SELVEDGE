@@ -1,0 +1,86 @@
+{
+  "capability": "Recognise a reference to a local value and return owned data instead. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 8,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-01-local-reference",
+    "source_split": "scored",
+    "source_tree_sha256": "2982d5154ce64ae85ff4190debd8955064c24166b75fea0fb1b4f2489614e7c2",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Label construction.\n\npub fn label(prefix: &str) -> String {\n    format!(\"{prefix}:ready\")\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Label construction.\n\npub fn label(prefix: &str) -> String {\n    format!(\"{prefix}:READY\")\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Label construction. The crate does not build: `label` returns a\n//! reference to a `String` it creates locally.\n\npub fn label(prefix: &str) -> &str {\n    let text = format!(\"{prefix}:ready\");\n    &text\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Label construction.\n\npub fn label(prefix: &str) -> &str {\n    let text = format!(\"{prefix}:ready\");\n    &text\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-01-local-reference--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Label construction.\n\npub fn label(prefix: &str) -> String {\n    format!(\"{prefix}:ready\")\n}",
+    "replace": "//! Label construction.\n\npub fn label(prefix: &str) -> String {\n    format!(\"{prefix}:READY\")\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-01-local-reference (tree 2982d5154ce64ae85ff4190debd8955064c24166b75fea0fb1b4f2489614e7c2) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

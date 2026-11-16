@@ -1,0 +1,13 @@
+[package]
+name = "migrate_09_mutable_receiver"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+counter = { path = "dep" }

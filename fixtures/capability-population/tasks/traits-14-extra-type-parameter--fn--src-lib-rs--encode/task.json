@@ -1,0 +1,85 @@
+{
+  "capability": "Match the trait method's generic parameter list exactly. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-14-extra-type-parameter",
+    "source_split": "scored",
+    "source_tree_sha256": "2be2506c20880277eda426f0a0a54b46e5a5ab50fa74b081ca9a496382f9e9f9",
+    "target": "encode"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn encode(&self) -> String {\n        self.text.to_uppercase()\n    }",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn encode<T>(&self) -> String {\n        self.text.clone()\n    }",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn encode(&self) -> String {\n        self.text\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the clone dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn encode(&self) -> String {\n        self.text.clone()\n    }",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "encode",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-14-extra-type-parameter--fn--src-lib-rs--encode",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "fn encode(&self) -> String {\n        self.text.clone()\n    }",
+    "replace": "fn encode(&self) -> String {\n        self.text.to_uppercase()\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `encode` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-14-extra-type-parameter (tree 2be2506c20880277eda426f0a0a54b46e5a5ab50fa74b081ca9a496382f9e9f9) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

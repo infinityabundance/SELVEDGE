@@ -1,0 +1,101 @@
+{
+  "capability": "Preserve first-occurrence order where sorting happens to pass the visible case. (format: patch-selection; family: patch-function)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 12,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-06-order-preserving-unique",
+    "source_split": "scored",
+    "source_tree_sha256": "8b3ed120c01b65195678fac84fef8ad522f86deafe54add05048c23552fb920d",
+    "target": "unique"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if !seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut sorted = values.to_vec();\n    sorted.sort();\n    sorted.dedup();\n    sorted\n}",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if !(seen.insert(*value)) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the guard negated (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+        "kind": "reference",
+        "label": "F",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "unique",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "semantic-06-order-preserving-unique--fn--src-lib-rs--unique",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+    "replace": "pub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if !seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `unique` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-06-order-preserving-unique (tree 8b3ed120c01b65195678fac84fef8ad522f86deafe54add05048c23552fb920d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,86 @@
+{
+  "capability": "Clamp the last page to the number of items. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 14,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "failing-17-partial-last-page",
+    "source_split": "scored",
+    "source_tree_sha256": "0dd6f5201bec3f17acfa19a8073c14a75488dbd8ee016f87bc5ddd7b1442e05d",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Page bounds.\n\npub fn page_bounds(total: usize, page_size: usize, page: usize) -> (usize, usize) {\n    if page_size == 0 || page == 0 {\n        return (0, 0);\n    }\n    let start = (page - 1) * page_size;\n    if start >= total {\n        return (total, total);\n    }\n    (start, (start + page_size).max(total))\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Page bounds. The visible test fails: the last page is not clamped.\n\npub fn page_bounds(total: usize, page_size: usize, page: usize) -> (usize, usize) {\n    if page_size == 0 || page == 0 {\n        return (0, 0);\n    }\n    let start = (page - 1) * page_size;\n    if start >= total {\n        return (total, total);\n    }\n    (start, start + page_size)\n}\n\n#[cfg(test)]\nmod tests {\n    use super::page_bounds;\n\n    #[test]\n    fn visible_partial_page() {\n        assert_eq!(page_bounds(5, 2, 3), (4, 5));\n    }\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Page bounds.\n\npub fn page_bounds(total: usize, page_size: usize, page: usize) -> (usize, usize) {\n    if page_size == 0 || page == 0 {\n        return (0, 0);\n    }\n    let start = (page - 1) * page_size;\n    if start >= total {\n        return (total, total);\n    }\n    (start, start + page_size)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Page bounds.\n\npub fn page_bounds(total: usize, page_size: usize, page: usize) -> (usize, usize) {\n    if page_size == 0 || page == 0 {\n        return (0, 0);\n    }\n    let start = (page - 1) * page_size;\n    if start >= total {\n        return (total, total);\n    }\n    (start, (start + page_size).min(total))\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-17-partial-last-page--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Page bounds.\n\npub fn page_bounds(total: usize, page_size: usize, page: usize) -> (usize, usize) {\n    if page_size == 0 || page == 0 {\n        return (0, 0);\n    }\n    let start = (page - 1) * page_size;\n    if start >= total {\n        return (total, total);\n    }\n    (start, (start + page_size).min(total))\n}",
+    "replace": "//! Page bounds.\n\npub fn page_bounds(total: usize, page_size: usize, page: usize) -> (usize, usize) {\n    if page_size == 0 || page == 0 {\n        return (0, 0);\n    }\n    let start = (page - 1) * page_size;\n    if start >= total {\n        return (total, total);\n    }\n    (start, (start + page_size).max(total))\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-17-partial-last-page (tree 0dd6f5201bec3f17acfa19a8073c14a75488dbd8ee016f87bc5ddd7b1442e05d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

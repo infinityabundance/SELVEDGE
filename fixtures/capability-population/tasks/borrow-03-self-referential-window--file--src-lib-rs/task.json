@@ -1,0 +1,94 @@
+{
+  "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references). (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 8,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-03-self-referential-window",
+    "source_split": "calibration",
+    "source_tree_sha256": "05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 2,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n    first: &'static str,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        let first = text.split_whitespace().next().unwrap_or(\"\");\n        Self { text, first }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A window over a text, caching its first word as a slice.\n\npub struct Window {\n    text: String,\n    first: &'static str,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        let first = text.split_whitespace().next().unwrap_or(\"\");\n        Self { text, first }\n    }\n\n    pub fn first(&self) -> &str {\n        self.first\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-03-self-referential-window--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0597"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}",
+    "replace": "//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-03-self-referential-window (tree 05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

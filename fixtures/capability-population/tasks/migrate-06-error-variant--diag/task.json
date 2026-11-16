@@ -1,0 +1,75 @@
+{
+  "capability": "Migrate a match arm to a structured error variant and handle the new variant. (format: diagnostic-identification)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "migrate-06-error-variant",
+    "source_split": "calibration",
+    "source_tree_sha256": "095c28482c2a5d92f2d6f4ba2190ca5cf9f85055ddb2d4bd7d721d20271aa9dd",
+    "target": "E0599"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0599"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      }
+    ]
+  },
+  "id": "migrate-06-error-variant--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"empty key\"",
+    "replace": "\"empty\""
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-06-error-variant (tree 095c28482c2a5d92f2d6f4ba2190ca5cf9f85055ddb2d4bd7d721d20271aa9dd) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

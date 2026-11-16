@@ -1,0 +1,75 @@
+{
+  "capability": "End one mutable borrow before starting the next one. (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-07-overlapping-mut-borrows",
+    "source_split": "scored",
+    "source_tree_sha256": "584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3",
+    "target": "E0499"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "cannot borrow as mutable more than once at a time",
+        "id": "E0499"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      }
+    ]
+  },
+  "id": "borrow-07-overlapping-mut-borrows--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0499"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*first += 1;",
+    "replace": "*first += 2;"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-07-overlapping-mut-borrows (tree 584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

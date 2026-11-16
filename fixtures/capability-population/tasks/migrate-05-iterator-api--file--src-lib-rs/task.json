@@ -1,0 +1,94 @@
+{
+  "capability": "Replace a removed collection-returning API with the callback API. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "migrate-05-iterator-api",
+    "source_split": "scored",
+    "source_tree_sha256": "9fd899257ce771b249810e5eeae6c5a964da587894d6dbeab5fd0f7ac9b118ee",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_string()));\n    names\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_uppercase()));\n    names\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Collect item names through the item crate. This does not build:\n//! version 2 replaced `collect` with the callback `scan`.\n\npub fn names(input: &str) -> Vec<String> {\n    items::collect(input).into_iter().map(|item| item.name.to_string()).collect()\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    items::collect(input).into_iter().map(|item| item.name.to_string()).collect()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &|item| names.push(item.name.to_string()));\n    names\n}\n",
+        "kind": "operator-inversion",
+        "label": "E",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-05-iterator-api--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_string()));\n    names\n}",
+    "replace": "//! Collect item names through the item crate.\n\npub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_uppercase()));\n    names\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-05-iterator-api (tree 9fd899257ce771b249810e5eeae6c5a964da587894d6dbeab5fd0f7ac9b118ee) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

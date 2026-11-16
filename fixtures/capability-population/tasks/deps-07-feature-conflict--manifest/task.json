@@ -1,0 +1,67 @@
+{
+  "capability": "Resolve two mutually exclusive features by selecting the registered one. (format: patch-selection)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-fix",
+    "family": "patch-manifest",
+    "fix_lines": 2,
+    "format": "patch-selection",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "deps-07-feature-conflict",
+    "source_split": "calibration",
+    "source_tree_sha256": "624de463b1f0a5dc85b4d19f53f93f99145db0b2d7aa784d8db989a39c873865",
+    "target": "Cargo.toml"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "[package]\nname = \"deps_07_feature_conflict\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", features = [\"safe\"] }\n",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "[package]\nname = \"deps_07_feature_conflict\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", features = [\"fast\", \"safe\"] }\n",
+        "label": "B",
+        "provenance": "the source's initial manifest (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_07_feature_conflict\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\n",
+        "label": "C",
+        "provenance": "a dependency removed (wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "Cargo.toml"
+  },
+  "id": "deps-07-feature-conflict--manifest",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "mutually exclusive"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "codec = { path = \"dep\", features = [\"safe\"] }\n",
+    "replace": "codec = { path = \"dep\", features = [\"fast\", \"safe\"] }\n"
+  },
+  "prompt_intro": "Choose the one replacement manifest that makes the crate build and its tests pass. The source code is already correct; only the manifest is missing the capability the code needs.",
+  "provenance": "derived from fixtures/capability/tasks/deps-07-feature-conflict (tree 624de463b1f0a5dc85b4d19f53f93f99145db0b2d7aa784d8db989a39c873865) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

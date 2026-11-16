@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 619, in main
+    payload = population_module.derive_population(
+        source, args.out, force=args.force, max_scored_chars=maximum,
+    ...<2 lines>...
+        only_sources=(args.only_source.split(",") if args.only_source
+                      else None))
+  File "/work/oracle/capability/population.py", line 797, in derive_population
+    provisional = suite_module.load_task(item_path)
+  File "/work/oracle/capability/suite.py", line 290, in load_task
+    format_problems = format_module.validate_declaration(task)
+  File "/work/oracle/capability/formats.py", line 174, in validate_declaration
+    if len({item.strip() for item in definitions}) != len(definitions):
+            ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'

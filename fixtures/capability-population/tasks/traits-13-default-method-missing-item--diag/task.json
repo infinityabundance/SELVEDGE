@@ -1,0 +1,75 @@
+{
+  "capability": "Call the trait item that exists from a default method. (format: diagnostic-identification)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-13-default-method-missing-item",
+    "source_split": "scored",
+    "source_tree_sha256": "c198fa621b6daffc984c54014fa7a62802d4848564146f68726ac23b7f641f3e",
+    "target": "E0599"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0599"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable more than once at a time",
+        "id": "E0499"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      }
+    ]
+  },
+  "id": "traits-13-default-method-missing-item--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"[{}]\", self.title())",
+    "replace": "format!(\"({})\", self.title())"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/traits-13-default-method-missing-item (tree c198fa621b6daffc984c54014fa7a62802d4848564146f68726ac23b7f641f3e) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

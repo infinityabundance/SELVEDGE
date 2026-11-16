@@ -1,0 +1,75 @@
+{
+  "capability": "Clone a shared handle for each worker instead of moving it once. (format: diagnostic-identification)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "concurrency-12-shared-arc-moved",
+    "source_split": "scored",
+    "source_tree_sha256": "6a990791461ba116a4bdf5641c41205e109577593f9ba640833b22de432a6a60",
+    "target": "E0382"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "temporary value dropped while borrowed",
+        "id": "E0716"
+      }
+    ]
+  },
+  "id": "concurrency-12-shared-arc-moved--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "step_by(threads)",
+    "replace": "step_by(1)"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-12-shared-arc-moved (tree 6a990791461ba116a4bdf5641c41205e109577593f9ba640833b22de432a6a60) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

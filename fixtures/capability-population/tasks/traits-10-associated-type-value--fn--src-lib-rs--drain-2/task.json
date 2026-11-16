@@ -1,0 +1,93 @@
+{
+  "capability": "Make an associated type agree with the values the method yields. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 1,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-10-associated-type-value",
+    "source_split": "scored",
+    "source_tree_sha256": "fe29eb69b9bb6aaac41db8872f520b55470fa741308039088e354959ad21efdb",
+    "target": "drain"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 1..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n        self.current += 1;\n        Some(self.current as u64)\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the body of the sibling function `next_item` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn drain<S: Sequence<Item = u64>>(sequence: &S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the mutable borrow downgraded (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "drain",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-10-associated-type-value--fn--src-lib-rs--drain-2",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn drain<S: Sequence<Item = u64>>(sequence: &mut S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}",
+    "replace": "pub fn drain<S: Sequence<Item = u64>>(sequence: &S, limit: usize) -> Vec<u64> {\n    let mut out = Vec::new();\n    for _ in 0..limit {\n        match sequence.next_item() {\n            Some(item) => out.push(item),\n            None => break,\n        }\n    }\n    out\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `drain` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-10-associated-type-value (tree fe29eb69b9bb6aaac41db8872f520b55470fa741308039088e354959ad21efdb) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

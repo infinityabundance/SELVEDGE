@@ -1,0 +1,75 @@
+{
+  "capability": "Convert a borrowed argument where version 2 takes ownership. (format: diagnostic-identification)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-11-owned-argument",
+    "source_split": "scored",
+    "source_tree_sha256": "3c35793f90155abbf0df965e2859d59e45815a1b0398ba46066f4340de39b790",
+    "target": "E0308"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as immutable while it is also borrowed as mutable",
+        "id": "E0502"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed value",
+        "id": "E0505"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      }
+    ]
+  },
+  "id": "migrate-11-owned-argument--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "text.to_string()",
+    "replace": "text.to_ascii_uppercase()"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-11-owned-argument (tree 3c35793f90155abbf0df965e2859d59e45815a1b0398ba46066f4340de39b790) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

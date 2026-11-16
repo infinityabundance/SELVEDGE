@@ -1,0 +1,94 @@
+{
+  "capability": "Clone a shared handle for each worker instead of moving it once. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "concurrency-12-shared-arc-moved",
+    "source_split": "scored",
+    "source_tree_sha256": "6a990791461ba116a4bdf5641c41205e109577593f9ba640833b22de432a6a60",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A chunked sum.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        let values = Arc::clone(&values);\n        handles.push(std::thread::spawn(move && {\n            values.iter().skip(index).step_by(threads).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}\n",
+        "kind": "operator-inversion",
+        "label": "A",
+        "provenance": "the disjunction tightened to a conjunction (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! A chunked sum.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        let values = Arc::clone(&values);\n        handles.push(std::thread::spawn(move || {\n            values.iter().skip(index).step_by(threads).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A chunked sum.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        let values = Arc::clone(&values);\n        handles.push(std::thread::spawn(move || {\n            values.iter().skip(index).step_by(1).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A chunked sum. The crate does not compile: the shared handle is\n//! moved into the first worker and reused in the next.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        handles.push(std::thread::spawn(move || {\n            values.iter().skip(index).step_by(threads).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A chunked sum.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        handles.push(std::thread::spawn(move || {\n            values.iter().skip(index).step_by(threads).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-12-shared-arc-moved--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A chunked sum.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        let values = Arc::clone(&values);\n        handles.push(std::thread::spawn(move || {\n            values.iter().skip(index).step_by(threads).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}",
+    "replace": "//! A chunked sum.\n\nuse std::sync::Arc;\n\npub fn chunked_sum(values: Arc<Vec<u64>>, threads: usize) -> u64 {\n    let mut handles = Vec::new();\n    for index in 0..threads {\n        let values = Arc::clone(&values);\n        handles.push(std::thread::spawn(move || {\n            values.iter().skip(index).step_by(1).sum::<u64>()\n        }));\n    }\n    handles.into_iter().map(|handle| handle.join().unwrap()).sum()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-12-shared-arc-moved (tree 6a990791461ba116a4bdf5641c41205e109577593f9ba640833b22de432a6a60) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

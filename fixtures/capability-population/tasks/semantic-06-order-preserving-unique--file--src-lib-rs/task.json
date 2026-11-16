@@ -1,0 +1,100 @@
+{
+  "capability": "Preserve first-occurrence order where sorting happens to pass the visible case. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 26,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-06-order-preserving-unique",
+    "source_split": "scored",
+    "source_tree_sha256": "8b3ed120c01b65195678fac84fef8ad522f86deafe54add05048c23552fb920d",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! De-duplication by sorting, which loses first-occurrence order.\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut sorted = values.to_vec();\n    sorted.sort();\n    sorted.dedup();\n    sorted\n}\n\n#[cfg(test)]\nmod tests {\n    use super::unique;\n\n    #[test]\n    fn removes_duplicates_from_sorted_input() {\n        assert_eq!(unique(&[1, 1, 2]), vec![1, 2]);\n    }\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! De-duplication by sorting, which loses first-occurrence order.\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut sorted = values.to_vec();\n    sorted.sort();\n    sorted.dedup();\n    sorted\n}\n\n#[cfg(test)]\nmod tests {\n    use super::unique;\n\n    #[test]\n    fn removes_duplicates_from_sorted_input() {\n        assert_eq!(unique(&[1, 1, 2]), vec![1, 2]);\n    }\n    result\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if !seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}\n",
+        "kind": "declared-mutation",
+        "label": "F",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-06-order-preserving-unique--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}",
+    "replace": "//! Order-preserving de-duplication.\n\nuse std::collections::HashSet;\n\npub fn unique(values: &[i32]) -> Vec<i32> {\n    let mut seen = HashSet::new();\n    let mut result = Vec::new();\n    for value in values {\n        if !seen.insert(*value) {\n            result.push(*value);\n        }\n    }\n    result\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-06-order-preserving-unique (tree 8b3ed120c01b65195678fac84fef8ad522f86deafe54add05048c23552fb920d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

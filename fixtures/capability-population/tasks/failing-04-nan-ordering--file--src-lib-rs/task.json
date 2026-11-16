@@ -1,0 +1,93 @@
+{
+  "capability": "Replace a partial comparator with a total order that puts NaN last. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 20,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-04-nan-ordering",
+    "source_split": "scored",
+    "source_tree_sha256": "ebe44561c63f23358fde01dce505ef90d7f204c220ff843ec978a5b9c30f0aef",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Greater,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Less,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));\n}\n\n#[cfg(test)]\nmod tests {\n    use super::sort_ascending;\n\n    #[test]\n    fn nan_sorts_last() {\n        let mut values = [3.5, f64::NAN, 1.5, 2.5];\n        sort_ascending(&mut values);\n        assert_eq!(&values[..3], &[1.5, 2.5, 3.5]);\n        assert!(values[3].is_nan());\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &[f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Greater,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}\n",
+        "kind": "operator-inversion",
+        "label": "E",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-04-nan-ordering--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Greater,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}",
+    "replace": "//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Less,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-04-nan-ordering (tree ebe44561c63f23358fde01dce505ef90d7f204c220ff843ec978a5b9c30f0aef) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

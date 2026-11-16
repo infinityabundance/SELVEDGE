@@ -1,0 +1,94 @@
+{
+  "capability": "Hold a mutex across the whole read-modify-write, not across a barrier. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 3,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-04-mutex-critical-section",
+    "source_split": "scored",
+    "source_tree_sha256": "b3b593bc4e25704b284832d82f05a18eb3d8d4a7f58902f046b62a99ae47b9cd",
+    "target": "increment_pair"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                let current = *counter.lock().unwrap();\n                barrier.wait();\n                *counter.lock().unwrap() = current + 1;\n            });\n        }\n    });\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move && {\n                barrier.wait();\n                *counter.lock().unwrap() += 1;\n            });\n        }\n    });\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the disjunction tightened to a conjunction (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                barrier.wait();\n                *counter.lock().unwrap() -= 1;\n            });\n        }\n    });\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the accumulation reversed (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                barrier.wait();\n                *counter.lock().unwrap() += 1;\n            });\n        }\n    });\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                barrier.wait();\n                *counter.lock().unwrap() += 2;\n            });\n        }\n    });\n}",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "increment_pair",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-04-mutex-critical-section--fn--src-lib-rs--increment-pair",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                barrier.wait();\n                *counter.lock().unwrap() += 1;\n            });\n        }\n    });\n}",
+    "replace": "pub fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    let barrier = Arc::new(Barrier::new(2));\n    thread::scope(|scope| {\n        for _ in 0..2 {\n            let counter = Arc::clone(counter);\n            let barrier = Arc::clone(&barrier);\n            scope.spawn(move || {\n                barrier.wait();\n                *counter.lock().unwrap() += 2;\n            });\n        }\n    });\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `increment_pair` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-04-mutex-critical-section (tree b3b593bc4e25704b284832d82f05a18eb3d8d4a7f58902f046b62a99ae47b9cd) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,86 @@
+{
+  "capability": "Repair a transition table so every state follows the declared cycle. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 18,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "failing-09-state-cycle",
+    "source_split": "scored",
+    "source_tree_sha256": "725259357c13da32d543088a93aaed9d4a4a74a21624ce35bd532115482daf80",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Traffic-light transitions.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Red,\n        Light::Yellow => Light::Green,\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Traffic-light transitions.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Yellow,\n        Light::Yellow => Light::Red,\n    }\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Traffic-light transitions.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Red,\n        Light::Yellow => Light::Red,\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Traffic-light transitions. The visible test fails: Green skips\n//! Yellow.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Red,\n        Light::Yellow => Light::Green,\n    }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::{next, Light};\n\n    #[test]\n    fn green_follows_red_then_yellow() {\n        assert_eq!(next(Light::Red), Light::Green);\n        assert_eq!(next(Light::Green), Light::Yellow);\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-09-state-cycle--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Traffic-light transitions.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Yellow,\n        Light::Yellow => Light::Red,\n    }\n}",
+    "replace": "//! Traffic-light transitions.\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Light {\n    Red,\n    Green,\n    Yellow,\n}\n\npub fn next(light: Light) -> Light {\n    match light {\n        Light::Red => Light::Green,\n        Light::Green => Light::Red,\n        Light::Yellow => Light::Red,\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-09-state-cycle (tree 725259357c13da32d543088a93aaed9d4a4a74a21624ce35bd532115482daf80) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

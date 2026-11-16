@@ -1,0 +1,86 @@
+{
+  "capability": "Escape embedded quotes and quote newline fields, not only comma fields. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 16,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-07-csv-quoting",
+    "source_split": "calibration",
+    "source_tree_sha256": "2cefb838404686ea7f13e6f6aa8191cd39199cd8ee40b7191a03e01ef2a7b37d",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! CSV field quoting.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"\\\"\\\"\"))\n    } else {\n        value.to_string()\n    }\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! CSV field quoting.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"'\"))\n    } else {\n        value.to_string()\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! CSV field quoting, currently only for commas.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') {\n        format!(\"\\\"{value}\\\"\")\n    } else {\n        value.to_string()\n    }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::field;\n\n    #[test]\n    fn quotes_a_comma_field() {\n        assert_eq!(field(\"a,b\"), \"\\\"a,b\\\"\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! CSV field quoting.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') {\n        format!(\"\\\"{value}\\\"\")\n    } else {\n        value.to_string()\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-07-csv-quoting--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! CSV field quoting.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"\\\"\\\"\"))\n    } else {\n        value.to_string()\n    }\n}",
+    "replace": "//! CSV field quoting.\n\npub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"'\"))\n    } else {\n        value.to_string()\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-07-csv-quoting (tree 2cefb838404686ea7f13e6f6aa8191cd39199cd8ee40b7191a03e01ef2a7b37d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

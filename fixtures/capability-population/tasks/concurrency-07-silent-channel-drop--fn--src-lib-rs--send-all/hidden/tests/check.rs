@@ -1,0 +1,24 @@
+use concurrency_07_silent_channel_drop::send_all;
+use std::sync::mpsc::sync_channel;
+
+#[test]
+fn sends_when_there_is_room() {
+    let (sender, receiver) = sync_channel(2);
+    assert_eq!(send_all(&sender, &[1, 2]), Ok(()));
+    assert_eq!(receiver.recv(), Ok(1));
+    assert_eq!(receiver.recv(), Ok(2));
+}
+
+#[test]
+fn a_full_channel_is_an_error() {
+    let (sender, _receiver) = sync_channel(1);
+    sender.try_send(9).unwrap();
+    assert_eq!(send_all(&sender, &[1]), Err("channel full".to_string()));
+}
+
+#[test]
+fn a_disconnected_channel_is_an_error() {
+    let (sender, receiver) = sync_channel(1);
+    drop(receiver);
+    assert_eq!(send_all(&sender, &[1]), Err("disconnected".to_string()));
+}

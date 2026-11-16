@@ -1,0 +1,13 @@
+[package]
+name = "deps_04_unknown_feature"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+codec = { path = "dep", features = ["json"] }

@@ -1,0 +1,101 @@
+{
+  "capability": "Resolve an overlapping blanket impl by implementing the concrete types only. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-02-coherence",
+    "source_split": "calibration",
+    "source_tree_sha256": "37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"value: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "kind": "operator-inversion",
+        "label": "C",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text:{self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"value: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "kind": "initial",
+        "label": "F",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-02-coherence--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0119"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}",
+    "replace": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text:{self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-02-coherence (tree 37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

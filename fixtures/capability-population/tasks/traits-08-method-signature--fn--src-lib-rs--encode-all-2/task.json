@@ -1,0 +1,85 @@
+{
+  "capability": "Match a trait method's parameter type in its implementation. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-08-method-signature",
+    "source_split": "scored",
+    "source_tree_sha256": "12162d51209b4bada4ba35b9af58f8c20dd7c85f8aedc5760705d3121eb3f60a",
+    "target": "encode_all"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n    values.iter().rev().map(|value| codec.encode(*value)).collect()\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the iteration reversed (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n    values.iter().filter(|value| codec.encode(*value)).collect()\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n        format!(\"{value:x}\")\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the body of the sibling function `encode` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n    values.iter().map(|value| codec.encode(*value)).collect()\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "encode_all",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-08-method-signature--fn--src-lib-rs--encode-all-2",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n    values.iter().map(|value| codec.encode(*value)).collect()\n}",
+    "replace": "pub fn encode_all<T: Codec>(codec: &T, values: &[u32]) -> Vec<String> {\n    values.iter().rev().map(|value| codec.encode(*value)).collect()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `encode_all` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-08-method-signature (tree 12162d51209b4bada4ba35b9af58f8c20dd7c85f8aedc5760705d3121eb3f60a) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

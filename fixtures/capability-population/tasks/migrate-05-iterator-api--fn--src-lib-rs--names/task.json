@@ -1,0 +1,101 @@
+{
+  "capability": "Replace a removed collection-returning API with the callback API. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "migrate-05-iterator-api",
+    "source_split": "scored",
+    "source_tree_sha256": "9fd899257ce771b249810e5eeae6c5a964da587894d6dbeab5fd0f7ac9b118ee",
+    "target": "names"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn names(input: &str) -> Vec<String> {\n    items::scan(input, &mut |item| names.push(item.name.to_string()));\n    names\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_string()));\n    names\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_uppercase()));\n    names\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn names(input: &str) -> Vec<String> {\n    items::collect(input).into_iter().map(|item| item.name.to_string()).collect()\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &|item| names.push(item.name.to_string()));\n    names\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the mutable borrow downgraded (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.as_str()));\n    names\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "names",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-05-iterator-api--fn--src-lib-rs--names",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_string()));\n    names\n}",
+    "replace": "pub fn names(input: &str) -> Vec<String> {\n    let mut names = Vec::new();\n    items::scan(input, &mut |item| names.push(item.name.to_uppercase()));\n    names\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `names` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-05-iterator-api (tree 9fd899257ce771b249810e5eeae6c5a964da587894d6dbeab5fd0f7ac9b118ee) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

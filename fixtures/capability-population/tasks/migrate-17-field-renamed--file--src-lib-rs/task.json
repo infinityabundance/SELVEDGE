@@ -1,0 +1,94 @@
+{
+  "capability": "Read a renamed struct field after a dependency upgrade. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-17-field-renamed",
+    "source_split": "scored",
+    "source_tree_sha256": "4feacbb2eeb6fee1115eccd4b7da6d046548ef7de512ed6d0921cb8dcfc6ed82",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Doubling a measurement.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.value * 2.0)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Doubling a measurement.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.amount * 2.1)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Doubling a measurement.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.amount * 2.0)\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Doubling a measurement.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.amount)\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Doubling a measurement. This does not build: version 2 renamed the\n//! field.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.value * 2.0)\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-17-field-renamed--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0609"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Doubling a measurement.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.amount * 2.0)\n}",
+    "replace": "//! Doubling a measurement.\n\npub fn doubled(text: &str) -> Option<f64> {\n    measure::load(text).map(|measure| measure.amount)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-17-field-renamed (tree 4feacbb2eeb6fee1115eccd4b7da6d046548ef7de512ed6d0921cb8dcfc6ed82) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,101 @@
+{
+  "capability": "Reject a numeric identifier that carries a leading zero. (format: patch-selection; family: patch-function)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 3,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-11-leading-zero-id",
+    "source_split": "scored",
+    "source_tree_sha256": "4da735eeb00a3014253be776579f5d4a3d343a676b15373fd407c28457340483",
+    "target": "parse_id"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 1 || text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the conjunction loosened to a disjunction (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() - 1 > 1 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the length made off by one (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 1 && text.starts_with('1') {\n        return None;\n    }\n    text.parse().ok()\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 1 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 3 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn parse_id(text: &str) -> Option<u32> {\n    text.parse().ok()\n}",
+        "kind": "initial",
+        "label": "F",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "parse_id",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "semantic-11-leading-zero-id--fn--src-lib-rs--parse-id",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 1 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}",
+    "replace": "pub fn parse_id(text: &str) -> Option<u32> {\n    if text.len() > 3 && text.starts_with('0') {\n        return None;\n    }\n    text.parse().ok()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `parse_id` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-11-leading-zero-id (tree 4da735eeb00a3014253be776579f5d4a3d343a676b15373fd407c28457340483) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,94 @@
+{
+  "capability": "Complete a trait implementation split across modules. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 6,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-16-missing-associated-item",
+    "source_split": "scored",
+    "source_tree_sha256": "96dee5531c7a62b50343d0219fffba90ddcd97bcce44cf895f135a845acae1a5",
+    "target": "src/memory.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/memory.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! An in-memory sink.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! An in-memory sink.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }\n\n    fn finish(&mut self) -> Result<(), Self::Error> {\n        Ok(())\n    }\n}\n",
+        "kind": "operator-inversion",
+        "label": "B",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! An in-memory sink.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }\n\n    fn finish(&mut self) -> Result<(), Self::Error> {\n        Ok(())\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! An in-memory sink.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Err(())\n    }\n\n    fn finish(&mut self) -> Result<(), Self::Error> {\n        Ok(())\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! An in-memory sink. This does not compile: the impl omits `finish`.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/memory.rs"
+  },
+  "id": "repo-16-missing-associated-item--file--src-memory-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/memory.rs",
+    "find": "//! An in-memory sink.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Ok(())\n    }\n\n    fn finish(&mut self) -> Result<(), Self::Error> {\n        Ok(())\n    }\n}",
+    "replace": "//! An in-memory sink.\n\nuse crate::traits::Sink;\n\n#[derive(Default)]\npub struct Memory {\n    pub bytes: Vec<u8>,\n}\n\nimpl Sink for Memory {\n    type Error = ();\n\n    fn accept(&mut self, value: u8) -> Result<(), Self::Error> {\n        self.bytes.push(value);\n        Err(())\n    }\n\n    fn finish(&mut self) -> Result<(), Self::Error> {\n        Ok(())\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-16-missing-associated-item (tree 96dee5531c7a62b50343d0219fffba90ddcd97bcce44cf895f135a845acae1a5) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

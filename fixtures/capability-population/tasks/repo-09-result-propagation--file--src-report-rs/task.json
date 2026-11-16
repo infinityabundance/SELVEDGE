@@ -1,0 +1,78 @@
+{
+  "capability": "Propagate a return-type change from an API module to its consumers. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 6,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-09-result-propagation",
+    "source_split": "calibration",
+    "source_tree_sha256": "8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915",
+    "target": "src/report.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/report.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Report formatting.\n\nuse crate::api;\n\npub fn describe(key: &str) -> String {\n    match api::fetch(key) {\n        Some(value) => format!(\"{key}={value}\"),\n        None => format!(\"{key}=missing\"),\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Report formatting.\n\nuse crate::api;\n\npub fn describe(key: &str) -> String {\n    match api::fetch(key) {\n        Ok(value) => format!(\"{key}={value}\"),\n        Err(_) => format!(\"{key}=missing\"),\n    }\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Report formatting, still matching the old Option API.\n\nuse crate::api;\n\npub fn describe(key: &str) -> String {\n    match api::fetch(key) {\n        Some(value) => format!(\"{key}={value}\"),\n        None => format!(\"{key}=missing\"),\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/report.rs"
+  },
+  "id": "repo-09-result-propagation--file--src-report-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/report.rs",
+    "find": "//! Report formatting.\n\nuse crate::api;\n\npub fn describe(key: &str) -> String {\n    match api::fetch(key) {\n        Ok(value) => format!(\"{key}={value}\"),\n        Err(_) => format!(\"{key}=missing\"),\n    }\n}",
+    "replace": "//! Report formatting, still matching the old Option API.\n\nuse crate::api;\n\npub fn describe(key: &str) -> String {\n    match api::fetch(key) {\n        Some(value) => format!(\"{key}={value}\"),\n        None => format!(\"{key}=missing\"),\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-09-result-propagation (tree 8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

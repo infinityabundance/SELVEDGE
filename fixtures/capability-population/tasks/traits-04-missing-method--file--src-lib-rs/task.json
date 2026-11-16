@@ -1,0 +1,94 @@
+{
+  "capability": "Complete a trait impl that omits a required method. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 6,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-04-missing-method",
+    "source_split": "scored",
+    "source_tree_sha256": "d09e5d67ee540665da614f9755695dfaaa9660fc2c9ea34e8e9fb60312823cdd",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side + self.side\n    }\n\n    fn name(&self) -> &'static str {\n        \"square\"\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shapes. `Square` does not implement the full trait.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side * self.side\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side * self.side\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side * self.side\n    }\n\n    fn name(&self) -> &'static str {\n        \"square\"\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.2}\", shape.name(), shape.area())\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the literal 1 widened to 2 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side * self.side\n    }\n\n    fn name(&self) -> &'static str {\n        \"square\"\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-04-missing-method--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side * self.side\n    }\n\n    fn name(&self) -> &'static str {\n        \"square\"\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}",
+    "replace": "//! Shapes.\n\npub trait Shape {\n    fn area(&self) -> f64;\n    fn name(&self) -> &'static str;\n}\n\npub struct Square {\n    pub side: f64,\n}\n\nimpl Shape for Square {\n    fn area(&self) -> f64 {\n        self.side + self.side\n    }\n\n    fn name(&self) -> &'static str {\n        \"square\"\n    }\n}\n\npub fn describe<T: Shape>(shape: &T) -> String {\n    format!(\"{}:{:.1}\", shape.name(), shape.area())\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-04-missing-method (tree d09e5d67ee540665da614f9755695dfaaa9660fc2c9ea34e8e9fb60312823cdd) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,86 @@
+{
+  "capability": "Claim a one-shot flag with compare-exchange on the released value. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 17,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-17-compare-exchange-claim",
+    "source_split": "calibration",
+    "source_tree_sha256": "69979612e26823363d3b6f0ac3a33be71175638eb7c3d7bc85d7607aa186070b",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A one-shot claim.\n\nuse std::sync::atomic::{AtomicBool, Ordering};\n\npub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, false, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A one-shot claim. The visible test fails: the compare-exchange\n//! compares against the claimed value, not the free one.\n\nuse std::sync::atomic::{AtomicBool, Ordering};\n\npub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(true, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::claim;\n    use std::sync::atomic::AtomicBool;\n\n    #[test]\n    fn visible_first_claim() {\n        let flag = AtomicBool::new(false);\n        assert!(claim(&flag));\n    }\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A one-shot claim.\n\nuse std::sync::atomic::{AtomicBool, Ordering};\n\npub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(true, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A one-shot claim.\n\nuse std::sync::atomic::{AtomicBool, Ordering};\n\npub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-17-compare-exchange-claim--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A one-shot claim.\n\nuse std::sync::atomic::{AtomicBool, Ordering};\n\npub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}",
+    "replace": "//! A one-shot claim.\n\nuse std::sync::atomic::{AtomicBool, Ordering};\n\npub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, false, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-17-compare-exchange-claim (tree 69979612e26823363d3b6f0ac3a33be71175638eb7c3d7bc85d7607aa186070b) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

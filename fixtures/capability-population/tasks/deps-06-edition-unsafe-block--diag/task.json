@@ -1,0 +1,75 @@
+{
+  "capability": "Wrap an unsafe operation in an unsafe block under edition 2024. (format: diagnostic-identification)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "deps-06-edition-unsafe-block",
+    "source_split": "scored",
+    "source_tree_sha256": "db572da31405be855244a26c68dd2a8422daec46012d40f3412bd7bcd68943c4",
+    "target": "E0133"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0133"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      }
+    ]
+  },
+  "id": "deps-06-edition-unsafe-block--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0133"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unsafe { *pointer }",
+    "replace": "unsafe { *pointer + 1 }"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/deps-06-edition-unsafe-block (tree db572da31405be855244a26c68dd2a8422daec46012d40f3412bd7bcd68943c4) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

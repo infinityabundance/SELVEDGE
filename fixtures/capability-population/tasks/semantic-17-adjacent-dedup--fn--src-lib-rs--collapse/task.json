@@ -1,0 +1,93 @@
+{
+  "capability": "Remove only adjacent duplicate values, preserving later repeats. (format: patch-selection; family: patch-function)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 13,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-17-adjacent-dedup",
+    "source_split": "scored",
+    "source_tree_sha256": "6f9d327eefe858c6353767d8f01797832a182cdcb4333a1e9a9ad146e29499b0",
+    "target": "collapse"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if !(out.last() != Some(value)) {\n            out.push(*value);\n        }\n    }\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the guard negated (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    for value in values {\n        if out.last() != Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() != Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() == Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut seen = BTreeSet::new();\n    values\n        .iter()\n        .copied()\n        .filter(|value| seen.insert(*value))\n        .collect()\n}",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "collapse",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "semantic-17-adjacent-dedup--fn--src-lib-rs--collapse",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() != Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}",
+    "replace": "pub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() == Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `collapse` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-17-adjacent-dedup (tree 6f9d327eefe858c6353767d8f01797832a182cdcb4333a1e9a9ad146e29499b0) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

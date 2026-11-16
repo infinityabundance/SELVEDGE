@@ -1,0 +1,93 @@
+{
+  "capability": "Take a non-reentrant mutex exactly once on a code path. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-16-non-reentrant-lock",
+    "source_split": "scored",
+    "source_tree_sha256": "3c2d45cd0d2e162a1515513a410f439b65ecdc9116851f9b1e66497adb6ec844",
+    "target": "read_twice"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    let value = *shared.lock().unwrap();\n    value * 3\n}",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    let first = shared.lock().unwrap();\n    let second = shared.lock().unwrap();\n    *first + *second\n}",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    let value = *shared.lock().unwrap_or_default();\n    value * 2\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "`unwrap` replaced by `unwrap_or_default` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    value * 2\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    let value = *shared.lock().unwrap();\n    value * 2\n}",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "read_twice",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-16-non-reentrant-lock--fn--src-lib-rs--read-twice",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    let value = *shared.lock().unwrap();\n    value * 2\n}",
+    "replace": "pub fn read_twice(shared: &Mutex<u32>) -> u32 {\n    let value = *shared.lock().unwrap();\n    value * 3\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `read_twice` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-16-non-reentrant-lock (tree 3c2d45cd0d2e162a1515513a410f439b65ecdc9116851f9b1e66497adb6ec844) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

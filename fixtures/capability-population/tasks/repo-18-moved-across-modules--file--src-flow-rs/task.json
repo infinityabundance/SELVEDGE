@@ -1,0 +1,86 @@
+{
+  "capability": "Measure a value before moving it across a module boundary. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-18-moved-across-modules",
+    "source_split": "calibration",
+    "source_tree_sha256": "1b29963277403ab990ce0da4425125c6fa9c45b466101ad562efaf6416ca667e",
+    "target": "src/flow.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/flow.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! The registration flow.\n\nuse crate::registry::Registry;\n\npub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    let snapshot = registry;\n    let count = registry.count();\n    count + snapshot.count()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The registration flow.\n\nuse crate::registry::Registry;\n\npub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count()\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! The registration flow.\n\nuse crate::registry::Registry;\n\npub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count() + 1\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The registration flow. This does not compile: the registry is used\n//! after it is moved.\n\nuse crate::registry::Registry;\n\npub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    let snapshot = registry;\n    let count = registry.count();\n    count + snapshot.count()\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/flow.rs"
+  },
+  "id": "repo-18-moved-across-modules--file--src-flow-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/flow.rs",
+    "find": "//! The registration flow.\n\nuse crate::registry::Registry;\n\npub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count()\n}",
+    "replace": "//! The registration flow.\n\nuse crate::registry::Registry;\n\npub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count() + 1\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-18-moved-across-modules (tree 1b29963277403ab990ce0da4425125c6fa9c45b466101ad562efaf6416ca667e) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

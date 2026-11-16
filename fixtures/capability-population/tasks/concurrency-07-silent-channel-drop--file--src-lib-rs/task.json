@@ -1,0 +1,93 @@
+{
+  "capability": "Report channel saturation instead of silently dropping values. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 14,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "concurrency-07-silent-channel-drop",
+    "source_split": "scored",
+    "source_tree_sha256": "3f0eb4408c9af6a5b6d0cd27bdebe3ecc7c7ead4bbd13e19054dc62b078d9f46",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Send every value and report saturation.\n\nuse std::sync::mpsc::SyncSender;\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Send every value and report saturation.\n\nuse std::sync::mpsc::{SyncSender, TrySendError};\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        let _ = sender.try_send(*value);\n    }\n    Ok(())\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Send every value and report saturation.\n\nuse std::sync::mpsc::{SyncSender, TrySendError};\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Send every value and report saturation.\n\nuse std::sync::mpsc::{SyncSender, TrySendError};\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Send every value, currently discarding every error.\n\nuse std::sync::mpsc::SyncSender;\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        let _ = sender.try_send(*value);\n    }\n    Ok(())\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-07-silent-channel-drop--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Send every value and report saturation.\n\nuse std::sync::mpsc::{SyncSender, TrySendError};\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}",
+    "replace": "//! Send every value and report saturation.\n\nuse std::sync::mpsc::{SyncSender, TrySendError};\n\npub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-07-silent-channel-drop (tree 3f0eb4408c9af6a5b6d0cd27bdebe3ecc7c7ead4bbd13e19054dc62b078d9f46) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

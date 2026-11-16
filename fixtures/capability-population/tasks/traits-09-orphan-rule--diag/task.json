@@ -1,0 +1,75 @@
+{
+  "capability": "Respect the orphan rule with a local newtype wrapper. (format: diagnostic-identification)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-09-orphan-rule",
+    "source_split": "scored",
+    "source_tree_sha256": "a07b053f94f2bf46eede67867d836eee014b5a651b0a70b79f380ad42c900361",
+    "target": "E0117"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0117"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as immutable while it is also borrowed as mutable",
+        "id": "E0502"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "temporary value dropped while borrowed",
+        "id": "E0716"
+      }
+    ]
+  },
+  "id": "traits-09-orphan-rule--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0117"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".join(\",\")",
+    "replace": ".join(\"-\")"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/traits-09-orphan-rule (tree a07b053f94f2bf46eede67867d836eee014b5a651b0a70b79f380ad42c900361) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,86 @@
+{
+  "capability": "Debug a rounding boundary in a chunk count, including overflow safety. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 15,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-01-chunk-boundary",
+    "source_split": "calibration",
+    "source_tree_sha256": "b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len / size\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Chunk arithmetic. The visible test fails: the count is short by one\n//! whenever the length is not an exact multiple of the chunk size.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len / size\n}\n\n#[cfg(test)]\nmod tests {\n    use super::chunk_count;\n\n    #[test]\n    fn five_items_in_chunks_of_two_need_three_chunks() {\n        assert_eq!(chunk_count(5, 2), 3);\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size != 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}\n",
+        "kind": "operator-inversion",
+        "label": "D",
+        "provenance": "the equality test inverted to `!=` (operator-inversion)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-01-chunk-boundary--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+    "replace": "//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len / size\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-01-chunk-boundary (tree b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Migrate a call site to a dependency that now takes a path type. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "migrate-08-path-api",
+    "source_split": "scored",
+    "source_tree_sha256": "d1ec274210dab395885893b1aba3524e3e3d1dc4775b7e47eab63e178852b17b",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! File stems through the vendored crate. This does not build: the\n//! API now takes `&Path`.\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(Path::new(name))\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! File stems through the vendored crate.\n\nuse std::path::Path;\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(name)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! File stems through the vendored crate.\n\nuse std::path::Path;\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(Path::new(name))\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! File stems through the vendored crate.\n\nuse std::path::Path;\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(Path::new(\"fixed\"))\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! File stems through the vendored crate. This does not build: the\n//! API now takes `&Path`.\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(name)\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-08-path-api--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! File stems through the vendored crate.\n\nuse std::path::Path;\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(Path::new(name))\n}",
+    "replace": "//! File stems through the vendored crate.\n\nuse std::path::Path;\n\npub fn stem_of(name: &str) -> Option<String> {\n    storage::stem(Path::new(\"fixed\"))\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-08-path-api (tree d1ec274210dab395885893b1aba3524e3e3d1dc4775b7e47eab63e178852b17b) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

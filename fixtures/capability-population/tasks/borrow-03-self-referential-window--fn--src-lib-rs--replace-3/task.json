@@ -1,0 +1,85 @@
+{
+  "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references). (format: patch-selection; family: patch-function)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-03-self-referential-window",
+    "source_split": "calibration",
+    "source_tree_sha256": "05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78",
+    "target": "replace"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn replace(&mut self, text: String) {\n        Self { text }\n    }",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the body of the sibling function `new` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn replace(&mut self, text: String) {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the body of the sibling function `first` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn replace(&self, text: String) {\n        self.text = text;\n    }",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the mutable borrow downgraded (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "replace",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "borrow-03-self-referential-window--fn--src-lib-rs--replace-3",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }",
+    "replace": "pub fn replace(&self, text: String) {\n        self.text = text;\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `replace` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-03-self-referential-window (tree 05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

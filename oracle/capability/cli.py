@@ -255,6 +255,47 @@ def main(argv: list[str]) -> int:
                         help="the Court F receipt the p95 value comes from")
     level3.add_argument("--out", required=True)
 
+    population = subparsers.add_parser(
+        "population-derive",
+        help="build the S31 selection-item population from the source suite")
+    population.add_argument("--from-suite", dest="population_suite",
+                            default=None,
+                            help="the source suite root (default: the suite root)")
+    population.add_argument("--out", required=True)
+    population.add_argument("--force", action="store_true")
+    population.add_argument("--max-scored-chars", type=int,
+                            default=None,
+                            help="drop an item whose prompt plus largest candidate "
+                                 "exceeds this many characters (exactness bound)")
+    population.add_argument("--workroot",
+                            default="/work/target/capability-population")
+    population.add_argument("--no-infer-failures", action="store_true",
+                            help="keep the predicted rustc code instead of measuring "
+                                 "it on the initial state (needs cargo to infer)")
+    population.add_argument("--only-source", default=None,
+                            help="comma-separated source ids (a smoke subset)")
+
+    population_check = subparsers.add_parser(
+        "population-check",
+        help="verify the population tree against its receipt and manifest")
+    population_check.add_argument("--root", required=True)
+
+    population_screen = subparsers.add_parser(
+        "population-screen",
+        help="pairwise prompt near-duplicate screen inside the population")
+    population_screen.add_argument("--root", required=True)
+    population_screen.add_argument("--out", required=True)
+    population_screen.add_argument("--threshold", type=float, default=None)
+
+    population_seal = subparsers.add_parser(
+        "population-seal",
+        help="recompute the population receipt from the tree after verification")
+    population_seal.add_argument("--root", required=True)
+    population_seal.add_argument("--rebalance", action="store_true",
+                                 help="re-balance reference positions first")
+    population_seal.add_argument("--verification", default=None,
+                                 help="the verify-formats receipt to bind")
+
     args = parser.parse_args(argv)
 
     if args.command == "manifest":
@@ -575,6 +616,75 @@ def main(argv: list[str]) -> int:
             calibrate_module._write_json(args.suite_version_out, decision["version"])
             print(f"capability_court: calibrated suite version -> "
                   f"{args.suite_version_out}")
+        return 0
+
+    if args.command == "population-derive":
+        from . import population as population_module
+
+        source = args.population_suite or args.suite
+        maximum = (args.max_scored_chars
+                   if args.max_scored_chars is not None
+                   else population_module.DEFAULT_MAX_SCORED_CHARS)
+        payload = population_module.derive_population(
+            source, args.out, force=args.force, max_scored_chars=maximum,
+            workroot=args.workroot,
+            infer_failures=not args.no_infer_failures,
+            only_sources=(args.only_source.split(",") if args.only_source
+                          else None))
+        counts = payload["counts"]
+        print(f"capability_court: population {counts['items']} items "
+              f"({counts['executable_items']} executable, "
+              f"{counts['diagnostic_items']} diagnostic) into {args.out}")
+        for category, count in sorted(counts["per_category_executable"].items()):
+            print(f"  {category:18s} {count:3d} executable")
+        if payload["skipped"]:
+            print(f"  skipped {len(payload['skipped'])} derivations; see POPULATION.json")
+        if payload["dropped_too_long"]:
+            print(f"  dropped {len(payload['dropped_too_long'])} items above the "
+                  "scored-size bound")
+        return 0
+
+    if args.command == "population-check":
+        from . import population as population_module
+
+        ok, message, _ = population_module.check(args.root)
+        print(f"capability_court: {message}")
+        return 0 if ok else 3
+
+    if args.command == "population-screen":
+        from . import population as population_module
+
+        threshold = (args.threshold if args.threshold is not None
+                     else population_module.PROMPT_NEAR_DUPLICATE)
+        payload = population_module.screen(args.root, threshold=threshold)
+        payload.update({"stamp": court.stamp_now(), "created_utc": court.utc_now(),
+                        "revision": court.revision(REPO),
+                        "command": " ".join(sys.argv)})
+        court.write_json_atomic(args.out, payload)
+        print(f"capability_court: {payload['verdict']}; {payload['items']} items, "
+              f"{payload['pairs']} pairs, maximum similarity "
+              f"{payload['maximum_similarity']:.4f} -> {args.out}")
+        for entry in payload["rejected"][:5]:
+            print(f"  {entry['similarity']:.4f} {entry['left']} vs {entry['right']}")
+        return 0 if payload["verdict"] == "pass" else 3
+
+    if args.command == "population-seal":
+        from . import population as population_module
+
+        payload = population_module.seal(
+            args.root, rebalance=args.rebalance,
+            verification=args.verification)
+        counts = payload["counts"]
+        print(f"capability_court: sealed {counts['items']} items "
+              f"({counts['executable_items']} executable, "
+              f"{counts['diagnostic_items']} diagnostic)")
+        for category, count in sorted(counts["per_category_executable"].items()):
+            print(f"  {category:18s} {count:3d} executable")
+        if payload.get("verification"):
+            print(f"  verification {payload['verification']['verdict']} "
+                  f"({payload['verification']['passed']}/"
+                  f"{payload['verification']['tasks']}), distractor statuses "
+                  f"{payload['verification']['distractor_status']}")
         return 0
 
     if args.command == "level3":

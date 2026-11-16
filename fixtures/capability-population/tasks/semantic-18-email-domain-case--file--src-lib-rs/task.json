@@ -1,0 +1,93 @@
+{
+  "capability": "Lowercase only the domain of an address, preserving the local part. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 17,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-18-email-domain-case",
+    "source_split": "scored",
+    "source_tree_sha256": "ee8929023a3b07d7da85a26598d5928cb6c245823a2ecefca2aeec8bfa9a8e5c",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Address normalisation: only the domain is lowercased.\n\npub fn normalise(text: &str) -> String {\n    text.to_lowercase()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::normalise;\n\n    #[test]\n    fn visible_already_lowercase() {\n        assert_eq!(normalise(\"user@example.com\"), \"user@example.com\");\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Address normalisation: only the domain is lowercased.\n\npub fn normalise(text: &str) -> String {\n    match text.split_once('@') {\n        Some((local, domain)) => {\n            format!(\"{}@{}\", local, domain.to_lowercase())\n        }\n        None => text.as_str(),\n    }\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Address normalisation: only the domain is lowercased.\n\npub fn normalise(text: &str) -> String {\n    match text.split_once('@') {\n        Some((local, domain)) => {\n            format!(\"{}@{}\", local, domain.to_lowercase())\n        }\n        None => text.to_string(),\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Address normalisation: only the domain is lowercased.\n\npub fn normalise(text: &str) -> String {\n    match text.split_once('@') {\n        Some((local, domain)) => {\n            format!(\"{}@{}\", local, domain.to_uppercase())\n        }\n        None => text.to_string(),\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Address normalisation with whole-string lowercasing.\n\npub fn normalise(text: &str) -> String {\n    text.to_lowercase()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::normalise;\n\n    #[test]\n    fn visible_already_lowercase() {\n        assert_eq!(normalise(\"user@example.com\"), \"user@example.com\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-18-email-domain-case--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Address normalisation: only the domain is lowercased.\n\npub fn normalise(text: &str) -> String {\n    match text.split_once('@') {\n        Some((local, domain)) => {\n            format!(\"{}@{}\", local, domain.to_lowercase())\n        }\n        None => text.to_string(),\n    }\n}",
+    "replace": "//! Address normalisation: only the domain is lowercased.\n\npub fn normalise(text: &str) -> String {\n    match text.split_once('@') {\n        Some((local, domain)) => {\n            format!(\"{}@{}\", local, domain.to_uppercase())\n        }\n        None => text.to_string(),\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-18-email-domain-case (tree ee8929023a3b07d7da85a26598d5928cb6c245823a2ecefca2aeec8bfa9a8e5c) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

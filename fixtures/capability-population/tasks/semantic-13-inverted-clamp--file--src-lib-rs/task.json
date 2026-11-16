@@ -1,0 +1,86 @@
+{
+  "capability": "Honour the documented order when a clamp's bounds are inverted. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 15,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-13-inverted-clamp",
+    "source_split": "scored",
+    "source_tree_sha256": "9378016da562a4993cc62a75c8c0b6958215ffd431af6041dd6d57d7cc9ff910",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Clamping with an inverted-bound rule.\n\npub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return low;\n    }\n    value.max(low).min(high)\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Clamping with an inverted-bound rule.\n\npub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return high;\n    }\n    value.max(low).min(high)\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Clamping with the standard two-step form.\n\npub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    value.max(low).min(high)\n}\n\n#[cfg(test)]\nmod tests {\n    use super::clamp;\n\n    #[test]\n    fn visible_inside_the_bounds() {\n        assert_eq!(clamp(5, 0, 10), 5);\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Clamping with an inverted-bound rule.\n\npub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    value.max(low).min(high)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-13-inverted-clamp--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Clamping with an inverted-bound rule.\n\npub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return low;\n    }\n    value.max(low).min(high)\n}",
+    "replace": "//! Clamping with an inverted-bound rule.\n\npub fn clamp(value: i64, low: i64, high: i64) -> i64 {\n    if low > high {\n        return high;\n    }\n    value.max(low).min(high)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-13-inverted-clamp (tree 9378016da562a4993cc62a75c8c0b6958215ffd431af6041dd6d57d7cc9ff910) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

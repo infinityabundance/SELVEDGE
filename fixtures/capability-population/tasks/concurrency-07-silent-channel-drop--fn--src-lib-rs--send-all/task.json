@@ -1,0 +1,85 @@
+{
+  "capability": "Report channel saturation instead of silently dropping values. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 10,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "concurrency-07-silent-channel-drop",
+    "source_split": "scored",
+    "source_tree_sha256": "3f0eb4408c9af6a5b6d0cd27bdebe3ecc7c7ead4bbd13e19054dc62b078d9f46",
+    "target": "send_all"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        let _ = sender.try_send(*value);\n    }\n    Ok(())\n}",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".as_str())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "send_all",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-07-silent-channel-drop--fn--src-lib-rs--send-all",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"channel full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}",
+    "replace": "pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    for value in values {\n        match sender.try_send(*value) {\n            Ok(()) => {}\n            Err(TrySendError::Full(_)) => {\n                return Err(\"full\".to_string())\n            }\n            Err(TrySendError::Disconnected(_)) => {\n                return Err(\"disconnected\".to_string())\n            }\n        }\n    }\n    Ok(())\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `send_all` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-07-silent-channel-drop (tree 3f0eb4408c9af6a5b6d0cd27bdebe3ecc7c7ead4bbd13e19054dc62b078d9f46) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

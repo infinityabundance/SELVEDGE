@@ -1,0 +1,93 @@
+{
+  "capability": "Take a mutable reference when a function mutates its argument. (format: patch-selection; family: patch-function)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "borrow-13-mutate-through-shared",
+    "source_split": "calibration",
+    "source_tree_sha256": "609291d78e2f05de702c645fae42cf3b0e95fe88168812640bf7b071de054b5f",
+    "target": "stamp"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() - 1 {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the length made off by one (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] -= 1;\n    }\n    entries.iter().sum()\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the accumulation reversed (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "stamp",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "borrow-13-mutate-through-shared--fn--src-lib-rs--stamp",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}",
+    "replace": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `stamp` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-13-mutate-through-shared (tree 609291d78e2f05de702c645fae42cf3b0e95fe88168812640bf7b071de054b5f) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

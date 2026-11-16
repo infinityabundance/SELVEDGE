@@ -1,0 +1,85 @@
+{
+  "capability": "Propagate one lifetime annotation through a three-module call chain. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-01-lifetime-propagation",
+    "source_split": "scored",
+    "source_tree_sha256": "822ff103df125911de6a1cdb5fd6db35f311a402a4256689a705e0fb96051a3d",
+    "target": "src/report.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/report.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> String {\n    format!(\"{} costs {}\", item.name, item.price)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "a statement dropped from the reference file (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> String {\n    let item = query::cheapest(items, fallback);\n    format!(\"{} costs {}\", item.name, item.price)\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest(items: &[Item], fallback: &Item) -> String {\n    let item = query::cheapest(items, fallback).unwrap();\n    format!(\"{} costs {}\", item.name, item.price)\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> String {\n    let item = query::cheapest(fallback, items);\n    format!(\"{} costs {}\", item.name, item.price)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "two call arguments swapped (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/report.rs"
+  },
+  "id": "repo-01-lifetime-propagation--file--src-report-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/report.rs",
+    "find": "//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> String {\n    let item = query::cheapest(items, fallback);\n    format!(\"{} costs {}\", item.name, item.price)\n}",
+    "replace": "//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest(items: &[Item], fallback: &Item) -> String {\n    let item = query::cheapest(items, fallback).unwrap();\n    format!(\"{} costs {}\", item.name, item.price)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-01-lifetime-propagation (tree 822ff103df125911de6a1cdb5fd6db35f311a402a4256689a705e0fb96051a3d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

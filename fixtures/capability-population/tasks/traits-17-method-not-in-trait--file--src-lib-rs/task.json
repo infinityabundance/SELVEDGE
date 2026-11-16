@@ -1,0 +1,94 @@
+{
+  "capability": "Put a method that the trait does not declare in an inherent impl. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 13,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-17-method-not-in-trait",
+    "source_split": "calibration",
+    "source_tree_sha256": "44b9066db75998203e3fe58b730256388d0cb711e10e60c4361ca85669268260",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A named tag.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A named tag.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Tag {\n    pub fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n\n    fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A named tag.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Tag {\n    pub fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A named tag.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Tag {\n    pub fn rename(&mut self, new: &str) {\n        self.name.push_str(new);\n    }\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A named tag. The crate does not build: the impl defines a method the\n//! trait does not declare.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n\n    fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-17-method-not-in-trait--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0407"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A named tag.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Tag {\n    pub fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n}",
+    "replace": "//! A named tag.\n\npub trait Named {\n    fn name(&self) -> &str;\n}\n\npub struct Tag {\n    pub name: String,\n}\n\nimpl Tag {\n    pub fn rename(&mut self, new: &str) {\n        self.name.push_str(new);\n    }\n}\n\nimpl Named for Tag {\n    fn name(&self) -> &str {\n        &self.name\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-17-method-not-in-trait (tree 44b9066db75998203e3fe58b730256388d0cb711e10e60c4361ca85669268260) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

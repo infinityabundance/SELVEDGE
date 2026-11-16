@@ -1,0 +1,85 @@
+{
+  "capability": "Convert a borrowed argument where version 2 takes ownership. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-11-owned-argument",
+    "source_split": "scored",
+    "source_tree_sha256": "3c35793f90155abbf0df965e2859d59e45815a1b0398ba46066f4340de39b790",
+    "target": "plate"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn plate(text: &str) -> String {\n    nameplate::render(text)\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn plate(text: &str) -> String {\n    nameplate::render(text.as_str())\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn plate(text: &str) -> String {\n    nameplate::render(text.to_string())\n}",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn plate(text: &str) -> String {\n    nameplate::render(text.to_ascii_uppercase())\n}",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "plate",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-11-owned-argument--fn--src-lib-rs--plate",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn plate(text: &str) -> String {\n    nameplate::render(text.to_string())\n}",
+    "replace": "pub fn plate(text: &str) -> String {\n    nameplate::render(text.to_ascii_uppercase())\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `plate` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-11-owned-argument (tree 3c35793f90155abbf0df965e2859d59e45815a1b0398ba46066f4340de39b790) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

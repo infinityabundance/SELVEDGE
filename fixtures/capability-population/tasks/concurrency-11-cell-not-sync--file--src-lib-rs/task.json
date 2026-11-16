@@ -1,0 +1,94 @@
+{
+  "capability": "Replace an unsynchronised cell with an atomic shared across threads. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 11,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "concurrency-11-cell-not-sync",
+    "source_split": "calibration",
+    "source_tree_sha256": "1846917309313ec123da44bdc677f3d52186dd619798a9694a9af69df5b1190c",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Count from several threads.\n\nuse std::sync::atomic::{AtomicU64, Ordering};\n\npub fn count_with(counter: &AtomicU64, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(2, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Count from several threads. The crate does not compile: `Cell` is\n//! not `Sync`.\n\nuse std::cell::Cell;\n\npub fn count_with(counter: &Cell<u64>, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.set(counter.get() + 1);\n            });\n        }\n    });\n    counter.get()\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Count from several threads.\n\nuse std::cell::Cell;\n\npub fn count_with(counter: &AtomicU64, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Count from several threads.\n\nuse std::sync::atomic::{AtomicU64, Ordering};\n\npub fn count_with(counter: &Cell<u64>, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Count from several threads.\n\nuse std::sync::atomic::{AtomicU64, Ordering};\n\npub fn count_with(counter: &AtomicU64, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-11-cell-not-sync--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Count from several threads.\n\nuse std::sync::atomic::{AtomicU64, Ordering};\n\npub fn count_with(counter: &AtomicU64, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}",
+    "replace": "//! Count from several threads.\n\nuse std::sync::atomic::{AtomicU64, Ordering};\n\npub fn count_with(counter: &AtomicU64, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(2, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-11-cell-not-sync (tree 1846917309313ec123da44bdc677f3d52186dd619798a9694a9af69df5b1190c) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

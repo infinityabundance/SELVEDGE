@@ -1,0 +1,94 @@
+{
+  "capability": "Convert a borrowed argument where version 2 takes ownership. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-11-owned-argument",
+    "source_split": "scored",
+    "source_tree_sha256": "3c35793f90155abbf0df965e2859d59e45815a1b0398ba46066f4340de39b790",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Render a plate.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text.to_ascii_uppercase())\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render a plate. This does not build: version 2 takes the text by\n//! value.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text)\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render a plate.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Render a plate.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text.as_str())\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Render a plate.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text.to_string())\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-11-owned-argument--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Render a plate.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text.to_string())\n}",
+    "replace": "//! Render a plate.\n\npub fn plate(text: &str) -> String {\n    nameplate::render(text.to_ascii_uppercase())\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-11-owned-argument (tree 3c35793f90155abbf0df965e2859d59e45815a1b0398ba46066f4340de39b790) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

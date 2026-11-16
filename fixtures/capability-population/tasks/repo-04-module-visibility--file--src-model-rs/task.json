@@ -1,0 +1,86 @@
+{
+  "capability": "Widen a module-private helper to crate visibility for a sibling module. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-04-module-visibility",
+    "source_split": "scored",
+    "source_tree_sha256": "57de02aaac779ae7ead318e5175d3cfa68f88f458872c85ab7b1dc2ad83f1a0c",
+    "target": "src/model.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/model.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\nfn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\npub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .filter(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\npub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\npub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(1) })\n        .collect()\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/model.rs"
+  },
+  "id": "repo-04-module-visibility--file--src-model-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0603"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/model.rs",
+    "find": "//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\npub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(0) })\n        .collect()\n}",
+    "replace": "//! Record parsing.\n\npub struct Record {\n    pub value: i32,\n}\n\npub(crate) fn load(lines: &[&str]) -> Vec<Record> {\n    lines\n        .iter()\n        .map(|line| Record { value: line.trim().parse().unwrap_or(1) })\n        .collect()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-04-module-visibility (tree 57de02aaac779ae7ead318e5175d3cfa68f88f458872c85ab7b1dc2ad83f1a0c) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Add the conversion a new dependency error type requires at every `?` site. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 1,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "migrate-03-error-conversion",
+    "source_split": "scored",
+    "source_tree_sha256": "6a128bca7b055f69af8c4b127862bc6cfd5c624ea9e45554139a1f0fafa91acb",
+    "target": "count_fields"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text)?;\n    Ok(tokens.len())\n}",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text)?;\n    Ok(tokens.len() - 1)\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the length made off by one (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text);\n    Ok(tokens.len())\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the `?` propagation dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n    Ok(tokens.len())\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n        match error {\n            tokens::Error::Empty => AppError::Empty,\n            tokens::Error::Malformed(field) => AppError::Invalid { field },\n        }\n    }",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the body of the sibling function `from` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "count_fields",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-03-error-conversion--fn--src-lib-rs--count-fields",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text)?;\n    Ok(tokens.len())\n}",
+    "replace": "pub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text)?;\n    Ok(tokens.len() - 1)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `count_fields` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-03-error-conversion (tree 6a128bca7b055f69af8c4b127862bc6cfd5c624ea9e45554139a1f0fafa91acb) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Remove only adjacent duplicate values, preserving later repeats. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 27,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-17-adjacent-dedup",
+    "source_split": "scored",
+    "source_tree_sha256": "6f9d327eefe858c6353767d8f01797832a182cdcb4333a1e9a9ad146e29499b0",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Collapsing adjacent duplicates.\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() != Some(value) {\n            out.push(*value);\n        }\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Collapsing adjacent duplicates.\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() != Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Collapsing adjacent duplicates.\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() == Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Collapsing through a set of seen values.\n\nuse std::collections::BTreeSet;\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut seen = BTreeSet::new();\n    values\n        .iter()\n        .copied()\n        .filter(|value| seen.insert(*value))\n        .collect()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::collapse;\n\n    #[test]\n    fn visible_adjacent_duplicates() {\n        assert_eq!(collapse(&[1, 1, 2]), vec![1, 2]);\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Collapsing adjacent duplicates.\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut seen = BTreeSet::new();\n    values\n        .iter()\n        .copied()\n        .filter(|value| seen.insert(*value))\n        .collect()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::collapse;\n\n    #[test]\n    fn visible_adjacent_duplicates() {\n        assert_eq!(collapse(&[1, 1, 2]), vec![1, 2]);\n    }\n    out\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-17-adjacent-dedup--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Collapsing adjacent duplicates.\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() != Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}",
+    "replace": "//! Collapsing adjacent duplicates.\n\npub fn collapse(values: &[u8]) -> Vec<u8> {\n    let mut out: Vec<u8> = Vec::new();\n    for value in values {\n        if out.last() == Some(value) {\n            out.push(*value);\n        }\n    }\n    out\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-17-adjacent-dedup (tree 6f9d327eefe858c6353767d8f01797832a182cdcb4333a1e9a9ad146e29499b0) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

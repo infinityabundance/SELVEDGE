@@ -1,0 +1,101 @@
+{
+  "capability": "Resolve a shared/mutable borrow conflict by copying the value out. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-02-mutate-while-borrowed",
+    "source_split": "scored",
+    "source_tree_sha256": "57775c08224eab41d9aab968deb68c212b4ca7ae30050c4b4725870d5a771a0a",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(0);\n    values.push(value);\n    last\n}\n",
+        "kind": "operator-inversion",
+        "label": "A",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(0);\n    values.push(value);\n    last\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(1);\n    values.push(value);\n    last\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().unwrap_or(&0);\n    values.push(value);\n    *last\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().unwrap_or(&0);\n    values.push(value);\n    last\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(0);\n    values.push(value);\n    *last\n}\n",
+        "kind": "single-edit-revert",
+        "label": "F",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-02-mutate-while-borrowed--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(0);\n    values.push(value);\n    last\n}",
+    "replace": "//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(1);\n    values.push(value);\n    last\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-02-mutate-while-borrowed (tree 57775c08224eab41d9aab968deb68c212b4ca7ae30050c4b4725870d5a771a0a) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

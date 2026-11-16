@@ -1,0 +1,85 @@
+{
+  "capability": "Call the trait item that exists from a default method. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-13-default-method-missing-item",
+    "source_split": "scored",
+    "source_tree_sha256": "c198fa621b6daffc984c54014fa7a62802d4848564146f68726ac23b7f641f3e",
+    "target": "render"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn render(&self) -> String {\n        self.text.clone()\n    }",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the body of the sibling function `title` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn render(&self) -> String {\n        format!(\"[{}]\", self.title())\n    }",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "fn render(&self) -> String {\n        format!(\"({})\", self.title())\n    }",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn render(&self) -> String {\n        format!(\"[{}]\", self.heading())\n    }",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "render",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-13-default-method-missing-item--fn--src-lib-rs--render",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "fn render(&self) -> String {\n        format!(\"[{}]\", self.title())\n    }",
+    "replace": "fn render(&self) -> String {\n        format!(\"({})\", self.title())\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `render` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-13-default-method-missing-item (tree c198fa621b6daffc984c54014fa7a62802d4848564146f68726ac23b7f641f3e) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Follow a renamed method across a vendored dependency upgrade. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "declared-naive",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-10-method-renamed",
+    "source_split": "scored",
+    "source_tree_sha256": "ad5bc8f880f9522e4dd67349a9e17b20c4ac6b3304e2b72bd620f11c6599a6bf",
+    "target": "running_total"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn running_total(values: &[i64]) -> i64 {\n    for value in values {\n        tally.push(*value);\n    }\n    tally.total()\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn running_total(values: &[i64]) -> i64 {\n    let mut tally = stats::Tally::new();\n    for value in values {\n        tally.push(*value);\n    }\n    tally.total()\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn running_total(values: &[i64]) -> i64 {\n    let mut tally = stats::Tally::new();\n    for value in values {\n        tally.push(*value);\n    }\n    tally.total() * 2\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn running_total(values: &[i64]) -> i64 {\n    let mut tally = stats::Tally::new();\n    for value in values {\n        tally.push(*value);\n    }\n    tally.total().max(0)\n}",
+        "kind": "declared-naive",
+        "label": "D",
+        "provenance": "the source's declared naive fix (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn running_total(values: &[i64]) -> i64 {\n    let mut tally = stats::Tally::new();\n    for value in values {\n        tally.push(*value);\n    }\n    tally.sum()\n}",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "running_total",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-10-method-renamed--fn--src-lib-rs--running-total",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn running_total(values: &[i64]) -> i64 {\n    let mut tally = stats::Tally::new();\n    for value in values {\n        tally.push(*value);\n    }\n    tally.total()\n}",
+    "replace": "pub fn running_total(values: &[i64]) -> i64 {\n    let mut tally = stats::Tally::new();\n    for value in values {\n        tally.push(*value);\n    }\n    tally.total() * 2\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `running_total` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-10-method-renamed (tree ad5bc8f880f9522e4dd67349a9e17b20c4ac6b3304e2b72bd620f11c6599a6bf) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

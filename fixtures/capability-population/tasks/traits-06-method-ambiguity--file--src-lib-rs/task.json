@@ -1,0 +1,93 @@
+{
+  "capability": "Disambiguate a method provided by two traits. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "operator-inversion",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-06-method-ambiguity",
+    "source_split": "scored",
+    "source_tree_sha256": "8de0243c2f1475b07591f17128b5555299019173b145d169b7c72080a8d3f240",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.1\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Left::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Left::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Right::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    item.value()\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 200\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Left::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}\n",
+        "kind": "operator-inversion",
+        "label": "E",
+        "provenance": "the increment widened by one (operator-inversion)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-06-method-ambiguity--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0034"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Left::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}",
+    "replace": "//! Two traits with the same method.\n\npub trait Left {\n    fn value(&self) -> u32;\n}\n\npub trait Right {\n    fn value(&self) -> u32;\n}\n\npub struct Item(pub u32);\n\nimpl Left for Item {\n    fn value(&self) -> u32 {\n        self.0\n    }\n}\n\nimpl Right for Item {\n    fn value(&self) -> u32 {\n        self.0 + 100\n    }\n}\n\npub fn left(item: &Item) -> u32 {\n    Right::value(item)\n}\n\npub fn right(item: &Item) -> u32 {\n    Right::value(item)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-06-method-ambiguity (tree 8de0243c2f1475b07591f17128b5555299019173b145d169b7c72080a8d3f240) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

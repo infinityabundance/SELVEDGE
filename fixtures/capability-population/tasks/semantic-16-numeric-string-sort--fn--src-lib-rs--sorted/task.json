@@ -1,0 +1,86 @@
+{
+  "capability": "Sort numbers numerically rather than by their decimal text. (format: patch-selection; family: patch-function)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "semantic-16-numeric-string-sort",
+    "source_split": "scored",
+    "source_tree_sha256": "7bce0fe78a809c3ca87eb4cd53b06237d55da7a96bff0ae14aab60e79999b07d",
+    "target": "sorted"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn sorted(values: &[u32]) -> Vec<u32> {\n    let mut out = values.to_vec();\n    out.sort_unstable();\n    out\n}",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn sorted(values: &[u32]) -> Vec<u32> {\n    let mut out = values.to_vec();\n    out.sort_unstable_by(|a, b| b.cmp(a));\n    out\n}",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sorted(values: &[u32]) -> Vec<u32> {\n    let mut text: Vec<String> =\n        values.iter().map(|value| value.to_string()).collect();\n    text.sort();\n    text.iter().filter_map(|value| value.parse().ok()).collect()\n}",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sorted(values: &[u32]) -> Vec<u32> {\n    out.sort_unstable();\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "sorted",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "semantic-16-numeric-string-sort--fn--src-lib-rs--sorted",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn sorted(values: &[u32]) -> Vec<u32> {\n    let mut out = values.to_vec();\n    out.sort_unstable();\n    out\n}",
+    "replace": "pub fn sorted(values: &[u32]) -> Vec<u32> {\n    let mut out = values.to_vec();\n    out.sort_unstable_by(|a, b| b.cmp(a));\n    out\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `sorted` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-16-numeric-string-sort (tree 7bce0fe78a809c3ca87eb4cd53b06237d55da7a96bff0ae14aab60e79999b07d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

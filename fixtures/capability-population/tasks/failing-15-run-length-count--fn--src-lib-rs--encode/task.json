@@ -1,0 +1,93 @@
+{
+  "capability": "Reset a run counter to one, not zero, after emitting a run. (format: patch-selection; family: patch-function)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "failing-15-run-length-count",
+    "source_split": "scored",
+    "source_tree_sha256": "fb2658ce96ba58b6a07989eb8838ad8c57042afe9d7766f0f017cb9e1e4a5ced",
+    "target": "encode"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count -= 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the accumulation reversed (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 2;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 0;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character != current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the equality test inverted to `!=` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "encode",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "failing-15-run-length-count--fn--src-lib-rs--encode",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+    "replace": "pub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 2;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `encode` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/failing-15-run-length-count (tree fb2658ce96ba58b6a07989eb8838ad8c57042afe9d7766f0f017cb9e1e4a5ced) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

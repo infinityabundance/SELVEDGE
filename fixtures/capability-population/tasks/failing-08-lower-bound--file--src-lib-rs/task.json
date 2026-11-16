@@ -1,0 +1,86 @@
+{
+  "capability": "Fix a binary-search return value without breaking insertion points. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 19,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "failing-08-lower-bound",
+    "source_split": "scored",
+    "source_tree_sha256": "0eff208884601639cbc35f3f44968ba82e91e3f1229dc15fa223ecf6ef05beac",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Lower-bound search.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] < target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    low\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Lower-bound search.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] <= target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    low\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Lower-bound search. The visible test fails: a present value is\n//! reported one index too far.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] < target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    if low < values.len() && values[low] == target {\n        low + 1\n    } else {\n        low\n    }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::lower_bound;\n\n    #[test]\n    fn finds_a_present_value() {\n        assert_eq!(lower_bound(&[1, 3, 5], 3), 1);\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Lower-bound search.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] < target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    if low < values.len() && values[low] == target {\n        low + 1\n    } else {\n        low\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-08-lower-bound--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Lower-bound search.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] < target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    low\n}",
+    "replace": "//! Lower-bound search.\n\npub fn lower_bound(values: &[i32], target: i32) -> usize {\n    let mut low = 0;\n    let mut high = values.len();\n    while low < high {\n        let mid = (low + high) / 2;\n        if values[mid] <= target {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    low\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-08-lower-bound (tree 0eff208884601639cbc35f3f44968ba82e91e3f1229dc15fa223ecf6ef05beac) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

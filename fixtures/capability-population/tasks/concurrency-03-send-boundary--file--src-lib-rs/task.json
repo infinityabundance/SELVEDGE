@@ -1,0 +1,94 @@
+{
+  "capability": "Recognise a non-Send smart pointer crossing a thread boundary and move to Arc. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 8,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-03-send-boundary",
+    "source_split": "scored",
+    "source_tree_sha256": "f47f6d33df6112c557ec08ae569172b9343afa9f6fcef285b62a3b7862f15048",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Rc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().take(1).sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sum a vector across four worker threads.\n\nuse std::rc::Rc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Rc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Rc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::rc::Rc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-03-send-boundary--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}",
+    "replace": "//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().take(1).sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-03-send-boundary (tree f47f6d33df6112c557ec08ae569172b9343afa9f6fcef285b62a3b7862f15048) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

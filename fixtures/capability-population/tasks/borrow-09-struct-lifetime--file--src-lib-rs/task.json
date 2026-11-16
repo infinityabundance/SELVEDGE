@@ -1,0 +1,94 @@
+{
+  "capability": "Add a lifetime parameter to a borrowing struct and its impl. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 10,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-09-struct-lifetime",
+    "source_split": "scored",
+    "source_tree_sha256": "fc38c23479abeb54eaaf63c4127b3116de809efdfad0a1d12b172bb7ebd93499",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A view with an explicit lifetime.\n\npub struct View {\n    pub text: &str,\n}\n\nimpl<'a> View<'a> {\n    pub fn new(text: &'a str) -> View<'a> {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        self.text\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A view with an explicit lifetime.\n\npub struct View<'a> {\n    pub text: &'a str,\n}\n\nimpl View {\n    pub fn new(text: &str) -> View {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        self.text\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A view with an explicit lifetime.\n\npub struct View<'a> {\n    pub text: &'a str,\n}\n\nimpl<'a> View<'a> {\n    pub fn new(text: &'a str) -> View<'a> {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        self.text\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A view with an explicit lifetime.\n\npub struct View<'a> {\n    pub text: &'a str,\n}\n\nimpl<'a> View<'a> {\n    pub fn new(text: &'a str) -> View<'a> {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        \"x\"\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A view that borrows text but has no lifetime parameter.\n\npub struct View {\n    pub text: &str,\n}\n\nimpl View {\n    pub fn new(text: &str) -> View {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        self.text\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-09-struct-lifetime--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0106"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A view with an explicit lifetime.\n\npub struct View<'a> {\n    pub text: &'a str,\n}\n\nimpl<'a> View<'a> {\n    pub fn new(text: &'a str) -> View<'a> {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        self.text\n    }\n}",
+    "replace": "//! A view with an explicit lifetime.\n\npub struct View<'a> {\n    pub text: &'a str,\n}\n\nimpl<'a> View<'a> {\n    pub fn new(text: &'a str) -> View<'a> {\n        View { text }\n    }\n\n    pub fn text(&self) -> &str {\n        \"x\"\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-09-struct-lifetime (tree fc38c23479abeb54eaaf63c4127b3116de809efdfad0a1d12b172bb7ebd93499) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

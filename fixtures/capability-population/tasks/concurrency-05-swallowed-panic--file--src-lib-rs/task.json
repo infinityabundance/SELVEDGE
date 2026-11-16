@@ -1,0 +1,93 @@
+{
+  "capability": "Propagate a worker panic instead of discarding the join error. (format: patch-selection; family: patch-file)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 32,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-05-swallowed-panic",
+    "source_split": "scored",
+    "source_tree_sha256": "7da734669686f302d5cafaff68180b02ae4e67f51c3a386c6b305c93eec0f148",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    let result = thread::scope(|scope| -> Result<(), String> {\n        let handles: Vec<_> = jobs\n            .iter()\n            .map(|job| {\n                scope.spawn(move || {\n                    if *job < 0 {\n                        panic!(\"negative job\");\n                    }\n                    *job\n                })\n            })\n            .collect();\n        for handle in handles {\n            total += handle.join().map_err(|_| \"worker\".to_string())?;\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Scoped workers whose panic is swallowed.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    thread::scope(|scope| {\n        let mut handles = Vec::new();\n        for job in jobs {\n            handles.push(scope.spawn(move || {\n                if *job < 0 {\n                    panic!(\"negative job\");\n                }\n                *job\n            }));\n        }\n        for handle in handles {\n            if let Ok(value) = handle.join() {\n                total += value;\n            }\n        }\n    });\n    Ok(total)\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    thread::scope(|scope| {\n        let mut handles = Vec::new();\n        for job in jobs {\n            handles.push(scope.spawn(move || {\n                if *job < 0 {\n                    panic!(\"negative job\");\n                }\n                *job\n            }));\n        }\n        for handle in handles {\n            total += handle.join().map_err(|_| \"worker failed\".to_string())?;\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    let result = thread::scope(|scope| -> Result<(), String> {\n        let handles: Vec<_> = jobs\n            .iter()\n            .map(|job| {\n                scope.spawn(move || {\n                    if *job < 0 {\n                        panic!(\"negative job\");\n                    }\n                    *job\n                })\n            })\n            .collect();\n        for handle in handles {\n            if let Ok(value) = handle.join() {\n                total += value;\n            }\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    let result = thread::scope(|scope| -> Result<(), String> {\n        let handles: Vec<_> = jobs\n            .iter()\n            .map(|job| {\n                scope.spawn(move || {\n                    if *job < 0 {\n                        panic!(\"negative job\");\n                    }\n                    *job\n                })\n            })\n            .collect();\n        for handle in handles {\n            total += handle.join().map_err(|_| \"worker failed\".to_string())?;\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "concurrency-05-swallowed-panic--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    let result = thread::scope(|scope| -> Result<(), String> {\n        let handles: Vec<_> = jobs\n            .iter()\n            .map(|job| {\n                scope.spawn(move || {\n                    if *job < 0 {\n                        panic!(\"negative job\");\n                    }\n                    *job\n                })\n            })\n            .collect();\n        for handle in handles {\n            total += handle.join().map_err(|_| \"worker failed\".to_string())?;\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}",
+    "replace": "//! Scoped workers that propagate a panic.\n\nuse std::thread;\n\npub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n    let mut total = 0;\n    let result = thread::scope(|scope| -> Result<(), String> {\n        let handles: Vec<_> = jobs\n            .iter()\n            .map(|job| {\n                scope.spawn(move || {\n                    if *job < 0 {\n                        panic!(\"negative job\");\n                    }\n                    *job\n                })\n            })\n            .collect();\n        for handle in handles {\n            total += handle.join().map_err(|_| \"worker\".to_string())?;\n        }\n        Ok(())\n    });\n    result?;\n    Ok(total)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-05-swallowed-panic (tree 7da734669686f302d5cafaff68180b02ae4e67f51c3a386c6b305c93eec0f148) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

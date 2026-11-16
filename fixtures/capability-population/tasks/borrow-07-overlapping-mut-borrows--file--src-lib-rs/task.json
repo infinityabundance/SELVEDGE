@@ -1,0 +1,94 @@
+{
+  "capability": "End one mutable borrow before starting the next one. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-07-overlapping-mut-borrows",
+    "source_split": "scored",
+    "source_tree_sha256": "584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        *first += 1;\n        *second += 1;\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        *first += 1;\n        let second = self.value_mut();\n        *second += 1;\n    }\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        *first += 2;\n        let second = self.value_mut();\n        *second += 1;\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A counter with two overlapping mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        let second = self.value_mut();\n        *first += 1;\n        *second += 1;\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        let second = self.value_mut();\n        *first += 1;\n        let second = self.value_mut();\n        *second += 1;\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-07-overlapping-mut-borrows--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0499"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        *first += 1;\n        let second = self.value_mut();\n        *second += 1;\n    }\n}",
+    "replace": "//! A counter with sequential mutable borrows.\n\npub struct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    pub fn new(value: i32) -> Self {\n        Counter { value }\n    }\n\n    pub fn value(&self) -> i32 {\n        self.value\n    }\n\n    pub fn value_mut(&mut self) -> &mut i32 {\n        &mut self.value\n    }\n\n    pub fn bump_twice(&mut self) {\n        let first = self.value_mut();\n        *first += 2;\n        let second = self.value_mut();\n        *second += 1;\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-07-overlapping-mut-borrows (tree 584145b03a6ab5afa9e191571c5d1d6ff5ec7c6e3a11d0853e096174d9c863c3) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Extend a shared error type with conversions so `?` works in a service module. (format: patch-selection; family: patch-function)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-02-error-propagation",
+    "source_split": "scored",
+    "source_tree_sha256": "fca320701586b2f515f492ddb4a911e7cf42d28bebcce502743ee95e4aef9b23",
+    "target": "fmt"
+  },
+  "difficulty": "easy",
+  "entry": "src/error.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n        }\n    }",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn fmt(&self, formatter: &core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the mutable borrow downgraded (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        AppError::Parse(error.field)\n    }",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the body of the sibling function `from` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        AppError::Io\n    }",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the body of the sibling function `from` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "fmt",
+    "kind": "patch-selection",
+    "template": "src/error.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "repo-02-error-propagation--fn--src-error-rs--fmt",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/error.rs",
+    "find": "fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }",
+    "replace": "fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n        }\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `fmt` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-02-error-propagation (tree fca320701586b2f515f492ddb4a911e7cf42d28bebcce502743ee95e4aef9b23) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

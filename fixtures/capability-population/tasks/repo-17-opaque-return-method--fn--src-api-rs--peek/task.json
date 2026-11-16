@@ -1,0 +1,85 @@
+{
+  "capability": "Call a trait method on an opaque return type instead of an absent one. (format: patch-selection; family: patch-function)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-17-opaque-return-method",
+    "source_split": "scored",
+    "source_tree_sha256": "540c992746ff34ecb9d2fca89e89382dda39b07c33b9ab10ee9c1c58a0087d8e",
+    "target": "peek"
+  },
+  "difficulty": "easy",
+  "entry": "src/api.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn peek() -> Option<u8> {\n    open().first()\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn peek() -> Option<u8> {\n    Map { value: 7 }\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the body of the sibling function `open` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn peek() -> Option<u8> {\n    open().get(0)\n}",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn peek() -> Option<u8> {\n    open().get(1)\n}",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "peek",
+    "kind": "patch-selection",
+    "template": "src/api.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "repo-17-opaque-return-method--fn--src-api-rs--peek",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/api.rs",
+    "find": "pub fn peek() -> Option<u8> {\n    open().get(0)\n}",
+    "replace": "pub fn peek() -> Option<u8> {\n    open().get(1)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `peek` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-17-opaque-return-method (tree 540c992746ff34ecb9d2fca89e89382dda39b07c33b9ab10ee9c1c58a0087d8e) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

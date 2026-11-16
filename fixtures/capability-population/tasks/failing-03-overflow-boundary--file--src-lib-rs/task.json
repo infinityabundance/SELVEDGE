@@ -1,0 +1,86 @@
+{
+  "capability": "Debug a debug-build overflow panic and choose the registered saturation rule. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 18,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-03-overflow-boundary",
+    "source_split": "calibration",
+    "source_tree_sha256": "4168489cc88019c6ce5dd8feeb88bf5abee9aee6440340d116edc3d54f60c658",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    let mut total = 0u8;\n    for value in values {\n        total += *value;\n    }\n    total\n}\n\n#[cfg(test)]\nmod tests {\n    use super::running_total;\n\n    #[test]\n    fn saturates_instead_of_overflowing() {\n        assert_eq!(running_total(&[250, 10]), 255);\n    }\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    let mut total = 0u8;\n    for value in values {\n        total += *value;\n    }\n    total\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.saturating_add(*value))\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.wrapping_add(*value))\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-03-overflow-boundary--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.saturating_add(*value))\n}",
+    "replace": "//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.wrapping_add(*value))\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-03-overflow-boundary (tree 4168489cc88019c6ce5dd8feeb88bf5abee9aee6440340d116edc3d54f60c658) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,85 @@
+{
+  "capability": "Match a trait method's parameter type in its implementation. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-08-method-signature",
+    "source_split": "scored",
+    "source_tree_sha256": "12162d51209b4bada4ba35b9af58f8c20dd7c85f8aedc5760705d3121eb3f60a",
+    "target": "encode"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn encode(&self, value: u64) -> String {\n        format!(\"{value:x}\")\n    }",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn encode(&self, value: u32) -> String {\n    values.iter().map(|value| codec.encode(*value)).collect()\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "the body of the sibling function `encode_all` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn encode(&self, value: u32) -> String {\n        format!(\"{value:x}\")\n    }",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "fn encode(&self, value: u32) -> String {\n        format!(\"{value:X}\")\n    }",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "encode",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-08-method-signature--fn--src-lib-rs--encode",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "fn encode(&self, value: u32) -> String {\n        format!(\"{value:x}\")\n    }",
+    "replace": "fn encode(&self, value: u32) -> String {\n        format!(\"{value:X}\")\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `encode` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-08-method-signature (tree 12162d51209b4bada4ba35b9af58f8c20dd7c85f8aedc5760705d3121eb3f60a) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

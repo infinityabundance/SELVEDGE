@@ -1,0 +1,85 @@
+{
+  "capability": "Implement the operator trait a newtype needs to participate in arithmetic. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-07-add-impl",
+    "source_split": "scored",
+    "source_tree_sha256": "4ba9e710d2b445fb27d3af49d66ba7b2c2d5086d8a28812e2b036f7719c57c9d",
+    "target": "add"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0)\n    }",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0 + 1)\n    }",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn add(self, right: Money) -> Money {\n        Money(self.1 + right.0)\n    }",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn add(self, right: Money) -> Money {\n    left + right\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the body of the sibling function `total` (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "add",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-07-add-impl--fn--src-lib-rs--add",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0)\n    }",
+    "replace": "fn add(self, right: Money) -> Money {\n        Money(self.0 + right.0 + 1)\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `add` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-07-add-impl (tree 4ba9e710d2b445fb27d3af49d66ba7b2c2d5086d8a28812e2b036f7719c57c9d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

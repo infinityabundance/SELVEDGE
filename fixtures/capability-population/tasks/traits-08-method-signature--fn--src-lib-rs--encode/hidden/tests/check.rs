@@ -1,0 +1,21 @@
+use traits_08_method_signature::{encode_all, Codec, Hex};
+
+#[test]
+fn encodes_the_maximum_byte() {
+    assert_eq!(Hex.encode(255), "ff");
+}
+
+#[test]
+fn encodes_through_the_generic_helper() {
+    assert_eq!(encode_all(&Hex, &[1, 15, 255]), vec!["1", "f", "ff"]);
+}
+
+#[test]
+fn zero_encodes_to_one_zero() {
+    assert_eq!(Hex.encode(0), "0");
+}
+
+#[test]
+fn an_empty_slice_is_empty() {
+    assert!(encode_all(&Hex, &[]).is_empty());
+}

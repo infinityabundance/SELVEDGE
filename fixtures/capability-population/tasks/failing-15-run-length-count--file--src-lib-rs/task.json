@@ -1,0 +1,86 @@
+{
+  "capability": "Reset a run counter to one, not zero, after emitting a run. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 15,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "failing-15-run-length-count",
+    "source_split": "scored",
+    "source_tree_sha256": "fb2658ce96ba58b6a07989eb8838ad8c57042afe9d7766f0f017cb9e1e4a5ced",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Run-length encoding.\n\npub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Run-length encoding.\n\npub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 2;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Run-length encoding. The visible test fails: the counter restarts\n//! at zero after a run is emitted.\n\npub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 0;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}\n\n#[cfg(test)]\nmod tests {\n    use super::encode;\n\n    #[test]\n    fn visible_two_as() {\n        assert_eq!(encode(\"aab\"), \"a2b1\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Run-length encoding.\n\npub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 0;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-15-run-length-count--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Run-length encoding.\n\npub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 1;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}",
+    "replace": "//! Run-length encoding.\n\npub fn encode(text: &str) -> String {\n    let mut out = String::new();\n    let mut characters = text.chars();\n    let mut current = match characters.next() {\n        Some(character) => character,\n        None => return out,\n    };\n    let mut count = 1u32;\n    for character in characters {\n        if character == current {\n            count += 2;\n        } else {\n            out.push(current);\n            out.push_str(&count.to_string());\n            current = character;\n            count = 1;\n        }\n    }\n    out.push(current);\n    out.push_str(&count.to_string());\n    out\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-15-run-length-count (tree fb2658ce96ba58b6a07989eb8838ad8c57042afe9d7766f0f017cb9e1e4a5ced) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

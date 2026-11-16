@@ -1,0 +1,86 @@
+{
+  "capability": "Encode Roman numerals with the subtractive pairs. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 18,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-12-roman-subtractive",
+    "source_split": "scored",
+    "source_tree_sha256": "370eca1ee858061809c78df8f7b8b637963a84ee3850b001fa7dbf070221ede0",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Roman numerals.\n\npub fn to_roman(value: u32) -> String {\n    if value == 0 || value > 3999 {\n        return String::new();\n    }\n    let table = [\n        (1000, \"M\"), (900, \"CM\"), (500, \"D\"), (400, \"CD\"),\n        (100, \"C\"), (90, \"XC\"), (50, \"L\"), (40, \"XL\"),\n        (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\"),\n    ];\n    let mut remaining = value;\n    let mut out = String::new();\n    for (amount, symbol) in table {\n        while remaining >= amount {\n            out.push_str(symbol);\n            remaining -= amount;\n        }\n    }\n    out\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Roman numerals.\n\npub fn to_roman(value: u32) -> String {\n    if value == 0 || value > 3999 {\n        return String::new();\n    }\n    let table = [\n        (1000, \"M\"), (900, \"DCCCC\"), (500, \"D\"), (400, \"CCCC\"),\n        (100, \"C\"), (90, \"XC\"), (50, \"L\"), (40, \"XL\"),\n        (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\"),\n    ];\n    let mut remaining = value;\n    let mut out = String::new();\n    for (amount, symbol) in table {\n        while remaining >= amount {\n            out.push_str(symbol);\n            remaining -= amount;\n        }\n    }\n    out\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Roman numerals. The visible test fails: there are no subtractive\n//! pairs.\n\npub fn to_roman(value: u32) -> String {\n    if value == 0 || value > 3999 {\n        return String::new();\n    }\n    let table = [\n        (1000, \"M\"), (500, \"D\"), (100, \"C\"), (50, \"L\"),\n        (10, \"X\"), (5, \"V\"), (1, \"I\"),\n    ];\n    let mut remaining = value;\n    let mut out = String::new();\n    for (amount, symbol) in table {\n        while remaining >= amount {\n            out.push_str(symbol);\n            remaining -= amount;\n        }\n    }\n    out\n}\n\n#[cfg(test)]\nmod tests {\n    use super::to_roman;\n\n    #[test]\n    fn visible_subtractive_four() {\n        assert_eq!(to_roman(4), \"IV\");\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Roman numerals.\n\npub fn to_roman(value: u32) -> String {\n    if value == 0 || value > 3999 {\n        return String::new();\n    }\n    let table = [\n        (1000, \"M\"), (500, \"D\"), (100, \"C\"), (50, \"L\"),\n        (10, \"X\"), (5, \"V\"), (1, \"I\"),\n    ];\n    let mut remaining = value;\n    let mut out = String::new();\n    for (amount, symbol) in table {\n        while remaining >= amount {\n            out.push_str(symbol);\n            remaining -= amount;\n        }\n    }\n    out\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-12-roman-subtractive--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Roman numerals.\n\npub fn to_roman(value: u32) -> String {\n    if value == 0 || value > 3999 {\n        return String::new();\n    }\n    let table = [\n        (1000, \"M\"), (900, \"CM\"), (500, \"D\"), (400, \"CD\"),\n        (100, \"C\"), (90, \"XC\"), (50, \"L\"), (40, \"XL\"),\n        (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\"),\n    ];\n    let mut remaining = value;\n    let mut out = String::new();\n    for (amount, symbol) in table {\n        while remaining >= amount {\n            out.push_str(symbol);\n            remaining -= amount;\n        }\n    }\n    out\n}",
+    "replace": "//! Roman numerals.\n\npub fn to_roman(value: u32) -> String {\n    if value == 0 || value > 3999 {\n        return String::new();\n    }\n    let table = [\n        (1000, \"M\"), (900, \"DCCCC\"), (500, \"D\"), (400, \"CCCC\"),\n        (100, \"C\"), (90, \"XC\"), (50, \"L\"), (40, \"XL\"),\n        (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\"),\n    ];\n    let mut remaining = value;\n    let mut out = String::new();\n    for (amount, symbol) in table {\n        while remaining >= amount {\n            out.push_str(symbol);\n            remaining -= amount;\n        }\n    }\n    out\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-12-roman-subtractive (tree 370eca1ee858061809c78df8f7b8b637963a84ee3850b001fa7dbf070221ede0) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "Round ties to the nearest even integer rather than away from zero. (format: patch-selection; family: patch-file)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 22,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "semantic-10-round-half-even",
+    "source_split": "scored",
+    "source_tree_sha256": "90fd15d0584b6613047cf7af53f36c7edd6418ede5b84d3375f6ca0aebd95757",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Tie-to-even rounding.\n\npub fn round_half_even(value: f64) -> f64 {\n    let floor = value.floor();\n    let fraction = value - floor;\n    if (fraction - 0.5).abs() < 1e-12 {\n        if (floor as i64) % 2 == 0 {\n            floor\n        } else {\n            floor + 1.0\n        }\n    } else {\n        value.round()\n    }\n}\n",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Tie-to-even rounding.\n\npub fn round_half_even(value: f64) -> f64 {\n    let floor = value.floor();\n    let fraction = value - floor;\n    if (fraction - 0.5).abs() < 1e-12 {\n        if (floor as i64) % 2 != 0 {\n            floor\n        } else {\n            floor + 1.0\n        }\n    } else {\n        value.round()\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Tie-to-even rounding with the standard rounding rule.\n\npub fn round_half_even(value: f64) -> f64 {\n    value.round()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::round_half_even;\n\n    #[test]\n    fn visible_not_a_tie() {\n        assert_eq!(round_half_even(2.4), 2.0);\n    }\n}\n",
+        "kind": "initial",
+        "label": "C",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Tie-to-even rounding.\n\npub fn round_half_even(value: f64) -> f64 {\n    value.round()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::round_half_even;\n\n    #[test]\n    fn visible_not_a_tie() {\n        assert_eq!(round_half_even(2.4), 2.0);\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Tie-to-even rounding.\n\npub fn round_half_even(value: f64) -> f64 {\n    let floor = value.floor();\n    let fraction = value - floor;\n    if (fraction - 0.5).abs() < 1e-12 {\n        if (floor as i64) % 2 == 0 {\n            floor\n        } else {\n            floor + 2.0\n        }\n    } else {\n        value.round()\n    }\n}\n",
+        "kind": "operator-inversion",
+        "label": "E",
+        "provenance": "the increment widened by one (operator-inversion)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "semantic-10-round-half-even--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Tie-to-even rounding.\n\npub fn round_half_even(value: f64) -> f64 {\n    let floor = value.floor();\n    let fraction = value - floor;\n    if (fraction - 0.5).abs() < 1e-12 {\n        if (floor as i64) % 2 == 0 {\n            floor\n        } else {\n            floor + 1.0\n        }\n    } else {\n        value.round()\n    }\n}",
+    "replace": "//! Tie-to-even rounding.\n\npub fn round_half_even(value: f64) -> f64 {\n    let floor = value.floor();\n    let fraction = value - floor;\n    if (fraction - 0.5).abs() < 1e-12 {\n        if (floor as i64) % 2 != 0 {\n            floor\n        } else {\n            floor + 1.0\n        }\n    } else {\n        value.round()\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-10-round-half-even (tree 90fd15d0584b6613047cf7af53f36c7edd6418ede5b84d3375f6ca0aebd95757) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

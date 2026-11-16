@@ -1,0 +1,75 @@
+{
+  "capability": "Disambiguate a method provided by two traits. (format: diagnostic-identification)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-06-method-ambiguity",
+    "source_split": "scored",
+    "source_tree_sha256": "8de0243c2f1475b07591f17128b5555299019173b145d169b7c72080a8d3f240",
+    "target": "E0034"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0034"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "the trait bound is not satisfied",
+        "id": "E0277"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      }
+    ]
+  },
+  "id": "traits-06-method-ambiguity--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0034"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Left::value(item)",
+    "replace": "Right::value(item)"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/traits-06-method-ambiguity (tree 8de0243c2f1475b07591f17128b5555299019173b145d169b7c72080a8d3f240) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

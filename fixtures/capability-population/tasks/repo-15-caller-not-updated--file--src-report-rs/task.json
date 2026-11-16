@@ -1,0 +1,86 @@
+{
+  "capability": "Update a caller after a helper's signature gained a parameter. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "repo-15-caller-not-updated",
+    "source_split": "scored",
+    "source_tree_sha256": "3a7dd3f3c12057e5579e0c93d81225b280402a10d24841c0f64bfe94f0098f5b",
+    "target": "src/report.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/report.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A report line.\n\npub fn line(part: u32) -> String {\n    crate::format::ratio(part, 20)\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A report line. This does not compile: the caller was not updated\n//! after the formatter gained its second argument.\n\npub fn line(part: u32) -> String {\n    crate::format::ratio(part)\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A report line.\n\npub fn line(part: u32) -> String {\n    crate::format::ratio(part)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A report line.\n\npub fn line(part: u32) -> String {\n    crate::format::ratio(part, 10)\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/report.rs"
+  },
+  "id": "repo-15-caller-not-updated--file--src-report-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0061"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/report.rs",
+    "find": "//! A report line.\n\npub fn line(part: u32) -> String {\n    crate::format::ratio(part, 10)\n}",
+    "replace": "//! A report line.\n\npub fn line(part: u32) -> String {\n    crate::format::ratio(part, 20)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-15-caller-not-updated (tree 3a7dd3f3c12057e5579e0c93d81225b280402a10d24841c0f64bfe94f0098f5b) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

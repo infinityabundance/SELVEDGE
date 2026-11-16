@@ -1,0 +1,101 @@
+{
+  "capability": "Call a top-level function that version 2 renamed. (format: patch-selection; family: patch-function)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "migrate-15-function-renamed",
+    "source_split": "scored",
+    "source_tree_sha256": "2dfe8858d6514d98c19cdb768b989d602383adab754292bc5f09b1bdd4ebd23f",
+    "target": "double"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).filter(|value| value * 2.0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the map replaced by a filter (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).map(|value| value * 2.0)\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).map(|value| value + 2.0)\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn double(input: &str) -> Option<f64> {\n    units::parse(input).map(|value| value * 2.0)\n}",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).map(|value| value * 2.1)\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).map(|value| value * 3.0)\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "the literal 2 widened to 3 (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "double",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "migrate-15-function-renamed--fn--src-lib-rs--double",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).map(|value| value * 2.0)\n}",
+    "replace": "pub fn double(input: &str) -> Option<f64> {\n    units::parse_value(input).map(|value| value + 2.0)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `double` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-15-function-renamed (tree 2dfe8858d6514d98c19cdb768b989d602383adab754292bc5f09b1bdd4ebd23f) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

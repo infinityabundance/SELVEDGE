@@ -1,0 +1,13 @@
+[package]
+name = "deps_09_disable_default_features"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+codec = { path = "dep", default-features = false, features = ["modern"] }

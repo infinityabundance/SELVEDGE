@@ -1,0 +1,94 @@
+{
+  "capability": "Finish reading a collection before mutating it from another module. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-14-crossmodule-borrow",
+    "source_split": "calibration",
+    "source_tree_sha256": "a92e712774e233e4f93611f656ebdc2e4c34203b115b4154ed8ecfbf003a6525",
+    "target": "src/sync.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/sync.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Append items to a store. This does not compile: a read borrow is held\n//! across the mutation.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = &store.items[0];\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first.len()\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Append items to a store.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = &store.items[0];\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Append items to a store.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(0);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first.len()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Append items to a store.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(0);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Append items to a store.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(1);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/sync.rs"
+  },
+  "id": "repo-14-crossmodule-borrow--file--src-sync-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/sync.rs",
+    "find": "//! Append items to a store.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(0);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}",
+    "replace": "//! Append items to a store.\n\nuse crate::store::Store;\n\npub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(1);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-14-crossmodule-borrow (tree a92e712774e233e4f93611f656ebdc2e4c34203b115b4154ed8ecfbf003a6525) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

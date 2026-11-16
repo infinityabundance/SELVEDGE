@@ -1,0 +1,94 @@
+{
+  "capability": "Hand a field out of a type that implements Drop without moving it. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-12-move-out-of-drop-type",
+    "source_split": "scored",
+    "source_tree_sha256": "576ccbf606afad96ae353d1a151f52500c141cd3846748b6dcf13a7eb4891122",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Buffer hand-off.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(mut buffer: Buffer) -> Vec<u8> {\n    std::mem::take(&mut buffer.data)\n}\n",
+        "kind": "operator-inversion",
+        "label": "A",
+        "provenance": "the mutable borrow downgraded (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! Buffer hand-off.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(mut buffer: Buffer) -> Vec<u8> {\n    std::mem::take(&mut buffer.data)\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Buffer hand-off.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(mut buffer: Buffer) -> Vec<u8> {\n    Vec::new()\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Buffer hand-off. The crate does not build: `Buffer` implements\n//! `Drop`, so its field cannot be moved out.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(buffer: Buffer) -> Vec<u8> {\n    buffer.data\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Buffer hand-off.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(buffer: Buffer) -> Vec<u8> {\n    buffer.data\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-12-move-out-of-drop-type--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0509"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Buffer hand-off.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(mut buffer: Buffer) -> Vec<u8> {\n    std::mem::take(&mut buffer.data)\n}",
+    "replace": "//! Buffer hand-off.\n\npub struct Buffer {\n    pub data: Vec<u8>,\n}\n\nimpl Buffer {\n    pub fn new(data: Vec<u8>) -> Self {\n        Self { data }\n    }\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        self.data.clear();\n    }\n}\n\npub fn into_data(mut buffer: Buffer) -> Vec<u8> {\n    Vec::new()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-12-move-out-of-drop-type (tree 576ccbf606afad96ae353d1a151f52500c141cd3846748b6dcf13a7eb4891122) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

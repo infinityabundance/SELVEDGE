@@ -1,0 +1,17 @@
+[
+ "borrow-05-temporary-lifetime src/lib.rs first_word: only 1 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs count: only 2 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs get: only 0 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs len: only 1 distinct distractors; 3 are required",
+ "traits-03-object-safety src/lib.rs put: only 2 distinct distractors; 3 are required"
+]
+borrow-05-temporary-lifetime--diag diagnostic-identification medium 4 None
+borrow-05-temporary-lifetime--file--src-lib-rs patch-file medium 5 ['reference', 'declared-mutation', 'initial', 'synthesized-mutation', 'synthesized-mutation']
+borrow-05-temporary-lifetime--fn--src-lib-rs--label patch-function medium 4 ['reference', 'declared-mutation', 'initial', 'synthesized-mutation']
+semantic-01-overlapping-count--file--src-lib-rs patch-file hard 6 ['reference', 'declared-mutation', 'initial', 'single-edit-revert', 'single-edit-revert', 'single-edit-revert']
+semantic-01-overlapping-count--fn--src-lib-rs--count-occurrences patch-function medium 5 ['reference', 'declared-mutation', 'initial', 'synthesized-mutation', 'synthesized-mutation']
+semantic-07-csv-quoting--file--src-lib-rs patch-file hard 6 ['reference', 'declared-mutation', 'initial', 'single-edit-revert', 'single-edit-revert', 'single-edit-revert']
+semantic-07-csv-quoting--fn--src-lib-rs--field patch-function medium 5 ['reference', 'declared-mutation', 'initial', 'synthesized-mutation', 'synthesized-mutation']
+traits-03-object-safety--diag diagnostic-identification medium 4 None
+traits-03-object-safety--file--src-lib-rs patch-file medium 6 ['reference', 'declared-mutation', 'initial', 'single-edit-revert', 'single-edit-revert', 'operator-inversion']
+scored {'candidate_chars': 692, 'chars': 6072, 'id': 'traits-03-object-safety--file--src-lib-rs', 'prompt_chars': 5380}

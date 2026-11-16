@@ -1,0 +1,93 @@
+{
+  "capability": "Match the trait method's parameter list. (format: patch-selection; family: patch-function)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "declared-naive",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-16-method-arity",
+    "source_split": "scored",
+    "source_tree_sha256": "09cb600c3672a0a2d087927b709b324fe19fcfd0e60a24142518d925ffc9354a",
+    "target": "scale"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "fn scale(&self, factor: u32) -> u64 {\n        self.value\n    }",
+        "kind": "declared-naive",
+        "label": "A",
+        "provenance": "the source's declared naive fix (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn scale(&self) -> u64 {\n        self.value\n    }",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "fn scale(&self, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the body of the sibling function `scaled` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "fn scale(&self, factor: u32) -> u64 {\n        self.value * factor as u64\n    }",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "fn scale(&self, factor: u32) -> u64 {\n        self.value + factor as u64\n    }",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "scale",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "traits-16-method-arity--fn--src-lib-rs--scale",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "fn scale(&self, factor: u32) -> u64 {\n        self.value * factor as u64\n    }",
+    "replace": "fn scale(&self, factor: u32) -> u64 {\n        self.value + factor as u64\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `scale` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/traits-16-method-arity (tree 09cb600c3672a0a2d087927b709b324fe19fcfd0e60a24142518d925ffc9354a) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

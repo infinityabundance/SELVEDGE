@@ -1,0 +1,70 @@
+{
+  "capability": "Diagnose the pre-2018 extern crate requirement for a dependency path. (format: diagnostic-identification)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "deps-12-edition-2015-paths",
+    "source_split": "scored",
+    "source_tree_sha256": "0da620477e209fb1dd29a7ac9d09d3d1bc4fd055022cac1bcce3c2e48fa3cae9",
+    "target": "E0432"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0432"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "mismatched types",
+        "id": "E0308"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "temporary value dropped while borrowed",
+        "id": "E0716"
+      }
+    ]
+  },
+  "id": "deps-12-edition-2015-paths--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/deps-12-edition-2015-paths (tree 0da620477e209fb1dd29a7ac9d09d3d1bc4fd055022cac1bcce3c2e48fa3cae9) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

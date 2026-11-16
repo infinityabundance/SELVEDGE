@@ -1,0 +1,86 @@
+{
+  "capability": "Name the generic argument of a generic trait in its impl. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "traits-15-generic-trait-missing-argument",
+    "source_split": "scored",
+    "source_tree_sha256": "e2f9cfbe344132ab6d5584662017de8fe05e41ac7733fc77b22da4f8cf82c65b",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 0,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A generic encoder.\n\npub trait Encode<T> {\n    fn encode(&self, value: T) -> String;\n}\n\npub struct Hex;\n\nimpl Encode for Hex {\n    fn encode(&self, value: u8) -> String {\n        format!(\"{value:02x}\")\n    }\n}\n\npub fn encode_byte(value: u8) -> String {\n    use Encode;\n    Hex.encode(value)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A generic encoder.\n\npub trait Encode<T> {\n    fn encode(&self, value: T) -> String;\n}\n\npub struct Hex;\n\nimpl Encode<u8> for Hex {\n    fn encode(&self, value: u8) -> String {\n        format!(\"{value:02x}\")\n    }\n}\n\npub fn encode_byte(value: u8) -> String {\n    use Encode;\n    Hex.encode(value)\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A generic encoder.\n\npub trait Encode<T> {\n    fn encode(&self, value: T) -> String;\n}\n\npub struct Hex;\n\nimpl Encode<u8> for Hex {\n    fn encode(&self, value: u8) -> String {\n        format!(\"{value:02X}\")\n    }\n}\n\npub fn encode_byte(value: u8) -> String {\n    use Encode;\n    Hex.encode(value)\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A generic encoder. The crate does not build: the impl omits the\n//! trait's type argument.\n\npub trait Encode<T> {\n    fn encode(&self, value: T) -> String;\n}\n\npub struct Hex;\n\nimpl Encode for Hex {\n    fn encode(&self, value: u8) -> String {\n        format!(\"{value:02x}\")\n    }\n}\n\npub fn encode_byte(value: u8) -> String {\n    use Encode;\n    Hex.encode(value)\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-15-generic-trait-missing-argument--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0107"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A generic encoder.\n\npub trait Encode<T> {\n    fn encode(&self, value: T) -> String;\n}\n\npub struct Hex;\n\nimpl Encode<u8> for Hex {\n    fn encode(&self, value: u8) -> String {\n        format!(\"{value:02x}\")\n    }\n}\n\npub fn encode_byte(value: u8) -> String {\n    use Encode;\n    Hex.encode(value)\n}",
+    "replace": "//! A generic encoder.\n\npub trait Encode<T> {\n    fn encode(&self, value: T) -> String;\n}\n\npub struct Hex;\n\nimpl Encode<u8> for Hex {\n    fn encode(&self, value: u8) -> String {\n        format!(\"{value:02X}\")\n    }\n}\n\npub fn encode_byte(value: u8) -> String {\n    use Encode;\n    Hex.encode(value)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-15-generic-trait-missing-argument (tree e2f9cfbe344132ab6d5584662017de8fe05e41ac7733fc77b22da4f8cf82c65b) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

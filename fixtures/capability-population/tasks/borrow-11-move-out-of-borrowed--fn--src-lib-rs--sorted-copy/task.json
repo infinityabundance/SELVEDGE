@@ -1,0 +1,93 @@
+{
+  "capability": "Copy out of a shared reference instead of moving the referent. (format: patch-selection; family: patch-function)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "borrow-11-move-out-of-borrowed",
+    "source_split": "scored",
+    "source_tree_sha256": "023972622b2152afb6b0fc5b0c96a9a15d460351e28db56d6cf66976a8e0bf27",
+    "target": "sorted_copy"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort_by(|a, b| b.cmp(a));\n    owned\n}",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = *values;\n    owned.sort();\n    owned\n}",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values;\n    owned.sort();\n    owned\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the clone dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    owned.sort();\n    owned\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort();\n    owned\n}",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "sorted_copy",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "borrow-11-move-out-of-borrowed--fn--src-lib-rs--sorted-copy",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort();\n    owned\n}",
+    "replace": "pub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort_by(|a, b| b.cmp(a));\n    owned\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `sorted_copy` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-11-move-out-of-borrowed (tree 023972622b2152afb6b0fc5b0c96a9a15d460351e28db56d6cf66976a8e0bf27) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

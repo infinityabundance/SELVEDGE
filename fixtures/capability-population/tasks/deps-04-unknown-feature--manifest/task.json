@@ -1,0 +1,67 @@
+{
+  "capability": "Diagnose a misspelled feature name that the dependency does not declare. (format: patch-selection)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-fix",
+    "family": "patch-manifest",
+    "fix_lines": 2,
+    "format": "patch-selection",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "deps-04-unknown-feature",
+    "source_split": "scored",
+    "source_tree_sha256": "7d63d8059bbcca0f4507b044b9dfa79592b50933d912445a8afa95e55d71e173",
+    "target": "Cargo.toml"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "[package]\nname = \"deps_04_unknown_feature\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", features = [\"jason\"] }\n",
+        "label": "A",
+        "provenance": "the source's initial manifest (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_04_unknown_feature\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\n",
+        "label": "B",
+        "provenance": "a dependency removed (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_04_unknown_feature\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", features = [\"json\"] }\n",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "Cargo.toml"
+  },
+  "id": "deps-04-unknown-feature--manifest",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "jason"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "codec = { path = \"dep\", features = [\"json\"] }\n",
+    "replace": "codec = { path = \"dep\", features = [\"jason\"] }\n"
+  },
+  "prompt_intro": "Choose the one replacement manifest that makes the crate build and its tests pass. The source code is already correct; only the manifest is missing the capability the code needs.",
+  "provenance": "derived from fixtures/capability/tasks/deps-04-unknown-feature (tree 7d63d8059bbcca0f4507b044b9dfa79592b50933d912445a8afa95e55d71e173) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

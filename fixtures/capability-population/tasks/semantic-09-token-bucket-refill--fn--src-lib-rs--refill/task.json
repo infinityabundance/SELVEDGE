@@ -1,0 +1,93 @@
+{
+  "capability": "Refill proportionally to elapsed time and respect the capacity bound. (format: patch-selection; family: patch-function)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "semantic-09-token-bucket-refill",
+    "source_split": "calibration",
+    "source_tree_sha256": "037cbae95f92dad470f01a87cfa23c1174dc03903009f765e31dbb8df248a763",
+    "target": "refill"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).max(capacity)\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the minimum replaced by a maximum (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    tokens.saturating_add(gained).min(capacity)\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity)\n}",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity.saturating_sub(1))\n}",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms / 1000) * rate_per_sec as u64;\n    tokens.saturating_add(gained as u32)\n}",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "refill",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "semantic-09-token-bucket-refill--fn--src-lib-rs--refill",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity)\n}",
+    "replace": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity.saturating_sub(1))\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `refill` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-09-token-bucket-refill (tree 037cbae95f92dad470f01a87cfa23c1174dc03903009f765e31dbb8df248a763) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

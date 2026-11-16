@@ -1,0 +1,94 @@
+{
+  "capability": "Migrate a match arm to a structured error variant and handle the new variant. (format: patch-selection; family: patch-file)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "hard",
+    "source_id": "migrate-06-error-variant",
+    "source_split": "calibration",
+    "source_tree_sha256": "095c28482c2a5d92f2d6f4ba2190ca5cf9f85055ddb2d4bd7d721d20271aa9dd",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty key\".as_str()),\n    }\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty key\".to_string()),\n    }\n}\n",
+        "kind": "reference",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty\".to_string()),\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "D",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Read a value through the table crate. This does not build: the\n//! `NotFound` variant was replaced by `Missing { key }` and `Empty`.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n    }\n}\n",
+        "kind": "initial",
+        "label": "E",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "migrate-06-error-variant--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty key\".to_string()),\n    }\n}",
+    "replace": "//! Read a value through the table crate.\n\npub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty\".to_string()),\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-06-error-variant (tree 095c28482c2a5d92f2d6f4ba2190ca5cf9f85055ddb2d4bd7d721d20271aa9dd) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

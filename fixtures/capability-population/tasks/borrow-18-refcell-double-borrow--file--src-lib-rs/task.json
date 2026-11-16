@@ -1,0 +1,93 @@
+{
+  "capability": "Hold one interior borrow while reading and writing a ledger. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 19,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-18-refcell-double-borrow",
+    "source_split": "scored",
+    "source_tree_sha256": "bfee97f0887c21688f7598aa5df74b592edce2cd698064025c3d8675aaaeb0c5",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A ledger behind an interior-mutability cell.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let mut entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        self.entries.borrow_mut().push(total + value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A ledger behind an interior-mutability cell.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let mut entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        entries.push(total + value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A ledger behind an interior-mutability cell.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let mut entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        entries.push(value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A ledger behind an interior-mutability cell. The visible test\n//! fails at run time: `record` takes two live mutable borrows.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        self.entries.borrow_mut().push(total + value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::Ledger;\n\n    #[test]\n    fn visible_record_panics() {\n        let ledger = Ledger::new();\n        ledger.record(1);\n        assert_eq!(ledger.entries(), vec![1]);\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A ledger behind an interior-mutability cell.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        entries.push(total + value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "E",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-18-refcell-double-borrow--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A ledger behind an interior-mutability cell.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let mut entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        entries.push(total + value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}",
+    "replace": "//! A ledger behind an interior-mutability cell.\n\nuse std::cell::RefCell;\n\npub struct Ledger {\n    entries: RefCell<Vec<i64>>,\n}\n\nimpl Ledger {\n    pub fn new() -> Self {\n        Self { entries: RefCell::new(Vec::new()) }\n    }\n\n    pub fn record(&self, value: i64) {\n        let mut entries = self.entries.borrow_mut();\n        let total: i64 = entries.iter().sum();\n        entries.push(value);\n    }\n\n    pub fn entries(&self) -> Vec<i64> {\n        self.entries.borrow().clone()\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-18-refcell-double-borrow (tree bfee97f0887c21688f7598aa5df74b592edce2cd698064025c3d8675aaaeb0c5) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

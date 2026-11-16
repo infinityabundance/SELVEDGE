@@ -1,0 +1,101 @@
+{
+  "capability": "Count the separating space when deciding a greedy line break. (format: patch-selection; family: patch-function)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 2,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-11-wrap-counts-the-space",
+    "source_split": "scored",
+    "source_tree_sha256": "b311bfbc76a70743ad931c16f95bb343513e5a8746cbae439c49bd7f3e3e6d04",
+    "target": "wrap"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 1 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+        "kind": "reference",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+        "kind": "declared-mutation",
+        "label": "B",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 2 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the increment widened by one (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() - 1 + 1 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the length made off by one (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 1 + word.len() > width {\n            lines.push(std::mem::take(&current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "the mutable borrow downgraded (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() == false {\n            current.push_str(word);\n        } else if current.len() + 1 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+        "kind": "synthesized-mutation",
+        "label": "F",
+        "provenance": "the emptiness test negated (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "wrap",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "failing-11-wrap-counts-the-space--fn--src-lib-rs--wrap",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + 1 + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}",
+    "replace": "pub fn wrap(text: &str, width: usize) -> Vec<String> {\n    let mut lines: Vec<String> = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if current.is_empty() {\n            current.push_str(word);\n        } else if current.len() + word.len() > width {\n            lines.push(std::mem::take(&mut current));\n            current.push_str(word);\n        } else {\n            current.push(' ');\n            current.push_str(word);\n        }\n    }\n    if !current.is_empty() {\n        lines.push(current);\n    }\n    lines\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `wrap` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/failing-11-wrap-counts-the-space (tree b311bfbc76a70743ad931c16f95bb343513e5a8746cbae439c49bd7f3e3e6d04) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

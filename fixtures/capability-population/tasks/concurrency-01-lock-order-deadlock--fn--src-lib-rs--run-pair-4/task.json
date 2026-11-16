@@ -1,0 +1,94 @@
+{
+  "capability": "Remove a lock-order deadlock by imposing one global acquisition order. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "nearest-distractor",
+    "family": "patch-function",
+    "fix_lines": 1,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-01-lock-order-deadlock",
+    "source_split": "scored",
+    "source_tree_sha256": "f70f736c3b7bfdf418b96f6fb7f040c2fab990ea6099787beafb39202c3af9de",
+    "target": "run_pair"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(3);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the literal 2 widened to 3 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}",
+        "kind": "synthesized-mutation",
+        "label": "E",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      }
+    ],
+    "function": "run_pair",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-01-lock-order-deadlock--fn--src-lib-rs--run-pair-4",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}",
+    "replace": "pub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(3);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `run_pair` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-01-lock-order-deadlock (tree f70f736c3b7bfdf418b96f6fb7f040c2fab990ea6099787beafb39202c3af9de) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

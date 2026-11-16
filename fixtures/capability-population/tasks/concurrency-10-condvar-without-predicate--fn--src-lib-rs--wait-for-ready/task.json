@@ -1,0 +1,101 @@
+{
+  "capability": "Wait on a condition variable inside a predicate loop. (format: patch-selection; family: patch-function)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 8,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-10-condvar-without-predicate",
+    "source_split": "scored",
+    "source_tree_sha256": "f5c4249c788c4f12e13078de067f94e1776f207d1a677cc18e188f096d3e2170",
+    "target": "wait_for_ready"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let guard = lock.lock().unwrap();\n    let _released = ready.wait(guard).unwrap();\n    true\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let mut guard = lock.lock().unwrap_or_default();\n    while !*guard {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "`unwrap` replaced by `unwrap_or_default` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let mut guard = lock.lock().unwrap();\n    while !(!*guard) {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "the loop guard negated (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let mut guard = lock.lock().unwrap();\n    while !*guard {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "a body statement dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "function": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let mut guard = lock.lock().unwrap();\n    while !*guard {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let mut guard = lock.lock().unwrap();\n    while !*guard && false {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}",
+        "kind": "declared-mutation",
+        "label": "F",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "wait_for_ready",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "concurrency-10-condvar-without-predicate--fn--src-lib-rs--wait-for-ready",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let mut guard = lock.lock().unwrap();\n    while !*guard {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}",
+    "replace": "pub fn wait_for_ready(state: Arc<(Mutex<bool>, Condvar)>) -> bool {\n    let (lock, ready) = &*state;\n    let mut guard = lock.lock().unwrap();\n    while !*guard && false {\n        guard = ready.wait(guard).unwrap();\n    }\n    *guard\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `wait_for_ready` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-10-condvar-without-predicate (tree f5c4249c788c4f12e13078de067f94e1776f207d1a677cc18e188f096d3e2170) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

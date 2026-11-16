@@ -1,0 +1,41 @@
+//! An encoder trait.
+
+pub trait Encode {
+    fn encode(&self) -> String;
+}
+
+pub struct Doc {
+    pub text: String,
+}
+
+impl Encode for Doc {
+fn encode(&self) -> String {
+        self.text.clone()
+    }
+}
+
+#[cfg(test)]
+mod visible {
+    use crate::{Doc, Encode};
+
+    #[test]
+    fn encodes_the_text() {
+        let doc = Doc { text: "abc".to_string() };
+        assert_eq!(doc.encode(), "abc");
+    }
+
+    #[test]
+    fn an_empty_document_encodes_to_empty() {
+        let doc = Doc { text: String::new() };
+        assert_eq!(doc.encode(), "");
+    }
+
+    #[test]
+    fn the_generic_caller_works() {
+        fn render<E: Encode>(value: &E) -> String {
+            value.encode()
+        }
+        let doc = Doc { text: "x".to_string() };
+        assert_eq!(render(&doc), "x");
+    }
+}

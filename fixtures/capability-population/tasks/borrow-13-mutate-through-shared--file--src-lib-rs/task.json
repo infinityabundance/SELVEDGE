@@ -1,0 +1,94 @@
+{
+  "capability": "Take a mutable reference when a function mutates its argument. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "operator-inversion"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "borrow-13-mutate-through-shared",
+    "source_split": "calibration",
+    "source_tree_sha256": "609291d78e2f05de702c645fae42cf3b0e95fe88168812640bf7b071de054b5f",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Increment every entry in place. The crate does not build: the\n//! vector is borrowed immutably but mutated.\n\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Increment every entry in place.\n\npub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Increment every entry in place.\n\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() - 1 {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n",
+        "kind": "operator-inversion",
+        "label": "C",
+        "provenance": "the length made off by one (operator-inversion)",
+        "reference": false
+      },
+      {
+        "content": "//! Increment every entry in place.\n\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Increment every entry in place.\n\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-13-mutate-through-shared--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0596"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Increment every entry in place.\n\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}",
+    "replace": "//! Increment every entry in place.\n\npub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 2;\n    }\n    entries.iter().sum()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-13-mutate-through-shared (tree 609291d78e2f05de702c645fae42cf3b0e95fe88168812640bf7b071de054b5f) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

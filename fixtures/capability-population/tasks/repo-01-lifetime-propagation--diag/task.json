@@ -1,0 +1,75 @@
+{
+  "capability": "Propagate one lifetime annotation through a three-module call chain. (format: diagnostic-identification)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-01-lifetime-propagation",
+    "source_split": "scored",
+    "source_tree_sha256": "822ff103df125911de6a1cdb5fd6db35f311a402a4256689a705e0fb96051a3d",
+    "target": "E0106"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable more than once at a time",
+        "id": "E0499"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      }
+    ]
+  },
+  "id": "repo-01-lifetime-propagation--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0106"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn cheapest_name<'a>(items: &'a [Item], fallback: &'a Item) -> &'a str {\n",
+    "replace": "pub fn cheapest_name(items: &[Item], fallback: &Item) -> &str {\n"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/repo-01-lifetime-propagation (tree 822ff103df125911de6a1cdb5fd6db35f311a402a4256689a705e0fb96051a3d) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

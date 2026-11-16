@@ -1151,12 +1151,14 @@ def verify(out_root: str, workroot: str, only: str | None = None,
         if fmt == formats.FORMAT_PATCH:
             spec = formats.format_spec(task)
             passing = []
+            statuses = {}
             for index, candidate in enumerate(spec["candidates"]):
                 parsed = formats.ParsedAnswer(
                     ok=True, kind="choice", mode="choice_letter",
                     payload={"label": candidate["label"], "index": index,
                              "id": None, "option": candidate})
                 outcome = formats.judge(task, parsed, runner)
+                statuses[candidate["label"]] = outcome.get("status")
                 if outcome["status"] == sandbox.STATUS_PASS:
                     passing.append(candidate["label"])
             expected = [candidate["label"] for candidate in spec["candidates"]
@@ -1165,6 +1167,7 @@ def verify(out_root: str, workroot: str, only: str | None = None,
                 "labels": [candidate["label"] for candidate in spec["candidates"]],
                 "passing": passing,
                 "expected": expected,
+                "statuses": statuses,
                 "target": spec.get("target", "function"),
             }
             if passing != expected:
@@ -1189,17 +1192,20 @@ def verify(out_root: str, workroot: str, only: str | None = None,
         if fmt == formats.FORMAT_DIAGNOSTIC:
             spec = formats.format_spec(task)
             passing = []
+            statuses = {}
             for index, option in enumerate(spec["options"]):
                 parsed = formats.ParsedAnswer(
                     ok=True, kind="choice", mode="choice_letter",
                     payload={"label": chr(ord("A") + index), "index": index,
                              "id": option["id"], "option": option})
                 outcome = formats.judge(task, parsed, runner)
+                statuses[option["id"]] = outcome.get("status")
                 if outcome["status"] == sandbox.STATUS_PASS:
                     passing.append(option["id"])
             expected = [option["id"] for option in spec["options"]
                         if option["consequence"]["kind"] == "reference"]
-            record["diagnostic"] = {"passing": passing, "expected": expected}
+            record["diagnostic"] = {"passing": passing, "expected": expected,
+                                    "statuses": statuses}
             if passing != expected:
                 if prune and all(identifier in [option["id"] for option in spec["options"]]
                                  for identifier in expected):

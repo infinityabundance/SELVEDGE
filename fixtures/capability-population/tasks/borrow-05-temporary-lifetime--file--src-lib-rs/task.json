@@ -1,0 +1,101 @@
+{
+  "capability": "Bind a temporary before borrowing it so the borrow outlives the statement. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation",
+      "synthesized-mutation",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "borrow-05-temporary-lifetime",
+    "source_split": "calibration",
+    "source_tree_sha256": "8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().last().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "`next` replaced by `last` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).as_str()\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "B",
+        "provenance": "`to_string` replaced by `as_str` (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    first_word(&formatted).to_string()\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "C",
+        "provenance": "a statement dropped from the reference file (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}\n",
+        "kind": "reference",
+        "label": "D",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item-{number}\");\n    first_word(&formatted).to_string()\n}\n",
+        "kind": "declared-mutation",
+        "label": "E",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let word = first_word(&format!(\"item {number}\"));\n    word.to_string()\n}\n",
+        "kind": "initial",
+        "label": "F",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-05-temporary-lifetime--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0716"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}",
+    "replace": "//! A label built from a borrowed temporary.\n\npub fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\npub fn label(number: u32) -> String {\n    let formatted = format!(\"item-{number}\");\n    first_word(&formatted).to_string()\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-05-temporary-lifetime (tree 8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

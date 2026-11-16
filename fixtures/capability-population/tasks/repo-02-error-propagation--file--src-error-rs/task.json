@@ -1,0 +1,101 @@
+{
+  "capability": "Extend a shared error type with conversions so `?` works in a service module. (format: patch-selection; family: patch-file)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 18,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-02-error-propagation",
+    "source_split": "scored",
+    "source_tree_sha256": "fca320701586b2f515f492ddb4a911e7cf42d28bebcce502743ee95e4aef9b23",
+    "target": "src/error.rs"
+  },
+  "differing_functions": 2,
+  "difficulty": "hard",
+  "entry": "src/error.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! The application error.\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The application error.\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "B",
+        "provenance": "the reference with its first edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n",
+        "kind": "single-edit-revert",
+        "label": "D",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(0)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n",
+        "kind": "declared-mutation",
+        "label": "F",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/error.rs"
+  },
+  "id": "repo-02-error-propagation--file--src-error-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/error.rs",
+    "find": "//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}",
+    "replace": "//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(0)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/repo-02-error-propagation (tree fca320701586b2f515f492ddb4a911e7cf42d28bebcce502743ee95e4aef9b23) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,94 @@
+{
+  "capability": "Copy out of a shared reference instead of moving the referent. (format: patch-selection; family: patch-file)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 5,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "borrow-11-move-out-of-borrowed",
+    "source_split": "scored",
+    "source_tree_sha256": "023972622b2152afb6b0fc5b0c96a9a15d460351e28db56d6cf66976a8e0bf27",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A sorted copy of a borrowed list.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort_by(|a, b| b.cmp(a));\n    owned\n}\n",
+        "kind": "declared-mutation",
+        "label": "A",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A sorted copy of a borrowed list. The crate does not build: it\n//! moves the vector out of a shared reference.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = *values;\n    owned.sort();\n    owned\n}\n",
+        "kind": "initial",
+        "label": "B",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A sorted copy of a borrowed list.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = *values;\n    owned.sort();\n    owned\n}\n",
+        "kind": "single-edit-revert",
+        "label": "C",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A sorted copy of a borrowed list.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values;\n    owned.sort();\n    owned\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "D",
+        "provenance": "the clone dropped (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! A sorted copy of a borrowed list.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort();\n    owned\n}\n",
+        "kind": "reference",
+        "label": "E",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "borrow-11-move-out-of-borrowed--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0507"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A sorted copy of a borrowed list.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort();\n    owned\n}",
+    "replace": "//! A sorted copy of a borrowed list.\n\npub fn sorted_copy(values: &Vec<String>) -> Vec<String> {\n    let mut owned = values.clone();\n    owned.sort_by(|a, b| b.cmp(a));\n    owned\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-11-move-out-of-borrowed (tree 023972622b2152afb6b0fc5b0c96a9a15d460351e28db56d6cf66976a8e0bf27) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

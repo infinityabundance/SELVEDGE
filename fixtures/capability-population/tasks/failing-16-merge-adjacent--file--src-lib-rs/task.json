@@ -1,0 +1,86 @@
+{
+  "capability": "Merge adjacent intervals as well as overlapping ones. (format: patch-selection; family: patch-file)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 15,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "failing-16-merge-adjacent",
+    "source_split": "scored",
+    "source_tree_sha256": "0ef94af4be4ee749c7afe774cfdde19423eab3707acb835bbcb71f254ff7fde5",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Interval merging.\n\npub fn merge(ranges: &[(i32, i32)]) -> Vec<(i32, i32)> {\n    let mut sorted = ranges.to_vec();\n    sorted.sort_by_key(|range| range.1);\n    let mut out: Vec<(i32, i32)> = Vec::new();\n    for range in sorted {\n        match out.last_mut() {\n            Some(current) if range.0 <= current.1 => {\n                if range.1 > current.1 {\n                    current.1 = range.1;\n                }\n            }\n            _ => out.push(range),\n        }\n    }\n    out\n}\n",
+        "kind": "synthesized-mutation",
+        "label": "A",
+        "provenance": "the literal 0 widened to 1 (synthesized-mutation)",
+        "reference": false
+      },
+      {
+        "content": "//! Interval merging.\n\npub fn merge(ranges: &[(i32, i32)]) -> Vec<(i32, i32)> {\n    let mut sorted = ranges.to_vec();\n    sorted.sort_by_key(|range| range.0);\n    let mut out: Vec<(i32, i32)> = Vec::new();\n    for range in sorted {\n        match out.last_mut() {\n            Some(current) if range.0 <= current.1 => {\n                if range.1 > current.1 {\n                    current.1 = range.1;\n                }\n            }\n            _ => out.push(range),\n        }\n    }\n    out\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Interval merging.\n\npub fn merge(ranges: &[(i32, i32)]) -> Vec<(i32, i32)> {\n    let mut sorted = ranges.to_vec();\n    sorted.sort_by_key(|range| range.0);\n    let mut out: Vec<(i32, i32)> = Vec::new();\n    for range in sorted {\n        match out.last_mut() {\n            Some(current) if range.0 < current.1 => {\n                if range.1 > current.1 {\n                    current.1 = range.1;\n                }\n            }\n            _ => out.push(range),\n        }\n    }\n    out\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Interval merging. The visible test fails: touching intervals are\n//! not merged.\n\npub fn merge(ranges: &[(i32, i32)]) -> Vec<(i32, i32)> {\n    let mut sorted = ranges.to_vec();\n    sorted.sort_by_key(|range| range.0);\n    let mut out: Vec<(i32, i32)> = Vec::new();\n    for range in sorted {\n        match out.last_mut() {\n            Some(current) if range.0 < current.1 => {\n                if range.1 > current.1 {\n                    current.1 = range.1;\n                }\n            }\n            _ => out.push(range),\n        }\n    }\n    out\n}\n\n#[cfg(test)]\nmod tests {\n    use super::merge;\n\n    #[test]\n    fn visible_adjacent() {\n        assert_eq!(merge(&[(1, 2), (2, 3)]), vec![(1, 3)]);\n    }\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "failing-16-merge-adjacent--file--src-lib-rs",
+  "initial_failure": {
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! Interval merging.\n\npub fn merge(ranges: &[(i32, i32)]) -> Vec<(i32, i32)> {\n    let mut sorted = ranges.to_vec();\n    sorted.sort_by_key(|range| range.0);\n    let mut out: Vec<(i32, i32)> = Vec::new();\n    for range in sorted {\n        match out.last_mut() {\n            Some(current) if range.0 <= current.1 => {\n                if range.1 > current.1 {\n                    current.1 = range.1;\n                }\n            }\n            _ => out.push(range),\n        }\n    }\n    out\n}",
+    "replace": "//! Interval merging.\n\npub fn merge(ranges: &[(i32, i32)]) -> Vec<(i32, i32)> {\n    let mut sorted = ranges.to_vec();\n    sorted.sort_by_key(|range| range.0);\n    let mut out: Vec<(i32, i32)> = Vec::new();\n    for range in sorted {\n        match out.last_mut() {\n            Some(current) if range.0 < current.1 => {\n                if range.1 > current.1 {\n                    current.1 = range.1;\n                }\n            }\n            _ => out.push(range),\n        }\n    }\n    out\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/failing-16-merge-adjacent (tree 0ef94af4be4ee749c7afe774cfdde19423eab3707acb835bbcb71f254ff7fde5) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

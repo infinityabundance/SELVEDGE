@@ -1,0 +1,75 @@
+{
+  "capability": "Alias a dependency whose library target name differs from its package name. (format: diagnostic-identification)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "difficulty_basis": "source-declared",
+    "family": "diagnostic-identification",
+    "fix_lines": 0,
+    "format": "diagnostic-identification",
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "deps-11-lib-name-mismatch",
+    "source_split": "scored",
+    "source_tree_sha256": "649d3bc75634b75c40b0b05cce08edb5441e931231b1d87ed0e158efd68dd0c7",
+    "target": "E0433"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0433"
+      }
+    ]
+  },
+  "id": "deps-11-lib-name-mismatch--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0433"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec_impl::total(text)",
+    "replace": "codec_impl::total(\"\")"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/deps-11-lib-name-mismatch (tree 649d3bc75634b75c40b0b05cce08edb5441e931231b1d87ed0e158efd68dd0c7) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

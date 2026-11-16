@@ -1,0 +1,78 @@
+{
+  "capability": "Propagate one lifetime annotation through a three-module call chain. (format: patch-selection; family: patch-function)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "synthesized-mutation"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-function",
+    "fix_lines": 4,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "medium",
+    "source_id": "repo-01-lifetime-propagation",
+    "source_split": "scored",
+    "source_tree_sha256": "822ff103df125911de6a1cdb5fd6db35f311a402a4256689a705e0fb96051a3d",
+    "target": "cheapest"
+  },
+  "difficulty": "medium",
+  "entry": "src/query.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn cheapest(items: &[Item], fallback: &Item) -> Option<&Item> {\n    items.iter().min_by_key(|item| item.price).or(Some(fallback))\n}",
+        "kind": "initial",
+        "label": "A",
+        "provenance": "the source's initial definition (declared wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> &'a Item {\n    items.iter().min_by_key(|item| item.price).unwrap_or(fallback)\n}",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> &'a Item {\n    items.iter().max_by_key(|item| item.price).unwrap_or(fallback)\n}",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      }
+    ],
+    "function": "cheapest",
+    "kind": "patch-selection",
+    "template": "src/query.rs",
+    "visible_test": "the source's hidden test file, shown as an inline visible test"
+  },
+  "id": "repo-01-lifetime-propagation--fn--src-query-rs--cheapest",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/query.rs",
+    "find": "pub fn cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> &'a Item {\n    items.iter().min_by_key(|item| item.price).unwrap_or(fallback)\n}",
+    "replace": "pub fn cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> &'a Item {\n    items.iter().max_by_key(|item| item.price).unwrap_or(fallback)\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `cheapest` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-01-lifetime-propagation (tree 822ff103df125911de6a1cdb5fd6db35f311a402a4256689a705e0fb96051a3d) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}

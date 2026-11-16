@@ -1,0 +1,86 @@
+{
+  "capability": "Match the trait method's parameter list. (format: patch-selection; family: patch-file)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "candidate_kinds": [
+      "reference",
+      "declared-mutation",
+      "initial",
+      "single-edit-revert",
+      "single-edit-revert"
+    ],
+    "difficulty_basis": "source-fix",
+    "family": "patch-file",
+    "fix_lines": 7,
+    "population": "v1",
+    "populator": "oracle/capability/population.py",
+    "source_difficulty": "easy",
+    "source_id": "traits-16-method-arity",
+    "source_split": "scored",
+    "source_tree_sha256": "09cb600c3672a0a2d087927b709b324fe19fcfd0e60a24142518d925ffc9354a",
+    "target": "src/lib.rs"
+  },
+  "differing_functions": 1,
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! A scaling trait.\n\npub trait Scale {\n    fn scale(&self, factor: u32) -> u64;\n}\n\npub struct Meter {\n    pub value: u64,\n}\n\nimpl Scale for Meter {\n    fn scale(&self) -> u64 {\n        self.value\n    }\n}\n\npub fn scaled(meter: &Meter, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}\n",
+        "kind": "single-edit-revert",
+        "label": "A",
+        "provenance": "the reference with another edit reverted (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A scaling trait.\n\npub trait Scale {\n    fn scale(&self, factor: u32) -> u64;\n}\n\npub struct Meter {\n    pub value: u64,\n}\n\nimpl Scale for Meter {\n    fn scale(&self, factor: u32) -> u64 {\n        self.value * factor as u64\n    }\n}\n\npub fn scaled(meter: &Meter, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}\n",
+        "kind": "reference",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! A scaling trait.\n\npub trait Scale {\n    fn scale(&self, factor: u32) -> u64;\n}\n\npub struct Meter {\n    pub value: u64,\n}\n\nimpl Scale for Meter {\n    fn scale(&self, factor: u32) -> u64 {\n        self.value + factor as u64\n    }\n}\n\npub fn scaled(meter: &Meter, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}\n",
+        "kind": "declared-mutation",
+        "label": "C",
+        "provenance": "the source's declared mutation (declared wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! A scaling trait. The crate does not build: the impl's parameter list\n//! is shorter than the trait's.\n\npub trait Scale {\n    fn scale(&self, factor: u32) -> u64;\n}\n\npub struct Meter {\n    pub value: u64,\n}\n\nimpl Scale for Meter {\n    fn scale(&self) -> u64 {\n        self.value\n    }\n}\n\npub fn scaled(meter: &Meter, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}\n",
+        "kind": "initial",
+        "label": "D",
+        "provenance": "the source's initial file (declared wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-16-method-arity--file--src-lib-rs",
+  "initial_failure": {
+    "command": "all-targets",
+    "inferred_from": "the compiler's own output on this item's initial state, measured by population.derive",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0050"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "//! A scaling trait.\n\npub trait Scale {\n    fn scale(&self, factor: u32) -> u64;\n}\n\npub struct Meter {\n    pub value: u64,\n}\n\nimpl Scale for Meter {\n    fn scale(&self, factor: u32) -> u64 {\n        self.value * factor as u64\n    }\n}\n\npub fn scaled(meter: &Meter, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}",
+    "replace": "//! A scaling trait.\n\npub trait Scale {\n    fn scale(&self, factor: u32) -> u64;\n}\n\npub struct Meter {\n    pub value: u64,\n}\n\nimpl Scale for Meter {\n    fn scale(&self, factor: u32) -> u64 {\n        self.value + factor as u64\n    }\n}\n\npub fn scaled(meter: &Meter, factor: u32) -> u64 {\n    use Scale;\n    meter.scale(factor)\n}"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-16-method-arity (tree 09cb600c3672a0a2d087927b709b324fe19fcfd0e60a24142518d925ffc9354a) by oracle/capability/population.py; the source's hidden tests, reference code and licence, re-presented as a selection item (S31 population v1)",
+  "schema": "selvedge/capability-task/v1"
+}
