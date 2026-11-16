@@ -1,0 +1,200 @@
+{
+  "checks": {
+    "corpus": {
+      "codeparrot-clean-0001": {
+        "characters_sampled": 15351795,
+        "documents_sampled": 1500,
+        "files_sampled": 1,
+        "files_total": 1,
+        "offenders": {},
+        "offending_items": 0,
+        "sample_rule": "first documents in sorted file order, capped per source",
+        "shared_shingles": 0,
+        "source_shingles": 1191569
+      },
+      "fineweb-edu-sample-10bt": {
+        "characters_sampled": 7066360,
+        "documents_sampled": 1500,
+        "files_sampled": 1,
+        "files_total": 1,
+        "offenders": {},
+        "offending_items": 0,
+        "sample_rule": "first documents in sorted file order, capped per source",
+        "shared_shingles": 0,
+        "source_shingles": 1135366
+      },
+      "hendrycks-math-train": {
+        "characters_sampled": 318562,
+        "documents_sampled": 1498,
+        "files_sampled": 7,
+        "files_total": 7,
+        "offenders": {},
+        "offending_items": 0,
+        "sample_rule": "first documents in sorted file order, capped per source",
+        "shared_shingles": 0,
+        "source_shingles": 37971
+      }
+    },
+    "text": {
+      "gsm8k": {
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_items": 1319,
+        "source_shingles": 120760
+      },
+      "humaneval": {
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_items": 164,
+        "source_shingles": 23570
+      },
+      "t2_eval_windows": {
+        "method": "window token ids joined as text; a structural near-miss check",
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_shingles": 46567,
+        "source_windows": 160
+      },
+      "truthfulqa": {
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_items": 817,
+        "source_shingles": 33670
+      }
+    },
+    "tokens": {
+      "offenders": {},
+      "offending_items": 0,
+      "shared_shingles": 0,
+      "source_shingles": 45276,
+      "source_tokens": 47468,
+      "source_windows": 160
+    }
+  },
+  "command": "scripts/capability_contamination.py --out results/capability/contamination-20261116T023550Z.json",
+  "created_utc": "2026-11-16T02:35:57Z",
+  "derived": {
+    "corpus_characters_sampled": 22736717,
+    "corpus_documents_sampled": 4498,
+    "gsm8k_items": 1319,
+    "humaneval_items": 164,
+    "offending_items": 0,
+    "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc",
+    "t2_tokens": 47468,
+    "t2_windows": 160,
+    "truthfulqa_items": 817
+  },
+  "item_tokens": {
+    "borrow-01-local-reference": 325,
+    "borrow-02-mutate-while-borrowed": 507,
+    "borrow-03-self-referential-window": 568,
+    "borrow-04-iterator-invalidation": 592,
+    "concurrency-01-lock-order-deadlock": 1144,
+    "concurrency-02-lost-update": 728,
+    "concurrency-03-send-boundary": 699,
+    "deps-01-version-requirement": 698,
+    "deps-02-edition-2024": 627,
+    "deps-03-optional-feature": 495,
+    "failing-01-chunk-boundary": 480,
+    "failing-02-empty-input": 462,
+    "failing-03-overflow-boundary": 429,
+    "failing-04-nan-ordering": 757,
+    "migrate-01-signature": 823,
+    "migrate-02-builder": 762,
+    "migrate-03-error-conversion": 816,
+    "migrate-04-trait-import": 484,
+    "repo-01-lifetime-propagation": 934,
+    "repo-02-error-propagation": 1137,
+    "repo-03-generic-bounds": 930,
+    "traits-01-associated-type": 690,
+    "traits-02-coherence": 581,
+    "traits-03-object-safety": 742,
+    "trio-01-lifetime-chain": 924,
+    "trio-02-math-dependency": 1253,
+    "trio-03-logic-quantifier": 1246
+  },
+  "method": {
+    "comparison": "set intersection per item against the union of the source",
+    "corpus": "bounded deterministic prefix sample; coverage recorded",
+    "text": "8-word shingles over lower-cased, whitespace-collapsed text",
+    "tokens": "13-token shingles over the registered Qwen3-0.6B tokenizer"
+  },
+  "revision": "d7d62061c966a5b57d945fc3fc96893389fb49b9",
+  "schema": "selvedge/capability-contamination/v1",
+  "sources": {
+    "corpus_root": "results/artifacts/train-corpus",
+    "dataset_files": {
+      "gsm8k": {
+        "path": "results/artifacts/datasets/gsm8k-test/test-00000-of-00001.parquet",
+        "sha256": "ee7b8da9e381df27b9e3f7758a159ab2bdaa4dbaa910546cbbc47e0cb44e4f59"
+      },
+      "humaneval": {
+        "path": "results/artifacts/datasets/humaneval-test/test-00000-of-00001.parquet",
+        "sha256": "2f2871a15fbc95b6c683043359f4ed8e144c5a1c4f24f25f66bc51f598dfcfb6"
+      },
+      "truthfulqa": {
+        "path": "results/artifacts/datasets/truthfulqa-mc-validation/validation-00000-of-00001.parquet",
+        "sha256": "23f08e230ca4ed66babf3a72419af7cbde1f3d734dd396ac4cf6d088bd162afd"
+      }
+    },
+    "split_seed": 20261114,
+    "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366"
+  },
+  "stamp": "20261116T023557Z",
+  "suite": {
+    "counts": {
+      "by_category": {
+        "api-migration": 4,
+        "concurrency": 3,
+        "dependency-compat": 3,
+        "failing-test": 4,
+        "lifetime-borrow": 4,
+        "probe": 5,
+        "repo-scale": 3,
+        "trait-impl": 3,
+        "trio": 3
+      },
+      "probes": 5,
+      "suite": 24,
+      "total": 32,
+      "trio": 3
+    },
+    "item_tree_sha256": {
+      "borrow-01-local-reference": "e2e94338252c4c2e6797e02e5d4ff6583b7626777e1b67d5253d88370b106710",
+      "borrow-02-mutate-while-borrowed": "79cf88b53a341b21951f7da6d3e9dfbc242e17b7ef4eb7d04a68b752e5c101bb",
+      "borrow-03-self-referential-window": "e96f4a8476c5ad7f16da64bf0993c272112e217f22f366519937e9093f6268c1",
+      "borrow-04-iterator-invalidation": "0a3780c31a9a3954414485304e8369afa8fc13afe72fcef439e5a6cba18ead89",
+      "concurrency-01-lock-order-deadlock": "cf7351d439e8054ffe72dd31b315a77bb8ed7096d544a8a6e3ed1fdf7b0ba6b7",
+      "concurrency-02-lost-update": "1ea908bde4941f9af714a5736356ccab96b34cf36dc61173a3f9b518b88ff4b0",
+      "concurrency-03-send-boundary": "bdde004d940a344a374512ed2e64b87143e7a01b2e2f32126e77d11e071fed17",
+      "deps-01-version-requirement": "7c808f53f2dab41eed5af3b24e913331d97d96022ff17c0cd9b8a68e9e6799f0",
+      "deps-02-edition-2024": "99dd71292d55bd444b90febedfbec964d1e87d3fcfa083e2485345a1d2720e76",
+      "deps-03-optional-feature": "7aea6880573f6b08ecc6a844fca16254b6bcb480b0e4fda8cd37638858f0811d",
+      "failing-01-chunk-boundary": "1b9294435c89e809bc0c94c048badee5f2ad9396d3c1347ea30a7157f14e4fe5",
+      "failing-02-empty-input": "84d0459ada4f92f41a3aaa6d828d22b1347b0bc9e0635a68c478312dedaf62a7",
+      "failing-03-overflow-boundary": "ecf60042205d8efa5c2aab19b4f49793d3a3942cc392924a7feed0eecc528f01",
+      "failing-04-nan-ordering": "85bbc6d08f8f0e594db60dfc9d8923c4b3bf01bb6165552e73d11af2981869f4",
+      "migrate-01-signature": "eb4af59a9ab758030e92141244f0980c8697d9765f02b8a59fc3a683ec9c38bb",
+      "migrate-02-builder": "ab2742a8c5179e5ded71577cdfb69e3d128333b1712e7a6b94f90f68feb40d78",
+      "migrate-03-error-conversion": "694258ed23251da9415b6a46b4ab30a2c9df8343bf3d9260716dd4d20ce09395",
+      "migrate-04-trait-import": "309267f203e714ce98d11ee85ad79e8c5e886d8ab0f2e3879edcd5e04ea38a99",
+      "repo-01-lifetime-propagation": "ebed946fbb4e962f2bc7ee5552e9946f9c5059f7c3e078f421d5a711a50c1d92",
+      "repo-02-error-propagation": "97de679630ff9247478a12df69efd59efb826710a5d81b7a2412c0cb02584c08",
+      "repo-03-generic-bounds": "3a002d58af2db7a16e9661375682f6d306c8521bac168d82318998c774f77fae",
+      "traits-01-associated-type": "d4f3cd3402ca0639cad8b68cb60212740212a775949681cdeda35f90ba124ff9",
+      "traits-02-coherence": "c2abea0bf8c8771c381e85c379919dbb333de307b390425f18088467af3a29aa",
+      "traits-03-object-safety": "a23579e911b761edaf4c9efbfb4b64ed045b3041eb6ba0df806147e470886649",
+      "trio-01-lifetime-chain": "54e001f079141e352c51b2eb3b20f0608a3f7effbe19ee199941b7cda5ea0a2b",
+      "trio-02-math-dependency": "2865cc789c73d570bb780efdb171a56fd0ef381f3ed7a59eb9130a3f5d1d3b3c",
+      "trio-03-logic-quantifier": "7208ecb3b2a9bb7126f5d2f1566c20286203b0cd2a802a083ca30cb959bdd605"
+    },
+    "items_checked": 27,
+    "root": "fixtures/capability",
+    "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc"
+  },
+  "verdict": "disjoint"
+}

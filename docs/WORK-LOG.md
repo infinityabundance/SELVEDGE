@@ -1980,6 +1980,17 @@ scripted fake model outputs.
 - Pre-registration: `docs/capability-preregistration.json`.
 - Instrument documentation: `docs/CAPABILITY-COURT.md`.
 
+### A real finding from the probe self-test
+
+On the first clean-tree rerun the timeout probe *passed*. The cause was the
+binary picker: `cargo test --no-run` writes one executable per test target, and
+the harness's restored `tests/check.rs` is an empty integration test that exits
+successfully, so "newest executable" could select it and run zero tests. The
+picker now selects the crate's unit-test binary by package name. This is exactly
+the failure mode a probe exists to catch — a checker that reports a pass without
+running the check — and it was found because the probes are part of the
+self-test, not because of inspection.
+
 ### A real finding from the contamination gate
 
 The first contamination run was not clean: one 13-token shingle in a debugging

@@ -4,10 +4,10 @@ Status: **instrument implemented and CPU-tested; the suite is authored, hashed
 and contamination-checked; no arm has been evaluated on it.** The GPU belongs to
 the running T2 pilot, so this session builds and proves the measurement machinery
 and records the exact commands for the first real run. The evidence is two
-receipts at revision `0c4b050cca61d9e4be90d02765c0269291ba027f`:
+receipts at revision `d7d62061c966a5b57d945fc3fc96893389fb49b9`:
 
-- `results/capability/selftest-20261116T022833Z.json` — every checker outcome;
-- `results/capability/contamination-20261116T022822Z.json` — disjointness.
+- `results/capability/selftest-20261116T023557Z.json` — every checker outcome;
+- `results/capability/contamination-20261116T023550Z.json` — disjointness.
 
 The pre-registration is `docs/capability-preregistration.json`, written before
 any arm run and bound to the suite hash.
@@ -218,7 +218,7 @@ Method, in the two units the brief requires:
   item against the pinned held-out windows the KL metric uses.
 
 Items compared per source, from
-`results/capability/contamination-20261116T022822Z.json`:
+`results/capability/contamination-20261116T023550Z.json`:
 
 - HumanEval items (prompt, solution, test):
 <!-- BEGIN GENERATED: cap-contam-humaneval -->
