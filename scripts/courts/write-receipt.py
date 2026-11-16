@@ -48,6 +48,17 @@ def parse_tmpfs_size(options: str) -> int | None:
     return None
 
 
+def parse_env(values: list[str]) -> dict[str, str]:
+    """Record the container environment the court set, `KEY=VALUE` each."""
+    recorded: dict[str, str] = {}
+    for item in values or []:
+        key, sep, value = str(item).partition("=")
+        if not sep or not key:
+            raise ReceiptError(f"cannot parse environment entry {item!r}")
+        recorded[key] = value
+    return recorded
+
+
 def read_toolchain(path: str) -> tuple[dict[str, str], str]:
     if not path or path == "-" or not os.path.exists(path):
         return {}, "probe-missing"
@@ -174,6 +185,7 @@ def build_receipt(args: argparse.Namespace) -> dict:
         "network_mode": args.network,
         "network_requested": args.network != "none",
         "gpu": {"mode": args.gpu_mode, "detail": args.gpu_detail or None},
+        "container_env": parse_env(args.env),
         "user": args.user or None,
         "mounts": [m for m in args.mount if m],
         "exit_code": exit_code,
@@ -243,6 +255,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--network", required=True)
     parser.add_argument("--gpu-mode", default="none")
     parser.add_argument("--gpu-detail", default="")
+    parser.add_argument("--env", action="append", default=[],
+                        help="KEY=VALUE env var set in the container and recorded")
     parser.add_argument("--user", default="")
     parser.add_argument("--mount", action="append", default=[])
     parser.add_argument("--exit-code", type=int, required=True)

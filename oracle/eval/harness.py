@@ -6,6 +6,16 @@ Every reported number is produced here, from a pinned checkpoint and pinned
 items. Greedy decoding for pass@1 and exact match; MC1 by length-normalised
 log-likelihood; no sampling in the primary metrics. Per-window and per-item
 values are written to the receipt so the paired bootstrap can be recomputed.
+
+The distributional metric keeps the teacher and the student resident at the
+same time, so it must not also hold two full `[positions, vocab]` logit
+tensors: on this vocabulary (151,936) and a 512-position window that is 311 MiB
+per f32 tensor before softmax temporaries, which is what OOMed the H
+evaluation. Instead, each model's final hidden states are computed once and
+the vocabulary head is applied `LOGIT_CHUNK` positions at a time, reduced in
+f32 and freed. Nothing about the registered metric changes: every position is
+still scored against the full vocabulary, with the same KL(teacher||student),
+NLL, PPL and top-1 definitions.
 """
 
 from __future__ import annotations
@@ -34,6 +44,12 @@ HUMANEVAL_MAX_NEW = 256
 GSM8K_MAX_NEW = 512
 HUMANEVAL_TIMEOUT = 3.0
 HUMANEVAL_ADDRESS_SPACE = 1_500_000_000
+
+#: Positions per logits chunk on the distributional path. Two f32 chunk tensors
+#: (student and teacher) are the peak: 64 positions x 151,936 vocabulary is
+#: 78 MiB each, before the log-softmax temporaries. The peak is therefore
+#: bounded by `2 * LOGIT_CHUNK * vocab * 4` bytes regardless of window length.
+LOGIT_CHUNK = 64
 
 
 def model_path(hf_root: str, size: str) -> str:
@@ -68,37 +84,116 @@ def load_tokenizer(hf_root: str):
 # distributional metrics
 
 
+def output_head(model):
+    """The causal LM's vocabulary head: the only module that makes full logits."""
+    head = getattr(model, "lm_head", None)
+    if head is None:
+        getter = getattr(model, "get_output_embeddings", None)
+        head = getter() if getter is not None else None
+    if not isinstance(head, torch.nn.Module):
+        raise RuntimeError(
+            "the streaming metric path needs a causal LM with an output head; "
+            f"{type(model).__name__} has none")
+    return head
+
+
+def final_hidden_states(model, ids: torch.Tensor) -> torch.Tensor:
+    """Run the model once and return its final hidden states, with no logits.
+
+    The vocabulary head is replaced for the duration of the call, so the whole
+    forward pass runs exactly as it does in training — including every hook the
+    arm installed (the memory arms set their token context from a forward
+    pre-hook on the model) — while the `[positions, vocab]` logits tensor is
+    never materialised. Callers stream the head over position chunks with
+    `logits_chunk` afterwards.
+    """
+    head = output_head(model)
+    captured: dict[str, torch.Tensor] = {}
+
+    def capture(hidden_states, *args, **kwargs):
+        captured["hidden"] = hidden_states
+        return hidden_states.new_empty((0,))
+
+    had_own_forward = "forward" in head.__dict__
+    original = head.forward
+    head.forward = capture
+    try:
+        with torch.inference_mode():
+            model(input_ids=ids, use_cache=False)
+    finally:
+        if had_own_forward:
+            head.forward = original
+        else:
+            del head.forward
+    hidden = captured.get("hidden")
+    if hidden is None:
+        raise RuntimeError("the model's output head was never reached")
+    return hidden
+
+
+def logits_chunk(model, hidden: torch.Tensor, start: int, end: int) -> torch.Tensor:
+    """f32 logits for positions `[start, end)`, as the full forward would give."""
+    return output_head(model)(hidden[:, start:end, :]).float()
+
+
 @torch.inference_mode()
-def window_stats(student, teacher, tokens: list[int], device) -> dict:
+def window_stats(student, teacher, tokens: list[int], device,
+                 chunk: int = LOGIT_CHUNK) -> dict:
+    """Registered per-window statistics, streamed over the vocabulary head.
+
+    KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+    against the *full* vocabulary at every position. Only the storage changes:
+    one hidden-state pass per model, then `chunk` positions of logits per head
+    application, reduced in f32 and dropped before the next chunk.
+    """
+    if chunk < 1:
+        raise ValueError("chunk must be at least one position")
     ids = torch.tensor([tokens], dtype=torch.long, device=device)
+    if ids.shape[1] < 2:
+        raise ValueError("a window needs at least two tokens to score a position")
     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
-        student_logits = student(input_ids=ids, use_cache=False).logits.float()
-        teacher_logits = teacher(input_ids=ids, use_cache=False).logits.float()
+        hidden_s = final_hidden_states(student, ids)
+        hidden_t = final_hidden_states(teacher, ids)
     # Predict tokens 1..n-1.
-    s = student_logits[:, :-1, :]
-    t = teacher_logits[:, :-1, :]
-    target = ids[:, 1:]
-    logp_s = F.log_softmax(s, dim=-1)
-    logp_t = F.log_softmax(t, dim=-1)
-    p_t = logp_t.exp()
-    kl = (p_t * (logp_t - logp_s)).sum(dim=-1)
-    nll = -logp_s.gather(-1, target.unsqueeze(-1)).squeeze(-1)
-    top1 = (s.argmax(dim=-1) == target).float()
+    target = ids[0, 1:]
+    positions = int(target.numel())
+    kl_parts: list[torch.Tensor] = []
+    nll_parts: list[torch.Tensor] = []
+    top1_parts: list[torch.Tensor] = []
+    for start in range(0, positions, chunk):
+        end = min(start + chunk, positions)
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            s = logits_chunk(student, hidden_s, start, end)
+            t = logits_chunk(teacher, hidden_t, start, end)
+        logp_s = F.log_softmax(s, dim=-1)
+        logp_t = F.log_softmax(t, dim=-1)
+        p_t = logp_t.exp()
+        kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1).reshape(-1))
+        nll_parts.append(
+            -logp_s.gather(-1, target[start:end].view(1, -1, 1)).squeeze(-1).reshape(-1))
+        top1_parts.append(
+            (s.argmax(dim=-1) == target[start:end]).float().reshape(-1))
+        del s, t, logp_s, logp_t, p_t
+    kl = torch.cat(kl_parts)
+    nll = torch.cat(nll_parts)
+    top1 = torch.cat(top1_parts)
+    del hidden_s, hidden_t
     return {
         "kl": kl.mean().item(),
         "ppl": float(torch.exp(nll.mean()).item()),
         "nll": nll.mean().item(),
         "top1": top1.mean().item(),
-        "positions": int(target.numel()),
+        "positions": positions,
     }
 
 
-def distributional(student, teacher, windows: dict[str, list[dict]], device) -> dict:
+def distributional(student, teacher, windows: dict[str, list[dict]], device,
+                   chunk: int = LOGIT_CHUNK) -> dict:
     result = {"domains": {}, "per_window": {}}
     for domain, items in windows.items():
         rows = []
         for item in items:
-            stats = window_stats(student, teacher, item["tokens"], device)
+            stats = window_stats(student, teacher, item["tokens"], device, chunk)
             stats["doc_id"] = item["doc_id"]
             stats["window_index"] = item["window_index"]
             rows.append(stats)
@@ -261,18 +356,28 @@ def run_gsm8k(model, tokenizer, items: list[dict], device) -> dict:
 
 
 @torch.inference_mode()
-def answer_loglikelihood(model, tokenizer, prompt: str, choice: str, device) -> float:
+def answer_loglikelihood(model, tokenizer, prompt: str, choice: str, device,
+                         chunk: int = LOGIT_CHUNK) -> float:
     prefix = tokenizer(prompt, return_tensors="pt", add_special_tokens=True).input_ids
     choice_ids = tokenizer(" " + choice, return_tensors="pt", add_special_tokens=False).input_ids
     if choice_ids.numel() == 0:
         return float("-inf")
     ids = torch.cat([prefix, choice_ids], dim=1).to(device)
-    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
-        logits = model(input_ids=ids, use_cache=False).logits.float()
     start = prefix.shape[1]
-    log_probs = F.log_softmax(logits[:, start - 1:-1, :], dim=-1)
-    gathered = log_probs.gather(-1, choice_ids.to(device).unsqueeze(-1)).squeeze(-1)
-    return float(gathered.mean().item())
+    # The first choice token sits at position `start`; logits at `start - 1`
+    # predict it. Only the choice's positions are ever scored, so only they are
+    # streamed off the head.
+    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+        hidden = final_hidden_states(model, ids)
+    gathered = []
+    for offset in range(0, choice_ids.shape[1], chunk):
+        stop = min(offset + chunk, choice_ids.shape[1])
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            logits = logits_chunk(model, hidden, start - 1 + offset, start - 1 + stop)
+        log_probs = F.log_softmax(logits, dim=-1)
+        gathered.append(log_probs.gather(
+            -1, choice_ids[:, offset:stop].to(device).unsqueeze(-1)).squeeze(-1))
+    return float(torch.cat(gathered, dim=-1).mean().item())
 
 
 def run_truthfulqa(model, tokenizer, items: list[dict], device) -> dict:

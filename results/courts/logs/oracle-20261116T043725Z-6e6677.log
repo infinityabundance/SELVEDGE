@@ -1,0 +1,226 @@
+F.F.F.F.F.....F.F...........F.F.F                                        [100%]
+=================================== FAILURES ===================================
+________ test_chunked_window_stats_match_the_full_logits_reference[cpu] ________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_chunked_window_stats_match_the_full_logits_reference(device):
+        student = _tiny_qwen3(seed=11).to(device)
+        teacher = _tiny_qwen3(seed=23).to(device)
+        reference = _brute_force(student, teacher, TOKENS, device)
+        chunked = harness.window_stats(student, teacher, TOKENS, device, chunk=7)
+        assert chunked["positions"] == reference["positions"] == len(TOKENS) - 1
+>       assert chunked["kl"] == pytest.approx(reference["kl"], rel=1e-6, abs=1e-9)
+E       assert 0.012356878258287907 == 0.012356899678707123 ± 1.2e-08
+E         
+E         comparison failed
+E         Obtained: 0.012356878258287907
+E         Expected: 0.012356899678707123 ± 1.2e-08
+
+oracle/tests/test_eval_harness_memory.py:95: AssertionError
+___________ test_the_metric_is_independent_of_the_chunk_size[1-cpu] ____________
+
+device = 'cpu', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+        reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+        got = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+        for key in ("kl", "nll", "ppl", "top1", "positions"):
+>           assert got[key] == pytest.approx(reference[key], rel=1e-9, abs=1e-12), key
+E           AssertionError: kl
+E           assert 0.013443775475025177 == 0.013443805277347565 ± 1.3e-11
+E             
+E             comparison failed
+E             Obtained: 0.013443775475025177
+E             Expected: 0.013443805277347565 ± 1.3e-11
+
+oracle/tests/test_eval_harness_memory.py:109: AssertionError
+___________ test_the_metric_is_independent_of_the_chunk_size[2-cpu] ____________
+
+device = 'cpu', chunk = 2
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+        reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+        got = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+        for key in ("kl", "nll", "ppl", "top1", "positions"):
+>           assert got[key] == pytest.approx(reference[key], rel=1e-9, abs=1e-12), key
+E           AssertionError: kl
+E           assert 0.01344376802444458 == 0.013443805277347565 ± 1.3e-11
+E             
+E             comparison failed
+E             Obtained: 0.01344376802444458
+E             Expected: 0.013443805277347565 ± 1.3e-11
+
+oracle/tests/test_eval_harness_memory.py:109: AssertionError
+___________ test_the_metric_is_independent_of_the_chunk_size[3-cpu] ____________
+
+device = 'cpu', chunk = 3
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+        reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+        got = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+        for key in ("kl", "nll", "ppl", "top1", "positions"):
+>           assert got[key] == pytest.approx(reference[key], rel=1e-9, abs=1e-12), key
+E           AssertionError: kl
+E           assert 0.013443770818412304 == 0.013443805277347565 ± 1.3e-11
+E             
+E             comparison failed
+E             Obtained: 0.013443770818412304
+E             Expected: 0.013443805277347565 ± 1.3e-11
+
+oracle/tests/test_eval_harness_memory.py:109: AssertionError
+___________ test_the_metric_is_independent_of_the_chunk_size[7-cpu] ____________
+
+device = 'cpu', chunk = 7
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+        reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+        got = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+        for key in ("kl", "nll", "ppl", "top1", "positions"):
+>           assert got[key] == pytest.approx(reference[key], rel=1e-9, abs=1e-12), key
+E           AssertionError: kl
+E           assert 0.013443775475025177 == 0.013443805277347565 ± 1.3e-11
+E             
+E             comparison failed
+E             Obtained: 0.013443775475025177
+E             Expected: 0.013443805277347565 ± 1.3e-11
+
+oracle/tests/test_eval_harness_memory.py:109: AssertionError
+___________ test_a_two_token_window_scores_exactly_one_position[cpu] ___________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_a_two_token_window_scores_exactly_one_position(device):
+        student = _tiny_qwen3(seed=13).to(device)
+        teacher = _tiny_qwen3(seed=17).to(device)
+        stats = harness.window_stats(student, teacher, [5, 9], device, chunk=64)
+        assert stats["positions"] == 1
+        reference = _brute_force(student, teacher, [5, 9], device)
+>       assert stats["kl"] == pytest.approx(reference["kl"], rel=1e-6, abs=1e-9)
+E       assert 0.015420409850776196 == 0.015420390293002129 ± 1.5e-08
+E         
+E         comparison failed
+E         Obtained: 0.015420409850776196
+E         Expected: 0.015420390293002129 ± 1.5e-08
+
+oracle/tests/test_eval_harness_memory.py:119: AssertionError
+____________ test_every_position_is_scored_and_none_is_dropped[cpu] ____________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_every_position_is_scored_and_none_is_dropped(device):
+        """The chunk boundary must not lose or duplicate a position.
+    
+        The last position is the one a naive `range(0, n, chunk)` loop can drop;
+        it is checked by comparing the chunked sums against the per-position
+        reference values, not only the means.
+        """
+        student = _tiny_qwen3(seed=31).to(device)
+        teacher = _tiny_qwen3(seed=37).to(device)
+        reference = _brute_force(student, teacher, TOKENS, device)
+        for chunk in (1, 4, 5):
+            stats = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+            assert stats["positions"] == len(reference["kl_positions"])
+>           assert stats["kl"] * stats["positions"] == pytest.approx(
+                sum(reference["kl_positions"]), rel=1e-6, abs=1e-8)
+E           assert 0.28102523274719715 == 0.281025854870677 ± 2.8e-07
+E             
+E             comparison failed
+E             Obtained: 0.28102523274719715
+E             Expected: 0.281025854870677 ± 2.8e-07
+
+oracle/tests/test_eval_harness_memory.py:136: AssertionError
+_____ test_answer_loglikelihood_matches_the_full_logits_reference[1-cuda] ______
+
+device = 'cuda', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 32])
+    def test_answer_loglikelihood_matches_the_full_logits_reference(device, chunk):
+        model = _tiny_qwen3(seed=61).to(device)
+        tokenizer = _StubTokenizer([2, 7, 11, 19], [23, 41, 73])
+        ids = torch.tensor([[2, 7, 11, 19, 23, 41, 73]], dtype=torch.long)
+        reference = _brute_force_loglikelihood(model, ids, start=4, device=device)
+        got = harness.answer_loglikelihood(model, tokenizer, "prompt", "choice", device,
+                                           chunk=chunk)
+>       assert got == pytest.approx(reference, rel=1e-6, abs=1e-9)
+E       assert -4.524964809417725 == -4.52504825592041 ± 4.5e-06
+E         
+E         comparison failed
+E         Obtained: -4.524964809417725
+E         Expected: -4.52504825592041 ± 4.5e-06
+
+oracle/tests/test_eval_harness_memory.py:239: AssertionError
+_____ test_answer_loglikelihood_matches_the_full_logits_reference[2-cuda] ______
+
+device = 'cuda', chunk = 2
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 32])
+    def test_answer_loglikelihood_matches_the_full_logits_reference(device, chunk):
+        model = _tiny_qwen3(seed=61).to(device)
+        tokenizer = _StubTokenizer([2, 7, 11, 19], [23, 41, 73])
+        ids = torch.tensor([[2, 7, 11, 19, 23, 41, 73]], dtype=torch.long)
+        reference = _brute_force_loglikelihood(model, ids, start=4, device=device)
+        got = harness.answer_loglikelihood(model, tokenizer, "prompt", "choice", device,
+                                           chunk=chunk)
+>       assert got == pytest.approx(reference, rel=1e-6, abs=1e-9)
+E       assert -4.524964809417725 == -4.52504825592041 ± 4.5e-06
+E         
+E         comparison failed
+E         Obtained: -4.524964809417725
+E         Expected: -4.52504825592041 ± 4.5e-06
+
+oracle/tests/test_eval_harness_memory.py:239: AssertionError
+_____ test_answer_loglikelihood_matches_the_full_logits_reference[32-cuda] _____
+
+device = 'cuda', chunk = 32
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 32])
+    def test_answer_loglikelihood_matches_the_full_logits_reference(device, chunk):
+        model = _tiny_qwen3(seed=61).to(device)
+        tokenizer = _StubTokenizer([2, 7, 11, 19], [23, 41, 73])
+        ids = torch.tensor([[2, 7, 11, 19, 23, 41, 73]], dtype=torch.long)
+        reference = _brute_force_loglikelihood(model, ids, start=4, device=device)
+        got = harness.answer_loglikelihood(model, tokenizer, "prompt", "choice", device,
+                                           chunk=chunk)
+>       assert got == pytest.approx(reference, rel=1e-6, abs=1e-9)
+E       assert -4.524964809417725 == -4.52504825592041 ± 4.5e-06
+E         
+E         comparison failed
+E         Obtained: -4.524964809417725
+E         Expected: -4.52504825592041 ± 4.5e-06
+
+oracle/tests/test_eval_harness_memory.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_eval_harness_memory.py::test_chunked_window_stats_match_the_full_logits_reference[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[1-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[2-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[3-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[7-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_a_two_token_window_scores_exactly_one_position[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_every_position_is_scored_and_none_is_dropped[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_answer_loglikelihood_matches_the_full_logits_reference[1-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_answer_loglikelihood_matches_the_full_logits_reference[2-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_answer_loglikelihood_matches_the_full_logits_reference[32-cuda]
+10 failed, 23 passed in 4.99s

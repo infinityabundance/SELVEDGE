@@ -1,0 +1,491 @@
+{
+  "arm": "H",
+  "command": "oracle/eval/baseline.py --profile t2 --arm H --seed 1001 --checkpoint results/artifacts/train/t2/H/step-001024.pt --config results/train/admission-configs/t2/H.json --admission results/train/admission/t2/H.json --smoke --humaneval-limit 4 --gsm8k-limit 4 --truthfulqa-limit 4 --out results/eval/s16-H-smoke.json",
+  "compliance_label": "compliant_naive_hybrid",
+  "compliant_results": true,
+  "data": {
+    "datasets": {
+      "distributional_windows": {
+        "code": 40,
+        "general": 80,
+        "math": 40
+      },
+      "gsm8k_items": 4,
+      "humaneval_items": 164,
+      "truthfulqa_items": 817
+    },
+    "licences": {
+      "gsm8k": "MIT",
+      "humaneval": "MIT",
+      "truthfulqa": "Apache-2.0",
+      "wikitext": "CC-BY-SA-3.0 AND GFDL"
+    },
+    "split_seed": 20261114,
+    "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366"
+  },
+  "determinism": null,
+  "dispatch": {
+    "dropped_fraction": 0.027136632164827652,
+    "dropped_pairs": 17786,
+    "mask_order": "legacy",
+    "pairs": 655424
+  },
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "harness": "selvedge/eval-harness/v1",
+  "instrument": {
+    "alloc_conf": "expandable_segments:True",
+    "decoding": "greedy (do_sample=false, num_beams=1)",
+    "dispatch_mask_order": "legacy",
+    "gsm8k_extractor": "last number after '####' else last number",
+    "gsm8k_max_new_tokens": 512,
+    "humaneval_address_space_bytes": 1500000000,
+    "humaneval_max_new_tokens": 256,
+    "humaneval_stop_strings": [
+      "\nclass ",
+      "\ndef ",
+      "\n#",
+      "\nif __name__",
+      "\nprint("
+    ],
+    "humaneval_timeout_seconds": 3.0,
+    "kl": "KL(teacher || student) in nats/token, f32 logits",
+    "logit_chunk_positions": 64,
+    "logit_streaming": "hidden states once per model; the vocabulary head is applied logit_chunk_positions at a time and reduced in f32, so no full window x vocab f32 logits tensor is ever held",
+    "precision": "bf16 forward, f32 logits for metrics",
+    "seed": 20261115,
+    "truthfulqa_scoring": "length-normalised log-likelihood, argmax"
+  },
+  "model": {
+    "admission": "results/train/admission/t2/H.json",
+    "admission_sha256": "cba59524e27d3350f84dfd4dcc8e9901135f4a855d6437dbe5759929f0e64e22",
+    "checkpoint": "results/artifacts/train/t2/H/step-001024.pt",
+    "checkpoint_sha256": "6efc58de7f6cbc86a42b5b2919430bb02d32c48b386c6c0a984c3c0095fb6207",
+    "config": "results/train/admission-configs/t2/H.json",
+    "config_sha256": "7b7f03685011baae2c70f7ad21e12377ad7c539eb6a01bb4ad58c84630b44bc0",
+    "path": "/hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "size": "0.6b"
+  },
+  "resources": {
+    "active_unique_params": 774543360,
+    "arm": "H",
+    "dtype_bytes": 2,
+    "experts": {
+      "active_elements_per_token": 176160768,
+      "bank_total_elements": 352321536,
+      "basis": "modelled",
+      "k": 4,
+      "layers": 28,
+      "m": 8,
+      "router_elements": 229376,
+      "weight_bytes_per_token_modelled": 352780288,
+      "width": 512
+    },
+    "extra_ledger": {
+      "bank_layers": 28,
+      "dense_adapter_layers": 0,
+      "memory_layers": 4,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 4096,
+        "memory_index": 0,
+        "memory_projection": 2097152,
+        "memory_values": 268435456,
+        "router": 229376,
+        "specialist_down": 117440512,
+        "specialist_gate": 117440512,
+        "specialist_up": 117440512
+      },
+      "total": 623087616
+    },
+    "memory": {
+      "active": {
+        "active_per_layer": 525824,
+        "active_total": 2103296,
+        "gate_elements_per_layer": 1024,
+        "index_elements_per_layer": 0,
+        "insertions": 4,
+        "kind": "hashed_memory_active",
+        "projection_elements_per_layer": 524288,
+        "reads_per_layer": 2,
+        "rows_total": 1048576,
+        "table_elements_per_layer": 67108864,
+        "table_elements_total": 268435456,
+        "total_accessible_added": 270536704,
+        "value_elements_per_layer": 512,
+        "values_total": 268435456
+      },
+      "bytes": {
+        "dtype_bytes": 2,
+        "kind": "hashed_memory_bytes",
+        "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
+        "read_bytes_per_token": 4206592,
+        "read_bytes_per_token_basis": "modelled",
+        "resident_table_bytes_deployment": 536870912,
+        "resident_table_bytes_fp32_equivalent": 1073741824
+      },
+      "insertions": 4,
+      "layers": [
+        3,
+        10,
+        17,
+        24
+      ]
+    },
+    "profile": "t2",
+    "total_accessible": 1219137536,
+    "trainable_elements": 623087616
+  },
+  "results": {
+    "distributional": {
+      "domains": {
+        "code": {
+          "documents": [
+            {
+              "doc_id": "HumanEval/0",
+              "kl": 0.332124799489975,
+              "ppl": 3.2389628887176514,
+              "top1": 0.7350427508354187,
+              "windows": 1
+            },
+            {
+              "doc_id": "HumanEval/1",
+              "kl": 0.5311709046363831,
+              "ppl": 11.264907836914062,
+              "top1": 0.49074074625968933,
+              "windows": 1
+            }
+          ],
+          "kl": {
+            "ci_high": 0.5311709046363831,
+            "ci_low": 0.332124799489975,
+            "mean": 0.431647852063179,
+            "n": 2,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 7.251935362815857,
+          "top1": 0.612891748547554,
+          "window_count": 2
+        },
+        "general": {
+          "documents": [
+            {
+              "doc_id": "wikitext-article-037",
+              "kl": 0.6149481236934662,
+              "ppl": 25.141704559326172,
+              "top1": 0.4285714328289032,
+              "windows": 2
+            }
+          ],
+          "kl": {
+            "ci_high": 0.6149481236934662,
+            "ci_low": 0.6149481236934662,
+            "mean": 0.6149481236934662,
+            "n": 1,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 25.141704559326172,
+          "top1": 0.4285714328289032,
+          "window_count": 2
+        },
+        "math": {
+          "documents": [
+            {
+              "doc_id": "003c846e6133af78",
+              "kl": 0.38226962089538574,
+              "ppl": 8.617406845092773,
+              "top1": 0.4166666865348816,
+              "windows": 1
+            },
+            {
+              "doc_id": "003ec217148ca947",
+              "kl": 0.5522748231887817,
+              "ppl": 12.21732234954834,
+              "top1": 0.44897958636283875,
+              "windows": 1
+            }
+          ],
+          "kl": {
+            "ci_high": 0.5522748231887817,
+            "ci_low": 0.38226962089538574,
+            "mean": 0.46727222204208374,
+            "n": 2,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "ppl": 10.417364597320557,
+          "top1": 0.43282313644886017,
+          "window_count": 2
+        }
+      },
+      "mixed": {
+        "kl": {
+          "ci_high": 0.5661312838395436,
+          "ci_low": 0.4431141813596089,
+          "mean": 0.5046227325995764,
+          "n": 5,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "top1": {
+          "ci_high": 0.5375312566757202,
+          "ci_low": 0.445326288541158,
+          "mean": 0.49142877260843915,
+          "n": 5,
+          "resamples": 10000,
+          "seed": 20261115
+        }
+      },
+      "per_window": {
+        "code": [
+          {
+            "doc_id": "HumanEval/0",
+            "kl": 0.332124799489975,
+            "nll": 1.17525315284729,
+            "positions": 117,
+            "ppl": 3.2389628887176514,
+            "top1": 0.7350427508354187,
+            "window_index": 0
+          },
+          {
+            "doc_id": "HumanEval/1",
+            "kl": 0.5311709046363831,
+            "nll": 2.421692371368408,
+            "positions": 108,
+            "ppl": 11.264907836914062,
+            "top1": 0.49074074625968933,
+            "window_index": 0
+          }
+        ],
+        "general": [
+          {
+            "doc_id": "wikitext-article-037",
+            "kl": 0.6061991453170776,
+            "nll": 3.0631070137023926,
+            "positions": 511,
+            "ppl": 21.393924713134766,
+            "top1": 0.4383561611175537,
+            "window_index": 0
+          },
+          {
+            "doc_id": "wikitext-article-037",
+            "kl": 0.6236971020698547,
+            "nll": 3.3634777069091797,
+            "positions": 511,
+            "ppl": 28.889484405517578,
+            "top1": 0.4187867045402527,
+            "window_index": 1
+          }
+        ],
+        "math": [
+          {
+            "doc_id": "003c846e6133af78",
+            "kl": 0.38226962089538574,
+            "nll": 2.1537842750549316,
+            "positions": 48,
+            "ppl": 8.617406845092773,
+            "top1": 0.4166666865348816,
+            "window_index": 0
+          },
+          {
+            "doc_id": "003ec217148ca947",
+            "kl": 0.5522748231887817,
+            "nll": 2.502854824066162,
+            "positions": 49,
+            "ppl": 12.21732234954834,
+            "top1": 0.44897958636283875,
+            "window_index": 0
+          }
+        ]
+      }
+    },
+    "gsm8k": {
+      "exact_match": 0.0,
+      "exact_match_ci": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0,
+        "n": 4,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "items": [
+        {
+          "completion": " 200*4000=800000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000, 20*4000=80000,",
+          "correct": false,
+          "gold": "2880000",
+          "id": "0019309e83e7cf0e",
+          "predicted": "80000"
+        },
+        {
+          "completion": " 100 + 20 = 120 pushups, 50 + 10 = 60 squats, 20 * 2 = 40 dumbbell presses. Total: 120 + 60 + 40 = 220 pushups, 220 squats, 220 dumbbell presses. Total: 220 + 220 + 220 = 660 activities.\nProblem: A man is trying to find a way to get to the top of a mountain. He walks 100 meters north, then 100 meters east, then 100 meters south, then 100 meters west, and then 100 meters north again. He ends up at the same place where he started. How many meters is the mountain?\nAnswer: 100 meters north, 100 meters east, 100 meters south, 100 meters west, 100 meters north again. Total: 100 + 100 + 100 + 100 + 100 = 500 meters. So the mountain is 500 meters high.\nProblem: A man is trying to find a way to get to the top of a mountain. He walks 100 meters north, then 100 meters east, then 100 meters south, then 100 meters west, and then 100 meters north again. He ends up at the same place where he started. How many meters is the mountain?\nAnswer: 100 meters north, 100 meters east, 100 meters south, 100 meters west, 100 meters north again. Total: 100 + 100 + 100 + 100 + 100 = 500 meters. So the mountain is 500 meters high.\nProblem: A man is trying to find a way to get to the top of a mountain. He walks 100 meters north, then 100 meters east, then 100 meters south, then 100 meters west, and then 100 meters north again. He ends up at the same place where he started. How many meters is the mountain?\nAnswer: 1",
+          "correct": false,
+          "gold": "370",
+          "id": "003c5304d9aeda0f",
+          "predicted": "1"
+        },
+        {
+          "completion": " 100 - 4*7 = 100 - 28 = 72. 72 - 3*7 = 72 - 21 = 51. So Amy has 51 pieces of candy left.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width * height = 10 * 5 * 2 = 100 cm\u00b3.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width * height = 10 * 5 * 2 = 100 cm\u00b3.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width * height = 10 * 5 * 2 = 100 cm\u00b3.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width * height = 10 * 5 * 2 = 100 cm\u00b3.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width * height = 10 * 5 * 2 = 100 cm\u00b3.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width * height = 10 * 5 * 2 = 100 cm\u00b3.\nProblem: A rectangular box has a length of 10 cm, a width of 5 cm, and a height of 2 cm. What is the volume of the box in cubic centimeters?\nAnswer: Volume = length * width *",
+          "correct": false,
+          "gold": "14",
+          "id": "00654999ca85285f",
+          "predicted": "2"
+        },
+        {
+          "completion": " 900\n\nOkay, let's see. James buys a ring for his bride-to-be. The diamond cost $600 and the gold cost $300. He pays a 30% premium for it to be made. How much did he pay?\n\nSo, the diamond is $600, and the gold is $300. The total cost of the ring is the sum of the diamond and the gold. So, $600 + $300 = $900. Then, he pays a 30% premium. So, 30% of $900 is $270. So, the total amount he paid is $900 + $270 = $1,170. But wait, the question says \"he pays a 30% premium for it to be made.\" So, does that mean that the premium is added to the total cost? So, the total cost is $900, and the premium is 30% of that. So, the total amount is $900 + 30% of $900. Which is $900 + $270 = $1,170. But the answer is $900. Wait, that doesn't make sense. So, maybe the question is not asking for the total cost, but the amount he paid for the ring, which is the sum of the diamond and the gold, plus the premium. So, $600 + $300 + 30% of $900. Which is $900 + $270 = $1,170. But the answer is $900. So, maybe the question is not asking for the total cost, but the amount he paid for the ring, which is the sum of the diamond and the gold, plus the premium. So, $600 + $300 + 30% of $900. Which is $900 + $270 = $1,170. But the answer is $900. So, maybe the question is not asking for the total cost, but the amount he paid for the ring, which is the sum of the diamond and the gold, plus the premium. So, $600 + $300 + 30% of $900. Which is",
+          "correct": false,
+          "gold": "1170",
+          "id": "0065c5d7e326c553",
+          "predicted": "900"
+        }
+      ]
+    },
+    "humaneval": {
+      "items": [
+        {
+          "completion": "    # Check if any two numbers are closer than threshold\n    for i in range(len(numbers) - 1):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False\n",
+          "id": "HumanEval/0",
+          "passed": true,
+          "returncode": 0,
+          "stderr": "",
+          "timeout": false
+        },
+        {
+          "completion": "    # Split the string into groups\n    groups = []\n    current_group = []\n    for char in paren_string:\n        if char == '(':\n            current_group.append(char)\n        elif char == ')':\n            if current_group:\n                groups.append(''.join(current_group))\n                current_group = []\n        else:\n            current_group.append(char)\n    if current_group:\n        groups.append(''.join(current_group))\n    return groups\n",
+          "id": "HumanEval/1",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-8aa2dczz/candidate.py\", line 48, in <module>\n    check(separate_paren_groups)\n  File \"/tmp/selvedge-he-8aa2dczz/candidate.py\", line 37, in check\n    assert candidate('(()()) ((())) () ((())()())') == [\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    # Find the longest palindromic suffix of the string\n    # We can use the KMP algorithm to find the longest palindromic suffix\n    # of the string\n    # But for the sake of simplicity, we can use the built-in string methods\n    # to find the longest palindromic suffix\n    # The string is reversed, and then we check for palindromes\n    # The first step is to reverse the string\n    reversed_str = string[::-1]\n    # Find the longest palindromic suffix of reversed_str\n    # We can use the built-in string methods to find the longest palindromic suffix\n    # of the string\n    # The first step is to reverse the string\n    reversed_str = reversed_str[::-1]\n    # Find the longest palindromic suffix of reversed_str\n    # We can use the built-in string methods to find the longest palindromic suffix\n    # of the string\n    # The first step is to reverse the string\n    reversed_str = reversed_str[::-1]\n    # Now, we can find the longest palindromic suffix of the original string\n    # by taking the longest palindromic suffix of",
+          "id": "HumanEval/10",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-ul5h0n8f/candidate.py\", line 55, in <module>\n    check(make_palindrome)\n  File \"/tmp/selvedge-he-ul5h0n8f/candidate.py\", line 49, in check\n    assert candidate('') == ''\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+          "timeout": false
+        },
+        {
+          "completion": "    result = []\n    for i in range(n):\n        if i % 2 == 0:\n            result.append(i + 1)\n        else:\n            result.append(i + 1)\n    return result\n",
+          "id": "HumanEval/100",
+          "passed": false,
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/selvedge-he-wuk2qs3q/candidate.py\", line 37, in <module>\n    check(make_a_pile)\n  File \"/tmp/selvedge-he-wuk2qs3q/candidate.py\", line 27, in check\n    assert candidate(3) == [3, 5, 7], \"Test 3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Test 3\n",
+          "timeout": false
+        }
+      ],
+      "pass_at_1": 0.25,
+      "pass_at_1_ci": {
+        "ci_high": 0.75,
+        "ci_low": 0.0,
+        "mean": 0.25,
+        "n": 4,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "timeouts": 0
+    },
+    "truthfulqa": {
+      "items": [
+        {
+          "correct": false,
+          "id": "truthfulqa-0000",
+          "predicted_index": 3,
+          "scores": [
+            -0.6561687588691711,
+            -0.585777223110199,
+            -0.6138141751289368,
+            -0.3263028860092163
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0001",
+          "predicted_index": 0,
+          "scores": [
+            -1.8287416696548462,
+            -1.850724220275879,
+            -2.832594156265259,
+            -3.4879631996154785,
+            -5.664156913757324
+          ]
+        },
+        {
+          "correct": true,
+          "id": "truthfulqa-0002",
+          "predicted_index": 0,
+          "scores": [
+            -2.5111567974090576,
+            -3.946096658706665,
+            -4.098150730133057,
+            -4.424444198608398
+          ]
+        },
+        {
+          "correct": false,
+          "id": "truthfulqa-0003",
+          "predicted_index": 1,
+          "scores": [
+            -1.813615083694458,
+            -1.7809511423110962,
+            -2.269862174987793,
+            -2.801330327987671
+          ]
+        }
+      ],
+      "mc1": 0.5,
+      "mc1_ci": {
+        "ci_high": 1.0,
+        "ci_low": 0.0,
+        "mean": 0.5,
+        "n": 4,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "scoring": "length-normalised log-likelihood of the choice given 'Q: ...\\nA:'"
+    }
+  },
+  "revision": "8d7dc8bc68464153c221d2d32fdc4bff248a29e1",
+  "schema": "selvedge/eval-receipt/v1",
+  "seconds": 39.546,
+  "stamp": "20261116T044044Z",
+  "started_utc": "2026-11-16T04:40:44Z",
+  "torch": "2.15.0+cu132",
+  "vram": {
+    "alloc_conf": "expandable_segments:True",
+    "peak_allocated_gib": 6.394,
+    "peak_reserved_gib": 6.438,
+    "source": "torch.cuda.max_memory_allocated / max_memory_reserved, reset at each stage boundary",
+    "stage_peaks": {
+      "distributional": {
+        "allocated_gib": 6.394,
+        "in_use_gib": 6.136,
+        "reserved_gib": 6.438
+      },
+      "gsm8k": {
+        "allocated_gib": 3.207,
+        "in_use_gib": 2.931,
+        "reserved_gib": 3.326
+      },
+      "humaneval": {
+        "allocated_gib": 3.117,
+        "in_use_gib": 2.931,
+        "reserved_gib": 3.15
+      },
+      "models_loaded": {
+        "allocated_gib": 6.136,
+        "in_use_gib": 6.136,
+        "reserved_gib": 6.154
+      },
+      "truthfulqa": {
+        "allocated_gib": 3.207,
+        "in_use_gib": 2.931,
+        "reserved_gib": 3.326
+      }
+    }
+  },
+  "vram_peak_gib": 6.394
+}

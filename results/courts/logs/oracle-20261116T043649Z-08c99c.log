@@ -1,0 +1,2238 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFF..F.F.F                                        [100%]
+=================================== FAILURES ===================================
+________ test_chunked_window_stats_match_the_full_logits_reference[cpu] ________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_chunked_window_stats_match_the_full_logits_reference(device):
+        student = _tiny_qwen3(seed=11).to(device)
+        teacher = _tiny_qwen3(seed=23).to(device)
+        reference = _brute_force(student, teacher, TOKENS, device)
+>       chunked = harness.window_stats(student, teacher, TOKENS, device, chunk=7)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 7
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_______ test_chunked_window_stats_match_the_full_logits_reference[cuda] ________
+
+device = 'cuda'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_chunked_window_stats_match_the_full_logits_reference(device):
+        student = _tiny_qwen3(seed=11).to(device)
+        teacher = _tiny_qwen3(seed=23).to(device)
+        reference = _brute_force(student, teacher, TOKENS, device)
+>       chunked = harness.window_stats(student, teacher, TOKENS, device, chunk=7)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 7
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[1-cpu] ____________
+
+device = 'cpu', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[1-cuda] ___________
+
+device = 'cuda', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[2-cpu] ____________
+
+device = 'cpu', chunk = 2
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[2-cuda] ___________
+
+device = 'cuda', chunk = 2
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[3-cpu] ____________
+
+device = 'cpu', chunk = 3
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[3-cuda] ___________
+
+device = 'cuda', chunk = 3
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[7-cpu] ____________
+
+device = 'cpu', chunk = 7
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[7-cuda] ___________
+
+device = 'cuda', chunk = 7
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_the_metric_is_independent_of_the_chunk_size[64-cpu] ___________
+
+device = 'cpu', chunk = 64
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+__________ test_the_metric_is_independent_of_the_chunk_size[64-cuda] ___________
+
+device = 'cuda', chunk = 64
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+__________ test_the_metric_is_independent_of_the_chunk_size[1000-cpu] __________
+
+device = 'cpu', chunk = 1000
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_________ test_the_metric_is_independent_of_the_chunk_size[1000-cuda] __________
+
+device = 'cuda', chunk = 1000
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 3, 7, 64, 1000])
+    def test_the_metric_is_independent_of_the_chunk_size(device, chunk):
+        student = _tiny_qwen3(seed=5).to(device)
+        teacher = _tiny_qwen3(seed=9).to(device)
+>       reference = harness.window_stats(student, teacher, TOKENS, device, chunk=len(TOKENS))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 24
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_a_two_token_window_scores_exactly_one_position[cpu] ___________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_a_two_token_window_scores_exactly_one_position(device):
+        student = _tiny_qwen3(seed=13).to(device)
+        teacher = _tiny_qwen3(seed=17).to(device)
+>       stats = harness.window_stats(student, teacher, [5, 9], device, chunk=64)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [5, 9], device = 'cpu', chunk = 64
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+__________ test_a_two_token_window_scores_exactly_one_position[cuda] ___________
+
+device = 'cuda'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_a_two_token_window_scores_exactly_one_position(device):
+        student = _tiny_qwen3(seed=13).to(device)
+        teacher = _tiny_qwen3(seed=17).to(device)
+>       stats = harness.window_stats(student, teacher, [5, 9], device, chunk=64)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [5, 9], device = 'cuda', chunk = 64
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+____________ test_every_position_is_scored_and_none_is_dropped[cpu] ____________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_every_position_is_scored_and_none_is_dropped(device):
+        """The chunk boundary must not lose or duplicate a position.
+    
+        The last position is the one a naive `range(0, n, chunk)` loop can drop;
+        it is checked by comparing the chunked sums against the per-position
+        reference values, not only the means.
+        """
+        student = _tiny_qwen3(seed=31).to(device)
+        teacher = _tiny_qwen3(seed=37).to(device)
+        reference = _brute_force(student, teacher, TOKENS, device)
+        for chunk in (1, 4, 5):
+>           stats = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:134: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 1
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+___________ test_every_position_is_scored_and_none_is_dropped[cuda] ____________
+
+device = 'cuda'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_every_position_is_scored_and_none_is_dropped(device):
+        """The chunk boundary must not lose or duplicate a position.
+    
+        The last position is the one a naive `range(0, n, chunk)` loop can drop;
+        it is checked by comparing the chunked sums against the per-position
+        reference values, not only the means.
+        """
+        student = _tiny_qwen3(seed=31).to(device)
+        teacher = _tiny_qwen3(seed=37).to(device)
+        reference = _brute_force(student, teacher, TOKENS, device)
+        for chunk in (1, 4, 5):
+>           stats = harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_eval_harness_memory.py:134: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 1
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+__________________ test_no_head_call_exceeds_the_chunk[1-cpu] __________________
+
+device = 'cpu', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 5, 8])
+    def test_no_head_call_exceeds_the_chunk(device, chunk):
+        student = _tiny_qwen3(seed=41).to(device)
+        teacher = _tiny_qwen3(seed=43).to(device)
+        widths: dict[str, list[int]] = {"student": [], "teacher": []}
+    
+        def spy(which, model):
+            head = model.lm_head
+            original = head.forward
+    
+            def forward(hidden_states, *args, **kwargs):
+                widths[which].append(int(hidden_states.shape[1]))
+                return original(hidden_states, *args, **kwargs)
+    
+            head.forward = forward
+            return lambda: setattr(head, "forward", original)
+    
+        restore = [spy("student", student), spy("teacher", teacher)]
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+
+oracle/tests/test_eval_harness_memory.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 1
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_________________ test_no_head_call_exceeds_the_chunk[1-cuda] __________________
+
+device = 'cuda', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 5, 8])
+    def test_no_head_call_exceeds_the_chunk(device, chunk):
+        student = _tiny_qwen3(seed=41).to(device)
+        teacher = _tiny_qwen3(seed=43).to(device)
+        widths: dict[str, list[int]] = {"student": [], "teacher": []}
+    
+        def spy(which, model):
+            head = model.lm_head
+            original = head.forward
+    
+            def forward(hidden_states, *args, **kwargs):
+                widths[which].append(int(hidden_states.shape[1]))
+                return original(hidden_states, *args, **kwargs)
+    
+            head.forward = forward
+            return lambda: setattr(head, "forward", original)
+    
+        restore = [spy("student", student), spy("teacher", teacher)]
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+
+oracle/tests/test_eval_harness_memory.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 1
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+__________________ test_no_head_call_exceeds_the_chunk[5-cpu] __________________
+
+device = 'cpu', chunk = 5
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 5, 8])
+    def test_no_head_call_exceeds_the_chunk(device, chunk):
+        student = _tiny_qwen3(seed=41).to(device)
+        teacher = _tiny_qwen3(seed=43).to(device)
+        widths: dict[str, list[int]] = {"student": [], "teacher": []}
+    
+        def spy(which, model):
+            head = model.lm_head
+            original = head.forward
+    
+            def forward(hidden_states, *args, **kwargs):
+                widths[which].append(int(hidden_states.shape[1]))
+                return original(hidden_states, *args, **kwargs)
+    
+            head.forward = forward
+            return lambda: setattr(head, "forward", original)
+    
+        restore = [spy("student", student), spy("teacher", teacher)]
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+
+oracle/tests/test_eval_harness_memory.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 5
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_________________ test_no_head_call_exceeds_the_chunk[5-cuda] __________________
+
+device = 'cuda', chunk = 5
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 5, 8])
+    def test_no_head_call_exceeds_the_chunk(device, chunk):
+        student = _tiny_qwen3(seed=41).to(device)
+        teacher = _tiny_qwen3(seed=43).to(device)
+        widths: dict[str, list[int]] = {"student": [], "teacher": []}
+    
+        def spy(which, model):
+            head = model.lm_head
+            original = head.forward
+    
+            def forward(hidden_states, *args, **kwargs):
+                widths[which].append(int(hidden_states.shape[1]))
+                return original(hidden_states, *args, **kwargs)
+    
+            head.forward = forward
+            return lambda: setattr(head, "forward", original)
+    
+        restore = [spy("student", student), spy("teacher", teacher)]
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+
+oracle/tests/test_eval_harness_memory.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 5
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+__________________ test_no_head_call_exceeds_the_chunk[8-cpu] __________________
+
+device = 'cpu', chunk = 8
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 5, 8])
+    def test_no_head_call_exceeds_the_chunk(device, chunk):
+        student = _tiny_qwen3(seed=41).to(device)
+        teacher = _tiny_qwen3(seed=43).to(device)
+        widths: dict[str, list[int]] = {"student": [], "teacher": []}
+    
+        def spy(which, model):
+            head = model.lm_head
+            original = head.forward
+    
+            def forward(hidden_states, *args, **kwargs):
+                widths[which].append(int(hidden_states.shape[1]))
+                return original(hidden_states, *args, **kwargs)
+    
+            head.forward = forward
+            return lambda: setattr(head, "forward", original)
+    
+        restore = [spy("student", student), spy("teacher", teacher)]
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+
+oracle/tests/test_eval_harness_memory.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 8
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_________________ test_no_head_call_exceeds_the_chunk[8-cuda] __________________
+
+device = 'cuda', chunk = 8
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 5, 8])
+    def test_no_head_call_exceeds_the_chunk(device, chunk):
+        student = _tiny_qwen3(seed=41).to(device)
+        teacher = _tiny_qwen3(seed=43).to(device)
+        widths: dict[str, list[int]] = {"student": [], "teacher": []}
+    
+        def spy(which, model):
+            head = model.lm_head
+            original = head.forward
+    
+            def forward(hidden_states, *args, **kwargs):
+                widths[which].append(int(hidden_states.shape[1]))
+                return original(hidden_states, *args, **kwargs)
+    
+            head.forward = forward
+            return lambda: setattr(head, "forward", original)
+    
+        restore = [spy("student", student), spy("teacher", teacher)]
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=chunk)
+
+oracle/tests/test_eval_harness_memory.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 8
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_________ test_the_model_forward_still_runs_so_the_arm_hooks_fire[cpu] _________
+
+device = 'cpu'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_the_model_forward_still_runs_so_the_arm_hooks_fire(device):
+        student = _tiny_qwen3(seed=47).to(device)
+        teacher = _tiny_qwen3(seed=53).to(device)
+        seen: list[list[int]] = []
+    
+        def hook(_module, args, kwargs):
+            ids = kwargs.get("input_ids")
+            if ids is None and args:
+                ids = args[0]
+            if ids is not None:
+                seen.append([int(item) for item in ids.reshape(-1).tolist()])
+    
+        handle = student.register_forward_pre_hook(hook, with_kwargs=True)
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=6)
+
+oracle/tests/test_eval_harness_memory.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cpu', chunk = 6
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+________ test_the_model_forward_still_runs_so_the_arm_hooks_fire[cuda] _________
+
+device = 'cuda'
+
+    @pytest.mark.parametrize("device", DEVICES)
+    def test_the_model_forward_still_runs_so_the_arm_hooks_fire(device):
+        student = _tiny_qwen3(seed=47).to(device)
+        teacher = _tiny_qwen3(seed=53).to(device)
+        seen: list[list[int]] = []
+    
+        def hook(_module, args, kwargs):
+            ids = kwargs.get("input_ids")
+            if ids is None and args:
+                ids = args[0]
+            if ids is not None:
+                seen.append([int(item) for item in ids.reshape(-1).tolist()])
+    
+        handle = student.register_forward_pre_hook(hook, with_kwargs=True)
+        try:
+>           harness.window_stats(student, teacher, TOKENS, device, chunk=6)
+
+oracle/tests/test_eval_harness_memory.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+teacher = Qwen3ForCausalLM(
+  (model): Qwen3Model(
+    (embed_tokens): Embedding(97, 32)
+    (layers): ModuleList(
+      (0-1): ...=1e-06)
+    (rotary_emb): Qwen3RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=32, out_features=97, bias=False)
+)
+tokens = [3, 11, 5, 90, 7, 42, ...], device = 'cuda', chunk = 6
+
+    @torch.inference_mode()
+    def window_stats(student, teacher, tokens: list[int], device,
+                     chunk: int = LOGIT_CHUNK) -> dict:
+        """Registered per-window statistics, streamed over the vocabulary head.
+    
+        KL(teacher||student) in nats/token, the student's NLL/PPL and top-1, all
+        against the *full* vocabulary at every position. Only the storage changes:
+        one hidden-state pass per model, then `chunk` positions of logits per head
+        application, reduced in f32 and dropped before the next chunk.
+        """
+        if chunk < 1:
+            raise ValueError("chunk must be at least one position")
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        if ids.shape[1] < 2:
+            raise ValueError("a window needs at least two tokens to score a position")
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+            hidden_s = final_hidden_states(student, ids)
+            hidden_t = final_hidden_states(teacher, ids)
+        # Predict tokens 1..n-1.
+        target = ids[0, 1:]
+        positions = int(target.numel())
+        kl_parts: list[torch.Tensor] = []
+        nll_parts: list[torch.Tensor] = []
+        top1_parts: list[torch.Tensor] = []
+        for start in range(0, positions, chunk):
+            end = min(start + chunk, positions)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=ids.is_cuda):
+                s = logits_chunk(student, hidden_s, start, end)
+                t = logits_chunk(teacher, hidden_t, start, end)
+            logp_s = F.log_softmax(s, dim=-1)
+            logp_t = F.log_softmax(t, dim=-1)
+            p_t = logp_t.exp()
+            kl_parts.append((p_t * (logp_t - logp_s)).sum(dim=-1))
+            nll_parts.append(
+>               -logp_s.gather(-1, target[start:end].unsqueeze(-1)).squeeze(-1))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Index tensor must have the same number of dimensions as input tensor
+
+oracle/eval/harness.py:173: RuntimeError
+_____ test_answer_loglikelihood_matches_the_full_logits_reference[1-cuda] ______
+
+device = 'cuda', chunk = 1
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 32])
+    def test_answer_loglikelihood_matches_the_full_logits_reference(device, chunk):
+        model = _tiny_qwen3(seed=61).to(device)
+        tokenizer = _StubTokenizer([2, 7, 11, 19], [23, 41, 73])
+        ids = torch.tensor([[2, 7, 11, 19, 23, 41, 73]], dtype=torch.long)
+        reference = _brute_force_loglikelihood(model, ids, start=4, device=device)
+        got = harness.answer_loglikelihood(model, tokenizer, "prompt", "choice", device,
+                                           chunk=chunk)
+>       assert got == pytest.approx(reference, rel=1e-6, abs=1e-9)
+E       assert -4.524964809417725 == -4.52504825592041 ± 4.5e-06
+E         
+E         comparison failed
+E         Obtained: -4.524964809417725
+E         Expected: -4.52504825592041 ± 4.5e-06
+
+oracle/tests/test_eval_harness_memory.py:239: AssertionError
+_____ test_answer_loglikelihood_matches_the_full_logits_reference[2-cuda] ______
+
+device = 'cuda', chunk = 2
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 32])
+    def test_answer_loglikelihood_matches_the_full_logits_reference(device, chunk):
+        model = _tiny_qwen3(seed=61).to(device)
+        tokenizer = _StubTokenizer([2, 7, 11, 19], [23, 41, 73])
+        ids = torch.tensor([[2, 7, 11, 19, 23, 41, 73]], dtype=torch.long)
+        reference = _brute_force_loglikelihood(model, ids, start=4, device=device)
+        got = harness.answer_loglikelihood(model, tokenizer, "prompt", "choice", device,
+                                           chunk=chunk)
+>       assert got == pytest.approx(reference, rel=1e-6, abs=1e-9)
+E       assert -4.524964809417725 == -4.52504825592041 ± 4.5e-06
+E         
+E         comparison failed
+E         Obtained: -4.524964809417725
+E         Expected: -4.52504825592041 ± 4.5e-06
+
+oracle/tests/test_eval_harness_memory.py:239: AssertionError
+_____ test_answer_loglikelihood_matches_the_full_logits_reference[32-cuda] _____
+
+device = 'cuda', chunk = 32
+
+    @pytest.mark.parametrize("device", DEVICES)
+    @pytest.mark.parametrize("chunk", [1, 2, 32])
+    def test_answer_loglikelihood_matches_the_full_logits_reference(device, chunk):
+        model = _tiny_qwen3(seed=61).to(device)
+        tokenizer = _StubTokenizer([2, 7, 11, 19], [23, 41, 73])
+        ids = torch.tensor([[2, 7, 11, 19, 23, 41, 73]], dtype=torch.long)
+        reference = _brute_force_loglikelihood(model, ids, start=4, device=device)
+        got = harness.answer_loglikelihood(model, tokenizer, "prompt", "choice", device,
+                                           chunk=chunk)
+>       assert got == pytest.approx(reference, rel=1e-6, abs=1e-9)
+E       assert -4.524964809417725 == -4.52504825592041 ± 4.5e-06
+E         
+E         comparison failed
+E         Obtained: -4.524964809417725
+E         Expected: -4.52504825592041 ± 4.5e-06
+
+oracle/tests/test_eval_harness_memory.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_eval_harness_memory.py::test_chunked_window_stats_match_the_full_logits_reference[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_chunked_window_stats_match_the_full_logits_reference[cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[1-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[1-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[2-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[2-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[3-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[3-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[7-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[7-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[64-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[64-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[1000-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_metric_is_independent_of_the_chunk_size[1000-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_a_two_token_window_scores_exactly_one_position[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_a_two_token_window_scores_exactly_one_position[cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_every_position_is_scored_and_none_is_dropped[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_every_position_is_scored_and_none_is_dropped[cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_no_head_call_exceeds_the_chunk[1-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_no_head_call_exceeds_the_chunk[1-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_no_head_call_exceeds_the_chunk[5-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_no_head_call_exceeds_the_chunk[5-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_no_head_call_exceeds_the_chunk[8-cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_no_head_call_exceeds_the_chunk[8-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_model_forward_still_runs_so_the_arm_hooks_fire[cpu]
+FAILED oracle/tests/test_eval_harness_memory.py::test_the_model_forward_still_runs_so_the_arm_hooks_fire[cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_answer_loglikelihood_matches_the_full_logits_reference[1-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_answer_loglikelihood_matches_the_full_logits_reference[2-cuda]
+FAILED oracle/tests/test_eval_harness_memory.py::test_answer_loglikelihood_matches_the_full_logits_reference[32-cuda]
+29 failed, 4 passed in 5.14s

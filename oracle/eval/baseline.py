@@ -16,11 +16,19 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import gc
 import hashlib
 import json
 import os
 import sys
 import time
+
+# Must be set before the caching allocator is initialised: the evaluation holds
+# a 1.7B teacher and a >0.7B-active student at once, and fragmented segments are
+# what turned an 8 GiB working set into a 13.3 GiB allocation peak. The court
+# forwards the same value into the container; this is the in-process default so
+# a direct run cannot silently differ.
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 import numpy as np
 import torch
@@ -61,6 +69,51 @@ def write_json_atomic(path: str, payload: dict) -> None:
     os.replace(tmp, path)
 
 
+GIB = float(1024 ** 3)
+
+
+def vram_peak() -> dict:
+    """Peaks since the last `reset_peak_memory_stats`, in GiB."""
+    return {
+        "allocated_gib": round(torch.cuda.max_memory_allocated() / GIB, 3),
+        "reserved_gib": round(torch.cuda.max_memory_reserved() / GIB, 3),
+        "in_use_gib": round(torch.cuda.memory_allocated() / GIB, 3),
+    }
+
+
+class StageVRAM:
+    """Per-stage VRAM peaks, so a peak can be attributed to a stage, not a run."""
+
+    def __init__(self) -> None:
+        self.stages: dict[str, dict] = {}
+
+    def reset(self) -> None:
+        gc.collect()
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
+
+    def record(self, name: str) -> dict:
+        self.stages[name] = vram_peak()
+        print(f"eval: vram[{name}] allocated={self.stages[name]['allocated_gib']:.2f}GiB "
+              f"reserved={self.stages[name]['reserved_gib']:.2f}GiB", flush=True)
+        return self.stages[name]
+
+    def report(self) -> dict:
+        if not self.stages:
+            return {"stage_peaks": {}, "peak_allocated_gib": 0.0,
+                    "peak_reserved_gib": 0.0}
+        return {
+            "stage_peaks": self.stages,
+            "peak_allocated_gib": max(entry["allocated_gib"]
+                                      for entry in self.stages.values()),
+            "peak_reserved_gib": max(entry["reserved_gib"]
+                                     for entry in self.stages.values()),
+            "source": "torch.cuda.max_memory_allocated / max_memory_reserved, "
+                      "reset at each stage boundary",
+            "alloc_conf": os.environ.get("PYTORCH_CUDA_ALLOC_CONF"),
+        }
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", required=True)
@@ -88,12 +141,21 @@ def main(argv: list[str]) -> int:
                         help="overflow validity-mask placement (P12.1); `legacy` is "
                              "what every registered arm was trained and evaluated "
                              "with, `pair` is the corrected placement")
+    parser.add_argument("--logit-chunk", type=int, default=harness.LOGIT_CHUNK,
+                        help="positions per streamed logits chunk on the "
+                             "distributional and MC1 paths; the registered metric "
+                             "is unchanged, only the peak logits tensor shrinks")
     args = parser.parse_args(argv)
+
+    if args.logit_chunk < 1:
+        raise SystemExit("--logit-chunk must be at least one position")
 
     if not torch.cuda.is_available():
         raise SystemExit("evaluation requires the GPU court (--gpu)")
     device = torch.device("cuda")
     started = time.time()
+    peaks = StageVRAM()
+    peaks.reset()
 
     tokenizer = harness.load_tokenizer(args.hf_root)
     split, split_sha = tasks.load_split(args.split_dir, args.split_receipts)
@@ -129,7 +191,10 @@ def main(argv: list[str]) -> int:
                                       profile=args.profile,
                                       mask_order=args.mask_order)
             arm_model.model.to(device)
-            state = torch.load(args.checkpoint, map_location=device, weights_only=False)
+            # Load on the host and copy: the checkpoint also carries the
+            # optimiser state, and loading it straight to the device would hold
+            # a second full copy of every tensor in VRAM for the whole run.
+            state = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
             _missing, unexpected = arm_model.model.load_state_dict(state["model"],
                                                                    strict=False)
             if unexpected:
@@ -140,6 +205,9 @@ def main(argv: list[str]) -> int:
             unloaded = [name for name in trainable if name not in state["model"]]
             if unloaded:
                 raise SystemExit(f"checkpoint misses trainable tensors: {unloaded[:5]}")
+            del state
+            gc.collect()
+            torch.cuda.empty_cache()
             print(f"eval: loaded {loaded} tensors; {len(trainable)} trainable")
             arm_model.model.eval()
             student = arm_model.model
@@ -148,6 +216,7 @@ def main(argv: list[str]) -> int:
             raise SystemExit("--checkpoint requires --config and --admission")
         else:
             student = base
+    peaks.record("models_loaded")
 
     compliance = {
         "D": "compliant_dense_baseline",
@@ -182,29 +251,52 @@ def main(argv: list[str]) -> int:
                                         64, harness.GEN_BATCH, device)
         determinism = {"problems": len(probe), "identical": first == second}
 
+    peaks.reset()
     if args.smoke:
         results["distributional"] = harness.distributional(
             student, teacher,
-            {domain: entries[:2] for domain, entries in windows.items()}, device)
-        results["humaneval"] = harness.run_humaneval(
-            student, tokenizer, humaneval[:args.humaneval_limit], device)
-        results["gsm8k"] = harness.run_gsm8k(
-            student, tokenizer, gsm8k[:args.gsm8k_limit], device)
-        if not args.skip_truthfulqa:
-            results["truthfulqa"] = harness.run_truthfulqa(
-                student, tokenizer, truthfulqa[:args.truthfulqa_limit], device)
+            {domain: entries[:2] for domain, entries in windows.items()}, device,
+            chunk=args.logit_chunk)
     else:
         results["distributional"] = harness.distributional(student, teacher, windows,
-                                                           device)
+                                                           device,
+                                                           chunk=args.logit_chunk)
+    peaks.record("distributional")
+
+    # Generation needs the student only. Release the teacher first: it is
+    # 3.4 GiB of weights that would otherwise sit idle through the expensive
+    # generation stages.
+    if teacher is not student:
+        del teacher
+        gc.collect()
+        torch.cuda.empty_cache()
+    peaks.reset()
+
+    if args.smoke:
         results["humaneval"] = harness.run_humaneval(
             student, tokenizer, humaneval[:args.humaneval_limit], device)
+        peaks.record("humaneval")
         results["gsm8k"] = harness.run_gsm8k(
-            student, tokenizer, gsm8k, device)
+            student, tokenizer, gsm8k[:args.gsm8k_limit], device)
+        peaks.record("gsm8k")
         if not args.skip_truthfulqa:
             results["truthfulqa"] = harness.run_truthfulqa(
                 student, tokenizer, truthfulqa[:args.truthfulqa_limit], device)
+            peaks.record("truthfulqa")
+    else:
+        results["humaneval"] = harness.run_humaneval(
+            student, tokenizer, humaneval[:args.humaneval_limit], device)
+        peaks.record("humaneval")
+        results["gsm8k"] = harness.run_gsm8k(
+            student, tokenizer, gsm8k, device)
+        peaks.record("gsm8k")
+        if not args.skip_truthfulqa:
+            results["truthfulqa"] = harness.run_truthfulqa(
+                student, tokenizer, truthfulqa[:args.truthfulqa_limit], device)
+            peaks.record("truthfulqa")
 
-    vram = torch.cuda.max_memory_allocated() / (1024 ** 3)
+    vram_report = peaks.report()
+    vram = vram_report["peak_allocated_gib"]
     resources = None
     if built is not None and args.profile == "t3":
         resources = {
@@ -231,6 +323,7 @@ def main(argv: list[str]) -> int:
         "started_utc": utc_now(),
         "seconds": round(time.time() - started, 3),
         "vram_peak_gib": round(vram, 3),
+        "vram": vram_report,
         "gpu": torch.cuda.get_device_name(0),
         "torch": torch.__version__,
         "command": " ".join(sys.argv),
@@ -243,6 +336,7 @@ def main(argv: list[str]) -> int:
             "config": args.config,
             "config_sha256": sha256_file(args.config) if args.config else None,
             "admission": args.admission,
+            "admission_sha256": sha256_file(args.admission) if args.admission else None,
         },
         "data": {
             "split_sha256": split_sha,
@@ -269,6 +363,12 @@ def main(argv: list[str]) -> int:
             "truthfulqa_scoring": "length-normalised log-likelihood, argmax",
             "kl": "KL(teacher || student) in nats/token, f32 logits",
             "precision": "bf16 forward, f32 logits for metrics",
+            "logit_chunk_positions": args.logit_chunk,
+            "logit_streaming": "hidden states once per model; the vocabulary head "
+                               "is applied logit_chunk_positions at a time and "
+                               "reduced in f32, so no full window x vocab f32 "
+                               "logits tensor is ever held",
+            "alloc_conf": os.environ.get("PYTORCH_CUDA_ALLOC_CONF"),
             "seed": 20261115,
             "dispatch_mask_order": (
                 built.mask_order() if built is not None else args.mask_order),

@@ -25,7 +25,12 @@
 #   SELVEDGE_CPUS   CPU limit                                  (default 8)
 #   SELVEDGE_PIDS   pids limit                                 (default 1024)
 #   SELVEDGE_TMP    /tmp tmpfs size                            (default 2g)
-#   SELVEDGE_NOFILE open-file limit                            (default 65536)
+#   SELVEDGE_NOFILE open-file limit                              (default 65536)
+#
+# GPU memory policy: `PYTORCH_CUDA_ALLOC_CONF` is forwarded into every
+# container (default `expandable_segments:True`) and recorded in the receipt.
+# It changes no arithmetic; it stops a long-lived evaluation that holds a
+# teacher and a student at once from fragmenting the allocator into an OOM.
 #
 # Fail-closed rules enforced here:
 #   * A missing/invalid/zero limit refuses to run (exit 78). There is no flag to
@@ -304,6 +309,11 @@ validate_limit SELVEDGE_PIDS "$pids" '^[1-9][0-9]*$'
 validate_limit SELVEDGE_TMP "$tmp_size" '^[1-9][0-9]*[kKmMgG]$'
 validate_limit SELVEDGE_NOFILE "$nofile" '^[1-9][0-9]*$'
 
+# GPU allocator policy: forwarded, recorded, and fail-closed on garbage.
+alloc_conf="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+[[ "$alloc_conf" =~ ^[A-Za-z0-9_:,.=+-]+$ ]] ||
+  die "PYTORCH_CUDA_ALLOC_CONF='$alloc_conf' is not a well formed allocator config" 78
+
 mem_bytes=$(size_to_bytes "$mem")
 tmp_bytes=$(size_to_bytes "$tmp_size")
 nano_cpus=$(awk -v c="$cpus" 'BEGIN { printf "%.0f", c * 1000000000 }')
@@ -550,6 +560,7 @@ declare -a common=(
   -e "SELVEDGE_COURT_CPUS=${cpus}"
   -e "SELVEDGE_COURT_PIDS=${pids}"
   -e "SELVEDGE_REVISION=${revision}"
+  -e "PYTORCH_CUDA_ALLOC_CONF=${alloc_conf}"
   -e "SELVEDGE_TOOLCHAIN_OUT=/work/${toolchain_rel}"
   -e "HOME=/tmp"
   -e "TMPDIR=/tmp"
@@ -614,6 +625,7 @@ declare -a receipt_static=(
   --network "$network_mode"
   --gpu-mode "$gpu_mode"
   --gpu-detail "$gpu_detail"
+  --env "PYTORCH_CUDA_ALLOC_CONF=${alloc_conf}"
   --user "${host_uid}:${host_gid}"
   "${receipt_mount_args[@]}"
   --host-uname "$(uname -srm)"
