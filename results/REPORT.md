@@ -238,7 +238,10 @@ item compiled and then failed a hidden behavioural test, which is the one place
 the instrument demonstrably reached the model's output end to end. The reference
 solutions pass the same checkers, so the court is not broken — a 0.6B distilled
 model asked to emit complete replacement files for multi-file Rust crates with
-hidden tests is simply outside this instrument's reach.
+hidden tests is simply outside this instrument's reach. S28's failure taxonomy
+(§"The diagnosis" below) replaces this paragraph's inference with a per-item
+classification: the format, not only the model, is the binding constraint, and
+the result is an instrument floor rather than a ranking.
 
 That makes the verified-task comparison **uninformative rather than negative for
 `H*`**: a floor effect cannot rank arms, so it must not be read as "the hybrid is
@@ -411,7 +414,7 @@ hashes, sizes and measurements. Rebuilding is documented in
 storage JSONL is excluded from git; `scripts/storage-summary.py` regenerates the
 tracked variance summaries from the receipts.
 
-## Capability court and the fresh Rust suite (S14–S26, CPU-only)
+## Capability court and the fresh Rust suite (S14–S28, CPU-only)
 
 The instrument every frontier claim will use now exists and is larger.
 `docs/CAPABILITY-COURT.md` is the reference. The current evidence, at revisions `2beba67` and
@@ -453,6 +456,60 @@ Established, on CPU:
   registered hash, append-only, with refusal and acceptance proved by CPU tests;
 - one declared **naive** shallow fix per category, proved by the self-test to
   compile and then fail a hidden behavioural test.
+
+### The diagnosis: the 0.0000 is an instrument floor (S28, CPU-only)
+
+All five arms scored 0.0000 on the v4 suite. S28 classified every arm/item
+outcome from the stored receipts — **no model forward pass ran** — and the result
+is not a capability ranking:
+
+- every outcome is in `results/CAPABILITY-FAILURE-TAXONOMY.md`, generated from
+  `results/capability/taxonomy-*.json` by `oracle/capability/diagnose.py`;
+- the dominant classes are answers that never reached the checker at all
+  (no code block, degenerate repetition, truncation) and answers that reached it
+  and did not compile; two answers compiled anywhere in 765 outcomes and neither
+  passed;
+- a tolerant extraction rule recovers a large share of the discarded answers, and
+  re-judging those recovered answers with the real checker produced zero passes,
+  so the parser is a real defect but not the explanation;
+- every multi-file task was terminal for every arm, which is what makes the
+  format — complete multi-file crate replacement — structurally out of reach here.
+
+The exact counts are generated in `docs/CAPABILITY-COURT.md` §12 and are not
+restated here. The registered power analysis assumed a 0.5 baseline; the measured
+baseline is 0.0, so that analysis is invalid.
+
+### The redesign (S28, CPU-only): four formats, calibrated before use
+
+`docs/CAPABILITY-COURT.md` §13–§15. The arm is now asked only for the piece the
+source task is about, and every behaviour claim is still decided by `cargo`:
+
+- **easy** — one function body, with the signature and one failing test shown;
+- **medium** — choose one of 3–5 candidate definitions/files/manifests; exactly
+  one passes, and a candidate that also passes is pruned by the verifier;
+- **hard** — complete replacement files (the v4 format, kept for the hardest
+  tier and the multi-file sources);
+- **diagnostic** — name the compiler error; the harness applies that diagnosis's
+  registered repair and compiles it. Reported as `verified_diagnostic`, on its own
+  metric, never pooled with executable success.
+
+84 calibration items are derived from 24 of the registered source tasks (three per
+category), partitioned from the scored and sealed splits by a pre-registered hash
+rule. `verify-formats` compiled all of them and proved, per item, that the failing
+state fails, the reference passes, a mutated reference fails, exactly one patch
+candidate passes and exactly one diagnostic consequence resolves the failure —
+`results/capability/derivation-verify-calibration.json`. **No arm has been run on
+these items**, so the calibration split is an instrument, not a result.
+
+The calibration protocol is registered in
+`docs/capability-calibration-preregistration-v1.json`: five arms, per-item pass
+probability and discrimination, an acceptance window (not zero, not saturated,
+and a partial-credit spread or item–total correlation above the registered
+minimum), cell retirement and reformatting rules, a monotone-ladder check, a
+primary metric (executable success) with a secondary partial-credit metric that
+is never a decision input, and a power statement that cannot be finalised until
+the pass measures the baseline and the paired variance. The GPU commands are
+`docs/CAPABILITY-COURT.md` §15; none was run.
 
 ### Instrument corrections before any arm run (S16C, CPU-only)
 

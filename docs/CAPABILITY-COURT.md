@@ -19,6 +19,17 @@ revisions `2beba67` (instrument, sealed, contamination, similarity) and
 - `results/capability/power-20261116T090700Z.json` — the power arithmetic for
   the registered composite at n = 144.
 
+**Dated correction, 2026-11-16 (S28).** The five-arm T2 run scored 0.0000 on
+every arm. §12 records the failure taxonomy of those stored receipts and the
+conclusion it forces: the v4 format — complete replacement files for multi-file
+crates — is outside what a 0.6B arm can produce in this harness, so the 0.0000
+result measures an instrument floor and is **uninformative**, and the power
+analysis above (which assumed a 0.5 baseline) is invalid. §13 defines the
+redesigned, executable formats, §14 registers the calibration protocol that
+must run before any capability claim, and §15 gives the exact GPU commands. The
+registered T2 verdict, its thresholds and every historical receipt are
+unchanged.
+
 The original pre-registration is `docs/capability-preregistration.json` (the
 historical suite, retained unchanged). The first expansion was registered in v2;
 a same-session near-duplicate audit replaced sixteen tasks and the fixture is
@@ -606,11 +617,28 @@ different prompt.
 **Extraction.** Fenced blocks with `path=`, a single unnamed fence as the entry
 file, or whole-text fallback for a Rust body. Paths outside `src/**.rs`, the
 manifest policy, duplicate paths and harness-owned paths are rejected and
-recorded as an invalid answer — never silently repaired.
+recorded as an invalid answer — never silently repaired. This is the registered
+rule for the v4 suite and it is unchanged. The calibrated suite (§13) sets
+`extraction_policy: "tolerant"` per task, which additionally reads a `path=`
+line written *inside* a fence, takes the last block for a repeated path and
+picks the most Rust-like block among several unnamed fences; it still rejects
+every forbidden path, and it never invents code. §12 reports what that tolerance
+actually rescues: nothing that passes.
+
+**Formats.** `oracle/capability/formats.py` owns the prompt, answer parsing and
+executable judging for the four registered formats (§13). The legacy
+`file-replacement` path renders exactly the v4 prompt (the stored prompt hashes
+still recompute), and the three new formats are opt-in per task through
+`metadata.format` + `metadata.format_spec`, validated by
+`suite.load_task` so a malformed format declaration refuses the suite rather
+than silently falling back.
 
 **Outcomes.** `pass`, `compile_error`, `test_failed`, `timeout`, `oom`,
 `invalid_solution`, `nonzero_exit`. Counts are reported per run; a timeout is a
-failure with a duration, not a hang.
+failure with a duration, not a hang. Every row now also carries `format`, `tier`,
+`metric`, `failure_class`, `failure_flags`, the parsed answer's screen and (in
+`calibrate`-style runs) `partial_credit`; `failure_class` uses the registered
+classes of §12 and `verify-formats`/`diagnose` recompute them from stored text.
 
 **Scoring.** Per item, success is 1 or 0. The primary composite is the
 equal-weight mean of the eight suite categories, each the arithmetic mean of its
@@ -803,6 +831,14 @@ future expansion, a lower-variance endpoint or a larger n is what would change
 it. The simulation is a model of the paired comparison, not measured arm data,
 and it is labelled as such in the receipt.
 
+**Dated correction, 2026-11-16 (S28).** The model above assumed a 0.5 baseline.
+The measured baseline was 0.0 on all five arms (§12), so this analysis is not a
+conservative estimate of the instrument's power — it describes an instrument
+that did not exist. The numbers in this subsection remain as the historical
+receipt of what was registered; the corrected power statement is §14's: it is
+computed from a measured baseline and measured paired variance, and it is not
+available until the calibration pass runs.
+
 ## 8. What a win on this suite establishes — and what it does not
 
 A win establishes, at the pre-registered threshold and on this instrument:
@@ -844,8 +880,11 @@ A win does **not** establish:
 
 ## 9. Remaining gaps, explicitly
 
-1. **No arm has been evaluated.** Every number here describes the instrument.
-   The pre-pilot commands are §10.
+1. **No arm has been evaluated on the redesigned instrument.** The five T2 arms
+   were run against the v4 suite and scored 0.0000; §12 shows that result is an
+   instrument floor. The calibrated formats (§13) and the calibration protocol
+   (§14) are registered and CPU-verified but no arm has been run on them. The
+   pre-pilot commands are §10 and §15.
 2. **The trio is under P11.21's item count.** The per-surface and per-operation
    counts in §3 are small, the operation annotation is author-only, and there is
    no inter-annotator agreement.
@@ -888,8 +927,25 @@ A win does **not** establish:
 13. **The power model is a model.** The MDE is computed from a stated paired
     discordance model and the registered bootstrap, not from measured arms. It
     predicts what the instrument could resolve; it does not measure an effect.
+14. **The v4 capability result is an instrument floor, not a capability result.**
+    All five arms scored 0.0000 because the format demanded complete multi-file
+    replacements. It ranks nothing (§12).
+15. **The calibrated suite is not yet calibrated.** The derivation is verified
+    with `cargo` and the protocol is registered, but item difficulty,
+    discrimination and the ladder are unmeasured until the calibration pass
+    runs. No capability claim may use the calibration split.
+16. **The diagnostic metric is not capability.** `verified_diagnostic` proves an
+    arm can name the right compiler error and that the named repair resolves the
+    failure; it says nothing about producing the repair. It is reported
+    separately and never pooled.
+17. **The scored split is not derived yet.** It depends on which cells survive
+    calibration, so its item count is not fixed in the registration.
 
 ## 10. Exact commands for the first real runs
+
+**Dated note, 2026-11-16 (S28).** These commands produced the five-arm result
+that §12 diagnoses as an instrument floor. They are retained exactly as run; the
+commands for the redesigned instrument are §15.
 
 All of them are ready; none was run in this session.
 
@@ -1083,3 +1139,448 @@ per-category intervals are printed, and the category minimum is met. Its receipt
 is evidence that the pipeline works, not evidence about any model. The historical
 24-task v1 smoke run `results/capability/instrument-smoke-20261116T023255Z/` is
 retained unchanged.
+
+## 12. The instrument floor: failure taxonomy of the stored T2 receipts (S28)
+
+The five-arm T2 run scored 0.0000 on every arm. Before any redesign, every
+failure was classified from the receipts already in the repository — the five
+`results/capability/runs/t2-*/generations.json` files and their `result.json`
+checker receipts. **No model forward pass ran for this section.** The generated
+report is `results/CAPABILITY-FAILURE-TAXONOMY.md`; its receipt is
+`results/capability/taxonomy-*.json`; `diagnose --check` regenerates the report
+byte for byte from the receipt.
+
+### 12.1 The registered classes
+
+One primary class per arm/item, plus flags (`truncated`, `degenerate_repetition`,
+`empty`, `wrong_file`, `stub`, `unchanged_initial`, `unbalanced_braces`):
+
+| class | meaning |
+| --- | --- |
+| `pass` | the checker passed |
+| `tests_failed` | compiled, a hidden test failed |
+| `non_compiling` | reached the checker, did not compile |
+| `timeout` / `oom` / `nonzero_exit` | the checker bound fired |
+| `empty_answer` | no characters |
+| `refusal` | an explicit refusal, no code |
+| `degenerate_repetition` | one line repeated at least eight times |
+| `truncated` | unterminated fence, or the token cap with no closed answer |
+| `wrong_file` | only harness-owned or unwritable paths were returned |
+| `duplicate_path_rejected` | the strict rule rejected a repeated file block |
+| `no_code_block` | prose or a non-Rust block, nothing extractable |
+
+The classification is recomputed from the stored text, so a historical receipt
+keeps its own status and gains a taxonomy class beside it; a receipt written
+after S28 carries `failure_class` directly and `diagnose` uses it instead.
+
+Two views are reported and they are not the same view. The **strict rejection
+reason** is what the registered extraction rule said when it discarded an answer
+("no code block and no recognisable Rust body", a duplicate path, an unwritable
+path). The **fine class** asks *why* that answer was unusable (degenerate
+repetition, an unterminated fence, an empty answer). Every answer the strict rule
+rejected for having no code block was also degenerate or truncated, so the fine
+class count for a bare no-code answer is zero while the strict reason count is
+not; §12.2 quotes both, labelled.
+
+### 12.2 What the receipts contain
+
+Across the five arms.
+
+Arm/item outcomes classified:
+
+<!-- BEGIN GENERATED: cap-tax-outcomes -->
+765 arm/item outcomes
+<!-- END GENERATED: cap-tax-outcomes -->
+
+Outcomes that passed:
+
+<!-- BEGIN GENERATED: cap-tax-passes -->
+0
+<!-- END GENERATED: cap-tax-passes -->
+
+Answers that reached the checker and did not compile:
+
+<!-- BEGIN GENERATED: cap-tax-noncompiling -->
+293
+<!-- END GENERATED: cap-tax-noncompiling -->
+
+Answers the strict rule rejected with *no code block*:
+
+<!-- BEGIN GENERATED: cap-tax-no-code -->
+459
+<!-- END GENERATED: cap-tax-no-code -->
+
+Multi-file tasks on which **no** arm produced a compiling answer:
+
+<!-- BEGIN GENERATED: cap-tax-multifile-terminal -->
+46
+<!-- END GENERATED: cap-tax-multifile-terminal -->
+
+out of the multi-file tasks in the suite:
+
+<!-- BEGIN GENERATED: cap-tax-multifile-tasks -->
+46
+<!-- END GENERATED: cap-tax-multifile-tasks -->
+
+The per-arm table, the per-category and per-shape tables and the author
+difficulty table are in the generated report and are not restated here.
+
+### 12.3 Is the failure the parser, the model, or the format?
+
+Three checks separate those explanations, and only one of them needs `cargo`.
+
+**Tolerance.** The strict extraction rule discarded answers that a tolerant
+rule reads (a `path=` line written inside the fence — the observed `M` shape —
+and repeated file blocks). The tolerant rule recovers this many
+otherwise-unreadable answers:
+
+<!-- BEGIN GENERATED: cap-tax-recovered -->
+242
+<!-- END GENERATED: cap-tax-recovered -->
+
+Re-judging those recovered answers with the real checker (a CPU pass over stored
+text, no forwards) produced this many passes:
+
+<!-- BEGIN GENERATED: cap-tax-recovered-passing -->
+0
+<!-- END GENERATED: cap-tax-recovered-passing -->
+
+So the parser is not what made the baseline zero. It is still a real defect and
+the calibrated suite uses the tolerant policy — but it cannot be the explanation
+of the floor.
+
+**Answer shape.** The dominant fine classes are answers that never reach the
+checker at all (`degenerate_repetition`, `truncated`), and the strict rule's
+reason for discarding them is "no code block". Inspection of the stored text
+shows the arms echoing the instruction's test command ("The tests must be run
+with `cargo test ...`") or repeating a block until the token cap; this is a
+format-comprehension failure, not a wrong fix.
+
+**Reach.** Of 153 tasks, only a handful ever saw a compiling answer: one `H` and
+one `H*` item compiled and failed a hidden test. Every multi-file task was
+terminal for every arm (the count above).
+
+The conclusion is therefore **not** "the model cannot do these repairs". It is
+that this instrument, with this format, at this model scale, measures whether an
+arm can emit a complete multi-file Rust crate from scratch — and the answer is
+no, uniformly. The 0.0000 is an **instrument floor**: it ranks nothing, its
+confidence intervals are degenerate, and the pre-registered relative comparison
+is undefined. The registered power analysis assumed a baseline of 0.5; the
+measured baseline is 0.0, so that analysis is invalid rather than optimistic.
+
+### 12.4 Structurally out of reach versus merely hard
+
+* **Structurally out of reach in this harness:** every multi-file source (the
+  count above). No arm compiled any of them, at any difficulty label, in any
+  category. The required output is a whole crate replacement, and the observed
+  outputs are both shorter than the reference and structurally malformed.
+* **Merely hard:** the evidence does not establish such a tier *within the v4
+  format*. Single-entry tasks also produced almost no compiling answer, and the
+  failures are concentrated in parse- and shape-level classes rather than in
+  near-miss behavioural fixes.
+* **What would measure "merely hard":** a format whose required output is small
+  enough for the arm to produce, with the crate otherwise solved. That is §13.
+
+## 13. The calibrated formats (S28)
+
+Four formats, three executable and one verified separately. The design rule is:
+**the arm is asked only for the piece the source task is about, and every claim
+about behaviour is decided by `cargo`.**
+
+| format | tier | the arm returns | judged by | metric |
+| --- | --- | --- | --- | --- |
+| `body-completion` | easy | one function body | spliced into a template with the signature; `cargo test` | executable |
+| `patch-selection` | medium | one candidate letter | the chosen function definition, file or manifest is applied; `cargo test` | executable |
+| `file-replacement` | hard | complete files | `cargo test`, unchanged from v4 | executable |
+| `diagnostic-identification` | diagnostic | the diagnostic identifier / option letter | that option's registered consequence is applied and compiled | `verified_diagnostic` |
+
+**Why each format.** `body-completion` removes the retyping burden and keeps the
+behavioural question: the crate is otherwise solved, the signature is given, and
+one visible test fails. `patch-selection` removes generation entirely while
+keeping a real decision: several plausible candidates are shown, exactly one
+passes, and which one passes is decided by `cargo` — not by an author label.
+`file-replacement` is kept only as the hardest tier, including the multi-file
+sources, so the old format still exists where it is appropriate.
+`diagnostic-identification` measures the one thing a 0.6B arm can plausibly do on
+a compile error when it cannot write the fix, and it is **not** executable, so it
+is reported as `verified_diagnostic` and never pooled with task success.
+
+**Derivation, not new authoring.** The calibrated items are derived from the same
+registered source tasks (`oracle/capability/derive.py`), so the hidden tests,
+the reference behaviour, the licence and the category semantics are the source's:
+
+- `body-completion`: the reference file with the target function's body replaced
+  by `todo!()`; the signature is shown, plus one visible test. The rest of the
+  crate is handed over solved, so the item cannot be blamed on files the arm was
+  not asked about.
+- `patch-selection`: 3–5 candidates — the reference definition, the source's
+  initial definition, the source's declared mutation and naive fix, a
+  single-edit revert, and operator inversions when a source offers fewer than
+  three. For a source whose fix is in the manifest or in no single function, the
+  target is the manifest or the whole file instead of a function. Every candidate
+  is compiled; a candidate that the checker shows *also* passes is pruned and the
+  pruning is recorded in the verification receipt.
+- `file-replacement`: the source task copied under a new id.
+- `diagnostic-identification`: only for sources whose failing state is a compile
+  error with an `E####` code; the correct option's consequence is the reference
+  repair, and a wrong option's consequence is a registered repair that does not
+  resolve the error.
+
+**Visible-test rule.** The visible test in a body or patch item is one test taken
+from that item's own hidden set, together with any helper functions in that file,
+with the crate's self-import removed. The source's own inline test is *not* used:
+in the semantic-repair sources that test encodes the old behaviour and passes in
+the failing state. The remaining hidden tests are still restored by the harness,
+so the visible test cannot stand in for the hidden set.
+
+**Splits.** Sources are partitioned by `sha256('selvedge-calibration-v1:<split>:<id>')`
+ascending — a rule fixed before the split was computed — so the calibration and
+scored splits are disjoint by construction and the sealed holdback (a separate
+collection, never read by the derivation) is excluded by an explicit assertion.
+
+**The calibration split.** Three sources per category, each derived into every
+format it can support. Items in the calibration split:
+
+<!-- BEGIN GENERATED: cap-cal-items -->
+84 calibration items
+<!-- END GENERATED: cap-cal-items -->
+
+By format — `body-completion`:
+
+<!-- BEGIN GENERATED: cap-cal-body -->
+23
+<!-- END GENERATED: cap-cal-body -->
+
+`patch-selection`:
+
+<!-- BEGIN GENERATED: cap-cal-patch -->
+23
+<!-- END GENERATED: cap-cal-patch -->
+
+`file-replacement`:
+
+<!-- BEGIN GENERATED: cap-cal-file -->
+24
+<!-- END GENERATED: cap-cal-file -->
+
+`diagnostic-identification`:
+
+<!-- BEGIN GENERATED: cap-cal-diagnostic -->
+14
+<!-- END GENERATED: cap-cal-diagnostic -->
+
+Every executable cell (category × format) has at least two items; the receipt
+`fixtures/capability-calibrated/DERIVATION.json` records the exact counts and
+the two sources the derivation could not use for a patch item. The derivation
+contract is bound to the source suite hash and to every source tree hash, so a
+fixture edit is a failed `derive-formats --check`, not a silent drift.
+
+**Verification.** `verify-formats` compiles every derived item and proves, per
+item: the failing state fails as declared, the reference passes, and a mutated
+reference fails; per patch item: exactly one candidate passes and it is the
+declared reference; per diagnostic item: exactly one option's consequence
+resolves the failure. The receipt is
+`results/capability/derivation-verify-calibration.json` and its verdict is the
+only evidence that the derived suite is an instrument.
+
+## 14. Calibration registration and acceptance window
+
+Registered in `docs/capability-calibration-preregistration-v1.json` before the
+calibration pass. The registration binds the formats, the ladder hypothesis, the
+split rule, the window, the statistics, the retirement rule, the metric
+separation and the power formula. `court calibrate` refuses to apply a window
+that differs from the registered one.
+
+**Five arms, one pass.** The calibration split is run on `D`, `M`, `X`, `H` and
+`H*`, greedy, with the same decoding as §10(a), on the calibration split only.
+The sealed holdback is never opened. The output is an *item matrix*
+(item × arm), not an arm comparison.
+
+**Per item.** Pass probability (mean executable outcome over the five arms),
+partial-credit fraction (secondary), partial-credit spread (population standard
+deviation across arms) and item–total correlation (point-biserial against each
+arm's total with the item removed; reported with the caveat that five arms make
+it low-precision).
+
+**Acceptance window.** An item is kept when it is **not zero and not
+saturated** — with five binary arms that is exactly one to four passes — **and**
+it discriminates: spread at least 0.15 or correlation at least 0.30. Otherwise it
+is retired with a named reason. A cell is *reformatted* when fewer than two items
+survive or more than a third are retired; a category is scorable only when every
+executable cell is scored; a calibrated suite version is emitted only when every
+category is scorable **and** the measured ladder is monotone.
+
+**The ladder is a hypothesis.** Tiers are `easy = body-completion`,
+`medium = patch-selection`, `hard = file-replacement`, and the registration
+states the expected order. The calibration pass measures `1 - mean pass rate`
+per cell; a violation refuses the suite version and names the categories, rather
+than relabelling them after the fact.
+
+**Primary and secondary metrics, separated.**
+
+- **Primary:** verified task success (executable formats only). The endpoint and
+  decision rule are the registered ones (10% relative, paired 95% CI above zero,
+  no category regressing by more than 0.05 absolute) — §7 is unchanged.
+- **Secondary:** the fraction of hidden tests passed, recorded per item and
+  reported per cell. It is **never** substituted for the primary metric and is
+  not an input to any decision rule; the CPU tests assert that adding it leaves
+  the composite unchanged and that it is flagged `primary: false`.
+- **Separate:** `verified_diagnostic`, its own block with its own item counts,
+  never pooled with executable success. The CPU test that a passing diagnostic
+  leaves the primary composite at zero is the guard.
+
+**Power cannot be finalised in this session.** The registered formula is
+
+    n_per_category = (z_{1-α/2} + z_power)² · Var(d) / (categories · δ²)
+
+with `δ = baseline × 10%` and `d` the per-item paired difference. Every input is
+measured, and none exists yet: the baseline is not 0.5 (it was 0.0 on the old
+instrument), and Var(d) is the variance of the measured per-item paired
+differences over the ten arm pairs. The calibration receipt therefore reports the
+measured baseline, the pairwise variances, `required_n` under both the planning
+(median) and conservative (maximum) variance, the items available per category
+and the shortfall. If the required n exceeds the available items the instrument
+is under-powered at that n and P14.8 stays open — the shortfall is published, not
+absorbed into a claim.
+
+## 15. Exact commands for the calibration pass
+
+None of these was run in this session; the derivation, its verification and the
+taxonomy were (all CPU). The GPU is free, so these are the next session's
+commands. The sealed holdback is never named by any of them.
+
+Step 0 — re-derive the calibration split and verify it with `cargo`
+(CPU; reproducible from the registered source suite):
+
+```bash
+SELVEDGE_MEM=4g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
+scripts/court rust -- python3 scripts/capability_court.py derive-formats \
+  --out fixtures/capability-calibrated --split calibration --per-category 3 --force
+
+SELVEDGE_MEM=6g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=2g \
+scripts/court rust -- python3 scripts/capability_court.py verify-formats \
+  --root fixtures/capability-calibrated --prune \
+  --out results/capability/derivation-verify-calibration.json
+```
+
+Step 1 — size the generation limit from a measured peak, not from a habit. The
+same adapter ran the 153-item v4 generation at `SELVEDGE_MEM=24g` with exit 0 and
+no OOM (`results/courts/oracle-20261116T122455Z-e627a1.json`), which is the
+sizing basis; the smoke run below re-measures it, and the launch record must
+carry the measured peak. Do not start this while another memory-heavy job runs:
+check `MemAvailable` and refuse if `limit + running peak` exceeds it.
+
+```bash
+# 1a. smoke: 8 items, measure the cgroup peak, then set SELVEDGE_MEM from it
+SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=4g \
+scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
+  --t2-arm 'H*' \
+  --t2-checkpoint results/artifacts/train/t2/Hstar/step-001024.pt \
+  --t2-config 'results/train/admission-configs/t2/H*.json' \
+  --t2-admission 'results/train/admission/t2/H*.json' \
+  --t2-training-receipt 'results/t2/H*/run.json' \
+  --t2-mask-order legacy \
+  --provenance-amendment results/t2/PROVENANCE-AMENDMENT-Hstar.json \
+  --preregistration docs/capability-calibration-preregistration-v1.json \
+  --only 'borrow-05-temporary-lifetime--body,borrow-05-temporary-lifetime--patch' \
+  --out results/capability/calibration-smoke/generations-Hstar.json
+```
+
+Step 2 — generate on the calibration split, one command per arm (GPU). `H*` is
+`Hstar` on disk and `H*` in the config name; `X` and `H` need their certified
+provenance amendment, `D` and `M` do not.
+
+```bash
+# repeat for ARM in D M X H; H* is shown because it needs the amendment
+ARM='H*'; DIR=Hstar
+CKPT="results/artifacts/train/t2/$DIR/step-001024.pt"
+CFG="results/train/admission-configs/t2/$ARM.json"
+ADM="results/train/admission/t2/$ARM.json"
+REC="results/t2/$ARM/run.json"
+mkdir -p "results/capability/calibration/$DIR"
+
+SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=4g \
+scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
+  --t2-arm "$ARM" \
+  --t2-checkpoint "$CKPT" \
+  --t2-config "$CFG" \
+  --t2-admission "$ADM" \
+  --t2-training-receipt "$REC" \
+  --t2-mask-order legacy \
+  --provenance-amendment results/t2/PROVENANCE-AMENDMENT-Hstar.json \
+  --preregistration docs/capability-calibration-preregistration-v1.json \
+  --suite fixtures/capability-calibrated \
+  --out "results/capability/calibration/$DIR/generations.json"
+```
+
+Step 3 — check on CPU, with partial credit (the secondary metric):
+
+```bash
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+scripts/court rust -- python3 scripts/capability_court.py check \
+  --generations results/capability/calibration/Hstar/generations.json \
+  --preregistration docs/capability-calibration-preregistration-v1.json \
+  --suite fixtures/capability-calibrated \
+  --partial-credit \
+  --min-category-items 0 \
+  --out results/capability/calibration/Hstar/result.json
+```
+
+`--min-category-items 0` is correct here and only here: calibration is not a
+capability result and the category-minimum rule belongs to the scored split. The
+receipt records the zero, and `calibrate` applies the real cell minimums.
+
+Step 4 — fit item difficulty, apply the window, emit the calibrated suite
+version (CPU):
+
+```bash
+SELVEDGE_MEM=6g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
+scripts/court rust -- python3 scripts/capability_court.py calibrate \
+  --suite fixtures/capability-calibrated \
+  --registration docs/capability-calibration-preregistration-v1.json \
+  --result D=results/capability/calibration/D/result.json \
+  --result M=results/capability/calibration/M/result.json \
+  --result X=results/capability/calibration/X/result.json \
+  --result H=results/capability/calibration/H/result.json \
+  --result 'H*=results/capability/calibration/Hstar/result.json' \
+  --out results/capability/calibration-$(date -u +%Y%m%dT%H%M%SZ).json \
+  --suite-version-out fixtures/capability-calibrated/VERSION.json
+
+# and its fail-closed re-check
+scripts/court python -- python3 scripts/capability_court.py calibrate --check \
+  --out results/capability/calibration-<stamp>.json \
+  --suite-version-out fixtures/capability-calibrated/VERSION.json
+```
+
+Step 5 — only after a version exists: derive and verify the **scored** split
+(the remaining 120 sources), which is the suite a capability claim may use:
+
+```bash
+SELVEDGE_MEM=4g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
+scripts/court rust -- python3 scripts/capability_court.py derive-formats \
+  --out fixtures/capability-scored --split scored --per-category 3 --force
+# the calibrated version's accepted cells decide which formats are scored; the
+# derivation receipts and the VERSION.json together are the instrument version.
+```
+
+The calibration pass must establish, at minimum: a measured pass probability and
+partial-credit spread per item; which cells survive and why the others were
+retired; whether the ladder is monotone; the measured baseline and paired
+variance and therefore the required n; and either a calibrated suite version or
+an explicit refusal. It must not open the sealed set, change the T2 verdict, or
+report an arm comparison.
+
+## 16. What the stored receipts cannot answer
+
+1. **Per-item truncation.** The stored generation receipts recorded
+   `finish_reason: "stop"` for every item and the *batch's* decoded width as
+   `tokens_out`, so a 3072-token cut could not be told from an EOS stop. §12 uses
+   the answer text (unterminated fence) as the direct evidence and the cap as
+   corroboration. The adapter now records `finish_reason` (`length`/`eos`/`stop`)
+   and a per-item token count, so the calibration receipt will not have this gap.
+2. **A per-item memory peak.** The generation court receipts record the requested
+   limits, not `memory.peak`; the calibration smoke run is what produces the
+   measured peak the launch record needs.
+3. **Whether an arm could do these tasks with a different prompt.** The
+   redesign changes the format and the prompt together. A future ablation could
+   separate them; nothing here claims the prompt alone caused the floor.

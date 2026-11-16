@@ -348,13 +348,13 @@ def main(argv: list[str]) -> int:
         from . import diagnose as diagnose_module
 
         arm_dirs = _pairs(args.arm, "--arm")
-        if not arm_dirs:
-            raise SystemExit("diagnose needs at least one --arm NAME=DIR")
         if args.check:
             receipt = load_json(args.out)
             ok, message = diagnose_module.check_report(args.report, receipt)
             print(f"capability_court: {message}")
             return 0 if ok else 3
+        if not arm_dirs:
+            raise SystemExit("diagnose needs at least one --arm NAME=DIR")
         payload = diagnose_module.analyse(arm_dirs, args.suite,
                                           recheck_limit=args.recheck_limit,
                                           workroot=args.workroot)

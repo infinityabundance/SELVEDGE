@@ -245,6 +245,20 @@ that document's §2), the trio, the sealed holdback, the checkers, the sandbox,
 the contamination gate, the near-duplicate screen and the v4 pre-registration
 exist and are CPU-tested; no model has been evaluated on any of them.
 
+**Dated addition, 2026-11-16 (S28).** The five T2 arms were then evaluated and
+every one scored 0.0000. `docs/CAPABILITY-COURT.md` §12 classifies all 765
+arm/item outcomes from the stored receipts and shows the result is an **instrument
+floor**: the v4 format asks for complete multi-file crate replacements, no arm
+produced a compiling answer on any multi-file task, and tolerant extraction of
+the discarded answers rescued nothing that passed. The 0.0000 ranks nothing and
+must not be read as a capability ranking between `D`, `M`, `X`, `H` and `H*`.
+The registered power analysis assumed a 0.5 baseline that the measurement
+contradicted; it is invalid, not merely optimistic. The redesigned formats and
+the calibration protocol (§13, §14) are registered and CPU-verified, but **no arm
+has been run on them**, so no capability claim exists at any tier.
+
+The following remain true and are added to rather than replaced by the S28 work.
+
 - **The suite is authored and still small.** It is not a benchmark and not a
   random sample of programming work. The P14.4 expansion is recorded in
   `docs/CAPABILITY-COURT.md` §2 (generated suite and category counts); one item
@@ -299,6 +313,28 @@ exist and are CPU-tested; no model has been evaluated on any of them.
 - **A Level 1 gain is not a Level 3 product.** Level 3 additionally needs
   responsiveness from Court F and a product-branch (3B-8B quantised) baseline,
   which is a planned control because no such checkpoint is present locally.
+- **The calibrated formats are a redesign, not a proven improvement.** Item
+  difficulty, discrimination and the easy/medium/hard ladder are unmeasured until
+  the calibration pass runs; the derivation proves only that each item's failing
+  state fails, its reference passes, exactly one patch candidate passes and
+  exactly one diagnostic consequence resolves the failure. A format that turns
+  out to be saturated is retired by the registered window, not assumed useful.
+- **`verified_diagnostic` is not capability.** Naming the right compiler error
+  and having the named repair resolve it is a weaker claim than producing the
+  repair. It is reported on its own metric, per category, and never pooled with
+  executable success or with partial credit.
+- **Partial credit is descriptive.** The fraction of hidden tests passed rewards
+  progress and is never a decision input; a model that fails every item but
+  passes some assertions cannot outrank one that solves fewer items completely.
+- **The visible test is one hidden test.** Body and patch items show a single
+  test drawn from the item's own hidden set. That is intentional and does not
+  leak the hidden set as a whole, but it does mean the visible test is not an
+  independent sample of the behaviour the hidden tests check.
+- **Calibration is five arms of one family.** The item statistics come from
+  `D`, `M`, `X`, `H` and `H*` — one seed, one budget, one base model. An item
+  that discriminates among these five is not thereby validated against a different
+  model family, and the item–total correlation it reports is low-precision by
+  construction with five arms.
 - **The address-space limit is a toolchain constraint, not a measured workload
   peak.** The per-checker bound is the smallest value at which the pinned
   toolchain links a one-file crate; the enforced memory bound for the workload

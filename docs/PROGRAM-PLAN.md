@@ -3469,6 +3469,19 @@ re-ran contamination over all 177 authored items, added the near-duplicate scree
 (`results/capability/similarity-20261116T090200Z.json`) and the power receipt
 (`results/capability/power-20261116T090700Z.json`).
 
+**S28: the expansion is implemented but the instrument it produced is not
+usable as an endpoint.** The five-arm run scored 0.0000, and the failure taxonomy
+of the stored receipts (`results/CAPABILITY-FAILURE-TAXONOMY.md`, summarised in
+`docs/CAPABILITY-COURT.md` §12) shows why: the format asked every arm for
+complete multi-file crate replacements, which no arm produced on any multi-file
+task, and tolerant extraction of the discarded answers rescued nothing that
+passed. The suite size therefore does not buy a capability comparison on its own.
+S28 derived a 24-source calibration split in four formats (84 items, all
+CPU-verified) and registered a calibration protocol
+(`docs/capability-calibration-preregistration-v1.json`); the item difficulty,
+discrimination and ladder are still unmeasured, so P14.4's acceptance evidence —
+"item difficulty and discrimination estimated by a solver" — is still not met.
+
 **The measured gap this leaves.** The expansion does not buy the 10% claim it was
 made for. The analytic (normal-approximation) MDE lands almost exactly on the
 registered 10% relative threshold, but the *simulated* power of the registered
@@ -3610,8 +3623,22 @@ variance term and the unchanged 10% threshold. A formula-only power statement
 does **not** satisfy this item; the P14.4 receipt is itself the evidence that a
 formula-only statement was optimistic here.
 
-**Depends.** P14.4, P14.6, P14.7. **Status.** open — registered by S27 from the
-measured gap, nothing implemented, no number claimed beyond the quoted receipt.
+**Depends.** P14.4, P14.6, P14.7. **Status.** partially advanced by S28 — the
+**measured-variance** half is designed and registered, the GPU pass is not run.
+S28 implemented and CPU-tested: a per-item calibration mode (`calibrate`) that
+computes pass probability, partial-credit spread, item–total correlation, the
+acceptance window, cell retirement and reformatting, the monotone-ladder check,
+and `required_n` from the **measured** baseline and the **measured** paired
+difference variance over the ten arm pairs; a calibration pre-registration
+(`docs/capability-calibration-preregistration-v1.json`) that fixes the window and
+states that no n is claimed until the pass runs; and the exact GPU commands
+(`docs/CAPABILITY-COURT.md` §15). It also fixes the two instrument defects that
+made the old per-item evidence unusable: the adapter now records a real
+`finish_reason` and a per-item token count instead of `"stop"` and the batch
+width, and the taxonomy shows the old format was a floor. **Not done:** the
+calibration pass itself, the calibrated suite version, and therefore any
+simulated power curve from a real outcome matrix. Until those exist this item
+remains open and no n, MDE or power figure may be claimed from it.
 **Effort.** XL. **Tier.** CANDIDATE.
 
 ## 20. WS15 — Beyond-MoE architectures (research hypotheses)
