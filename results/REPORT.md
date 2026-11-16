@@ -993,3 +993,57 @@ explicitly forbidden there.
   was not; whether it is the best endpoint is a question for a scored run.
 - **No novelty.** The literature pass narrowed the claim and forbade the wider
   sentences; it did not establish absence (§8's caveat applies).
+
+## M8 — the anchored scoreboard, before any training (S36, GPU)
+
+The program now has a fixed measuring instrument for WS19's target, and the
+target model does not exist yet. That is the point: every later stage is measured
+against scores that were produced before the first training step, by a harness
+SELVEDGE did not write, under a config that is hashed into every receipt.
+
+**What ran.** `EleutherAI/lm-evaluation-harness`, pinned by commit in
+`docker/Dockerfile.eval`, over `Qwen/Qwen3.5-0.8B-Base` (the anchor) and
+`Qwen/Qwen3.5-2B-Base` (the gap reference), both at the revisions pinned in
+`models/FRONTIER.lock.json` with their weight files hashed against the Hub's LFS
+oids. All GPU work ran inside the eval court: hard memory/swap/pids/CPU limits, a
+bounded tmpfs, `--cap-drop ALL`, no network at scoring time. Nothing was trained.
+
+**What the numbers are.** Scores in percent, with the harness's own bootstrap
+standard error, over the task list fixed in `docs/anchor-preregistration-v1.json`.
+Base checkpoints get completion-style prompts and the harness's own few-shot
+pools; there is no chat template and no per-model prompt tuning. `n` is items
+scored, not items requested.
+
+<!-- BEGIN GENERATED: report-anchor-scoreboard -->
+| task | metric | n | few-shot | batch | anchor | SE | 2B | SE |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `mmlu_pro` | `exact_match,custom-extract` | 504 | 5 | 8 | 27.58 | 1.98 | pending | pending |
+| `mmlu` | `acc,none` | 14042 | 5 | 2 | 48.22 | 0.41 | pending | pending |
+| `gsm8k` | `exact_match,strict-match` | 1319 | 5 | 8 | 38.82 | 1.34 | pending | pending |
+| `minerva_math500` | `math_verify,none` | 500 | 4 | 8 | 23.40 | 1.90 | pending | pending |
+| `humaneval` | `pass@1,create_test` | 164 | 0 | 8 | 20.73 | 3.18 | pending | pending |
+| `ifeval` | `prompt_level_strict_acc,none` | 541 | 0 | 8 | 26.06 | 1.89 | pending | pending |
+| `arc_challenge` | `acc_norm,none` | 1172 | 25 | 4 | 43.26 | 1.45 | pending | pending |
+| `triviaqa` | `exact_match,remove_whitespace` | 1000 | 5 | 8 | 19.60 | 1.26 | pending | pending |
+
+No gap receipt exists yet: the upper-end run has not been scored, so no gap is claimed.
+<!-- END GENERATED: report-anchor-scoreboard -->
+
+**The three defects this stage hit, and what they changed.** A group-task `limit`
+counts per subject, so a registered "500 MMLU-Pro items" would have queued several
+thousand generations; the pre-registration was corrected to a per-subject slice
+before any score was recorded. A loglikelihood batch of 16, then 4, exceeded the
+device because the harness materialises logits for every position over a
+248,320-token vocabulary on prompts of a few thousand tokens; the registered batch
+sizes are the ones whose measured peaks fit. And TriviaQA scored exactly zero at
+n=8 — the silent-zero guard fired, the logged samples showed a well-formed prompt
+and working extraction, and a hundred-item probe scored non-zero, so the zero was
+sampling, not a defect.
+
+**What this does not establish.** Not quality for the hybrid architecture: the 2B
+reference's text tower is over the ceiling, so the gap here is a capability gap
+and not a compliant-parameter gap. Not tournament-grade precision on the
+subsampled tasks, whose standard errors are printed beside them. And not coverage
+of the reference models that cannot be fetched or licensed (`google/gemma-3-1b-it`
+is gated; `LiquidAI/LFM2.5-1.2B-Instruct` is non-OSI), which are recorded as
+exclusions rather than silently skipped.

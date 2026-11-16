@@ -743,7 +743,10 @@ a measurement, not a constant.
 ## 8. What this document does not establish
 
 - It does not establish quality for any of these checkpoints. No capability number
-  was produced; no harness was run.
+  was produced; no harness was run. **Superseded by §9 (S36)**, which ran the
+  pinned harness and produced the anchored scoreboard; the sentence is kept
+  because it is true of the S32 verification this section reports, and §9 is the
+  receipt-backed correction.
 - It does not establish that the LFM licence permits the proposed use. That is
   legal review, and the licence is not Apache-2.0.
 - It does not reproduce the vendor's benchmark table. Those numbers are the
@@ -763,3 +766,136 @@ a measurement, not a constant.
 - It does not establish any FLOP or latency number for the hybrid path. No FLOP
   formula is defined for a DeltaNet scan in this repository, so
   `inspect-model` emits none for this schema rather than inventing one.
+
+## 9. The anchored scoreboard (S36)
+
+This section is the fixed instrument every later WS19 stage is measured against.
+It answers a question §8 explicitly said this document did not answer: *what does
+this checkpoint actually score, measured by an independent harness, before anyone
+trains anything?*
+
+**No training happened here.** No registered receipt was modified, no target
+model exists, and every number below was produced by
+`EleutherAI/lm-evaluation-harness` — not by SELVEDGE code — over the two Base
+checkpoints pinned in §2. The harness runs in `docker/Dockerfile.eval`, an image
+built on the oracle court's vendor stack, pinned by image id in
+`docker/IMAGES.lock` and by commit in the pre-registration file.
+
+### Why the instrument is pinned before the scores
+
+`docs/anchor-preregistration-v1.json` is the single source of the config: the two
+revisions, the task list, the few-shot counts, the sample limits, the batch sizes,
+the prompt and extraction behaviour, the seed set, and the paragraph that defines
+the win condition. Every run receipt carries the **sha256 of that file**, the
+harness commit re-read from the image at run time, and the harness's own resolved
+task config for each task (`doc_to_text`, delimiter, `generation_kwargs`,
+`metric_list`, `filter_list`) together with sha256 hashes of the task yaml and its
+`utils.py`. The run refuses to proceed when the harness commit differs from the
+pre-registration, when a task is not in the file, or when a cached checkpoint file
+differs in size from `models/FRONTIER.lock.json`; `gap` refuses to compare two
+receipts produced under different pre-registration digests. That is what makes
+"the identical config applies to both models" a checked property rather than a
+sentence.
+
+Two choices in that file are load-bearing and worth stating plainly:
+
+- **Completion-style prompts, no chat template.** Both checkpoints are Base
+  models. `apply_chat_template` is false, `fewshot_as_multiturn` is false, and
+  every task uses the harness's own `doc_to_text` and its own few-shot pool. No
+  model-specific prompt tuning exists anywhere in the pipeline.
+- **Fixed batch sizes, not `auto`.** The harness autotuner allocates until the
+  device refuses, which would turn a resource measurement into a record of the
+  autotuner's failed attempt, and the device is shared with a desktop session.
+  The sizes are derived from the smoke receipts named in the pre-registration.
+
+### What the scored path is
+
+`transformers` resolves `model_type: qwen3_5` to `Qwen3_5ForCausalLM` (the vendor's
+"VLM compatibility" mapping), and the loaded parameter count is checked against
+the audited text tower. So the harness scores the **text tower only**: the vision
+tower and the MTP head are never instantiated. The two fused kernels the model
+would like (`causal_conv1d`, `flash-linear-attention`) are absent from the eval
+court, so transformers runs its own reference PyTorch implementations of the short
+convolution and the gated delta rule. That is the exact path rather than an
+approximation, and it is also the slow path — which is why the sample limits exist
+and why the wall clock is recorded per task.
+
+### The scoreboard
+
+Scores are percentages; `SE` is the harness's own bootstrap standard error on the
+primary metric; `n` is the number of scored items, not the number requested.
+
+<!-- BEGIN GENERATED: frontier-anchor-scoreboard -->
+| task | metric | n | few-shot | batch | anchor | SE | 2B | SE |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `mmlu_pro` | `exact_match,custom-extract` | 504 | 5 | 8 | 27.58 | 1.98 | pending | pending |
+| `mmlu` | `acc,none` | 14042 | 5 | 2 | 48.22 | 0.41 | pending | pending |
+| `gsm8k` | `exact_match,strict-match` | 1319 | 5 | 8 | 38.82 | 1.34 | pending | pending |
+| `minerva_math500` | `math_verify,none` | 500 | 4 | 8 | 23.40 | 1.90 | pending | pending |
+| `humaneval` | `pass@1,create_test` | 164 | 0 | 8 | 20.73 | 3.18 | pending | pending |
+| `ifeval` | `prompt_level_strict_acc,none` | 541 | 0 | 8 | 26.06 | 1.89 | pending | pending |
+| `arc_challenge` | `acc_norm,none` | 1172 | 25 | 4 | 43.26 | 1.45 | pending | pending |
+| `triviaqa` | `exact_match,remove_whitespace` | 1000 | 5 | 8 | 19.60 | 1.26 | pending | pending |
+<!-- END GENERATED: frontier-anchor-scoreboard -->
+
+Reading notes that are claims about the instrument rather than the models:
+
+- `mmlu_pro` and `mmlu` are group tasks. `limit` counts **per subject** for a group,
+  so the registered MMLU-Pro sample is a stratified slice across all fourteen
+  subjects, and `mmlu` runs every item of all fifty-seven.
+- `minerva_math500` is scored with symbolic `math_verify`, not string match;
+  `mmlu_pro` uses the harness's `custom-extract` filter; `gsm8k`'s primary metric
+  is the strict `#### <n>` extraction (the flexible extraction is recorded in the
+  receipt alongside it and is never used to choose a headline number).
+- `humaneval` executes generated code inside the court (`unsafe_code: true` in the
+  harness yaml, code evaluation enabled only in that sandbox).
+
+### The gap to the reference, and the win condition
+
+The registered win condition is "close at least half the gap on one family". The
+arithmetic it needs is per task and per family:
+
+<!-- BEGIN GENERATED: frontier-anchor-gap -->
+No gap receipt exists yet: the upper-end run has not been scored, so no gap is claimed.
+<!-- END GENERATED: frontier-anchor-gap -->
+
+Family means are the **unweighted** mean of the member task scores, fixed in the
+pre-registration before any score existed, because weighting by item count would
+let MMLU's full test set decide a family mean that GSM8K is equally supposed to
+describe.
+
+One arithmetic caveat that belongs next to the table rather than in a footnote:
+the win condition is a statement about *scores on this instrument*, and a family
+mean over two tasks inherits the sampling error of both. The gap is large enough
+on the families below that no plausible standard-error combination reverses its
+sign, but "half the gap" is a scoreboard target, not a significance test.
+
+### Determinism, and what would make a number a defect
+
+Three failure modes are checked rather than assumed:
+
+1. **A silent zero.** A task scoring exactly `0.000` is flagged in the receipt and
+   fails the run's exit code. It was hit once (TriviaQA, n=8) and diagnosed from
+   the logged samples: the prompt was well formed and the extraction returned a
+   string, the model simply answered the wrong entity eight times. A hundred-item
+   probe then scored non-zero, so the zero was a small-sample artefact and not a
+   harness defect. That diagnosis is what makes the reported number recordable.
+2. **A drifted config.** `gap` refuses receipts whose pre-registration digest
+   differs, and the scoreboard generator refuses to mix two runs of one model.
+3. **A stale table.** The three table regions are owned by
+   `scripts/s36_scoreboard.py`, which fails closed when a block does not match the
+   receipts on disk.
+
+### What this section does not establish
+
+- It is not a quality claim about the DeltaNet hybrid as an architecture. It is
+  what these two checkpoints score, and the 2B reference is over the ceiling, so
+  the gap is a capability gap and not a compliant-parameter gap.
+- It is not tournament-grade. Subsampled tasks (`mmlu_pro`, `triviaqa`) carry the
+  sampling error printed above them; the full-set tasks do not.
+- It does not cover the gated or non-open checkpoints. `google/gemma-3-1b-it`
+  answers HTTP 401 to anonymous requests and `LiquidAI/LFM2.5-1.2B-Instruct`
+  carries the non-OSI LFM Open License v1.0, so neither is scored here; the
+  pre-registration records both exclusions and their reasons.
+- It does not make the vendor's published numbers comparable. Those are the
+  vendor's instrument, and no vendor number appears in this document.
