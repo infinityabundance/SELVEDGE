@@ -474,9 +474,15 @@ def main(argv: list[str]) -> int:
             if not ok:
                 return 3
             if args.suite_version_out:
+                receipt = load_json(args.out)
+                decision = receipt.get("suite_version") or {}
                 try:
-                    ok, message = calibrate_module.check_suite_version(
-                        args.suite_version_out, load_json(args.out))
+                    if decision.get("emitted") is False:
+                        ok, message = calibrate_module.check_refusal(
+                            args.suite_version_out, receipt)
+                    else:
+                        ok, message = calibrate_module.check_suite_version(
+                            args.suite_version_out, receipt)
                 except calibrate_module.CalibrationError as exc:
                     print(f"capability_court: {exc}")
                     return 3
@@ -496,20 +502,27 @@ def main(argv: list[str]) -> int:
             calibration_receipt=os.path.abspath(args.out))
         payload.update({"stamp": court.stamp_now(), "revision": court.revision(REPO),
                         "command": " ".join(sys.argv)})
+        decision = None
+        if args.suite_version_out:
+            decision = calibrate_module.version_decision(payload, court.revision(REPO))
+            payload["suite_version"] = {
+                "emitted": decision["emitted"],
+                "revision": decision["revision"],
+                "path": args.suite_version_out,
+            }
+            if not decision["emitted"]:
+                payload["suite_version"]["reason"] = decision["reason"]
         court.write_json_atomic(args.out, payload)
         summary = payload["summary"]
         print(f"capability_court: calibration {summary['accepted']} accepted, "
               f"{summary['retired']} retired, {summary['diagnostic_items']} "
               f"diagnostic -> {args.out}")
-        if args.suite_version_out:
-            try:
-                version = calibrate_module.build_suite_version(
-                    payload, court.revision(REPO))
-            except calibrate_module.CalibrationError as exc:
-                print(f"capability_court: no suite version emitted: {exc}")
+        if decision is not None:
+            if not decision["emitted"]:
+                print(f"capability_court: no suite version emitted: {decision['reason']}")
                 print(f"capability_court: the statistics receipt is {args.out}")
                 return 3
-            calibrate_module._write_json(args.suite_version_out, version)
+            calibrate_module._write_json(args.suite_version_out, decision["version"])
             print(f"capability_court: calibrated suite version -> "
                   f"{args.suite_version_out}")
         return 0

@@ -737,6 +737,34 @@ def test_the_suite_version_is_refused_when_the_ladder_is_not_monotone():
         calibrate.build_suite_version(calibration, "0" * 40)
 
 
+def test_a_recorded_refusal_is_evidence_that_recomputes(tmp_path):
+    calibration = {
+        "summary": {"categories_scorable": False,
+                    "reformatted_categories": ["c"]},
+        "ladder": {"violations": []},
+        "items": [], "cells": [], "power": {}, "window": {}, "suite": {},
+        "calibration_receipt": "receipt.json",
+    }
+    decision = calibrate.version_decision(calibration, "0" * 40)
+    assert decision["emitted"] is False
+    assert "reformatted cell" in decision["reason"]
+    calibration["suite_version"] = {
+        "emitted": False, "revision": "0" * 40, "reason": decision["reason"]}
+    version_path = os.path.join(str(tmp_path), "VERSION.json")
+    ok, message = calibrate.check_refusal(version_path, calibration)
+    assert ok, message
+    # A version file that exists contradicts the recorded refusal.
+    with open(version_path, "w", encoding="utf-8") as handle:
+        handle.write("{}")
+    ok, message = calibrate.check_refusal(version_path, calibration)
+    assert not ok and "exists" in message
+    os.unlink(version_path)
+    # A reason that no longer recomputes is a stale receipt.
+    calibration["suite_version"]["reason"] = "because"
+    ok, message = calibrate.check_refusal(version_path, calibration)
+    assert not ok and "does not recompute" in message
+
+
 def test_required_n_scales_with_variance_and_the_measured_baseline():
     low = calibrate.required_n(0.5, 0.10, 0.25, 8)
     high = calibrate.required_n(0.5, 0.10, 0.50, 8)

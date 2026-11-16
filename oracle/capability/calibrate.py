@@ -435,6 +435,38 @@ def calibrate(suite_root: str, results: dict, registration: dict,
     }
 
 
+def version_decision(calibration: dict, revision: str) -> dict:
+    """Whether the item records support a version, and the reason if they do not.
+
+    A refusal is evidence too: the receipt must name it, so a later session can
+    re-verify that no version was emitted and why, instead of trusting a printed
+    line that no receipt carries.
+    """
+    try:
+        version = build_suite_version(calibration, revision)
+    except CalibrationError as exc:
+        return {"emitted": False, "revision": revision, "reason": str(exc)}
+    return {"emitted": True, "revision": revision, "version": version}
+
+
+def check_refusal(version_path: str, calibration: dict) -> tuple[bool, str]:
+    """A recorded refusal still holds, and no version file exists."""
+    if os.path.isfile(version_path):
+        return False, (f"{version_path} exists, but the calibration receipt records "
+                       "a refusal")
+    decision = calibration.get("suite_version") or {}
+    if decision.get("emitted") is not False:
+        return False, "the calibration receipt records no refusal"
+    recomputed = version_decision(calibration, decision.get("revision") or "")
+    if recomputed.get("emitted"):
+        return False, ("the item records now support a version; the recorded "
+                       "refusal is stale")
+    if recomputed.get("reason") != decision.get("reason"):
+        return False, ("the recorded refusal reason does not recompute from the "
+                       "item records")
+    return True, f"{version_path} absent and the refusal recomputes: {decision['reason']}"
+
+
 def check_suite_version(version_path: str, calibration: dict) -> tuple[bool, str]:
     """The emitted version is exactly the decision the receipt records."""
     if not os.path.isfile(version_path):
@@ -473,6 +505,13 @@ def recheck_calibration(path: str) -> tuple[bool, str]:
     if summary.get("retired") != sum(1 for record in executable
                                      if not record["accepted"]):
         return False, f"{path}: the retired count is stale"
+    decision = payload.get("suite_version")
+    if isinstance(decision, dict):
+        recomputed = version_decision(payload, decision.get("revision") or "")
+        if recomputed.get("emitted") != decision.get("emitted"):
+            return False, f"{path}: the version decision does not recompute"
+        if recomputed.get("reason") != decision.get("reason"):
+            return False, f"{path}: the refusal reason does not recompute"
     return True, f"{path}: cells, ladder and counts recompute"
 
 
