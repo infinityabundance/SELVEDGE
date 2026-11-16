@@ -2791,3 +2791,302 @@ the item is promoted from `CANDIDATE` and this registration is committed.
 `oracle/tests/test_p13_recovery.py`, the tiny-model smoke in
 `recovery_court.py --smoke`); **not launched**. No measurement of any arm
 exists at this revision.
+
+# P18.6 — cut-set discovery and interaction diagnostics from stored omission artifacts
+
+Status: **pre-registered 2026-11-16 (S25), before any statistic in
+`results/P18.6-CUTSET.md` was computed.** This section is appended to the M1/M2
+contract and does **not** modify any M1 or M2 threshold, arm, budget or kill
+condition. It registers a new analysis over artifacts that already exist. It is
+the registration P18.6 of `docs/PROGRAM-PLAN.md` §23 requires. The analysis
+script is `scripts/p18_6_cutset.py`; its only inputs are the files named in
+P18.6.1; it executes no model and uses no GPU.
+
+## P18.6.1 Data sources, with the stamp and revision that produced each
+
+| role | path | stamp | revision | binding hash |
+| --- | --- | --- | --- | --- |
+| pairwise interaction records (primary) | `results/selectors/interactions-20261114T232338Z.json` | `20261114T232338Z` | `1e623062379239a4bed3337ed2ed91d1a7f5411b` | sha256 `ac160ac774e0264e7e3c303e01b571a6df008a798a12a5bda5013add3bccfb9d` |
+| M1 layer-omission frontier (secondary) | `results/frontier/frontier.json` | `20261114T223105Z` | `9ea017fd6071a8fb75e88f4254a9f6cf83b23c30` | sha256 `3407eb4f47ddada9a01b025d16893a2adaa898ffab7a650622d433d859b124a3` |
+| M1 published report | `results/M1-FRONTIER.md` | — | reports the frontier above | — |
+| M2 published report | `results/M2-SELECTORS.md` | — | reports the interaction receipt above | — |
+| T2 single-expert labels (instrument-gap statement only) | `results/artifacts/train/t2/Hstar/utility-labels.pt` + `.sha256` | label stamp `20261116T053240Z` in the label manifest | artifact revision not stored in the manifest | sha256 `9e41d6049766f69ae1483867b5bdc895383be6dfd94993d2c38949caa1b7bf14` |
+| T2 diagnostics receipt (instrument-gap statement only) | `results/t2/diagnostics-20261116T070700Z.json` | `20261116T070703Z` | `41e4a7e1bbeaf59c7b75bdcf28b19acbdfcf461e` | — |
+| T2 arm state (instrument-gap statement only) | `results/t2/pilot-state.json` | — | — | — |
+
+The interaction receipt records `preregistration_commit`
+`a0b107adc23f23cbda43a09cbd6d229b0ea024a1` (the M2 registration) and
+`data.split_sha256`
+`902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366`, which
+binds it to `results/splits/split-20261114T223127Z.json` (sha256
+`693a55437d2c6377bea9a3cca44c2ba7ac14599e5b8281a6cc0dd2bfc1a5d7b9`).
+
+**What the primary artifact contains.** 160 contexts. Each context is one
+(window, probed layer, fixed group pair) on calibration text. The probed layer
+is one of layers `{0, 7, 14, 21, 27}`; the window is one of eight calibration
+windows; the pair is one of four fixed pairs per layer. In the probed layer the
+retained group mask takes the four values `S`, `S+g`, `S+j`, `S+g+j`, where `S`
+is the static top-4 magnitude group set of that layer; every other layer keeps
+its static top-5 magnitude mask. For each mask the receipt stores the exact
+teacher KL in nats/token. The 160 contexts cost 640 forwards and
+`49.596` GPU-seconds at the receipt's stamp. **The receipt measures retained
+sets, not trained banks, and every window is calibration text.**
+
+## P18.6.2 Definitions, fixed now
+
+For a context `c`, write `a = KL(S)`, `b = KL(S+g)`, `c_j = KL(S+j)`,
+`d = KL(S+g+j)`.
+
+- **Unary addition effect** `m_g = b - a`, `m_j = c_j - a`. Positive means
+  *adding* `g` (restoring it to the retained set) raises loss at this context.
+  This is the measured non-monotonicity direction; it is not forced to be
+  negative.
+- **Joint addition effect** `Delta = d - a`.
+- **Pairwise non-additivity**
+  `E = d - b - c_j + a = Delta - m_g - m_j`. This equals `-I` where `I` is the
+  receipt's `interaction` field (`I = b + c_j - a - d`), because the receipt's
+  sign convention is the opposite of P16.5's. `E > 0` means the two additions
+  cost **more** than the sum of their unary effects (super-additive loss
+  increase; a submodularity violation). In omission terms, with `O` the
+  complement of `S` in the probed layer, the same four-point quantity is the
+  interaction of the *omission* damages, so `E > 0` is P16.5's positive `b_ij`
+  (joint removal worse than additive). `E < 0` is sub-additive (redundancy).
+- **Far-worse interaction** (pre-registered): `E > max(0.01 nats,
+  0.25 * (|m_g| + |m_j|))`.
+- **Measured-minimal destructive omission set.** Fix the primary threshold
+  `epsilon = 0.25` nats, the M2 registered usable-tier KL bound. The measured
+  nested family is `{O, O\{g}, O\{j}, O\{g,j}}`, with `L(O) = a`,
+  `L(O\{g}) = b`, `L(O\{j}) = c_j`, `L(O\{g,j}) = d`.
+  - `O` is measured-minimal destructive iff `a > epsilon`, `b <= epsilon` and
+    `c_j <= epsilon`.
+  - `O\{g}` is measured-minimal destructive iff `b > epsilon` and
+    `d <= epsilon` (its only measured immediate subset is `O\{g,j}`);
+    `O\{j}` is symmetric.
+  - `O\{g,j}` is reported destructive or not, but cannot be classified
+    minimal because none of its immediate subsets was measured.
+  A distinct configuration is `(layer, g, j, kind)` with `kind` in
+  `{O, O\g, O\j}`. `S` is static per layer, so there are at most 60 distinct
+  configurations, each replicated over the eight windows.
+  The sensitivity values `epsilon` in `{0.05, 0.10, 0.25, 0.50, 1.00}` are
+  reported descriptively; only `0.25` is decisive.
+
+**Every statistic is computed from these stored numbers. No missing
+measurement is imputed, and no model is executed.**
+
+## P18.6.3 Split, fixed before the numbers are read
+
+The eight calibration windows are ranked by the SHA-256 of the source article
+recorded in the split receipt. The four lowest hashes are the **discovery**
+half; the four highest are the **replication** half. The ranking is independent
+of every measured KL. The assignment is:
+
+| half | windows (documents) |
+| --- | --- |
+| discovery | `wikitext-article-020`, `wikitext-article-055`, `wikitext-article-042`, `wikitext-article-039` |
+| replication | `wikitext-article-038`, `wikitext-article-019`, `wikitext-article-050`, `wikitext-article-044` |
+
+Each half has 4 windows x 5 layers x 4 pairs = 80 contexts. **This is an
+internal discovery/replication split inside the calibration corpus. It is not a
+held-out-corpus split.** The original M1/M2 held-out articles, the code slice
+and the math slice contain no interaction measurement of any kind. A result
+that replicates here has replicated across calibration documents, not out of
+the corpus.
+
+The M1 layer-omission check is out-of-sample by construction: its unary model
+uses only the 28 single-layer omission arms, while the two 20-layer joint arms
+are separate measurements the unary model never sees. No split is applied to
+that check.
+
+## P18.6.4 Statistics, fixed now
+
+**S1 — interaction distribution and sign asymmetry.** For all 160 contexts and
+per layer: `n`, mean, median, IQR, sd, min, max, positive/negative/zero
+fractions of `E`; mean and median `|E|`; the fraction of contexts with
+far-worse `E`. Sign asymmetry is reported as (a) the distribution of the
+marginal-magnitude asymmetry `|m_g| - |m_j|` (mean, median, IQR) and (b) the
+number of sign changes of `E` across the eight windows for each of the 20 fixed
+`(layer, g, j)` cells (min, median, max; fraction of cells with at least one
+flip). `E` is algebraically symmetric in `g` and `j`; no directional asymmetry
+is claimed from swapping them.
+
+**S2 — unary-only versus pairwise-additive explanation.** In-sample: mean
+`|Delta|`, mean `|E|`, the ratio `mean|E| / mean|Delta|`, and
+`R2_unary = 1 - sum(E^2) / sum((Delta - mean Delta)^2)`. The measured pair
+interaction is exact in-sample by construction, so an in-sample pairwise `R2`
+of one is **not** evidence and is labelled as such. Out-of-sample is the
+decisive form: for each of the 20 `(layer, g, j)` cells estimate
+`E_D(cell)` as the discovery mean, then on the 80 replication contexts compare
+the actual `Delta` against three predictions — **(U)** unary only
+`m_g + m_j`; **(I)** unary plus the discovery cell interaction;
+**(G)** unary plus the global discovery mean interaction. Report MAE, RMSE,
+`R2` against the constant-mean predictor, and the replication sign agreement of
+`E` with `sign(E_D(cell))`. Report the Spearman correlation across the 20 cells
+between `E_D` and the replication mean `E` descriptively.
+
+**S3 — monotonicity and submodularity violations.** Count contexts with
+`E > 0` (super-additive), `E < 0` (sub-additive) and `E = 0`; count far-worse
+contexts. Report the sequential marginal comparison explicitly:
+`Delta(j | S+g) = d - b` versus `Delta(j | S) = c_j - a`; the event
+`Delta(j|S+g) > Delta(j|S)` is algebraically identical to `E > 0` and the
+identity is reported as a correctness check, not as a second finding.
+
+**S4 — measured-minimal destructive sets and replication.** At
+`epsilon = 0.25`: the number of contexts containing a measured-minimal
+destructive configuration, the number of distinct `(layer, g, j, kind)`
+configurations, and the number that **replicate**, where a configuration
+replicates iff it is measured-minimal destructive in at least 3 of the 4
+discovery windows **and** at least 3 of the 4 replication windows. A weaker
+"destructive direction" count is also reported: `L > epsilon` in at least 3 of
+4 windows in both halves, regardless of subset safety. The `epsilon`
+sensitivity list in P18.6.2 is reported descriptively.
+
+**S5 — coverage, using the stored design as the population.** The population is
+the 160 cells `(layer, pair, window)`. A cell is **damaging** iff `E > 0.01`
+nats (the pre-registered effect floor: one fifth of the acceptable-tier KL
+bound `0.05`). Secondary labels `E > 0.1` and "measured-minimal destructive at
+`epsilon = 0.25`" are reported descriptively. At equal evaluation counts
+`N` in `{20, 40, 80, 120}` compare:
+
+- **random design:** 10,000 uniform draws without replacement, seed `20261116`;
+- **covering design:** a strength-2 covering array over the three factors
+  `layer` (5 levels), `pair` (4), `window` (8), constructed greedily to maximize
+  newly covered factor-level pairs; deterministic tie-break by the SHA-256 of
+  the cell key, plus 1,000 randomized tie-break variants (seed `20261116` plus
+the draw index), because the damage label is never used in construction.
+
+Metrics: recall of damaging cells, precision, and the number of the 20
+`(layer, pair)` strata that contain at least one damaging cell and are touched
+by the design. The covering design cannot reach full pairwise coverage below
+`N` = 31; the achieved fraction is reported at every `N`. **This simulation is
+over the stored 5-layer x 4-pair design, not over the group-pair space: only 20
+of the 3,360 possible `(layer, group-pair)` cells were ever measured.**
+
+**S6 — M1 layer-omission additivity, secondary and descriptive.** From
+`frontier.json`, take the 28 single-layer omission KL means and the two joint
+arms `layer-omit-first-20` (layers 0-19) and `layer-omit-last-20` (layers
+8-27). Compare each measured joint KL against the naive additive prediction
+`sum_{l in T} KL_single(l)`. Report the ratio and absolute residual. This is a
+**different instrument** (whole-layer FFN omission on a dense teacher, joint
+arms above the 1e9 ceiling), so it is never pooled with S1-S5 and never used to
+set a threshold. It is a sanity check on whether the program's stored artifacts
+contain any visible non-additivity at another granularity.
+
+## P18.6.5 Decision rules and kill conditions, fixed now
+
+These are evaluated once, on the primary `epsilon = 0.25` and `tau_E = 0.01`
+registration. The sensitivity values cannot change a verdict.
+
+- **D1 — the interaction is non-negligible.** At least 10% of contexts are
+  far-worse **and** mean `|E| >= 0.05` nats. Otherwise the pairwise term is
+  second-order on this sample and the diagnostic is negative for structure.
+- **D2 — the interaction replicates out of sample.** On the replication half,
+  `sign(E)` agrees with `sign(E_D(cell))` on at least 70% of contexts **and** the
+  cell-interaction predictor **(I)** reduces MAE by at least 10% relative to
+  **(U)** with an absolute improvement of at least `0.005` nats. The 10,000-
+  resample paired bootstrap over the four replication windows reports the CI of
+  the MAE difference; it is reported, not required, because four units are few.
+  If D2 fails, P16.5's own kill condition applies: the sign is not stable across
+  splits, the interactions are not established, and no constrained selection
+  may be built on them.
+- **D3 — a minimal destructive set replicates.** At least one distinct
+  measured-minimal destructive configuration replicates under the
+  3-of-4 + 3-of-4 rule. **If D3 fails, P18.6's kill criterion fires: the result
+  is reported negative and nothing is fed to P16.12.** This is the plan's own
+  condition and is not renegotiated here.
+- **D4 — covering arrays beat random sampling at equal evaluations.** At
+  `N = 80`, the covering design's median damaging-cell recall is at least 1.5x
+  the random design's median **and** the covering 5th percentile exceeds the
+  random 95th percentile. Otherwise the stored population provides no evidence
+  that covering arrays are the better use of evaluations.
+
+**What justifies a GPU covering-array experiment.** Only `D1 and D2 and D4`
+justify the P16.12-style covering-array search on trained banks. If `D1 and D2`
+hold but D4 fails, the justified GPU step is a **full-factorial interaction
+census** on the trained banks, not a covering-array search, because no
+stored-data evidence favours the array. If D1 or D2 fails, no GPU interaction
+experiment is justified by this evidence; the next step is to fix the
+instrument (a trained-bank combination label, not another analysis of these
+artifacts). D3 is deliberately **not** part of the GPU-justification rule: the
+stored `epsilon` is the M2 usable-tier bound on a degraded instrument, and a
+real cut set is a property of the trained model that this instrument cannot
+decide. D3 still decides whether anything is fed to P16.12.
+
+## P18.6.6 The GPU experiment that would be registered after the gate opens
+
+This is a **plan and a cost estimate**, not a measurement, and it may not run
+before the §20.0 gate opens. It is registered now so the sign of the stored
+diagnostic cannot be used to substitute a different experiment later.
+
+- **Arms (minimal):** `X` and `H` (trained, admitted; `results/t2/pilot-state.json`),
+  plus `H*` once its training and the registered reader finish. `D` and `M` are
+  optional controls. Every arm is evaluated with its own trained bank and its
+  own router; no post-hoc omission is applied to a dense teacher.
+- **Question:** for each routed layer, measure `L(T)` for the full bank and for
+  every **2-omission** and **3-omission** set `T` over the 8-experts-per-layer
+  bank (`C(8,2)=28` and `C(8,3)=56` sets), on a discovery split and a
+  replication split. That is `1 + 28 + 56 = 85` set evaluations per routed
+  layer, using the measured pairs so a triple costs one new forward.
+- **Splits:** 32 calibration windows (discovery) and 32 held-out general
+  windows (replication), 512 tokens each; code and math remain untouched until
+  the capability court uses them.
+- **Forwards per arm:** `28 layers x 85 sets x 64 windows = 152,320` (full
+  factorial). At the interaction receipt's measured `49.596 / 640 = 0.0775`
+  GPU-seconds per 512-token forward, that is an **estimated 3.3 GPU-hours per
+  arm**, or **~6.6 GPU-hours for X and H** before overhead. This is an estimate
+  from a different instrument and is labelled as one; the launch record must
+  replace it with a smoke-measured peak and its own `SELVEDGE_MEM` derived by
+  the §0.2 rule. The interaction receipt's own `49.596` GPU-seconds is the only
+  measured cost quoted here (stamp `20261114T232338Z`, revision
+  `1e623062379239a4bed3337ed2ed91d1a7f5411b`).
+- **Controls:** (i) random omission sets of equal size, matched in number to the
+  discovered damaging sets; (ii) a `b_ij := 0` additive selector, which must
+  lose if the interactions are real; (iii) the replication half, which the
+  discovery half never sees.
+- **Covering-array design (only if D4 holds):** a strength-2 covering array over
+  the factors `(routed layer, group-pair index, window)` at equal evaluation
+  count to the random control. The stored design has only four pairs per layer,
+  so the array cannot be designed from it; it must be generated over the real
+  `C(8,2)=28` group pairs and committed before the pass.
+- **Prerequisite instrument gap this experiment closes:** `X` and `H` have no
+  utility-label artifact at all, and `H*`'s only label artifact
+  (`utility-labels.pt`, sha256 `9e41d604...`) is a **single-expert, full-bank
+  leave-one-out** label (`u_e = L(+all) - L(-e)`); it contains no pair or triple
+  omission. The GPU experiment above is the minimal pass that creates the
+  missing combination measurements.
+
+## P18.6.7 What this diagnostic can and cannot conclude
+
+- **Can:** describe the distribution and sign behaviour of the measured
+  pairwise non-additivity on 160 stored calibration contexts; test whether a
+  discovery-half interaction estimate predicts a replication-half interaction;
+  count measured-minimal destructive configurations and test their replication;
+  compare covering-array and random designs **over the stored design**; and
+  state exactly which measurements are missing.
+- **Cannot:** establish a cut set for a trained model. The M2 interactions come
+  from a **degraded, non-deployed selection regime**: a dense teacher with
+  static magnitude masks in 27 layers and a top-4/top-5 magnitude mask in the
+  probed layer. The stored KL values are far outside the usable tier in early
+  layers, so the `epsilon = 0.25` test is not a capability test. The interaction
+  sample is 8 calibration windows x 5 layers x 4 fixed pairs; it is not a census
+  and it cannot bound unmeasured pairs. No code or math item was measured. The
+  trained banks `X` and `H` have **no** combination measurements, and `H*` has
+  only single-expert labels. Nothing here may be extrapolated to the trained
+  models, and no result here may be presented as a capability result.
+- **If the evidence is too thin:** the report says so in plain words, reports
+  D1-D4 and the kill criterion exactly as measured, and recommends the GPU
+  experiment only under the rule in P18.6.5.
+
+## P18.6.8 Reproduction
+
+```bash
+SELVEDGE_MEM=8g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/court python -- python3 scripts/p18_6_cutset.py \
+    --out-json results/p18.6/cutset-$(date -u +%Y%m%dT%H%M%SZ).json \
+    --out-md results/P18.6-CUTSET.md
+```
+
+The script is deterministic (bootstrap seed `20261116`), uses only the Python
+standard library, reads only the paths in P18.6.1, and writes the JSON receipt
+and the generated Markdown. It refuses to run if any input hash differs from
+the hash recorded above. The court enforces the hard memory, swap, pids, CPU
+and `/tmp` limits; the host is never used to execute the analysis.
