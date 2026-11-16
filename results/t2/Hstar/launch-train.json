@@ -1,0 +1,61 @@
+{
+  "alloc_conf": "expandable_segments:True",
+  "arm": "H*",
+  "components": {
+    "gradients_bf16": {
+      "bytes": 1246175232,
+      "elements": 623087616
+    },
+    "optimiser_adamw_fp32": {
+      "bytes": 4984700928,
+      "elements": 623087616,
+      "note": "two fp32 moments over the trainable elements",
+      "source": "results/artifacts/train/t2/H/summary.json trainable_elements"
+    },
+    "student_weights_bf16": {
+      "bytes": 2438275072,
+      "elements": 1219137536,
+      "source": "results/train/admission-configs/t2/H*.json total_accessible"
+    },
+    "utility_label_phase": {
+      "allowance_gib": 0.5,
+      "note": "forward-only, no gradients, micro_positions=256 sub-batches under inference_mode while the optimiser state is resident"
+    }
+  },
+  "components_note": "weights and chunked logits only; the runtime's CUDA context, cuBLAS workspaces and load transients are named by the measured peak, not by this sum",
+  "created_utc": "2026-11-16T04:51:29Z",
+  "deviation": {
+    "free_at_measured_reserved_gib": 4.243,
+    "headroom_factor_achieved": 1.374
+  },
+  "device": {
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "total_gib": 15.99,
+    "usable_basis": "device total less the desktop compositor's resident allocation; the binding constraint on this host",
+    "usable_gib": 15.6
+  },
+  "fits_with_headroom": false,
+  "headroom_factor": 1.5,
+  "headroom_required_gib": 17.036,
+  "host_limits": {
+    "SELVEDGE_CPUS": "8",
+    "SELVEDGE_MEM": "24g",
+    "SELVEDGE_PIDS": "1024",
+    "SELVEDGE_TMP": "8g",
+    "note": "host RAM limit for the court container; VRAM is not a cgroup resource and is bounded by the arithmetic above"
+  },
+  "kill_condition": "stop the container if any step in train.jsonl reports vram_peak_gib above 12.5 GiB (12.5 of 15.6 usable); the failure is then recorded with its cgroup evidence instead of retried at the same limit",
+  "measured": {
+    "peak_allocated_gib": 10.857304096221924,
+    "peak_reserved_gib": null,
+    "source": "results/artifacts/train/t2/H/summary.json",
+    "stage_peaks": null,
+    "step_peak_gib": 10.857304096221924
+  },
+  "predicted_peak_gib": 11.357,
+  "revision": "1db04d5d69f803b8af237a5ff4d1754d2d860302",
+  "schema": "selvedge/t2-gpu-launch/v1",
+  "stage": "train",
+  "unit": "selvedge-t2-Hstar-train",
+  "verdict": "the 1.5x rule over the predicted peak does not fit on this card; the launch is authorised on a measured bound instead: the same geometry's measured reserved peak plus the declared allowance, with the kill condition below enforced from the first logged step"
+}

@@ -32,6 +32,7 @@ import datetime
 import glob
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -115,12 +116,17 @@ def plan(args) -> int:
     config = load_json(repo_path(f"results/train/admission-configs/t2/{args.arm}.json"))
     accessible = int(config["total_accessible"])
 
+    measured_source = (args.measured or
+                       (f"results/eval/t2-{args.arm}.json" if args.stage == "eval"
+                        else f"results/artifacts/train/t2/{args.run_name}/summary.json"))
+    measured_receipt = (load_json(repo_path(measured_source))
+                        if measured_source and os.path.isfile(repo_path(measured_source))
+                        else {})
+    # AdamW keeps two fp32 moments and a bf16 gradient per *trainable* element,
+    # which is fewer than the accessible count (the frozen core is 596M of it).
+    trainable = int(measured_receipt.get("trainable_elements") or accessible)
+
     components = {
-        "teacher_weights_bf16": {
-            "elements": model_elements("1.7b"),
-            "bytes": model_elements("1.7b") * 2,
-            "source": "results/accounting/*-qwen3-1.7b.json",
-        },
         "student_weights_bf16": {
             "elements": accessible,
             "bytes": accessible * 2,
@@ -128,6 +134,13 @@ def plan(args) -> int:
         },
     }
     if args.stage == "eval":
+        # Only the evaluation holds the teacher: training reads the precomputed
+        # teacher-target cache, so no teacher weights are resident.
+        components["teacher_weights_bf16"] = {
+            "elements": model_elements("1.7b"),
+            "bytes": model_elements("1.7b") * 2,
+            "source": "results/accounting/*-qwen3-1.7b.json",
+        }
         components["memory_table_bf16"] = {
             "bytes": 4 * (1 << 18) * 256 * 2,
             "note": "4 insertion layers x 2^18 rows x 256 values, resident and "
@@ -144,32 +157,31 @@ def plan(args) -> int:
             "note": "two chunk tensors (student, teacher); log-softmax and p_t "
                     "add at most two more of the same size inside a chunk",
         }
-        measured_source = args.measured or f"results/eval/t2-{args.arm}.json"
     else:
         components["optimiser_adamw_fp32"] = {
-            "elements": accessible,
-            "bytes": 2 * accessible * 4,
+            "elements": trainable,
+            "bytes": 2 * trainable * 4,
+            "source": f"{measured_source} trainable_elements" if measured_receipt
+                      else "total_accessible (measured trainable count unavailable)",
             "note": "two fp32 moments over the trainable elements",
         }
         components["gradients_bf16"] = {
-            "elements": accessible,
-            "bytes": accessible * 2,
+            "elements": trainable,
+            "bytes": trainable * 2,
         }
-        measured_source = args.measured or f"results/artifacts/train/t2/{args.run_name}/summary.json"
 
     predicted = None
     measured = None
-    if measured_source and os.path.isfile(repo_path(measured_source)):
-        receipt = load_json(repo_path(measured_source))
-        vram = receipt.get("vram") or {}
+    if measured_receipt:
+        vram = measured_receipt.get("vram") or {}
         measured = {
             "source": measured_source,
-            "peak_allocated_gib": receipt.get("vram_peak_gib"),
+            "peak_allocated_gib": measured_receipt.get("vram_peak_gib"),
             "peak_reserved_gib": vram.get("peak_reserved_gib"),
             "stage_peaks": vram.get("stage_peaks"),
         }
         if args.stage != "eval":
-            measured["step_peak_gib"] = receipt.get("vram_peak_gib")
+            measured["step_peak_gib"] = measured_receipt.get("vram_peak_gib")
     if measured and measured.get("peak_allocated_gib") is not None:
         predicted = float(measured["peak_allocated_gib"])
         if args.stage == "train":
@@ -240,6 +252,26 @@ def plan(args) -> int:
     return 0
 
 
+def journal_consumption(unit: str) -> dict | None:
+    """The unit's own accounting line, which survives the transient unit."""
+    try:
+        text = subprocess.run(
+            ["journalctl", "--user", "-u", unit, "--no-pager", "-o", "cat"],
+            capture_output=True, text=True, check=True).stdout
+    except Exception:
+        return None
+    lines = [line.strip() for line in text.splitlines() if "Consumed" in line]
+    if not lines:
+        return None
+    line = lines[-1]
+    match = re.search(r"Consumed (?P<cpu>[^,]+) CPU time over (?P<wall>[^,]+) wall "
+                      r"clock time, (?P<mem>[^ ]+) memory peak", line)
+    if not match:
+        return {"line": line}
+    return {"line": line, "cpu_time": match.group("cpu"),
+            "wall_clock": match.group("wall"), "memory_peak": match.group("mem")}
+
+
 def finalize(args) -> int:
     record = load_json(repo_path(args.record))
     if not os.path.isfile(repo_path(args.court_receipt)):
@@ -276,10 +308,32 @@ def finalize(args) -> int:
                  "--property=MemoryPeak", "--property=MemorySwapMax",
                  "--property=CPUQuotaPerSecUSec", "--property=Result"],
                 capture_output=True, text=True, check=True).stdout.strip()
-            record["cgroup"] = dict(
-                line.split("=", 1) for line in show.splitlines() if "=" in line)
+            record["cgroup"] = {
+                "source": "systemctl --user show, read after the unit stopped",
+                "values": dict(line.split("=", 1) for line in show.splitlines()
+                               if "=" in line)}
         except Exception as error:  # pragma: no cover - host dependent
             record["cgroup"] = {"error": str(error)}
+        consumption = journal_consumption(args.unit)
+        if consumption:
+            record.setdefault("cgroup", {})["journal"] = consumption
+        if args.unit_show and os.path.isfile(repo_path(args.unit_show)):
+            with open(repo_path(args.unit_show), "r", encoding="utf-8") as handle:
+                live = dict(line.split("=", 1) for line in handle.read().splitlines()
+                            if "=" in line)
+            record.setdefault("cgroup", {})["live"] = {
+                "source": args.unit_show,
+                "note": "captured from the running unit, so it records the limits "
+                        "systemd actually applied",
+                "values": live,
+            }
+        values = (record.get("cgroup") or {}).get("values") or {}
+        if str(values.get("MemoryMax")) == "infinity":
+            record["cgroup"]["values_note"] = (
+                "the transient unit was unloaded when it succeeded, so systemd "
+                "reports its defaults here; the journal line below is its own "
+                "accounting")
+            record["cgroup"].pop("values", None)
     record["finalised_utc"] = utc_now()
     write_json_atomic(repo_path(args.record), record)
     print(json.dumps({"record": args.record, "measured": record.get("measured"),
@@ -312,6 +366,9 @@ def build_parser() -> argparse.ArgumentParser:
             child.add_argument("--court-receipt", required=True)
             child.add_argument("--measured", default=None)
             child.add_argument("--unit", default=None)
+            child.add_argument("--unit-show", default=None,
+                               help="key=value dump of `systemctl --user show` taken "
+                                    "from the running unit")
             child.set_defaults(func=finalize)
     return parser
 

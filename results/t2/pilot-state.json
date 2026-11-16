@@ -53,11 +53,18 @@
       "container_exit_code": 0,
       "court_log": "",
       "court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T234515Z-b23ea1.json",
-      "finished_utc": "2026-11-16T04:26:34Z",
-      "pending_state": "",
+      "eval": "results/eval/t2-H.json",
+      "eval_court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T044607Z-876fae.json",
+      "eval_summary": "results/t2/H/eval.json",
+      "finished_utc": "2026-11-16T04:46:05Z",
+      "pending_state": "results/courts/pending/selvedge-oracle-court-20261115T234515Z-b23ea1.json",
       "receipt": "results/t2/H/run.json",
+      "recovered": {
+        "kind": "verified-final-checkpoint",
+        "utc": "2026-11-16T04:46:05Z"
+      },
       "started_utc": "2026-11-15T23:45:14Z",
-      "status": "evaluating"
+      "status": "evaluated"
     },
     "H*": {
       "status": "pending"
@@ -128,12 +135,15 @@
     "stream_sha256": "fddc1656462bcaf8000f129848ffd544c0754076e431f2d8c05ba7175050309c",
     "tokens": 147784500
   },
-  "failure": {
-    "detail": "court wait returned non-zero",
-    "exit_code": 1,
-    "phase": "eval-H",
-    "utc": "2026-11-16T04:26:51Z"
-  },
+  "failure": null,
+  "failures": [
+    {
+      "detail": "court wait returned non-zero",
+      "exit_code": 1,
+      "phase": "eval-H",
+      "utc": "2026-11-16T04:26:51Z"
+    }
+  ],
   "phases": {
     "eval_D0": {
       "court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T143241Z-d1b92b.json",
@@ -141,21 +151,22 @@
       "status": "done"
     },
     "targets": {
-      "receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T042458Z-c1cd15.json",
+      "receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T044443Z-8e42d0.json",
       "started_utc": "2026-11-15T13:26:56Z",
       "status": "verified",
       "tokens": 67108864,
       "verified": true,
-      "verified_utc": "2026-11-16T04:26:34Z"
+      "verified_utc": "2026-11-16T04:46:00Z"
     }
   },
   "pilot": "t2",
-  "revision": "5ede31199fff885044bbdd8a5f031cfc15a0bf18",
+  "resumed_utc": "2026-11-16T04:44:43Z",
+  "revision": "fd2882355cc3438791758e4a3cee87b7ca7f1746",
   "schema": "selvedge/t2-pilot-state/v1",
   "seed": 1001,
   "started_utc": "2026-11-15T13:26:56Z",
-  "status": "failed",
+  "status": "partial",
   "steps": 1024,
   "tokens_per_step": 65536,
-  "updated_utc": "2026-11-16T04:26:51Z"
+  "updated_utc": "2026-11-16T04:57:22Z"
 }

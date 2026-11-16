@@ -1,6 +1,16 @@
 {
   "alloc_conf": "expandable_segments:True",
   "arm": "H",
+  "cgroup": {
+    "journal": {
+      "cpu_time": "9.100s",
+      "line": "selvedge-t2-H-eval.service: Consumed 9.100s CPU time over 12min 39.526s wall clock time, 78.9M memory peak.",
+      "memory_peak": "78.9M",
+      "wall_clock": "12min 39.526s"
+    },
+    "source": "systemctl --user show, read after the unit stopped",
+    "values_note": "the transient unit was unloaded when it succeeded, so systemd reports its defaults here; the journal line below is its own accounting"
+  },
   "components": {
     "logit_chunk_f32": {
       "bytes": 77791232,
@@ -25,6 +35,41 @@
     }
   },
   "components_note": "weights and chunked logits only; the runtime's CUDA context, cuBLAS workspaces and load transients are named by the measured peak, not by this sum",
+  "court": {
+    "container_env": {
+      "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+    },
+    "container_exit_code": 0,
+    "enforcement_ok": true,
+    "exit_code": 0,
+    "gpu": {
+      "detail": "--gpus all unavailable: docker: Error response from daemon: failed to discover GPU vendor from CDI: no known GPU vendor found  Run 'docker run --help' for more information",
+      "mode": "device-passthrough"
+    },
+    "limits": {
+      "cap_drop": [
+        "ALL"
+      ],
+      "cpus": "8",
+      "init": true,
+      "memory": "24g",
+      "memory_bytes": 25769803776,
+      "memory_swap": "24g",
+      "memory_swap_bytes": 25769803776,
+      "nano_cpus": 8000000000,
+      "nofile": 65536,
+      "pids": 1024,
+      "security_opt": [
+        "no-new-privileges"
+      ],
+      "tmpfs": "/tmp",
+      "tmpfs_bytes": 8589934592,
+      "tmpfs_size": "8g"
+    },
+    "log_path": "results/courts/logs/oracle-20261116T044607Z-876fae.log",
+    "oom_killed": false,
+    "receipt": "results/courts/oracle-20261116T044607Z-876fae.json"
+  },
   "created_utc": "2026-11-16T04:44:33Z",
   "device": {
     "name": "NVIDIA GeForce RTX 4080 SUPER",
@@ -32,6 +77,7 @@
     "usable_basis": "device total less the desktop compositor's resident allocation; the binding constraint on this host",
     "usable_gib": 15.6
   },
+  "finalised_utc": "2026-11-16T04:59:18Z",
   "fits_with_headroom": true,
   "headroom_factor": 1.5,
   "headroom_required_gib": 9.591,
@@ -45,23 +91,23 @@
   "kill_condition": "abort if torch.cuda.max_memory_allocated at any stage exceeds 12.5 GiB; the instrument logs it per stage",
   "measured": {
     "peak_allocated_gib": 6.394,
-    "peak_reserved_gib": 6.438,
-    "source": "results/eval/s16-parity-chunked.json",
+    "peak_reserved_gib": 6.439,
+    "source": "results/eval/t2-H.json",
     "stage_peaks": {
       "distributional": {
         "allocated_gib": 6.394,
         "in_use_gib": 6.136,
-        "reserved_gib": 6.438
+        "reserved_gib": 6.439
       },
       "gsm8k": {
-        "allocated_gib": 3.207,
+        "allocated_gib": 3.553,
         "in_use_gib": 2.931,
-        "reserved_gib": 3.326
+        "reserved_gib": 3.713
       },
       "humaneval": {
-        "allocated_gib": 3.117,
+        "allocated_gib": 3.504,
         "in_use_gib": 2.931,
-        "reserved_gib": 3.15
+        "reserved_gib": 3.564
       },
       "models_loaded": {
         "allocated_gib": 6.136,
@@ -69,9 +115,9 @@
         "reserved_gib": 6.154
       },
       "truthfulqa": {
-        "allocated_gib": 3.207,
-        "in_use_gib": 2.931,
-        "reserved_gib": 3.326
+        "allocated_gib": 3.553,
+        "in_use_gib": 2.932,
+        "reserved_gib": 3.713
       }
     }
   },
@@ -79,6 +125,6 @@
   "revision": "fd2882355cc3438791758e4a3cee87b7ca7f1746",
   "schema": "selvedge/t2-gpu-launch/v1",
   "stage": "eval",
-  "unit": null,
+  "unit": "selvedge-t2-H-eval",
   "verdict": "fits with the declared headroom"
 }
