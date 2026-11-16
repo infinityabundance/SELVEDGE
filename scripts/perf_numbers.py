@@ -32,6 +32,22 @@ or revision that does not match the receipt, a manifest number no block prints,
 a sentinel with no manifest block, an untracked receipt, or a receipt whose
 revision is not a real commit. `--write` regenerates regions atomically.
 
+External regions. A generated region whose content is not a single receipt
+number (a status block, a per-arm table) is owned by its own generator, not by
+this one. Such regions are declared under the manifest's optional
+`external_regions` list:
+
+    {
+      "owner": "scripts/status_consistency.py",
+      "doc": "README.md",
+      "sentinels": ["readme-status"]
+    }
+
+This checker then refuses an undeclared region as before, and additionally
+refuses a declared external region that the document does not contain, so an
+owner cannot claim a block it does not print. It never renders or overwrites an
+external region: the owner's own court does that.
+
 Standard library only; reads files, never the network.
 """
 
@@ -256,6 +272,27 @@ def load_manifest(path: str) -> dict:
         source = block["source"]
         if not isinstance(source, dict) or "receipt" not in source or "pointer" not in source:
             raise Failure(f"{where}: source must be an object with 'receipt' and 'pointer'")
+    external = manifest.get("external_regions")
+    if external is not None:
+        if not isinstance(external, list) or not external:
+            raise Failure("manifest 'external_regions' must be a non-empty array when present")
+        for index, entry in enumerate(external):
+            where = f"external_regions[{index}]"
+            if not isinstance(entry, dict):
+                raise Failure(f"{where}: must be an object")
+            for key in ("owner", "doc", "sentinels"):
+                if key not in entry:
+                    raise Failure(f"{where}: missing required key {key!r}")
+            if not isinstance(entry["owner"], str) or not entry["owner"]:
+                raise Failure(f"{where}: owner must be a non-empty string")
+            if not isinstance(entry["doc"], str) or not entry["doc"]:
+                raise Failure(f"{where}: doc must be a non-empty string")
+            sentinels = entry["sentinels"]
+            if not isinstance(sentinels, list) or not sentinels:
+                raise Failure(f"{where}: sentinels must be a non-empty array")
+            for sentinel in sentinels:
+                if not isinstance(sentinel, str) or not sentinel:
+                    raise Failure(f"{where}: every sentinel must be a non-empty string")
     return manifest
 
 
@@ -384,6 +421,14 @@ def check(repo: str, manifest_rel: str) -> int:
                 f"(doc has {body!r}, source renders {entry['rendered']!r})"
             )
 
+    # external regions are declared, not derived: they must exist as declared
+    external_declared = {
+        (entry["doc"], sentinel)
+        for entry in manifest.get("external_regions", [])
+        for sentinel in entry["sentinels"]
+    }
+    external_seen: set[tuple[str, str]] = set()
+
     # (e) a sentinel with no manifest block
     for doc in markdown_files(repo):
         doc_path = os.path.join(repo, doc)
@@ -395,6 +440,9 @@ def check(repo: str, manifest_rel: str) -> int:
             problems.append(str(exc))
             continue
         for region in regions:
+            if (doc, region.id) in external_declared:
+                external_seen.add((doc, region.id))
+                continue
             if region.id not in by_sentinel:
                 problems.append(
                     f"{doc}: generated region {region.id!r} has no manifest block"
@@ -403,6 +451,22 @@ def check(repo: str, manifest_rel: str) -> int:
                 problems.append(
                     f"{doc}: region {region.id!r} is declared for {by_sentinel[region.id]['doc']}"
                 )
+
+    # declared external regions that the document does not print
+    for doc, sentinel in sorted(external_declared):
+        if (doc, sentinel) in external_seen:
+            continue
+        doc_path = os.path.join(repo, doc)
+        if not os.path.exists(doc_path):
+            problems.append(f"external region {sentinel!r}: doc {doc} does not exist")
+            continue
+        with open(doc_path, "r", encoding="utf-8") as handle:
+            _lines, regions = scan_regions(handle.read(), doc)
+        if sentinel not in {region.id for region in regions}:
+            problems.append(
+                f"external region {sentinel!r} is declared for {doc} but the document "
+                "does not contain it"
+            )
 
     # (d) a manifest number that no block prints
     all_regions = "\n".join(entry["rendered"] for entry in resolved)
