@@ -195,8 +195,8 @@
     "scored": 0,
     "total": 24
   },
-  "command": "scripts/capability_calibration_analysis.py --calibration results/capability/calibration-20261116T164100Z.json --result D=results/capability/calibration/D/result.json --result M=results/capability/calibration/M/result.json --result X=results/capability/calibration/X/result.json --result H=results/capability/calibration/H/result.json --result H*=results/capability/calibration/Hstar/result.json --generations D=results/capability/calibration/D/generations.json --generations M=results/capability/calibration/M/generations.json --generations X=results/capability/calibration/X/generations.json --generations H=results/capability/calibration/H/generations.json --generations H*=results/capability/calibration/Hstar/generations.json --smoke results/capability/calibration-smoke/generations-Hstar.json --out results/capability/calibration-analysis-20261116T165000Z.json",
-  "created_utc": "2026-11-16T16:29:19Z",
+  "command": "scripts/capability_calibration_analysis.py --calibration results/capability/calibration-20261116T164100Z.json --result D=results/capability/calibration/D/result.json --result M=results/capability/calibration/M/result.json --result X=results/capability/calibration/X/result.json --result H=results/capability/calibration/H/result.json --result H*=results/capability/calibration/Hstar/result.json --generations D=results/capability/calibration/D/generations.json --generations M=results/capability/calibration/M/generations.json --generations X=results/capability/calibration/X/generations.json --generations H=results/capability/calibration/H/generations.json --generations H*=results/capability/calibration/Hstar/generations.json --smoke results/capability/calibration-smoke/generations-Hstar.json --out results/capability/calibration-analysis-20261116T165500Z.json",
+  "created_utc": "2026-11-16T16:32:43Z",
   "inputs": {
     "calibration": {
       "path": "results/capability/calibration-20261116T164100Z.json",
@@ -653,6 +653,7 @@
     "required_n_conservative": "686,777",
     "required_n_planning": "338,483",
     "smoke_peak": "7.132 GiB process peak, 6.796 GiB cgroup peak, 4.054 GiB VRAM allocated",
+    "throughput": "D 298.6 tokens/s over 258,048 tokens; H 164.4 tokens/s over 245,792 tokens; H* 165.6 tokens/s over 258,048 tokens; M 333.8 tokens/s over 258,048 tokens; X 171.4 tokens/s over 258,048 tokens",
     "window": "1 accepted, 69 retired (68 zero pass, 1 does not discriminate), 0 saturated, 0 with a partial-credit spread"
   },
   "resources": {
@@ -704,13 +705,40 @@
       "vram_max_memory_reserved_gib": 4.186
     }
   },
-  "revision": "bf7d4fec4d042769c4b2bb3238ab573240c7613b",
+  "revision": "b3b3b1a32426776381609fa01600228b49ac47d3",
   "schema": "selvedge/capability-calibration-analysis/v1",
-  "stamp": "20261116T162919Z",
+  "stamp": "20261116T163243Z",
   "suite_version": {
     "emitted": false,
     "path": "fixtures/capability-calibrated/VERSION.json",
     "reason": "cannot emit a calibrated suite version: categories ['api-migration', 'concurrency', 'dependency-compat', 'failing-test', 'lifetime-borrow', 'repo-scale', 'semantic-repair', 'trait-impl'] have a reformatted cell; redesign that format before scoring",
     "revision": "bf7d4fec4d042769c4b2bb3238ab573240c7613b"
+  },
+  "throughput": {
+    "D": {
+      "decoding_seconds": 864.1,
+      "tokens_out": 258048,
+      "tokens_per_second": 298.6
+    },
+    "H": {
+      "decoding_seconds": 1495.1,
+      "tokens_out": 245792,
+      "tokens_per_second": 164.4
+    },
+    "H*": {
+      "decoding_seconds": 1558.5,
+      "tokens_out": 258048,
+      "tokens_per_second": 165.6
+    },
+    "M": {
+      "decoding_seconds": 773.0,
+      "tokens_out": 258048,
+      "tokens_per_second": 333.8
+    },
+    "X": {
+      "decoding_seconds": 1505.4,
+      "tokens_out": 258048,
+      "tokens_per_second": 171.4
+    }
   }
 }
