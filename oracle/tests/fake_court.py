@@ -35,7 +35,8 @@ ACTIVE = {"D0": 596049920, "D": 772210688, "M": 598153216, "X": 772440064,
 ARMS = ("D", "M", "X", "H", "H*")
 CATEGORIES = ("api-migration", "concurrency", "dependency-compat", "failing-test",
               "lifetime-borrow", "repo-scale", "semantic-repair", "trait-impl")
-CAPABILITY_PASSES = {"D": 3, "M": 2, "X": 3, "H": 3, "H*": 7}
+CAPABILITY_PASSES = {"D": 6, "M": 4, "X": 6, "H": 6, "H*": 14}
+CAPABILITY_ITEMS_PER_CATEGORY = 18
 
 
 def sha256(path: str) -> str:
@@ -98,7 +99,7 @@ def eval_receipt(arm: str, digest: str, config_sha: str, admission_sha: str,
 
 
 def capability_result(arm: str, root: str) -> dict:
-    prereg_path = os.path.join(root, "docs/capability-preregistration-v3.json")
+    prereg_path = os.path.join(root, "docs/capability-preregistration-v4.json")
     prereg = json.load(open(prereg_path, encoding="utf-8"))
     amendment_path = os.path.join(root, "results/t2/"
                                         "PROVENANCE-AMENDMENT-X-and-H.json")
@@ -106,10 +107,12 @@ def capability_result(arm: str, root: str) -> dict:
     by_category = {}
     for category in CATEGORIES:
         passes = CAPABILITY_PASSES[arm]
-        values = [1.0 if index < passes else 0.0 for index in range(9)]
+        values = [1.0 if index < passes
+                  else 0.0 for index in range(CAPABILITY_ITEMS_PER_CATEGORY)]
         mean = sum(values) / len(values)
         by_category[category] = {"mean": mean, "ci_low": mean, "ci_high": mean,
-                                 "n": 9, "minimum_required": 8,
+                                 "n": CAPABILITY_ITEMS_PER_CATEGORY,
+                                 "minimum_required": CAPABILITY_ITEMS_PER_CATEGORY,
                                  "minimum_met": True}
         rows += [{"id": f"{category}-{index:02d}", "category": category,
                   "surface": None, "status": "pass" if value else "test_failed",
@@ -130,26 +133,28 @@ def capability_result(arm: str, root: str) -> dict:
         "stamp": "20261116T000000Z",
         "revision": "c" * 40,
         "suite": {"suite_sha256": prereg["suite_sha256"],
-                  "category_minimum_items": 8},
+                  "category_minimum_items": CAPABILITY_ITEMS_PER_CATEGORY},
         "generations": {
             "adapter": {"name": f"t2-{arm}", "kind": "t2-arm", "tools": False,
                         "provenance": provenance},
             "decoding": {"feedback": "none", "seed": 20261115},
         },
-        "preregistration": {"path": "docs/capability-preregistration-v3.json",
+        "preregistration": {"path": "docs/capability-preregistration-v4.json",
                             "sha256": sha256(prereg_path),
                             "primary_relative_threshold": 0.1},
         "scores": {
             "primary_composite": composite,
             "primary_ci": {"mean": composite, "ci_low": composite,
-                           "ci_high": composite, "n": 72, "resamples": 10000,
+                           "ci_high": composite,
+                           "n": CAPABILITY_ITEMS_PER_CATEGORY * len(CATEGORIES),
+                           "resamples": 10000,
                            "seed": 20261115},
             "by_category": by_category,
-            "category_minimum_items": 8,
+            "category_minimum_items": CAPABILITY_ITEMS_PER_CATEGORY,
             "category_minimum_met": True,
             "categories": list(CATEGORIES),
             "counts": {"pass": sum(CAPABILITY_PASSES[arm] for _ in CATEGORIES)},
-            "items": 72,
+            "items": CAPABILITY_ITEMS_PER_CATEGORY * len(CATEGORIES),
             "trio": {"rust": {"mean": 1.0}, "numeric-graph": {"mean": 1.0},
                      "logic": {"mean": 1.0}},
             "trio_all_surfaces": True,
@@ -162,8 +167,8 @@ def build_repo(root: str) -> dict:
     """A miniature repository with the real registration and suite, and fake arms."""
     os.makedirs(root, exist_ok=True)
     os.makedirs(os.path.join(root, "docs"), exist_ok=True)
-    shutil.copy(os.path.join(REPO, "docs/capability-preregistration-v3.json"),
-                os.path.join(root, "docs/capability-preregistration-v3.json"))
+    shutil.copy(os.path.join(REPO, "docs/capability-preregistration-v4.json"),
+                os.path.join(root, "docs/capability-preregistration-v4.json"))
     shutil.copy(os.path.join(REPO, "docs/perf-numbers.json"),
                 os.path.join(root, "docs/perf-numbers.json"))
     shutil.copytree(os.path.join(REPO, "fixtures/capability"),

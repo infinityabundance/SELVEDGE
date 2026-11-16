@@ -2639,3 +2639,89 @@ not run before the §20.0 gate opens.
   revised.
 - The discovery/replication split is internal to calibration text; no result
   replicated on the held-out corpus.
+
+## 2026-11-16 — S27: post-`H*` bookkeeping, the v3→v4 binding defect, and the T2 verdict run
+
+### Plan
+
+`H*` training was still running detached when this session opened (step 867 of
+1024, GPU 93%), so the GPU window was used only for read-only polling. The
+session's CPU work, in order: (1) record the P18.6 negative and the measured
+power gap in the plan and the report; (2) append a numbered item for closing the
+power gap without renumbering anything; (3) fix the post-`H*` pipeline's
+pre-registration binding, which was stale against the 144-item suite; and
+(4) wait for `H*` to exit, then run `scripts/post-hstar.sh --resume` supervised,
+stage by stage.
+
+### What was changed before any GPU work
+
+**`docs/PROGRAM-PLAN.md`.**
+
+- **P18.6 → executed, negative, kill criterion fired.** The status now names the
+  receipt (`results/p18.6/cutset-20261116T073406Z.json`, stamp
+  `20261116T073414Z`, revision `03a72dc3b4a09014f4ae6e84982b62f9b1d64d50`), the
+  report (`results/P18.6-CUTSET.md`), the pre-registration commit
+  (`1a8ad21`), the four decisions (D1 yes, D2 no, D3 no, D4 no) and the fact
+  that the ε test is structurally degenerate on the stored instrument rather
+  than merely empty. `feed_to_P16.12`: no. The tier-index row and the
+  "only `ACTIVE` item" note now record that the item has been discharged, so
+  nothing in WS15–WS18 is `ACTIVE`.
+- **P14.4 → implemented at 144 scored tasks**, with the registered power gap
+  stated in the item itself rather than left to the receipt, and the pointer to
+  the generated values (`docs/CAPABILITY-COURT.md` §7.1).
+- **P14.7 → implemented, frozen and unexercised**: the 24 sealed tasks are
+  hash-bound in `fixtures/capability/SEALED.json` and in the v4 registration,
+  no arm has been scored against them, and the set's own size cannot carry a
+  10% claim.
+- **P14.8 appended** (WS14 goes from 7 items to 8; the tier index and the
+  CANDIDATE count are updated, and **no existing P-ID is renumbered, retitled
+  or removed**). Its deliverable is a suite and design that reach ≥80% power at
+  a 10% relative effect; its acceptance evidence is a power curve **simulated
+  from the real per-item outcome matrix**, not a formula; the 10% threshold,
+  the conjunctive category-regression limit, the bootstrap seed and the
+  resample count are explicitly not movable by it.
+
+**`results/REPORT.md`.** Records, as a quotation naming the receipt stamp and
+revision, that the scored suite is **under-powered for a 10% claim at n = 144**:
+the analytic MDE sits almost on the threshold while the simulated decision power
+of the registered conjunctive rule at that effect is about half, so the binding
+constraint is the rule and not the interval. It also records that the sealed
+holdback is frozen and unscored and that no under-threshold null in the file is
+read as evidence of no effect.
+
+### The defect found and fixed: the pipeline bound a superseded registration
+
+The post-`H*` pipeline was written (S22) while the registered suite was 72 items
+and bound `docs/capability-preregistration-v3.json`. S26 then doubled the suite
+to 144 and pre-registered it in `v4`, an append-only supersession that keeps the
+threshold, the decision rule, the bootstrap seed and the resample count
+identical and changes only the suite hash, the item count and the per-category
+minimum.
+
+Because `oracle/capability/court.py::verify_preregistration` refuses a contract
+whose `suite_sha256` or `suite_items` disagrees with the suite manifest, the
+capability stage would have failed closed on its **first** generate call for
+**every** arm — before any GPU time was spent, but after a needless `H*`
+evaluation cycle had queued behind it. The defect is a stale pointer, not a
+threshold: nothing registered changed.
+
+Fixed in four places, all pointer-only:
+
+- `scripts/post_hstar.py`: `PREREG` → `v4`. The item floor is now **read from
+the registration** (`primary.suite_items`) instead of the hard-coded 72, and a
+registration that declares no suite size is refused rather than passing by
+default — so a future expansion supersedes the registration and the check moves
+with it.
+- `scripts/capability_compare.py`: the default `--preregistration` and its usage
+text → `v4`.
+- `scripts/t2_verdict.py`: the (unused) `PREREG_REL` constant → `v4`.
+- `oracle/tests/fake_court.py`: the scripted court now serves `v4` and its
+fixture result carries 18 items per category and 144 items, so the fixture
+cannot agree with a pipeline that reads the old size.
+
+Validation, in the python court with `SELVEDGE_MEM=12g`, `SELVEDGE_CPUS=8`,
+`SELVEDGE_PIDS=1024`, `SELVEDGE_TMP=8g`: 143 tests passed across the nine
+torch-free capability / post-`H*` / verdict modules; the court re-inspected the
+applied cgroup limits and recorded an enforcement match. The torch-dependent
+modules were not collected in this image (no `torch`), which is the same split
+earlier sessions used; no GPU was touched.

@@ -138,16 +138,16 @@ Rules:
 | **HYPOTHESIS** | §5: P5.11 · §13: P10.14, P10.16 · §15: P12.7–P12.8, P12.12–P12.14 | 8 |
 
 Tier index — new items: WS13 (§18) has **21** items — P13.1–P13.4 and
-P13.6–P13.21 `CANDIDATE` (20), P13.5 `HYPOTHESIS` (1). WS14 (§19) has **7**
+P13.6–P13.21 `CANDIDATE` (20), P13.5 `HYPOTHESIS` (1). WS14 (§19) has **8**
 items — P14.1–P14.3 `ACTIVE` as runtime-optimisation work (they **do not** gate
-the T2 capability run; see §0.0) and P14.4–P14.7 `CANDIDATE`.
+the T2 capability run; see §0.0) and P14.4–P14.8 `CANDIDATE`.
 
 Tier index — S24 items: WS15–WS18 (§20–§23) have **60** items — `ACTIVE` 1,
 `CANDIDATE` 56, `HYPOTHESIS` 3.
 
 | tier | items | count |
 | --- | --- | ---: |
-| **ACTIVE** | P18.6 (cut-set discovery from stored omission traces, the only diagnostic permitted before the gate) | 1 |
+| **ACTIVE** | P18.6 (cut-set discovery from stored omission traces, the only diagnostic permitted before the gate) — **executed by S25, negative; see §23** | 1 |
 | **CANDIDATE** | P15.1–P15.8 · P16.1–P16.25, P16.27–P16.31, P16.33–P16.35 · P17.1–P17.4 · P18.1–P18.5, P18.7–P18.12 | 56 |
 | **HYPOTHESIS** | P15.9 (integration) · P16.26 (Braess) · P16.32 (biological control) | 3 |
 
@@ -158,7 +158,11 @@ Tier index — S24 items: WS15–WS18 (§20–§23) have **60** items — `ACTIV
   `results/M2-SELECTORS.md`, the T2 per-item rows) and needs no training run and
   no new model. Every other item here needs either a training run, a new module
   or a new measurement instrument, so the tier rule (ACTIVE requires evidence
-  being produced in this phase) keeps them at `CANDIDATE`.
+  being produced in this phase) keeps them at `CANDIDATE`. **It has since been
+  executed and its registered kill criterion fired** (S25: receipt
+  `results/p18.6/cutset-20261116T073406Z.json`, report `results/P18.6-CUTSET.md`,
+  negative). The row is kept as the record of what was `ACTIVE` in the phase in
+  which the matrix was written; nothing in WS15–WS18 is `ACTIVE` now.
 - **P16.26 and P16.32 are `HYPOTHESIS`** because their own evidence base is an
   analogy: Braess' paradox and the biological principles are each attested only
   by secondary or citing records (`docs/PRIOR-ART-AND-NOVELTY.md` rows 158,
@@ -276,7 +280,7 @@ experiment, a falsifying control and a kill criterion, and none is scheduled.
 | P14.3 | Token-at-a-time prefill: keep the scalar oracle, add a batched path |
 
 
-#### CANDIDATE — 102 items
+#### CANDIDATE — 103 items
 
 **§2 — WS2 — Correct the registered architecture accounting**
 
@@ -439,6 +443,7 @@ experiment, a falsifying control and a kill criterion, and none is scheduled.
 | P14.5 | Strengthen checker coverage and scale for Rust cases (execution already exists) |
 | P14.6 | Keep correctness separate from reference-continuation likelihood |
 | P14.7 | A sealed evaluation set for external comparison |
+| P14.8 | Close the statistical-power gap: reach 80% power at a 10% relative effect |
 
 
 #### HYPOTHESIS — 9 items
@@ -3441,18 +3446,30 @@ the *frontier* claim needs the larger one.
 **Acceptance evidence.** the expanded authoring source, its manifest and hash, an
 updated contamination receipt, and a **new** pre-registration that supersedes
 (does not edit) the current one.
-**Depends.** P12.9. **Status.** partial, advanced by S26: the suite is now the
-size recorded in `docs/CAPABILITY-COURT.md` §2 (144 scored tasks, 18 per
-category, plus the 9-task trio and 6 probes), with the sealed set (P14.7) frozen
-in the same session. S26 doubled the suite, re-hashed it, re-ran contamination
-over all 177 authored items, added the near-duplicate screen
-(`results/capability/similarity-20261116T090200Z.json`), added the power receipt
-(`results/capability/power-20261116T090300Z.json`) and wrote
-`docs/capability-preregistration-v4.json` as an append-only supersession of v3
-(v2 registered the first pass and was itself superseded after the earlier
-near-duplicate audit). The "hundreds" target is not met (144 items), and item
-difficulty and discrimination are still not estimated by any solver. **Effort.**
-XL. **Tier.** CANDIDATE.
+**Depends.** P12.9. **Status.** **implemented at 144 scored tasks** (P14.7 holds the
+other 24), advanced by S26 and recorded by S27: the suite is the size recorded in
+`docs/CAPABILITY-COURT.md` §2 (144 scored tasks, 18 per category, plus the 9-task
+trio and 6 probes), with the sealed set frozen in the same session. S26 doubled
+the suite from 72, re-hashed it (suite sha256 bound in
+`docs/capability-preregistration-v4.json`, an append-only supersession of v3),
+re-ran contamination over all 177 authored items, added the near-duplicate screen
+(`results/capability/similarity-20261116T090200Z.json`) and the power receipt
+(`results/capability/power-20261116T090700Z.json`).
+
+**The measured gap this leaves.** The expansion does not buy the 10% claim it was
+made for. The analytic (normal-approximation) MDE lands almost exactly on the
+registered 10% relative threshold, but the *simulated* power of the registered
+conjunctive rule at that effect is far below 80%, and the simulated 80%-power MDE
+sits above the threshold — with 20% of gains reversed it is higher still. The
+values are generated from the power receipt in `docs/CAPABILITY-COURT.md` §7.1
+and are not restated here. A near-threshold null on this suite is therefore
+**under-powered** and must be reported as such: it cannot separate "no 10%
+effect" from "a 10% effect this n cannot see". The threshold, the decision rule,
+the bootstrap seed and the resample count are **unchanged**; the instrument is
+what falls short. Closing that gap is **P14.8** (appended, not a renumber). The
+"hundreds" target is also not met (144 items), and item difficulty and
+discrimination are still not estimated by any solver. **Effort.** XL. **Tier.**
+CANDIDATE.
 
 ### P14.5 — Strengthen checker coverage and scale for Rust cases
 
@@ -3512,17 +3529,77 @@ SELVEDGE's own development loop.
 **Acceptance evidence.** the sealed set's hash recorded in the contract before any
 arm sees it, a custody record, and a rule that a sealed result is published once
 and never re-run for tuning.
-**Depends.** P14.4. **Status.** partial, advanced by S26: 24 sealed tasks (three
-per category) are frozen in `fixtures/capability/SEALED.json` at
+**Depends.** P14.4. **Status.** **implemented, unexercised** (S27 record): 24 sealed
+tasks (three per category) are frozen in `fixtures/capability/SEALED.json` at
 `sealed_sha256 7666768f3abdbd93c268cc6d10250ddefa13a3a58c94268863fdcab79e7984bc`,
 with the item hashes, the freeze date, the no-tuning rule and the one-shot unlock
-procedure. `oracle/capability/sealed.py` refuses to score them without
-`--unlock-sealed` and the registered hash, records the unlock time before
-checking any item, and treats the registration as append-only; the CPU tests
-prove refusal and acceptance. The sealed set has been instrument-checked but no
-arm has been run against it, and it was authored by the same process and author
-as the scored suite, so it controls for tuning against these exact tasks rather
-than for the author's shared taste. **Effort.** M. **Tier.** CANDIDATE.
+procedure, and the count and policy are bound in
+`docs/capability-preregistration-v4.json` (`sealed_holdback`). `oracle/capability/sealed.py`
+refuses to score them without `--unlock-sealed` and the registered hash, records
+the unlock time before checking any item, and treats the registration as
+append-only; the CPU tests prove refusal and acceptance. **Frozen and unscored:**
+the set has been instrument-checked (its self-check runs against itself behind an
+unlock record) but **no arm has been scored against it**, so no sealed result
+exists for any arm and none is reported. It was authored by the same process and
+author as the scored suite, so it controls for tuning against these exact tasks
+rather than for the author's shared taste. Its 24 items are far too few for a
+10% claim on their own (the power arithmetic of §7.1 applies to the scored suite,
+not to this set), and P14.8 must size any external comparison it is used for.
+**Effort.** M. **Tier.** CANDIDATE.
+
+### P14.8 — Close the statistical-power gap: reach 80% power at a 10% relative effect
+
+**What.** Make the registered instrument able to *decide* the registered 10%
+relative claim, by three changes that are allowed to move and one that is not:
+
+1. **n.** Grow the scored suite toward roughly 288–400 paired tasks with the
+   same authoring-source discipline, hash binding, per-item executed checker and
+   anti-gaming screens as P14.4/§7 of `docs/CAPABILITY-COURT.md` requires, in
+   expansions that each supersede the pre-registration rather than editing it.
+2. **Design.** Prefer a paired-difference estimand whose variance term is the
+   variance of the *paired* difference (same item, two arms) over the marginal
+   success rate, and report which of the two the decision rule consumes.
+3. **Variance measured, not assumed.** Estimate per-item difficulty and
+   discrimination from real solver runs on the scored arms, so the variance term
+   in the power computation is measured from the item matrix rather than assumed
+   at a 0.5 baseline with an i.i.d. model.
+4. **Fixed.** The 10% relative threshold, the conjunctive category-regression
+   limit, the bootstrap seed and the resample count. This item may not move them.
+
+**Why.** P14.4's expansion was justified by power and did not reach it. The
+registered power receipt (`results/capability/power-20261116T090700Z.json`, stamp
+`20261116T082751Z`, revision `5e5543fc08cae4f9e2065e9d38be53143b05c1f1`; generated
+in `docs/CAPABILITY-COURT.md` §7.1) shows the analytic normal-approximation MDE
+landing *at* the threshold while the simulated power of the registered
+conjunctive rule at that same effect stays well under 80%, and the simulated
+80%-power MDE above the threshold (higher again once documented category
+regressions are included). Two consequences follow, and both are fatal to an
+honest reading if ignored. First, a null near the threshold is uninformative: it
+cannot distinguish a real 10% effect from a power failure, so a "no improvement"
+verdict on the current suite is only ever a statement about this instrument.
+Second, the conjunctive rule is the binding constraint, not the CI: the CI nearly
+covers at the analytic MDE while the joint decision does not. Growing n without
+addressing the decision rule and the paired design would spend tokens to move a
+number that is not the limiting one. Without this item, every future frontier
+comparison is structurally unable to report the threshold it is registered
+against.
+
+**Acceptance evidence.** a **simulated power curve computed from the real
+per-item outcome matrix** of the scored arms — not a closed-form formula and not
+an assumed i.i.d. model — at the registered decision rule, bootstrap seed and
+resample count, over a grid of candidate n and design (marginal versus paired),
+showing **≥80% decision power at a 10% relative effect** and the CI coverage at
+that point; the outcome matrix itself stored as a receipt with the arm
+checkpoints and revisions that produced it; the per-item difficulty and
+discrimination estimates derived from that matrix; and a new pre-registration
+that supersedes (never edits) v4 with the new n, the design, the measured
+variance term and the unchanged 10% threshold. A formula-only power statement
+does **not** satisfy this item; the P14.4 receipt is itself the evidence that a
+formula-only statement was optimistic here.
+
+**Depends.** P14.4, P14.6, P14.7. **Status.** open — registered by S27 from the
+measured gap, nothing implemented, no number claimed beyond the quoted receipt.
+**Effort.** XL. **Tier.** CANDIDATE.
 
 ## 20. WS15 — Beyond-MoE architectures (research hypotheses)
 
@@ -4631,7 +4708,26 @@ the negative and do not feed anything to P16.12.
 trace means), P6.5. **Acceptance evidence.** a CPU receipt in the Docker court
 with an explicit `SELVEDGE_MEM` limit, naming the artifacts and their hashes, the
 per-subset safety table, the replication split, and the evaluation count.
-**Status.** open (not started). **Effort.** M. **Tier.** **ACTIVE**.
+**Status.** **executed by S25; the registered kill criterion fired; the result is
+negative.** The receipt is `results/p18.6/cutset-20261116T073406Z.json` (stamp
+`20261116T073414Z`, revision `03a72dc3b4a09014f4ae6e84982b62f9b1d64d50`) and the
+report is `results/P18.6-CUTSET.md`; the pre-registration is the P18.6 section of
+`docs/EXPERIMENT-CONTRACT.md` at commit `1a8ad212fdb51746d64f70c2c3181e58bdc6c552`,
+committed before any number was computed. No measured-minimal destructive set
+replicates at ε = 0.25 (D3 no), and the ε test is **structurally degenerate on
+this instrument**, not merely empty: every one of the 640 stored KL values sits
+far above the usable-tier bound, because every non-probed layer keeps the static
+top-5 magnitude mask. The interaction is non-negligible (D1 yes) but its sign does
+not replicate across the discovery/replication halves (D2 no), and the
+covering-array arm shows no measured recall advantage over random sampling at
+N = 80 (D4 no). `feed_to_P16.12`: **no**; `gpu_experiment_justified`: **none**.
+The negative is kept as the result: it measures the stored instrument, not the
+trained banks, and the item's own text says so. What remains open is the
+*instrument*, not the search — the receipt's §11 names the minimal pass that
+would close the gap (full-bank pairwise and triple omissions on the trained
+banks, with the discovery/replication split and both controls), and it is gated
+by §20.0. **Effort.** M. **Tier.** **ACTIVE** (now discharged; the tier follows
+the item's own rule — it is no longer producing evidence in this phase).
 
 ### P18.7 — Return-point cache vs conventional policies in the simulator
 

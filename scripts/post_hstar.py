@@ -65,7 +65,7 @@ HYBRID = ("H", "H*")
 STEPS = 1024
 BUDGET_TOKENS = STEPS * 65536
 SEED = 1001
-PREREG = "docs/capability-preregistration-v3.json"
+PREREG = "docs/capability-preregistration-v4.json"
 AMENDMENT = "results/t2/PROVENANCE-AMENDMENT-X-and-H.json"
 SENSITIVITY_LABEL = "S1"
 GPU_BUSY_MIB = 3000
@@ -953,7 +953,14 @@ class Pipeline:
             return None
         if not (result.get("scores") or {}).get("category_minimum_met"):
             return None
-        if (result.get("scores") or {}).get("items", 0) < 72:
+        # The item floor is the registered suite size, read from the
+        # pre-registration rather than hard-coded, so a later expansion
+        # supersedes the registration and this check moves with it.
+        registered_items = int(
+            ((load_json(prereg).get("primary") or {}).get("suite_items")) or 0)
+        if registered_items <= 0:
+            return None
+        if (result.get("scores") or {}).get("items", 0) < registered_items:
             return None
         provenance = ((result.get("generations") or {}).get("adapter") or {}).get(
             "provenance") or {}

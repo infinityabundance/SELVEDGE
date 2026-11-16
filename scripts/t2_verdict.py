@@ -63,7 +63,7 @@ REGISTERED_SEED = 1001
 REGISTERED_STEPS = 1024
 REGISTERED_BUDGET_TOKENS = 67108864
 AMENDMENT_REL = "results/t2/PROVENANCE-AMENDMENT-X-and-H.json"
-PREREG_REL = "docs/capability-preregistration-v3.json"
+PREREG_REL = "docs/capability-preregistration-v4.json"
 SENSITIVITY_LABEL = "S1"
 
 

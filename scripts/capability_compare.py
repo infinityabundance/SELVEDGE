@@ -7,7 +7,7 @@
         --result X=results/capability/runs/t2-X/result.json \
         --result H=results/capability/runs/t2-H/result.json \
         --result 'H*=results/capability/runs/t2-Hstar/result.json' \
-        --preregistration docs/capability-preregistration-v3.json \
+        --preregistration docs/capability-preregistration-v4.json \
         --out results/capability/runs/t2-comparison.json
 
 The registered Level-1 test (`docs/CAPABILITY-COURT.md` §7) is applied by
@@ -350,7 +350,7 @@ def main(argv: list[str]) -> int:
         DEFAULT_SUITE = os.path.join(REPO, "fixtures", "capability")
         DEFAULT_AMENDMENT = "results/t2/PROVENANCE-AMENDMENT-X-and-H.json"
     preregistration = args.preregistration or os.path.join(
-        REPO, "docs", "capability-preregistration-v3.json")
+        REPO, "docs", "capability-preregistration-v4.json")
     suite_root = args.suite or DEFAULT_SUITE
     amendment = args.amendment
     if amendment is None:

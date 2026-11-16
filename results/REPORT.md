@@ -449,6 +449,38 @@ used, and it was authored by the same author and process as the scored suite, so
 it controls for tuning against these exact tasks rather than for a shared
 authoring style.
 
+Recorded as a quotation, because these are statistical estimates rather than the
+kind of performance number directive 12 governs: the receipt
+`results/capability/power-20261116T090700Z.json` (stamp `20261116T082751Z`,
+revision `5e5543fc08cae4f9e2065e9d38be53143b05c1f1`) puts the analytic
+(normal-approximation) MDE at 0.1034 relative to the 0.5 baseline — almost
+exactly the registered 10% threshold — while the *simulated* probability of
+satisfying the registered conjunctive decision at that effect is 0.492, and the
+simulated 80%-power MDE is 0.14 relative, 0.18 once 20% of gains are reversed.
+
+**So the scored suite is under-powered for a 10% claim at n = 144.** The binding
+constraint is the conjunctive rule, not the confidence interval: the interval
+nearly covers at the analytic MDE while the joint decision does not. A null near
+the threshold on this instrument is therefore **uninformative** and will be
+reported that way — it cannot separate "no 10% effect" from "a 10% effect this
+suite is too small to see" — and no under-threshold null in this file is or will
+be read as evidence of no effect. The 10% threshold, the 5 pp category-regression
+limit, the bootstrap seed and the resample count stay exactly as registered; the
+instrument, not the threshold, is what falls short. Closing the gap is
+**P14.8** (appended to WS14, no renumbering), whose acceptance evidence is a
+power curve **simulated from the real per-item matrix**, not a formula.
+
+The 24-task sealed holdback (P14.7) is **frozen and unscored**. Its hash, item
+hashes and one-shot unlock rule are registered in
+`fixtures/capability/SEALED.json` and bound in
+`docs/capability-preregistration-v4.json`; its instrument self-check runs behind
+an unlock record, but **no arm has been scored against it**, so this file reports
+no sealed result for any arm. It also cannot carry a 10% claim on its own: 24
+items, three per category, are far below the n the power arithmetic above
+requires, and it was authored by the same author and process as the scored suite,
+so it controls for tuning against these exact tasks rather than for a shared
+authoring style.
+
 ## Next
 
 The trained branch now exists: T2 (above) is the upcycled/sparse-budget branch the
