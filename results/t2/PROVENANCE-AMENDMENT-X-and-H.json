@@ -1,0 +1,155 @@
+{
+  "schema": "selvedge/t2-provenance-amendment/v1",
+  "stamp": "20261116T060000Z",
+  "created_utc": "2026-11-16T06:00:00Z",
+  "author": "S20",
+  "purpose": "Certify the routed-dispatch mask order of the historical T2 arms X and H, whose training receipts predate dispatch_mask_order, so the capability adapter may score them. The original receipts are NOT edited; this is a separate amendment that binds to them by hash.",
+  "subject_arms": ["X", "H"],
+  "decision": "CERTIFIED",
+  "inferred_mask_order": "legacy",
+  "confidence": {
+    "level": "high",
+    "statement": "Both arms trained on the same oracle/train/modeling.py blob (e61ca0d), which is the revision immediately before f13581f introduced mask_order. That blob has no mask_order parameter and its combine() restores to token-major order, applies the pair weight, and only then applies the sorted-position-indexed valid mask: the legacy placement, byte for byte. A fixed-batch replay reproduces the historical combine and confirms it is bitwise equal to the current legacy path and differs from the corrected pair path whenever overflow occurs. Residual risk is limited to a revision-selection error; both the recorded training revision and the shared pre-correction blob rule that out.",
+    "not_certified_for": "The mask order of any arm trained after f13581f, or any arm whose training receipt records a different revision or blob."
+  },
+  "evidence_chain": {
+    "model_code": {
+      "path": "oracle/train/modeling.py",
+      "training_blob_git_sha1": "e61ca0da6b27bbe3f8b507cc67f41c5b33f6e781",
+      "training_blob_sha256": "9ccf56e8ab3da3e44af6abeb6b83ef6c08b2c8f64a8dc3d886563d4d372d3726",
+      "blob_shared_by_revisions": [
+        "8ef0981731f3d764cac613d2ab5a7bde71883557",
+        "3e5454501384fb9fda214cdfda93694eeb894150"
+      ],
+      "correction_commit": "f13581f58a872b4a7315410f9e83f0ec3df49b74",
+      "correction_commit_parent": "3e5454501384fb9fda214cdfda93694eeb894150",
+      "correction_commit_subject": "P12.1: audit the routed-overflow mask against an independent reference",
+      "finding": "In the training blob, combine() has no mask_order branch and runs index_select(inverse) -> *pair_weight -> *valid. `valid` is indexed by sorted position, so this is exactly MASK_ORDER_LEGACY in the corrected code. f13581f is a child of 3e54545, so no training revision used the corrected path."
+    },
+    "arms": {
+      "X": {
+        "training_revision": "8ef0981731f3d764cac613d2ab5a7bde71883557",
+        "git_sha_at_launch": "f6808fa9090c82bc6b22b0a9b46ed3f163fcae7c",
+        "training_receipts": {
+          "run.json": {
+            "path": "results/t2/X/run.json",
+            "sha256": "4a3fb310f2ae4c92dbd89cacf678ce963e2e615a3bb615f73867fcf4f2a7e9c9"
+          },
+          "run-meta.json": {
+            "path": "results/t2/X/run-meta.json",
+            "sha256": "feda7c6a80366a4044412c7df3236d52c8e8479d4c29d57d13e5ed1f23e4992e"
+          }
+        },
+        "checkpoint_sha256": "9504267555fb49862f9c5060dea2c2749540958ba0278c0dd3fc1c197271b58a",
+        "eval_receipt": {
+          "path": "results/t2/X/eval.json",
+          "sha256": null,
+          "eval_revision": "f6808fa9090c82bc6b22b0a9b46ed3f163fcae7c",
+          "records_dispatch_mask_order": false,
+          "note": "predates the field; this is why X is refused without the amendment"
+        },
+        "container_image": {
+          "reference": "selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60",
+          "digest": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+          "source": "results/courts/oracle-20261115T191409Z-510388.json (image_id and image_digest at the X-era revision)"
+        }
+      },
+      "H": {
+        "training_revision": "3e5454501384fb9fda214cdfda93694eeb894150",
+        "git_sha_at_launch": "5ede31199fff885044bbdd8a5f031cfc15a0bf18",
+        "training_receipts": {
+          "run.json": {
+            "path": "results/t2/H/run.json",
+            "sha256": "8efa893ed38c7a3116a71a800cdbbffd6abaff48159350f22729b00d5bdfaa3a"
+          },
+          "run-meta.json": {
+            "path": "results/t2/H/run-meta.json",
+            "sha256": "07a9c7d684c07500494205ffdd73527990acc4c677730329a5b4e25eb172b8a9"
+          }
+        },
+        "checkpoint_sha256": "6efc58de7f6cbc86a42b5b2919430bb02d32c48b386c6c0a984c3c0095fb6207",
+        "eval_receipt": {
+          "path": "results/t2/H/eval.json",
+          "sha256": null,
+          "eval_revision": "fd2882355cc3438791758e4a3cee87b7ca7f1746",
+          "records_dispatch_mask_order": true,
+          "dispatch_mask_order": "legacy",
+          "note": "H was evaluated after f13581f, so its eval receipt records the field directly and agrees with the training revision's semantics"
+        },
+        "container_image": {
+          "reference": "selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60",
+          "digest": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+          "source": "results/courts/oracle-20261115T234311Z-064420.json (image_id and image_digest at the H-era revision)"
+        }
+      }
+    },
+    "replay": {
+      "script": "oracle/eval/dispatch_provenance_replay.py",
+      "receipt": "results/t2/provenance-replay-20261116T055200Z.json",
+      "receipt_sha256": "9d45ac7be7dfd083ed98d8514a7dd2695be5a5573c065acfd5aed85c61a3fd10",
+      "evidence_sha256": "178438d36eb783f82c09d3e9dc6c234f640e95c3e7230fe5c38210babb12d25f",
+      "court_receipt": "results/courts/oracle-20261116T054753Z-7abdd2.json",
+      "command": "SELVEDGE_MEM=8g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g scripts/court oracle -- python3 oracle/eval/dispatch_provenance_replay.py --out results/t2/provenance-replay-20261116T055200Z.json --historical-revision 8ef0981731f3d764cac613d2ab5a7bde71883557 --historical-blob e61ca0da6b27bbe3f8b507cc67f41c5b33f6e781",
+      "fixture": "fixed, deterministic, seed 20261116: tokens=8, k=2, experts=4, hidden=4, capacity_factor=1.25, capacity=5; expert 0 receives 12 pairs so 7 are dropped and the sort permutation is not the identity",
+      "result": {
+        "conclusion": "legacy",
+        "historical_vs_current_legacy_max_abs": 0.0,
+        "historical_vs_current_pair_max_abs": 4.960000038146973,
+        "legacy_vs_pair_max_abs": 4.960000038146973,
+        "control_no_overflow_legacy_vs_pair_max_abs": 0.0,
+        "current_pair_vs_reference_pair_max_abs": 0.0,
+        "pairs_gated_differently": 4,
+        "historical_equals_current_legacy": true,
+        "historical_equals_current_pair": false,
+        "placements_agree_without_overflow": true
+      },
+      "note": "The reference's numeric 'sorted' mode differs on this batch only in which buffer row it models for a mislabelled pair (last row vs expert*capacity+slot); the decisive mask comparison and the historical-vs-legacy bitwise equality are unaffected. Recorded in the replay receipt as reference_sorted_numeric_note."
+    },
+    "sensitivity_impact": {
+      "X": {
+        "source": "results/t2/dispatch-audit-20261115T234953Z.json",
+        "sampled_layers": 1428,
+        "dropped_pairs": 26217,
+        "pairs": 2924544,
+        "dropped_fraction": 0.008964474461659664,
+        "dropped_percent": 0.896,
+        "misassigned_fraction_analytic": 0.01652080438384155,
+        "misassigned_percent": 1.653,
+        "worst_sampled_layer": {"layer": "144", "step": 660, "dropped": 511, "pairs": 2048, "dropped_percent": 24.95}
+      },
+      "H": {
+        "source": "results/t2/H/train.jsonl routing blocks (7 layers x 8 experts sampled every 20 steps)",
+        "sampled_layers": 1428,
+        "dropped_pairs": 26707,
+        "pairs": 2924544,
+        "dropped_fraction": 0.009132021949404762,
+        "dropped_percent": 0.913,
+        "worst_sampled_layer": {"layer": "298", "step": 660, "dropped": 537, "pairs": 2048, "dropped_percent": 26.22},
+        "method": "sum(dropped_pairs)/sum(sum(counts)) over every routing block recorded in H's own train.jsonl; no values copied from the review",
+        "eval_receipt_note": "results/t2/H/eval.json instrument.dispatch_mask_order = 'legacy'; the eval receipt does not carry a dropped fraction, so H's exposure is computed from the training log and stated as such"
+      },
+      "interpretation": "The mask order affects well under 1% of routed pairs on average for both arms, but up to ~25% on the worst sampled layer. Certification therefore makes the historical checkpoints scoreable at their actual (legacy) semantics; it does not assert the legacy semantics are correct."
+    }
+  },
+  "adapter_consumption": {
+    "flag": "--provenance-amendment",
+    "rule": "The capability adapter accepts this amendment only when: (a) the arm is X or H; (b) the training receipt sha256 matches binding_sha256 below; (c) the replay receipt sha256 matches; (d) the amendment's inferred_mask_order equals the adapter's --mask-order. The amendment sha256 is recorded in every downstream receipt under provenance.provenance_amendment.",
+    "binding_sha256": {
+      "results/t2/X/run.json": "4a3fb310f2ae4c92dbd89cacf678ce963e2e615a3bb615f73867fcf4f2a7e9c9",
+      "results/t2/H/run.json": "8efa893ed38c7a3116a71a800cdbbffd6abaff48159350f22729b00d5bdfaa3a"
+    }
+  },
+  "future_sensitivity_run": {
+    "status": "REGISTERED, NOT LAUNCHED",
+    "purpose": "Re-evaluate the same X and H checkpoints under the corrected pair mask from the same checkpoint, to quantify the sensitivity of the capability result to the corrected dispatch. This does not retrain.",
+    "command_template": "SELVEDGE_MEM=<sized> SELVEDGE_CPUS=<n> SELVEDGE_PIDS=1024 SELVEDGE_TMP=<bounded> scripts/court oracle -- python3 oracle/eval/baseline.py --profile t2 --arm <X|H> --seed 1001 --checkpoint results/artifacts/train/t2/<X|H>/step-001024.pt --config results/train/admission-configs/t2/<X|H>.json --admission results/train/admission/t2/<X|H>.json --mask-order pair --out results/t2/<X|H>/eval-pair-mask.json",
+    "precondition": "Only after H* reports and the registered five-arm verdict exists; sizing from the arm's own eval smoke receipt, never the 8 GiB doc limit."
+  },
+  "supersedes": null,
+  "does_not_modify": [
+    "results/t2/X/* receipts",
+    "results/t2/H/* receipts",
+    "docs/capability-preregistration.json",
+    "any registered threshold"
+  ]
+}

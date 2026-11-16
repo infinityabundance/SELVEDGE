@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/oracle/eval/dispatch_provenance_replay.py", line 211, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/dispatch_provenance_replay.py", line 142, in main
+    ok_legacy, _ = _current("legacy", top_ok, flat_ok, pw_ok)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/dispatch_provenance_replay.py", line 97, in _current
+    out = dispatch.combine(buffer, row, order, valid, pair_weight, TOKENS)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/../train/modeling.py", line 180, in combine
+    return flat_out.view(tokens, self.k, self.hidden).sum(dim=1)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: shape '[8, 2, 4]' is invalid for input of size 32

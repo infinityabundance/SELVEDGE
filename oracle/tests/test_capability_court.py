@@ -571,6 +571,78 @@ def test_a_routed_arm_without_a_recorded_mask_placement_is_refused(tmp_path):
         adapter._verify_receipt(state)
 
 
+def _write_amendment(tmp_path, receipt_path, arm="H", decision="CERTIFIED",
+                     inferred="legacy", binding_digest=None, replay_digest=None):
+    replay = tmp_path / "replay.json"
+    replay.write_text("{\"conclusion\": \"legacy\"}", encoding="utf-8")
+    amendment = {
+        "schema": "selvedge/t2-provenance-amendment/v1",
+        "decision": decision,
+        "subject_arms": [arm],
+        "inferred_mask_order": inferred,
+        "adapter_consumption": {
+            "binding_sha256": {
+                str(receipt_path): binding_digest
+                or adapters.sha256_file(str(receipt_path)),
+            }
+        },
+        "evidence_chain": {
+            "replay": {
+                "receipt": str(replay),
+                "receipt_sha256": replay_digest
+                or adapters.sha256_file(str(replay)),
+            }
+        },
+    }
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(amendment), encoding="utf-8")
+    return path
+
+
+def test_a_certified_amendment_supplies_a_missing_mask_placement(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+    adapter.provenance_amendment = str(_write_amendment(tmp_path, tmp_path / "run.json"))
+    verification = adapter._verify_receipt(state)
+    assert verification["checked"] is True
+    amendment = verification["provenance_amendment"]
+    assert amendment["used"] is True
+    assert amendment["inferred_mask_order"] == "legacy"
+    assert len(amendment["sha256"]) == 64
+    assert amendment["replay_receipt_sha256"]
+
+
+def test_an_amendment_bound_to_another_receipt_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+    adapter.provenance_amendment = str(_write_amendment(
+        tmp_path, tmp_path / "run.json", binding_digest="0" * 64))
+    with pytest.raises(adapters.AdapterError, match="binding"):
+        adapter._verify_receipt(state)
+
+
+def test_an_amendment_for_another_arm_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+    adapter.provenance_amendment = str(_write_amendment(
+        tmp_path, tmp_path / "run.json", arm="X"))
+    with pytest.raises(adapters.AdapterError, match="does not cover arm"):
+        adapter._verify_receipt(state)
+
+
+def test_an_amendment_inferring_a_different_mask_order_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+    adapter.provenance_amendment = str(_write_amendment(
+        tmp_path, tmp_path / "run.json", inferred="pair"))
+    with pytest.raises(adapters.AdapterError, match="amended mask order"):
+        adapter._verify_receipt(state)
+
+
+def test_an_amendment_with_a_stale_replay_digest_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+    adapter.provenance_amendment = str(_write_amendment(
+        tmp_path, tmp_path / "run.json", replay_digest="0" * 64))
+    with pytest.raises(adapters.AdapterError, match="replay receipt digest"):
+        adapter._verify_receipt(state)
+
+
 def test_a_dense_arm_does_not_need_a_mask_placement(tmp_path):
     adapter, state, arm = _checkpoint_fixture(tmp_path, arm="D", mask_order=None)
     assert adapter._verify_receipt(state)["checked"] is True

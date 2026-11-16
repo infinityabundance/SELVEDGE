@@ -136,7 +136,8 @@ class T2ArmAdapter(Adapter):
                  hf_root: str, device: str | None = None, batch: int = 4,
                  accounting: str | None = None, seed: int = 1001,
                  training_receipt: str | None = None,
-                 mask_order: str = "legacy"):
+                 mask_order: str = "legacy",
+                 provenance_amendment: str | None = None):
         self.arm = arm
         self.checkpoint = checkpoint
         self.config = config
@@ -148,6 +149,7 @@ class T2ArmAdapter(Adapter):
         self.seed = seed
         self.training_receipt = training_receipt
         self.mask_order = mask_order
+        self.provenance_amendment = provenance_amendment
         self.name = f"t2-{arm}"
         self.tools = False
         self._loaded = None
@@ -271,12 +273,20 @@ class T2ArmAdapter(Adapter):
         elif state.get("step") != step:
             problems.append(f"the checkpoint is at step {state.get('step')!r}, the "
                             f"receipt names step {step}")
+        amendment_info = None
         if self.arm in self.ROUTED_ARMS:
             recorded_mask = receipt.get("dispatch_mask_order")
+            if recorded_mask is None and self.provenance_amendment:
+                amendment_info, amendment_problems = self._verify_amendment(receipt)
+                problems.extend(amendment_problems)
+                if not amendment_problems:
+                    recorded_mask = amendment_info["inferred_mask_order"]
+                    amendment_info["used"] = True
             if recorded_mask is None:
                 problems.append(
                     "the training receipt records no dispatch mask placement (P12.1), "
-                    "so a routed checkpoint's dispatch semantics are unverified")
+                    "so a routed checkpoint's dispatch semantics are unverified; "
+                    "supply a certified --provenance-amendment if one exists")
             elif recorded_mask != self.mask_order:
                 problems.append(f"the arm was trained with mask_order={recorded_mask!r}, "
                                 f"the adapter is building {self.mask_order!r}")
@@ -286,7 +296,70 @@ class T2ArmAdapter(Adapter):
                 f"{self.training_receipt}: " + "; ".join(problems))
         return {"checked": True, "receipt": self.training_receipt,
                 "receipt_sha256": sha256_file(self.training_receipt),
-                "step": state.get("step"), "mask_order": self.mask_order}
+                "step": state.get("step"), "mask_order": self.mask_order,
+                "provenance_amendment": amendment_info}
+
+    def _verify_amendment(self, receipt: dict) -> tuple[dict, list[str]]:
+        """Validate a provenance amendment that supplies a missing mask order.
+
+        The amendment is never trusted by name: it must certify *this* arm, infer
+        the same mask order the adapter is building, bind the exact training
+        receipt by sha256, and reference a replay receipt whose digest still
+        matches. Every check is recorded in the verification block, and the
+        amendment's own digest is carried into downstream provenance.
+        """
+        path = self.provenance_amendment
+        info: dict = {"path": path, "sha256": None, "used": False}
+        problems: list[str] = []
+        if not os.path.isfile(path):
+            return info, [f"provenance amendment {path!r} does not exist"]
+        with open(path, "r", encoding="utf-8") as handle:
+            amendment = json.load(handle)
+        info["sha256"] = sha256_file(path)
+        info["decision"] = amendment.get("decision")
+        info["inferred_mask_order"] = amendment.get("inferred_mask_order")
+        if amendment.get("decision") != "CERTIFIED":
+            problems.append("the provenance amendment does not certify the arm")
+        if self.arm not in (amendment.get("subject_arms") or []):
+            problems.append(
+                f"the provenance amendment does not cover arm {self.arm!r}")
+        if amendment.get("inferred_mask_order") != self.mask_order:
+            problems.append(
+                f"the amended mask order is {amendment.get('inferred_mask_order')!r}, "
+                f"the adapter is building {self.mask_order!r}")
+        binding = ((amendment.get("adapter_consumption") or {})
+                   .get("binding_sha256") or {})
+        # Several arms use the same receipt filename (`run.json`), so a basename
+        # match is ambiguous. Prefer an exact path suffix; only fall back to the
+        # tail when every tail candidate carries the same digest.
+        suffix = [(name, digest) for name, digest in binding.items()
+                  if str(self.training_receipt).endswith(name)]
+        if len(suffix) == 1:
+            expected = suffix[0][1]
+        else:
+            tail = {digest for name, digest in binding.items()
+                    if _path_tail(name) == _path_tail(self.training_receipt)}
+            expected = next(iter(tail)) if len(tail) == 1 else None
+        if expected is None:
+            problems.append(
+                "the provenance amendment does not bind this training receipt")
+        elif expected != sha256_file(self.training_receipt):
+            problems.append(
+                "the training receipt digest does not match the provenance "
+                "amendment's binding")
+        replay = ((amendment.get("evidence_chain") or {}).get("replay") or {})
+        replay_path = replay.get("receipt")
+        replay_sha = replay.get("receipt_sha256")
+        if not replay_path or not replay_sha:
+            problems.append("the provenance amendment names no replay receipt")
+        elif not os.path.isfile(replay_path):
+            problems.append(f"the replay receipt {replay_path!r} does not exist")
+        elif sha256_file(replay_path) != replay_sha:
+            problems.append("the replay receipt digest does not match the amendment")
+        else:
+            info["replay_receipt"] = replay_path
+            info["replay_receipt_sha256"] = replay_sha
+        return info, problems
 
     def metadata(self) -> dict:
         _torch, _tokenizer, _model, _device, state = self._load()
@@ -335,6 +408,7 @@ class T2ArmAdapter(Adapter):
                 "admission_stamp": admission.get("stamp"),
                 "admission_revision": admission.get("revision"),
                 "dispatch_mask_order": self.mask_order,
+                "provenance_amendment": verification.get("provenance_amendment"),
                 "checkpoint_verification": verification,
                 "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
             },
@@ -728,5 +802,6 @@ def adapter_from_spec(spec: dict) -> Adapter:
                             batch=int(spec.get("batch", 4)),
                             accounting=spec.get("accounting"),
                             training_receipt=spec.get("training_receipt"),
-                            mask_order=spec.get("mask_order", "legacy"))
+                            mask_order=spec.get("mask_order", "legacy"),
+                            provenance_amendment=spec.get("provenance_amendment"))
     raise AdapterError(f"unknown adapter kind {kind!r}")

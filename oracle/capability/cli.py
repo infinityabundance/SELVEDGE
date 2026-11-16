@@ -67,6 +67,11 @@ def main(argv: list[str]) -> int:
     generate.add_argument("--t2-mask-order", default="legacy",
                           help="the dispatch mask placement the arm was trained with "
                                "(legacy or pair)")
+    generate.add_argument("--provenance-amendment", default=None,
+                          help="a certified amendment (results/t2/PROVENANCE-AMENDMENT-*.json) "
+                               "that supplies a missing dispatch mask order for a routed "
+                               "arm whose training receipt predates the field; its digest "
+                               "is recorded in the downstream receipt")
     generate.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     generate.add_argument("--device", default=None)
     generate.add_argument("--batch", type=int, default=4)
@@ -176,7 +181,8 @@ def main(argv: list[str]) -> int:
                 args.hf_root, device=args.device, batch=args.batch,
                 accounting=args.t2_accounting,
                 training_receipt=args.t2_training_receipt,
-                mask_order=args.t2_mask_order)
+                mask_order=args.t2_mask_order,
+                provenance_amendment=args.provenance_amendment)
         elif args.adapter_spec:
             spec = load_json(args.adapter_spec)
             adapter = adapters.adapter_from_spec(spec)

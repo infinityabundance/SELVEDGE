@@ -1,0 +1,91 @@
+......................................F..                                [100%]
+=================================== FAILURES ===================================
+_______________ test_a_dense_arm_does_not_need_a_mask_placement ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_dense_arm_does_not_need0')
+
+    def test_a_dense_arm_does_not_need_a_mask_placement(tmp_path):
+        adapter, state, arm = _checkpoint_fixture(tmp_path, arm="D", mask_order=None)
+>       assert adapter._verify_receipt(state)["checked"] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_court.py:576: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7f1aac945160>
+state = {'step': 100, 'arm': 'D', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7f1aac944a70>, 'model.layers.0.router.w': <test_capability_court._Param object at 0x7f1aac946bd0>}}
+
+    def _verify_receipt(self, state: dict) -> dict:
+        """Cross-check the checkpoint against the run that produced it."""
+        if not self.training_receipt:
+            return {"checked": False,
+                    "reason": "no training receipt was supplied to the adapter"}
+        if not os.path.isfile(self.training_receipt):
+            raise AdapterError(f"training receipt {self.training_receipt} does not exist")
+        with open(self.training_receipt, "r", encoding="utf-8") as handle:
+            receipt = json.load(handle)
+        admission = self._admission or {}
+        problems = []
+        if receipt.get("arm") != self.arm:
+            problems.append(f"the receipt is for arm {receipt.get('arm')!r}")
+        if not admission.get("admitted"):
+            problems.append("the admission record does not admit this arm")
+        if admission.get("arm") != self.arm:
+            problems.append(f"the admission record is for arm {admission.get('arm')!r}")
+        config_sha = (receipt.get("config") or {}).get("sha256")
+        if config_sha != sha256_file(self.config):
+            problems.append("the receipt's config digest does not match the config file")
+        admission_path = (receipt.get("admission") or {}).get("path")
+        if not admission_path or (_path_tail(admission_path)
+                                  != _path_tail(self.admission)):
+            problems.append(
+                f"the receipt names admission record {admission_path!r}, not "
+                f"{self.admission!r}")
+        receipt_active = (receipt.get("admission") or {}).get("active_unique_params")
+        if receipt_active != admission.get("active_unique_params"):
+            problems.append("the receipt's admitted active-parameter count differs from "
+                            "the admission record's")
+        checkpoint = receipt.get("checkpoint") or {}
+        if checkpoint.get("sha256") != sha256_file(self.checkpoint):
+            problems.append("the checkpoint digest does not match the training receipt")
+        if os.path.basename(str(checkpoint.get("path") or "")) != os.path.basename(
+                self.checkpoint):
+            problems.append("the checkpoint filename does not match the training receipt")
+        step = _step_from_checkpoint_name(checkpoint.get("name") or checkpoint.get("path"))
+        if step is None:
+            problems.append("the training receipt names no step-NNNNNN checkpoint")
+        elif state.get("step") != step:
+            problems.append(f"the checkpoint is at step {state.get('step')!r}, the "
+                            f"receipt names step {step}")
+        if self.arm in self.ROUTED_ARMS:
+            recorded_mask = receipt.get("dispatch_mask_order")
+            amendment_info = None
+            if recorded_mask is None and self.provenance_amendment:
+                amendment_info, amendment_problems = self._verify_amendment(receipt)
+                problems.extend(amendment_problems)
+                if not amendment_problems:
+                    recorded_mask = amendment_info["inferred_mask_order"]
+                    amendment_info["used"] = True
+            if recorded_mask is None:
+                problems.append(
+                    "the training receipt records no dispatch mask placement (P12.1), "
+                    "so a routed checkpoint's dispatch semantics are unverified; "
+                    "supply a certified --provenance-amendment if one exists")
+            elif recorded_mask != self.mask_order:
+                problems.append(f"the arm was trained with mask_order={recorded_mask!r}, "
+                                f"the adapter is building {self.mask_order!r}")
+        if problems:
+            raise AdapterError(
+                f"the checkpoint does not match its training receipt "
+                f"{self.training_receipt}: " + "; ".join(problems))
+        return {"checked": True, "receipt": self.training_receipt,
+                "receipt_sha256": sha256_file(self.training_receipt),
+                "step": state.get("step"), "mask_order": self.mask_order,
+>               "provenance_amendment": amendment_info}
+                                        ^^^^^^^^^^^^^^
+E       UnboundLocalError: cannot access local variable 'amendment_info' where it is not associated with a value
+
+oracle/capability/adapters.py:300: UnboundLocalError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_a_dense_arm_does_not_need_a_mask_placement
+1 failed, 40 passed in 7.30s

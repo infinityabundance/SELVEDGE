@@ -562,12 +562,40 @@ on the arm letter, the config digest, the admission identity, the checkpoint nam
 and digest, the checkpoint step, and — for routed arms (`X`, `H`, `H*`) — the
 recorded `dispatch_mask_order`.
 
-**Consequence for the four finished arms.** Their `run.json` receipts predate the
-`dispatch_mask_order` field, so the routed ones (`X`, `H`) are refused by this
-check until a receipt that records the mask placement exists. That is deliberate:
+**Consequence for the four finished arms (updated 2026-11-16, S20).** Their
+`run.json` receipts predate the `dispatch_mask_order` field, so the routed ones
+(`X`, `H`) were refused by this check. That refusal is retained as the default:
 the P12.1 audit showed the mask placement changes what the arm computed, so an
-arm scored through this court must prove which placement produced it. `D` and `M`
-carry no dispatch and are not subject to the rule.
+arm scored through this court must prove which placement produced it. `D` and
+`M` carry no dispatch and are not subject to the rule.
+
+**Provenance amendment (`--provenance-amendment`).** A routed arm trained before
+the field may still be scored if a **separate** amendment certifies its mask
+order from repository history. The adapter then accepts it under a named flag
+and records the amendment digest in every downstream receipt:
+
+```bash
+scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
+  --t2-arm X \
+  --t2-checkpoint "results/artifacts/train/t2/X/step-001024.pt" \
+  --t2-config "results/train/admission-configs/t2/X.json" \
+  --t2-admission "results/train/admission/t2/X.json" \
+  --t2-training-receipt "results/t2/X/run.json" \
+  --t2-mask-order legacy \
+  --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json \
+  --preregistration docs/capability-preregistration.json \
+  --out "results/capability/runs/t2-X/generations.json"
+```
+
+The amendment is never trusted by name. It must certify this arm, infer the same
+mask order the adapter is building, bind the exact training receipt by sha256,
+and reference a replay receipt whose digest still matches. Any failure refuses
+the load with the reason named. The original receipts are not edited. For `X`
+and `H`, `results/t2/PROVENANCE-AMENDMENT-X-and-H.json` certifies `legacy`: both
+arms trained on the same pre-correction `modeling.py` blob (`e61ca0d`), and a
+fixed-batch replay reproduces that combine bitwise. The sensitivity of a
+capability result to the *corrected* mask is a separate, registered run that does
+not retrain.
 
 Step 2, check (CPU, rust court; the court needs `cargo` and the checker sandbox):
 

@@ -1,0 +1,103 @@
+......................................FF......                           [100%]
+=================================== FAILURES ===================================
+_________ test_a_certified_amendment_supplies_a_missing_mask_placement _________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_certified_amendment_sup0')
+
+    def test_a_certified_amendment_supplies_a_missing_mask_placement(tmp_path):
+        adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+        adapter.provenance_amendment = str(_write_amendment(tmp_path, tmp_path / "run.json"))
+>       verification = adapter._verify_receipt(state)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_court.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7fad1a39d160>
+state = {'step': 100, 'arm': 'H', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7fad1a39fe00>, 'model.layers.0.router.w': <test_capability_court._Param object at 0x7fad1a39f950>}}
+
+    def _verify_receipt(self, state: dict) -> dict:
+        """Cross-check the checkpoint against the run that produced it."""
+        if not self.training_receipt:
+            return {"checked": False,
+                    "reason": "no training receipt was supplied to the adapter"}
+        if not os.path.isfile(self.training_receipt):
+            raise AdapterError(f"training receipt {self.training_receipt} does not exist")
+        with open(self.training_receipt, "r", encoding="utf-8") as handle:
+            receipt = json.load(handle)
+        admission = self._admission or {}
+        problems = []
+        if receipt.get("arm") != self.arm:
+            problems.append(f"the receipt is for arm {receipt.get('arm')!r}")
+        if not admission.get("admitted"):
+            problems.append("the admission record does not admit this arm")
+        if admission.get("arm") != self.arm:
+            problems.append(f"the admission record is for arm {admission.get('arm')!r}")
+        config_sha = (receipt.get("config") or {}).get("sha256")
+        if config_sha != sha256_file(self.config):
+            problems.append("the receipt's config digest does not match the config file")
+        admission_path = (receipt.get("admission") or {}).get("path")
+        if not admission_path or (_path_tail(admission_path)
+                                  != _path_tail(self.admission)):
+            problems.append(
+                f"the receipt names admission record {admission_path!r}, not "
+                f"{self.admission!r}")
+        receipt_active = (receipt.get("admission") or {}).get("active_unique_params")
+        if receipt_active != admission.get("active_unique_params"):
+            problems.append("the receipt's admitted active-parameter count differs from "
+                            "the admission record's")
+        checkpoint = receipt.get("checkpoint") or {}
+        if checkpoint.get("sha256") != sha256_file(self.checkpoint):
+            problems.append("the checkpoint digest does not match the training receipt")
+        if os.path.basename(str(checkpoint.get("path") or "")) != os.path.basename(
+                self.checkpoint):
+            problems.append("the checkpoint filename does not match the training receipt")
+        step = _step_from_checkpoint_name(checkpoint.get("name") or checkpoint.get("path"))
+        if step is None:
+            problems.append("the training receipt names no step-NNNNNN checkpoint")
+        elif state.get("step") != step:
+            problems.append(f"the checkpoint is at step {state.get('step')!r}, the "
+                            f"receipt names step {step}")
+        amendment_info = None
+        if self.arm in self.ROUTED_ARMS:
+            recorded_mask = receipt.get("dispatch_mask_order")
+            if recorded_mask is None and self.provenance_amendment:
+                amendment_info, amendment_problems = self._verify_amendment(receipt)
+                problems.extend(amendment_problems)
+                if not amendment_problems:
+                    recorded_mask = amendment_info["inferred_mask_order"]
+                    amendment_info["used"] = True
+            if recorded_mask is None:
+                problems.append(
+                    "the training receipt records no dispatch mask placement (P12.1), "
+                    "so a routed checkpoint's dispatch semantics are unverified; "
+                    "supply a certified --provenance-amendment if one exists")
+            elif recorded_mask != self.mask_order:
+                problems.append(f"the arm was trained with mask_order={recorded_mask!r}, "
+                                f"the adapter is building {self.mask_order!r}")
+        if problems:
+>           raise AdapterError(
+                f"the checkpoint does not match its training receipt "
+                f"{self.training_receipt}: " + "; ".join(problems))
+E           capability.adapters.AdapterError: the checkpoint does not match its training receipt /tmp/pytest-of-unknown/pytest-0/test_a_certified_amendment_sup0/run.json: the provenance amendment does not bind this training receipt; the training receipt records no dispatch mask placement (P12.1), so a routed checkpoint's dispatch semantics are unverified; supply a certified --provenance-amendment if one exists
+
+oracle/capability/adapters.py:294: AdapterError
+____________ test_an_amendment_bound_to_another_receipt_is_refused _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_an_amendment_bound_to_ano0')
+
+    def test_an_amendment_bound_to_another_receipt_is_refused(tmp_path):
+        adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+        adapter.provenance_amendment = str(_write_amendment(
+            tmp_path, tmp_path / "run.json", binding_digest="0" * 64))
+>       with pytest.raises(adapters.AdapterError, match="binding"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'binding'
+E         Actual message: "the checkpoint does not match its training receipt /tmp/pytest-of-unknown/pytest-0/test_an_amendment_bound_to_ano0/run.json: the provenance amendment does not bind this training receipt; the training receipt records no dispatch mask placement (P12.1), so a routed checkpoint's dispatch semantics are unverified; supply a certified --provenance-amendment if one exists"
+
+oracle/tests/test_capability_court.py:618: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_a_certified_amendment_supplies_a_missing_mask_placement
+FAILED oracle/tests/test_capability_court.py::test_an_amendment_bound_to_another_receipt_is_refused
+2 failed, 44 passed in 7.29s
