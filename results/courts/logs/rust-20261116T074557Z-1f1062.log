@@ -1,0 +1,60 @@
+capability_selftest: borrow-01-local-reference: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-02-mutate-while-borrowed: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-03-self-referential-window: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-04-iterator-invalidation: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-05-temporary-lifetime: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-06-move-while-borrowed: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-07-overlapping-mut-borrows: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-08-iterator-outlives-local: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-09-struct-lifetime: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-10-assign-while-borrowed: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-11-move-out-of-borrowed: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-12-move-out-of-drop-type: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-13-mutate-through-shared: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-14-borrow-after-move: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-15-return-local-table-entry: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-16-closure-borrows-local: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-17-two-input-lifetimes: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-18-refcell-double-borrow: initial=test_failed reference=test_failed mutation=test_failed
+capability_selftest: concurrency-01-lock-order-deadlock: initial=timeout reference=pass mutation=test_failed
+capability_selftest: concurrency-02-lost-update: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-03-send-boundary: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-04-mutex-critical-section: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-05-swallowed-panic: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-06-guard-crosses-thread: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-07-silent-channel-drop: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-08-borrowed-thread: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-09-shared-input: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-10-condvar-without-predicate: initial=timeout reference=pass mutation=timeout
+capability_selftest: concurrency-11-cell-not-sync: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-12-shared-arc-moved: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-13-atomic-fetch-or: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-14-poisoned-mutex: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-15-mutex-read-modify-write: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-16-non-reentrant-lock: initial=timeout reference=pass mutation=test_failed
+capability_selftest: concurrency-17-scoped-returned-reference: initial=pass reference=pass mutation=test_failed
+capability_selftest: concurrency-18-barrier-early-return: initial=timeout reference=pass mutation=test_failed
+capability_selftest: deps-01-version-requirement: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-02-edition-2024: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-03-optional-feature: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-04-unknown-feature: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-05-workspace-member: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-06-edition-unsafe-block: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-07-feature-conflict: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-08-renamed-package: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-09-disable-default-features: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-10-edition-unsafe-attribute: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-11-lib-name-mismatch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-12-edition-2015-paths: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-13-wrong-lib-path: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-14-workspace-inheritance: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-15-missing-package-name: initial=compile_error reference=pass mutation=compile_error
+Traceback (most recent call last):
+  File "/work/scripts/capability_selftest.py", line 369, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/scripts/capability_selftest.py", line 157, in main
+    initial = checkers.run_initial(task, args.workroot, keep=args.keep)
+  File "/work/oracle/capability/checkers.py", line 289, in run_initial
+    raise CheckerError(f"{task.id}: could not prepare the initial state: {problems}")
+capability.checkers.CheckerError: deps-16-missing-dependency-dir: could not prepare the initial state: ["deps-16-missing-dependency-dir: dependency path 'dep' does not exist"]

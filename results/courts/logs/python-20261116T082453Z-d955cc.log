@@ -1,0 +1,314 @@
+FFFF.............................................FF.F.FFFFFFF.           [100%]
+=================================== FAILURES ===================================
+_____________ test_a_full_pass_yields_a_perfect_balanced_composite _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_full_pass_yields_a_perf0')
+
+    def test_a_full_pass_yields_a_perfect_balanced_composite(tmp_path):
+        _generations, result = run(tmp_path=tmp_path)
+        scores = result["scores"]
+        assert scores["primary_composite"] == pytest.approx(1.0)
+>       assert scores["counts"] == {"pass": 81}
+E       AssertionError: assert {'pass': 153} == {'pass': 81}
+E         
+E         Differing items:
+E         {'pass': 153} != {'pass': 81}
+E         Use -v to get more diff
+
+oracle/tests/test_capability_court.py:74: AssertionError
+___________ test_a_failed_category_moves_the_composite_by_one_eighth ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_failed_category_moves_t0')
+
+    def test_a_failed_category_moves_the_composite_by_one_eighth(tmp_path):
+        tasks = suite.load_suite(SUITE_ROOT)["suite"]
+        lifetime = {task.id for task in tasks if task.category == "lifetime-borrow"}
+        _generations, result = run(fail=lifetime, tmp_path=tmp_path, name="crippled")
+        assert result["scores"]["primary_composite"] == pytest.approx(7 / 8)
+        assert result["scores"]["by_category"]["lifetime-borrow"]["mean"] == 0.0
+>       assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 9
+E       assert 18 == 9
+
+oracle/tests/test_capability_court.py:91: AssertionError
+___________ test_a_category_filter_scores_only_the_selected_category ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_category_filter_scores_0')
+
+    def test_a_category_filter_scores_only_the_selected_category(tmp_path):
+        adapter = adapters.FakeAdapter(reference_outputs(), name="filtered",
+                                       accounting={"task_success": None})
+        generation_path = os.path.join(str(tmp_path), "gen-filtered.json")
+        generations = court.generate(adapter, SUITE_ROOT, generation_path,
+                                     categories=["lifetime-borrow"])
+        assert {item["category"] for item in generations["items"]} == {"lifetime-borrow"}
+        result = court.check(
+            generations, SUITE_ROOT, os.path.join(str(tmp_path), "result-filtered.json"),
+            categories=["lifetime-borrow"],
+            runner=lambda task, files: {"status": "pass"})
+        assert result["suite"]["category_filter"] == ["lifetime-borrow"]
+        assert result["scores"]["categories"] == ["lifetime-borrow"]
+>       assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 9
+E       assert 18 == 9
+
+oracle/tests/test_capability_court.py:109: AssertionError
+_________________ test_a_category_below_the_minimum_is_refused _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_category_below_the_mini0')
+
+    def test_a_category_below_the_minimum_is_refused(tmp_path):
+        adapter = adapters.FakeAdapter(reference_outputs(), name="tiny",
+                                       accounting={"task_success": None})
+        generation_path = os.path.join(str(tmp_path), "gen-tiny.json")
+        generations = court.generate(adapter, SUITE_ROOT, generation_path,
+                                     categories=["lifetime-borrow"])
+>       with pytest.raises(court.CourtError, match="below the 10-item minimum"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE CourtError
+
+oracle/tests/test_capability_court.py:119: Failed
+_________________ test_genuine_win_passes_the_conjunctive_gate _________________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_genuine_win_passes_the_co0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_genuine_win_passes_the_conjunctive_gate(environment):
+>       payload = run(environment)
+                  ^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_compare.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_capability_compare.py:143: in run
+    return capability_compare.compare(environment["paths"], PREREG, SUITE_ROOT,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = {'D': '/tmp/pytest-of-unknown/pytest-0/test_genuine_win_passes_the_co0/result-D.json', 'M': '/tmp/pytest-of-unknown/py...sses_the_co0/result-X.json', 'H': '/tmp/pytest-of-unknown/pytest-0/test_genuine_win_passes_the_co0/result-H.json', ...}
+preregistration = '/work/docs/capability-preregistration-v3.json'
+suite_root = '/work/fixtures/capability'
+amendment_path = '/tmp/pytest-of-unknown/pytest-0/test_genuine_win_passes_the_co0/PROVENANCE-AMENDMENT-X-and-H.json'
+
+    def compare(paths: dict, preregistration: str, suite_root: str,
+                amendment_path: str | None = None) -> dict:
+        missing = [arm for arm in ARMS if arm not in paths]
+        if missing:
+            raise Refusal("missing capability result(s) for: " + ", ".join(missing))
+        prereg = load_json(preregistration)
+        prereg_digest = sha256_file(preregistration)
+        manifest = suite_module.build_manifest(suite_root)
+        problems = court.verify_preregistration(prereg, manifest)
+        if problems:
+>           raise Refusal("the pre-registration does not match this suite: "
+                          + "; ".join(problems))
+E           capability_compare.Refusal: the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count
+
+scripts/capability_compare.py:208: Refusal
+__________ test_aggregate_win_with_a_category_regression_is_not_a_win __________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_aggregate_win_with_a_cate0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f26cd9e6930>
+
+    def test_aggregate_win_with_a_category_regression_is_not_a_win(tmp_path, monkeypatch):
+        root = str(tmp_path)
+        monkeypatch.setattr(capability_compare, "REPO", root)
+        amendment_path = os.path.join(root, "amendment.json")
+        dump(amendment_path, {"decision": "CERTIFIED", "subject_arms": ["X", "H"],
+                              "inferred_mask_order": "legacy"})
+        digest = sha256(PREREG)
+        suite_hash = suite_module.build_manifest(SUITE_ROOT)["suite_sha256"]
+        arm = dict(WIN)
+        arm["concurrency"] = 2
+        paths = {"D": os.path.join(root, "D.json"), "M": os.path.join(root, "M.json"),
+                 "X": os.path.join(root, "X.json"), "H": os.path.join(root, "H.json"),
+                 "H*": os.path.join(root, "H*.json")}
+        specs = {"D": BASE, "M": WORSE, "X": BASE, "H": BASE, "H*": arm}
+        for name, spec in specs.items():
+            dump(paths[name], result_receipt(
+                spec, digest=digest, suite_hash=suite_hash, name=name,
+                provenance=provenance(name, sha256(amendment_path))))
+>       payload = capability_compare.compare(paths, PREREG, SUITE_ROOT, amendment_path)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_compare.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = {'D': '/tmp/pytest-of-unknown/pytest-0/test_aggregate_win_with_a_cate0/D.json', 'M': '/tmp/pytest-of-unknown/pytest-0/...aggregate_win_with_a_cate0/X.json', 'H': '/tmp/pytest-of-unknown/pytest-0/test_aggregate_win_with_a_cate0/H.json', ...}
+preregistration = '/work/docs/capability-preregistration-v3.json'
+suite_root = '/work/fixtures/capability'
+amendment_path = '/tmp/pytest-of-unknown/pytest-0/test_aggregate_win_with_a_cate0/amendment.json'
+
+    def compare(paths: dict, preregistration: str, suite_root: str,
+                amendment_path: str | None = None) -> dict:
+        missing = [arm for arm in ARMS if arm not in paths]
+        if missing:
+            raise Refusal("missing capability result(s) for: " + ", ".join(missing))
+        prereg = load_json(preregistration)
+        prereg_digest = sha256_file(preregistration)
+        manifest = suite_module.build_manifest(suite_root)
+        problems = court.verify_preregistration(prereg, manifest)
+        if problems:
+>           raise Refusal("the pre-registration does not match this suite: "
+                          + "; ".join(problems))
+E           capability_compare.Refusal: the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count
+
+scripts/capability_compare.py:208: Refusal
+_______________________ test_refuses_unregistered_result _______________________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_unregistered_resu0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_unregistered_result(environment):
+        receipt = json.load(open(environment["paths"]["H"]))
+        receipt["preregistration"]["sha256"] = None
+        dump(environment["paths"]["H"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "unregistered" in str(error.value)
+E       AssertionError: assert 'unregistered' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:200: AssertionError
+__________ test_refuses_missing_provenance_amendment_for_a_routed_arm __________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_missing_provenanc0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_missing_provenance_amendment_for_a_routed_arm(environment):
+        receipt = json.load(open(environment["paths"]["H"]))
+        receipt["generations"]["adapter"]["provenance"].pop("provenance_amendment")
+        dump(environment["paths"]["H"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "provenance amendment is required" in str(error.value)
+E       AssertionError: assert 'provenance amendment is required' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:218: AssertionError
+______________ test_refuses_amendment_that_does_not_cover_the_arm ______________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_amendment_that_do0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_amendment_that_does_not_cover_the_arm(environment):
+        receipt = json.load(open(environment["paths"]["X"]))
+        receipt["generations"]["adapter"]["provenance"][
+            "provenance_amendment"]["sha256"] = "f" * 64
+        dump(environment["paths"]["X"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "changed after generation" in str(error.value)
+E       AssertionError: assert 'changed after generation' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:228: AssertionError
+___________ test_refuses_hstar_without_a_recorded_mask_or_amendment ____________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_hstar_without_a_r0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_hstar_without_a_recorded_mask_or_amendment(environment):
+        receipt = json.load(open(environment["paths"]["H*"]))
+        receipt["generations"]["adapter"]["provenance"]["dispatch_mask_order"] = None
+        dump(environment["paths"]["H*"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "no dispatch mask placement" in str(error.value)
+E       AssertionError: assert 'no dispatch mask placement' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:237: AssertionError
+___________________ test_refuses_result_on_a_different_suite ___________________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_result_on_a_diffe0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_result_on_a_different_suite(environment):
+        receipt = json.load(open(environment["paths"]["M"]))
+        receipt["suite"]["suite_sha256"] = "1" * 64
+        dump(environment["paths"]["M"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "measured on suite" in str(error.value)
+E       AssertionError: assert 'measured on suite' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:246: AssertionError
+_____________ test_refuses_result_scored_against_another_threshold _____________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_result_scored_aga0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_result_scored_against_another_threshold(environment):
+        receipt = json.load(open(environment["paths"]["D"]))
+        receipt["preregistration"]["primary_relative_threshold"] = 0.05
+        dump(environment["paths"]["D"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "scored against threshold" in str(error.value)
+E       AssertionError: assert 'scored against threshold' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:255: AssertionError
+______________ test_refuses_a_result_without_the_category_minimum ______________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_refuses_a_result_without_0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_refuses_a_result_without_the_category_minimum(environment):
+        receipt = json.load(open(environment["paths"]["H"]))
+        receipt["scores"]["category_minimum_met"] = False
+        dump(environment["paths"]["H"], receipt)
+        with pytest.raises(capability_compare.Refusal) as error:
+            run(environment)
+>       assert "per-category minimum" in str(error.value)
+E       AssertionError: assert 'per-category minimum' in 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'
+E        +  where 'the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count' = str(Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count'))
+E        +    where Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') = <ExceptionInfo Refusal('the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count') tblen=3>.value
+
+oracle/tests/test_capability_compare.py:264: AssertionError
+_____________ test_not_measured_records_the_missing_d0_comparator ______________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_not_measured_records_the_0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': '33d070291608df5d7794a979b0e2feb9b1230bda72c775537a05ecc28bc30d4b', ...}
+
+    def test_not_measured_records_the_missing_d0_comparator(environment):
+>       payload = run(environment)
+                  ^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_compare.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_capability_compare.py:143: in run
+    return capability_compare.compare(environment["paths"], PREREG, SUITE_ROOT,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = {'D': '/tmp/pytest-of-unknown/pytest-0/test_not_measured_records_the_0/result-D.json', 'M': '/tmp/pytest-of-unknown/py...ecords_the_0/result-X.json', 'H': '/tmp/pytest-of-unknown/pytest-0/test_not_measured_records_the_0/result-H.json', ...}
+preregistration = '/work/docs/capability-preregistration-v3.json'
+suite_root = '/work/fixtures/capability'
+amendment_path = '/tmp/pytest-of-unknown/pytest-0/test_not_measured_records_the_0/PROVENANCE-AMENDMENT-X-and-H.json'
+
+    def compare(paths: dict, preregistration: str, suite_root: str,
+                amendment_path: str | None = None) -> dict:
+        missing = [arm for arm in ARMS if arm not in paths]
+        if missing:
+            raise Refusal("missing capability result(s) for: " + ", ".join(missing))
+        prereg = load_json(preregistration)
+        prereg_digest = sha256_file(preregistration)
+        manifest = suite_module.build_manifest(suite_root)
+        problems = court.verify_preregistration(prereg, manifest)
+        if problems:
+>           raise Refusal("the pre-registration does not match this suite: "
+                          + "; ".join(problems))
+E           capability_compare.Refusal: the pre-registration does not match this suite: the pre-registration binds a different suite hash; the pre-registration binds a different suite item count
+
+scripts/capability_compare.py:208: Refusal
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_a_full_pass_yields_a_perfect_balanced_composite
+FAILED oracle/tests/test_capability_court.py::test_a_failed_category_moves_the_composite_by_one_eighth
+FAILED oracle/tests/test_capability_court.py::test_a_category_filter_scores_only_the_selected_category
+FAILED oracle/tests/test_capability_court.py::test_a_category_below_the_minimum_is_refused
+FAILED oracle/tests/test_capability_compare.py::test_genuine_win_passes_the_conjunctive_gate
+FAILED oracle/tests/test_capability_compare.py::test_aggregate_win_with_a_category_regression_is_not_a_win
+FAILED oracle/tests/test_capability_compare.py::test_refuses_unregistered_result
+FAILED oracle/tests/test_capability_compare.py::test_refuses_missing_provenance_amendment_for_a_routed_arm
+FAILED oracle/tests/test_capability_compare.py::test_refuses_amendment_that_does_not_cover_the_arm
+FAILED oracle/tests/test_capability_compare.py::test_refuses_hstar_without_a_recorded_mask_or_amendment
+FAILED oracle/tests/test_capability_compare.py::test_refuses_result_on_a_different_suite
+FAILED oracle/tests/test_capability_compare.py::test_refuses_result_scored_against_another_threshold
+FAILED oracle/tests/test_capability_compare.py::test_refuses_a_result_without_the_category_minimum
+FAILED oracle/tests/test_capability_compare.py::test_not_measured_records_the_missing_d0_comparator
+14 failed, 48 passed in 33.65s

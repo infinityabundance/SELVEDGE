@@ -1,0 +1,36 @@
+##### e0506 (exit 101)
+error[E0506]: cannot assign to `current` because it is borrowed
+ --> src/lib.rs:4:5
+  |
+
+##### e0503b (exit 101)
+error[E0502]: cannot borrow `text` as immutable because it is also borrowed as mutable
+ --> src/lib.rs:4:17
+  |
+
+##### e0614 (exit 0)
+
+
+##### lib-name-mismatch (exit 101)
+error[E0433]: cannot find module or crate `codec` in this scope
+ --> src/lib.rs:1:30
+  |
+
+##### missing-src (exit 101)
+error: can't find lib `missing_src` at path `/work/target/s26-probe/crates2/missing-src/src/other.rs`
+ --> /work/target/s26-probe/crates2/missing-src/Cargo.toml
+error: could not compile due to 1 previous target resolution error
+
+##### ws-inherit-plain (exit 0)
+
+
+##### ws-inherit-version (exit 101)
+error: failed to parse manifest at `/work/target/s26-probe/crates2/ws-inherit/Cargo.toml`
+Caused by:
+  error inheriting `version` from workspace root manifest's `workspace.package.version`
+
+##### missing-name (exit 101)
+error: failed to parse manifest at `/work/target/s26-probe/crates2/missing-name/Cargo.toml`
+Caused by:
+  missing field `package.name`
+

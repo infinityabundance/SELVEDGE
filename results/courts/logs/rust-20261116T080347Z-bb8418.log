@@ -1,0 +1,38 @@
+### sealed-borrow-01-sort-closure-mutation compile_error missing ['E0502']
+STDOUT: 
+STDERR: error[E0500]: closure requires unique access to `*values` but it is already borrowed
+ --> src/lib.rs:5:20
+  |
+5 |     values.sort_by(|left, right| {
+  |     ------ ------- ^^^^^^^^^^^^^ closure construction occurs here
+  |     |      |
+  |     |      first borrow later used by call
+  |     borrow occurs here
+6 |         values.push(*left);
+  |         ------ second borrow occurs due to use of `*values` in closure
+
+For more information about this error, try `rustc --explain E0500`.
+error: could not compile `sealed_borrow_01_sort_closure_mutation` (lib) due to 1 previous error
+
+### sealed-failing-01-luhn-parity test_failed missing ['assertion `left == right` failed']
+STDOUT: 
+running 1 test
+tests::visible_known_valid_number --- FAILED
+
+failures:
+
+---- tests::visible_known_valid_number stdout ----
+
+thread 'tests::visible_known_valid_number' (139) panicked at src/lib.rs:34:9:
+assertion failed: luhn_valid("49927398716")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::visible_known_valid_number
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+STDERR: error: test failed, to rerun pass `--lib`
+

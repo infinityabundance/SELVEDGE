@@ -1,0 +1,16 @@
+capability_selftest: deps-10-edition-unsafe-attribute: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-11-lib-name-mismatch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-12-edition-2015-paths: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-13-wrong-lib-path: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-14-workspace-inheritance: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-15-missing-package-name: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-16-missing-dependency-dir: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-17-invalid-package-name: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-18-default-features-type: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: probe-compile-error: compile_error (expected compile_error)
+capability_selftest: probe-oom: oom (expected oom)
+capability_selftest: probe-pass: pass (expected pass)
+capability_selftest: probe-stdout-forgery: test_failed (expected fail)
+capability_selftest: probe-timeout: timeout (expected timeout)
+capability_selftest: probe-wrong: test_failed (expected fail)
+capability_selftest: pass; 9 initial, 9 reference, 9 mutation, 1/1 naive, 6 probes; receipt results/capability/tmp-deps.json

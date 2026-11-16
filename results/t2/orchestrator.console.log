@@ -127,3 +127,20 @@ court: selvedge-oracle-court-20261116T050040Z-fa5c1a.json exit=0 enforcement=ok 
 [2026-11-16T05:01:58Z] [targets-verify] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T050040Z-fa5c1a.json
 [2026-11-16T05:01:58Z] [targets] verified, 67108864 tokens
 [2026-11-16T05:01:58Z] [H*] training launched: selvedge-oracle-court-20261116T050158Z-739076.json
+court: selvedge-oracle-court-20261116T050158Z-739076.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T050158Z-739076.json log=results/courts/logs/oracle-20261116T050158Z-739076.log
+[2026-11-16T09:05:11Z] [H*] trained; receipt results/t2/H*/run.json
+[2026-11-16T09:05:13Z] [H*] evaluating results/artifacts/train/t2/Hstar/step-001024.pt
+[2026-11-16T09:05:14Z] [eval-H*] launched; state=selvedge-oracle-court-20261116T090514Z-1b0add.json
+court: selvedge-oracle-court-20261116T090514Z-1b0add.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T090514Z-1b0add.json log=results/courts/logs/oracle-20261116T090514Z-1b0add.log
+[2026-11-16T09:17:07Z] [eval-H*] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T090514Z-1b0add.json
+[2026-11-16T09:17:07Z] [H*] evaluated; summary results/t2/H*/eval.json
+[2026-11-16T09:17:07Z] [instrument] P2.4 both-target check over the five final checkpoints
+[2026-11-16T09:17:07Z] [instrument] launched; state=selvedge-oracle-court-20261116T091707Z-d51bdb.json
+court: selvedge-oracle-court-20261116T091707Z-d51bdb.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T091707Z-d51bdb.json log=results/courts/logs/oracle-20261116T091707Z-d51bdb.log
+[2026-11-16T09:18:27Z] [instrument] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T091707Z-d51bdb.json
+[2026-11-16T09:18:27Z] [decision] applying the registered decision rule
+[2026-11-16T09:18:28Z] [decision] launched; state=selvedge-oracle-court-20261116T091828Z-9a4e4b.json
+court: selvedge-oracle-court-20261116T091828Z-9a4e4b.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T091828Z-9a4e4b.json log=results/courts/logs/oracle-20261116T091828Z-9a4e4b.log
+[2026-11-16T09:18:31Z] [decision] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T091828Z-9a4e4b.json
+[2026-11-16T09:18:32Z] pilot complete; state: results/t2/pilot-state.json; report: results/T2-PILOT.md
+[2026-11-16T09:18:32Z] next: scripts/court commit_identity, scripts/court perf_numbers, then commit

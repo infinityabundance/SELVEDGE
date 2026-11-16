@@ -1,0 +1,20 @@
+capability_authoring: materialised 913 files under fixtures/capability
+Traceback (most recent call last):
+  File "/work/scripts/capability_authoring.py", line 240, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/scripts/capability_authoring.py", line 232, in main
+    payload = suite.build_manifest(args.root)
+  File "/work/oracle/capability/suite.py", line 348, in build_manifest
+    collections = load_suite(root)
+  File "/work/oracle/capability/suite.py", line 301, in load_suite
+    "suite": load_collection(os.path.join(root, "tasks")),
+             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/suite.py", line 291, in load_collection
+    tasks.append(load_task(path))
+                 ~~~~~~~~~^^^^^^
+  File "/work/oracle/capability/suite.py", line 245, in load_task
+    limits = limit_module.from_mapping(metadata.get("limits"), f"{where}: limits")
+  File "/work/oracle/capability/limits.py", line 126, in from_mapping
+    raise LimitError(f"{where}: unknown limit keys {sorted(unknown)}")
+capability.limits.LimitError: fixtures/capability/tasks/concurrency-10-condvar-without-predicate: limits: unknown limit keys ['timeout_seconds']

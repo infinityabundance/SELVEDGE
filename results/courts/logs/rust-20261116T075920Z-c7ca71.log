@@ -1,0 +1,54 @@
+##### e0624 (exit 101)
+error[E0624]: method `secret` is private
+ --> src/report.rs:2:49
+  |
+2 | pub fn describe(config: &Config) -> u8 { config.secret() }
+
+##### e0252 (exit 101)
+error[E0252]: the name `Item` is defined multiple times
+ --> src/lib.rs:4:9
+  |
+3 | pub use a::Item;
+
+##### e0063 (exit 101)
+error[E0063]: missing field `label` in initializer of `Config`
+ --> src/build.rs:2:27
+  |
+2 | pub fn make() -> Config { Config { retries: 3 } }
+
+##### e0207 (exit 101)
+error[E0049]: method `render` has 0 type parameters but its trait declaration has 1 type parameter
+ --> src/lib.rs:4:14
+  |
+1 | pub trait Render { fn render<T: std::fmt::Display>(&self, value: T) -> String; }
+
+##### e0080 (exit 101)
+error: this operation will panic at runtime
+ --> src/lib.rs:3:43
+  |
+3 | impl Size for Zero { const BYTES: usize = 8 / 0; }
+
+##### e0524 (exit 101)
+error[E0499]: cannot borrow `*value` as mutable more than once at a time
+ --> src/lib.rs:4:21
+  |
+2 |     std::thread::scope(|scope| {
+
+##### e0608 (exit 101)
+error[E0608]: cannot index into a value of type `impl Iterator<Item = String>`
+ --> src/lib.rs:2:35
+  |
+2 | pub fn first() -> String { items()[0].clone() }
+
+##### no-workspace-key (exit 101)
+error: current package believes it's in a workspace when it's not:
+current:   /work/target/s26-probe/crates5/no-workspace-key/Cargo.toml
+workspace: /work/Cargo.toml
+this may be fixable by adding `target/s26-probe/crates5/no-workspace-key` to the `workspace.members` array of the manifest located at: /work/Cargo.toml
+
+##### resolver-int (exit 101)
+error: invalid type: integer `2`, expected a string
+ --> Cargo.toml:7:12
+  |
+7 | resolver = 2
+

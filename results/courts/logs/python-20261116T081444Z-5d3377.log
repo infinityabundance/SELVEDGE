@@ -1,0 +1,36 @@
+..................F......F.............                                  [100%]
+=================================== FAILURES ===================================
+______ test_the_registration_records_the_policy_and_the_unlock_procedure _______
+
+    def test_the_registration_records_the_policy_and_the_unlock_procedure():
+        payload = registration()
+        assert "may not be used for tuning" in payload["rule"]
+        assert payload["unlock"]["one_shot"] is True
+        assert payload["unlock"]["may_not_be_used_for_tuning"] is True
+        assert payload["unlock"]["flag"] == sealed.UNLOCK_FLAG
+        assert payload["unlock"]["sealed_sha256"] == payload["sealed_sha256"]
+>       assert payload["sealed_sha256"] in payload["unlock_procedure"]
+E       AssertionError: assert '7666768f3abdbd93c268cc6d10250ddefa13a3a58c94268863fdcab79e7984bc' in '1. copy the sealed tree and verify every item hash against this registration (`scripts/capability_sealed.py --verify`...refuses to run again for the same revision; 4. report the sealed result once, with the unlock record and the revision.'
+
+oracle/tests/test_capability_sealed.py:67: AssertionError
+________________ test_tampering_with_a_sealed_item_is_detected _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_tampering_with_a_sealed_i0')
+
+    def test_tampering_with_a_sealed_item_is_detected(tmp_path):
+        copy = tmp_path / "capability"
+        shutil.copytree(SUITE_ROOT, copy)
+        item = sealed.load_items(str(copy))[0]
+        target = os.path.join(item.root, "initial", "src", "lib.rs")
+        with open(target, "a", encoding="utf-8") as handle:
+            handle.write("\n// tampered\n")
+        ok, message = sealed.check_registration(str(copy))
+        assert not ok
+>       assert "differs from the freeze" in message or "aggregate" in message
+E       assert ('differs from the freeze' in "sealed items differ from the freeze: ['sealed-borrow-01-sort-closure-mutation']" or 'aggregate' in "sealed items differ from the freeze: ['sealed-borrow-01-sort-closure-mutation']")
+
+oracle/tests/test_capability_sealed.py:125: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_sealed.py::test_the_registration_records_the_policy_and_the_unlock_procedure
+FAILED oracle/tests/test_capability_sealed.py::test_tampering_with_a_sealed_item_is_detected
+2 failed, 37 passed in 0.72s

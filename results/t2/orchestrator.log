@@ -357,3 +357,59 @@ court: selvedge-oracle-court-20261116T050040Z-fa5c1a.json exit=0 enforcement=ok 
 court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough detach=pending
 court: oracle detached container=f30e7ffe26853a28e7d006de8e67325369b063f7601e9904183149c439e9563a state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261116T050158Z-739076.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261116T050158Z-739076.log
 [2026-11-16T05:01:58Z] [H*] training launched: selvedge-oracle-court-20261116T050158Z-739076.json
+court: selvedge-oracle-court-20261116T050158Z-739076.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T050158Z-739076.json log=results/courts/logs/oracle-20261116T050158Z-739076.log
+{
+  "arm": "H*",
+  "checkpoint": {
+    "bytes": 5866590113,
+    "name": "step-001024.pt",
+    "path": "results/artifacts/train/t2/Hstar/step-001024.pt",
+    "sha256": "c4fb56eba6d536130dcb5c9561c18166a256c0422dd7bddf7c783537aa3b8fce",
+    "sha256_source": "sidecar"
+  },
+  "final_step": 1024,
+  "out": "results/t2/H*/run.json",
+  "tokens": 67108864,
+  "tokens_per_second": 5030.657646572302,
+  "vram_peak_gib": 10.812920570373535
+}
+[2026-11-16T09:05:11Z] [H*] trained; receipt results/t2/H*/run.json
+[2026-11-16T09:05:13Z] [H*] evaluating results/artifacts/train/t2/Hstar/step-001024.pt
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough detach=pending
+court: oracle detached container=d9578748036f019804026d7812438a9fd17f6f94f379a15a00023a1b5c2d58fd state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261116T090514Z-1b0add.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261116T090514Z-1b0add.log
+[2026-11-16T09:05:14Z] [eval-H*] launched; state=selvedge-oracle-court-20261116T090514Z-1b0add.json
+court: selvedge-oracle-court-20261116T090514Z-1b0add.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T090514Z-1b0add.json log=results/courts/logs/oracle-20261116T090514Z-1b0add.log
+[2026-11-16T09:17:07Z] [eval-H*] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T090514Z-1b0add.json
+{
+  "arm": "H*",
+  "kl_mixed": {
+    "ci_high": 0.5266858858770381,
+    "ci_low": 0.4789536850123356,
+    "mean": 0.5020853346834581,
+    "n": 120,
+    "resamples": 10000,
+    "seed": 20261115
+  },
+  "out": "results/t2/H*/eval.json",
+  "pc": 0.18716362659342625,
+  "per_task": {
+    "gsm8k_exact_match": 0.08,
+    "humaneval_pass_at_1": 0.2073170731707317,
+    "truthfulqa_mc1": 0.2741738066095471
+  }
+}
+[2026-11-16T09:17:07Z] [H*] evaluated; summary results/t2/H*/eval.json
+[2026-11-16T09:17:07Z] [instrument] P2.4 both-target check over the five final checkpoints
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough detach=pending
+court: oracle detached container=3a82d7404b1efb6cff021c0cf281c167fdffb52f51fe68980bd944fcda183570 state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261116T091707Z-d51bdb.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261116T091707Z-d51bdb.log
+[2026-11-16T09:17:07Z] [instrument] launched; state=selvedge-oracle-court-20261116T091707Z-d51bdb.json
+court: selvedge-oracle-court-20261116T091707Z-d51bdb.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T091707Z-d51bdb.json log=results/courts/logs/oracle-20261116T091707Z-d51bdb.log
+[2026-11-16T09:18:27Z] [instrument] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T091707Z-d51bdb.json
+[2026-11-16T09:18:27Z] [decision] applying the registered decision rule
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough detach=pending
+court: oracle detached container=2bb5ee6757c320189cdc1bedabf155e3251e44fa03a0a5e0a9261ec504e58e9b state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261116T091828Z-9a4e4b.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261116T091828Z-9a4e4b.log
+[2026-11-16T09:18:28Z] [decision] launched; state=selvedge-oracle-court-20261116T091828Z-9a4e4b.json
+court: selvedge-oracle-court-20261116T091828Z-9a4e4b.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T091828Z-9a4e4b.json log=results/courts/logs/oracle-20261116T091828Z-9a4e4b.log
+[2026-11-16T09:18:31Z] [decision] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T091828Z-9a4e4b.json
+[2026-11-16T09:18:32Z] pilot complete; state: results/t2/pilot-state.json; report: results/T2-PILOT.md
+[2026-11-16T09:18:32Z] next: scripts/court commit_identity, scripts/court perf_numbers, then commit

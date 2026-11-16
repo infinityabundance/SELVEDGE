@@ -1,0 +1,78 @@
+##### e0451 (exit 101)
+error[E0616]: field `value` of struct `Config` is private
+  --> src/lib.rs:10:38
+   |
+10 | pub fn run() -> u8 { use_it::build().value }
+
+##### e0583 (exit 101)
+error[E0583]: file not found for module `config`
+ --> src/lib.rs:1:1
+  |
+1 | pub mod config;
+
+##### e0365 (exit 101)
+error[E0603]: struct `Widget` is private
+ --> src/lib.rs:4:19
+  |
+4 | pub use internal::Widget;
+
+##### e0050 (exit 101)
+error[E0050]: method `scale` has 1 parameter but the declaration in trait `Scale::scale` has 2
+ --> src/lib.rs:3:33
+  |
+1 | pub trait Scale { fn scale(&self, factor: u32) -> u64; }
+
+##### e0049 (exit 101)
+error[E0049]: method `encode` has 1 type parameter but its trait declaration has 0 type parameters
+ --> src/lib.rs:4:15
+  |
+1 | pub trait Encode { fn encode(&self) -> String; }
+
+##### e0407 (exit 101)
+error[E0407]: method `rename` is not a member of trait `Named`
+ --> src/lib.rs:5:5
+  |
+5 |     fn rename(&mut self, new: &str) { self.name = new.to_string(); }
+
+##### e0592 (exit 101)
+error[E0592]: duplicate definitions with name `ratio`
+ --> src/lib.rs:2:14
+  |
+2 | impl Meter { pub fn ratio(&self) -> u64 { self.value } }
+
+##### e0308-assoc (exit 101)
+error[E0308]: mismatched types
+ --> src/lib.rs:5:58
+  |
+5 |     fn next_item(&mut self) -> Option<Self::Item> { Some(1u64) }
+
+##### e0046-const (exit 101)
+error[E0046]: not all trait items implemented, missing: `MAX`
+ --> src/lib.rs:3:1
+  |
+1 | pub trait Limits { const MAX: usize; fn capped(&self, value: usize) -> usize; }
+
+##### e0599-default (exit 101)
+error[E0599]: no method named `heading` found for reference `&Self` in the current scope
+ --> src/lib.rs:3:55
+  |
+3 |     fn render(&self) -> String { format!("[{}]", self.heading()) }
+
+##### e0277-blanket (exit 101)
+error[E0277]: `T` doesn't implement `std::fmt::Display`
+ --> src/lib.rs:3:49
+  |
+3 |     fn summary(&self) -> String { format!("{}", self) }
+
+##### e0596-nonmut (exit 101)
+error[E0594]: cannot assign to `state.count`, as `state` is not declared as mutable
+ --> src/lib.rs:3:5
+  |
+3 |     state.count += 1;
+
+##### e0599-impl-trait (exit 101)
+error[E0599]: no method named `first` found for opaque type `impl Store` in the current scope
+ --> src/lib.rs:5:38
+  |
+5 | pub fn peek() -> Option<u8> { open().first() }
+

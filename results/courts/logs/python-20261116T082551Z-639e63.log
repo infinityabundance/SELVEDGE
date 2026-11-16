@@ -1,0 +1,20 @@
+...F..........................................................           [100%]
+=================================== FAILURES ===================================
+_________________ test_a_category_below_the_minimum_is_refused _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_category_below_the_mini0')
+
+    def test_a_category_below_the_minimum_is_refused(tmp_path):
+        adapter = adapters.FakeAdapter(reference_outputs(), name="tiny",
+                                       accounting={"task_success": None})
+        generation_path = os.path.join(str(tmp_path), "gen-tiny.json")
+        generations = court.generate(adapter, SUITE_ROOT, generation_path,
+                                     categories=["lifetime-borrow"])
+>       with pytest.raises(court.CourtError, match="below the 18-item minimum"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE CourtError
+
+oracle/tests/test_capability_court.py:119: Failed
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_a_category_below_the_minimum_is_refused
+1 failed, 61 passed in 36.29s
