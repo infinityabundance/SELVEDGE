@@ -186,7 +186,7 @@ As of the last poll before this commit (`scripts/poll-t2-pilot.sh`,
 | `D` (dense control) | **completed** — trained the registered budget and evaluated | `results/t2/D/run.json`, `results/t2/D/eval.json`, `results/eval/t2-D.json` |
 | `M` (memory only) | **completed** — trained the registered budget and evaluated | `results/t2/M/run.json`, `results/t2/M/eval.json`, `results/eval/t2-M.json` |
 | `X` (specialists) | **completed** — trained the registered budget and evaluated | `results/t2/X/run.json`, `results/t2/X/eval.json`, `results/eval/t2-X.json` |
-| `H` (naive hybrid) | **training** — step 165/1024 (16.1%), 4,656 tokens/s, 10.86 GiB peak, ETA ≈ 3.4 h at its own rate (poll 2026-11-16T00:29:46Z) | `results/t2/H/run.json` in progress |
+| `H` (naive hybrid) | **training** — step 194/1024 (19.0%), 4,505 tokens/s, 10.86 GiB peak, ETA ≈ 3.4 h at its own rate (poll 2026-11-16T00:36:45Z) | `results/t2/H/run.json` in progress |
 | `H*` (error-directed hybrid) | **pending** | — |
 
 Three of five arms have both a training receipt and an evaluation summary. The
