@@ -555,11 +555,12 @@ and the required items per category at 80% power for a 10% relative effect are
 338,483
 <!-- END GENERATED: report-cal-n-planning -->
 
-against the surviving items. Inverting the same formula at the available n, the
-smallest effect the instrument could detect is tens of times the measured
-baseline (`docs/CAPABILITY-COURT.md` §17.4). P14.8 therefore stays open with the
-shortfall published. No arm is ranked on this suite: the protocol forbids it,
-and a constant answer carries no ranking information.
+against the items that survived (the shortfall per category is in
+`docs/CAPABILITY-COURT.md` §17.4). Inverting the same formula at the available
+n, the smallest effect the instrument could detect is tens of times the measured
+baseline. P14.8 therefore stays open with the shortfall published. No arm is
+ranked on this suite: the protocol forbids it, and a constant answer carries no
+ranking information.
 
 ### Instrument corrections before any arm run (S16C, CPU-only)
 
