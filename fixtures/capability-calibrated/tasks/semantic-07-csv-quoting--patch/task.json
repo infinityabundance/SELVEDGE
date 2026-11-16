@@ -1,0 +1,62 @@
+{
+  "capability": "Escape embedded quotes and quote newline fields, not only comma fields. (format: patch-selection)",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "hard",
+    "source_id": "semantic-07-csv-quoting",
+    "source_tree_sha256": "2cefb838404686ea7f13e6f6aa8191cd39199cd8ee40b7191a03e01ef2a7b37d"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"'\"))\n    } else {\n        value.to_string()\n    }\n}\n",
+        "label": "A",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"\\\"\\\"\"))\n    } else {\n        value.to_string()\n    }\n}\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn field(value: &str) -> String {\n    if value.contains(',') {\n        format!(\"\\\"{value}\\\"\")\n    } else {\n        value.to_string()\n    }\n}\n",
+        "label": "C",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      }
+    ],
+    "function": "field",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "semantic-07-csv-quoting--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"\\\"\\\"\"))\n    } else {\n        value.to_string()\n    }\n}",
+    "replace": "pub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"'\"))\n    } else {\n        value.to_string()\n    }\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `field` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-07-csv-quoting (tree 2cefb838404686ea7f13e6f6aa8191cd39199cd8ee40b7191a03e01ef2a7b37d) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

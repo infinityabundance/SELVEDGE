@@ -1,0 +1,62 @@
+{
+  "capability": "Supply a const generic argument that version 2 made mandatory. (format: patch-selection)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "migrate-13-const-generic",
+    "source_tree_sha256": "8754170ec9066838db3e06b598974898283fc1fe10f6df23a281abcab41086dd"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn make_counter() -> Frame<3> {\n    Frame::new()\n}\n",
+        "label": "A",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn make_counter() -> Frame {\n    Frame::new()\n}\n",
+        "label": "B",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      },
+      {
+        "function": "pub fn make_counter() -> Frame<4> {\n    Frame::new()\n}\n",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "make_counter",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "migrate-13-const-generic--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn make_counter() -> Frame<4> {\n    Frame::new()\n}",
+    "replace": "pub fn make_counter() -> Frame<3> {\n    Frame::new()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `make_counter` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-13-const-generic (tree 8754170ec9066838db3e06b598974898283fc1fe10f6df23a281abcab41086dd) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

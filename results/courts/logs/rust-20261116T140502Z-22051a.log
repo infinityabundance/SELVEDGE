@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 370, in main
+    payload = derive_module.derive(args.suite, args.out, split=args.split,
+                                   calibration_per_category=args.per_category,
+                                   force=args.force)
+  File "/work/oracle/capability/derive.py", line 686, in derive
+    manifest = suite_module.build_manifest(out_root)
+  File "/work/oracle/capability/suite.py", line 362, in build_manifest
+    collections = load_suite(root)
+  File "/work/oracle/capability/suite.py", line 313, in load_suite
+    "suite": load_collection(os.path.join(root, "tasks")),
+             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/suite.py", line 303, in load_collection
+    tasks.append(load_task(path))
+                 ~~~~~~~~~^^^^^^
+  File "/work/oracle/capability/suite.py", line 292, in load_task
+    raise SuiteError("; ".join(format_problems))
+capability.suite.SuiteError: deps-09-disable-default-features--patch: format_spec.function is required

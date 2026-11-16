@@ -1,0 +1,62 @@
+{
+  "capability": "Find the last index of a duplicated value with a correct bound. (format: patch-selection)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "failing-10-last-duplicate-index",
+    "source_tree_sha256": "bbb351249b8089b7fe64f9766e9959e54d266bf43ef6fe1505187e4dbf5d8612"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] == target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}\n",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] == target {\n            return Some(middle);\n        }\n        if values[middle] < target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    None\n}\n",
+        "label": "B",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      },
+      {
+        "function": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] != target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}\n",
+        "label": "C",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      }
+    ],
+    "function": "last_index",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "failing-10-last-duplicate-index--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] == target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}",
+    "replace": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] == target {\n            return Some(middle);\n        }\n        if values[middle] < target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    None\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `last_index` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/failing-10-last-duplicate-index (tree bbb351249b8089b7fe64f9766e9959e54d266bf43ef6fe1505187e4dbf5d8612) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

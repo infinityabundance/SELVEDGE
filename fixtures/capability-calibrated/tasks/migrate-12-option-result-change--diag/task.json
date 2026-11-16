@@ -1,0 +1,68 @@
+{
+  "capability": "Handle an Option-returning lookup after an API change. (format: diagnostic-identification)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "diagnostic-identification",
+    "source_difficulty": "medium",
+    "source_id": "migrate-12-option-result-change",
+    "source_tree_sha256": "4ddc1ca385f094ddf08ce74f54781b3026d215e1dfb9c360629b8de3330fd4f9"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "temporary value dropped while borrowed",
+        "id": "E0716"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable more than once at a time",
+        "id": "E0499"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0369"
+      }
+    ]
+  },
+  "id": "migrate-12-option-result-change--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0369"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "count + 1",
+    "replace": "count"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-12-option-result-change (tree 4ddc1ca385f094ddf08ce74f54781b3026d215e1dfb9c360629b8de3330fd4f9) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

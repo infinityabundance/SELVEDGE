@@ -1,0 +1,41 @@
+{
+  "capability": "Debug a rounding boundary in a chunk count, including overflow safety. (format: body-completion)",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "body-completion",
+    "source_difficulty": "medium",
+    "source_id": "failing-01-chunk-boundary",
+    "source_tree_sha256": "b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "body-completion",
+  "format_spec": {
+    "function": "chunk_count",
+    "kind": "body-completion",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "failing-01-chunk-boundary--body",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "not yet implemented"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "len.div_ceil(size)",
+    "replace": "len / size"
+  },
+  "prompt_intro": "Only the body of `chunk_count` is missing. Complete it so that the visible test and the hidden tests pass. Keep the signature exactly as it is; return the body only.",
+  "provenance": "derived from fixtures/capability/tasks/failing-01-chunk-boundary (tree b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

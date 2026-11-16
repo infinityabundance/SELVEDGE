@@ -1,0 +1,141 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______ test_the_diagnostic_consequence_verifies_the_right_identification _______
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_the_diagnostic_consequenc0')
+
+    def test_the_diagnostic_consequence_verifies_the_right_identification(tmp_path):
+>       task = diagnostic_task(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_formats.py:318: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_capability_formats.py:161: in diagnostic_task
+    return make_task(tmp_path, fmt=formats.FORMAT_DIAGNOSTIC, spec=DIAGNOSTIC_SPEC,
+oracle/tests/test_capability_formats.py:120: in make_task
+    return suite.load_task(base)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = '/tmp/pytest-of-unknown/pytest-0/test_the_diagnostic_consequenc0/tiny-item'
+
+    def load_task(root: str) -> Task:
+        where = os.path.relpath(root)
+        metadata_path = os.path.join(root, "task.json")
+        if not os.path.isfile(metadata_path):
+            raise SuiteError(f"{where}: task.json is missing")
+        try:
+            with open(metadata_path, "r", encoding="utf-8") as handle:
+                metadata = json.load(handle)
+        except ValueError as exc:
+            raise SuiteError(f"{where}: task.json is not valid JSON: {exc}")
+    
+        if metadata.get("schema") != SCHEMA:
+            raise SuiteError(f"{where}: schema must be {SCHEMA!r}")
+        required = ["id", "kind", "category", "capability", "license", "provenance",
+                    "entry", "checker"]
+        if metadata.get("kind") != "probe":
+            required.extend(["initial_failure", "prompt_intro"])
+        for key in required:
+            _require(metadata, key, where)
+        if metadata["kind"] not in KINDS:
+            raise SuiteError(f"{where}: kind {metadata['kind']!r} is not one of {KINDS}")
+        if metadata["category"] not in CATEGORIES:
+            raise SuiteError(f"{where}: unknown category {metadata['category']!r}")
+        if metadata["license"] != LICENSE:
+            raise SuiteError(f"{where}: license must be {LICENSE!r}")
+        if os.path.basename(root.rstrip("/")) != metadata["id"]:
+            raise SuiteError(f"{where}: directory name and id differ")
+    
+        checker = metadata["checker"]
+        if not isinstance(checker, dict) or checker.get("kind") not in CHECKER_KINDS:
+            raise SuiteError(f"{where}: checker.kind must be one of {CHECKER_KINDS}")
+        if metadata["kind"] == "probe":
+            if "probe_expectation" not in metadata:
+                raise SuiteError(f"{where}: a probe must declare probe_expectation")
+            if metadata["probe_expectation"] not in (
+                    "pass", "fail", "timeout", "oom", "compile_error"):
+                raise SuiteError(f"{where}: unknown probe_expectation")
+        if metadata["kind"] == "trio" and "shared_operation" not in metadata:
+            raise SuiteError(f"{where}: a trio task must declare shared_operation")
+    
+        failure = metadata.get("initial_failure")
+        if failure is not None:
+            if not isinstance(failure, dict):
+                raise SuiteError(f"{where}: initial_failure must be an object")
+            if failure.get("kind") not in ("compile_error", "test_failure", "timeout", "oom",
+                                           "hidden_test_failure"):
+                raise SuiteError(f"{where}: initial_failure.kind is invalid")
+            must = failure.get("must_contain")
+            if not isinstance(must, list) or not must or not all(isinstance(m, str) and m
+                                                                 for m in must):
+                raise SuiteError(
+                    f"{where}: initial_failure.must_contain must be non-empty strings")
+    
+        if metadata.get("manifest_policy", "locked") not in ("locked", "arm"):
+            raise SuiteError(f"{where}: manifest_policy must be 'locked' or 'arm'")
+        if "difficulty" in metadata and metadata["difficulty"] not in (
+                "easy", "medium", "hard"):
+            raise SuiteError(f"{where}: difficulty must be easy, medium or hard")
+        if "format" in metadata and metadata["format"] not in format_module.FORMATS:
+            raise SuiteError(f"{where}: format {metadata['format']!r} is not one of "
+                             f"{format_module.FORMATS}")
+    
+        limits = limit_module.from_mapping(metadata.get("limits"), f"{where}: limits")
+        run_limits = None
+        if "run_limits" in metadata:
+            run_limits = limit_module.run_only_from_mapping(
+                metadata["run_limits"], f"{where}: run_limits")
+    
+        initial_root = os.path.join(root, "initial")
+        hidden_root = os.path.join(root, "hidden")
+        reference_root = os.path.join(root, "reference")
+        for directory in (initial_root, hidden_root, reference_root):
+            if not os.path.isdir(directory):
+                raise SuiteError(f"{where}: {os.path.basename(directory)}/ is missing")
+        initial_files = _relative_files(initial_root)
+        hidden_files = _relative_files(hidden_root)
+        reference_files = _relative_files(reference_root)
+        if not initial_files:
+            raise SuiteError(f"{where}: initial/ is empty")
+        if not reference_files:
+            raise SuiteError(f"{where}: reference/ is empty")
+        if metadata["entry"] not in initial_files:
+            raise SuiteError(f"{where}: entry {metadata['entry']!r} is not in initial/")
+        if not hidden_files:
+            raise SuiteError(f"{where}: hidden/ is empty")
+        for relative in hidden_files:
+            if not relative.startswith("tests/"):
+                raise SuiteError(f"{where}: hidden file {relative!r} is not under tests/")
+        for relative in reference_files:
+            if relative.startswith("tests/"):
+                raise SuiteError(f"{where}: reference may not contain tests/: {relative!r}")
+            if relative not in initial_files and not (
+                    relative.startswith("src/") and relative.endswith(".rs")):
+                raise SuiteError(
+                    f"{where}: reference file {relative!r} is neither in initial/ nor a new src file")
+    
+        task = Task(root=root, metadata=metadata, limits=limits, run_limits=run_limits,
+                    initial_files=initial_files, hidden_files=hidden_files,
+                    reference_files=reference_files)
+        format_problems = format_module.validate_declaration(task)
+        if format_problems:
+>           raise SuiteError("; ".join(format_problems))
+E           capability.suite.SuiteError: tiny-item: format_spec.template is required
+
+oracle/capability/suite.py:292: SuiteError
+______________ test_derived_items_validate_and_carry_their_format ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_derived_items_validate_an0')
+
+    def test_derived_items_validate_and_carry_their_format(tmp_path):
+        root = os.path.join(str(tmp_path), "derived")
+>       payload = derive.derive(SUITE_ROOT, root, per_category=1)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: derive() got an unexpected keyword argument 'per_category'
+
+oracle/tests/test_capability_formats.py:521: TypeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_formats.py::test_the_diagnostic_consequence_verifies_the_right_identification
+FAILED oracle/tests/test_capability_formats.py::test_derived_items_validate_and_carry_their_format
+2 failed, 46 deselected in 0.08s

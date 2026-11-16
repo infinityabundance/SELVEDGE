@@ -1,0 +1,36 @@
+{
+  "capability": "Put a method that the trait does not declare in an inherent impl.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "easy",
+    "source_id": "traits-17-method-not-in-trait",
+    "source_tree_sha256": "44b9066db75998203e3fe58b730256388d0cb711e10e60c4361ca85669268260"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "traits-17-method-not-in-trait--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0407"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.name = new.to_string();",
+    "replace": "self.name.push_str(new);"
+  },
+  "observed_failure": "error[E0407]: method `rename` is not a member of trait `Named`\n --> src/lib.rs:10:5\n  |\n10 |     fn rename(&mut self, new: &str) { self.name = new.to_string(); }\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not a member of trait `Named`",
+  "prompt_intro": "This crate does not compile. The `Named` impl adds a `rename` method that the trait does not declare. Move it to an inherent impl for `Tag` and keep the behaviour.",
+  "provenance": "derived from fixtures/capability/tasks/traits-17-method-not-in-trait (tree 44b9066db75998203e3fe58b730256388d0cb711e10e60c4361ca85669268260) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

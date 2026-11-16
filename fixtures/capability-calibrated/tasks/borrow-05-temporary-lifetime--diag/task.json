@@ -1,0 +1,68 @@
+{
+  "capability": "Bind a temporary before borrowing it so the borrow outlives the statement. (format: diagnostic-identification)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "diagnostic-identification",
+    "source_difficulty": "medium",
+    "source_id": "borrow-05-temporary-lifetime",
+    "source_tree_sha256": "8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot return a value referencing local data",
+        "id": "E0515"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable more than once at a time",
+        "id": "E0499"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "temporary value dropped while borrowed",
+        "id": "E0716"
+      }
+    ]
+  },
+  "id": "borrow-05-temporary-lifetime--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0716"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"item {number}\")",
+    "replace": "format!(\"item-{number}\")"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-05-temporary-lifetime (tree 8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

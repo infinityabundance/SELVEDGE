@@ -1,0 +1,36 @@
+{
+  "capability": "Measure a value before moving it across a module boundary.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "easy",
+    "source_id": "repo-18-moved-across-modules",
+    "source_tree_sha256": "1b29963277403ab990ce0da4425125c6fa9c45b466101ad562efaf6416ca667e"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "repo-18-moved-across-modules--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/flow.rs",
+    "find": "registry.count()",
+    "replace": "registry.count() + 1"
+  },
+  "observed_failure": "error[E0382]: borrow of moved value: `registry`\n --> src/flow.rs:10:17\n  |\n8 |     let snapshot = registry;\n  |         -------- value moved here\n10 |     let count = registry.count();\n  |                 ^^^^^^^^ value borrowed here after move",
+  "prompt_intro": "This crate does not compile. `flow::register_and_count` moves the registry into a snapshot binding and then asks it for its count. Count before moving, and return that count.",
+  "provenance": "derived from fixtures/capability/tasks/repo-18-moved-across-modules (tree 1b29963277403ab990ce0da4425125c6fa9c45b466101ad562efaf6416ca667e) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

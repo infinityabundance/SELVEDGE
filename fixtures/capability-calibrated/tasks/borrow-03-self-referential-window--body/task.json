@@ -1,0 +1,41 @@
+{
+  "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references). (format: body-completion)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "body-completion",
+    "source_difficulty": "medium",
+    "source_id": "borrow-03-self-referential-window",
+    "source_tree_sha256": "05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "body-completion",
+  "format_spec": {
+    "function": "first",
+    "kind": "body-completion",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "borrow-03-self-referential-window--body",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "not yet implemented"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unwrap_or(\"\")",
+    "replace": "unwrap_or(\"x\")"
+  },
+  "prompt_intro": "Only the body of `first` is missing. Complete it so that the visible test and the hidden tests pass. Keep the signature exactly as it is; return the body only.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-03-self-referential-window (tree 05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

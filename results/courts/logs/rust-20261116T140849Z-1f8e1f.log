@@ -1,0 +1,29 @@
+derive.verify: borrow-03-self-referential-window--patch: initial=compile_error reference=pass
+derive.verify: borrow-05-temporary-lifetime--patch: initial=compile_error reference=pass
+derive.verify: borrow-13-mutate-through-shared--patch: initial=compile_error reference=pass
+derive.verify: concurrency-11-cell-not-sync--patch: initial=compile_error reference=pass
+derive.verify: concurrency-14-poisoned-mutex--patch: initial=compile_error reference=pass
+derive.verify: concurrency-17-compare-exchange-claim--patch: initial=compile_error reference=pass
+derive.verify: deps-07-feature-conflict--patch: initial=compile_error reference=pass
+derive.verify: deps-09-disable-default-features--patch: initial=compile_error reference=pass
+derive.verify: deps-14-workspace-inheritance--patch: initial=compile_error reference=pass
+derive.verify: failing-01-chunk-boundary--patch: initial=compile_error reference=pass
+derive.verify: failing-03-overflow-boundary--patch: initial=compile_error reference=pass
+derive.verify: failing-10-last-duplicate-index--patch: initial=compile_error reference=pass
+derive.verify: migrate-06-error-variant--patch: initial=compile_error reference=pass
+derive.verify: migrate-12-option-result-change--patch: initial=compile_error reference=pass
+derive.verify: migrate-13-const-generic--patch: initial=compile_error reference=pass
+derive.verify: repo-09-result-propagation--patch: initial=compile_error reference=pass
+derive.verify: repo-14-crossmodule-borrow--patch: initial=compile_error reference=pass
+derive.verify: repo-18-moved-across-modules--patch: initial=compile_error reference=pass
+derive.verify: semantic-01-overlapping-count--patch: initial=compile_error reference=pass
+derive.verify: semantic-07-csv-quoting--patch: initial=compile_error reference=pass
+derive.verify: semantic-09-token-bucket-refill--patch: initial=compile_error reference=pass
+derive.verify: traits-02-coherence--patch: initial=compile_error reference=pass
+derive.verify: traits-17-method-not-in-trait--patch: initial=compile_error reference=pass
+capability_court: fail; 18/23 derived tasks verified -> /tmp/verify-patch.json
+  borrow-03-self-referential-window--patch: the failing state did not fail as declared (compile_error, missing ['E0425'])
+  deps-07-feature-conflict--patch: candidates that pass are ['B', 'C'], the declared reference is ['B']
+  deps-09-disable-default-features--patch: candidates that pass are ['A', 'C', 'D'], the declared reference is ['A']
+  deps-14-workspace-inheritance--patch: candidates that pass are ['B', 'D'], the declared reference is ['D']
+  traits-17-method-not-in-trait--patch: the failing state did not fail as declared (compile_error, missing ['E0425'])

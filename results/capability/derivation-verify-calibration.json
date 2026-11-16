@@ -1,0 +1,2313 @@
+{
+  "command": "scripts/capability_court.py verify-formats --root fixtures/capability-calibrated --prune --out results/capability/derivation-verify-calibration.json",
+  "created_utc": "2026-11-16T14:21:00Z",
+  "dropped": [],
+  "failures": [],
+  "items": [
+    {
+      "format": "body-completion",
+      "id": "borrow-03-self-referential-window--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "unwrap_or(\"\")",
+          "kind": "declared",
+          "replace": "unwrap_or(\"x\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0597"
+        ],
+        "passing": [
+          "E0597"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "borrow-03-self-referential-window--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "unwrap_or(\"\")",
+          "kind": "declared",
+          "replace": "unwrap_or(\"x\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "borrow-03-self-referential-window--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "unwrap_or(\"\")",
+          "kind": "declared",
+          "replace": "unwrap_or(\"x\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "borrow-03-self-referential-window--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }",
+          "kind": "declared",
+          "replace": "pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "borrow-05-temporary-lifetime--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "format!(\"item {number}\")",
+          "kind": "declared",
+          "replace": "format!(\"item-{number}\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0716"
+        ],
+        "passing": [
+          "E0716"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "borrow-05-temporary-lifetime--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "format!(\"item {number}\")",
+          "kind": "declared",
+          "replace": "format!(\"item-{number}\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "borrow-05-temporary-lifetime--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "format!(\"item {number}\")",
+          "kind": "declared",
+          "replace": "format!(\"item-{number}\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "borrow-05-temporary-lifetime--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}",
+          "kind": "declared",
+          "replace": "pub fn label(number: u32) -> String {\n    let word = first_word(&format!(\"item {number}\"));\n    word.to_string()\n}"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "borrow-13-mutate-through-shared--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "entries[index] += 1;",
+          "kind": "declared",
+          "replace": "entries[index] += 2;"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0596"
+        ],
+        "passing": [
+          "E0596"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "borrow-13-mutate-through-shared--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "entries[index] += 1;",
+          "kind": "declared",
+          "replace": "entries[index] += 2;"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "borrow-13-mutate-through-shared--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "entries[index] += 1;",
+          "kind": "declared",
+          "replace": "entries[index] += 2;"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "C"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "borrow-13-mutate-through-shared--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}",
+          "kind": "declared",
+          "replace": "pub fn stamp(entries: &Vec<u32>) -> u32 {\n    for index in 0..entries.len() {\n        entries[index] += 1;\n    }\n    entries.iter().sum()\n}"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "concurrency-11-cell-not-sync--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "counter.fetch_add(1, Ordering::SeqCst)",
+          "kind": "declared",
+          "replace": "counter.fetch_add(2, Ordering::SeqCst)"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0277"
+        ],
+        "passing": [
+          "E0277"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "concurrency-11-cell-not-sync--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "counter.fetch_add(1, Ordering::SeqCst)",
+          "kind": "declared",
+          "replace": "counter.fetch_add(2, Ordering::SeqCst)"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "concurrency-11-cell-not-sync--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "counter.fetch_add(1, Ordering::SeqCst)",
+          "kind": "declared",
+          "replace": "counter.fetch_add(2, Ordering::SeqCst)"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "C"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "concurrency-11-cell-not-sync--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn count_with(counter: &AtomicU64, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n    counter.load(Ordering::SeqCst)\n}",
+          "kind": "declared",
+          "replace": "pub fn count_with(counter: &Cell<u64>, threads: usize) -> u64 {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                counter.set(counter.get() + 1);\n            });\n        }\n    });\n    counter.get()\n}"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "concurrency-14-poisoned-mutex--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "guard.push(7);",
+          "kind": "declared",
+          "replace": "guard.push(8);"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "concurrency-14-poisoned-mutex--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "guard.push(7);",
+          "kind": "declared",
+          "replace": "guard.push(8);"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "A"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "A"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "concurrency-14-poisoned-mutex--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(7);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared\n        .lock()\n        .unwrap_or_else(|poisoned| poisoned.into_inner());\n    guard.len()\n}",
+          "kind": "declared",
+          "replace": "pub fn record_with_panic(shared: &Mutex<Vec<u8>>) -> usize {\n    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {\n        std::thread::scope(|scope| {\n            scope.spawn(|| {\n                let mut guard = shared.lock().unwrap();\n                guard.push(7);\n                panic!(\"worker failed\");\n            });\n        });\n    }));\n    let _ = caught;\n    let guard = shared.lock().unwrap();\n    guard.len()\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "concurrency-17-compare-exchange-claim--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "compare_exchange(false, true,",
+          "kind": "declared",
+          "replace": "compare_exchange(false, false,"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "concurrency-17-compare-exchange-claim--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "compare_exchange(false, true,",
+          "kind": "declared",
+          "replace": "compare_exchange(false, false,"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "C"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "concurrency-17-compare-exchange-claim--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}",
+          "kind": "declared",
+          "replace": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(true, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "deps-07-feature-conflict--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "codec::mode()",
+          "kind": "declared",
+          "replace": "\"fast\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "deps-07-feature-conflict--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "codec::mode()",
+          "kind": "declared",
+          "replace": "\"fast\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "passing": [
+          "C",
+          "D"
+        ],
+        "pruned": [
+          "D"
+        ],
+        "target": "file"
+      },
+      "format": "patch-selection",
+      "id": "deps-07-feature-conflict--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "Cargo.toml",
+          "find": "codec = { path = \"dep\", features = [\"safe\"] }\n",
+          "kind": "declared",
+          "replace": "codec = { path = \"dep\", features = [\"fast\", \"safe\"] }\n"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "deps-09-disable-default-features--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "codec::render(value)",
+          "kind": "declared",
+          "replace": "codec::render(value).to_lowercase()"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0425"
+        ],
+        "passing": [
+          "E0425"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "deps-09-disable-default-features--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "codec::render(value)",
+          "kind": "declared",
+          "replace": "codec::render(value).to_lowercase()"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "deps-09-disable-default-features--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "codec::render(value)",
+          "kind": "declared",
+          "replace": "codec::render(value).to_lowercase()"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "A"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "passing": [
+          "A",
+          "D",
+          "E"
+        ],
+        "pruned": [
+          "D",
+          "E"
+        ],
+        "target": "file"
+      },
+      "format": "patch-selection",
+      "id": "deps-09-disable-default-features--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "Cargo.toml",
+          "find": "codec = { path = \"dep\", default-features = false, features = [\"modern\"] }\n",
+          "kind": "declared",
+          "replace": "codec = { path = \"dep\" }\n"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "deps-14-workspace-inheritance--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "Cargo.toml",
+          "find": "version = \"0.1.0\"",
+          "kind": "declared",
+          "replace": "version.workspace = true"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "D"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "passing": [
+          "B",
+          "D"
+        ],
+        "pruned": [
+          "B"
+        ],
+        "target": "file"
+      },
+      "format": "patch-selection",
+      "id": "deps-14-workspace-inheritance--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "Cargo.toml",
+          "find": "version = \"0.1.0\"\n",
+          "kind": "declared",
+          "replace": "version.workspace = true\n"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "failing-01-chunk-boundary--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "len.div_ceil(size)",
+          "kind": "declared",
+          "replace": "len / size"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "failing-01-chunk-boundary--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "len.div_ceil(size)",
+          "kind": "declared",
+          "replace": "len / size"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "failing-01-chunk-boundary--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}",
+          "kind": "declared",
+          "replace": "pub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len / size\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "failing-03-overflow-boundary--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "saturating_add",
+          "kind": "declared",
+          "replace": "wrapping_add"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "failing-03-overflow-boundary--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "saturating_add",
+          "kind": "declared",
+          "replace": "wrapping_add"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "A"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "A"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "failing-03-overflow-boundary--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.saturating_add(*value))\n}",
+          "kind": "declared",
+          "replace": "pub fn running_total(values: &[u8]) -> u8 {\n    let mut total = 0u8;\n    for value in values {\n        total += *value;\n    }\n    total\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "failing-10-last-duplicate-index--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "values[low - 1] == target",
+          "kind": "declared",
+          "replace": "values[low - 1] != target"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "failing-10-last-duplicate-index--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "values[low - 1] == target",
+          "kind": "declared",
+          "replace": "values[low - 1] != target"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "A"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "A"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "failing-10-last-duplicate-index--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] <= target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    if low > 0 && values[low - 1] == target {\n        Some(low - 1)\n    } else {\n        None\n    }\n}",
+          "kind": "declared",
+          "replace": "pub fn last_index(values: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0usize;\n    let mut high = values.len();\n    while low < high {\n        let middle = low + (high - low) / 2;\n        if values[middle] == target {\n            return Some(middle);\n        }\n        if values[middle] < target {\n            low = middle + 1;\n        } else {\n            high = middle;\n        }\n    }\n    None\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "migrate-06-error-variant--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "\"empty key\"",
+          "kind": "declared",
+          "replace": "\"empty\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0599"
+        ],
+        "passing": [
+          "E0599"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "migrate-06-error-variant--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "\"empty key\"",
+          "kind": "declared",
+          "replace": "\"empty\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "migrate-06-error-variant--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "\"empty key\"",
+          "kind": "declared",
+          "replace": "\"empty\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "migrate-06-error-variant--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::Empty) => Err(\"empty key\".to_string()),\n    }\n}",
+          "kind": "declared",
+          "replace": "pub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {\n    match table::lookup(table, key) {\n        Ok(value) => Ok(value),\n        Err(table::Error::Missing { .. }) => Err(format!(\"missing {key}\")),\n        Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n    }\n}"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "migrate-12-option-result-change--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "count + 1",
+          "kind": "declared",
+          "replace": "count"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0369"
+        ],
+        "passing": [
+          "E0369"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "migrate-12-option-result-change--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "count + 1",
+          "kind": "declared",
+          "replace": "count"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "migrate-12-option-result-change--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "count + 1",
+          "kind": "declared",
+          "replace": "count"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "migrate-12-option-result-change--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn next_count(registry: &Registry, key: &str) -> i64 {\n    registry.lookup(key).map(|count| count + 1).unwrap_or(0)\n}",
+          "kind": "declared",
+          "replace": "pub fn next_count(registry: &Registry, key: &str) -> i64 {\n    registry.lookup(key) + 1\n}"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "migrate-13-const-generic--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "Frame<4>",
+          "kind": "declared",
+          "replace": "Frame<3>"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0107"
+        ],
+        "passing": [
+          "E0107"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "migrate-13-const-generic--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "Frame<4>",
+          "kind": "declared",
+          "replace": "Frame<3>"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "migrate-13-const-generic--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "Frame<4>",
+          "kind": "declared",
+          "replace": "Frame<3>"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "C"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "migrate-13-const-generic--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn make_counter() -> Frame<4> {\n    Frame::new()\n}",
+          "kind": "declared",
+          "replace": "pub fn make_counter() -> Frame<3> {\n    Frame::new()\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "repo-09-result-propagation--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/cache.rs",
+          "find": "Ok(value) => value",
+          "kind": "declared",
+          "replace": "Ok(value) => value + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0308"
+        ],
+        "passing": [
+          "E0308"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "repo-09-result-propagation--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/cache.rs",
+          "from": "3",
+          "kind": "generic_numeric",
+          "to": "0"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "repo-09-result-propagation--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/cache.rs",
+          "find": "Ok(value) => value",
+          "kind": "declared",
+          "replace": "Ok(value) => value + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "repo-09-result-propagation--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/cache.rs",
+          "find": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 0,\n    }\n}",
+          "kind": "declared",
+          "replace": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value + 1,\n        Err(_) => 0,\n    }\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "repo-14-crossmodule-borrow--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/sync.rs",
+          "find": "unwrap_or(0)",
+          "kind": "declared",
+          "replace": "unwrap_or(1)"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0502"
+        ],
+        "passing": [
+          "E0502"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "repo-14-crossmodule-borrow--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/sync.rs",
+          "from": "0",
+          "kind": "generic_numeric",
+          "to": "1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "repo-14-crossmodule-borrow--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/sync.rs",
+          "find": "unwrap_or(0)",
+          "kind": "declared",
+          "replace": "unwrap_or(1)"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "repo-14-crossmodule-borrow--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/sync.rs",
+          "find": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(0);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}",
+          "kind": "declared",
+          "replace": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(1);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "repo-18-moved-across-modules--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/flow.rs",
+          "find": "registry.count()",
+          "kind": "declared",
+          "replace": "registry.count() + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0382"
+        ],
+        "passing": [
+          "E0382"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "repo-18-moved-across-modules--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "skipped": "repo-18-moved-across-modules--diag: no generic mutation applies; add a declared mutation"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "repo-18-moved-across-modules--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/flow.rs",
+          "find": "registry.count()",
+          "kind": "declared",
+          "replace": "registry.count() + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "repo-18-moved-across-modules--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/flow.rs",
+          "find": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count()\n}",
+          "kind": "declared",
+          "replace": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    let snapshot = registry;\n    let count = registry.count();\n    count + snapshot.count()\n}"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "semantic-01-overlapping-count--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "*window == needle.as_bytes()",
+          "kind": "declared",
+          "replace": "*window != needle.as_bytes()"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "semantic-01-overlapping-count--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "hidden_test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "*window == needle.as_bytes()",
+          "kind": "declared",
+          "replace": "*window != needle.as_bytes()"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "C"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "semantic-01-overlapping-count--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn count_occurrences(haystack: &str, needle: &str) -> usize {\n    if needle.is_empty() {\n        return 0;\n    }\n    haystack\n        .as_bytes()\n        .windows(needle.len())\n        .filter(|window| *window == needle.as_bytes())\n        .count()\n}",
+          "kind": "declared",
+          "replace": "pub fn count_occurrences(haystack: &str, needle: &str) -> usize {\n    if needle.is_empty() {\n        return 0;\n    }\n    haystack\n        .as_bytes()\n        .windows(needle.len())\n        .filter(|window| *window != needle.as_bytes())\n        .count()\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "semantic-07-csv-quoting--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "value.replace('\"', \"\\\"\\\"\")",
+          "kind": "declared",
+          "replace": "value.replace('\"', \"'\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "semantic-07-csv-quoting--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "hidden_test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "value.replace('\"', \"\\\"\\\"\")",
+          "kind": "declared",
+          "replace": "value.replace('\"', \"'\")"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "semantic-07-csv-quoting--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"\\\"\\\"\"))\n    } else {\n        value.to_string()\n    }\n}",
+          "kind": "declared",
+          "replace": "pub fn field(value: &str) -> String {\n    if value.contains(',') || value.contains('\"') || value.contains('\\n') {\n        format!(\"\\\"{}\\\"\", value.replace('\"', \"'\"))\n    } else {\n        value.to_string()\n    }\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "semantic-09-token-bucket-refill--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": ".min(capacity)",
+          "kind": "declared",
+          "replace": ".min(capacity.saturating_sub(1))"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "semantic-09-token-bucket-refill--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "hidden_test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": ".min(capacity)",
+          "kind": "declared",
+          "replace": ".min(capacity.saturating_sub(1))"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "A"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "A"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "semantic-09-token-bucket-refill--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity)\n}",
+          "kind": "declared",
+          "replace": "pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n    let gained = (elapsed_ms.saturating_mul(rate_per_sec as u64) / 1000) as u32;\n    tokens.saturating_add(gained).min(capacity.saturating_sub(1))\n}"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "traits-02-coherence--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "\"text: {self}\"",
+          "kind": "declared",
+          "replace": "\"text:{self}\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0119"
+        ],
+        "passing": [
+          "E0119"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "traits-02-coherence--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "\"text: {self}\"",
+          "kind": "declared",
+          "replace": "\"text:{self}\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "traits-02-coherence--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "\"text: {self}\"",
+          "kind": "declared",
+          "replace": "\"text:{self}\""
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "B"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "passing": [
+          "B"
+        ],
+        "target": "file"
+      },
+      "format": "patch-selection",
+      "id": "traits-02-coherence--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "impl Summary for &str {\n",
+          "kind": "declared",
+          "replace": "impl<T: Display> Summary for T {\n"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "traits-03-object-safety--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "store.len()",
+          "kind": "declared",
+          "replace": "store.len() + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0038"
+        ],
+        "passing": [
+          "E0038"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "traits-03-object-safety--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "store.len()",
+          "kind": "declared",
+          "replace": "store.len() + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "traits-03-object-safety--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "store.len()",
+          "kind": "declared",
+          "replace": "store.len() + 1"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "body-completion",
+      "id": "traits-17-method-not-in-trait--body",
+      "initial": {
+        "as_expected": true,
+        "expected": "test_failure",
+        "missing_evidence": [],
+        "status": "test_failed"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "self.name = new.to_string();",
+          "kind": "declared",
+          "replace": "self.name.push_str(new);"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "diagnostic": {
+        "expected": [
+          "E0407"
+        ],
+        "passing": [
+          "E0407"
+        ]
+      },
+      "format": "diagnostic-identification",
+      "id": "traits-17-method-not-in-trait--diag",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "self.name = new.to_string();",
+          "kind": "declared",
+          "replace": "self.name.push_str(new);"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "format": "file-replacement",
+      "id": "traits-17-method-not-in-trait--full",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "self.name = new.to_string();",
+          "kind": "declared",
+          "replace": "self.name.push_str(new);"
+        },
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": "pass"
+    },
+    {
+      "candidates": {
+        "expected": [
+          "C"
+        ],
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "passing": [
+          "C"
+        ],
+        "target": "function"
+      },
+      "format": "patch-selection",
+      "id": "traits-17-method-not-in-trait--patch",
+      "initial": {
+        "as_expected": true,
+        "expected": "compile_error",
+        "missing_evidence": [],
+        "status": "compile_error"
+      },
+      "mutation": {
+        "rejected": true,
+        "spec": {
+          "file": "src/lib.rs",
+          "find": "pub fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }",
+          "kind": "declared",
+          "replace": "fn rename(&mut self, new: &str) {\n        self.name = new.to_string();\n    }"
+        },
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": "pass"
+    }
+  ],
+  "passed": 84,
+  "pruned": true,
+  "revision": "6f4b6ec72aabcc6033292e5b609cf51222448f78",
+  "schema": "selvedge/capability-derivation-verification/v1",
+  "stamp": "20261116T142100Z",
+  "suite": {
+    "root": "/work/fixtures/capability-calibrated",
+    "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6"
+  },
+  "tasks": 84,
+  "verdict": "pass"
+}

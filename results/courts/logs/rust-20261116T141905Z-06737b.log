@@ -1,0 +1,69 @@
+capability_selftest: borrow-03-self-referential-window--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: borrow-03-self-referential-window--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-03-self-referential-window--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-03-self-referential-window--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-05-temporary-lifetime--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: borrow-05-temporary-lifetime--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-05-temporary-lifetime--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-05-temporary-lifetime--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: borrow-13-mutate-through-shared--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: borrow-13-mutate-through-shared--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-13-mutate-through-shared--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-13-mutate-through-shared--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: concurrency-11-cell-not-sync--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-11-cell-not-sync--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-11-cell-not-sync--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-11-cell-not-sync--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: concurrency-14-poisoned-mutex--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-14-poisoned-mutex--full: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-14-poisoned-mutex--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-17-compare-exchange-claim--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-17-compare-exchange-claim--full: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-17-compare-exchange-claim--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-07-feature-conflict--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: deps-07-feature-conflict--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-07-feature-conflict--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-09-disable-default-features--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: deps-09-disable-default-features--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-09-disable-default-features--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-09-disable-default-features--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-14-workspace-inheritance--full: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-14-workspace-inheritance--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: failing-01-chunk-boundary--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-01-chunk-boundary--full: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-01-chunk-boundary--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: failing-03-overflow-boundary--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-03-overflow-boundary--full: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-03-overflow-boundary--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: failing-10-last-duplicate-index--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-10-last-duplicate-index--full: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-10-last-duplicate-index--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-06-error-variant--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: migrate-06-error-variant--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-06-error-variant--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-06-error-variant--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: migrate-12-option-result-change--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: migrate-12-option-result-change--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-12-option-result-change--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-12-option-result-change--patch: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: migrate-13-const-generic--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: migrate-13-const-generic--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-13-const-generic--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-13-const-generic--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-09-result-propagation--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: repo-09-result-propagation--diag: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: repo-09-result-propagation--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-09-result-propagation--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-14-crossmodule-borrow--body: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: repo-14-crossmodule-borrow--diag: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-14-crossmodule-borrow--full: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-14-crossmodule-borrow--patch: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-18-moved-across-modules--body: initial=test_failed reference=pass mutation=test_failed
+Traceback (most recent call last):
+  File "/work/scripts/capability_selftest.py", line 381, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/scripts/capability_selftest.py", line 228, in main
+    max_workdir = max(max_workdir, wrong["evidence"]["workdir_bytes"] or 0)
+                                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'workdir_bytes'

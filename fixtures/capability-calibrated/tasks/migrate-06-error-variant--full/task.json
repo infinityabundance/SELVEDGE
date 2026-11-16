@@ -1,0 +1,39 @@
+{
+  "capability": "Migrate a match arm to a structured error variant and handle the new variant.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "hard",
+    "source_id": "migrate-06-error-variant",
+    "source_tree_sha256": "095c28482c2a5d92f2d6f4ba2190ca5cf9f85055ddb2d4bd7d721d20271aa9dd"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "migrate-06-error-variant--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"empty key\"",
+    "replace": "\"empty\""
+  },
+  "observed_failure": "error[E0599]: no variant or associated item named `NotFound` found for enum `Error`\n --> src/lib.rs:6:23\n  |\n6 |         Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n  |                       ^^^^^^^^ variant or associated item not found in `Error`",
+  "prompt_intro": "The crate does not build against the vendored `table` 2.0.0. Version 1 had `Error::NotFound`; version 2 has `Error::Missing { key: String }` and `Error::Empty`. Rewrite `read` to return `missing <key>` for a missing key and `empty key` for an empty key. Do not modify `dep/`. Keep `pub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String>`.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-06-error-variant (tree 095c28482c2a5d92f2d6f4ba2190ca5cf9f85055ddb2d4bd7d721d20271aa9dd) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

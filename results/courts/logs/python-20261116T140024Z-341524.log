@@ -1,0 +1,25 @@
+F
+=================================== FAILURES ===================================
+________ test_tolerant_extraction_reads_a_path_written_inside_the_fence ________
+
+    def test_tolerant_extraction_reads_a_path_written_inside_the_fence():
+        """The M arm wrote `path=src/lib.rs` as the first line of the block."""
+        text = "```rust\npath=src/lib.rs\n```rust\npub fn add_one(v: u8) -> u8 { v + 1 }\n```"
+        strict = __import__("capability.extract", fromlist=["extract"]).extract_files(
+            text, "src/lib.rs", {"src/lib.rs"}, "locked")
+        assert not strict.ok or strict.mode == "fenced_entry"
+        from capability import extract
+    
+        tolerant = extract.extract_files(text, "src/lib.rs", {"src/lib.rs"}, "locked",
+                                         tolerant=True)
+        assert tolerant.ok
+        assert tolerant.mode == "fenced_paths"
+        assert "path=src/lib.rs" not in tolerant.files["src/lib.rs"]
+>       assert "fn add_one" in tolerant.files["src/lib.rs"]
+E       AssertionError: assert 'fn add_one' in ''
+
+oracle/tests/test_capability_formats.py:202: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_formats.py::test_tolerant_extraction_reads_a_path_written_inside_the_fence
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.07s

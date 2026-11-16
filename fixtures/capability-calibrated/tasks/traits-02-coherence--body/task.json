@@ -1,0 +1,41 @@
+{
+  "capability": "Resolve an overlapping blanket impl by implementing the concrete types only. (format: body-completion)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "body-completion",
+    "source_difficulty": "medium",
+    "source_id": "traits-02-coherence",
+    "source_tree_sha256": "37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "body-completion",
+  "format_spec": {
+    "function": "summary_of_text",
+    "kind": "body-completion",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "traits-02-coherence--body",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "not yet implemented"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"text: {self}\"",
+    "replace": "\"text:{self}\""
+  },
+  "prompt_intro": "Only the body of `summary_of_text` is missing. Complete it so that the visible test and the hidden tests pass. Keep the signature exactly as it is; return the body only.",
+  "provenance": "derived from fixtures/capability/tasks/traits-02-coherence (tree 37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

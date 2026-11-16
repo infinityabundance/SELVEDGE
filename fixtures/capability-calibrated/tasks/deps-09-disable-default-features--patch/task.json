@@ -1,0 +1,60 @@
+{
+  "capability": "Disable a default feature and enable the API-bearing alternative. (format: patch-selection)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "hard",
+    "source_id": "deps-09-disable-default-features",
+    "source_tree_sha256": "43fc9402907631955c3dbbccf7c37191dfb9888a33362e3815d876f8145cbc85"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "[package]\nname = \"deps_09_disable_default_features\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\", default-features = false, features = [\"modern\"] }\n",
+        "label": "A",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "[package]\nname = \"deps_09_disable_default_features\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\n",
+        "label": "B",
+        "provenance": "a dependency removed (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_09_disable_default_features\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ncodec = { path = \"dep\" }\n",
+        "label": "C",
+        "provenance": "the source's initial manifest (wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "Cargo.toml"
+  },
+  "id": "deps-09-disable-default-features--patch",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "codec = { path = \"dep\", default-features = false, features = [\"modern\"] }\n",
+    "replace": "codec = { path = \"dep\" }\n"
+  },
+  "prompt_intro": "Choose the one replacement manifest that makes the crate build and its tests pass. The source code is already correct; only the manifest is missing the capability the code needs.",
+  "provenance": "derived from fixtures/capability/tasks/deps-09-disable-default-features (tree 43fc9402907631955c3dbbccf7c37191dfb9888a33362e3815d876f8145cbc85) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

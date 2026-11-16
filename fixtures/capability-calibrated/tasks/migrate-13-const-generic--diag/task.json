@@ -1,0 +1,68 @@
+{
+  "capability": "Supply a const generic argument that version 2 made mandatory. (format: diagnostic-identification)",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "diagnostic-identification",
+    "source_difficulty": "medium",
+    "source_id": "migrate-13-const-generic",
+    "source_tree_sha256": "8754170ec9066838db3e06b598974898283fc1fe10f6df23a281abcab41086dd"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed context",
+        "id": "E0507"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot borrow as mutable because it is not declared mutable",
+        "id": "E0596"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "cannot move out of a borrowed value",
+        "id": "E0505"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0107"
+      }
+    ]
+  },
+  "id": "migrate-13-const-generic--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0107"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Frame<4>",
+    "replace": "Frame<3>"
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-13-const-generic (tree 8754170ec9066838db3e06b598974898283fc1fe10f6df23a281abcab41086dd) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

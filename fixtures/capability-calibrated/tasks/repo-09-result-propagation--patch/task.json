@@ -1,0 +1,62 @@
+{
+  "capability": "Propagate a return-type change from an API module to its consumers. (format: patch-selection)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "repo-09-result-propagation",
+    "source_tree_sha256": "8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915"
+  },
+  "difficulty": "medium",
+  "entry": "src/cache.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value + 1,\n        Err(_) => 0,\n    }\n}\n",
+        "label": "A",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 0,\n    }\n}\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Some(value) => value,\n        None => 0,\n    }\n}\n",
+        "label": "C",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      }
+    ],
+    "function": "cached",
+    "kind": "patch-selection",
+    "template": "src/cache.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "repo-09-result-propagation--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/cache.rs",
+    "find": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value,\n        Err(_) => 0,\n    }\n}",
+    "replace": "pub fn cached(key: &str) -> i32 {\n    match api::fetch(key) {\n        Ok(value) => value + 1,\n        Err(_) => 0,\n    }\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `cached` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-09-result-propagation (tree 8e09f8fb56468d58e7e3411836d142b3e62736536a1659a807afc40bafa82915) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

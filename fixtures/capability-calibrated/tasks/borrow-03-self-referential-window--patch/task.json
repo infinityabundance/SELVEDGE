@@ -1,0 +1,62 @@
+{
+  "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references). (format: patch-selection)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "borrow-03-self-referential-window",
+    "source_tree_sha256": "05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }\n",
+        "label": "A",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn first(&self) -> &str {\n        self.first\n    }\n",
+        "label": "C",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      }
+    ],
+    "function": "first",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "borrow-03-self-referential-window--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }",
+    "replace": "pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"x\")\n    }"
+  },
+  "prompt_intro": "Choose the one candidate definition for `first` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-03-self-referential-window (tree 05dac09e02632c57206848ab72f754aa7bea586ceb0d9d86e1a89ca71fe5bc78) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,66 @@
+{
+  "capability": "Resolve an overlapping blanket impl by implementing the concrete types only. (format: patch-selection)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "traits-02-coherence",
+    "source_tree_sha256": "37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "label": "A",
+        "provenance": "the source's first edit reverted (wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl<T: Display> Summary for T {\n    fn summary(&self) -> String {\n        format!(\"value: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "label": "C",
+        "provenance": "the source's initial file (wrong)",
+        "reference": false
+      },
+      {
+        "content": "//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text:{self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n",
+        "label": "D",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "src/lib.rs"
+  },
+  "id": "traits-02-coherence--patch",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0119"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "impl Summary for &str {\n",
+    "replace": "impl<T: Display> Summary for T {\n"
+  },
+  "prompt_intro": "Choose the one replacement file that makes the crate build and its tests pass. Exactly one candidate does.",
+  "provenance": "derived from fixtures/capability/tasks/traits-02-coherence (tree 37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,62 @@
+{
+  "capability": "Claim a one-shot flag with compare-exchange on the released value. (format: patch-selection)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "concurrency-17-compare-exchange-claim",
+    "source_tree_sha256": "69979612e26823363d3b6f0ac3a33be71175638eb7c3d7bc85d7607aa186070b"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(true, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n",
+        "label": "A",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      },
+      {
+        "function": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, false, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n",
+        "label": "B",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}\n",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "function": "claim",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "concurrency-17-compare-exchange-claim--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}",
+    "replace": "pub fn claim(flag: &AtomicBool) -> bool {\n    flag.compare_exchange(true, true, Ordering::SeqCst, Ordering::SeqCst)\n        .is_ok()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `claim` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-17-compare-exchange-claim (tree 69979612e26823363d3b6f0ac3a33be71175638eb7c3d7bc85d7607aa186070b) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

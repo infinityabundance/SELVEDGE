@@ -1,0 +1,36 @@
+{
+  "capability": "Recover the data of a mutex poisoned by a panicking worker.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-14-poisoned-mutex",
+    "source_tree_sha256": "78727827716c2b125249b5da7663c9568cc28371f6feb0e569e25baa8bbfd209"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "concurrency-14-poisoned-mutex--full",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "PoisonError"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "guard.push(7);",
+    "replace": "guard.push(8);"
+  },
+  "observed_failure": "thread 'tests::visible_after_panic' panicked at src/lib.rs:21:34:\ncalled `Result::unwrap()` on an `Err` value: PoisonError { .. }",
+  "prompt_intro": "The visible test fails: a worker panics while holding the lock, which poisons the mutex, and the subsequent `lock().unwrap()` panics on the poison marker. The bytes the worker recorded before the panic are still valid. Recover the poisoned guard and return the recorded length.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-14-poisoned-mutex (tree 78727827716c2b125249b5da7663c9568cc28371f6feb0e569e25baa8bbfd209) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

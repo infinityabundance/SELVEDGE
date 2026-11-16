@@ -1,0 +1,36 @@
+{
+  "capability": "Find the last index of a duplicated value with a correct bound.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "failing-10-last-duplicate-index",
+    "source_tree_sha256": "bbb351249b8089b7fe64f9766e9959e54d266bf43ef6fe1505187e4dbf5d8612"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "failing-10-last-duplicate-index--full",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "values[low - 1] == target",
+    "replace": "values[low - 1] != target"
+  },
+  "observed_failure": "thread 'tests::visible_last_position' panicked at src/lib.rs:21:9:\nassertion `left == right` failed\n  left: Some(1)\n right: Some(2)",
+  "prompt_intro": "The visible test fails. `last_index` returns the first matching position instead of the last. It must return the highest index whose value equals the target, or `None`. The input is sorted ascending.",
+  "provenance": "derived from fixtures/capability/tasks/failing-10-last-duplicate-index (tree bbb351249b8089b7fe64f9766e9959e54d266bf43ef6fe1505187e4dbf5d8612) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

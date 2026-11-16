@@ -1,0 +1,62 @@
+{
+  "capability": "Measure a value before moving it across a module boundary. (format: patch-selection)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "easy",
+    "source_id": "repo-18-moved-across-modules",
+    "source_tree_sha256": "1b29963277403ab990ce0da4425125c6fa9c45b466101ad562efaf6416ca667e"
+  },
+  "difficulty": "medium",
+  "entry": "src/flow.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    let snapshot = registry;\n    let count = registry.count();\n    count + snapshot.count()\n}\n",
+        "label": "A",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      },
+      {
+        "function": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count()\n}\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count() + 1\n}\n",
+        "label": "C",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      }
+    ],
+    "function": "register_and_count",
+    "kind": "patch-selection",
+    "template": "src/flow.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "repo-18-moved-across-modules--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/flow.rs",
+    "find": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    registry.count()\n}",
+    "replace": "pub fn register_and_count(mut registry: Registry, names: &[&str]) -> usize {\n    for name in names {\n        registry.add(name);\n    }\n    let snapshot = registry;\n    let count = registry.count();\n    count + snapshot.count()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `register_and_count` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-18-moved-across-modules (tree 1b29963277403ab990ce0da4425125c6fa9c45b466101ad562efaf6416ca667e) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

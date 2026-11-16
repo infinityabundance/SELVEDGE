@@ -1,0 +1,36 @@
+{
+  "capability": "Escape embedded quotes and quote newline fields, not only comma fields.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "hard",
+    "source_id": "semantic-07-csv-quoting",
+    "source_tree_sha256": "2cefb838404686ea7f13e6f6aa8191cd39199cd8ee40b7191a03e01ef2a7b37d"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "semantic-07-csv-quoting--full",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value.replace('\"', \"\\\"\\\"\")",
+    "replace": "value.replace('\"', \"'\")"
+  },
+  "observed_failure": "the crate builds and tests pass; field(\"a\\\"b\") returns `a\"b` where the\ncontract requires `\"a\"\"b\"`",
+  "prompt_intro": "The CSV field encoder builds and its comma example passes. The contract requires quoting when the field contains a comma, a double quote or a newline, and every embedded double quote must be doubled. Fix `field`. Keep `pub fn field(value: &str) -> String`.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-07-csv-quoting (tree 2cefb838404686ea7f13e6f6aa8191cd39199cd8ee40b7191a03e01ef2a7b37d) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,191 @@
+{
+  "schema": "selvedge/capability-calibration-preregistration/v1",
+  "registered_utc": "2026-11-16T14:20:00Z",
+  "supersedes": null,
+  "status": "registered before any calibration run; no arm has been calibrated against this instrument",
+  "why": "The registered T2 verdict's capability endpoint returned 0.0000 on every arm over 765 arm/item outcomes. The failure taxonomy of the stored receipts (results/CAPABILITY-FAILURE-TAXONOMY.md) shows the cause is the task format: no arm produced a compiling answer on 103 of 153 tasks and only two answers compiled at all, because the format demands complete replacement files for multi-file Rust crates. The registered power analysis assumed a 0.5 baseline and is therefore invalid. This file registers a redesigned, calibrated instrument whose item difficulty and discrimination are measured before any capability claim is made.",
+  "does_not_change": {
+    "t2_verdict": "The registered T2 verdict (error_direction_not_supported), its thresholds, its KL/PC endpoint and its receipts are unchanged. This instrument redesigns the capability court; it does not re-decide T2.",
+    "primary_relative_threshold": 0.1,
+    "category_regression_limit": 0.05,
+    "bootstrap_seed": 20261115,
+    "bootstrap_resamples": 10000
+  },
+  "formats": {
+    "body-completion": {
+      "tier": "easy",
+      "executable": true,
+      "arm_returns": "one function body",
+      "judged_by": "the harness splices the body into a template that already contains the signature, compiles the crate and runs its tests",
+      "visible": "the function signature and one failing test"
+    },
+    "patch-selection": {
+      "tier": "medium",
+      "executable": true,
+      "arm_returns": "the letter of one candidate",
+      "judged_by": "the harness applies the chosen function definition, whole file or manifest, compiles the crate and runs its tests",
+      "candidate_rule": "every candidate is compiled; exactly one must pass, and which one is decided by cargo, never by an author label; a candidate that also passes is pruned by verify-formats and recorded in the derivation verification receipt",
+      "targets": ["function", "file", "manifest"]
+    },
+    "file-replacement": {
+      "tier": "hard",
+      "executable": true,
+      "arm_returns": "complete replacement files",
+      "judged_by": "cargo test, exactly as in the v4 instrument",
+      "scope": "the hardest tier only; this is the format the v4 suite used for every item"
+    },
+    "diagnostic-identification": {
+      "tier": "diagnostic",
+      "executable": false,
+      "arm_returns": "the identifier of the diagnostic that explains the failure, or the option letter that names it",
+      "judged_by": "the harness applies that option's registered consequence and compiles and runs it; the diagnosis is verified only if the consequence resolves the failure",
+      "metric": "verified_diagnostic",
+      "pooling_rule": "never pooled with executable task success and never part of the primary composite"
+    }
+  },
+  "ladder": {
+    "hypothesis": "body-completion is easier than patch-selection, which is easier than file-replacement, measured as 1 - mean pass rate per cell",
+    "per_category": "every category carries the easy, medium and hard formats where the source tasks can express them; the derivation records any source that cannot support a format and the category cell size that results",
+    "minimum_items_per_cell": 2,
+    "verification": "if the measured difficulty is not monotone in the declared order, the calibrated suite version is refused and the format or the tier mapping must be redesigned; the ladder labels are never reused as a difficulty claim"
+  },
+  "splits": {
+    "calibration": {
+      "selection_rule": "sha256('selvedge-calibration-v1:calibration:<task id>') ascending, first 3 per category, from fixtures/capability/tasks",
+      "sources": 24,
+      "items": 84,
+      "items_by_format": {
+        "body-completion": 23,
+        "diagnostic-identification": 14,
+        "file-replacement": 24,
+        "patch-selection": 23
+      },
+      "suite_root": "fixtures/capability-calibrated",
+      "verification": "results/capability/derivation-verify-calibration.json",
+      "rule": "used once, to fit item difficulty and discrimination. It is disjoint from the scored split and from the sealed holdback by construction."
+    },
+    "scored": {
+      "selection_rule": "the remaining 120 source tasks, derived by the same rules after calibration",
+      "sources": 120,
+      "items": "not yet fixed: the calibration pass decides which formats and cells survive; the scored split is derived only after that decision",
+      "rule": "the calibrated suite version lists the accepted calibration items; the scored split is then derived from the remaining sources with the same derivation command and the same window"
+    },
+    "sealed": {
+      "items": 24,
+      "rule": "the P14.7 holdback is untouched, is not in the calibration split, is never read by the derivation, and is scored only through its custody gate"
+    }
+  },
+  "window": {
+    "arms_expected": 5,
+    "min_pass_rate": 0.1,
+    "max_pass_rate": 0.9,
+    "binary_equivalence": "with A arms and binary outcomes, 0.10 <= pass rate <= 0.90 is the same statement as 1 <= passes <= A-1",
+    "min_partial_credit_spread": 0.15,
+    "min_item_total_correlation": 0.3,
+    "min_items_per_cell": 2,
+    "max_cell_retirement_fraction": 0.3333333333333333,
+    "primary_metric": "verified_task_success",
+    "secondary_metric": "fraction_of_hidden_tests_passed",
+    "secondary_statement": "partial credit is secondary, is reported per item, and never enters the primary composite or a decision rule",
+    "power": {
+      "target_power": 0.8,
+      "level": 0.95,
+      "relative_effect": 0.1,
+      "variance_source": "the pooled variance of per-item paired differences over the calibrated arm pairs",
+      "planning_variance": "median of the pairwise variances",
+      "conservative_variance": "maximum of the pairwise variances"
+    }
+  },
+  "statistics": {
+    "per_item": {
+      "pass_probability": "the mean of the five arms' executable outcomes on the item",
+      "partial_credit": "the mean fraction of hidden tests passed (secondary)",
+      "spread": "the population standard deviation of the five arms' partial credit on the item",
+      "discrimination": "the point-biserial correlation across arms between the item's outcome and the arm's total executable score with the item removed, reported with the caveat that five arms make it low-precision",
+      "discrimination_rule": "spread >= 0.15 or correlation >= 0.30"
+    },
+    "per_cell": {
+      "cell": "category x format",
+      "statistics": "item count, accepted count, retired count and fraction, mean pass rate, mean accepted pass rate",
+      "decision": "scored when accepted >= 2 and retired fraction <= 1/3; otherwise reformatted"
+    },
+    "ladder": "1 - mean pass rate per tier, compared across the three executable formats within a category"
+  },
+  "acceptance": {
+    "item_kept_when": "the item is solvable and not saturated across the five arms, and it discriminates",
+    "item_retired_when": "zero arms pass, every arm passes, or neither the partial-credit spread nor the item-total correlation reaches its minimum",
+    "cell_reformatted_when": "fewer than two items survive or more than one third is retired",
+    "category_scorable_when": "every one of its executable cells is scored",
+    "calibrated_suite_emitted_when": "all categories are scorable and the measured ladder is monotone; otherwise calibrate writes its statistics receipt and refuses to emit a suite version, naming the reason"
+  },
+  "primary": {
+    "metric": "verified_task_success",
+    "endpoint": "category-balanced mean executable task success on the calibrated suite",
+    "decision_rule": "unchanged: 10% relative improvement, paired 95% CI lower bound above zero, no category regressing by more than 0.05 absolute",
+    "statement": "only executable formats contribute; a verified diagnosis never contributes to this endpoint"
+  },
+  "secondary": {
+    "metric": "fraction_of_hidden_tests_passed",
+    "role": "descriptive only; it is recorded per item and reported per cell, and it is never substituted for the primary metric or used by the decision rule",
+    "why": "partial credit rewards progress toward a solution and would otherwise let a model that fails every item but passes some assertions outrank one that solves fewer items completely"
+  },
+  "diagnostic": {
+    "metric": "verified_diagnostic",
+    "role": "a separate instrument block, reported per category with its own item count",
+    "rule": "an answer that names a diagnostic is verified by applying that option's registered consequence and compiling it; the metric is never pooled with executable success"
+  },
+  "power": {
+    "formula": "n_per_category = (z_{1-alpha/2} + z_power)^2 * Var(d) / (categories * (baseline * relative_effect)^2), where d is the per-item paired difference",
+    "target": "80% decision power at a 10% relative effect, two-sided 95%",
+    "variance": "measured from the calibration pass's per-item outcome matrix, over the ten arm pairs; the median is the planning value and the maximum the conservative value",
+    "baseline": "the measured mean item pass rate over accepted executable items, not an assumed 0.5",
+    "cannot_be_finalised_now": "no calibration pass has run, so neither the baseline nor Var(d) exists. This registration states the formula and the source of every input and makes no n claim. The calibration receipt will carry the computed n and the shortfall per category; if the required n exceeds the available items, P14.8 remains open and the shortfall is published rather than hidden",
+    "required_n_reporting": "the calibration receipt reports required n under both the planning and conservative variance, the items available per category, and the shortfall"
+  },
+  "anti_gaming": {
+    "carried_from_v4": {
+      "checker_not_visible_at_inference": true,
+      "prompt_order_invariance": true,
+      "few_shot_must_be_disjoint_8_word_shingles": true,
+      "tool_parity": true,
+      "no_hidden_teacher": true
+    },
+    "new": {
+      "visible_test_is_one_hidden_test": "the visible test shown in a body or patch item is one test from that item's own hidden set, so showing it cannot leak the hidden set as a whole; the remaining hidden tests are still restored by the harness",
+      "candidate_correctness_is_executed": "a patch candidate is correct only if it passes the checker; the author's label is never the answer key",
+      "diagnostic_consequence_is_executed": "a diagnostic label is verified only by compiling its registered consequence",
+      "pruning_is_receipted": "a candidate or option that the checker shows also passes is removed by verify-formats and recorded in results/capability/derivation-verify-calibration.json",
+      "tolerant_extraction_never_invents_code": "tolerance only changes which stored text is compiled; it never repairs code, and the taxonomy receipt shows it rescued no passing answer"
+    }
+  },
+  "calibration_pass": {
+    "arms": ["D", "M", "X", "H", "H*"],
+    "split": "calibration only; the sealed holdback is never opened",
+    "outputs": {
+      "generations": "results/capability/calibration/generations-<arm>.json",
+      "results": "results/capability/calibration/result-<arm>.json",
+      "calibration_receipt": "results/capability/calibration-<stamp>.json",
+      "suite_version": "fixtures/capability-calibrated/VERSION.json"
+    },
+    "must_establish": [
+      "a measured per-item pass probability for every calibration item on five arms",
+      "a measured partial-credit spread and item-total correlation per item",
+      "the accepted, retired and reformatted cells, with a named reason for every retirement",
+      "whether the declared easy/medium/hard ladder is monotone in the measured difficulty",
+      "the measured baseline pass rate and paired-difference variance, and therefore the required n for 80% power at 10% relative, or an explicit statement that this n cannot reach it",
+      "a calibrated suite version that names the items allowed to carry a capability claim, or a refusal that names why none was emitted"
+    ],
+    "must_not": [
+      "open the sealed holdback",
+      "change the registered T2 verdict or its thresholds",
+      "report a capability comparison between arms: calibration measures the instrument, not the arms"
+    ]
+  },
+  "evidence": {
+    "failure_taxonomy": "results/CAPABILITY-FAILURE-TAXONOMY.md and results/capability/taxonomy-*.json",
+    "derivation": "fixtures/capability-calibrated/DERIVATION.json",
+    "derivation_verification": "results/capability/derivation-verify-calibration.json",
+    "cpu_tests": "oracle/tests/test_capability_formats.py",
+    "instrument_document": "docs/CAPABILITY-COURT.md §12-§15"
+  }
+}

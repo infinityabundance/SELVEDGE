@@ -1,0 +1,9 @@
+policy arm allowed ['Cargo.toml', 'dep/Cargo.toml', 'dep/src/lib.rs', 'src/lib.rs']
+A the source's initial manifest (wrong) compile_error 
+   stderr  note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default |  | error: could not compile `codec` (lib) due to 1 previous error; 1 warning emitted | 
+B a dependency removed (wrong) compile_error 
+   stderr uld not compile `deps_07_feature_conflict` (lib) due to 1 previous error | error: could not compile `deps_07_feature_conflict` (lib test) due to 1 previous error | 
+C reference pass 
+   stderr  | 14 |     } | 15 |     "default" |    |     ^^^^^^^^^ unreachable expression |    | |    = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default |  | 
+D the edition lowered instead of the depen pass 
+   stderr  | 14 |     } | 15 |     "default" |    |     ^^^^^^^^^ unreachable expression |    | |    = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default |  | 

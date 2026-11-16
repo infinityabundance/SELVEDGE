@@ -1,0 +1,13 @@
+[package]
+name = "migrate_12_option_result_change"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+registry = { path = "dep" }

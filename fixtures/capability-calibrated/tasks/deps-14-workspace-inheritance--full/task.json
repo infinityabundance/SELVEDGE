@@ -1,0 +1,36 @@
+{
+  "capability": "Resolve a workspace-inherited field that the root does not define.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "deps-14-workspace-inheritance",
+    "source_tree_sha256": "bc91cc6df07aab434dc3b84c341473e911122bf5e7dc1aa2bc1a5f5ca75e8d57"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "deps-14-workspace-inheritance--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "error inheriting `version`"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "version = \"0.1.0\"",
+    "replace": "version.workspace = true"
+  },
+  "observed_failure": "error: failed to parse manifest at `.../Cargo.toml`\nCaused by:\n  error inheriting `version` from workspace root manifest's `workspace.package.version`\n\nCaused by:\n  `workspace.package.version` was not defined",
+  "prompt_intro": "This crate does not build. Its package inherits `version` from a workspace root that defines no `[workspace.package]` values, so the field has no source. Give the package an explicit version. Keep the behaviour.",
+  "provenance": "derived from fixtures/capability/tasks/deps-14-workspace-inheritance (tree bc91cc6df07aab434dc3b84c341473e911122bf5e7dc1aa2bc1a5f5ca75e8d57) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

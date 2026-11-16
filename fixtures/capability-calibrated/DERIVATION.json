@@ -1,0 +1,670 @@
+{
+  "command": "scripts/capability_court.py derive-formats --out fixtures/capability-calibrated --split calibration --per-category 3 --force",
+  "counts": {
+    "by_category": {
+      "api-migration": 12,
+      "concurrency": 10,
+      "dependency-compat": 9,
+      "failing-test": 9,
+      "lifetime-borrow": 12,
+      "repo-scale": 12,
+      "semantic-repair": 9,
+      "trait-impl": 11
+    },
+    "by_format": {
+      "body-completion": 23,
+      "diagnostic-identification": 14,
+      "file-replacement": 24,
+      "patch-selection": 23
+    },
+    "by_metric": {
+      "verified_diagnostic": 14,
+      "verified_task_success": 70
+    },
+    "by_tier": {
+      "diagnostic": 14,
+      "easy": 23,
+      "hard": 24,
+      "medium": 23
+    },
+    "items": 84
+  },
+  "created_utc": "2026-11-16T14:20:20Z",
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "format": "body-completion",
+      "id": "borrow-03-self-referential-window--body",
+      "metric": "verified_task_success",
+      "source": "borrow-03-self-referential-window"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "diagnostic-identification",
+      "id": "borrow-03-self-referential-window--diag",
+      "metric": "verified_diagnostic",
+      "source": "borrow-03-self-referential-window"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "file-replacement",
+      "id": "borrow-03-self-referential-window--full",
+      "metric": "verified_task_success",
+      "source": "borrow-03-self-referential-window"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "patch-selection",
+      "id": "borrow-03-self-referential-window--patch",
+      "metric": "verified_task_success",
+      "source": "borrow-03-self-referential-window"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "body-completion",
+      "id": "borrow-05-temporary-lifetime--body",
+      "metric": "verified_task_success",
+      "source": "borrow-05-temporary-lifetime"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "diagnostic-identification",
+      "id": "borrow-05-temporary-lifetime--diag",
+      "metric": "verified_diagnostic",
+      "source": "borrow-05-temporary-lifetime"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "file-replacement",
+      "id": "borrow-05-temporary-lifetime--full",
+      "metric": "verified_task_success",
+      "source": "borrow-05-temporary-lifetime"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "patch-selection",
+      "id": "borrow-05-temporary-lifetime--patch",
+      "metric": "verified_task_success",
+      "source": "borrow-05-temporary-lifetime"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "body-completion",
+      "id": "borrow-13-mutate-through-shared--body",
+      "metric": "verified_task_success",
+      "source": "borrow-13-mutate-through-shared"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "diagnostic-identification",
+      "id": "borrow-13-mutate-through-shared--diag",
+      "metric": "verified_diagnostic",
+      "source": "borrow-13-mutate-through-shared"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "file-replacement",
+      "id": "borrow-13-mutate-through-shared--full",
+      "metric": "verified_task_success",
+      "source": "borrow-13-mutate-through-shared"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "patch-selection",
+      "id": "borrow-13-mutate-through-shared--patch",
+      "metric": "verified_task_success",
+      "source": "borrow-13-mutate-through-shared"
+    },
+    {
+      "category": "concurrency",
+      "format": "body-completion",
+      "id": "concurrency-11-cell-not-sync--body",
+      "metric": "verified_task_success",
+      "source": "concurrency-11-cell-not-sync"
+    },
+    {
+      "category": "concurrency",
+      "format": "diagnostic-identification",
+      "id": "concurrency-11-cell-not-sync--diag",
+      "metric": "verified_diagnostic",
+      "source": "concurrency-11-cell-not-sync"
+    },
+    {
+      "category": "concurrency",
+      "format": "file-replacement",
+      "id": "concurrency-11-cell-not-sync--full",
+      "metric": "verified_task_success",
+      "source": "concurrency-11-cell-not-sync"
+    },
+    {
+      "category": "concurrency",
+      "format": "patch-selection",
+      "id": "concurrency-11-cell-not-sync--patch",
+      "metric": "verified_task_success",
+      "source": "concurrency-11-cell-not-sync"
+    },
+    {
+      "category": "concurrency",
+      "format": "body-completion",
+      "id": "concurrency-14-poisoned-mutex--body",
+      "metric": "verified_task_success",
+      "source": "concurrency-14-poisoned-mutex"
+    },
+    {
+      "category": "concurrency",
+      "format": "file-replacement",
+      "id": "concurrency-14-poisoned-mutex--full",
+      "metric": "verified_task_success",
+      "source": "concurrency-14-poisoned-mutex"
+    },
+    {
+      "category": "concurrency",
+      "format": "patch-selection",
+      "id": "concurrency-14-poisoned-mutex--patch",
+      "metric": "verified_task_success",
+      "source": "concurrency-14-poisoned-mutex"
+    },
+    {
+      "category": "concurrency",
+      "format": "body-completion",
+      "id": "concurrency-17-compare-exchange-claim--body",
+      "metric": "verified_task_success",
+      "source": "concurrency-17-compare-exchange-claim"
+    },
+    {
+      "category": "concurrency",
+      "format": "file-replacement",
+      "id": "concurrency-17-compare-exchange-claim--full",
+      "metric": "verified_task_success",
+      "source": "concurrency-17-compare-exchange-claim"
+    },
+    {
+      "category": "concurrency",
+      "format": "patch-selection",
+      "id": "concurrency-17-compare-exchange-claim--patch",
+      "metric": "verified_task_success",
+      "source": "concurrency-17-compare-exchange-claim"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "body-completion",
+      "id": "deps-07-feature-conflict--body",
+      "metric": "verified_task_success",
+      "source": "deps-07-feature-conflict"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "file-replacement",
+      "id": "deps-07-feature-conflict--full",
+      "metric": "verified_task_success",
+      "source": "deps-07-feature-conflict"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "patch-selection",
+      "id": "deps-07-feature-conflict--patch",
+      "metric": "verified_task_success",
+      "source": "deps-07-feature-conflict"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "body-completion",
+      "id": "deps-09-disable-default-features--body",
+      "metric": "verified_task_success",
+      "source": "deps-09-disable-default-features"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "diagnostic-identification",
+      "id": "deps-09-disable-default-features--diag",
+      "metric": "verified_diagnostic",
+      "source": "deps-09-disable-default-features"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "file-replacement",
+      "id": "deps-09-disable-default-features--full",
+      "metric": "verified_task_success",
+      "source": "deps-09-disable-default-features"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "patch-selection",
+      "id": "deps-09-disable-default-features--patch",
+      "metric": "verified_task_success",
+      "source": "deps-09-disable-default-features"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "file-replacement",
+      "id": "deps-14-workspace-inheritance--full",
+      "metric": "verified_task_success",
+      "source": "deps-14-workspace-inheritance"
+    },
+    {
+      "category": "dependency-compat",
+      "format": "patch-selection",
+      "id": "deps-14-workspace-inheritance--patch",
+      "metric": "verified_task_success",
+      "source": "deps-14-workspace-inheritance"
+    },
+    {
+      "category": "failing-test",
+      "format": "body-completion",
+      "id": "failing-01-chunk-boundary--body",
+      "metric": "verified_task_success",
+      "source": "failing-01-chunk-boundary"
+    },
+    {
+      "category": "failing-test",
+      "format": "file-replacement",
+      "id": "failing-01-chunk-boundary--full",
+      "metric": "verified_task_success",
+      "source": "failing-01-chunk-boundary"
+    },
+    {
+      "category": "failing-test",
+      "format": "patch-selection",
+      "id": "failing-01-chunk-boundary--patch",
+      "metric": "verified_task_success",
+      "source": "failing-01-chunk-boundary"
+    },
+    {
+      "category": "failing-test",
+      "format": "body-completion",
+      "id": "failing-03-overflow-boundary--body",
+      "metric": "verified_task_success",
+      "source": "failing-03-overflow-boundary"
+    },
+    {
+      "category": "failing-test",
+      "format": "file-replacement",
+      "id": "failing-03-overflow-boundary--full",
+      "metric": "verified_task_success",
+      "source": "failing-03-overflow-boundary"
+    },
+    {
+      "category": "failing-test",
+      "format": "patch-selection",
+      "id": "failing-03-overflow-boundary--patch",
+      "metric": "verified_task_success",
+      "source": "failing-03-overflow-boundary"
+    },
+    {
+      "category": "failing-test",
+      "format": "body-completion",
+      "id": "failing-10-last-duplicate-index--body",
+      "metric": "verified_task_success",
+      "source": "failing-10-last-duplicate-index"
+    },
+    {
+      "category": "failing-test",
+      "format": "file-replacement",
+      "id": "failing-10-last-duplicate-index--full",
+      "metric": "verified_task_success",
+      "source": "failing-10-last-duplicate-index"
+    },
+    {
+      "category": "failing-test",
+      "format": "patch-selection",
+      "id": "failing-10-last-duplicate-index--patch",
+      "metric": "verified_task_success",
+      "source": "failing-10-last-duplicate-index"
+    },
+    {
+      "category": "api-migration",
+      "format": "body-completion",
+      "id": "migrate-06-error-variant--body",
+      "metric": "verified_task_success",
+      "source": "migrate-06-error-variant"
+    },
+    {
+      "category": "api-migration",
+      "format": "diagnostic-identification",
+      "id": "migrate-06-error-variant--diag",
+      "metric": "verified_diagnostic",
+      "source": "migrate-06-error-variant"
+    },
+    {
+      "category": "api-migration",
+      "format": "file-replacement",
+      "id": "migrate-06-error-variant--full",
+      "metric": "verified_task_success",
+      "source": "migrate-06-error-variant"
+    },
+    {
+      "category": "api-migration",
+      "format": "patch-selection",
+      "id": "migrate-06-error-variant--patch",
+      "metric": "verified_task_success",
+      "source": "migrate-06-error-variant"
+    },
+    {
+      "category": "api-migration",
+      "format": "body-completion",
+      "id": "migrate-12-option-result-change--body",
+      "metric": "verified_task_success",
+      "source": "migrate-12-option-result-change"
+    },
+    {
+      "category": "api-migration",
+      "format": "diagnostic-identification",
+      "id": "migrate-12-option-result-change--diag",
+      "metric": "verified_diagnostic",
+      "source": "migrate-12-option-result-change"
+    },
+    {
+      "category": "api-migration",
+      "format": "file-replacement",
+      "id": "migrate-12-option-result-change--full",
+      "metric": "verified_task_success",
+      "source": "migrate-12-option-result-change"
+    },
+    {
+      "category": "api-migration",
+      "format": "patch-selection",
+      "id": "migrate-12-option-result-change--patch",
+      "metric": "verified_task_success",
+      "source": "migrate-12-option-result-change"
+    },
+    {
+      "category": "api-migration",
+      "format": "body-completion",
+      "id": "migrate-13-const-generic--body",
+      "metric": "verified_task_success",
+      "source": "migrate-13-const-generic"
+    },
+    {
+      "category": "api-migration",
+      "format": "diagnostic-identification",
+      "id": "migrate-13-const-generic--diag",
+      "metric": "verified_diagnostic",
+      "source": "migrate-13-const-generic"
+    },
+    {
+      "category": "api-migration",
+      "format": "file-replacement",
+      "id": "migrate-13-const-generic--full",
+      "metric": "verified_task_success",
+      "source": "migrate-13-const-generic"
+    },
+    {
+      "category": "api-migration",
+      "format": "patch-selection",
+      "id": "migrate-13-const-generic--patch",
+      "metric": "verified_task_success",
+      "source": "migrate-13-const-generic"
+    },
+    {
+      "category": "repo-scale",
+      "format": "body-completion",
+      "id": "repo-09-result-propagation--body",
+      "metric": "verified_task_success",
+      "source": "repo-09-result-propagation"
+    },
+    {
+      "category": "repo-scale",
+      "format": "diagnostic-identification",
+      "id": "repo-09-result-propagation--diag",
+      "metric": "verified_diagnostic",
+      "source": "repo-09-result-propagation"
+    },
+    {
+      "category": "repo-scale",
+      "format": "file-replacement",
+      "id": "repo-09-result-propagation--full",
+      "metric": "verified_task_success",
+      "source": "repo-09-result-propagation"
+    },
+    {
+      "category": "repo-scale",
+      "format": "patch-selection",
+      "id": "repo-09-result-propagation--patch",
+      "metric": "verified_task_success",
+      "source": "repo-09-result-propagation"
+    },
+    {
+      "category": "repo-scale",
+      "format": "body-completion",
+      "id": "repo-14-crossmodule-borrow--body",
+      "metric": "verified_task_success",
+      "source": "repo-14-crossmodule-borrow"
+    },
+    {
+      "category": "repo-scale",
+      "format": "diagnostic-identification",
+      "id": "repo-14-crossmodule-borrow--diag",
+      "metric": "verified_diagnostic",
+      "source": "repo-14-crossmodule-borrow"
+    },
+    {
+      "category": "repo-scale",
+      "format": "file-replacement",
+      "id": "repo-14-crossmodule-borrow--full",
+      "metric": "verified_task_success",
+      "source": "repo-14-crossmodule-borrow"
+    },
+    {
+      "category": "repo-scale",
+      "format": "patch-selection",
+      "id": "repo-14-crossmodule-borrow--patch",
+      "metric": "verified_task_success",
+      "source": "repo-14-crossmodule-borrow"
+    },
+    {
+      "category": "repo-scale",
+      "format": "body-completion",
+      "id": "repo-18-moved-across-modules--body",
+      "metric": "verified_task_success",
+      "source": "repo-18-moved-across-modules"
+    },
+    {
+      "category": "repo-scale",
+      "format": "diagnostic-identification",
+      "id": "repo-18-moved-across-modules--diag",
+      "metric": "verified_diagnostic",
+      "source": "repo-18-moved-across-modules"
+    },
+    {
+      "category": "repo-scale",
+      "format": "file-replacement",
+      "id": "repo-18-moved-across-modules--full",
+      "metric": "verified_task_success",
+      "source": "repo-18-moved-across-modules"
+    },
+    {
+      "category": "repo-scale",
+      "format": "patch-selection",
+      "id": "repo-18-moved-across-modules--patch",
+      "metric": "verified_task_success",
+      "source": "repo-18-moved-across-modules"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "body-completion",
+      "id": "semantic-01-overlapping-count--body",
+      "metric": "verified_task_success",
+      "source": "semantic-01-overlapping-count"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "file-replacement",
+      "id": "semantic-01-overlapping-count--full",
+      "metric": "verified_task_success",
+      "source": "semantic-01-overlapping-count"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "patch-selection",
+      "id": "semantic-01-overlapping-count--patch",
+      "metric": "verified_task_success",
+      "source": "semantic-01-overlapping-count"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "body-completion",
+      "id": "semantic-07-csv-quoting--body",
+      "metric": "verified_task_success",
+      "source": "semantic-07-csv-quoting"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "file-replacement",
+      "id": "semantic-07-csv-quoting--full",
+      "metric": "verified_task_success",
+      "source": "semantic-07-csv-quoting"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "patch-selection",
+      "id": "semantic-07-csv-quoting--patch",
+      "metric": "verified_task_success",
+      "source": "semantic-07-csv-quoting"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "body-completion",
+      "id": "semantic-09-token-bucket-refill--body",
+      "metric": "verified_task_success",
+      "source": "semantic-09-token-bucket-refill"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "file-replacement",
+      "id": "semantic-09-token-bucket-refill--full",
+      "metric": "verified_task_success",
+      "source": "semantic-09-token-bucket-refill"
+    },
+    {
+      "category": "semantic-repair",
+      "format": "patch-selection",
+      "id": "semantic-09-token-bucket-refill--patch",
+      "metric": "verified_task_success",
+      "source": "semantic-09-token-bucket-refill"
+    },
+    {
+      "category": "trait-impl",
+      "format": "body-completion",
+      "id": "traits-02-coherence--body",
+      "metric": "verified_task_success",
+      "source": "traits-02-coherence"
+    },
+    {
+      "category": "trait-impl",
+      "format": "diagnostic-identification",
+      "id": "traits-02-coherence--diag",
+      "metric": "verified_diagnostic",
+      "source": "traits-02-coherence"
+    },
+    {
+      "category": "trait-impl",
+      "format": "file-replacement",
+      "id": "traits-02-coherence--full",
+      "metric": "verified_task_success",
+      "source": "traits-02-coherence"
+    },
+    {
+      "category": "trait-impl",
+      "format": "patch-selection",
+      "id": "traits-02-coherence--patch",
+      "metric": "verified_task_success",
+      "source": "traits-02-coherence"
+    },
+    {
+      "category": "trait-impl",
+      "format": "body-completion",
+      "id": "traits-03-object-safety--body",
+      "metric": "verified_task_success",
+      "source": "traits-03-object-safety"
+    },
+    {
+      "category": "trait-impl",
+      "format": "diagnostic-identification",
+      "id": "traits-03-object-safety--diag",
+      "metric": "verified_diagnostic",
+      "source": "traits-03-object-safety"
+    },
+    {
+      "category": "trait-impl",
+      "format": "file-replacement",
+      "id": "traits-03-object-safety--full",
+      "metric": "verified_task_success",
+      "source": "traits-03-object-safety"
+    },
+    {
+      "category": "trait-impl",
+      "format": "body-completion",
+      "id": "traits-17-method-not-in-trait--body",
+      "metric": "verified_task_success",
+      "source": "traits-17-method-not-in-trait"
+    },
+    {
+      "category": "trait-impl",
+      "format": "diagnostic-identification",
+      "id": "traits-17-method-not-in-trait--diag",
+      "metric": "verified_diagnostic",
+      "source": "traits-17-method-not-in-trait"
+    },
+    {
+      "category": "trait-impl",
+      "format": "file-replacement",
+      "id": "traits-17-method-not-in-trait--full",
+      "metric": "verified_task_success",
+      "source": "traits-17-method-not-in-trait"
+    },
+    {
+      "category": "trait-impl",
+      "format": "patch-selection",
+      "id": "traits-17-method-not-in-trait--patch",
+      "metric": "verified_task_success",
+      "source": "traits-17-method-not-in-trait"
+    }
+  ],
+  "manifest_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6",
+  "revision": "6f4b6ec72aabcc6033292e5b609cf51222448f78",
+  "schema": "selvedge/capability-derivation/v1",
+  "selection": {
+    "calibration_per_category": 3,
+    "disjoint_from": "the scored split (the remaining sources) and the sealed holdback (a separate collection, never read here)",
+    "rule": "sha256(seed:split:task_id) ascending, first N per category",
+    "seed": "selvedge-calibration-v1",
+    "source_ids": [
+      "borrow-03-self-referential-window",
+      "borrow-05-temporary-lifetime",
+      "borrow-13-mutate-through-shared",
+      "concurrency-11-cell-not-sync",
+      "concurrency-14-poisoned-mutex",
+      "concurrency-17-compare-exchange-claim",
+      "deps-07-feature-conflict",
+      "deps-09-disable-default-features",
+      "deps-14-workspace-inheritance",
+      "failing-01-chunk-boundary",
+      "failing-03-overflow-boundary",
+      "failing-10-last-duplicate-index",
+      "migrate-06-error-variant",
+      "migrate-12-option-result-change",
+      "migrate-13-const-generic",
+      "repo-09-result-propagation",
+      "repo-14-crossmodule-borrow",
+      "repo-18-moved-across-modules",
+      "semantic-01-overlapping-count",
+      "semantic-07-csv-quoting",
+      "semantic-09-token-bucket-refill",
+      "traits-02-coherence",
+      "traits-03-object-safety",
+      "traits-17-method-not-in-trait"
+    ],
+    "sources": 24
+  },
+  "skipped": [
+    "deps-14-workspace-inheritance: no reference source file to complete",
+    "traits-03-object-safety: only 2 distinct candidate definitions; patch-selection needs at least 3"
+  ],
+  "source_suite": {
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "7347e1e94b7ddcd3d04f1580646b392fc1591a25e71b299a663fc7f837f0a207"
+  },
+  "split": "calibration",
+  "stamp": "20261116T142020Z",
+  "verified": false
+}

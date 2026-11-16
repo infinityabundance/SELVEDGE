@@ -1,0 +1,60 @@
+{
+  "capability": "Resolve a workspace-inherited field that the root does not define. (format: patch-selection)",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "deps-14-workspace-inheritance",
+    "source_tree_sha256": "bc91cc6df07aab434dc3b84c341473e911122bf5e7dc1aa2bc1a5f5ca75e8d57"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "content": "[package]\nname = \"deps_14_workspace_inheritance\"\nversion = { workspace = true }\nedition = \"2021\"\n\n[workspace]\n\n[lib]\npath = \"src/lib.rs\"\n",
+        "label": "A",
+        "provenance": "the table form of workspace inheritance (wrong here)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_14_workspace_inheritance\"\nversion.workspace = true\nedition = \"2021\"\n\n[workspace]\n\n[lib]\npath = \"src/lib.rs\"\n",
+        "label": "B",
+        "provenance": "the source's initial manifest (wrong)",
+        "reference": false
+      },
+      {
+        "content": "[package]\nname = \"deps_14_workspace_inheritance\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\n\n[lib]\npath = \"src/lib.rs\"\n",
+        "label": "C",
+        "provenance": "reference",
+        "reference": true
+      }
+    ],
+    "kind": "patch-selection",
+    "target": "file",
+    "template": "Cargo.toml"
+  },
+  "id": "deps-14-workspace-inheritance--patch",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "error inheriting `version`"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "version = \"0.1.0\"\n",
+    "replace": "version.workspace = true\n"
+  },
+  "prompt_intro": "Choose the one replacement manifest that makes the crate build and its tests pass. The source code is already correct; only the manifest is missing the capability the code needs.",
+  "provenance": "derived from fixtures/capability/tasks/deps-14-workspace-inheritance (tree bc91cc6df07aab434dc3b84c341473e911122bf5e7dc1aa2bc1a5f5ca75e8d57) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,36 @@
+{
+  "capability": "Count overlapping occurrences where a non-overlapping matcher passes the visible case.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "semantic-01-overlapping-count",
+    "source_tree_sha256": "9811318c23c7353a2752adc06c73093e2436695471f98d4fc8d027e949c96d87"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "semantic-01-overlapping-count--full",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*window == needle.as_bytes()",
+    "replace": "*window != needle.as_bytes()"
+  },
+  "observed_failure": "the crate builds and tests pass; count_occurrences(\"aaaa\", \"aa\") is 2\nwhere the contract requires 3 overlapping matches",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract counts **overlapping** occurrences: `count_occurrences(\"aaaa\", \"aa\")` is 3, not 2. An empty needle counts zero. Inputs are ASCII. Fix the helper; keep the signature.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-01-overlapping-count (tree 9811318c23c7353a2752adc06c73093e2436695471f98d4fc8d027e949c96d87) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

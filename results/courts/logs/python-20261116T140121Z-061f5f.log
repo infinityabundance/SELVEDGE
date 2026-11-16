@@ -1,0 +1,189 @@
+...............FFFF............F................                         [100%]
+=================================== FAILURES ===================================
+____________ test_a_diagnostic_answer_can_be_given_by_option_letter ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_diagnostic_answer_can_b0')
+
+    def test_a_diagnostic_answer_can_be_given_by_option_letter(tmp_path):
+        task = diagnostic_task(tmp_path)
+>       prompt = suite.render_prompt(task)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_formats.py:337: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/capability/suite.py:326: in render_prompt
+    return format_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+task = Task(root='/tmp/pytest-of-unknown/pytest-0/test_a_diagnostic_answer_can_b0/tiny-item', metadata={'schema': 'selvedge/c...mits=None, initial_files=['Cargo.toml', 'src/lib.rs'], hidden_files=['tests/check.rs'], reference_files=['src/lib.rs'])
+
+    def render_prompt(task) -> str:
+        """The exact prompt for a non-legacy format. Deterministic in the fixture."""
+        fmt = task_format(task)
+        spec = format_spec(task)
+        if fmt == FORMAT_FILE:
+            raise FormatError("file-replacement is rendered by suite.render_prompt")
+>       template = task.read_initial(spec["template"])
+                                     ^^^^^^^^^^^^^^^^
+E       KeyError: 'template'
+
+oracle/capability/formats.py:381: KeyError
+______ test_the_diagnostic_metric_is_never_pooled_with_executable_success ______
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_the_diagnostic_metric_is_0')
+
+    def test_the_diagnostic_metric_is_never_pooled_with_executable_success(tmp_path):
+>       result = run_mini(tmp_path, pass_items={"diag-item"})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_formats.py:393: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_capability_formats.py:376: in run_mini
+    generations = court.generate(adapter, root, os.path.join(str(tmp_path), "gen.json"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:228: in generate
+    prompt = task_prompt(task)
+             ^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:138: in task_prompt
+    return suite_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/suite.py:326: in render_prompt
+    return format_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+task = Task(root='/tmp/pytest-of-unknown/pytest-0/test_the_diagnostic_metric_is_0/mini-suite/tasks/diag-item', metadata={'sch...mits=None, initial_files=['Cargo.toml', 'src/lib.rs'], hidden_files=['tests/check.rs'], reference_files=['src/lib.rs'])
+
+    def render_prompt(task) -> str:
+        """The exact prompt for a non-legacy format. Deterministic in the fixture."""
+        fmt = task_format(task)
+        spec = format_spec(task)
+        if fmt == FORMAT_FILE:
+            raise FormatError("file-replacement is rendered by suite.render_prompt")
+>       template = task.read_initial(spec["template"])
+                                     ^^^^^^^^^^^^^^^^
+E       KeyError: 'template'
+
+oracle/capability/formats.py:381: KeyError
+_______ test_partial_credit_is_secondary_and_never_changes_the_composite _______
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_partial_credit_is_seconda0')
+
+    def test_partial_credit_is_secondary_and_never_changes_the_composite(tmp_path):
+>       plain = run_mini(tmp_path, pass_items={"exec-item"})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_formats.py:407: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_capability_formats.py:376: in run_mini
+    generations = court.generate(adapter, root, os.path.join(str(tmp_path), "gen.json"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:228: in generate
+    prompt = task_prompt(task)
+             ^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:138: in task_prompt
+    return suite_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/suite.py:326: in render_prompt
+    return format_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+task = Task(root='/tmp/pytest-of-unknown/pytest-0/test_partial_credit_is_seconda0/mini-suite/tasks/diag-item', metadata={'sch...mits=None, initial_files=['Cargo.toml', 'src/lib.rs'], hidden_files=['tests/check.rs'], reference_files=['src/lib.rs'])
+
+    def render_prompt(task) -> str:
+        """The exact prompt for a non-legacy format. Deterministic in the fixture."""
+        fmt = task_format(task)
+        spec = format_spec(task)
+        if fmt == FORMAT_FILE:
+            raise FormatError("file-replacement is rendered by suite.render_prompt")
+>       template = task.read_initial(spec["template"])
+                                     ^^^^^^^^^^^^^^^^
+E       KeyError: 'template'
+
+oracle/capability/formats.py:381: KeyError
+________ test_the_check_receipt_records_a_taxonomy_class_for_every_item ________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_the_check_receipt_records0')
+
+    def test_the_check_receipt_records_a_taxonomy_class_for_every_item(tmp_path):
+>       result = run_mini(tmp_path, pass_items={"exec-item"})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_capability_formats.py:417: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_capability_formats.py:376: in run_mini
+    generations = court.generate(adapter, root, os.path.join(str(tmp_path), "gen.json"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:228: in generate
+    prompt = task_prompt(task)
+             ^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:138: in task_prompt
+    return suite_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/suite.py:326: in render_prompt
+    return format_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+task = Task(root='/tmp/pytest-of-unknown/pytest-0/test_the_check_receipt_records0/mini-suite/tasks/diag-item', metadata={'sch...mits=None, initial_files=['Cargo.toml', 'src/lib.rs'], hidden_files=['tests/check.rs'], reference_files=['src/lib.rs'])
+
+    def render_prompt(task) -> str:
+        """The exact prompt for a non-legacy format. Deterministic in the fixture."""
+        fmt = task_format(task)
+        spec = format_spec(task)
+        if fmt == FORMAT_FILE:
+            raise FormatError("file-replacement is rendered by suite.render_prompt")
+>       template = task.read_initial(spec["template"])
+                                     ^^^^^^^^^^^^^^^^
+E       KeyError: 'template'
+
+oracle/capability/formats.py:381: KeyError
+_____ test_a_taxonomy_receipt_classifies_stored_receipts_without_inference _____
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_taxonomy_receipt_classi0')
+
+    def test_a_taxonomy_receipt_classifies_stored_receipts_without_inference(tmp_path):
+        root = mini_suite(tmp_path)
+        outputs = {"exec-item": "", "diag-item": "garbage"}
+        adapter = adapters.FakeAdapter(outputs, name="scripted",
+                                       accounting={"task_success": None})
+        directory = os.path.join(str(tmp_path), "arm")
+        os.makedirs(directory, exist_ok=True)
+>       generations = court.generate(adapter, root,
+                                    os.path.join(directory, "generations.json"))
+
+oracle/tests/test_capability_formats.py:474: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/capability/court.py:228: in generate
+    prompt = task_prompt(task)
+             ^^^^^^^^^^^^^^^^^
+oracle/capability/court.py:138: in task_prompt
+    return suite_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/capability/suite.py:326: in render_prompt
+    return format_module.render_prompt(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+task = Task(root='/tmp/pytest-of-unknown/pytest-0/test_a_taxonomy_receipt_classi0/mini-suite/tasks/diag-item', metadata={'sch...mits=None, initial_files=['Cargo.toml', 'src/lib.rs'], hidden_files=['tests/check.rs'], reference_files=['src/lib.rs'])
+
+    def render_prompt(task) -> str:
+        """The exact prompt for a non-legacy format. Deterministic in the fixture."""
+        fmt = task_format(task)
+        spec = format_spec(task)
+        if fmt == FORMAT_FILE:
+            raise FormatError("file-replacement is rendered by suite.render_prompt")
+>       template = task.read_initial(spec["template"])
+                                     ^^^^^^^^^^^^^^^^
+E       KeyError: 'template'
+
+oracle/capability/formats.py:381: KeyError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_formats.py::test_a_diagnostic_answer_can_be_given_by_option_letter
+FAILED oracle/tests/test_capability_formats.py::test_the_diagnostic_metric_is_never_pooled_with_executable_success
+FAILED oracle/tests/test_capability_formats.py::test_partial_credit_is_secondary_and_never_changes_the_composite
+FAILED oracle/tests/test_capability_formats.py::test_the_check_receipt_records_a_taxonomy_class_for_every_item
+FAILED oracle/tests/test_capability_formats.py::test_a_taxonomy_receipt_classifies_stored_receipts_without_inference
+5 failed, 43 passed in 0.49s

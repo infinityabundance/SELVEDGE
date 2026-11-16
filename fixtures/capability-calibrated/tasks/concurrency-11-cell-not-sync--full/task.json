@@ -1,0 +1,36 @@
+{
+  "capability": "Replace an unsynchronised cell with an atomic shared across threads.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "easy",
+    "source_id": "concurrency-11-cell-not-sync",
+    "source_tree_sha256": "1846917309313ec123da44bdc677f3d52186dd619798a9694a9af69df5b1190c"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "concurrency-11-cell-not-sync--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "counter.fetch_add(1, Ordering::SeqCst)",
+    "replace": "counter.fetch_add(2, Ordering::SeqCst)"
+  },
+  "observed_failure": "error[E0277]: `Cell<u64>` cannot be shared between threads safely\n --> src/lib.rs:5:24\n  |\n5 |             scope.spawn(|| {\n  |                   ----- ^^ `Cell<u64>` is not `Sync`",
+  "prompt_intro": "This crate does not compile. `count_with` shares a `Cell<u64>` between scoped threads, and `Cell` is not `Sync`. Use an `AtomicU64` so every worker adds exactly one, and return the final count. Change the parameter type; keep the name and the thread count.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-11-cell-not-sync (tree 1846917309313ec123da44bdc677f3d52186dd619798a9694a9af69df5b1190c) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

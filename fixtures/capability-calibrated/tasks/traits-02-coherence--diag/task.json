@@ -1,0 +1,68 @@
+{
+  "capability": "Resolve an overlapping blanket impl by implementing the concrete types only. (format: diagnostic-identification)",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "diagnostic-identification",
+    "source_difficulty": "medium",
+    "source_id": "traits-02-coherence",
+    "source_tree_sha256": "37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "diagnostic-identification",
+  "format_spec": {
+    "kind": "diagnostic-identification",
+    "options": [
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "borrowed value does not live long enough",
+        "id": "E0597"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "use of moved value",
+        "id": "E0382"
+      },
+      {
+        "consequence": {
+          "kind": "mutation"
+        },
+        "description": "missing lifetime specifier",
+        "id": "E0106"
+      },
+      {
+        "consequence": {
+          "kind": "reference"
+        },
+        "description": "the reported error",
+        "id": "E0119"
+      }
+    ]
+  },
+  "id": "traits-02-coherence--diag",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0119"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"text: {self}\"",
+    "replace": "\"text:{self}\""
+  },
+  "prompt_intro": "This crate does not compile. Identify which compiler error explains the failure. The harness applies the registered repair for the option you choose and compiles it: a diagnosis whose repair does not resolve the failure is not verified.",
+  "provenance": "derived from fixtures/capability/tasks/traits-02-coherence (tree 37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

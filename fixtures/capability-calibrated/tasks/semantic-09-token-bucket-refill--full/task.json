@@ -1,0 +1,36 @@
+{
+  "capability": "Refill proportionally to elapsed time and respect the capacity bound.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "hard",
+    "source_id": "semantic-09-token-bucket-refill",
+    "source_tree_sha256": "037cbae95f92dad470f01a87cfa23c1174dc03903009f765e31dbb8df248a763"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "semantic-09-token-bucket-refill--full",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".min(capacity)",
+    "replace": ".min(capacity.saturating_sub(1))"
+  },
+  "observed_failure": "the crate builds and tests pass; refill(0, 500, 10, 100) returns 0 where\nproportional refill requires 5, and the capacity bound is ignored",
+  "prompt_intro": "The token-bucket helper builds and its one-second example passes. The contract refills proportionally for sub-second elapsed time and never exceeds `capacity`. `refill(0, 500, 10, 100)` must return 5 and `refill(90, 1000, 20, 100)` must return 100. Fix `refill`. Keep the signature.",
+  "provenance": "derived from fixtures/capability/tasks/semantic-09-token-bucket-refill (tree 037cbae95f92dad470f01a87cfa23c1174dc03903009f765e31dbb8df248a763) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

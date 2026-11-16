@@ -1,0 +1,41 @@
+{
+  "capability": "Take a mutable reference when a function mutates its argument. (format: body-completion)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "body-completion",
+    "source_difficulty": "easy",
+    "source_id": "borrow-13-mutate-through-shared",
+    "source_tree_sha256": "609291d78e2f05de702c645fae42cf3b0e95fe88168812640bf7b071de054b5f"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "body-completion",
+  "format_spec": {
+    "function": "stamp",
+    "kind": "body-completion",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "borrow-13-mutate-through-shared--body",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "not yet implemented"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "entries[index] += 1;",
+    "replace": "entries[index] += 2;"
+  },
+  "prompt_intro": "Only the body of `stamp` is missing. Complete it so that the visible test and the hidden tests pass. Keep the signature exactly as it is; return the body only.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-13-mutate-through-shared (tree 609291d78e2f05de702c645fae42cf3b0e95fe88168812640bf7b071de054b5f) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

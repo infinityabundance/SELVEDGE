@@ -1,0 +1,39 @@
+{
+  "capability": "Disable a default feature and enable the API-bearing alternative.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "hard",
+    "source_id": "deps-09-disable-default-features",
+    "source_tree_sha256": "43fc9402907631955c3dbbccf7c37191dfb9888a33362e3815d876f8145cbc85"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "deps-09-disable-default-features--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec::render(value)",
+    "replace": "codec::render(value).to_lowercase()"
+  },
+  "observed_failure": "error[E0425]: cannot find function `render` in crate `codec`\n --> src/lib.rs:3:12\n  |\n3 |     codec::render(value)\n  |            ^^^^^^ not found in `codec`",
+  "prompt_intro": "This crate does not build. The vendored `codec` 2.0.0 enables its `legacy` feature by default, which hides `render`; `render` exists only with the `modern` feature. Disable the defaults and enable `modern`. Do not modify `dep/`. Keep `pub fn render(value: &str) -> String`, which trims and upper-cases.",
+  "provenance": "derived from fixtures/capability/tasks/deps-09-disable-default-features (tree 43fc9402907631955c3dbbccf7c37191dfb9888a33362e3815d876f8145cbc85) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

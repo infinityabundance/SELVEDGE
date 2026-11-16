@@ -1,0 +1,36 @@
+{
+  "capability": "Resolve an overlapping blanket impl by implementing the concrete types only.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "traits-02-coherence",
+    "source_tree_sha256": "37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "traits-02-coherence--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0119"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"text: {self}\"",
+    "replace": "\"text:{self}\""
+  },
+  "observed_failure": "error[E0119]: conflicting implementations of trait `Summary` for type `Report`\n --> src/lib.rs:15:1\n  |\n15| impl<T: Display> Summary for T {\n  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ conflicting implementation for `Report`",
+  "prompt_intro": "This crate does not build: `impl<T: Display> Summary for T` overlaps the\nimpl for `Report`. Remove the blanket impl and implement `Summary` for the\ntwo concrete types the application needs: `Report` (prefix `report: `) and\n`&str` (prefix `text: `). Keep `summary_of_text`.",
+  "provenance": "derived from fixtures/capability/tasks/traits-02-coherence (tree 37f9de1cc19b31b8a0d0565189b6cd46cfc6a9deecde1a1e7eeb8f1995107d0c) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,36 @@
+{
+  "capability": "Debug a rounding boundary in a chunk count, including overflow safety.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "failing-01-chunk-boundary",
+    "source_tree_sha256": "b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "failing-01-chunk-boundary--full",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "len.div_ceil(size)",
+    "replace": "len / size"
+  },
+  "observed_failure": "running 1 test\ntest tests::five_items_in_chunks_of_two_need_three_chunks ... FAILED\n\nthread 'tests::five_items_in_chunks_of_two_need_three_chunks' panicked at\nsrc/lib.rs:16:9:\nassertion `left == right` failed\n  left: 2\n right: 3\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. `chunk_count` must return the number of chunks needed to hold `len` items in groups of `size`, treating a size of zero as zero chunks, and it must not overflow for any `usize` input. Keep the signature.",
+  "provenance": "derived from fixtures/capability/tasks/failing-01-chunk-boundary (tree b34b10136c1ea08e63e4c9afadbb16c045909d80bb8f482c594a40939e67039e) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

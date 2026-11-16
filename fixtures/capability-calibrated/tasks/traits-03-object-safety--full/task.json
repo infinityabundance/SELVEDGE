@@ -1,0 +1,36 @@
+{
+  "capability": "Make a trait object-safe by removing a generic method, keeping dynamic dispatch.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "traits-03-object-safety",
+    "source_tree_sha256": "02c8475d07e4ec223b0802fd1c0c5bd040e1dc7eef9a06994cb5778059fd0f28"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "traits-03-object-safety--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0038"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "store.len()",
+    "replace": "store.len() + 1"
+  },
+  "observed_failure": "error[E0038]: the trait `Store` cannot be made into an object\n --> src/lib.rs:18:19\n  |\n18| pub fn count(store: &dyn Store) -> usize {\n  |                   ^^^^^^^^^ `Store` cannot be made into an object\n  |\n  = note: method `put` has generic type parameters",
+  "prompt_intro": "This crate does not build: `Store::put` is generic, so `Store` cannot be\nused as `dyn Store`. Make `put` take an `i64` directly so the trait is\nobject-safe, and keep `count(&dyn Store)` working. Keep the method names and\nthe `len` semantics.",
+  "provenance": "derived from fixtures/capability/tasks/traits-03-object-safety (tree 02c8475d07e4ec223b0802fd1c0c5bd040e1dc7eef9a06994cb5778059fd0f28) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

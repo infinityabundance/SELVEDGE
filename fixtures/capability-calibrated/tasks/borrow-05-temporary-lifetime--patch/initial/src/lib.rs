@@ -1,0 +1,17 @@
+//! A label built from a borrowed temporary.
+
+pub fn first_word(text: &str) -> &str {
+    text.split_whitespace().next().unwrap_or("")
+}
+
+// TODO(FUNCTION)
+
+#[cfg(test)]
+mod visible {
+    use super::*;
+
+    #[test]
+    fn labels_the_first_word() {
+        assert_eq!(label(3), "item");
+    }
+}

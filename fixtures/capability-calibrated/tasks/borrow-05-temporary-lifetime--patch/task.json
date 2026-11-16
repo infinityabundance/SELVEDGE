@@ -1,0 +1,62 @@
+{
+  "capability": "Bind a temporary before borrowing it so the borrow outlives the statement. (format: patch-selection)",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "borrow-05-temporary-lifetime",
+    "source_tree_sha256": "8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn label(number: u32) -> String {\n    let word = first_word(&format!(\"item {number}\"));\n    word.to_string()\n}\n",
+        "label": "A",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      },
+      {
+        "function": "pub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn label(number: u32) -> String {\n    let formatted = format!(\"item-{number}\");\n    first_word(&formatted).to_string()\n}\n",
+        "label": "C",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      }
+    ],
+    "function": "label",
+    "kind": "patch-selection",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "borrow-05-temporary-lifetime--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub fn label(number: u32) -> String {\n    let formatted = format!(\"item {number}\");\n    first_word(&formatted).to_string()\n}",
+    "replace": "pub fn label(number: u32) -> String {\n    let word = first_word(&format!(\"item {number}\"));\n    word.to_string()\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `label` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/borrow-05-temporary-lifetime (tree 8544a5c4143da238d1371cfb7ebe113ee5eb346d5b19f98ee7a1af949488788c) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

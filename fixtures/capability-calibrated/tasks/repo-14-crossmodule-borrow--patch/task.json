@@ -1,0 +1,62 @@
+{
+  "capability": "Finish reading a collection before mutating it from another module. (format: patch-selection)",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "patch-selection",
+    "source_difficulty": "medium",
+    "source_id": "repo-14-crossmodule-borrow",
+    "source_tree_sha256": "a92e712774e233e4f93611f656ebdc2e4c34203b115b4154ed8ecfbf003a6525"
+  },
+  "difficulty": "medium",
+  "entry": "src/sync.rs",
+  "extraction_policy": "tolerant",
+  "format": "patch-selection",
+  "format_spec": {
+    "candidates": [
+      {
+        "function": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(1);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}\n",
+        "label": "A",
+        "provenance": "the source's declared mutation (wrong)",
+        "reference": false
+      },
+      {
+        "function": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(0);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}\n",
+        "label": "B",
+        "provenance": "reference",
+        "reference": true
+      },
+      {
+        "function": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = &store.items[0];\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first.len()\n}\n",
+        "label": "C",
+        "provenance": "source initial (failing) definition",
+        "reference": false
+      }
+    ],
+    "function": "append_all",
+    "kind": "patch-selection",
+    "template": "src/sync.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "repo-14-crossmodule-borrow--patch",
+  "initial_failure": {
+    "command": "all-targets",
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/sync.rs",
+    "find": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(0);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}",
+    "replace": "pub fn append_all(store: &mut Store, extra: &[String]) -> usize {\n    let first = store.items.first().map(|item| item.len()).unwrap_or(1);\n    for item in extra {\n        store.items.push(item.clone());\n    }\n    first\n}"
+  },
+  "prompt_intro": "Choose the one candidate definition for `append_all` that satisfies the visible test and the hidden tests. The others compile-or-not and fail at least one test.",
+  "provenance": "derived from fixtures/capability/tasks/repo-14-crossmodule-borrow (tree a92e712774e233e4f93611f656ebdc2e4c34203b115b4154ed8ecfbf003a6525) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

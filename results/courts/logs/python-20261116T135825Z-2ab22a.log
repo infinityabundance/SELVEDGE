@@ -1,0 +1,15 @@
+..F..................................................................... [ 86%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_the_manifest_matches_the_tree ______________________
+
+    def test_the_manifest_matches_the_tree():
+        ok, message = suite.check_manifest(SUITE_ROOT)
+>       assert ok, message
+E       AssertionError: MANIFEST.json is stale at 'tasks'; regenerate it
+E       assert False
+
+oracle/tests/test_capability_suite.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_suite.py::test_the_manifest_matches_the_tree
+1 failed, 82 passed in 34.15s

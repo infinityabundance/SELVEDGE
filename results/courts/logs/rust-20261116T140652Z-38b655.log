@@ -1,0 +1,123 @@
+== migrate-06-error-variant--patch target function
+--- template
+//! Read a value through the table crate.
+
+// TODO(FUNCTION)
+
+#[cfg(test)]
+mod visible {
+    use super::*;
+
+    #[test]
+    fn returns_a_present_value() {
+        assert_eq!(read(&table(), "beta"), Ok(2));
+    }
+}
+
+--- reference
+//! Read a value through the table crate.
+
+pub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String> {
+    match table::lookup(table, key) {
+        Ok(value) => Ok(value),
+        Err(table::Error::Missing { .. }) => Err(format!("missing {key}")),
+        Err(table::Error::Empty) => Err("empty key".to_string()),
+    }
+}
+
+#[cfg(test)]
+mod visible {
+    use super::*;
+
+    #[test]
+    fn returns_a_present_value() {
+        assert_eq!(read(&table(), "beta"), Ok(2));
+    }
+}
+
+ check compile_error 
+ stderr error[E0423]: expected function, found crate `table`
+  --> src/lib.rs:17:26
+   |
+17 |         assert_eq!(read(&table(), "beta"), Ok(2));
+   |                          ^^^^^ not a function
+
+For more information about this error, try `rustc --explain E0423`.
+error: could not compile `migrate_06_error_variant` (lib test) due to 1 previous error
+
+== semantic-01-overlapping-count--patch target function
+--- template
+//! Overlapping occurrence counting.
+
+// TODO(FUNCTION)
+
+#[cfg(test)]
+mod tests {
+    use super::count_occurrences;
+
+    #[test]
+    fn visible_example_is_non_overlapping() {
+        assert_eq!(count_occurrences("aaaa", "aa"), 2);
+    }
+}
+
+--- reference
+//! Overlapping occurrence counting.
+
+pub fn count_occurrences(haystack: &str, needle: &str) -> usize {
+    if needle.is_empty() {
+        return 0;
+    }
+    haystack
+        .as_bytes()
+        .windows(needle.len())
+        .filter(|window| *window == needle.as_bytes())
+        .count()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::count_occurrences;
+
+    #[test]
+    fn visible_example_is_non_overlapping() {
+        assert_eq!(count_occurrences("aaaa", "aa"), 2);
+    }
+}
+
+ check test_failed 
+ stderr error: test failed, to rerun pass `--lib`
+
+== deps-07-feature-conflict--patch target file
+--- template
+[package]
+name = "deps_07_feature_conflict"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+codec = { path = "dep", features = ["fast", "safe"] }
+
+--- reference
+[package]
+name = "deps_07_feature_conflict"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+codec = { path = "dep", features = ["safe"] }
+
+ check invalid_solution ['the crate manifest is locked for this task']
+ stderr 

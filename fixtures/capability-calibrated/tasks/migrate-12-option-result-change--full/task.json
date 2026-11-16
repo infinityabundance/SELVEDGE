@@ -1,0 +1,39 @@
+{
+  "capability": "Handle an Option-returning lookup after an API change.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "migrate-12-option-result-change",
+    "source_tree_sha256": "4ddc1ca385f094ddf08ce74f54781b3026d215e1dfb9c360629b8de3330fd4f9"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "migrate-12-option-result-change--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0369"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "count + 1",
+    "replace": "count"
+  },
+  "observed_failure": "error[E0369]: cannot add `{integer}` to `Option<i64>`\n --> src/lib.rs:4:5\n  |\n4 |     registry.lookup(key) + 1\n  |     --------------------- ^ - {integer}\n  |     Option<i64>",
+  "prompt_intro": "This crate does not build against the vendored `registry` 2.0.0. Version 1 returned the stored count directly; version 2 returns `Option<i64>` because a key may be absent. `next_count` must return the stored count plus one, or `0` when the key is absent. Do not modify `dep/`.",
+  "provenance": "derived from fixtures/capability/tasks/migrate-12-option-result-change (tree 4ddc1ca385f094ddf08ce74f54781b3026d215e1dfb9c360629b8de3330fd4f9) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

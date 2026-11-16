@@ -1,0 +1,41 @@
+{
+  "capability": "Recover the data of a mutex poisoned by a panicking worker. (format: body-completion)",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "body-completion",
+    "source_difficulty": "hard",
+    "source_id": "concurrency-14-poisoned-mutex",
+    "source_tree_sha256": "78727827716c2b125249b5da7663c9568cc28371f6feb0e569e25baa8bbfd209"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "body-completion",
+  "format_spec": {
+    "function": "record_with_panic",
+    "kind": "body-completion",
+    "template": "src/lib.rs",
+    "visible_test": "the first hidden test and its helpers, shown as the visible test"
+  },
+  "id": "concurrency-14-poisoned-mutex--body",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "not yet implemented"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "guard.push(7);",
+    "replace": "guard.push(8);"
+  },
+  "prompt_intro": "Only the body of `record_with_panic` is missing. Complete it so that the visible test and the hidden tests pass. Keep the signature exactly as it is; return the body only.",
+  "provenance": "derived from fixtures/capability/tasks/concurrency-14-poisoned-mutex (tree 78727827716c2b125249b5da7663c9568cc28371f6feb0e569e25baa8bbfd209) by oracle/capability/derive.py; the hidden tests, reference code and licence are the source's, the format is new (S28)",
+  "schema": "selvedge/capability-task/v1"
+}

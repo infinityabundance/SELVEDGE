@@ -1,0 +1,36 @@
+{
+  "capability": "Finish reading a collection before mutating it from another module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "derived_from": {
+    "format": "file-replacement",
+    "source_difficulty": "medium",
+    "source_id": "repo-14-crossmodule-borrow",
+    "source_tree_sha256": "a92e712774e233e4f93611f656ebdc2e4c34203b115b4154ed8ecfbf003a6525"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "extraction_policy": "tolerant",
+  "format": "file-replacement",
+  "id": "repo-14-crossmodule-borrow--full",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/sync.rs",
+    "find": "unwrap_or(0)",
+    "replace": "unwrap_or(1)"
+  },
+  "observed_failure": "error[E0502]: cannot borrow `store.items` as mutable because it is also borrowed as immutable\n --> src/sync.rs:5:19\n  |\n4 |     let first = &store.items[0];\n  |                  ----------- immutable borrow occurs here\n5 |     for item in extra {\n  |                   ^^^^^ mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. `sync::append_all` holds a borrow of the first stored item while it pushes new items through the same `Store`. Take the measurement before mutating, and return `0` when the store is empty.",
+  "provenance": "derived from fixtures/capability/tasks/repo-14-crossmodule-borrow (tree a92e712774e233e4f93611f656ebdc2e4c34203b115b4154ed8ecfbf003a6525) by oracle/capability/derive.py: the source task unchanged, copied under a new id as the hardest tier (S28)",
+  "schema": "selvedge/capability-task/v1"
+}
