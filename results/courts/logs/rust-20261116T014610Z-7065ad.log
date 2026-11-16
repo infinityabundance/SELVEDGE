@@ -1,0 +1,42 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running tests/tiny_parity.rs (target/debug/deps/tiny_parity-ab0986307ab5b9df)
+
+running 4 tests
+test accounting_row_is_valid_jsonl_and_reports_every_required_field ... ok
+test exact_mode_classifies_as_proven_and_approximate_does_not ... 
+thread 'exact_mode_classifies_as_proven_and_approximate_does_not' (335) panicked at crates/selvedge-runtime/tests/tiny_parity.rs:172:5:
+assertion `left == right` failed
+  left: 6
+ right: 2
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<usize, usize>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: tiny_parity::exact_mode_classifies_as_proven_and_approximate_does_not
+             at ./tests/tiny_parity.rs:172:5
+   5: tiny_parity::exact_mode_classifies_as_proven_and_approximate_does_not::{closure#0}
+             at ./tests/tiny_parity.rs:140:62
+   6: <tiny_parity::exact_mode_classifies_as_proven_and_approximate_does_not::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+test rust_forward_matches_the_numpy_reference_on_the_tiny_fixture ... tiny parity: positions=6 vocab=64 max_abs=0.00000008940696716308594 max_rel=0.000035773567626352244
+ok
+test tokenizer_round_trips_the_pinned_vocabulary ... ok
+
+failures:
+
+failures:
+    exact_mode_classifies_as_proven_and_approximate_does_not
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+error: test failed, to rerun pass `-p selvedge-runtime --test tiny_parity`

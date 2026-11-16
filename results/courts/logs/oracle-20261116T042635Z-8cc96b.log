@@ -1,0 +1,18 @@
+eval: loaded 124 tensors; 124 trainable
+Traceback (most recent call last):
+  File "/work/oracle/eval/baseline.py", line 296, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/baseline.py", line 197, in main
+    results["distributional"] = harness.distributional(student, teacher, windows,
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/harness.py", line 101, in distributional
+    stats = window_stats(student, teacher, item["tokens"], device)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 158, in inference_mode
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/harness.py", line 84, in window_stats
+    kl = (p_t * (logp_t - logp_s)).sum(dim=-1)
+          ~~~~^~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 298.00 MiB. GPU 0 has a total capacity of 15.61 GiB of which 292.62 MiB is free. Including non-PyTorch memory, this process has 13.65 GiB memory in use. Of the allocated memory 13.34 GiB is allocated by PyTorch, and 14.16 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)

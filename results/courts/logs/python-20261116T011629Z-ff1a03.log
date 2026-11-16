@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/sim_perf_blocks.py", line 143, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/work/scripts/sim_perf_blocks.py", line 102, in main
+    receipt = receipts.setdefault(receipt_path, load(receipt_path))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/sim_perf_blocks.py", line 86, in load
+    with open(path, "r", encoding="utf-8") as handle:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/sim/validation-06b-lru1of2.json'

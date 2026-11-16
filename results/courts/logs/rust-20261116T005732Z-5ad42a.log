@@ -1,0 +1,37 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+error[E0599]: no method named `uses_future` found for struct `OracleNextRecordPrefetch` in the current scope
+   --> crates/selvedge-sim/tests/engine.rs:367:20
+    |
+367 |     assert!(oracle.uses_future());
+    |                    ^^^^^^^^^^^ method not found in `OracleNextRecordPrefetch`
+    |
+   ::: crates/selvedge-sim/src/policy.rs:346:8
+    |
+346 |     fn uses_future(&self) -> bool {
+    |        ----------- the method is available for `OracleNextRecordPrefetch` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Predictor` which provides `uses_future` is implemented but not in scope; perhaps you want to import it
+    |
+  9 + use selvedge_sim::Predictor;
+    |
+
+error[E0599]: no method named `uses_future` found for struct `LastValuePrefetch` in the current scope
+   --> crates/selvedge-sim/tests/engine.rs:368:19
+    |
+368 |     assert!(!last.uses_future());
+    |                   ^^^^^^^^^^^ method not found in `LastValuePrefetch`
+    |
+   ::: crates/selvedge-sim/src/policy.rs:346:8
+    |
+346 |     fn uses_future(&self) -> bool {
+    |        ----------- the method is available for `LastValuePrefetch` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Predictor` which provides `uses_future` is implemented but not in scope; perhaps you want to import it
+    |
+  9 + use selvedge_sim::Predictor;
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `selvedge-sim` (test "engine") due to 2 previous errors

@@ -585,6 +585,9 @@ def cmd_arm_receipt(args) -> int:
             "court_receipt": args.court_receipt,
             "court_log": args.court_log,
             "exit_code": args.exit_code,
+            "exit_code_source": ("container (docker wait / inspect)"
+                                 if args.exit_code is not None
+                                 else "unobserved: no court attribution"),
             "started_utc": args.started_utc,
             "finished_utc": args.finished_utc,
             "steps_logged": steps_logged,
@@ -837,6 +840,14 @@ def cmd_estimate(args) -> int:
 # ---------------------------------------------------------------------------
 
 
+def _exit_code(value: str):
+    """An exit code, or None when the run has no court attribution (a
+    verified-checkpoint harvest after the orchestrator died)."""
+    if value is None or str(value).strip().lower() in ("", "none", "unobserved"):
+        return None
+    return int(value)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -880,7 +891,9 @@ def build_parser() -> argparse.ArgumentParser:
     arm.add_argument("--container", default=None)
     arm.add_argument("--court-receipt", default=None)
     arm.add_argument("--court-log", default=None)
-    arm.add_argument("--exit-code", type=int, default=None)
+    arm.add_argument("--exit-code", type=_exit_code, default=None,
+                     help="container exit code, or 'unobserved' when no court "
+                          "attribution exists (a verified-checkpoint harvest)")
     arm.add_argument("--started-utc", default=None)
     arm.add_argument("--finished-utc", default=None)
     arm.set_defaults(func=cmd_arm_receipt)

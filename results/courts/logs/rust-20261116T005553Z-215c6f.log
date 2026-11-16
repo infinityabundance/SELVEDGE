@@ -1,0 +1,86 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.52s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_sim-1ea419601c6d3be7)
+
+running 52 tests
+test calibration::tests::empirical_quantiles_match_sample ... ok
+test calibration::tests::size_law_interpolates_and_extrapolates ... ok
+test calibration::tests::normal_quantile_matches_known_values ... ok
+test calibration::tests::calibration_fails_closed_without_cold_reads ... ok
+test envelope::tests::invalid_parameters_are_rejected ... ok
+test envelope::tests::envelope_builds_from_prefix_only ... ok
+test envelope::tests::invalidation_rules_are_recorded ... ok
+test envelope::tests::unseen_phase_is_uncovered_not_invented ... ok
+test envelope::tests::envelope_round_trips ... ok
+test placement::tests::frequency_and_coaccess_layouts_are_permutations ... ok
+test placement::tests::unknown_placement_name_is_rejected ... ok
+test placement::tests::coaccess_blocks_place_coaccessed_pairs_adjacent ... ok
+test placement::tests::objective_prices_replication ... ok
+test placement::tests::sequential_is_a_permutation_of_extents ... ok
+test policy::tests::least_stale_protects_current_sequence ... ok
+test placement::tests::replication_amplification_is_accounted ... ok
+test placement::tests::weights_are_deterministic ... ok
+test placement::tests::weights_use_lift_and_marginal_cost ... ok
+test policy::tests::no_cache_never_hits_and_never_admits ... ok
+test policy::tests::oversized_shard_is_refused ... ok
+test policy::tests::lfu_prefers_frequency_then_recency ... ok
+test policy::tests::capacity_boundary_exact_fit_is_admitted ... ok
+test policy::tests::lru_evicts_oldest_with_id_tiebreak ... ok
+test policy::tests::pinned_entries_are_never_evicted ... ok
+test policy::tests::pinned_refuses_beyond_capacity ... ok
+test policy::tests::zero_capacity_policy_cache_is_rejected ... ok
+test prng::tests::below_is_bounded_and_rejects_zero ... ok
+test prng::tests::empirical_quantiles_include_endpoints ... ok
+test prng::tests::splitmix_is_reproducible ... ok
+test report::tests::conservation_checks_reject_a_bad_summary ... ok
+test prng::tests::nearest_rank_percentiles ... ok
+test report::tests::latency_summary_uses_nearest_rank ... ok
+test synthetic::tests::invalid_specs_are_rejected ... ok
+test prng::tests::uniform_is_in_unit_interval ... ok
+test synthetic::tests::chunk_union_creates_physical_adjacency ... ok
+test trace::tests::approximate_trace_cannot_name_native_dense ... ok
+test calibration::tests::calibration_reads_metrics_and_writes_receipt ... ok
+test calibration::tests::fit_reports_residuals_and_can_reject_exponential ... ok
+test trace::tests::overlapping_shards_are_rejected ... ok
+test trace::tests::trace_exact_mode_requires_whole_bundle_set ... ok
+test trace::tests::trace_rejects_duplicate_selection ... ok
+test trace::tests::trace_exact_mode_without_basis_is_rejected ... ok
+test trace::tests::trace_line_cap_is_enforced ... ok
+test trace::tests::trace_manifest_hash_mismatch_fails_closed ... ok
+test trace::tests::trace_rejects_noncanonical_selection ... ok
+test synthetic::tests::phase_switch_changes_the_hot_set ... ok
+test trace::tests::trace_rejects_out_of_table_shard ... ok
+test trace::tests::trace_rejects_semantic_fields ... ok
+test trace::tests::trace_round_trip_and_hash ... ok
+test calibration::tests::normal_quantile_has_unit_moments ... FAILED
+test synthetic::tests::generator_is_deterministic_and_hash_stable ... ok
+test synthetic::tests::different_seeds_differ ... ok
+
+failures:
+
+---- calibration::tests::normal_quantile_has_unit_moments stdout ----
+
+thread 'calibration::tests::normal_quantile_has_unit_moments' (125) panicked at crates/selvedge-sim/src/calibration.rs:935:9:
+variance 1.4808144816443023; q99 2.326347874388028 q999 3.090232304709404
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: selvedge_sim::calibration::tests::normal_quantile_has_unit_moments
+             at ./src/calibration.rs:935:9
+   3: selvedge_sim::calibration::tests::normal_quantile_has_unit_moments::{closure#0}
+             at ./src/calibration.rs:924:42
+   4: <selvedge_sim::calibration::tests::normal_quantile_has_unit_moments::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    calibration::tests::normal_quantile_has_unit_moments
+
+test result: FAILED. 51 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+error: test failed, to rerun pass `-p selvedge-sim --lib`

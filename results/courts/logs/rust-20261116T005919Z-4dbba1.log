@@ -1,0 +1,38 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running tests/engine.rs (target/debug/deps/engine-3818b591359bf8b7)
+
+running 1 test
+test prefetch_never_changes_the_selected_set ... FAILED
+
+failures:
+
+---- prefetch_never_changes_the_selected_set stdout ----
+
+thread 'prefetch_never_changes_the_selected_set' (55) panicked at crates/selvedge-sim/tests/engine.rs:392:71:
+called `Result::unwrap()` on an `Err` value: Invalid { field: "bytes_prefetch", reason: "1000 speculative bytes, 2000 used + 0 wasted" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_sim::engine::Simulation, selvedge_sim::error::SimError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: engine::prefetch_never_changes_the_selected_set
+             at ./tests/engine.rs:392:71
+   5: engine::prefetch_never_changes_the_selected_set::{closure#0}
+             at ./tests/engine.rs:379:45
+   6: <engine::prefetch_never_changes_the_selected_set::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    prefetch_never_changes_the_selected_set
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p selvedge-sim --test engine`

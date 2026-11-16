@@ -1,0 +1,147 @@
++ target/debug/selvedge sim calibrate --metrics transfer+verify=results/store/metrics-06b-r1/plan-order.jsonl --metrics hit_copy=results/store/metrics-06b-r1/lru-1of4.jsonl --io results/io/io-scan-06b-r1.json --out results/sim/calibration-06b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+calibration: 3 inputs, shard 786432 B, transfer p50 930308 ns, verify p50 307905 ns
+fit transfer_ns exponential: max |rel err| 1.6581, mean 0.7861
+fit transfer_ns lognormal: max |rel err| 0.2658, mean 0.1161
+fit verify_ns exponential: max |rel err| 2.9533, mean 1.2070
+fit verify_ns lognormal: max |rel err| 0.0739, mean 0.0406
+receipt: results/sim/calibration-06b.json
++ target/debug/selvedge sim calibrate --metrics transfer+verify=results/store/metrics-17b-r1/plan-order.jsonl --metrics hit_copy=results/store/metrics-17b-r1/lru-1of4.jsonl --io results/io/io-scan-17b-r1.json --out results/sim/calibration-17b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+calibration: 3 inputs, shard 3145728 B, transfer p50 3023058 ns, verify p50 1234256 ns
+fit transfer_ns exponential: max |rel err| 1.5036, mean 0.8263
+fit transfer_ns lognormal: max |rel err| 0.1275, mean 0.0454
+fit verify_ns exponential: max |rel err| 3.1638, mean 1.2423
+fit verify_ns lognormal: max |rel err| 0.0818, mean 0.0452
+receipt: results/sim/calibration-17b.json
++ target/debug/selvedge sim validate --calibration results/sim/calibration-06b.json --metrics results/store/metrics-06b-r1/lru-1of2.jsonl --arm lru-1of2 --bench results/store/store-bench-06b-r1.json --policy lru --out results/sim/validation-06b-lru-1of2.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+receipt: results/sim/validation-06b-lru-1of2.json
+arm lru-1of2 policy lru capacity 528482304: reads 2688 hits recorded/replayed 672/672, mismatches 0
+stall measured p50/p95/p99 1193670/1693235/2229627 ns vs predicted 1099575/1567334/1889743 ns
+discrepancy mean: -6.4%
+discrepancy p50: -7.9%
+discrepancy p95: -7.4%
+discrepancy p99: -15.2%
+device bytes measured 1585446912 vs predicted 1585446912 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge sim validate --calibration results/sim/calibration-06b.json --metrics results/store/metrics-06b-r1/least-stale-1of4.jsonl --arm least-stale-1of4 --bench results/store/store-bench-06b-r1.json --policy least_stale --out results/sim/validation-06b-least-stale-1of4.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+receipt: results/sim/validation-06b-least-stale-1of4.json
+arm least-stale-1of4 policy least_stale capacity 264241152: reads 2688 hits recorded/replayed 336/336, mismatches 0
+stall measured p50/p95/p99 1226442/1605250/1883499 ns vs predicted 1199515/1593322/1909460 ns
+discrepancy mean: -1.2%
+discrepancy p50: -2.2%
+discrepancy p95: -0.7%
+discrepancy p99: +1.4%
+device bytes measured 1849688064 vs predicted 1849688064 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge sim validate --calibration results/sim/calibration-06b.json --metrics results/store/metrics-06b-r1/none-cold.jsonl --arm none-cold --bench results/store/store-bench-06b-r1.json --policy none --out results/sim/validation-06b-none-cold.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+receipt: results/sim/validation-06b-none-cold.json
+arm none-cold policy none capacity 0: reads 2688 hits recorded/replayed 0/0, mismatches 0
+stall measured p50/p95/p99 1264082/1714815/2119140 ns vs predicted 1254258/1605612/1909755 ns
+discrepancy mean: -0.5%
+discrepancy p50: -0.8%
+discrepancy p95: -6.4%
+discrepancy p99: -9.9%
+device bytes measured 2113929216 vs predicted 2113929216 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge sim validate --calibration results/sim/calibration-17b.json --metrics results/store/metrics-17b-r1/lru-1of4.jsonl --arm lru-1of4 --bench results/store/store-bench-17b-r1.json --policy lru --out results/sim/validation-17b-lru-1of4.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+receipt: results/sim/validation-17b-lru-1of4.json
+arm lru-1of4 policy lru capacity 1056964608: reads 2688 hits recorded/replayed 336/336, mismatches 0
+stall measured p50/p95/p99 4341311/5483115/6891747 ns vs predicted 4268406/5379454/7026323 ns
+discrepancy mean: -1.7%
+discrepancy p50: -1.7%
+discrepancy p95: -1.9%
+discrepancy p99: +2.0%
+device bytes measured 7398752256 vs predicted 7398752256 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge trace export --bundle results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --metrics results/store/metrics-06b-r1/plan-order.jsonl --receipt results/store/store-bench-06b-r1.json --out results/sim/traces/whole-bundle-06b-plan-order.jsonl --stamp 20261116T010255Z --revision ceb7d2388a9c
+trace: 2 records, 1344 shards, source=measured, mode=exact
+records: results/sim/traces/whole-bundle-06b-plan-order.jsonl
+manifest: results/sim/traces/whole-bundle-06b-plan-order.manifest.json
+records_sha256: 802ec13177f485c55f70a93e0bbdcd8519464659140b1c8a758342be8650afcb
++ target/debug/selvedge trace export --bundle results/artifacts/qwen3-1.7b-ffn-g16/swiglu-c4de86a90d4a-fe4c159deaf6.slv --fixtures results/selectors/fixtures/selector-inputs.json --selector magnitude --receipt results/selectors/fixtures/selector-inputs.json --out results/sim/traces/m2-magnitude-17b.jsonl --stamp 20261116T010255Z --revision ceb7d2388a9c
+selvedge: json error: invalid type: integer `28`, expected a string at line 2286 column 24
+FAILED (exit 0): target/debug/selvedge trace export --bundle results/artifacts/qwen3-1.7b-ffn-g16/swiglu-c4de86a90d4a-fe4c159deaf6.slv --fixtures results/selectors/fixtures/selector-inputs.json --selector magnitude --receipt results/selectors/fixtures/selector-inputs.json --out results/sim/traces/m2-magnitude-17b.jsonl --stamp 20261116T010255Z --revision ceb7d2388a9c
++ target/debug/selvedge trace generate --preset hot --out results/sim/traces/synthetic-hot.jsonl --stamp 20261116T010255Z --revision ceb7d2388a9c
+synthetic trace: 3584 records, 448 shards, hash 37558521466fc34831474f7d599fbcc15cbdd112c9a6261afdd33fd1f678a578
+records: results/sim/traces/synthetic-hot.jsonl
+manifest: results/sim/traces/synthetic-hot.manifest.json
++ target/debug/selvedge trace generate --preset cold --out results/sim/traces/synthetic-cold.jsonl --stamp 20261116T010255Z --revision ceb7d2388a9c
+synthetic trace: 3584 records, 448 shards, hash 8665f410f9c184ec38242a776d20e32b9e76fc08ce178b5f101d74b32370df93
+records: results/sim/traces/synthetic-cold.jsonl
+manifest: results/sim/traces/synthetic-cold.manifest.json
++ target/debug/selvedge trace generate --preset alternating --out results/sim/traces/synthetic-alternating.jsonl --stamp 20261116T010255Z --revision ceb7d2388a9c
+synthetic trace: 7168 records, 448 shards, hash b10b9f44f41d31c200669157f1e31563e80e71343c66b9c94f340db701cdbdeb
+records: results/sim/traces/synthetic-alternating.jsonl
+manifest: results/sim/traces/synthetic-alternating.manifest.json
++ target/debug/selvedge trace inspect --trace results/sim/traces/whole-bundle-06b-plan-order.jsonl
+trace id: swiglu-ad15450e2cc2-76dd1b90442e-magnitude
+source=measured mode=exact records=2 shards=1344 payload=1056964608 B
+records_sha256: 802ec13177f485c55f70a93e0bbdcd8519464659140b1c8a758342be8650afcb (verified)
+phase whole-bundle: 1 records
+phase whole-bundle: 1 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/m2-magnitude-17b.jsonl
+selvedge: trace i/o error: No such file or directory (os error 2)
+FAILED (exit 0): target/debug/selvedge trace inspect --trace results/sim/traces/m2-magnitude-17b.jsonl
++ target/debug/selvedge trace inspect --trace results/sim/traces/synthetic-hot.jsonl
+trace id: synthetic-5e1de6e511ed5eed
+source=synthetic mode=approximate records=3584 shards=448 payload=352321536 B
+records_sha256: 37558521466fc34831474f7d599fbcc15cbdd112c9a6261afdd33fd1f678a578 (verified)
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/synthetic-cold.jsonl
+trace id: synthetic-5e1de6e511ed5eed
+source=synthetic mode=approximate records=3584 shards=448 payload=352321536 B
+records_sha256: 8665f410f9c184ec38242a776d20e32b9e76fc08ce178b5f101d74b32370df93 (verified)
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/synthetic-alternating.jsonl
+trace id: synthetic-5e1de6e511ed5eed
+source=synthetic mode=approximate records=7168 shards=448 payload=352321536 B
+records_sha256: b10b9f44f41d31c200669157f1e31563e80e71343c66b9c94f340db701cdbdeb (verified)
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
++ target/debug/selvedge sim compare-store --trace results/sim/traces/whole-bundle-06b-plan-order.jsonl --bundle results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --calibration results/sim/calibration-06b.json --policy none --out results/sim/compare-store-06b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+selvedge: store error: invalid store configuration: max_run_bytes must be at least max_shard_bytes so a run never splits a shard
+FAILED (exit 0): target/debug/selvedge sim compare-store --trace results/sim/traces/whole-bundle-06b-plan-order.jsonl --bundle results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --calibration results/sim/calibration-06b.json --policy none --out results/sim/compare-store-06b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
++ target/debug/selvedge sim pareto --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --policies none,lru,lfu,least_stale --fractions 0.125,0.25,0.5,1.0 --out results/sim/pareto-m2-17b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+selvedge: trace i/o error: No such file or directory (os error 2)
+FAILED (exit 0): target/debug/selvedge sim pareto --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --policies none,lru,lfu,least_stale --fractions 0.125,0.25,0.5,1.0 --out results/sim/pareto-m2-17b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
++ target/debug/selvedge sim placement --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --cache-fraction 0.25 --coalesce-gap-bytes 0 --out results/sim/placement-m2-17b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+selvedge: trace i/o error: No such file or directory (os error 2)
+FAILED (exit 0): target/debug/selvedge sim placement --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --cache-fraction 0.25 --coalesce-gap-bytes 0 --out results/sim/placement-m2-17b.json --stamp 20261116T010255Z --revision ceb7d2388a9c
++ target/debug/selvedge envelope build --trace results/sim/traces/synthetic-alternating.jsonl --out results/sim/envelopes-synthetic-alternating.json --build-fraction 0.5 --min-coverage 0.6 --stamp 20261116T010255Z --revision ceb7d2388a9c
+envelopes: 0 phases from 3584 build records; evaluating 3584 records
+uncovered phases: synth-p0, synth-p1
++ target/debug/selvedge envelope apply --trace results/sim/traces/synthetic-alternating.jsonl --envelopes results/sim/envelopes-synthetic-alternating.json --calibration results/sim/calibration-17b.json --policy lru --cache-fraction 0.25 --compute-ns 5000000 --out results/sim/envelope-utility-synthetic-alternating.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+receipt: results/sim/envelope-utility-synthetic-alternating.json
+bytes: baseline 4281335808 -> envelope 4281335808 (saved 0, unused prefetch 0)
+p95: baseline 4154727 ns -> envelope 4154727 ns (saved 0 ns); cold bytes charged 0; invalidations 0
++ target/debug/selvedge simulate --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --policy lru --cache-fraction 0.25 --out results/sim/simulate-m2-17b-lru025.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+selvedge: trace i/o error: No such file or directory (os error 2)
+FAILED (exit 0): target/debug/selvedge simulate --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --policy lru --cache-fraction 0.25 --out results/sim/simulate-m2-17b-lru025.json --stamp 20261116T010255Z --revision ceb7d2388a9c
+one or more receipts reported a failure

@@ -47,3 +47,27 @@ court: selvedge-oracle-court-20261115T232734Z-c8a318.json exit=0 enforcement=ok 
 [2026-11-15T23:45:12Z] [eval-X] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T232734Z-c8a318.json
 [2026-11-15T23:45:14Z] [X] evaluated; summary results/t2/X/eval.json
 [2026-11-15T23:45:16Z] [H] training launched: selvedge-oracle-court-20261115T234515Z-b23ea1.json
+[2026-11-16T04:24:58Z] T2 pilot starting: arms='H' budget=67108864 steps=1024 seed=1001 resume=1
+{
+  "containers": [],
+  "disk_available_bytes": 111968870400,
+  "disk_headroom_bytes": 45440180224,
+  "disk_required_bytes": 66528690176,
+  "gpu_idle": true,
+  "gpu_reason": "",
+  "ok": true
+}
+[2026-11-16T04:24:58Z] resuming from results/t2/pilot-state.json
+[2026-11-16T04:24:58Z] [targets] verifying the cache against a live teacher
+[2026-11-16T04:24:58Z] [targets-verify] launched; state=selvedge-oracle-court-20261116T042458Z-c1cd15.json
+court: selvedge-oracle-court-20261116T042458Z-c1cd15.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T042458Z-c1cd15.json log=results/courts/logs/oracle-20261116T042458Z-c1cd15.log
+[2026-11-16T04:26:34Z] [targets-verify] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T042458Z-c1cd15.json
+[2026-11-16T04:26:34Z] [targets] verified, 67108864 tokens
+[2026-11-16T04:26:34Z] [H] resuming the wait on selvedge-oracle-court-20261115T234515Z-b23ea1.json
+court: selvedge-oracle-court-20261115T234515Z-b23ea1.json exit=0 enforcement=ok receipt=results/courts/oracle-20261115T234515Z-b23ea1.json log=results/courts/logs/oracle-20261115T234515Z-b23ea1.log
+[2026-11-16T04:26:35Z] [H] trained; receipt results/t2/H/run.json
+[2026-11-16T04:26:35Z] [H] evaluating results/artifacts/train/t2/H/step-001024.pt
+[2026-11-16T04:26:35Z] [eval-H] launched; state=selvedge-oracle-court-20261116T042635Z-8cc96b.json
+court: selvedge-oracle-court-20261116T042635Z-8cc96b.json exit=1 enforcement=ok receipt=results/courts/oracle-20261116T042635Z-8cc96b.json log=results/courts/logs/oracle-20261116T042635Z-8cc96b.log
+[2026-11-16T04:26:51Z] FAILED in phase eval-H (exit 1): court wait returned non-zero
+[2026-11-16T04:26:51Z] state: results/t2/pilot-state.json — nothing after this point was run

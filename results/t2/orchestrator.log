@@ -184,3 +184,73 @@ court: selvedge-oracle-court-20261115T232734Z-c8a318.json exit=0 enforcement=ok 
 court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=device-passthrough detach=pending
 court: oracle detached container=be69254ed77383965554dde0a279d6f41cbf0cdd3c65922da3fa25a11a4c94cd state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261115T234515Z-b23ea1.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261115T234515Z-b23ea1.log
 [2026-11-15T23:45:16Z] [H] training launched: selvedge-oracle-court-20261115T234515Z-b23ea1.json
+[2026-11-16T04:24:46Z] T2 pilot starting: arms='D M X H H*' budget=67108864 steps=1024 seed=1001 resume=1
+[2026-11-16T04:24:46Z] DRY RUN: guards and phases are printed, nothing is launched
+{
+  "containers": [],
+  "disk_available_bytes": 111968874496,
+  "disk_headroom_bytes": 45440184320,
+  "disk_required_bytes": 66528690176,
+  "gpu_idle": true,
+  "gpu_reason": "",
+  "ok": true
+}
+[2026-11-16T04:24:46Z] DRY RUN [targets-build]: python3 oracle/train/teacher_cache.py build --tokens 67108864
+[2026-11-16T04:24:46Z] DRY RUN [targets-verify]: python3 oracle/train/teacher_cache.py verify
+[2026-11-16T04:24:46Z] DRY RUN [eval-D0]: python3 oracle/eval/baseline.py --profile t1 --arm D --seed 1001 --out results/eval/t2-D0.json
+[2026-11-16T04:24:46Z] DRY RUN [D train]: python3 oracle/train/loop.py --arm D --profile t2 --config results/train/admission-configs/t2/D.json --admission results/train/admission/t2/D.json --out results/artifacts/train/t2/D --steps 1024 --seed 1001 --micro-batch 1 --accum 64 --micro-positions 512 --checkpoint-every 100 --zero-point --deterministic
+[2026-11-16T04:24:46Z] DRY RUN [D eval]: python3 oracle/eval/baseline.py --profile t2 --arm D --seed 1001 --checkpoint results/artifacts/train/t2/D/step-001024.pt --config results/train/admission-configs/t2/D.json --admission results/train/admission/t2/D.json --out results/eval/t2-D.json
+[2026-11-16T04:24:46Z] DRY RUN [M train]: python3 oracle/train/loop.py --arm M --profile t2 --config results/train/admission-configs/t2/M.json --admission results/train/admission/t2/M.json --out results/artifacts/train/t2/M --steps 1024 --seed 1001 --micro-batch 1 --accum 64 --micro-positions 512 --checkpoint-every 100 --zero-point --deterministic
+[2026-11-16T04:24:46Z] DRY RUN [M eval]: python3 oracle/eval/baseline.py --profile t2 --arm M --seed 1001 --checkpoint results/artifacts/train/t2/M/step-001024.pt --config results/train/admission-configs/t2/M.json --admission results/train/admission/t2/M.json --out results/eval/t2-M.json
+[2026-11-16T04:24:46Z] DRY RUN [X train]: python3 oracle/train/loop.py --arm X --profile t2 --config results/train/admission-configs/t2/X.json --admission results/train/admission/t2/X.json --out results/artifacts/train/t2/X --steps 1024 --seed 1001 --micro-batch 1 --accum 64 --micro-positions 512 --checkpoint-every 100 --zero-point --deterministic --load-balance
+[2026-11-16T04:24:46Z] DRY RUN [X eval]: python3 oracle/eval/baseline.py --profile t2 --arm X --seed 1001 --checkpoint results/artifacts/train/t2/X/step-001024.pt --config results/train/admission-configs/t2/X.json --admission results/train/admission/t2/X.json --out results/eval/t2-X.json
+[2026-11-16T04:24:46Z] DRY RUN [H train]: python3 oracle/train/loop.py --arm H --profile t2 --config results/train/admission-configs/t2/H.json --admission results/train/admission/t2/H.json --out results/artifacts/train/t2/H --steps 1024 --seed 1001 --micro-batch 1 --accum 64 --micro-positions 512 --checkpoint-every 100 --zero-point --deterministic --load-balance --warmup-steps 64
+[2026-11-16T04:24:46Z] DRY RUN [H eval]: python3 oracle/eval/baseline.py --profile t2 --arm H --seed 1001 --checkpoint results/artifacts/train/t2/H/step-001024.pt --config results/train/admission-configs/t2/H.json --admission results/train/admission/t2/H.json --out results/eval/t2-H.json
+[2026-11-16T04:24:46Z] DRY RUN [H* train]: python3 oracle/train/loop.py --arm H* --profile t2 --config results/train/admission-configs/t2/H*.json --admission results/train/admission/t2/H*.json --out results/artifacts/train/t2/Hstar --steps 1024 --seed 1001 --micro-batch 1 --accum 64 --micro-positions 512 --checkpoint-every 100 --zero-point --deterministic --warmup-steps 64 --calibration-windows 32 --router-steps 200 --labels-out results/artifacts/train/t2/Hstar/utility-labels.pt
+[2026-11-16T04:24:46Z] DRY RUN [H* eval]: python3 oracle/eval/baseline.py --profile t2 --arm H* --seed 1001 --checkpoint results/artifacts/train/t2/Hstar/step-001024.pt --config results/train/admission-configs/t2/H*.json --admission results/train/admission/t2/H*.json --out results/eval/t2-H*.json
+[2026-11-16T04:24:46Z] DRY RUN [instrument]: python3 oracle/eval/instrument_check.py --student D0 --student <arm>:<checkpoint>:<config>:<admission>:t2 (x5)
+[2026-11-16T04:24:46Z] DRY RUN [decision]: python3 oracle/eval/t2_decision.py --d0 ... --arm <arm>=<receipt> (x5) --out-dir results/t2 --seed 20261115 --resamples 10000
+[2026-11-16T04:24:46Z] DRY RUN: no state is written and nothing is launched
+[2026-11-16T04:24:58Z] T2 pilot starting: arms='H' budget=67108864 steps=1024 seed=1001 resume=1
+{
+  "containers": [],
+  "disk_available_bytes": 111968870400,
+  "disk_headroom_bytes": 45440180224,
+  "disk_required_bytes": 66528690176,
+  "gpu_idle": true,
+  "gpu_reason": "",
+  "ok": true
+}
+[2026-11-16T04:24:58Z] resuming from results/t2/pilot-state.json
+[2026-11-16T04:24:58Z] [targets] verifying the cache against a live teacher
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough detach=pending
+court: oracle detached container=2dc6f070e2d5f764986efc4baaf3e0eb82c2ef940a553ba4fc1cf81b3eebf704 state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261116T042458Z-c1cd15.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261116T042458Z-c1cd15.log
+[2026-11-16T04:24:58Z] [targets-verify] launched; state=selvedge-oracle-court-20261116T042458Z-c1cd15.json
+court: selvedge-oracle-court-20261116T042458Z-c1cd15.json exit=0 enforcement=ok receipt=results/courts/oracle-20261116T042458Z-c1cd15.json log=results/courts/logs/oracle-20261116T042458Z-c1cd15.log
+[2026-11-16T04:26:34Z] [targets-verify] ok; receipt=/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T042458Z-c1cd15.json
+[2026-11-16T04:26:34Z] [targets] verified, 67108864 tokens
+[2026-11-16T04:26:34Z] [H] resuming the wait on selvedge-oracle-court-20261115T234515Z-b23ea1.json
+court: selvedge-oracle-court-20261115T234515Z-b23ea1.json exit=0 enforcement=ok receipt=results/courts/oracle-20261115T234515Z-b23ea1.json log=results/courts/logs/oracle-20261115T234515Z-b23ea1.log
+{
+  "arm": "H",
+  "checkpoint": {
+    "bytes": 5866590113,
+    "name": "step-001024.pt",
+    "path": "results/artifacts/train/t2/H/step-001024.pt",
+    "sha256": "6efc58de7f6cbc86a42b5b2919430bb02d32c48b386c6c0a984c3c0095fb6207",
+    "sha256_source": "sidecar"
+  },
+  "final_step": 1024,
+  "out": "results/t2/H/run.json",
+  "tokens": 67108864,
+  "tokens_per_second": 4631.786306783334,
+  "vram_peak_gib": 10.857304096221924
+}
+[2026-11-16T04:26:35Z] [H] trained; receipt results/t2/H/run.json
+[2026-11-16T04:26:35Z] [H] evaluating results/artifacts/train/t2/H/step-001024.pt
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough detach=pending
+court: oracle detached container=806fdf9dae4d02014453d568005cb1c24958403f27bff1eb8466ce1648e9f457 state=/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261116T042635Z-8cc96b.json log=/mnt/1tb_kingston/SELVEDGE/results/courts/logs/oracle-20261116T042635Z-8cc96b.log
+[2026-11-16T04:26:35Z] [eval-H] launched; state=selvedge-oracle-court-20261116T042635Z-8cc96b.json
+court: selvedge-oracle-court-20261116T042635Z-8cc96b.json exit=1 enforcement=ok receipt=results/courts/oracle-20261116T042635Z-8cc96b.json log=results/courts/logs/oracle-20261116T042635Z-8cc96b.log
+[2026-11-16T04:26:51Z] FAILED in phase eval-H (exit 1): court wait returned non-zero
+[2026-11-16T04:26:51Z] state: results/t2/pilot-state.json — nothing after this point was run

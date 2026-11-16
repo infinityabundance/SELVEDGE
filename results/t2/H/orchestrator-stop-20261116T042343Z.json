@@ -1,0 +1,90 @@
+{
+  "schema": "selvedge/t2-orchestrator-stop/v1",
+  "pilot": "t2",
+  "arm": "H",
+  "recorded_utc": "2026-11-16T04:23:43Z",
+  "recorded_by": "subagent S16",
+  "summary": "The detached H training container ran to completion and exited 0, but the orchestrator that launched it was killed with its parent editor unit by systemd-oomd at 2026-11-16T01:24:08Z. No court receipt, log copy, run receipt or evaluation was written for H; the training artifacts are intact and the final checkpoint verifies.",
+  "orchestrator": {
+    "script": "scripts/run-t2-pilot.sh",
+    "pid_alive_at_diagnosis": false,
+    "console_log": "results/t2/orchestrator.console.log",
+    "log": "results/t2/orchestrator.log",
+    "last_log_line": "[2026-11-15T23:45:16Z] [H] training launched: selvedge-oracle-court-20261115T234515Z-b23ea1.json",
+    "last_log_write_utc": "2026-11-15T23:45:16Z",
+    "why_no_progress_after_234516Z": "the orchestrator was blocked in `scripts/court wait` (docker wait) on the detached container, which writes nothing until the container exits",
+    "pending_state": "results/courts/pending/selvedge-oracle-court-20261115T234515Z-b23ea1.json",
+    "pilot_state_said": {
+      "status": "running",
+      "arms.H.status": "running",
+      "arms.H.started_utc": "2026-11-15T23:45:14Z"
+    }
+  },
+  "host_pressure": {
+    "cause": "systemd-oomd killed the editor service that owned the orchestrator's process tree",
+    "unit": "app-dev.zed.Zed@4eb5e1a61f8e4269b3af932d9283f798.service",
+    "events": [
+      "2026-11-16T01:23:58Z systemd-oomd: Marked /user.slice/user-1000.slice/user@1000.service/app.slice/app-dev.zed.Zed@4eb5e1a61f8e4269b3af932d9283f798.service for killing due to memory used (121299726336) / total (134722048000) and swap used (134720274432) / total (134721040384) being more than 90.00%",
+      "2026-11-16T01:23:58Z systemd[1773]: app-dev.zed.Zed@4eb5e1a61f8e4269b3af932d9283f798.service: systemd-oomd killed 462 process(es) in this unit.",
+      "2026-11-16T01:24:08Z systemd[1773]: app-dev.zed.Zed@4eb5e1a61f8e4269b3af932d9283f798.service: Failed with result 'oom-kill'.",
+      "2026-11-16T01:24:08Z systemd[1773]: app-dev.zed.Zed@4eb5e1a61f8e4269b3af932d9283f798.service: Consumed 2d 10h 58min 4.467s CPU time over 4d 6h 59min 38.492s wall clock time, 59.6G memory peak, 85.8G memory swap peak."
+    ],
+    "kernel_oom_entries_for_container": [],
+    "note": "dmesg and the kernel journal carry no oom-kill entry for the training container; the kill was the cgroup-v2 userspace OOM killer acting on the editor unit, of which the orchestrator was a child process"
+  },
+  "training_container": {
+    "name": "selvedge-oracle-court-20261115T234515Z-b23ea1",
+    "id": "be69254ed77383965554dde0a279d6f41cbf0cdd3c65922da3fa25a11a4c94cd",
+    "exit_code": 0,
+    "oom_killed": false,
+    "started_utc": "2026-11-15T23:45:16.519921674Z",
+    "finished_utc": "2026-11-16T03:57:10.423866062Z",
+    "host_memory_limit_bytes": 8589934592,
+    "host_memory_swap_limit_bytes": 8589934592,
+    "nano_cpus": 8000000000,
+    "pids_limit": 1024,
+    "systemd_scope_memory_peak": "8G",
+    "systemd_scope_cpu_time": "4h 2min 31.387s",
+    "systemd_scope_wall_time": "4h 11min 53.834s",
+    "systemd_scope_io": "66.6G read, 60.1G written",
+    "runtime_seconds": 14830.8,
+    "container_memory_pressure": "none recorded; the container exited 0 under its own 8 GiB limit",
+    "post_hoc_note": "8 GiB was the pre-S16 default for this armoury. S16 relaunches hybrid train/eval containers at SELVEDGE_MEM=24g per the operator directive; see the launch receipt."
+  },
+  "artifacts_intact": {
+    "directory": "results/artifacts/train/t2/H",
+    "run_meta": "results/artifacts/train/t2/H/run-meta.json",
+    "summary": "results/artifacts/train/t2/H/summary.json",
+    "train_log": "results/artifacts/train/t2/H/train.jsonl",
+    "latest": "results/artifacts/train/t2/H/latest.json",
+    "zero_point": "results/artifacts/train/t2/H/zero-point.json",
+    "final_checkpoint": "results/artifacts/train/t2/H/step-001024.pt",
+    "final_checkpoint_bytes": 5866590113,
+    "final_checkpoint_sha256_expected": "6efc58de7f6cbc86a42b5b2919430bb02d32c48b386c6c0a984c3c0095fb6207",
+    "final_checkpoint_sha256_actual": "6efc58de7f6cbc86a42b5b2919430bb02d32c48b386c6c0a984c3c0095fb6207",
+    "checkpoint_verification_command": "sha256sum results/artifacts/train/t2/H/step-001024.pt",
+    "checkpoint_verification": "match",
+    "summary_steps": 1024,
+    "summary_tokens": 67108864,
+    "summary_finished_utc": "2026-11-16T03:57:09Z",
+    "summary_train_seconds": 14488.765144824982,
+    "summary_tokens_per_second": 4631.786306783334,
+    "summary_vram_peak_gib": 10.857304096221924,
+    "train_jsonl_rows": 1024,
+    "train_jsonl_first_step": 1,
+    "train_jsonl_last_step": 1024,
+    "train_jsonl_last_tokens": 67108864,
+    "latest_points_to": "results/artifacts/train/t2/H/step-001024.pt",
+    "zero_point_ok": true
+  },
+  "missing_after_the_stop": [
+    "results/courts/oracle-20261115T234515Z-b23ea1.json",
+    "results/courts/logs/oracle-20261115T234515Z-b23ea1.log",
+    "results/t2/H/run.json",
+    "results/t2/H/eval.json",
+    "results/eval/t2-H.json",
+    "pilot-state transition out of arms.H.status=running"
+  ],
+  "recovery_decision": "Do not rerun H training. Harvest the completed container with `scripts/court wait`, compose the run receipt from the verified checkpoint, then evaluate H with the registered harness.",
+  "code_fix": "scripts/run-t2-pilot.sh gained a verified-final-checkpoint harvest path and per-stage state transitions so a host-process death between a finished checkpoint and its evaluation can be resumed without retraining"
+}

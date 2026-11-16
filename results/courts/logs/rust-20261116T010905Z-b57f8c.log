@@ -1,0 +1,454 @@
++ target/debug/selvedge sim calibrate --metrics transfer+verify=results/store/metrics-06b-r1/plan-order.jsonl --metrics hit_copy=results/store/metrics-06b-r1/lru-1of4.jsonl --io results/io/io-scan-06b-r1.json --out results/sim/calibration-06b.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+calibration: 3 inputs, shard 786432 B, transfer p50 930308 ns, verify p50 307905 ns
+fit transfer_ns exponential: max |rel err| 1.6581, mean 0.7861
+fit transfer_ns lognormal: max |rel err| 0.2658, mean 0.1161
+fit verify_ns exponential: max |rel err| 2.9533, mean 1.2070
+fit verify_ns lognormal: max |rel err| 0.0739, mean 0.0406
+receipt: results/sim/calibration-06b.json
++ target/debug/selvedge sim calibrate --metrics transfer+verify=results/store/metrics-17b-r1/plan-order.jsonl --metrics hit_copy=results/store/metrics-17b-r1/lru-1of4.jsonl --io results/io/io-scan-17b-r1.json --out results/sim/calibration-17b.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+calibration: 3 inputs, shard 3145728 B, transfer p50 3023058 ns, verify p50 1234256 ns
+fit transfer_ns exponential: max |rel err| 1.5036, mean 0.8263
+fit transfer_ns lognormal: max |rel err| 0.1275, mean 0.0454
+fit verify_ns exponential: max |rel err| 3.1638, mean 1.2423
+fit verify_ns lognormal: max |rel err| 0.0818, mean 0.0452
+receipt: results/sim/calibration-17b.json
++ target/debug/selvedge sim validate --calibration results/sim/calibration-06b.json --metrics results/store/metrics-06b-r1/lru-1of2.jsonl --arm lru-1of2 --bench results/store/store-bench-06b-r1.json --policy lru --out results/sim/validation-06b-lru-1of2.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/validation-06b-lru-1of2.json
+arm lru-1of2 policy lru capacity 528482304: reads 2688 hits recorded/replayed 672/672, mismatches 0
+stall measured p50/p95/p99 1193670/1693235/2229627 ns vs predicted 1099575/1567334/1889743 ns
+discrepancy mean: -6.4%
+discrepancy p50: -7.9%
+discrepancy p95: -7.4%
+discrepancy p99: -15.2%
+device bytes measured 1585446912 vs predicted 1585446912 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge sim validate --calibration results/sim/calibration-06b.json --metrics results/store/metrics-06b-r1/least-stale-1of4.jsonl --arm least-stale-1of4 --bench results/store/store-bench-06b-r1.json --policy least_stale --out results/sim/validation-06b-least-stale-1of4.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/validation-06b-least-stale-1of4.json
+arm least-stale-1of4 policy least_stale capacity 264241152: reads 2688 hits recorded/replayed 336/336, mismatches 0
+stall measured p50/p95/p99 1226442/1605250/1883499 ns vs predicted 1199515/1593322/1909460 ns
+discrepancy mean: -1.2%
+discrepancy p50: -2.2%
+discrepancy p95: -0.7%
+discrepancy p99: +1.4%
+device bytes measured 1849688064 vs predicted 1849688064 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge sim validate --calibration results/sim/calibration-06b.json --metrics results/store/metrics-06b-r1/none-cold.jsonl --arm none-cold --bench results/store/store-bench-06b-r1.json --policy none --out results/sim/validation-06b-none-cold.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/validation-06b-none-cold.json
+arm none-cold policy none capacity 0: reads 2688 hits recorded/replayed 0/0, mismatches 0
+stall measured p50/p95/p99 1264082/1714815/2119140 ns vs predicted 1254258/1605612/1909755 ns
+discrepancy mean: -0.5%
+discrepancy p50: -0.8%
+discrepancy p95: -6.4%
+discrepancy p99: -9.9%
+device bytes measured 2113929216 vs predicted 2113929216 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge sim validate --calibration results/sim/calibration-17b.json --metrics results/store/metrics-17b-r1/lru-1of4.jsonl --arm lru-1of4 --bench results/store/store-bench-17b-r1.json --policy lru --out results/sim/validation-17b-lru-1of4.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/validation-17b-lru-1of4.json
+arm lru-1of4 policy lru capacity 1056964608: reads 2688 hits recorded/replayed 336/336, mismatches 0
+stall measured p50/p95/p99 4341311/5483115/6891747 ns vs predicted 4268406/5379454/7026323 ns
+discrepancy mean: -1.7%
+discrepancy p50: -1.7%
+discrepancy p95: -1.9%
+discrepancy p99: +2.0%
+device bytes measured 7398752256 vs predicted 7398752256 (+0.0%)
+verdict: pass (within the pre-registered tolerances)
++ target/debug/selvedge trace export --bundle results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --metrics results/store/metrics-06b-r1/plan-order.jsonl --receipt results/store/store-bench-06b-r1.json --out results/sim/traces/whole-bundle-06b-plan-order.jsonl --stamp 20261116T010907Z --revision ceb7d2388a9c
+trace: 2 records, 1344 shards, source=measured, mode=exact
+records: results/sim/traces/whole-bundle-06b-plan-order.jsonl
+manifest: results/sim/traces/whole-bundle-06b-plan-order.manifest.json
+records_sha256: 802ec13177f485c55f70a93e0bbdcd8519464659140b1c8a758342be8650afcb
++ target/debug/selvedge trace export --bundle results/artifacts/qwen3-1.7b-ffn-g16/swiglu-c4de86a90d4a-fe4c159deaf6.slv --fixtures results/selectors/fixtures/selector-inputs.json --selector magnitude --receipt results/selectors/fixtures/selector-inputs.json --out results/sim/traces/m2-magnitude-17b.jsonl --stamp 20261116T010907Z --revision ceb7d2388a9c
+trace: 256 records, 1344 shards, source=reconstructed, mode=approximate
+records: results/sim/traces/m2-magnitude-17b.jsonl
+manifest: results/sim/traces/m2-magnitude-17b.manifest.json
+records_sha256: 10175a06bafdb6acd51a6cc36662eceecbd101f03bfa19bfc2d7592fcc95a3f5
++ target/debug/selvedge trace generate --preset hot --out results/sim/traces/synthetic-hot.jsonl --stamp 20261116T010907Z --revision ceb7d2388a9c
+synthetic trace: 3584 records, 448 shards, hash 37558521466fc34831474f7d599fbcc15cbdd112c9a6261afdd33fd1f678a578
+records: results/sim/traces/synthetic-hot.jsonl
+manifest: results/sim/traces/synthetic-hot.manifest.json
++ target/debug/selvedge trace generate --preset cold --out results/sim/traces/synthetic-cold.jsonl --stamp 20261116T010907Z --revision ceb7d2388a9c
+synthetic trace: 3584 records, 448 shards, hash 8665f410f9c184ec38242a776d20e32b9e76fc08ce178b5f101d74b32370df93
+records: results/sim/traces/synthetic-cold.jsonl
+manifest: results/sim/traces/synthetic-cold.manifest.json
++ target/debug/selvedge trace generate --preset alternating --out results/sim/traces/synthetic-alternating.jsonl --stamp 20261116T010907Z --revision ceb7d2388a9c
+synthetic trace: 7168 records, 448 shards, hash b10b9f44f41d31c200669157f1e31563e80e71343c66b9c94f340db701cdbdeb
+records: results/sim/traces/synthetic-alternating.jsonl
+manifest: results/sim/traces/synthetic-alternating.manifest.json
++ target/debug/selvedge trace inspect --trace results/sim/traces/whole-bundle-06b-plan-order.jsonl
+trace id: swiglu-ad15450e2cc2-76dd1b90442e-whole-bundle
+source=measured mode=exact records=2 shards=1344 payload=1056964608 B
+records_sha256: 802ec13177f485c55f70a93e0bbdcd8519464659140b1c8a758342be8650afcb (verified)
+phase whole-bundle: 1 records
+phase whole-bundle: 1 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/m2-magnitude-17b.jsonl
+trace id: swiglu-c4de86a90d4a-fe4c159deaf6-m2-magnitude
+source=reconstructed mode=approximate records=256 shards=1344 payload=4227858432 B
+records_sha256: 10175a06bafdb6acd51a6cc36662eceecbd101f03bfa19bfc2d7592fcc95a3f5 (verified)
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
+phase m2-context: 1 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/synthetic-hot.jsonl
+trace id: synthetic-5e1de6e511ed5eed
+source=synthetic mode=approximate records=3584 shards=448 payload=352321536 B
+records_sha256: 37558521466fc34831474f7d599fbcc15cbdd112c9a6261afdd33fd1f678a578 (verified)
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/synthetic-cold.jsonl
+trace id: synthetic-5e1de6e511ed5eed
+source=synthetic mode=approximate records=3584 shards=448 payload=352321536 B
+records_sha256: 8665f410f9c184ec38242a776d20e32b9e76fc08ce178b5f101d74b32370df93 (verified)
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
+phase synth-p0: 448 records
++ target/debug/selvedge trace inspect --trace results/sim/traces/synthetic-alternating.jsonl
+trace id: synthetic-5e1de6e511ed5eed
+source=synthetic mode=approximate records=7168 shards=448 payload=352321536 B
+records_sha256: b10b9f44f41d31c200669157f1e31563e80e71343c66b9c94f340db701cdbdeb (verified)
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
+phase synth-p0: 448 records
+phase synth-p1: 448 records
++ target/debug/selvedge io-scan --file results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --quick --out results/io/io-scan-06b-contended.json
+io-scan: file=results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv bytes=1057882112 mount=/work (ext4) free=116662046720 bytes cache_dropped=true ratio=5878.3
+  seq      4096 B    440.1 MiB/s p50=280 p95=551 p99=5620 ns dev_amp=1.00
+  seq     65536 B    497.2 MiB/s p50=3917 p95=1497878 p99=1748957 ns dev_amp=1.00
+  seq-nr   4096 B      2.2 MiB/s p50=1378806 p95=1827664 p99=2466778 ns dev_amp=1.22
+  seq-nr  65536 B     40.9 MiB/s p50=1499271 p95=1816062 p99=2549763 ns dev_amp=1.00
+  rnd      4096 B p50=1333962 p95=1621579 p99=1897083 ns dev_amp=1.00
+  rnd     65536 B p50=1543563 p95=2052354 p99=2351592 ns dev_amp=1.00
+  qd   1            39.7 MiB/s p50=1540137 p99=2686178 ns
+  qd   4           142.3 MiB/s p50=1702581 p99=3008590 ns
+  align shard-extent offset aligned at 512     req=1048576 useful=1048576 dev=1052672 amp=1.004
+  align shard-extent offset aligned at 4096    req=1048576 useful=1048576 dev=1048576 amp=1.000
+  align shard-extent offset aligned at 65536   req=1048576 useful=1048576 dev=1048576 amp=1.000
+  align over-read 2097152 bytes to use 1048576 req=2097152 useful=1048576 dev=2097152 amp=2.000
+  sha256 71.8 MiB/s warm, 14261400672 ns/GiB, shard 1048576 B in 14392026 ns
++ target/debug/selvedge sim compare-store --trace results/sim/traces/whole-bundle-06b-plan-order.jsonl --bundle results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --calibration results/sim/calibration-06b.json --policy none --environment host shared with the T2 training pilot; the same-window quick io-scan is results/io/io-scan-06b-contended.json --out results/sim/compare-store-06b.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/compare-store-06b.json
+cold: store p50/p95/p99 14051281348/15869099126/15869099126 ns, sim 1472486304/1534253974/1534253974 ns; p50 -89.5% p95 -90.3% bytes +0.0%; shape p95 -7.7% p99 -7.7% (absolute defect / shape pass)
+warm: store p50/p95/p99 13852813229/13943364490/13943364490 ns, sim 1472486304/1534253974/1534253974 ns; p50 -89.4% p95 -89.0% bytes +0.0%; shape p95 +3.5% p99 +3.5% (absolute defect / shape pass)
+environment: host shared with the T2 training pilot; the same-window quick io-scan is results/io/io-scan-06b-contended.json
+FAILED (exit 3): target/debug/selvedge sim compare-store --trace results/sim/traces/whole-bundle-06b-plan-order.jsonl --bundle results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv --calibration results/sim/calibration-06b.json --policy none --environment host shared with the T2 training pilot; the same-window quick io-scan is results/io/io-scan-06b-contended.json --out results/sim/compare-store-06b.json --stamp 20261116T010907Z --revision ceb7d2388a9c
++ target/debug/selvedge sim pareto --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --policies none,lru,lfu,least_stale --fractions 0.125,0.25,0.5,1.0 --out results/sim/pareto-m2-17b.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/pareto-m2-17b.json
+| arm | bytes/record | p50 ns | p95 ns | hit rate |
+| none-cold | 47185920.0 | 66575092 | 75736140 | 0.000 |
+| none-cold | 47185920.0 | 66575092 | 75736140 | 0.000 |
+| none-cold | 47185920.0 | 66575092 | 75736140 | 0.000 |
+| none-cold | 47185920.0 | 66575092 | 75736140 | 0.000 |
+| lru-0.125 | 40808448.0 | 63307048 | 72668005 | 0.135 |
+| lru-0.250 | 34209792.0 | 51634186 | 72857039 | 0.275 |
+| lru-0.500 | 23359488.0 | 30269233 | 68599834 | 0.505 |
+| lru-1.000 | 14561280.0 | 14451972 | 67035390 | 0.691 |
+| lfu-0.125 | 41435136.0 | 62537268 | 74704226 | 0.122 |
+| lfu-0.250 | 34136064.0 | 52480269 | 72441564 | 0.277 |
+| lfu-0.500 | 22818816.0 | 28648238 | 69108602 | 0.516 |
+| lfu-1.000 | 14561280.0 | 14451972 | 67035390 | 0.691 |
+| least_stale-0.125 | 40808448.0 | 63307048 | 72668005 | 0.135 |
+| least_stale-0.250 | 34209792.0 | 51634186 | 72857039 | 0.275 |
+| least_stale-0.500 | 23359488.0 | 30269233 | 68599834 | 0.505 |
+| least_stale-1.000 | 14561280.0 | 14451972 | 67035390 | 0.691 |
++ target/debug/selvedge sim placement --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --cache-fraction 0.25 --coalesce-gap-bytes 0 --out results/sim/placement-m2-17b.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/placement-m2-17b.json
+| layout | amplification | p95 ns | bytes/record | objective |
+| sequential | 1.000 | 72857039 | 34209792.0 | 0 |
+| frequency-sorted | 1.000 | 73103127 | 34209792.0 | 0 |
+| co-access-blocked | 1.000 | 72363317 | 34209792.0 | 0 |
+| replicated-hot | 1.000 | 72618744 | 34209792.0 | 0 |
++ target/debug/selvedge sim placement --trace results/sim/traces/synthetic-alternating.jsonl --calibration results/sim/calibration-17b.json --cache-fraction 0.25 --coalesce-gap-bytes 0 --block-shards 8 --hot-shards 32 --out results/sim/placement-synthetic-alternating.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/placement-synthetic-alternating.json
+| layout | amplification | p95 ns | bytes/record | objective |
+| sequential | 1.000 | 4111333 | 1185024.0 | -954669932 |
+| frequency-sorted | 1.000 | 4200387 | 1185024.0 | -128268473 |
+| co-access-blocked | 1.000 | 4062435 | 1185024.0 | -1482675840 |
+| replicated-hot | 1.018 | 4052190 | 1185024.0 | -1471905205 |
++ target/debug/selvedge envelope build --trace results/sim/traces/synthetic-alternating.jsonl --out results/sim/envelopes-synthetic-alternating.json --build-fraction 0.5 --min-coverage 0.6 --stamp 20261116T010907Z --revision ceb7d2388a9c
+envelopes: 2 phases from 3584 build records; evaluating 3584 records
+phase synth-p0: 108 candidates, build coverage 0.446
+phase synth-p1: 102 candidates, build coverage 0.391
++ target/debug/selvedge envelope apply --trace results/sim/traces/synthetic-alternating.jsonl --envelopes results/sim/envelopes-synthetic-alternating.json --calibration results/sim/calibration-17b.json --policy lru --cache-fraction 0.25 --compute-ns 5000000 --out results/sim/envelope-utility-synthetic-alternating.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+receipt: results/sim/envelope-utility-synthetic-alternating.json
+bytes: baseline 4281335808 -> envelope 3785883648 (saved 495452160, unused prefetch 0)
+p95: baseline 4154727 ns -> envelope 3841931 ns (saved 312796 ns); cold bytes charged 475004928; invalidations 4
++ target/debug/selvedge simulate --trace results/sim/traces/m2-magnitude-17b.jsonl --calibration results/sim/calibration-17b.json --policy lru --cache-fraction 0.25 --out results/sim/simulate-m2-17b-lru025.json --stamp 20261116T010907Z --revision ceb7d2388a9c
+report: results/sim/simulate-m2-17b-lru025.json
+records=256 p50=51634186ns p95=72857039ns p99=80277543ns
+bytes: needed=12079595520 hit=3321888768 fetched=8757706752 device=8757706752 wasted=0 (prefetch 0 used 0 cancelled 0)
+cache hits=1056 misses=2784 evictions=2448 deadline_misses=0
+one or more receipts reported a failure

@@ -1,0 +1,94 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:23:1
+   |
+23 | pub fn fixture_dir() -> PathBuf {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+   = note: requested on the command line with `-W unreachable-pub`
+
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:28:1
+   |
+28 | pub fn build_tiny_bundle(out: &Path) -> PathBuf {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:52:1
+   |
+52 | pub fn tiny_config(bundle: &Path, prompt: Vec<u32>, max_new_tokens: usize) -> RunConfig {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:78:1
+   |
+78 | pub fn tiny_budget() -> Budget {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:83:1
+   |
+83 | pub fn tiny_architecture() -> Qwen3Config {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:89:1
+   |
+89 | pub fn one_group_selector() -> SelectorSpec {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> crates/selvedge-runtime/tests/common/mod.rs:97:1
+   |
+97 | pub struct TempDir(PathBuf);
+   | ---^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> crates/selvedge-runtime/tests/common/mod.rs:102:5
+    |
+102 |     pub fn new(tag: &str) -> Self {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> crates/selvedge-runtime/tests/common/mod.rs:115:5
+    |
+115 |     pub fn path(&self) -> &Path {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: `selvedge-runtime` (test "tiny_parity") generated 9 warnings (run `cargo fix --test "tiny_parity" -p selvedge-runtime` to apply 9 suggestions)
+warning: `selvedge-runtime` (test "court_e") generated 9 warnings (9 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.77s
+  Executable unittests src/lib.rs (target/debug/deps/selvedge_runtime-c51017fe6b8963c9)
+  Executable tests/court_e.rs (target/debug/deps/court_e-fa1c504ce5f285b5)
+  Executable tests/tiny_parity.rs (target/debug/deps/tiny_parity-ab0986307ab5b9df)

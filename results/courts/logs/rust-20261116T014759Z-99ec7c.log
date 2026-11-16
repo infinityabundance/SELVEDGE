@@ -1,0 +1,125 @@
+Execute Qwen3 on one device with bundle-backed MLP groups
+
+Usage: selvedge run [OPTIONS] --model <MODEL> --bundle <BUNDLE>
+
+Options:
+      --model <MODEL>
+          Model directory holding config.json (and tokenizer.json)
+
+      --bundle <BUNDLE>
+          Bundle to execute
+
+      --mode <MODE>
+          Execution mode
+
+          Possible values:
+          - exact:       Every group of every layer, proven against the manifest's declaration
+          - approximate: A selector-chosen subset, labelled approximate
+          
+          [default: exact]
+
+      --keep-groups <KEEP_GROUPS>
+          Groups kept per layer in approximate mode
+          
+          [default: 1]
+
+      --selector-seed <SELECTOR_SEED>
+          Selector seed in approximate mode
+          
+          [default: 98688622]
+
+      --prompt <PROMPT>
+          Raw text prompt, encoded with no chat template
+
+      --prompt-ids <PROMPT_IDS>
+          Explicit token ids, bypassing the tokenizer
+
+      --chat <CHAT>
+          User turn wrapped in the documented Qwen3 chat template
+
+      --max-new-tokens <MAX_NEW_TOKENS>
+          Tokens to generate
+          
+          [default: 16]
+
+      --stop-token <STOP_TOKEN>
+          Stop tokens; defaults to the model's generation_config.json
+
+      --tokenizer <TOKENIZER>
+          Explicit tokenizer path
+
+      --cache-bytes <CACHE_BYTES>
+          Cache capacity in bytes
+          
+          [default: 0]
+
+      --policy <POLICY>
+          Cache policy
+
+          Possible values:
+          - none:        No cache: every read goes to the bundle
+          - lru:         Least recently used
+          - lfu:         Least frequently used
+          - least-stale: SELVEDGE's least-stale policy
+          - pinned:      Pinned residency
+          
+          [default: none]
+
+      --prefetch
+          Prefetch the selected shards before reading them for execution
+
+      --read-order <READ_ORDER>
+          Fetch order for prefetched shards
+
+          Possible values:
+          - plan:     Manifest order
+          - physical: Ascending physical offset
+          - reverse:  Reverse manifest order
+          
+          [default: plan]
+
+      --inject-delay-ns <INJECT_DELAY_NS>
+          Extra delay injected after every backing-tier read
+          
+          [default: 0]
+
+      --threads <THREADS>
+          Worker threads for the dense kernels
+          
+          [default: 1]
+
+      --budget <BUDGET>
+          Active-unique-parameter ceiling
+          
+          [default: 1000000000]
+
+      --teacher
+          Label an over-budget run as a non-compliant teacher measurement
+
+      --fallback
+          Trim an over-budget approximate path to fit instead of refusing
+
+      --accounting <ACCOUNTING>
+          Write per-token accounting as JSON Lines here
+
+      --compare-logits <COMPARE_LOGITS>
+          Compare prefill logits against a raw little-endian f32 dump
+
+      --dump-logits <DUMP_LOGITS>
+          Write this run's prefill logits as a raw little-endian f32 dump
+
+      --tolerance-abs <TOLERANCE_ABS>
+          Absolute tolerance for --compare-logits
+          
+          [default: 0.001]
+
+      --tolerance-rel <TOLERANCE_REL>
+          Relative tolerance for --compare-logits
+          
+          [default: 0.001]
+
+      --json
+          Emit the structured summary as JSON
+
+  -h, --help
+          Print help (see a summary with '-h')

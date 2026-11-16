@@ -1,0 +1,215 @@
+    Checking selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Checking selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:31:22
+   |
+31 |     let mut source = CheckpointSource::open(&checkpoint).expect("open checkpoint");
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+   = note: `-D clippy::expect-used` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::expect_used)]`
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:33:22
+   |
+33 |     let discovered = discover_ffn_maps(&keys).expect("discover FFN");
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:34:18
+   |
+34 |     let digest = model_digest_for_path(&checkpoint).expect("digest");
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:39:16
+   |
+39 |       let plan = plan_conversion(
+   |  ________________^
+40 | |         &source,
+41 | |         &discovered,
+42 | |         &GroupSpec::ByCount(4),
+...  |
+46 | |     .expect("plan conversion");
+   | |______________________________^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:47:32
+   |
+47 |     let (published, _report) = convert(&mut source, &plan, out, &options).expect("convert");
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:59:22
+   |
+59 |       let mut config = RunConfig::new(
+   |  ______________________^
+60 | |         model,
+61 | |         bundle.to_path_buf(),
+62 | |         ExecutionMode::Exact,
+...  |
+65 | |     .expect("config");
+   | |_____________________^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:79:5
+   |
+79 |     Budget::new(64 * 1024 * 1024, ComplianceMode::Compliance).expect("budget")
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/common/mod.rs:84:5
+   |
+84 |     Qwen3Config::from_model_dir(&fixture_dir()).expect("config.json")
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+   --> crates/selvedge-runtime/tests/common/mod.rs:109:9
+    |
+109 |         std::fs::create_dir_all(&path).expect("create temp dir");
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if this value is an `Err`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:26:16
+   |
+26 |     let text = std::fs::read_to_string(&path).expect("committed reference logits");
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:27:5
+   |
+27 |     serde_json::from_str(&text).expect("reference json")
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:31:5
+   |
+31 | /     document["logits"]
+32 | |         .as_array()
+33 | |         .expect("logits array")
+   | |_______________________________^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:36:13
+   |
+36 | /             position
+37 | |                 .as_array()
+38 | |                 .expect("position array")
+   | |_________________________________________^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:40:30
+   |
+40 |                 .map(|value| value.as_f64().expect("float") as f32)
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:52:28
+   |
+52 |       let prompt: Vec<u32> = document["prompt_ids"]
+   |  ____________________________^
+53 | |         .as_array()
+54 | |         .expect("prompt ids")
+   | |_____________________________^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:56:22
+   |
+56 |         .map(|value| u32::try_from(value.as_u64().expect("id")).expect("u32"))
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:56:36
+   |
+56 |         .map(|value| u32::try_from(value.as_u64().expect("id")).expect("u32"))
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on an `Option` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:59:17
+   |
+59 |     let vocab = document["vocab"].as_u64().expect("vocab") as usize;
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is `None`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:64:22
+   |
+64 |     let mut runner = Runner::open(config).expect("open runner");
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:70:20
+   |
+70 |           let step = runner
+   |  ____________________^
+71 | |             .forward(*token, position, selvedge_runtime::account::Phase::Prefill)
+72 | |             .expect("prefill");
+   | |______________________________^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+
+error: used `expect()` on a `Result` value
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:73:16
+   |
+73 |         next = selvedge_runtime::model::greedy_token(&step.logits).expect("greedy");
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: if this value is an `Err`, it will panic
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+

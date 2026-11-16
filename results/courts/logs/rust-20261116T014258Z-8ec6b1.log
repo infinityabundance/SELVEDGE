@@ -1,0 +1,60 @@
+   Compiling strsim v0.11.1
+   Compiling serde v1.0.229
+   Compiling getrandom v0.3.4
+   Compiling tempfile v3.27.0
+   Compiling rand_core v0.9.5
+   Compiling darling_core v0.20.11
+   Compiling rusty-fork v0.3.1
+   Compiling rand_chacha v0.9.0
+   Compiling proptest v1.12.0
+   Compiling rand v0.9.5
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling dary_heap v0.3.9
+   Compiling spm_precompiled v0.1.4
+   Compiling compact_str v0.9.1
+   Compiling ahash v0.8.12
+   Compiling toml_edit v0.22.27
+   Compiling darling_macro v0.20.11
+   Compiling darling v0.20.11
+   Compiling derive_builder_core v0.20.2
+   Compiling toml v0.8.23
+   Compiling derive_builder_macro v0.20.2
+   Compiling derive_builder v0.20.2
+   Compiling tokenizers v0.23.2
+   Compiling selvedge-core v0.1.0 (/work/crates/selvedge-core)
+   Compiling selvedge-format v0.1.0 (/work/crates/selvedge-format)
+   Compiling selvedge-store v0.1.0 (/work/crates/selvedge-store)
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+error[E0432]: unresolved import `selvedge_runtime::logits_digest`
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:18:61
+   |
+18 | use selvedge_runtime::{ExecutionMode, PromptSource, Runner, logits_digest};
+   |                                                             ^^^^^^^^^^^^^ no `logits_digest` in the root
+
+error[E0432]: unresolved import `selvedge_runtime::logits_digest`
+  --> crates/selvedge-runtime/tests/court_e.rs:20:61
+   |
+20 | use selvedge_runtime::{ExecutionMode, Runner, StreamConfig, logits_digest};
+   |                                                             ^^^^^^^^^^^^^ no `logits_digest` in the root
+
+warning: unused import: `std::path::Path`
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:16:5
+   |
+16 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `PromptSource`
+  --> crates/selvedge-runtime/tests/tiny_parity.rs:18:39
+   |
+18 | use selvedge_runtime::{ExecutionMode, PromptSource, Runner, logits_digest};
+   |                                       ^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0432`.
+warning: `selvedge-runtime` (test "tiny_parity") generated 2 warnings
+error: could not compile `selvedge-runtime` (test "tiny_parity") due to 1 previous error; 2 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-runtime` (test "court_e") due to 1 previous error

@@ -1,0 +1,37 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+warning: unused import: `TensorSource`
+ --> crates/selvedge-runtime/tests/debug_dump.rs:5:42
+  |
+5 | use selvedge_convert::{CheckpointSource, TensorSource};
+  |                                          ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `selvedge-runtime` (test "debug_dump") generated 1 warning (run `cargo fix --test "debug_dump" -p selvedge-runtime` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running tests/debug_dump.rs (target/debug/deps/debug_dump-131c8079294fb737)
+
+running 1 test
+stage x0 norm 0.53383493 first [0.07214234, 0.026006354, 0.111097656]
+L0 h norm 1.5885637 first [-0.20810086, -0.009326544, -0.06758573]
+L0 q norm 0.6862413 k norm 0.6326423 v norm 0.6140667
+L0 v first [-0.089689, 0.04779254, 0.17777614]
+L0 o norm 0.47171605 first [-0.029762018, 0.0014476143, -0.09092208]
+L0 x after attention norm 0.6298068
+L0 gate norm 1.3380269 up norm 1.4686779 gate first [0.13238776, -0.095169544, 0.001964517]
+L0 mlp norm 0.051755097 first [0.0017668076, -0.0059041055, 0.013071913]
+L0 x after mlp norm 0.6358435
+L1 h norm 1.095738 first [0.14497222, 0.04004228, -0.061337836]
+L1 q norm 0.6252898 k norm 0.38097408 v norm 0.35118973
+L1 v first [-0.005791541, 0.07410762, -0.11274213]
+L1 o norm 0.34741724 first [-0.007661986, -0.034553062, -0.13497135]
+L1 x after attention norm 0.75184435
+L1 gate norm 1.0997571 up norm 1.0160035 gate first [-0.18760642, -0.065124944, 0.047897458]
+L1 mlp norm 0.02205057 first [0.00021954696, 0.00030516076, -4.993257e-5]
+L1 x after mlp norm 0.76255953
+final x norm 1.119531 first [0.117702425, 0.019652031, -0.10303948]
+logits first 8 [-0.10933066, 0.08392934, 0.0038646758, 0.06787785, 0.15944192, 0.11926058, -0.07386977, 0.07261316]
+test dump_stages ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

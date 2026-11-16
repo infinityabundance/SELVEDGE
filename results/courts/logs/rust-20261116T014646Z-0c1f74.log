@@ -1,0 +1,52 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.74s
+     Running tests/court_e.rs (target/debug/deps/court_e-fa1c504ce5f285b5)
+
+running 5 tests
+test court_e_approximate_mode_is_stable_but_not_exact ... ok
+test court_e_budget_gate_refuses_an_over_budget_exact_run ... ok
+test court_e_exact_mode_is_bitwise_identical_across_streaming_variants ... court-e cache-large-least-stale: device_bytes=49152 elapsed_ns=6879209
+court-e cache-large-lfu: device_bytes=49152 elapsed_ns=6618412
+court-e cache-large-lru: device_bytes=49152 elapsed_ns=6840899
+court-e cache-large-pinned: device_bytes=49152 elapsed_ns=6782739
+court-e cache-none: device_bytes=294912 elapsed_ns=10423191
+court-e cache-small-lru: device_bytes=294912 elapsed_ns=10619404
+court-e prefetch-delay-small-cache: device_bytes=294912 elapsed_ns=309288917
+court-e prefetch-physical: device_bytes=49152 elapsed_ns=7263499
+court-e prefetch-plan: device_bytes=49152 elapsed_ns=7395254
+court-e prefetch-reverse: device_bytes=49152 elapsed_ns=6936556
+court-e threads-1: device_bytes=49152 elapsed_ns=4276518
+court-e threads-4: device_bytes=49152 elapsed_ns=8092346
+ok
+test court_e_selector_reads_only_the_current_state ... ok
+test court_e_within_budget_fallback_trims_approximate_groups ... 
+thread 'court_e_within_budget_fallback_trims_approximate_groups' (4566) panicked at crates/selvedge-runtime/tests/court_e.rs:383:10:
+fallback run: Budget { reason: "the within-budget fallback cannot drop below one group per layer: plan exceeds active unique parameter limit: 12992 > 11464 (mode compliance)" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_runtime::run::TokenStep, selvedge_runtime::error::RuntimeError>>::expect
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1183:23
+   4: court_e::court_e_within_budget_fallback_trims_approximate_groups
+             at ./tests/court_e.rs:383:10
+   5: court_e::court_e_within_budget_fallback_trims_approximate_groups::{closure#0}
+             at ./tests/court_e.rs:357:61
+   6: <court_e::court_e_within_budget_fallback_trims_approximate_groups::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+
+failures:
+
+failures:
+    court_e_within_budget_fallback_trims_approximate_groups
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+error: test failed, to rerun pass `-p selvedge-runtime --test court_e`

@@ -1,0 +1,66 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.49s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_sim-1ea419601c6d3be7)
+
+running 52 tests
+test calibration::tests::empirical_quantiles_match_sample ... ok
+test calibration::tests::normal_quantile_matches_known_values ... ok
+test calibration::tests::normal_quantile_has_unit_moments ... ok
+test calibration::tests::size_law_interpolates_and_extrapolates ... ok
+test envelope::tests::invalid_parameters_are_rejected ... ok
+test calibration::tests::calibration_fails_closed_without_cold_reads ... ok
+test envelope::tests::envelope_builds_from_prefix_only ... ok
+test envelope::tests::unseen_phase_is_uncovered_not_invented ... ok
+test envelope::tests::invalidation_rules_are_recorded ... ok
+test envelope::tests::envelope_round_trips ... ok
+test placement::tests::unknown_placement_name_is_rejected ... ok
+test placement::tests::frequency_and_coaccess_layouts_are_permutations ... ok
+test placement::tests::sequential_is_a_permutation_of_extents ... ok
+test policy::tests::capacity_boundary_exact_fit_is_admitted ... ok
+test policy::tests::least_stale_protects_current_sequence ... ok
+test policy::tests::lfu_prefers_frequency_then_recency ... ok
+test placement::tests::coaccess_blocks_place_coaccessed_pairs_adjacent ... ok
+test policy::tests::no_cache_never_hits_and_never_admits ... ok
+test placement::tests::objective_prices_replication ... ok
+test policy::tests::lru_evicts_oldest_with_id_tiebreak ... ok
+test placement::tests::replication_amplification_is_accounted ... ok
+test policy::tests::pinned_entries_are_never_evicted ... ok
+test policy::tests::pinned_refuses_beyond_capacity ... ok
+test policy::tests::zero_capacity_policy_cache_is_rejected ... ok
+test policy::tests::oversized_shard_is_refused ... ok
+test prng::tests::below_is_bounded_and_rejects_zero ... ok
+test prng::tests::empirical_quantiles_include_endpoints ... ok
+test prng::tests::splitmix_is_reproducible ... ok
+test prng::tests::nearest_rank_percentiles ... ok
+test report::tests::conservation_checks_reject_a_bad_summary ... ok
+test report::tests::latency_summary_uses_nearest_rank ... ok
+test placement::tests::weights_use_lift_and_marginal_cost ... ok
+test prng::tests::uniform_is_in_unit_interval ... ok
+test synthetic::tests::chunk_union_creates_physical_adjacency ... ok
+test placement::tests::weights_are_deterministic ... ok
+test synthetic::tests::invalid_specs_are_rejected ... ok
+test trace::tests::approximate_trace_cannot_name_native_dense ... ok
+test trace::tests::overlapping_shards_are_rejected ... ok
+test trace::tests::trace_exact_mode_requires_whole_bundle_set ... ok
+test trace::tests::trace_exact_mode_without_basis_is_rejected ... ok
+test trace::tests::trace_rejects_duplicate_selection ... ok
+test trace::tests::trace_line_cap_is_enforced ... ok
+test trace::tests::trace_rejects_noncanonical_selection ... ok
+test trace::tests::trace_manifest_hash_mismatch_fails_closed ... ok
+test trace::tests::trace_rejects_out_of_table_shard ... ok
+test synthetic::tests::phase_switch_changes_the_hot_set ... ok
+test trace::tests::trace_rejects_semantic_fields ... ok
+test trace::tests::trace_round_trip_and_hash ... ok
+test calibration::tests::fit_reports_residuals_and_can_reject_exponential ... ok
+test calibration::tests::calibration_reads_metrics_and_writes_receipt ... ok
+test synthetic::tests::generator_is_deterministic_and_hash_stable ... ok
+test synthetic::tests::different_seeds_differ ... ok
+
+test result: ok. 52 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+   Doc-tests selvedge_sim
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

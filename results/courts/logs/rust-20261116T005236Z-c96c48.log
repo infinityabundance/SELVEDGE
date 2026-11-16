@@ -1,0 +1,35 @@
+   Compiling selvedge-core v0.1.0 (/work/crates/selvedge-core)
+   Compiling selvedge-format v0.1.0 (/work/crates/selvedge-format)
+   Compiling selvedge-store v0.1.0 (/work/crates/selvedge-store)
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+   Compiling selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+error[E0382]: borrow of moved value: `spec`
+   --> crates/selvedge-sim/src/synthetic.rs:420:50
+    |
+396 |         let mut spec = SyntheticSpec::default();
+    |             -------- move occurs because `spec` has type `synthetic::SyntheticSpec`, which does not implement the `Copy` trait
+...
+404 |         let generated = generate(spec, "rev", "stamp").unwrap();
+    |                                  ---- value moved here
+...
+420 |         let adjacent = offsets.windows(2).filter(|pair| pair[1] - pair[0] == spec.shard_bytes).count();
+    |                                                  ^^^^^^                      ---------------- borrow occurs due to use in closure
+    |                                                  |
+    |                                                  value borrowed here after move
+    |
+note: consider changing this parameter type in function `generate` to borrow instead if owning the value isn't necessary
+   --> crates/selvedge-sim/src/synthetic.rs:192:23
+    |
+192 | pub fn generate(spec: SyntheticSpec, revision: &str, stamp: &str) -> Result<SyntheticTrace> {
+    |        --------       ^^^^^^^^^^^^^ this parameter takes ownership of the value
+    |        |
+    |        in this function
+help: consider cloning the value if the performance cost is acceptable
+    |
+404 |         let generated = generate(spec.clone(), "rev", "stamp").unwrap();
+    |                                      ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `selvedge-sim` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

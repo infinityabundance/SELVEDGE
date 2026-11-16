@@ -1,0 +1,65 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+warning: unused import: `TensorSource`
+ --> crates/selvedge-runtime/tests/debug_dump.rs:5:42
+  |
+5 | use selvedge_convert::{CheckpointSource, TensorSource};
+  |                                          ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `selvedge-runtime` (test "debug_dump") generated 1 warning (run `cargo fix --test "debug_dump" -p selvedge-runtime` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.81s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_runtime-c51017fe6b8963c9)
+
+running 14 tests
+test account::tests::disabled_writer_counts_nothing ... ok
+test account::tests::latency_percentiles_are_index_based ... ok
+test bundle::tests::channel_keys_are_unambiguous ... ok
+test config::tests::pinned_architecture_validates_and_splits_heads ... ok
+test config::tests::unsupported_architecture_is_rejected_not_approximated ... ok
+test kernels::tests::dot_matches_naive_in_ascending_order_for_short_vectors ... ok
+test kernels::tests::matvec_is_independent_of_thread_count ... ok
+test kernels::tests::rms_norm_scales_by_root_mean_square ... ok
+test kernels::tests::rope_rotates_a_pair_by_the_position_angle ... ok
+test kernels::tests::softmax_sums_to_one_and_argmax_breaks_ties_low ... ok
+test modes::tests::projection_is_deterministic_and_seed_dependent ... ok
+test modes::tests::splitmix_is_not_constant ... ok
+test run::tests::logits_digest_notices_one_bit ... ok
+test run::tests::stop_tokens_are_read_from_the_generation_config ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/court_e.rs (target/debug/deps/court_e-fa1c504ce5f285b5)
+
+running 5 tests
+test court_e_approximate_mode_is_stable_but_not_exact ... ok
+test court_e_budget_gate_refuses_an_over_budget_exact_run ... ok
+test court_e_exact_mode_is_bitwise_identical_across_streaming_variants ... ok
+test court_e_selector_reads_only_the_current_state ... ok
+test court_e_within_budget_fallback_trims_approximate_groups ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests/debug_dump.rs (target/debug/deps/debug_dump-131c8079294fb737)
+
+running 1 test
+test dump_stages ... ignored, debug aid
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tiny_parity.rs (target/debug/deps/tiny_parity-ab0986307ab5b9df)
+
+running 4 tests
+test accounting_row_is_valid_jsonl_and_reports_every_required_field ... ok
+test exact_mode_classifies_as_proven_and_approximate_does_not ... ok
+test rust_forward_matches_the_numpy_reference_on_the_tiny_fixture ... ok
+test tokenizer_round_trips_the_pinned_vocabulary ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+
+   Doc-tests selvedge_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

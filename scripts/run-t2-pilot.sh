@@ -26,8 +26,21 @@
 #   SELVEDGE_MEM=28g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g
 #
 # Resuming: `scripts/run-t2-pilot.sh --resume` continues from the recorded
-# state. An arm whose container already exited non-zero is *not* resumed
-# automatically; the failure stays recorded until a human clears it.
+# state. It has three recovery paths, tried in this order:
+#
+#   1. a live or exited detached container recorded in the arm's pending state:
+#      `scripts/court wait` finishes it and writes its receipt and log copy;
+#   2. no awaitable container, but a **verified final checkpoint** (`step-N.pt`
+#      matching its sidecar sha256 and, when present, a summary that agrees on
+#      steps and tokens): the training stage is marked `trained` and the run
+#      continues at evaluation without retraining;
+#   3. otherwise, training resumes from the latest checkpoint.
+#
+# Every stage transition is written to results/t2/pilot-state.json as it
+# happens, so a host-process death can strand at most one stage, never a
+# finished checkpoint. An arm whose container exited non-zero without a
+# verified checkpoint is *not* resumed automatically; the failure stays
+# recorded until a human clears it.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -196,6 +209,118 @@ print(os.path.join(directory, names[-1]) if names else "")
 PY
 }
 
+# `verified_final_checkpoint <out> <steps>`: succeed only when the arm's final
+# checkpoint exists, its bytes match the sidecar sha256, and (when a summary is
+# present) the summary reports exactly the registered steps and tokens. This is
+# the test that lets a resume skip a training run that already finished but
+# whose orchestrator died. Prints one JSON object on success.
+verified_final_checkpoint() {
+  local out="$1" step_count="$2"
+  python3 - "$out" "$step_count" <<'PY'
+import hashlib, json, os, sys
+
+out, steps = sys.argv[1], int(sys.argv[2])
+tokens_expected = steps * 65536
+final = os.path.join(out, f"step-{steps:06d}.pt")
+
+
+def fail(reason: str) -> None:
+    print(reason, file=sys.stderr)
+    raise SystemExit(1)
+
+
+if not os.path.isfile(final):
+    fail(f"no final checkpoint at {final}")
+sidecar = final + ".sha256"
+if not os.path.isfile(sidecar):
+    fail(f"no sha256 sidecar at {sidecar}")
+raw = open(sidecar, encoding="utf-8").read().strip()
+expected = None
+if raw.startswith("{"):
+    expected = (json.loads(raw) or {}).get("sha256")
+elif raw:
+    expected = raw.split()[0]
+if not expected:
+    fail(f"sidecar {sidecar} carries no sha256")
+digest = hashlib.sha256()
+with open(final, "rb") as handle:
+    for chunk in iter(lambda: handle.read(16 * 1024 * 1024), b""):
+        digest.update(chunk)
+actual = digest.hexdigest()
+if actual != expected:
+    fail(f"sha256 mismatch for {final}: {actual} != {expected}")
+summary = None
+summary_path = os.path.join(out, "summary.json")
+if os.path.isfile(summary_path):
+    summary = json.load(open(summary_path, encoding="utf-8"))
+    if int(summary.get("steps", -1)) != steps:
+        fail(f"summary reports {summary.get('steps')} steps, expected {steps}")
+    if int(summary.get("tokens", -1)) != tokens_expected:
+        fail(f"summary reports {summary.get('tokens')} tokens, expected {tokens_expected}")
+log_path = os.path.join(out, "train.jsonl")
+last_step = None
+if os.path.isfile(log_path):
+    for line in open(log_path, encoding="utf-8"):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            last_step = int(json.loads(line).get("step", -1))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+print(json.dumps({
+    "ok": True,
+    "checkpoint": final,
+    "sha256": actual,
+    "bytes": os.path.getsize(final),
+    "steps": steps,
+    "tokens": tokens_expected,
+    "summary_present": summary is not None,
+    "summary_finished_utc": None if summary is None else summary.get("finished_utc"),
+    "train_log_last_step": last_step,
+}, sort_keys=True))
+PY
+}
+
+# `court_log_from_receipt <receipt>`: the log path a court receipt records.
+court_log_from_receipt() {
+  python3 - "${1:-}" <<'PY'
+import json, os, sys
+path = sys.argv[1] if len(sys.argv) > 1 else ""
+if path and os.path.exists(path):
+    try:
+        print(json.load(open(path, encoding="utf-8")).get("log") or "")
+    except Exception:
+        print("")
+else:
+    print("")
+PY
+}
+
+# `compose_arm_receipt <arm> <run_name> <training_state> <exit_code>`: writes
+# results/t2/<arm>/run.json once, then records the state transition. Safe to
+# call after a harvest or after a completed training stage.
+compose_arm_receipt() {
+  local arm="$1" run_name="$2" training_state="$3" exit_code="$4" started container_name
+  started=$(t2p state-get --state "$state_abs" --field "arms.$arm.started_utc" || true)
+  container_name=""
+  if [[ -n "$training_state" ]]; then
+    container_name=$(basename "$training_state" .json)
+  fi
+  t2p arm-receipt --arm "$arm" --run-name "$run_name" \
+    --training-state "$training_state" --consume \
+    --launch-revision "$(git rev-parse HEAD)" \
+    --container "$container_name" \
+    --court-receipt "${COURT_RECEIPT:-}" \
+    --started-utc "$started" \
+    --finished-utc "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --exit-code "$exit_code" >>"$log_abs" 2>&1
+  state_set "arms.$arm.status" '"trained"'
+  state_set "arms.$arm.receipt" "\"results/t2/$arm/run.json\""
+  state_set "arms.$arm.pending_state" '""'
+  state_set "arms.$arm.container_exit_code" "$exit_code"
+}
+
 # ---------------------------------------------------------------------------
 # 0. guards
 # ---------------------------------------------------------------------------
@@ -328,15 +453,51 @@ for arm in "${arm_list[@]}"; do
       log "DRY RUN [$arm eval]: python3 oracle/eval/baseline.py --profile t2 --arm $arm --seed $seed --checkpoint $out/step-$(printf '%06d' "$steps").pt --config $(arm_config "$arm") --admission $(arm_admission "$arm") --out $eval_out"
       continue
     fi
+
+    container_exit=0
+    wait_rc=0
+    pending=$(t2p state-get --state "$state_abs" --field "arms.$arm.pending_state" || true)
+    COURT_RECEIPT=$(t2p state-get --state "$state_abs" --field "arms.$arm.court_receipt" || true)
+
     if ((resume)); then
-      pending=$(t2p state-get --state "$state_abs" --field "arms.$arm.pending_state" || true)
       if [[ -n "$pending" ]] && [[ -f "$pending" ]] &&
          docker inspect "$(basename "$pending" .json)" >/dev/null 2>&1; then
+        # Path 1: the detached container is still attributable. `docker wait`
+        # returns its exit code immediately when it has already stopped.
         log "[$arm] resuming the wait on $(basename "$pending")"
         state_set "arms.$arm.status" '"running"'
-        court_await "$pending" || fail_now "train-$arm" "$?" "resumed court wait failed"
+        set +e
+        court_await "$pending"
+        wait_rc=$?
+        set -e
+        if ((wait_rc != 0)); then
+          if verified_final_checkpoint "$out" "$steps" >/dev/null 2>&1; then
+            log "[$arm] court wait exited $wait_rc but the final checkpoint verifies; harvesting it"
+            state_set "arms.$arm.container_failure" "{\"exit_code\": $wait_rc, \"utc\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"detail\": \"court wait non-zero; verified final checkpoint harvested\"}"
+          else
+            fail_now "train-$arm" "$wait_rc" "resumed court wait failed and no verified final checkpoint exists"
+          fi
+        fi
+        container_exit=$wait_rc
+      elif verified_final_checkpoint "$out" "$steps" >/dev/null 2>&1; then
+        # Path 2: the orchestrator died after the container finished (or the
+        # container was removed). The verified checkpoint is the artifact; do
+        # not retrain it. There is no court attribution, and the receipt says so.
+        log "[$arm] recovered a verified final checkpoint; skipping training"
+        verified_final_checkpoint "$out" "$steps" | tee -a "$log_abs" >&2
+        state_set "arms.$arm.recovered" "{\"kind\": \"verified-final-checkpoint\", \"utc\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+        state_set "arms.$arm.status" '"trained"'
+        COURT_RECEIPT=""
+        container_exit=unobserved
       else
+        # Path 3: no finished run. Resume the interrupted one from its latest
+        # verified-safe checkpoint, or fail closed if only an unverified final
+        # checkpoint is on disk.
         resume_from=$(latest_checkpoint "$out")
+        final_checkpoint="$out/step-$(printf '%06d' "$steps").pt"
+        if [[ "$resume_from" == "$final_checkpoint" ]]; then
+          fail_now "train-$arm" 79 "$final_checkpoint exists but failed verification; refusing to resume from it"
+        fi
         if [[ -n "$resume_from" ]]; then
           log "[$arm] resuming training from $resume_from"
           ARM_ARGV+=(--resume "$resume_from")
@@ -347,7 +508,12 @@ for arm in "${arm_list[@]}"; do
         pending=$(court_launch "${ARM_ARGV[@]}") || fail_now "train-$arm" 69 "detached launch refused"
         state_set "arms.$arm.pending_state" "\"$pending\""
         log "[$arm] training launched: $(basename "$pending")"
-        court_await "$pending" || fail_now "train-$arm" "$?" "training container failed"
+        set +e
+        court_await "$pending"
+        wait_rc=$?
+        set -e
+        ((wait_rc == 0)) || fail_now "train-$arm" "$wait_rc" "training container failed"
+        container_exit=0
       fi
     else
       state_set "arms.$arm.status" '"running"'
@@ -355,34 +521,40 @@ for arm in "${arm_list[@]}"; do
       pending=$(court_launch "${ARM_ARGV[@]}") || fail_now "train-$arm" 69 "detached launch refused"
       state_set "arms.$arm.pending_state" "\"$pending\""
       log "[$arm] training launched: $(basename "$pending")"
-      court_await "$pending" || fail_now "train-$arm" "$?" "training container failed"
+      set +e
+      court_await "$pending"
+      wait_rc=$?
+      set -e
+      ((wait_rc == 0)) || fail_now "train-$arm" "$wait_rc" "training container failed"
+      container_exit=0
     fi
-    state_set "arms.$arm.court_receipt" "\"${COURT_RECEIPT:-}\""
-    state_set "arms.$arm.court_log" "\"$(python3 - "${COURT_RECEIPT:-}" <<'PY'
-import json, os, sys
-path = sys.argv[1] if len(sys.argv) > 1 else ""
-if path and os.path.exists(path):
-    try:
-        print(json.load(open(path, encoding="utf-8")).get("log") or "")
-    except Exception:
-        print("")
-else:
-    print("")
-PY
-)\""
+
+    # Persist the court attribution before composing the run receipt, so a
+    # death between the wait and the receipt cannot lose it.
+    if [[ -n "${COURT_RECEIPT:-}" ]]; then
+      state_set "arms.$arm.court_receipt" "\"$COURT_RECEIPT\""
+      state_set "arms.$arm.court_log" "\"$(court_log_from_receipt "$COURT_RECEIPT")\""
+    fi
     state_set "arms.$arm.finished_utc" "\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\""
-    t2p arm-receipt --arm "$arm" --run-name "$run_name" \
-      --training-state "${pending:-}" --consume \
-      --launch-revision "$(git rev-parse HEAD)" \
-      --container "$(basename "${pending:-}" .json)" \
-      --court-receipt "${COURT_RECEIPT:-}" \
-      --started-utc "$(t2p state-get --state "$state_abs" --field "arms.$arm.started_utc" || echo '')" \
-      --finished-utc "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-      --exit-code 0 >>"$log_abs" 2>&1 || fail_now "train-receipt-$arm" 70 "could not compose the arm receipt"
-    state_set "arms.$arm.status" '"trained"'
-    state_set "arms.$arm.receipt" "\"results/t2/$arm/run.json\""
-    state_set "arms.$arm.pending_state" '""'
+
+    if [[ ! -f "results/t2/$arm/run.json" ]]; then
+      compose_arm_receipt "$arm" "$run_name" "${pending:-}" "${container_exit:-0}" ||
+        fail_now "train-receipt-$arm" 70 "could not compose the arm receipt"
+    else
+      state_set "arms.$arm.status" '"trained"'
+      log "[$arm] run receipt already present; reusing results/t2/$arm/run.json"
+    fi
     log "[$arm] trained; receipt results/t2/$arm/run.json"
+  else
+    # Training was already recorded. Rebuild a missing receipt from the
+    # artifacts if a previous process died between the state transition and the
+    # write; never retrain.
+    if [[ ! -f "results/t2/$arm/run.json" ]]; then
+      pending=$(t2p state-get --state "$state_abs" --field "arms.$arm.pending_state" || true)
+      COURT_RECEIPT=$(t2p state-get --state "$state_abs" --field "arms.$arm.court_receipt" || true)
+      compose_arm_receipt "$arm" "$run_name" "${pending:-}" 0 ||
+        fail_now "train-receipt-$arm" 70 "could not reconstruct the arm receipt"
+    fi
   fi
 
   # ---- evaluation ------------------------------------------------------

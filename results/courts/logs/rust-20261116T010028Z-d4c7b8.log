@@ -1,0 +1,154 @@
+    Checking serde_json v1.0.154
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/src/sim_cmd.rs:686:24
+    |
+686 |             return Err(SimError::invalid("bundle", "has no shards"));
+    |                    --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Box<dyn Error>`, found `SimError`
+    |                    |
+    |                    arguments to this enum variant are incorrect
+    |
+    = note: expected struct `Box<dyn StdError>`
+                 found enum `SimError`
+    = note: for more on the distinction between the stack and the heap, read https://doc.rust-lang.org/book/ch15-01-box.html, https://doc.rust-lang.org/rust-by-example/std/box.html, and https://doc.rust-lang.org/std/boxed/index.html
+help: the type constructed contains `SimError` due to the type of the argument passed
+   --> crates/selvedge-cli/src/sim_cmd.rs:686:20
+    |
+686 |             return Err(SimError::invalid("bundle", "has no shards"));
+    |                    ^^^^--------------------------------------------^
+    |                        |
+    |                        this argument influences the type of `Err`
+note: tuple variant defined here
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:566:4
+help: store this in the heap by calling `Box::new`
+    |
+686 |             return Err(Box::new(SimError::invalid("bundle", "has no shards")));
+    |                        +++++++++                                            +
+
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/src/sim_cmd.rs:698:28
+    |
+698 |                   return Err(SimError::invalid(
+    |  ________________________---_^
+    | |                        |
+    | |                        arguments to this enum variant are incorrect
+699 | |                     "metrics",
+700 | |                     format!(
+701 | |                         "pass {pass_number} has {} reads, bundle has {shard_count} shards",
+702 | |                         pass.len()
+703 | |                     ),
+704 | |                 ));
+    | |_________________^ expected `Box<dyn Error>`, found `SimError`
+    |
+    = note: expected struct `Box<dyn StdError>`
+                 found enum `SimError`
+    = note: for more on the distinction between the stack and the heap, read https://doc.rust-lang.org/book/ch15-01-box.html, https://doc.rust-lang.org/rust-by-example/std/box.html, and https://doc.rust-lang.org/std/boxed/index.html
+help: the type constructed contains `SimError` due to the type of the argument passed
+   --> crates/selvedge-cli/src/sim_cmd.rs:698:24
+    |
+698 |                    return Err(SimError::invalid(
+    |   ________________________^   -
+    |  |____________________________|
+699 | ||                     "metrics",
+700 | ||                     format!(
+701 | ||                         "pass {pass_number} has {} reads, bundle has {shard_count} shards",
+702 | ||                         pass.len()
+703 | ||                     ),
+704 | ||                 ));
+    | ||_________________-^
+    | |__________________|
+    |                    this argument influences the type of `Err`
+note: tuple variant defined here
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:566:4
+help: store this in the heap by calling `Box::new`
+    |
+698 ~                 return Err(Box::new(SimError::invalid(
+699 |                     "metrics",
+...
+703 |                     ),
+704 ~                 )));
+    |
+
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/src/sim_cmd.rs:757:20
+    |
+757 |           return Err(SimError::invalid(
+    |  ________________---_^
+    | |                |
+    | |                arguments to this enum variant are incorrect
+758 | |             "export",
+759 | |             "choose --whole-bundle, --metrics or --fixtures",
+760 | |         ));
+    | |_________^ expected `Box<dyn Error>`, found `SimError`
+    |
+    = note: expected struct `Box<dyn StdError>`
+                 found enum `SimError`
+    = note: for more on the distinction between the stack and the heap, read https://doc.rust-lang.org/book/ch15-01-box.html, https://doc.rust-lang.org/rust-by-example/std/box.html, and https://doc.rust-lang.org/std/boxed/index.html
+help: the type constructed contains `SimError` due to the type of the argument passed
+   --> crates/selvedge-cli/src/sim_cmd.rs:757:16
+    |
+757 |            return Err(SimError::invalid(
+    |   ________________^   -
+    |  |____________________|
+758 | ||             "export",
+759 | ||             "choose --whole-bundle, --metrics or --fixtures",
+760 | ||         ));
+    | ||_________-^
+    | |__________|
+    |            this argument influences the type of `Err`
+note: tuple variant defined here
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:566:4
+help: store this in the heap by calling `Box::new`
+    |
+757 ~         return Err(Box::new(SimError::invalid(
+758 |             "export",
+759 |             "choose --whole-bundle, --metrics or --fixtures",
+760 ~         )));
+    |
+
+error[E0308]: mismatched types
+   --> crates/selvedge-cli/src/sim_cmd.rs:972:28
+    |
+972 |                   return Err(SimError::invalid(
+    |  ________________________---_^
+    | |                        |
+    | |                        arguments to this enum variant are incorrect
+973 | |                     "preset",
+974 | |                     format!("unknown preset {other}"),
+975 | |                 ));
+    | |_________________^ expected `Box<dyn Error>`, found `SimError`
+    |
+    = note: expected struct `Box<dyn StdError>`
+                 found enum `SimError`
+    = note: for more on the distinction between the stack and the heap, read https://doc.rust-lang.org/book/ch15-01-box.html, https://doc.rust-lang.org/rust-by-example/std/box.html, and https://doc.rust-lang.org/std/boxed/index.html
+help: the type constructed contains `SimError` due to the type of the argument passed
+   --> crates/selvedge-cli/src/sim_cmd.rs:972:24
+    |
+972 |                    return Err(SimError::invalid(
+    |   ________________________^   -
+    |  |____________________________|
+973 | ||                     "preset",
+974 | ||                     format!("unknown preset {other}"),
+975 | ||                 ));
+    | ||_________________-^
+    | |__________________|
+    |                    this argument influences the type of `Err`
+note: tuple variant defined here
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:566:4
+help: store this in the heap by calling `Box::new`
+    |
+972 ~                 return Err(Box::new(SimError::invalid(
+973 |                     "preset",
+974 |                     format!("unknown preset {other}"),
+975 ~                 )));
+    |
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `selvedge-cli` (bin "selvedge") due to 4 previous errors

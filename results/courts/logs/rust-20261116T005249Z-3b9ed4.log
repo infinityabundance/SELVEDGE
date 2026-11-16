@@ -1,0 +1,225 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_sim-5bf896422dd2ce1a)
+
+running 50 tests
+test calibration::tests::empirical_quantiles_match_sample ... ok
+test calibration::tests::size_law_interpolates_and_extrapolates ... ok
+test envelope::tests::invalidation_rules_are_recorded ... ok
+test envelope::tests::envelope_builds_from_prefix_only ... ok
+test envelope::tests::unseen_phase_is_uncovered_not_invented ... ok
+test envelope::tests::envelope_round_trips ... ok
+test envelope::tests::invalid_parameters_are_rejected ... ok
+test placement::tests::sequential_is_a_permutation_of_extents ... ok
+test placement::tests::unknown_placement_name_is_rejected ... ok
+test placement::tests::frequency_and_coaccess_layouts_are_permutations ... ok
+test placement::tests::coaccess_blocks_place_coaccessed_pairs_adjacent ... ok
+test policy::tests::capacity_boundary_exact_fit_is_admitted ... ok
+test policy::tests::least_stale_protects_current_sequence ... ok
+test policy::tests::lfu_prefers_frequency_then_recency ... ok
+test placement::tests::weights_are_deterministic ... ok
+test policy::tests::no_cache_never_hits_and_never_admits ... ok
+test placement::tests::weights_use_lift_and_marginal_cost ... ok
+test policy::tests::oversized_shard_is_refused ... ok
+test policy::tests::pinned_refuses_beyond_capacity ... ok
+test policy::tests::zero_capacity_policy_cache_is_rejected ... ok
+test prng::tests::below_is_bounded_and_rejects_zero ... ok
+test prng::tests::empirical_quantiles_include_endpoints ... ok
+test prng::tests::nearest_rank_percentiles ... ok
+test prng::tests::splitmix_is_reproducible ... ok
+test prng::tests::uniform_is_in_unit_interval ... ok
+test report::tests::conservation_checks_reject_a_bad_summary ... ok
+test report::tests::latency_summary_uses_nearest_rank ... ok
+test synthetic::tests::chunk_union_creates_physical_adjacency ... ok
+test calibration::tests::calibration_fails_closed_without_cold_reads ... FAILED
+test calibration::tests::fit_reports_residuals_and_can_reject_exponential ... FAILED
+test synthetic::tests::invalid_specs_are_rejected ... ok
+test calibration::tests::calibration_reads_metrics_and_writes_receipt ... FAILED
+test trace::tests::approximate_trace_cannot_name_native_dense ... ok
+test trace::tests::overlapping_shards_are_rejected ... ok
+test trace::tests::trace_exact_mode_requires_whole_bundle_set ... ok
+test trace::tests::trace_exact_mode_without_basis_is_rejected ... ok
+test placement::tests::objective_penalises_replication ... FAILED
+test placement::tests::replication_amplification_is_accounted ... FAILED
+test policy::tests::lru_evicts_oldest_with_id_tiebreak ... FAILED
+test synthetic::tests::phase_switch_changes_the_hot_set ... ok
+test policy::tests::pinned_entries_are_never_evicted ... FAILED
+test trace::tests::trace_line_cap_is_enforced ... ok
+test trace::tests::trace_rejects_duplicate_selection ... ok
+test trace::tests::trace_rejects_noncanonical_selection ... ok
+test trace::tests::trace_manifest_hash_mismatch_fails_closed ... ok
+test trace::tests::trace_rejects_out_of_table_shard ... ok
+test trace::tests::trace_rejects_semantic_fields ... ok
+test trace::tests::trace_round_trip_and_hash ... ok
+test synthetic::tests::different_seeds_differ ... ok
+test synthetic::tests::generator_is_deterministic_and_hash_stable ... ok
+
+failures:
+
+---- calibration::tests::calibration_fails_closed_without_cold_reads stdout ----
+
+thread 'calibration::tests::calibration_fails_closed_without_cold_reads' (55) panicked at crates/selvedge-sim/src/calibration.rs:1011:9:
+assertion failed: error.to_string().contains("no cold reads")
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:150:5
+   3: selvedge_sim::calibration::tests::calibration_fails_closed_without_cold_reads
+             at ./src/calibration.rs:1011:9
+   4: selvedge_sim::calibration::tests::calibration_fails_closed_without_cold_reads::{closure#0}
+             at ./src/calibration.rs:990:53
+   5: <selvedge_sim::calibration::tests::calibration_fails_closed_without_cold_reads::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   6: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- calibration::tests::fit_reports_residuals_and_can_reject_exponential stdout ----
+
+thread 'calibration::tests::fit_reports_residuals_and_can_reject_exponential' (58) panicked at crates/selvedge-sim/src/calibration.rs:910:9:
+lognormal 0.9150492828613445 vs exponential 0.6608445000974572
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: selvedge_sim::calibration::tests::fit_reports_residuals_and_can_reject_exponential
+             at ./src/calibration.rs:910:9
+   3: selvedge_sim::calibration::tests::fit_reports_residuals_and_can_reject_exponential::{closure#0}
+             at ./src/calibration.rs:891:58
+   4: <selvedge_sim::calibration::tests::fit_reports_residuals_and_can_reject_exponential::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- calibration::tests::calibration_reads_metrics_and_writes_receipt stdout ----
+
+thread 'calibration::tests::calibration_reads_metrics_and_writes_receipt' (56) panicked at crates/selvedge-sim/src/calibration.rs:974:10:
+called `Result::unwrap()` on an `Err` value: Json(Error("unknown field `wall_unix_ns`, expected one of `schema`, `event`, `mono_ns`, `shard`, `source`, `bytes_requested`, `bytes_completed`, `bytes_used`, `bytes_wasted`, `device_bytes`, `queue_wait_ns`, `transfer_ns`, `verify_ns`, `cache_insert_ns`, `eviction_ns`, `stall_ns`, `read_amplification`, `hit`, `verified`, `verification`, `evicted_entries`", line: 1, column: 67))
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_sim::calibration::Calibration, selvedge_sim::error::SimError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: selvedge_sim::calibration::tests::calibration_reads_metrics_and_writes_receipt
+             at ./src/calibration.rs:974:10
+   5: selvedge_sim::calibration::tests::calibration_reads_metrics_and_writes_receipt::{closure#0}
+             at ./src/calibration.rs:947:54
+   6: <selvedge_sim::calibration::tests::calibration_reads_metrics_and_writes_receipt::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- placement::tests::objective_penalises_replication stdout ----
+
+thread 'placement::tests::objective_penalises_replication' (67) panicked at crates/selvedge-sim/src/placement.rs:1002:9:
+assertion failed: replicated_report.objective > plain_report.objective
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:150:5
+   3: selvedge_sim::placement::tests::objective_penalises_replication
+             at ./src/placement.rs:1002:9
+   4: selvedge_sim::placement::tests::objective_penalises_replication::{closure#0}
+             at ./src/placement.rs:985:41
+   5: <selvedge_sim::placement::tests::objective_penalises_replication::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   6: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- placement::tests::replication_amplification_is_accounted stdout ----
+
+thread 'placement::tests::replication_amplification_is_accounted' (68) panicked at crates/selvedge-sim/src/placement.rs:958:9:
+assertion `left == right` failed
+  left: 3
+ right: 4
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<usize, usize>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: selvedge_sim::placement::tests::replication_amplification_is_accounted
+             at ./src/placement.rs:958:9
+   5: selvedge_sim::placement::tests::replication_amplification_is_accounted::{closure#0}
+             at ./src/placement.rs:944:48
+   6: <selvedge_sim::placement::tests::replication_amplification_is_accounted::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- policy::tests::lru_evicts_oldest_with_id_tiebreak stdout ----
+
+thread 'policy::tests::lru_evicts_oldest_with_id_tiebreak' (76) panicked at crates/selvedge-sim/src/policy.rs:472:9:
+assertion failed: !cache.contains(&id(4))
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:150:5
+   3: selvedge_sim::policy::tests::lru_evicts_oldest_with_id_tiebreak
+             at ./src/policy.rs:472:9
+   4: selvedge_sim::policy::tests::lru_evicts_oldest_with_id_tiebreak::{closure#0}
+             at ./src/policy.rs:457:44
+   5: <selvedge_sim::policy::tests::lru_evicts_oldest_with_id_tiebreak::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   6: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- policy::tests::pinned_entries_are_never_evicted stdout ----
+
+thread 'policy::tests::pinned_entries_are_never_evicted' (79) panicked at crates/selvedge-sim/src/policy.rs:520:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: selvedge_sim::policy::tests::pinned_entries_are_never_evicted
+             at ./src/policy.rs:520:9
+   5: selvedge_sim::policy::tests::pinned_entries_are_never_evicted::{closure#0}
+             at ./src/policy.rs:512:42
+   6: <selvedge_sim::policy::tests::pinned_entries_are_never_evicted::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    calibration::tests::calibration_fails_closed_without_cold_reads
+    calibration::tests::calibration_reads_metrics_and_writes_receipt
+    calibration::tests::fit_reports_residuals_and_can_reject_exponential
+    placement::tests::objective_penalises_replication
+    placement::tests::replication_amplification_is_accounted
+    policy::tests::lru_evicts_oldest_with_id_tiebreak
+    policy::tests::pinned_entries_are_never_evicted
+
+test result: FAILED. 43 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+error: test failed, to rerun pass `-p selvedge-sim --lib`

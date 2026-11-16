@@ -1,0 +1,228 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.17s
+     Running tests/engine.rs (target/debug/deps/engine-3818b591359bf8b7)
+
+running 20 tests
+test checksum_failure_fails_closed ... ok
+test coalescing_never_bridges_beyond_gap ... ok
+test deadline_misses_are_counted ... ok
+test capacity_boundary_and_eviction_ordering ... ok
+test determinism_under_a_fixed_seed ... ok
+test envelope_invalidation_on_excursion ... ok
+test oversized_transfer_is_rejected ... ok
+test envelope_utility_is_bytes_and_time ... ok
+test backpressure_wait_and_fail_modes ... FAILED
+test cancellation_returns_the_server ... FAILED
+test coalescing_merges_adjacent_extents ... FAILED
+test divergence_is_reported_as_a_percentage ... FAILED
+test simulator_rejects_inconsistent_cache_configuration ... ok
+test prefetch_cancelled_at_the_end_is_not_counted_as_read ... FAILED
+test replay_reproduces_hand_computed_schedule ... ok
+test start_record_outside_the_trace_is_rejected ... ok
+test prefetch_saves_stall_when_it_completes_in_time ... FAILED
+test prefetch_never_changes_the_selected_set ... FAILED
+test two_timescale_cold_change_is_charged_to_the_phase ... FAILED
+test byte_accounting_is_conserved_under_random_configurations ... ok
+
+failures:
+
+---- backpressure_wait_and_fail_modes stdout ----
+
+thread 'backpressure_wait_and_fail_modes' (86) panicked at crates/selvedge-sim/tests/engine.rs:271:87:
+called `Result::unwrap()` on an `Err` value: Invalid { field: "max_in_flight_bytes", reason: "a 2000 byte transfer can never fit the 1000 byte budget" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_sim::engine::Simulation, selvedge_sim::error::SimError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: engine::backpressure_wait_and_fail_modes
+             at ./tests/engine.rs:271:87
+   5: engine::backpressure_wait_and_fail_modes::{closure#0}
+             at ./tests/engine.rs:264:38
+   6: <engine::backpressure_wait_and_fail_modes::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- cancellation_returns_the_server stdout ----
+
+thread 'cancellation_returns_the_server' (88) panicked at crates/selvedge-sim/tests/engine.rs:303:5:
+cancelled 0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: engine::cancellation_returns_the_server
+             at ./tests/engine.rs:303:5
+   3: engine::cancellation_returns_the_server::{closure#0}
+             at ./tests/engine.rs:291:37
+   4: <engine::cancellation_returns_the_server::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- coalescing_merges_adjacent_extents stdout ----
+
+thread 'coalescing_merges_adjacent_extents' (91) panicked at crates/selvedge-sim/tests/engine.rs:224:5:
+assertion `left == right` failed
+  left: 2500
+ right: 3200
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: engine::coalescing_merges_adjacent_extents
+             at ./tests/engine.rs:224:5
+   5: engine::coalescing_merges_adjacent_extents::{closure#0}
+             at ./tests/engine.rs:214:40
+   6: <engine::coalescing_merges_adjacent_extents::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- divergence_is_reported_as_a_percentage stdout ----
+
+thread 'divergence_is_reported_as_a_percentage' (95) panicked at crates/selvedge-sim/tests/engine.rs:532:5:
+assertion `left == right` failed
+  left: 1
+ right: 0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: engine::divergence_is_reported_as_a_percentage
+             at ./tests/engine.rs:532:5
+   5: engine::divergence_is_reported_as_a_percentage::{closure#0}
+             at ./tests/engine.rs:505:44
+   6: <engine::divergence_is_reported_as_a_percentage::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- prefetch_cancelled_at_the_end_is_not_counted_as_read stdout ----
+
+thread 'prefetch_cancelled_at_the_end_is_not_counted_as_read' (99) panicked at crates/selvedge-sim/tests/engine.rs:321:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: engine::prefetch_cancelled_at_the_end_is_not_counted_as_read
+             at ./tests/engine.rs:321:5
+   5: engine::prefetch_cancelled_at_the_end_is_not_counted_as_read::{closure#0}
+             at ./tests/engine.rs:314:58
+   6: <engine::prefetch_cancelled_at_the_end_is_not_counted_as_read::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- prefetch_saves_stall_when_it_completes_in_time stdout ----
+
+thread 'prefetch_saves_stall_when_it_completes_in_time' (101) panicked at crates/selvedge-sim/tests/engine.rs:338:5:
+assertion `left == right` failed
+  left: 1500
+ right: 1600
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:439:17
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: engine::prefetch_saves_stall_when_it_completes_in_time
+             at ./tests/engine.rs:338:5
+   5: engine::prefetch_saves_stall_when_it_completes_in_time::{closure#0}
+             at ./tests/engine.rs:329:52
+   6: <engine::prefetch_saves_stall_when_it_completes_in_time::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- prefetch_never_changes_the_selected_set stdout ----
+
+thread 'prefetch_never_changes_the_selected_set' (100) panicked at crates/selvedge-sim/tests/engine.rs:358:71:
+called `Result::unwrap()` on an `Err` value: Invalid { field: "bytes_needed", reason: "6000 needed, 2000 served from cache + 3000 fetched" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_sim::engine::Simulation, selvedge_sim::error::SimError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: engine::prefetch_never_changes_the_selected_set
+             at ./tests/engine.rs:358:71
+   5: engine::prefetch_never_changes_the_selected_set::{closure#0}
+             at ./tests/engine.rs:345:45
+   6: <engine::prefetch_never_changes_the_selected_set::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- two_timescale_cold_change_is_charged_to_the_phase stdout ----
+
+thread 'two_timescale_cold_change_is_charged_to_the_phase' (105) panicked at crates/selvedge-sim/tests/engine.rs:406:5:
+assertion failed: simulation.phases[1].bytes_phase_cold >= SHARD_BYTES
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:150:5
+   3: engine::two_timescale_cold_change_is_charged_to_the_phase
+             at ./tests/engine.rs:406:5
+   4: engine::two_timescale_cold_change_is_charged_to_the_phase::{closure#0}
+             at ./tests/engine.rs:385:55
+   5: <engine::two_timescale_cold_change_is_charged_to_the_phase::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   6: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    backpressure_wait_and_fail_modes
+    cancellation_returns_the_server
+    coalescing_merges_adjacent_extents
+    divergence_is_reported_as_a_percentage
+    prefetch_cancelled_at_the_end_is_not_counted_as_read
+    prefetch_never_changes_the_selected_set
+    prefetch_saves_stall_when_it_completes_in_time
+    two_timescale_cold_change_is_charged_to_the_phase
+
+test result: FAILED. 12 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p selvedge-sim --test engine`

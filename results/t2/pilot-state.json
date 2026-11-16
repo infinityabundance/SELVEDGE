@@ -5,40 +5,35 @@
       "admitted": true,
       "config_sha256": "b42ca103bd29e6d87d795b1b1fab3980b0ff679095b68dc5e050c6097b678fc9",
       "path": "results/train/admission/t2/D.json",
-      "sha256": "795f09d134cfe835c2806845e767812c422e77e4873994e6f35fc0361bd5fd2e",
-      "step_index_sha256": null
+      "sha256": "795f09d134cfe835c2806845e767812c422e77e4873994e6f35fc0361bd5fd2e"
     },
     "H": {
       "active_unique_params": 774543360,
       "admitted": true,
       "config_sha256": "7b7f03685011baae2c70f7ad21e12377ad7c539eb6a01bb4ad58c84630b44bc0",
       "path": "results/train/admission/t2/H.json",
-      "sha256": "cba59524e27d3350f84dfd4dcc8e9901135f4a855d6437dbe5759929f0e64e22",
-      "step_index_sha256": null
+      "sha256": "cba59524e27d3350f84dfd4dcc8e9901135f4a855d6437dbe5759929f0e64e22"
     },
     "H*": {
       "active_unique_params": 774543360,
       "admitted": true,
       "config_sha256": "6f5c137edf128262cb8fe1ca6149b589d3b6a952620be17e0fa31dcaca716937",
       "path": "results/train/admission/t2/H*.json",
-      "sha256": "175bfdaff10e8c6818197e56e043ce26339095738aba8f01c6f865b20a087cc9",
-      "step_index_sha256": null
+      "sha256": "175bfdaff10e8c6818197e56e043ce26339095738aba8f01c6f865b20a087cc9"
     },
     "M": {
       "active_unique_params": 598153216,
       "admitted": true,
       "config_sha256": "16830ac92c2405582612a69d06edf3428dc08c0bcbd5934c7c6764fbb4090a1b",
       "path": "results/train/admission/t2/M.json",
-      "sha256": "5130643843877598f8900b3923e66bf153323e3a52f0b496b2d43128a7c0b358",
-      "step_index_sha256": null
+      "sha256": "5130643843877598f8900b3923e66bf153323e3a52f0b496b2d43128a7c0b358"
     },
     "X": {
       "active_unique_params": 772440064,
       "admitted": true,
       "config_sha256": "afc6d5069f1f7eb3a0caef1f9740bb2f0634d9444ff491f40788ec4edd5327b3",
       "path": "results/train/admission/t2/X.json",
-      "sha256": "dc417105a2e7bb0f06c73594bb7b2d5454ef43ff95a9c4099c58e2c01b5817a5",
-      "step_index_sha256": null
+      "sha256": "dc417105a2e7bb0f06c73594bb7b2d5454ef43ff95a9c4099c58e2c01b5817a5"
     }
   },
   "arms": {
@@ -55,9 +50,14 @@
       "status": "evaluated"
     },
     "H": {
-      "pending_state": "/mnt/1tb_kingston/SELVEDGE/results/courts/pending/selvedge-oracle-court-20261115T234515Z-b23ea1.json",
+      "container_exit_code": 0,
+      "court_log": "",
+      "court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T234515Z-b23ea1.json",
+      "finished_utc": "2026-11-16T04:26:34Z",
+      "pending_state": "",
+      "receipt": "results/t2/H/run.json",
       "started_utc": "2026-11-15T23:45:14Z",
-      "status": "running"
+      "status": "evaluating"
     },
     "H*": {
       "status": "pending"
@@ -128,7 +128,12 @@
     "stream_sha256": "fddc1656462bcaf8000f129848ffd544c0754076e431f2d8c05ba7175050309c",
     "tokens": 147784500
   },
-  "failure": null,
+  "failure": {
+    "detail": "court wait returned non-zero",
+    "exit_code": 1,
+    "phase": "eval-H",
+    "utc": "2026-11-16T04:26:51Z"
+  },
   "phases": {
     "eval_D0": {
       "court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T143241Z-d1b92b.json",
@@ -136,21 +141,21 @@
       "status": "done"
     },
     "targets": {
-      "receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T143130Z-478dc2.json",
+      "receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261116T042458Z-c1cd15.json",
       "started_utc": "2026-11-15T13:26:56Z",
       "status": "verified",
       "tokens": 67108864,
       "verified": true,
-      "verified_utc": "2026-11-15T14:32:41Z"
+      "verified_utc": "2026-11-16T04:26:34Z"
     }
   },
   "pilot": "t2",
-  "revision": "1dd7270f3959a3e0ce15f670a03997467235d04b",
+  "revision": "5ede31199fff885044bbdd8a5f031cfc15a0bf18",
   "schema": "selvedge/t2-pilot-state/v1",
   "seed": 1001,
   "started_utc": "2026-11-15T13:26:56Z",
-  "status": "running",
+  "status": "failed",
   "steps": 1024,
   "tokens_per_step": 65536,
-  "updated_utc": "2026-11-15T23:45:16Z"
+  "updated_utc": "2026-11-16T04:26:51Z"
 }

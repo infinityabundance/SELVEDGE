@@ -1,0 +1,29 @@
+    Checking selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+warning: use of `or_insert_with` to construct default value
+   --> crates/selvedge-sim/src/envelope.rs:261:14
+    |
+261 |             .or_insert_with(LayerCounts::default);
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `or_default()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unwrap_or_default
+    = note: `-W clippy::unwrap-or-default` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::unwrap_or_default)]`
+
+warning: you seem to want to iterate on a map's values
+   --> crates/selvedge-sim/src/envelope.rs:275:53
+    |
+275 |         for (_, LayerCounts { records, shards }) in &phase_layers {
+    |                                                     ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#for_kv_map
+    = note: `-W clippy::for-kv-map` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::for_kv_map)]`
+help: use the corresponding method
+    |
+275 -         for (_, LayerCounts { records, shards }) in &phase_layers {
+275 +         for LayerCounts { records, shards } in phase_layers.values() {
+    |
+
+warning: `selvedge-sim` (lib) generated 2 warnings (run `cargo clippy --fix --lib -p selvedge-sim -- ` to apply 2 suggestions)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.43s

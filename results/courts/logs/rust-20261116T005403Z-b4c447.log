@@ -1,0 +1,35 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.28s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_sim-5bf896422dd2ce1a)
+
+running 1 test
+test calibration::tests::fit_reports_residuals_and_can_reject_exponential ... FAILED
+
+failures:
+
+---- calibration::tests::fit_reports_residuals_and_can_reject_exponential stdout ----
+
+thread 'calibration::tests::fit_reports_residuals_and_can_reject_exponential' (98) panicked at crates/selvedge-sim/src/calibration.rs:926:9:
+lognormal 0.9057176369706861 {"mu": 14.512929638372318, "sigma": 0.7182965255798834} vs exponential 0.6451115265120022 {"mean_ns": 2574397.43, "rate_per_ns": 3.8844041263667667e-7}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: selvedge_sim::calibration::tests::fit_reports_residuals_and_can_reject_exponential
+             at ./src/calibration.rs:926:9
+   3: selvedge_sim::calibration::tests::fit_reports_residuals_and_can_reject_exponential::{closure#0}
+             at ./src/calibration.rs:902:58
+   4: <selvedge_sim::calibration::tests::fit_reports_residuals_and_can_reject_exponential::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    calibration::tests::fit_reports_residuals_and_can_reject_exponential
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 49 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p selvedge-sim --lib`

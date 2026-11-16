@@ -1,0 +1,35 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.33s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_sim-1ea419601c6d3be7)
+
+running 1 test
+test calibration::tests::normal_quantile_has_unit_moments ... FAILED
+
+failures:
+
+---- calibration::tests::normal_quantile_has_unit_moments stdout ----
+
+thread 'calibration::tests::normal_quantile_has_unit_moments' (98) panicked at crates/selvedge-sim/src/calibration.rs:913:9:
+variance 1.0316782580971011; q99 -1.2815525881570484 q999 -1.8574613110169513
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: selvedge_sim::calibration::tests::normal_quantile_has_unit_moments
+             at ./src/calibration.rs:913:9
+   3: selvedge_sim::calibration::tests::normal_quantile_has_unit_moments::{closure#0}
+             at ./src/calibration.rs:902:42
+   4: <selvedge_sim::calibration::tests::normal_quantile_has_unit_moments::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    calibration::tests::normal_quantile_has_unit_moments
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p selvedge-sim --lib`

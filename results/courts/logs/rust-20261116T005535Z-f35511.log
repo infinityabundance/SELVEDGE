@@ -1,0 +1,16 @@
+   Compiling selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+error: unexpected closing delimiter: `}`
+   --> crates/selvedge-sim/src/calibration.rs:375:1
+    |
+353 |     if p < LOWER || p > UPPER {
+    |                               - the nearest open delimiter
+...
+359 |         let mut value = -((((C[0] * r + C[1]) * r + C[2]) * r + C[3]) * r + C[4]) * r + C[5])
+    |                                                                                             - missing open `(` for this delimiter
+...
+375 | }
+    | ^ unexpected closing delimiter
+
+error: could not compile `selvedge-sim` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-sim` (lib test) due to 1 previous error

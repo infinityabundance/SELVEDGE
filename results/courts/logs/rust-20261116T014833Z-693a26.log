@@ -1,0 +1,27 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+error[E0425]: cannot find value `keys` in this scope
+  --> crates/selvedge-runtime/src/weights.rs:95:12
+   |
+95 |         if keys.iter().any(|key| key == "lm_head.weight") {
+   |            ^^^^ not found in this scope
+
+error[E0425]: cannot find value `embed` in this scope
+   --> crates/selvedge-runtime/src/weights.rs:102:30
+    |
+ 48 |     pub embed: Vec<f32>,
+    |         ----- a field by that name exists in `Self`
+...
+102 |             if tied.len() != embed.len()
+    |                              ^^^^^
+
+error[E0425]: cannot find value `embed` in this scope
+   --> crates/selvedge-runtime/src/weights.rs:105:26
+    |
+ 48 |     pub embed: Vec<f32>,
+    |         ----- a field by that name exists in `Self`
+...
+105 |                     .zip(embed.iter())
+    |                          ^^^^^
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `selvedge-runtime` (lib) due to 3 previous errors

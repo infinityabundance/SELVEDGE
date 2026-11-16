@@ -1,0 +1,29 @@
+    Checking selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> crates/selvedge-sim/src/envelope.rs:238:21
+    |
+238 |     let mut layers: BTreeMap<String, BTreeMap<u32, (u64, BTreeMap<ShardId, u64>)>> = BTreeMap::new();
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#type_complexity
+    = note: `-W clippy::type-complexity` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::type_complexity)]`
+
+warning: you seem to want to iterate on a map's values
+   --> crates/selvedge-sim/src/envelope.rs:266:49
+    |
+266 |         for (_, (layer_total, shard_counts)) in &phase_layers {
+    |                                                 ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#for_kv_map
+    = note: `-W clippy::for-kv-map` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::for_kv_map)]`
+help: use the corresponding method
+    |
+266 -         for (_, (layer_total, shard_counts)) in &phase_layers {
+266 +         for (layer_total, shard_counts) in phase_layers.values() {
+    |
+
+warning: `selvedge-sim` (lib) generated 2 warnings (run `cargo clippy --fix --lib -p selvedge-sim -- ` to apply 1 suggestion)
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.91s
