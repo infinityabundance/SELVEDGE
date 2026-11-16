@@ -26,7 +26,7 @@
 #   SELVEDGE_MEM=28g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g
 #
 # Resuming: `scripts/run-t2-pilot.sh --resume` continues from the recorded
-# state. It has three recovery paths, tried in this order:
+# state. It has four recovery paths, tried in this order:
 #
 #   1. a live or exited detached container recorded in the arm's pending state:
 #      `scripts/court wait` finishes it and writes its receipt and log copy;
@@ -34,13 +34,20 @@
 #      matching its sidecar sha256 and, when present, a summary that agrees on
 #      steps and tokens): the training stage is marked `trained` and the run
 #      continues at evaluation without retraining;
-#   3. otherwise, training resumes from the latest checkpoint.
+#   3. a completed evaluation receipt for exactly that checkpoint (its recorded
+#      `checkpoint_sha256` equals the sidecar): the eval stage is not re-run;
+#   4. otherwise, training resumes from the latest checkpoint.
+#
+# `--from-eval` is the operator's "do not train anything" switch: it implies
+# `--resume` and refuses to start an arm unless its final checkpoint verifies.
 #
 # Every stage transition is written to results/t2/pilot-state.json as it
 # happens, so a host-process death can strand at most one stage, never a
 # finished checkpoint. An arm whose container exited non-zero without a
 # verified checkpoint is *not* resumed automatically; the failure stays
-# recorded until a human clears it.
+# recorded until a human clears it. A previous `failure` block is archived into
+# `failures` on resume (never deleted) so the live state describes the run that
+# is actually in progress.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -66,7 +73,7 @@ run_root="results/artifacts/train/t2"
 eval_root="results/eval"
 
 usage() {
-  sed -n '2,32p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,49p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 while (($#)); do
@@ -83,6 +90,10 @@ while (($#)); do
 done
 
 mkdir -p results/t2
+
+if ((from_eval)); then
+  resume=1
+fi
 
 IFS=' ' read -r -a arm_list <<<"$arms"
 
@@ -297,9 +308,41 @@ else:
 PY
 }
 
+# `eval_receipt_is_current <receipt> <checkpoint> <arm>`: succeed when a
+# completed evaluation receipt already exists for exactly this checkpoint, so a
+# death between the receipt write and the state transition cannot cost a second
+# full evaluation. Prints one JSON object on success.
+eval_receipt_is_current() {
+  python3 - "${1:-}" "${2:-}" "${3:-}" <<'PY'
+import json, os, sys
+
+receipt_path, checkpoint, arm = sys.argv[1:4]
+sidecar_path = checkpoint + ".sha256"
+if not (receipt_path and os.path.isfile(receipt_path) and os.path.isfile(sidecar_path)):
+    raise SystemExit(1)
+try:
+    receipt = json.load(open(receipt_path, encoding="utf-8"))
+    sidecar = json.load(open(sidecar_path, encoding="utf-8"))
+except Exception:
+    raise SystemExit(1)
+model = receipt.get("model") or {}
+results = receipt.get("results") or {}
+expected = sidecar.get("sha256")
+complete = {"distributional", "humaneval", "gsm8k"} <= set(results)
+ok = bool(expected) and model.get("checkpoint_sha256") == expected \
+    and (receipt.get("arm") or "") == arm and complete
+if not ok:
+    raise SystemExit(1)
+print(json.dumps({"ok": True, "checkpoint_sha256": expected,
+                  "receipt": receipt_path, "stamp": receipt.get("stamp"),
+                  "seconds": receipt.get("seconds")}, sort_keys=True))
+PY
+}
+
 # `compose_arm_receipt <arm> <run_name> <training_state> <exit_code>`: writes
 # results/t2/<arm>/run.json once, then records the state transition. Safe to
-# call after a harvest or after a completed training stage.
+# call after a harvest or after a completed training stage. Returns non-zero —
+# and leaves the arm untrained — when the receipt could not be written.
 compose_arm_receipt() {
   local arm="$1" run_name="$2" training_state="$3" exit_code="$4" started container_name
   started=$(t2p state-get --state "$state_abs" --field "arms.$arm.started_utc" || true)
@@ -314,7 +357,10 @@ compose_arm_receipt() {
     --court-receipt "${COURT_RECEIPT:-}" \
     --started-utc "$started" \
     --finished-utc "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    --exit-code "$exit_code" >>"$log_abs" 2>&1
+    --exit-code "$exit_code" >>"$log_abs" 2>&1 || {
+    log "[$arm] arm receipt could not be composed; the arm stays untrained"
+    return 1
+  }
   state_set "arms.$arm.status" '"trained"'
   state_set "arms.$arm.receipt" "\"results/t2/$arm/run.json\""
   state_set "arms.$arm.pending_state" '""'
@@ -366,6 +412,7 @@ if ((resume)) && [[ -f "$state_abs" ]]; then
   log "resuming from $state_rel"
   t2p state-init --state "$state_abs" --budget-tokens "$budget_tokens" \
     --steps "$steps" --seed "$seed" --budget-stamp 20261115T130456Z >/dev/null
+  t2p state-archive-failure --state "$state_abs" | tee -a "$log_abs" >&2
 else
   t2p state-init --state "$state_abs" --budget-tokens "$budget_tokens" \
     --steps "$steps" --seed "$seed" --budget-stamp 20261115T130456Z >/dev/null
@@ -459,7 +506,19 @@ for arm in "${arm_list[@]}"; do
     pending=$(t2p state-get --state "$state_abs" --field "arms.$arm.pending_state" || true)
     COURT_RECEIPT=$(t2p state-get --state "$state_abs" --field "arms.$arm.court_receipt" || true)
 
-    if ((resume)); then
+    if ((from_eval)); then
+      # The operator said: do not train. A verified final checkpoint is the only
+      # thing that may reach evaluation; anything else stops here with a reason.
+      if ! verified_final_checkpoint "$out" "$steps" >/dev/null 2>&1; then
+        fail_now "train-$arm" 79 "--from-eval: no verified final checkpoint at $out"
+      fi
+      log "[$arm] --from-eval: verified final checkpoint, skipping training"
+      verified_final_checkpoint "$out" "$steps" | tee -a "$log_abs" >&2
+      state_set "arms.$arm.recovered" "{\"kind\": \"verified-final-checkpoint\", \"utc\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"reason\": \"--from-eval\"}"
+      state_set "arms.$arm.status" '"trained"'
+      COURT_RECEIPT="$(t2p state-get --state "$state_abs" --field "arms.$arm.court_receipt" || true)"
+      container_exit=unobserved
+    elif ((resume)); then
       if [[ -n "$pending" ]] && [[ -f "$pending" ]] &&
          docker inspect "$(basename "$pending" .json)" >/dev/null 2>&1; then
         # Path 1: the detached container is still attributable. `docker wait`
@@ -560,13 +619,21 @@ for arm in "${arm_list[@]}"; do
   # ---- evaluation ------------------------------------------------------
   final_step=$(python3 -c "print(f'{int($steps):06d}')")
   checkpoint="$out/step-$final_step.pt"
-  state_set "arms.$arm.status" '"evaluating"'
-  log "[$arm] evaluating $checkpoint"
-  SELVEDGE_MEM="${SELVEDGE_MEM:-28g}" SELVEDGE_TMP="${SELVEDGE_TMP:-8g}" \
-    court_run "eval-$arm" python3 oracle/eval/baseline.py --profile t2 --arm "$arm" --seed "$seed" \
-    --checkpoint "$checkpoint" --config "$(arm_config "$arm")" \
-    --admission "$(arm_admission "$arm")" --out "$eval_out" ||
-    fail_now "eval-$arm" "$?" "evaluation failed"
+  # Nothing unverified reaches evaluation, and nothing verified is retrained.
+  verified_final_checkpoint "$out" "$steps" >/dev/null 2>&1 ||
+    fail_now "eval-$arm" 79 "final checkpoint $checkpoint does not verify; refusing to evaluate"
+  if current=$(eval_receipt_is_current "$eval_out" "$checkpoint" "$arm"); then
+    log "[$arm] eval receipt already current for this checkpoint; not re-running"
+    log "  $current"
+  else
+    state_set "arms.$arm.status" '"evaluating"'
+    log "[$arm] evaluating $checkpoint"
+    SELVEDGE_MEM="${SELVEDGE_MEM:-28g}" SELVEDGE_TMP="${SELVEDGE_TMP:-8g}" \
+      court_run "eval-$arm" python3 oracle/eval/baseline.py --profile t2 --arm "$arm" --seed "$seed" \
+      --checkpoint "$checkpoint" --config "$(arm_config "$arm")" \
+      --admission "$(arm_admission "$arm")" --out "$eval_out" ||
+      fail_now "eval-$arm" "$?" "evaluation failed"
+  fi
   t2p eval-receipt --arm "$arm" --eval "$eval_out" >>"$log_abs" 2>&1 ||
     fail_now "eval-receipt-$arm" 70 "could not summarise the eval receipt"
   state_set "arms.$arm.status" '"evaluated"'

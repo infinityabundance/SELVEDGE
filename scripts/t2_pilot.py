@@ -13,6 +13,7 @@ Subcommands:
   state-init    create results/t2/pilot-state.json (idempotent)
   state-set     set one dotted field, atomically
   state-get     print one dotted field
+  state-archive-failure  move `failure` into the `failures` history on resume
   arm-receipt   compose results/t2/<arm>/run.json from the run artifacts
   eval-receipt  compose results/t2/<arm>/eval.json from the eval receipt
   progress      human-readable progress, remaining work and resume command
@@ -434,6 +435,27 @@ def cmd_state_set(args) -> int:
     split_set(state, args.field, value)
     state["updated_utc"] = utc_now()
     write_json_atomic(path, state)
+    return 0
+
+
+def cmd_state_archive_failure(args) -> int:
+    """Move `failure` into the `failures` history; nothing is deleted.
+
+    A resume supersedes the recorded failure without erasing it: the live state
+    must describe the run in progress, and the operator must still be able to
+    read what stopped the previous one.
+    """
+    path = state_path(args.state)
+    state = load_json(path)
+    failure = state.get("failure")
+    if not failure:
+        print(json.dumps({"archived": None}, indent=2, sort_keys=True))
+        return 0
+    state.setdefault("failures", []).append(failure)
+    state["failure"] = None
+    state["resumed_utc"] = utc_now()
+    write_json_atomic(path, state)
+    print(json.dumps({"archived": failure}, indent=2, sort_keys=True))
     return 0
 
 
@@ -860,7 +882,8 @@ def build_parser() -> argparse.ArgumentParser:
     targets.add_argument("--budget-tokens", type=int, default=67_108_864)
     targets.set_defaults(func=cmd_targets)
 
-    for name in ("state-init", "state-set", "state-get", "progress", "estimate"):
+    for name in ("state-init", "state-set", "state-get", "state-archive-failure",
+                 "progress", "estimate"):
         child = sub.add_parser(name)
         child.add_argument("--state", default=None)
         if name == "state-init":
@@ -876,6 +899,8 @@ def build_parser() -> argparse.ArgumentParser:
         elif name == "state-get":
             child.add_argument("--field", required=True)
             child.set_defaults(func=cmd_state_get)
+        elif name == "state-archive-failure":
+            child.set_defaults(func=cmd_state_archive_failure)
         elif name == "progress":
             child.add_argument("--json", action="store_true")
             child.set_defaults(func=cmd_progress)
