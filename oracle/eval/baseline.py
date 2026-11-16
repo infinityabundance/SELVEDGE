@@ -64,7 +64,10 @@ def write_json_atomic(path: str, payload: dict) -> None:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", required=True)
-    parser.add_argument("--profile", choices=["t1", "t2"], default="t1")
+    parser.add_argument("--profile", choices=["t1", "t2", "t3"], default="t1")
+    parser.add_argument("--latent-spec", default=None,
+                        help="T3: the latent geometry spec JSON; builds the arm with "
+                             "oracle/train/latent_geometry.py instead of build_arm")
     parser.add_argument("--model-size", default="0.6b", choices=["0.6b", "1.7b"])
     parser.add_argument("--checkpoint", default=None)
     parser.add_argument("--config", default=None)
@@ -102,16 +105,29 @@ def main(argv: list[str]) -> int:
     teacher = harness.load_model(
         harness.model_path(args.hf_root, "1.7b"), device)
     built = None
+    latent_spec_obj = None
     if args.arm == "E":
         student = teacher
     else:
         base = harness.load_model(harness.model_path(args.hf_root, args.model_size), device)
         if args.checkpoint and args.config and args.admission:
-            from modeling import build_arm, load_admission
+            from modeling import load_admission
 
             config, admission = load_admission(args.config, args.admission)
-            arm_model = build_arm(base, args.arm, config, admission, args.seed,
-                                  profile=args.profile, mask_order=args.mask_order)
+            if args.latent_spec:
+                import latent_geometry
+
+                spec = latent_geometry.LatentSpec.load(args.latent_spec)
+                latent_spec_obj = spec
+                arm_model = latent_geometry.build_latent_arm(base, spec, args.seed,
+                                                             admission)
+                args.arm = arm_model.arm
+            else:
+                from modeling import build_arm
+
+                arm_model = build_arm(base, args.arm, config, admission, args.seed,
+                                      profile=args.profile,
+                                      mask_order=args.mask_order)
             arm_model.model.to(device)
             state = torch.load(args.checkpoint, map_location=device, weights_only=False)
             _missing, unexpected = arm_model.model.load_state_dict(state["model"],
@@ -150,6 +166,8 @@ def main(argv: list[str]) -> int:
             "H": "compliant_naive_hybrid",
             "H*": "compliant_error_directed_hybrid",
         }.get(args.arm, "unlabelled")
+    if args.profile == "t3":
+        compliance = "compliant_latent_specialists"
 
     results: dict = {}
 
@@ -188,7 +206,16 @@ def main(argv: list[str]) -> int:
 
     vram = torch.cuda.max_memory_allocated() / (1024 ** 3)
     resources = None
-    if built is not None:
+    if built is not None and args.profile == "t3":
+        resources = {
+            "arm": built.arm, "profile": "t3",
+            "active_unique_params": admission["active_unique_params"],
+            "total_accessible": config["total_accessible"],
+            "trainable_elements": built.trainable_elements(),
+            "spec": latent_spec_obj.report(),
+            "basis": "admitted config (the Rust ledger is the source of truth)",
+        }
+    elif built is not None:
         from modeling import resource_report
 
         resources = resource_report(built)
