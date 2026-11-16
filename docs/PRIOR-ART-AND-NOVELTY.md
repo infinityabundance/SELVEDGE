@@ -882,3 +882,117 @@ arXiv's Atom API, which is the procedure §9 already prescribes.
    were rate-limited; every affected name was re-asked through arXiv (rounds
    26–28) and the queries are in the receipts. The three `UNSUPPORTED` rows are
    supported by *name-shape* probes returning homonyms, not by a rate limit.
+
+## 18. Verification table — the memory-table works re-read, and the four gap searches (sixth pass, 2026-11-16 S35)
+
+This pass answers a narrower question than the fifth: **not** "is the loop
+published" (it is), but "what exactly does the published memory-table work claim,
+and is any part of the residual gap actually closed by something we missed?"
+
+Twenty queries were issued through the court with network enabled:
+`scripts/court --net python -- python3 scripts/prior_art_fetch.py --only ...`,
+writing `results/prior-art/prior-art-fetch-20261116-round29-s35-gap.jsonl`
+(retrieval timestamps are in each record). **No query returned HTTP 429 in this
+pass**; all twenty returned 200. A zero-result query is recorded as a finding, not
+as absence (§8's caveat still applies).
+
+### 18.1 The verification re-reads
+
+| # | work | record | status | what it actually reports, and the residual |
+| ---: | --- | --- | --- | --- |
+| 194 | **NGM** (re-read) | arXiv **2605.16893v2** | **VERIFIED** | "**training-free, plug-and-play** ... repurposes a backbone model's pretrained token embedding space as memory ... a **Causal N-Gram Encoder** and a **Cosine-Gated Memory Injector** ... neither additional embedding training nor a separately learned memory bank". Evaluated on "**ten benchmarks across six language-model backbones** ... including four **Qwen3** models (**0.6B, 1.7B, 4B, 8B**)"; "improves **HumanEval by 4.26**, HumanEval+ by 2.41, and **GPQA-Diamond by 6.56** percentage points". **Correction to row 178:** the baseline is stronger than the ledger said, and it is measured **on our exact backbone family and size** — the 0.6B model in T2 is in its evaluation set. P19.2's low bar is therefore a *specific, reproducible* number on our own backbone, not a general caution |
+| 195 | **Memory Grafting** (re-read, scale results) | arXiv **2605.20948v1** | **VERIFIED, and it closes two of our questions** | "existing methods such as **Engram learn large memory tables from scratch** during pre-training, making memory scaling expensive and sometimes ineffective ... uses **frozen hidden states from a grafting model** as conditional n-gram memory ... exact longest-match suffix lookup ... expected **O(1)** complexity **with respect to memory-bank size** ... **matched recipient architectures and pre-training budgets** ... improves the **2.8B-scale** average from **51.95 (MoE)** and **52.43 (vanilla Engram)** to **53.86**; in the **0.92B** setting all grafting-model variants improve, with **Qwen3.5-35B-A3B** the strongest grafting model". **This is a table built from a larger model's hidden states at matched budget, with numbers** — i.e. exactly the "distil a table from a bigger teacher" route (gap c) and the "scale memory at matched cost" route (gap d), already published. P19.2 is a **reproduction with these two as the numeric baselines** |
+| 196 | **SCONE** (re-read) | arXiv **2502.01637v3** | **VERIFIED in mechanism and in its scaling claim** | "introducing embeddings for a set of **frequent n-grams** ... precomputed and stored in **off-accelerator memory** ... **two new scaling strategies: increasing the number of n-gram embeddings and scaling the model used to learn them, both while maintaining fixed accelerator usage during inference (in terms of FLOPS and memory)**"; "a model with **1B accelerator-resident parameters** outperforms a **1.9B-parameter baseline** across diverse corpora, using about **half the FLOPS and accelerator memory**". **Correction:** "scale accessible memory while holding active computation fixed" is **SCONE's own claim with numbers**; the plan may not present it as the question WS19 is asking. What P19 asks is only whether the *pass-conditioned address* moves quality at that fixed cost |
+| 197 | **Engram's scaling law** | arXiv (title) "**Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models**" | **VERIFIED** (title + abstract via `arxiv_all`; row 4 of this ledger stays `PARTIAL` for the original strategy-note claims) | "introduce **conditional memory** as a complementary sparsity axis, instantiated via **Engram**, a module that modernizes classic N-gram embedding for **O(1)** lookup. By formulating the **Sparsity Allocation** problem, we uncover a **U-shaped scaling law** that optimizes the trade-off between neural computation (MoE) and static memory (Engram). Guided by this law, we scale Engram to **27B par**[ameters] ...". **This is a published rows/compute-versus-quality scaling law.** The plan's "memory scale: 65K/1M/8M rows" question therefore has a published *shape of the answer*; ours can only be a local check at our anchor and budget, and must say so |
+| 198 | **Ouro** (re-read) | arXiv **2510.25741v6** | **VERIFIED** | as row 171, plus: the stated advantage "**stems not from increased knowledge capacity, but from superior knowledge manipulation capabilities**". That is a direct caution for a memory-capacity claim: Ouro's own analysis attributes loop gains to *manipulation*, not storage, which is one more reason the memory stage must be measured on a family where storage (not manipulation) is the deficit |
+| 199 | **SMELT** (re-read) | arXiv **2609.01343v3** | **VERIFIED** | as row 185. The compute-matched discipline is explicit: "matching **per-token FLOPs, total non-embedding parameters, and KV cache**", "four sizes up to **54B**", "saving **6.8--18.0% of training FLOPs**", "largest on **Code**" |
+| 200 | **Retrofitted Recurrence** (re-read) | arXiv **2608.11233v1** | **VERIFIED** | as row 172, with the numbers the plan needs for a reproduction baseline: "**6M** trained parameters over frozen base weights and **180M** full-block"; "adapter matched the full block overall (**83.8% versus 84.0%**), led through depth 11"; "extrapolates to roughly **1.5 times** its supervised depth"; "answered **7.6 times faster**" than a scratchpad model beyond its horizon |
+| 201 | **MoLE** (re-probe) | arXiv `arxiv_all: "Mixture of LoRA Experts"` returns five works (the LoRA mixture, LD-MoLE, SAMoRA, DynMoLE, and a multi-accent application) | **UNSUPPORTED as named**; the plausible mechanism is located | **Correction stands:** there is no located "MoLE (ICML 2025)". The five candidates are **Mixture of LoRA Experts** works, a different mechanism from a latent memory table. Must be cited by title or not at all |
+| 202 | **On-policy distillation** (search) | `arxiv_all: "on-policy distillation" AND "teacher"` → five works; `... AND "speed" AND "teacher"` → four, including **FlowMap-OPD: Rollout–Kernel Separation for On-Policy Distillation** | **PARTIAL** | the *route* exists in several published forms, and one names the throughput problem directly ("rollout–kernel separation"). The Thinking Machines page remains `PARTIAL` (row 184: no body text served) and **no number from it may be quoted**. What is established: the online-teacher cost is a known engineering problem with published mitigations, so P19's throughput requirement is a normal constraint, not a novel blocker |
+
+### 18.2 The four gap searches, and what they returned
+
+**(a) Pass- or state-conditioned lookup retrieval inside recurrent/shared-weight
+passes.** Queries: `all:"state-conditioned" AND all:"retrieval" AND all:"language
+model"` (5 candidates, all vision/agent work); `all:"per-pass" AND all:"memory"
+AND all:"transformer"` (1 candidate, unrelated); `all:"looped" AND all:"retrieval"
+AND all:"key"` (5 candidates). The closest match is **Cross-Loop Query Handoff:
+How Later Loops Redirect Two-Hop Retrieval in the Ouro Looped Language Models**
+(arXiv, title + abstract recorded in the round-29 receipt): "injecting the
+**layer-indexed collection of loop-3 queries** throughout loop 1 **rescues 90% and
+97%** of questions answered incorrectly at loop 1 and correctly at loop 3, versus
+**24% and 21%** for shuffled donors ... in Ouro-1.4B it is limited to
+four-candidate ranking". **Verdict: PARTIAL.** This establishes that later passes
+*differ in what they retrieve*, and that the loop index carries usable retrieval
+structure — in **attention queries**, not in a token-addressed lookup table. It is
+the strongest reason to expect a pass-conditioned address to matter, and it is
+**not** our mechanism.
+
+**(b) Per-pass recurrent state with weight-tied depth loops.** Queries:
+`all:"weight-tied" AND all:"recurrent depth"` (2, one is row 172);
+`all:"looped transformer" AND all:"state" AND all:"pass"` (5). Matches:
+**LoopVQ** ("each loop step still stores its own keys and values, so the KV cache
+grows linearly with the number of loop steps"), **Hybrid Latent Attention** for
+looped LMs ("the query of each loop reads [a compact latent] directly"), and
+**Asymmetric Looped Transformers** ("Global key-value caches that remain fixed
+across iterations"). **Verdict: VERIFIED as existing work, and it makes our
+choice the *conservative* one.** Per-pass state is the published default; sharing
+or compressing it is an active optimisation (and row 179 reports that sharing
+*improves* quality). P19.4 therefore cannot claim per-pass state as a novelty — it
+can only claim it as an accounted cost, with sharing as the cheaper control it
+must also report.
+
+**(c) Memory tables trained by distillation from a larger same-tokenizer
+teacher.** Queries: `all:"distillation" AND all:"n-gram" AND all:"memory"` (2,
+unrelated); `all:"teacher" AND all:"lookup table" AND all:"distillation"` (1,
+unrelated). **The direct query found nothing — and row 195 above closes the
+question anyway**: Memory Grafting builds the table from a **larger grafting
+model's frozen hidden states** at matched pre-training budget. **Verdict:
+ANSWERED by a work we already had**, not by this query. The lesson is recorded:
+the query was too literal ("distillation" + "lookup table"), and the mechanism
+was expressed as "grafting".
+
+**(d) Scaling accessible memory while holding active computation fixed.**
+Queries: `all:"memory" AND all:"active parameters" AND all:"capacity" AND
+all:"scaling"` (5, none dominant); `all:"retrieval" AND all:"fixed compute" AND
+all:"memory capacity"` (0 results). **Verdict: ANSWERED by SCONE (row 196) and
+Engram's sparsity-allocation law (row 197)**, both of which state the fixed-cost
+memory-scaling question and give numbers or a law. Our stage 2 must be framed as
+a **local reproduction** of that question at our anchor, not as an open question.
+
+### 18.3 The residual gap, restated after this pass
+
+What is **not** in any fetched record: a **token-addressed learned lookup table
+whose address is a function of the pass index and that pass's own hidden state**,
+read inside every pass of a weight-tied loop, with the read counted in the
+per-token unique-active union.
+
+What **is** published, and must be cited rather than re-claimed:
+
+1. token-addressed lookup tables with fixed-cost scaling and numbers (SCONE,
+   Memory Grafting, Engram, NGM, Lngram) — **single pass**;
+2. a table built from a larger model's hidden states at matched budget (Memory
+   Grafting) — **the teacher route is a reproduction**;
+3. a U-shaped compute-versus-memory scaling law (Engram) — **the row-scale
+   question has a published shape**;
+4. loops whose later passes retrieve differently, via attention query handoff
+   (Cross-Loop Query Handoff) — **evidence for the hypothesis, not the mechanism**;
+5. per-pass KV/state, and published schemes that share or compress it (LoopVQ,
+   HLA, AsymLoop, shared-memory looped LMs) — **per-pass state is not a novelty**.
+
+So the claim that survives is narrow and testable: **the address moves per pass
+because the pass index and the pass's own state are inputs to the address
+function, and that is what the three-control factorial in P19.4 measures.** Any
+sentence wider than that — "nobody reads memory inside loops", "memory scaling at
+fixed compute is new", "distilling a memory table is new" — is **stronger than the
+record** and is a defect against this ledger.
+
+### 18.4 What this pass does not establish
+
+- It did not read full texts, only abstracts and landing pages; a claim that
+  depends on a method section (e.g. the exact Engram law coefficients) is
+  `PARTIAL` at best.
+- It did not re-run the Semantic Scholar queries; no 429 occurred, so the
+  rate-limit caveat of the fifth pass does not apply here.
+- It did not search for negative results (works that tried per-pass lookup and
+  failed), because preprint APIs index published work, not attempts.

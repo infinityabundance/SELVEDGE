@@ -5107,6 +5107,27 @@ anchor leaves a quarter-billion elements of headroom under the ceiling
 (`docs/FRONTIER-TARGET.md` §6). Prior art is the comparison set and must be
 measured, not cited: Engram, Memory Grafting, SCONE (one work, not two), Lngram,
 and the **training-free** NGM, which sets the low bar.
+
+**What the sixth literature pass changed here (S35).** Three things in this stage
+are **reproductions, not questions**, and the plan now says so
+(`docs/PRIOR-ART-AND-NOVELTY.md` §18):
+
+1. **The row-scale question has a published shape.** Engram's paper formulates a
+   sparsity-allocation problem and reports a **U-shaped scaling law** between
+   neural computation and static memory. Our three row counts test whether that
+   shape holds at this anchor and budget; they do not test whether memory scales.
+2. **A table built from a larger teacher is published, with matched-budget
+   numbers.** Memory Grafting builds its values from a larger grafting model's
+   frozen hidden states and improves a 2.8B-scale average from 51.95/52.43 to
+   53.86. Our teacher route is that mechanism at our scale.
+3. **Fixed-cost memory scaling is SCONE's own claim**, with a 1B-resident model
+   beating a 1.9B baseline at about half the FLOPs and memory.
+
+So the comparison set is numeric, not rhetorical: NGM on the same backbone family
+(it reports HumanEval +4.26 and GPQA-Diamond +6.56 on Qwen3 models including
+0.6B), Memory Grafting's matched-budget numbers, and SCONE's fixed-cost result.
+A stage-2 null is informative only if it is a null **against those**, and the
+report must name which one it failed to beat.
 **Depends.** P19.0 accounting half, P19.1.
 **Acceptance evidence.** audited ≤ 1e9 unique active on every token (the union,
 not the total), bytes per token, scoreboard delta against the stage-1 anchor, a
@@ -5174,8 +5195,14 @@ rows read in pass 2 need not be the rows read in pass 1.
 precisely: the works with a token-addressed learned table read it in a single
 pass, and the works that reuse memory across passes do not use a token-addressed
 table. Finding 2 names the nearest published factorial (row 183), which crosses
-looping with shared-memory *rereading*. The mechanism here is narrower and
-falsifiable: the address itself changes per pass.
+looping with shared-memory *rereading*. **The sixth pass (§18) narrows it
+further, and the narrowing is the point:** later passes in a trained loop already
+retrieve differently through their **attention queries** (Cross-Loop Query
+Handoff rescues 90%/97% of two-hop questions by injecting loop-3 queries into
+loop 1), and per-pass KV/state is the published default with several schemes that
+share or compress it. Neither is our mechanism, but both mean the novelty
+sentence must be exactly "a **token-addressed lookup table** whose **address** is
+a function of the pass index and the pass's own state", and nothing wider.
 
 **The three controls, all required.**
 (i) **One retrieval, injected every pass** — one read per token, the same vector

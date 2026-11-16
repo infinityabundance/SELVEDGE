@@ -1121,6 +1121,68 @@ SOURCES = [
      "MoLE venue"),
     ("lowbit-ngram-abs", "arxiv_all", 'ti:"Low-Bit N-Gram Embeddings"',
      "low-bit n-gram embedding memory"),
+
+    # --- round 29 (S35): re-verify the memory-table works and search the four
+    # residual-gap questions. Every query is recorded, including the ones that
+    # find nothing and the ones that are rate-limited: a failed search is not
+    # evidence of absence.
+    # (1) verification re-reads -------------------------------------------
+    ("s35-ngm", "arxiv_id", "2605.16893",
+     "NGM: training-free n-gram memory repurposing the token embedding space"),
+    ("s35-memory-grafting", "arxiv_id", "2605.20948",
+     "Memory Grafting: latent memory scale results"),
+    ("s35-scone", "arxiv_id", "2502.01637",
+     "SCONE: frequent n-gram embeddings stored off-accelerator"),
+    ("s35-ouro", "arxiv_id", "2510.25741",
+     "Ouro: looped language models with learned depth allocation"),
+    ("s35-smelt", "arxiv_id", "2609.01343",
+     "SMELT: compute-matched MoE looped transformers and a scaling law"),
+    ("s35-retrofit", "arxiv_id", "2608.11233",
+     "retrofitted recurrent depth at two parameter budgets"),
+    ("s35-engram-search", "arxiv_all", 'all:"Engram" AND all:"conditional memory"',
+     "Engram table-scaling claims (rows vs quality)"),
+    ("s35-memory-scaling-search", "arxiv_all",
+     'all:"n-gram" AND all:"scaling law" AND all:"memory"',
+     "a published scaling law for n-gram/table memory rows versus quality"),
+    ("s35-onpolicy-search", "arxiv_all", 'all:"on-policy distillation" AND all:"teacher"',
+     "on-policy distillation: teacher-forward throughput accounting"),
+    ("s35-onpolicy-throughput", "arxiv_all",
+     'all:"on-policy distillation" AND all:"speed" AND all:"teacher"',
+     "on-policy distillation throughput / cost claims"),
+    ("s35-mole-search", "arxiv_all",
+     'all:"Mixture of LoRA Experts" AND all:"expert"',
+     "MoLE (Mixture of LoRA Experts) as the plausible MoLE mechanism"),
+    # (2) gap question (a): pass- or state-conditioned retrieval -----------
+    ("s35-gap-a-1", "arxiv_all",
+     'all:"state-conditioned" AND all:"retrieval" AND all:"language model"',
+     "state-conditioned lookup retrieval inside a forward pass"),
+    ("s35-gap-a-2", "arxiv_all",
+     'all:"per-pass" AND all:"memory" AND all:"transformer"',
+     "per-pass memory reads"),
+    ("s35-gap-a-3", "arxiv_all",
+     'all:"looped" AND all:"retrieval" AND all:"key"',
+     "retrieval inside looped/shared-weight passes"),
+    # (b) per-pass recurrent state with weight-tied depth loops ------------
+    ("s35-gap-b-1", "arxiv_all",
+     'all:"weight-tied" AND all:"recurrent depth"',
+     "weight-tied recurrent depth and its per-pass state"),
+    ("s35-gap-b-2", "arxiv_all",
+     'all:"looped transformer" AND all:"state" AND all:"pass"',
+     "per-pass state in looped transformers"),
+    # (c) memory tables distilled from a larger same-tokenizer teacher -----
+    ("s35-gap-c-1", "arxiv_all",
+     'all:"distillation" AND all:"n-gram" AND all:"memory"',
+     "n-gram memory trained by distillation"),
+    ("s35-gap-c-2", "arxiv_all",
+     'all:"teacher" AND all:"lookup table" AND all:"distillation"',
+     "lookup table trained from a teacher's distribution"),
+    # (d) scaling accessible memory at fixed active computation ------------
+    ("s35-gap-d-1", "arxiv_all",
+     'all:"memory" AND all:"active parameters" AND all:"capacity" AND all:"scaling"',
+     "accessible memory scaled while active computation is held fixed"),
+    ("s35-gap-d-2", "arxiv_all",
+     'all:"retrieval" AND all:"fixed compute" AND all:"memory capacity"',
+     "memory capacity versus fixed compute"),
 ]
 
 
