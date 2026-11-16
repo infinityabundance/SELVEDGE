@@ -1,5 +1,36 @@
 # T2 diagnostics — what `H*`'s target measures, and what it should
 
+Status: **the artifact this document was waiting for now exists, and the tool has
+been run on it.** The measurement below is the P12.2 one, not a new diagnostic.
+The claim in §2 that "there is no utility label artifact in `results/` at this
+revision" was true when written and is now superseded: `H*`'s Phase U produced
+`results/artifacts/train/t2/Hstar/utility-labels.pt`, whose sha256 sidecar is
+`9e41d604…`, and `oracle/eval/t2_diagnostics.py` ran on it, writing
+`results/t2/diagnostics-20261116T070700Z.json` (stamp `20261116T070703Z`,
+revision `41e4a7e1bbeaf59c7b75bdcf28b19acbdfcf461e`). That receipt is the
+registered output; the numbers live in it, not here.
+
+Two readings of that receipt, quoted with the stamp and revision that produced
+them, because they decide the successor:
+
+- `margin_over_noise` is `0.041129` (summary mean over the 28 layers). It is far
+  below one, so **decision rule 1 of §5 fires**: the fourth/fifth boundary is
+  inside the label noise, and changing the head cannot fix the target. This is
+  the measured reason P12.17 part 2 (absolute utility, noise-calibrated
+  temperature) is not optional.
+- `router_identity_bias_share` is `0.003632`, so **decision rule 3 fires the
+  other way**: routing is token-feature driven and the identity table is not the
+  confound. P12.17's offset term is therefore kept for the magnitude it
+  restores, not because routing is a constant.
+
+The deployed-budget comparison (part (a) of §2, and P12.17 part 1) remains
+unmeasured: the receipt still reports `deployed_budget_utility_available: false`
+and names the five-per-layer pass recipe it needs. The interaction term of
+P12.17 part 3 is also unmeasured. Nothing in this note is evidence that the
+successor target works.
+
+Original status line follows, unchanged for the record.
+
 Status: **tooling implemented and CPU-tested; the measurement itself is blocked
 on `H*`'s label artifact, which does not exist yet.** Nothing in this document is
 a measured gap. It defines the three diagnostics precisely, says which of them

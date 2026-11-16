@@ -2566,3 +2566,228 @@ addition changes no threshold, arm, kill condition or historical measurement.
 - P11.1.1's 200-item P12.9 failure artifact and its target-layer registration are
   unaffected and still do not exist at this revision; the expansion does not
   supply that artifact.
+
+---
+
+# Experiment contract — P13.14: omission-conditioned recovery (dated addition, 2026-11-16, S23)
+
+Status: **pre-registered before any measurement of this court.** Written while
+`H*` was still training and before any compensation run existed. It does not
+modify T2, T1, M1, M2, P8.2, P9.3, P11.1 or T3: every arm, budget, threshold and
+kill condition in those sections stands verbatim. The implementation is
+`oracle/train/recovery.py` (the compensator, the alignment baseline, the
+accounting and the arm matrix); the runner is `oracle/eval/recovery_court.py`
+(`--plan` needs no model, `--smoke` is a tiny-model CPU path); the CPU tests are
+`oracle/tests/test_p13_recovery.py`. Nothing here has been run on the GPU.
+
+**Identifier note.** The session brief that produced this work calls the item
+`P11.9 omission-conditioned recovery`. In `docs/PROGRAM-PLAN.md` the item is
+**P13.14** ("Omission-Conditioned Recovery"); plan item P11.9 is
+*Counterexample-Constrained Routing*, a different mechanism that this
+registration does not touch. Only P13.14 is registered here.
+
+## P13.14.1 Question
+
+Skipping a group changes the layer's output in a way a fixed model cannot undo.
+Is a correction **conditioned on which groups were omitted** better, at matched
+bytes, than the strongest set-independent correction — layer-wise output
+reconstruction, the step GPTQ (arXiv 2210.17323, VERIFIED) performs for
+quantisation error?
+
+## P13.14.2 The corrected layer and its causal inputs (fixed now)
+
+```
+h' = F_sparse(h, S) + C_theta(h, S)
+```
+
+- `F_sparse` is the arm's own deployed sparse path: the router's top-`k`
+  specialists at their softmax weight. It is never modified.
+- `S` is that same selection, read from the same router on the same hidden
+  state in the same forward pass. The omission set is its complement. The
+  compensator cannot see an omission list the router did not produce.
+- `C_theta(h, S) = W_up · act(W_down · [h ; enc(S)] + b_down) + b_up`, with
+  `enc(S) = sum_{e in S'} E_e` a learned per-expert embedding and `S'` the
+  omitted set (`--set-mode omitted`, the registered default) or the selected set
+  (`--set-mode selected`, reported as a robustness variant).
+- Size: `rank = 8`, `set_dim = 8`, one per routed layer, `silu`. Element count
+  `m·d + (hidden+d)·r + r + r·hidden + hidden = 17,544` per layer,
+  **491,232** for 28 layers at `hidden = 1024`, `m = 8`. `--plan` prints it from
+  the same constants the runner uses, so the registration cannot drift from the
+  implementation.
+- `W_up` and `b_up` are **zero-initialised**, so at step 0 the corrected layer is
+  the sparse layer bit for bit. `test_zero_initialised_compensator_reproduces_the_sparse_layer_exactly`
+  is the evidence, and the run's receipt records the zero point.
+- **Causal inputs only.** The forward signature is `(hidden_states, selected)`;
+  `causal_input_signature()` returns exactly that tuple and the test pins it.
+  No label, no teacher logit, no future token, no omitted group's activation and
+  no evaluation item reaches it. Training uses the registered distillation
+  objective on the training stream, the same objective and stream the base arm
+  trained on, so the compensator cannot learn anything the base arm could not.
+
+## P13.14.3 The alignment baseline (the hard one)
+
+A **set-independent affine low-rank map** `A(h) = h·V·Uᵀ + b` fitted in one
+closed-form step per layer on calibration activations, then truncated to the
+rank the compensator's own element budget allows:
+
+- `mode="l2"` (primary): ridge least squares on `(X, Y_dense − Y_sparse)`, i.e.
+  the layer-wise output reconstruction GPTQ performs. The correspondence is a
+  **reading**, not an identity: GPTQ alters quantised weights and compensates
+  the residual through a Hessian inverse, while this fits a residual map. It is
+  recorded as a reading in every receipt.
+- `mode="ot"` (reported): the Gaussian moment-matching map, which reproduces the
+  target's output mean and covariance, so the baseline cannot be dismissed as
+  weak on distribution shape.
+- `X` is the bank's input on the same calibration slice the compensator sees;
+  `Y_dense` is the unit-weight full bank, the reference T2.5's utility labels
+  already use.
+- **Matched bytes, fixed now.** An affine low-rank map costs
+  `2·hidden·rank + hidden` elements. `matched_alignment_rank` floors the rank so
+  the baseline's count is *at or below* the compensator's, and fails closed when
+  the budget cannot afford rank one. At the registered size this is rank `8`:
+  `17,408` per layer, **487,424** for 28 layers, against the compensator's
+  **491,232**. A win therefore cannot come from extra parameters.
+
+## P13.14.4 Arms and the budget (fixed now)
+
+Base arm: **`X`** (`results/artifacts/train/t2/X/step-001024.pt`), because a
+specialists-only arm has one path, so "the omitted computation" is unambiguous.
+`H` is registered as a secondary replication that is **not decisive** (its
+memory path would confound what is being omitted). Five arms, one base, one data
+order, one omission rate `(m − k)/m = 0.5`:
+
+| arm | correction | recovery elements | realized active |
+| --- | --- | ---: | ---: |
+| `sparse-only` | none | 0 | 772,440,064 |
+| `sparse+alignment` | set-independent affine low-rank, closed-form | 487,424 | 772,927,488 |
+| `sparse+compensator` | `C_theta(h, S)`, trained | 491,232 | 772,931,296 |
+| `sparse+alignment+compensator` | both | 978,656 | 773,418,720 |
+| `dense-teacher-reference` | none; all `m` groups at unit weight | 0 | not deployable |
+
+The M2 accounting rule (M2.2) applies unchanged: every learned selector or
+compensator weight is charged to the arm's active unique element count, and two
+arms are compared only at identical realized counts. No arm exceeds the
+`1e9` ceiling; the largest is 773,418,720. `--plan` regenerates this table.
+
+## P13.14.5 Data and protocol (fixed now)
+
+- Training stream: `results/artifacts/train/train.bin`, the registered corpus,
+  starting after the calibration slice the arm was already labelled on. No
+  evaluation item is in it (T1.3/T1.5 contamination filtering).
+- Calibration slice: the first 8 windows (8,192 tokens) of the stream, disjoint
+  from the evaluation windows. Capture bytes are bounded and recorded:
+  `3 · positions · hidden · 4` per layer.
+- Compensator training: `512` steps, AdamW `lr = 5e-4`, betas `(0.9, 0.95)`,
+  weight decay `0`, gradient clip `1.0`, batch `2 × 1024` tokens, seed `1001`.
+  Only the compensator is trainable (`freeze_arm_but_recovery`), which the
+  receipt records.
+- Alignment fitting: `ridge = 1e-3` relative to the mean feature variance,
+  one closed-form solve per layer, no optimisation steps.
+
+## P13.14.6 Metrics, statistics and decision order (fixed now)
+
+Instrument: `oracle/eval/harness.py`, the same primitives `baseline.py` (T2.9)
+calls — KL to the distillation teacher, top-1 agreement, per-domain PPL, and the
+three task accuracies. The registered instrument is not modified.
+
+- Primary: paired item/document differences in `KL`, `top-1` and per-domain
+  `PPL`, percentile paired bootstrap, seed `20261115`, `10,000` resamples,
+  stratified by domain exactly as T2.9 does it.
+- Secondary: `humaneval pass@1`, `gsm8k exact match`, `truthfulqa mc1`, paired
+  by item id.
+- Decision order, applied in this order and reported in it:
+  1. **Validity.** Ledger equality, the zero point, the causal-input signature
+     and the frozen-parameter report. Any failure refuses the arm rather than
+     reporting it.
+  2. `sparse+compensator` **versus** `sparse+alignment` at matched bytes.
+  3. `sparse+compensator` **versus** the shuffled-condition control (below).
+  4. **Task relevance** (P13.14.7).
+  5. Report the `dense-teacher-reference` gap as the recoverable ceiling; it is
+     never a deployable result.
+
+## P13.14.7 The falsifying control and the task-relevance clause (fixed now)
+
+**Shuffled condition.** A compensator of the same size, trained identically, but
+conditioned on an independently drawn omitted set of the same size
+(`recovery.shuffle_sets`). It knows the omission *rate* and nothing about the
+identity. A conditioned compensator that only matches this control has not
+learned the omission; it has learned the rate.
+
+**Task relevance — the clause this court exists to enforce.** Recovering
+activation statistics is not the claim. The compensator must recover
+**task-relevant transformations**, so:
+
+- a `KL`/`PPL`-only win **does not** satisfy this court, whatever its margin;
+- at least one registered task accuracy must improve over `sparse-only` with a
+  paired CI excluding zero, **or** the *correct-answer recovery rate* — the
+  share of positions/items where the sparse arm's wrong answer is replaced by
+  the teacher's correct one minus the reverse rate — must improve with a CI
+  excluding zero;
+- no task may regress by more than the item-level CI half-width.
+
+## P13.14.8 Kill condition (fixed now)
+
+Retire the item if **any** of the following holds at matched bytes:
+
+1. `sparse+compensator` does not beat `sparse+alignment` by at least `5%`
+   relative on the mixed stratified `KL`, with a paired CI excluding zero;
+2. it does not beat the shuffled-condition control by at least `10%` relative on
+   the same metric with a CI excluding zero;
+3. the task-relevance clause of P13.14.7 fails.
+
+A retired item is kept as a negative result (P6.5), never deleted, and no
+compensator is added to any arm's ledger.
+
+## P13.14.9 What a negative result means, and what this court does not claim
+
+- **Alignment wins.** The omission's effect is well approximated by a
+  set-independent map on these weights; "conditioning is unnecessary" is a real
+  finding and it retires the mechanism rather than the question.
+- **Only the shuffled control is matched.** The gain is the extra capacity, not
+  the conditioning; report it as such and do not describe the mechanism as
+  omission-conditioned.
+- **KL/PPL move and tasks do not.** The layer-level correction does not survive
+  to the output; this is exactly the reading the task-relevance clause exists to
+  block, and it is reported as a negative result.
+- This court makes no claim about MoSE/GMoE/TYLER, no claim about any external
+  system, and no capability claim; it is one mechanism's decisive experiment
+  inside the P13 gate (`docs/PROGRAM-PLAN.md` §18).
+
+## P13.14.10 Exact commands (not run in this session)
+
+```bash
+# (0) The arm matrix and the ledger, from the registered constants. No model.
+SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_TMP=1g \
+  scripts/court oracle -- python3 oracle/eval/recovery_court.py \
+    --plan --base-active 772440064
+
+# (1) The tiny-model CPU smoke: build, capture, fit, train-side wiring, ledger.
+SELVEDGE_MEM=8g SELVEDGE_CPUS=8 SELVEDGE_TMP=2g \
+  scripts/court oracle -- python3 oracle/eval/recovery_court.py \
+    --smoke --out results/t2/p13-smoke-$(date -u +%Y%m%dT%H%M%SZ).json
+
+# (2) The registered run. GPU court; size the memory from the T2 evaluation
+#     instrument's measured peak (11.596 GiB VRAM on the 4080 SUPER) plus the
+#     bounded capture (3 * 8192 * 1024 * 4 * 28 = 2.75 GiB of host RAM) plus the
+#     default 1.5x headroom rule => SELVEDGE_MEM=32g. Record the limit and this
+#     arithmetic in the launch record before starting.
+SELVEDGE_MEM=32g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g \
+  scripts/court --gpu oracle -- python3 oracle/eval/recovery_court.py \
+    --arm X \
+    --checkpoint results/artifacts/train/t2/X/step-001024.pt \
+    --config results/train/admission-configs/t2/X.json \
+    --admission results/train/admission/t2/X.json \
+    --stream results/artifacts/train/train.bin \
+    --targets results/artifacts/train \
+    --steps 512 --calibration-tokens 8192 \
+    --out results/t2/p13/recovery-X-$(date -u +%Y%m%dT%H%M%SZ).json
+```
+
+**Preconditions before step (2) may be launched:** the tier gate of §18 has
+opened (`H*` reported, first capability measurement exists); the GPU is free;
+the item is promoted from `CANDIDATE` and this registration is committed.
+
+**Status.** registered, implemented, CPU-tested (`24` tests in
+`oracle/tests/test_p13_recovery.py`, the tiny-model smoke in
+`recovery_court.py --smoke`); **not launched**. No measurement of any arm
+exists at this revision.

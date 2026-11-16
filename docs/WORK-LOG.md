@@ -2473,3 +2473,79 @@ nothing, and the sizing arithmetic.
   already-recorded VRAM peaks, not new measurements.
 - The scripted court in `oracle/tests/fake_court.py` is test infrastructure; the
   production path still runs every stage through `scripts/court` inside Docker.
+
+## 2026-11-16 — S23: the hybrid's interaction diagnostic, and P13.14 prepared
+
+### Context
+
+`H*` owned the GPU for the whole session and was not touched. Everything below
+is CPU work inside the oracle court, with an explicit memory limit on every
+command, over artifacts that already existed. No training, no forward pass.
+
+### Plan
+
+1. Answer "why did `H` lose `M`'s and `X`'s gains" from stored artifacts, and say
+   precisely what those artifacts cannot answer.
+2. Prepare plan item P13.14 (omission-conditioned recovery) properly:
+   compensator, the strong alignment baseline, a pre-registration, and CPU tests.
+3. Keep the tier gate closed and record that this session executed nothing.
+
+### What was measured (receipt-backed)
+
+- `oracle/eval/h_diagnostics.py`, 28 CPU tests in
+  `oracle/tests/test_h_diagnostics.py`. It measures the item-level outcome
+  partition from the stored T2 evaluation receipts; router geometry and
+  displacement from the *reconstructed deterministic initialiser* (with a
+  wrong-seed control in every row); `H*`'s usage, dead experts and top-`k` set
+  diversity from the stored pre-expert states; memory gate values, path
+  magnitudes and row reads from the stored weights and the exact calibration
+  tokens; and the expert/memory interaction proxies with permutation nulls.
+  Output: `results/H-DIAGNOSTICS.md`, rendered from
+  `results/t2/H-DIAGNOSTICS-20261116T065442Z.json` by the tool, so no number in
+  it is hand-written.
+- The registered P12.2 diagnostic also became measurable this session, because
+  `H*`'s Phase U artifact now exists. `oracle/eval/t2_diagnostics.py` ran on it
+  and wrote `results/t2/diagnostics-20261116T070700Z.json`. `docs/T2-DIAGNOSTICS.md`
+  records the two decision rules that receipt fires. The deployed-budget utility
+  and the interaction term remain unmeasured.
+
+What these two receipts do **not** establish: they are not the registered T2
+verdict, they do not re-score anything, and every statistic that needs `H`'s or
+`X`'s own hidden states is deferred with its exact command (the diagnostic's
+`--deferred-commands`), because producing those states needs a forward pass and
+the GPU was not free.
+
+### What was prepared (no run)
+
+- `oracle/train/recovery.py`: `C_theta(h, S)` as a rank-`r` bottleneck over the
+  layer input and a learned set code, zero-initialised on its last layer, with
+  only `(hidden_states, selected)` as inputs; the set-independent affine
+  low-rank alignment baseline fitted in closed form and truncated to the rank
+  the compensator's own element count allows; a shuffled-condition control; the
+  arm matrix and the M2-style ledger.
+- `oracle/eval/recovery_court.py`: `--plan` (arm matrix and ledger from the
+  registered constants, no model), `--smoke` (tiny model, CPU, exercises
+  install → capture → fit → gradient), and the registered run.
+- `docs/EXPERIMENT-CONTRACT.md` P13.14: five arms, matched-byte rule, data,
+  metrics, decision order, the task-relevance clause and the kill condition,
+  all fixed before any measurement, plus the exact GPU command and its memory
+  arithmetic.
+- `oracle/tests/test_p13_recovery.py` (24 tests): the zero point (bit-exact
+  reproduction of the sparse layer), the accounting, the leakage boundary,
+  determinism, installation into the model, and a synthetic case where the
+  omitted groups' function is known — where the conditioned compensator learns
+  it and both the alignment baseline and the shuffled control do not.
+
+### Courts
+
+`oracle/tests` — the whole directory, inside the oracle court; `perf_numbers`;
+`commit_identity`; `oracle` (the diagnostics runs). Receipts are under
+`results/courts/`.
+
+### What this entry does not claim
+
+- No P13.14 measurement: no arm has been trained, and the tier gate of
+  `docs/PROGRAM-PLAN.md` §18 is still closed (`H*` training, no capability
+  measurement). No exception was requested.
+- No capability, performance or frontier claim, and no revision of any T2 arm,
+  threshold or kill condition.

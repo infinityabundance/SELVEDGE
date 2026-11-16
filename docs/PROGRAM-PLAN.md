@@ -2853,6 +2853,17 @@ Any exception must be registered in advance in `docs/WORK-LOG.md` with a written
 justification (what is unblocked, why it cannot wait, what it could contaminate)
 and the operator's approval; an unregistered exception is a defect.
 
+**Gate status (dated note, 2026-11-16, S23).** Unchanged and still closed. At the
+time of writing, `H*` is training (step 431 of 1024, 28.2M of 67.1M tokens) and
+no capability measurement exists: the registered five-arm verdict needs `H*`,
+and `results/T2-PARTIAL.md` is exploratory and may not be cited as one. S23
+**prepared code and executed nothing**: the P13.14 module
+(`oracle/train/recovery.py`), its runner (`oracle/eval/recovery_court.py`) and
+its 24 CPU tests are committed, and the experiment is pre-registered in
+`docs/EXPERIMENT-CONTRACT.md` P13.14, but **no arm has been trained or measured
+and no P13.14 status has moved**. MoSE/GMoE/TYLER and all sixteen inventions
+remain gated on the same two conditions; no exception was requested or granted.
+
 ### P13.1 — Adaptive expert widths: nested slimmable experts under one budget
 
 **Status: published baseline to reproduce and extend** (MoSE, Tastan et al., ICML
@@ -3162,7 +3173,18 @@ alignment, at matched bytes (compensator included) and matched omission rate.
 **Kill criterion.** If the conditioned compensator does not beat alignment at
 matched bytes, or only matches the shuffled condition, retire.
 **Depends.** P12.1, P4.3. **Acceptance evidence.** the matched-byte receipt with
-the shuffled-condition ablation. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+the shuffled-condition ablation. **Status.** open, **pre-registered and
+implemented, not launched** (2026-11-16, S23). Registration:
+`docs/EXPERIMENT-CONTRACT.md` P13.14 (five arms, matched-byte ledger, the
+task-relevance clause, the decision order and the kill condition, all fixed
+before any measurement). Implementation: `oracle/train/recovery.py`
+(`C_theta(h, S)`, the set-independent affine alignment baseline with its
+GPTQ correspondence labelled as a reading, the M2-style ledger and the arm
+matrix) and `oracle/eval/recovery_court.py` (`--plan`, a tiny-model `--smoke`,
+and the registered run). CPU tests: `oracle/tests/test_p13_recovery.py`, 24
+passing, including the zero point, the accounting, the leakage boundary and a
+synthetic case where the omitted groups' function is known. **No arm has been
+trained or measured.** **Effort.** L. **Tier.** CANDIDATE.
 
 #### P13.15 — Counterexample-Preserving Compression
 
