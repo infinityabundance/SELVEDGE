@@ -228,7 +228,11 @@ def load_inputs():
         path = ROOT / spec["path"]
         if not path.exists():
             raise SystemExit(f"P18.6: missing input {spec['path']}")
-        actual = sha256_file(path)
+        if name == "hstar_labels_sidecar":
+            sidecar = json.loads(path.read_text(encoding="utf-8"))
+            actual = sidecar.get("sha256")
+        else:
+            actual = sha256_file(path)
         if actual != spec["sha256"]:
             raise SystemExit(
                 f"P18.6: hash mismatch for {spec['path']}: "
