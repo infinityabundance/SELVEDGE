@@ -3148,3 +3148,169 @@ standard library, reads only the paths in P18.6.1, and writes the JSON receipt
 and the generated Markdown. It refuses to run if any input hash differs from
 the hash recorded above. The court enforces the hard memory, swap, pids, CPU
 and `/tmp` limits; the host is never used to execute the analysis.
+
+# Experiment contract — T4: the K18 trade question (dated pre-registration, 2026-11-16, S35)
+
+**This is a new question, not a re-threshold.** `T3` is already registered
+(latent-geometry court), so this section takes the next free number. K18's
+verdict stands exactly as published: `X` did not clear the T2 conjunctive rule,
+because its primary-composite gain came with a pooled-KL regression beyond the
+registered no-regression margin (`results/T2-VERDICT.md`, receipt
+`results/t2-verdict.json`). Nothing in T2 is re-read as evidence here, no T2
+threshold moves, and a T4 result may never be presented as K18 passing.
+
+## T4.1 Question
+
+Is `X`'s task gain — bought at a measured pooled-KL regression — **Pareto-useful
+under matched inference cost**? Concretely: does the gain survive when a dense
+adapter of the same active size is given the training compute it needs to reach
+`X`'s KL?
+
+The measured trade, quoted from the verdict receipt by
+`scripts/s35_t4_registration.py` (receipt `results/t4/preregistration-20261116T192000Z.json`),
+is a primary-composite difference of
+
+<!-- BEGIN GENERATED: t4-k18-pc-delta -->
++0.0324
+<!-- END GENERATED: t4-k18-pc-delta -->
+
+with a paired 95% interval of
+
+<!-- BEGIN GENERATED: t4-k18-pc-lo -->
++0.0051
+<!-- END GENERATED: t4-k18-pc-lo -->
+
+to
+
+<!-- BEGIN GENERATED: t4-k18-pc-hi -->
++0.0604
+<!-- END GENERATED: t4-k18-pc-hi -->
+
+and a pooled-KL difference of
+
+<!-- BEGIN GENERATED: t4-k18-kl-delta -->
++0.0138
+<!-- END GENERATED: t4-k18-kl-delta -->
+
+(interval
+
+<!-- BEGIN GENERATED: t4-k18-kl-lo -->
++0.0086
+<!-- END GENERATED: t4-k18-kl-lo -->
+
+to
+
+<!-- BEGIN GENERATED: t4-k18-kl-hi -->
++0.0189
+<!-- END GENERATED: t4-k18-kl-hi -->
+
+nats, lower is better). Both intervals exclude zero in opposite directions. That
+is a trade, and a trade is a question — not a win, and not the absence of one.
+
+## T4.2 Arms (four; every one accounted before it runs)
+
+| arm | what it is | why it is in the set |
+| --- | --- | --- |
+| `X` | the finished T2 routed-specialist checkpoint, **re-used unchanged, not retrained** | the arm whose trade is being priced; re-training it would change the object under test |
+| `D_eq` | a dense adapter trained from the same frozen core at `X`'s active parameter count, same data order, same budget, one seed | removes "the comparison was not parameter-matched"; the measured mismatch between the T2 arms is printed below, and this arm is a guard rather than a story |
+| `D_kl` | `D_eq` continued (or restarted, the cheaper of the two, declared in its launch record) on the same data order until its pooled teacher KL reaches `X`'s measured KL target | **the fairness arm.** If a dense adapter reaches the same KL, the trade was a *training-cost* trade; if it cannot, inside the registered compute cap, it was a *capacity* trade |
+| `B_kl` | a KL-matched blend: `p = (1 - w) p_X + w p_D` on the logit scale, `w` fixed on a calibration split to hit the KL target, never tuned on the evaluation items | the cheapest adaptor that holds both endpoints. Its **active union is the union, not the sum**: the shared frozen core is counted once. This must be computed by the ledger before any `B_kl` number is quoted |
+
+The measured active-parameter mismatch between the two T2 arms whose trade is
+being priced is
+
+<!-- BEGIN GENERATED: t4-active-rel -->
+0.0297%
+<!-- END GENERATED: t4-active-rel -->
+
+relative (`X` minus `D`), so "matched active parameters" is a computed fact here and
+not an assumption; `D_eq` exists to make it true for the arm that is compared.
+
+`D_kl`'s KL target is
+
+<!-- BEGIN GENERATED: t4-kl-target -->
+0.5028
+<!-- END GENERATED: t4-kl-target -->
+
+(the pooled teacher KL `X` measured, same receipt), against `D`'s own
+
+<!-- BEGIN GENERATED: t4-k18-kl-d -->
+0.4890
+<!-- END GENERATED: t4-k18-kl-d -->
+
+. The registered compute cap for `D_kl` is
+
+<!-- BEGIN GENERATED: t4-compute-cap -->
+268,435,456 tokens
+<!-- END GENERATED: t4-compute-cap -->
+
+(4× the T2 budget of 67,108,864 tokens). `D_kl` is run as a bisection over
+training tokens with the cap fixed now; the *number of steps actually used* is
+reported, never chosen after the fact to make the comparison land.
+
+## T4.3 Endpoints, fixed before any arm is trained
+
+- **Primary:** the T2.9 composite `PC`, paired, category-weighted, 10,000
+  resamples at seed `20261115`, `X` minus `D_kl`.
+- **Secondary:** pooled teacher KL on the mixed interleaving, lower is better,
+  reported with its paired interval and never used to rescue a failed primary.
+- **Minimum absolute effect, fixed now:**
+
+  <!-- BEGIN GENERATED: t4-min-effect -->
+0.03
+  <!-- END GENERATED: t4-min-effect -->
+
+  derived mechanically as `ceil(half_width)` of the K18 interval it repeats: an
+  effect smaller than the instrument's own resolution is not a win condition.
+- **Matched inference cost** means: equal active unique parameters within
+  `0.5%`, equal bytes per token under the ledger's account, and the training
+  compute **reported as a ratio** (a `D_kl` that needed four times the compute is
+  a different result from one that needed one and a quarter, and the ratio is
+  part of the claim, not a footnote).
+
+## T4.4 Decision rule, fixed before any arm is trained
+
+- **WIN** iff the paired `PC` difference (`X` − `D_kl`) has a 95% CI lower bound
+  **at or above the minimum absolute effect**, and the pooled-KL difference's 95%
+  CI is compatible with zero at the registered tolerance. Then the trade is
+  Pareto-useful at matched inference cost, and the mechanism sentence is "routed
+  specialists buy task accuracy at a KL price a dense adapter of equal size cannot
+  buy back inside the compute cap".
+- **NO RESULT** iff the `PC` interval contains the minimum absolute effect but
+  excludes zero: the effect is real and below the resolution this instrument
+  registered. The decision is "underpowered at this instrument", not "false".
+- **MISS** otherwise. The recorded next routes, in order:
+  1. **if `D_kl` could not reach `X`'s KL inside the cap** — the trade is a
+     *capacity* effect, so the next route is the deferred capacity-matched dense
+     adapter `D_M` registered in K17 (equal **total** capacity, not equal active),
+     and T4 is not re-run at this scale;
+  2. **if `D_kl` matched KL and the gain vanished** — the gain was never about
+     routing; it was about effective training signal. The next route is the
+     error-directed target successor (P12.17), not specialist scaling;
+  3. **if `D_kl` matched KL and the gain survived on one seed only** — the next
+     route is a second seed at the same budget, not a new mechanism.
+- **Kill:** T4 is killed only when all three routes are exhausted and recorded. A
+  single miss is a route change.
+
+## T4.5 What T4 does not do
+
+- It does not scale the expert bank (K19 stands: that needs K15 **and** K16).
+- It does not re-evaluate `H*` or `H`, and it cannot be cited as evidence about
+  error-directed routing.
+- It does not re-open the per-token selection line (`docs/PROGRAM-PLAN.md` §25.1).
+- It does not claim capability: `PC` is a task-accuracy composite on the
+  registered likelihood instrument's task items, not the verified-task court.
+  A `B_kl` number is an inference-cost result, and the anti-pattern guard
+  (P18.12) forbids presenting it as a neural-mechanism win.
+
+## T4.6 Reproducing the numbers above
+
+```bash
+SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_TMP=1g scripts/court python -- \
+  python3 scripts/s35_t4_registration.py \
+  --out results/t4/preregistration-$(date -u +%Y%m%dT%H%M%SZ).json
+```
+
+The script reads `results/t2-verdict.json` and `results/t2/pilot-state.json` and
+computes nothing that depends on a run that has not happened. Every number in
+this section is a generated region bound to that receipt.

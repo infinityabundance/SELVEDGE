@@ -1,0 +1,47 @@
+{
+ "created_utc": "2026-11-16T19:11:16Z",
+ "k18_quotation": {
+  "k18_verdict": "FAIL",
+  "kl_ci_high": 0.01888959752085308,
+  "kl_ci_low": 0.008570762099698186,
+  "kl_difference": 0.013779856140414874,
+  "kl_relative_improvement": -0.028177603391038412,
+  "note": "K18 was decided FAIL against the T2 registrations. These are its numbers, quoted; T4 does not revisit the verdict.",
+  "pc_ci_half_width": 0.02767421211849817,
+  "pc_ci_high": 0.06041020423056127,
+  "pc_ci_low": 0.00506177999356493,
+  "pc_difference": 0.032440517061229364
+ },
+ "question": "is X's task gain at a measured pooled-KL regression Pareto-useful under matched inference cost?",
+ "revision": "4bf6169dd45d060f7109308a0362f769a1d3dd76",
+ "schema": "selvedge/t4-preregistration-numbers/v1",
+ "source_receipt": {
+  "comparison": "X-D",
+  "path": "results/t2-verdict.json",
+  "revision": "afe55469298555bad8f15925254264628611a93e",
+  "stamp": "20261116T134706Z"
+ },
+ "stamp": "20261116T191116Z",
+ "t4_registration": {
+  "active_parameters": {
+   "D": 772210688,
+   "X": 772440064,
+   "absolute_difference": 229376,
+   "relative_difference": 0.00029703810574556564
+  },
+  "compute_cap_multiple": 4.0,
+  "compute_cap_target_tokens": 268435456,
+  "decision_rule": "WIN iff the paired PC difference (X - D_kl) has a 95% CI lower bound at or above the minimum absolute effect AND the pooled-KL difference's 95% CI is compatible with zero at the registered tolerance. Otherwise MISS, with the recorded next route.",
+  "dense_kl_reference": 0.4890357760091623,
+  "kl_target": 0.5028156321495771,
+  "kl_target_source": "X's pooled teacher KL, from the same receipt",
+  "minimum_absolute_effect": 0.03,
+  "minimum_absolute_effect_derivation": "ceil(paired CI half-width of the K18 PC comparison to the next 0.01): an effect below the instrument's own resolution is not a win condition",
+  "primary": "PC (the T2.9 composite), paired, category-weighted",
+  "primary_difference_against": "D_kl",
+  "resamples": 10000,
+  "secondary": "pooled teacher KL (mixed interleaving), lower is better",
+  "seed": 20261115,
+  "t2_budget_tokens": 67108864
+ }
+}
