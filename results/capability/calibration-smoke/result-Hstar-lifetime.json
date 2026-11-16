@@ -1,0 +1,980 @@
+{
+  "anti_gaming": {
+    "checker_access": "separate-process-after-generation",
+    "checker_visible_to_arm": false,
+    "feedback": "none",
+    "few_shot_hygiene": null,
+    "offline_evidence": "no-default-route",
+    "prompt_hashes_match": true,
+    "tool_mode": "no-tools",
+    "tool_parity": "enforced at comparison time",
+    "tools": false
+  },
+  "command": "scripts/capability_court.py --suite fixtures/capability-calibrated check --generations results/capability/calibration-smoke/generations-Hstar-lifetime.json --preregistration docs/capability-calibration-preregistration-v1.json --partial-credit --min-category-items 0 --category lifetime-borrow --out results/capability/calibration-smoke/result-Hstar-lifetime.json",
+  "created_utc": "2026-11-16T14:36:54Z",
+  "generations": {
+    "adapter": {
+      "accounting": {
+        "active_unique_params": 774543360,
+        "gpu_residency_bytes": null,
+        "host_residency_bytes": null,
+        "measured_io": null,
+        "offline_teacher_construction_cost": null,
+        "optimizer_flops": null,
+        "task_success": null,
+        "total_accessible_capacity": 1219137536,
+        "training_tokens": null
+      },
+      "kind": "t2-arm",
+      "name": "t2-H*",
+      "null_reasons": {
+        "gpu_residency_bytes": "measured after the first generation",
+        "host_residency_bytes": "not instrumented for the training-model path",
+        "measured_io": "the PyTorch path does not expose device read counters",
+        "offline_teacher_construction_cost": "no teacher at inference",
+        "optimizer_flops": "not recorded in the arm's admission record",
+        "task_success": "filled by the check stage",
+        "training_tokens": "not recorded in the arm's admission record"
+      },
+      "provenance": {
+        "admission": "results/train/admission/t2/H*.json",
+        "admission_revision": null,
+        "admission_stamp": null,
+        "arm": "H*",
+        "checkpoint": "results/artifacts/train/t2/Hstar/step-001024.pt",
+        "checkpoint_sha256": "c4fb56eba6d536130dcb5c9561c18166a256c0422dd7bddf7c783537aa3b8fce",
+        "checkpoint_step": 1024,
+        "checkpoint_verification": {
+          "checked": true,
+          "mask_order": "legacy",
+          "provenance_amendment": {
+            "decision": "CERTIFIED",
+            "inferred_mask_order": "legacy",
+            "path": "results/t2/PROVENANCE-AMENDMENT-Hstar.json",
+            "replay_receipt": "results/t2/provenance-replay-Hstar-20261116T122413Z.json",
+            "replay_receipt_sha256": "747dea17e6780b64762e448951bbfa3e8bb163da04b35f353bdb471cc6517e8c",
+            "sha256": "ec6c2b510013dd647a6d1c3f8b36fea929ad57472a1b824c03ebf73a0540f4a9",
+            "used": true
+          },
+          "receipt": "results/t2/H*/run.json",
+          "receipt_sha256": "52e6090c125bfed7022d9c62f18898cc0b79d2a8c2afb7fed606e6dd25176b51",
+          "step": 1024
+        },
+        "config": "results/train/admission-configs/t2/H*.json",
+        "dispatch_mask_order": "legacy",
+        "provenance_amendment": {
+          "decision": "CERTIFIED",
+          "inferred_mask_order": "legacy",
+          "path": "results/t2/PROVENANCE-AMENDMENT-Hstar.json",
+          "replay_receipt": "results/t2/provenance-replay-Hstar-20261116T122413Z.json",
+          "replay_receipt_sha256": "747dea17e6780b64762e448951bbfa3e8bb163da04b35f353bdb471cc6517e8c",
+          "sha256": "ec6c2b510013dd647a6d1c3f8b36fea929ad57472a1b824c03ebf73a0540f4a9",
+          "used": true
+        },
+        "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+      },
+      "tools": false
+    },
+    "decoding": {
+      "category_filter": [
+        "lifetime-borrow"
+      ],
+      "feedback": "none",
+      "few_shot_texts": [],
+      "greedy": true,
+      "max_new_tokens": 3072,
+      "order": "sorted",
+      "seed": 20261115,
+      "stops": [
+        "\n```\n\n## "
+      ]
+    },
+    "few_shot": null,
+    "revision": "896fee769a70f8c9032e09d800c75cfa2b77fac4",
+    "schema": "selvedge/capability-generations/v1",
+    "stamp": "20261116T143645Z"
+  },
+  "items": [
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 15,
+          "degenerate_repetition": false,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 2,
+          "repeated_line_max": 1,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "body",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "2094c9d3e9d882f74d09c4c74ea4b0a721f88dc5a9caada396a0a4ff955f4e88",
+        "stderr_tail": "error: expected one of `!` or `[`, found `#`\n  --> src/lib.rs:13:6\n   |\n13 |     ## Example\n   |      ^ expected one of `!` or `[`\n\nerror: could not compile `borrow_03_self_referential_window` (lib) due to 1 previous error\nerror: could not compile `borrow_03_self_referential_window` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "truncated"
+      ],
+      "format": "body-completion",
+      "id": "borrow-03-self-referential-window--body",
+      "latency_ms": 18507,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 14,
+          "degenerate_repetition": false,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 2,
+          "repeated_line_max": 1,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "invalid",
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "screen": "truncated"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "no candidate letter could be read from the answer"
+        ]
+      },
+      "failure_class": "truncated",
+      "failure_flags": [
+        "truncated"
+      ],
+      "format": "diagnostic-identification",
+      "id": "borrow-03-self-referential-window--diag",
+      "latency_ms": 18507,
+      "metric": "verified_diagnostic",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 8329,
+          "degenerate_repetition": true,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 309,
+          "repeated_line_max": 300,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "files",
+        "mode": "fenced_entry",
+        "notes": [
+          "a fenced block was never closed"
+        ],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "d6faac3794c66aec95b642e6a9a8f6f45da18b610fb09321c5192a035c603258",
+        "stderr_tail": "error: expected one of `::`, `;`, or `as`, found `<eof>`\n   --> src/lib.rs:306:15\n    |\n306 | use std::str::FromUtf\n    |               ^^^^^^^ expected one of `::`, `;`, or `as`\n\nerror: could not compile `borrow_03_self_referential_window` (lib) due to 1 previous error\nerror: could not compile `borrow_03_self_referential_window` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "notes": [
+          "a fenced block was never closed"
+        ],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "file-replacement",
+      "id": "borrow-03-self-referential-window--full",
+      "latency_ms": 18507,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 6145,
+          "degenerate_repetition": true,
+          "fences": 1535,
+          "length_capped": true,
+          "lines": 1536,
+          "repeated_line_max": 1535,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "invalid",
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "no candidate letter could be read from the answer"
+        ]
+      },
+      "failure_class": "degenerate_repetition",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "patch-selection",
+      "id": "borrow-03-self-referential-window--patch",
+      "latency_ms": 18507,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 15,
+          "degenerate_repetition": false,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 2,
+          "repeated_line_max": 1,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "body",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "65de3e8e865da69f51b93569567931bb0b326e1f30ac8a6b4142d63eddb8c0f9",
+        "stderr_tail": "error: expected one of `!` or `[`, found `#`\n --> src/lib.rs:8:6\n  |\n8 |     ## Example\n  |      ^ expected one of `!` or `[`\n\nerror: could not compile `borrow_05_temporary_lifetime` (lib) due to 1 previous error\nerror: could not compile `borrow_05_temporary_lifetime` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "truncated"
+      ],
+      "format": "body-completion",
+      "id": "borrow-05-temporary-lifetime--body",
+      "latency_ms": 18536,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 11783,
+          "degenerate_repetition": true,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 148,
+          "repeated_line_max": 37,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "format!(\"item {number}\")",
+            "kind": "declared",
+            "replace": "format!(\"item-{number}\")"
+          }
+        },
+        "id": "E0596",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "diagnostic-identification",
+      "id": "borrow-05-temporary-lifetime--diag",
+      "latency_ms": 18536,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 4,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 377,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": true,
+          "lines": 15,
+          "repeated_line_max": 2,
+          "tokens_out": 3072,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_entry",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e81abfd2a656fad599c444f47680e4434b1f74c6202cc6da51aac5d7ce3f34de",
+        "stderr_tail": "             creates a temporary value which is freed while still in use\n11 |     word.to_string()\n   |     ---- borrow later used here\n   |\n   = note: consider using a `let` binding to create a longer lived value\n\nFor more information about this error, try `rustc --explain E0716`.\nerror: could not compile `borrow_05_temporary_lifetime` (lib) due to 1 previous error; 2 warnings emitted\nerror: could not compile `borrow_05_temporary_lifetime` (lib test) due to 1 previous error; 2 warnings emitted\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "truncated"
+      ],
+      "format": "file-replacement",
+      "id": "borrow-05-temporary-lifetime--full",
+      "latency_ms": 18536,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 6909,
+          "degenerate_repetition": true,
+          "fences": 1535,
+          "length_capped": true,
+          "lines": 1536,
+          "repeated_line_max": 1535,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "invalid",
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "no candidate letter could be read from the answer"
+        ]
+      },
+      "failure_class": "degenerate_repetition",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "patch-selection",
+      "id": "borrow-05-temporary-lifetime--patch",
+      "latency_ms": 18536,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 15,
+          "degenerate_repetition": false,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 2,
+          "repeated_line_max": 1,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "body",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "b4f9fcdc96a50ffc25e2841ec375d1722ce00e48da49cfccd667197b00ff2ad9",
+        "stderr_tail": "error: expected one of `!` or `[`, found `#`\n --> src/lib.rs:4:6\n  |\n4 |     ## Example\n  |      ^ expected one of `!` or `[`\n\nerror: could not compile `borrow_13_mutate_through_shared` (lib) due to 1 previous error\nerror: could not compile `borrow_13_mutate_through_shared` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "truncated"
+      ],
+      "format": "body-completion",
+      "id": "borrow-13-mutate-through-shared--body",
+      "latency_ms": 18399,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 11617,
+          "degenerate_repetition": true,
+          "fences": 1,
+          "length_capped": true,
+          "lines": 143,
+          "repeated_line_max": 36,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "entries[index] += 1;",
+            "kind": "declared",
+            "replace": "entries[index] += 2;"
+          }
+        },
+        "id": "E0277",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "diagnostic-identification",
+      "id": "borrow-13-mutate-through-shared--diag",
+      "latency_ms": 18399,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 13134,
+          "degenerate_repetition": true,
+          "fences": 2,
+          "length_capped": true,
+          "lines": 187,
+          "repeated_line_max": 19,
+          "tokens_out": 3072,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_entry",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "2dbde92a6c223e9971ec4e0b7fef9c569e395093ff701ec87f8d2ff55864b9fe",
+        "stderr_tail": "r}`\n   |\n   = help: the trait `AddAssign<&mut {integer}>` is not implemented for `{integer}`\nhelp: consider dereferencing here\n   |\n12 |         result += *m.entry(entry).or_insert(0);\n   |                   +\n\nFor more information about this error, try `rustc --explain E0277`.\nerror: could not compile `borrow_13_mutate_through_shared` (lib) due to 1 previous error; 1 warning emitted\nerror: could not compile `borrow_13_mutate_through_shared` (lib test) due to 1 previous error; 1 warning emitted\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "file-replacement",
+      "id": "borrow-13-mutate-through-shared--full",
+      "latency_ms": 18399,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 6909,
+          "degenerate_repetition": true,
+          "fences": 1535,
+          "length_capped": true,
+          "lines": 1536,
+          "repeated_line_max": 1535,
+          "tokens_out": 3072,
+          "unterminated_fence": true
+        },
+        "kind": "invalid",
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "screen": "degenerate_repetition"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no candidate letter could be read from the answer"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "none",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "no candidate letter could be read from the answer"
+        ]
+      },
+      "failure_class": "degenerate_repetition",
+      "failure_flags": [
+        "truncated",
+        "degenerate_repetition"
+      ],
+      "format": "patch-selection",
+      "id": "borrow-13-mutate-through-shared--patch",
+      "latency_ms": 18399,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 3072,
+      "value": 0.0
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-calibration-preregistration-v1.json",
+    "primary_relative_threshold": null,
+    "problems": [],
+    "sha256": "5cf48f9644742fd6c67cc7bf812638a82903655860bb80cc74c0c62b0f6198e5"
+  },
+  "resources": {
+    "cgroup_memory_peak_bytes": 167251968,
+    "cgroup_memory_peak_source": "/sys/fs/cgroup/memory.peak",
+    "process_maxrss_bytes": 24981504,
+    "process_maxrss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss"
+  },
+  "revision": "896fee769a70f8c9032e09d800c75cfa2b77fac4",
+  "schema": "selvedge/capability-result/v1",
+  "scores": {
+    "by_category": {
+      "lifetime-borrow": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "categories": [
+      "lifetime-borrow"
+    ],
+    "category_minimum_items": 0,
+    "category_minimum_met": true,
+    "counts": {
+      "compile_error": 6,
+      "invalid_solution": 4,
+      "test_failed": 2
+    },
+    "failure_classes": {
+      "degenerate_repetition": 3,
+      "non_compiling": 6,
+      "tests_failed": 2,
+      "truncated": 1
+    },
+    "formats": {
+      "by_format": {
+        "body-completion": 3,
+        "diagnostic-identification": 3,
+        "file-replacement": 3,
+        "patch-selection": 3
+      },
+      "by_metric": {
+        "verified_diagnostic": 3,
+        "verified_task_success": 9
+      },
+      "by_tier": {
+        "diagnostic": 3,
+        "easy": 3,
+        "hard": 3,
+        "medium": 3
+      },
+      "extraction_policies": {
+        "tolerant": 12
+      }
+    },
+    "items": 12,
+    "pooled": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 9,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_ci": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 9,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_composite": 0.0,
+    "trio": {},
+    "trio_all_surfaces": false,
+    "verified_diagnostic": {
+      "by_category": {
+        "lifetime-borrow": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 3,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 3,
+          "resamples": 10000,
+          "seed": 20261115
+        }
+      },
+      "items": 3,
+      "mean": 0.0,
+      "metric": "verified_diagnostic",
+      "pooled_with_primary": false,
+      "statement": "a verified diagnosis is not executable task success; this metric is reported separately and never enters the primary composite"
+    }
+  },
+  "stage": "check",
+  "stamp": "20261116T143654Z",
+  "suite": {
+    "category_filter": [
+      "lifetime-borrow"
+    ],
+    "category_minimum_items": 0,
+    "counts": {
+      "by_category": {
+        "api-migration": 12,
+        "concurrency": 10,
+        "dependency-compat": 9,
+        "failing-test": 9,
+        "lifetime-borrow": 12,
+        "repo-scale": 12,
+        "semantic-repair": 9,
+        "trait-impl": 11
+      },
+      "probes": 0,
+      "suite": 84,
+      "total": 84,
+      "trio": 0
+    },
+    "root": "/work/fixtures/capability-calibrated",
+    "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6"
+  }
+}

@@ -123,6 +123,52 @@ def sha256_file(path: str) -> str:
     return digest.hexdigest()
 
 
+def resource_usage() -> dict:
+    """Measured peaks of this process, its cgroup and the CUDA device.
+
+    OOM discipline (AGENTS.md directive 2) sizes every container limit from a
+    measured peak, so the receipt a limit is derived from has to carry one. The
+    values are read, never estimated: `ru_maxrss` is the process high-water
+    mark, `/sys/fs/cgroup/memory.peak` is the container's, and the CUDA numbers
+    are only present when torch is loaded and a device is visible.
+    """
+    usage: dict = {}
+    try:
+        import resource as resource_module
+
+        usage["process_maxrss_bytes"] = int(
+            resource_module.getrusage(resource_module.RUSAGE_SELF).ru_maxrss) * 1024
+        usage["process_maxrss_source"] = "resource.getrusage(RUSAGE_SELF).ru_maxrss"
+    except (ImportError, OSError, ValueError):
+        pass
+    for path in ("/sys/fs/cgroup/memory.peak", "/sys/fs/cgroup/memory/memory.max_usage_in_bytes"):
+        try:
+            with open(path, "r", encoding="ascii") as handle:
+                usage["cgroup_memory_peak_bytes"] = int(handle.read().strip())
+            usage["cgroup_memory_peak_source"] = path
+            break
+        except (OSError, ValueError):
+            continue
+    module = sys.modules.get("torch")
+    if module is not None:
+        try:
+            if module.cuda.is_available():
+                allocated = int(module.cuda.max_memory_allocated())
+                reserved = int(module.cuda.max_memory_reserved())
+                usage["vram"] = {
+                    "device": module.cuda.get_device_name(0),
+                    "max_memory_allocated_bytes": allocated,
+                    "max_memory_reserved_bytes": reserved,
+                    "max_memory_allocated_gib": round(allocated / (1024 ** 3), 3),
+                    "max_memory_reserved_gib": round(reserved / (1024 ** 3), 3),
+                    "source": ("torch.cuda.max_memory_allocated / "
+                               "max_memory_reserved at receipt time"),
+                }
+        except (RuntimeError, OSError):
+            pass
+    return usage
+
+
 def write_json_atomic(path: str, payload: dict) -> None:
     os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
     temporary = path + ".tmp"
@@ -287,6 +333,7 @@ def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_M
             "path": preregistration,
             "sha256": prereg_digest,
         },
+        "resources": resource_usage(),
         "few_shot": hygiene,
         "items": [
             {
@@ -653,6 +700,7 @@ def check(generations: dict, suite_root: str, out: str,
             "counts": counts,
             "items": sum(counts.values()),
         },
+        "resources": resource_usage(),
         "items": rows,
     }
     if not prompt_ok:
