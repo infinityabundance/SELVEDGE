@@ -2303,6 +2303,102 @@ them rather than guessing. `D` and `M` have no dispatch and are unaffected.
 - No T2 verdict and no cross-arm ordering. `H*` was training throughout; its
   progress is reported to the operator, not interpreted here.
 - No capability result: no arm has been scored on the suite.
-- No performance number. The runtime items are registered, not implemented.
-- The new tier assignments are a plan state, revisable at the next checkpoint; they
-  are not verdicts on any mechanism's merit.
+## 2026-11-16 — S20: prior-art false negatives, dispatch provenance, critical paths, partial T2
+
+Scope: operator corrections after the round-18 ledger wrongly concluded that MoSE
+could not be located and that GMoE/TYLER were title-only. Docs and CPU/network
+only; `H*` training was left untouched and polled read-only throughout.
+
+### Prior art — three retrieval false negatives corrected
+
+All three works were fetched directly at their true venues on 2026-11-16 UTC and
+are now `VERIFIED` with the exact supported claim. The round-18 failed-fetch
+receipts are kept; the old verdicts are retained as superseded history.
+
+- **MoSE** — *Mixture of Slimmable Experts*, Tastan et al., ICML 2026, PMLR
+  306:119816–119836 (`https://proceedings.mlr.press/v306/tastan26a.html`). Nested,
+  slimmable experts executed at variable widths under a fixed budget. Row 115
+  `UNSUPPORTED` → `VERIFIED`.
+- **GMoE** — Hong & Kim, ACL 2026 long 2065
+  (`https://aclanthology.org/2026.acl-long.2065/`). GRU-based recurrent router
+  shared across layers, routing-logit propagation, global experts plus a local
+  expert per layer. Row 117 `PARTIAL` → `VERIFIED`.
+- **TYLER** — Lin et al., EMNLP 2026 main 2004
+  (`https://aclanthology.org/2026.emnlp-main.2004/`). A learned policy over typed
+  latent operators with per-step allocation. Row 118 `PARTIAL` → `VERIFIED`.
+
+`docs/PRIOR-ART-AND-NOVELTY.md` gains §12.1b “Retrieval false negatives”, which
+states the rule plainly: a failed fetch is not evidence of non-existence. The
+failure modes were arXiv-only search (MoSE is in PMLR), landing pages that had
+not yet served an abstract (GMoE, TYLER), unsupported `ti:` queries, and homonym
+capture. `scripts/prior_art_audit.py` is new and audits the §12 row tally; it
+passes on the corrected ledger. `docs/PROGRAM-PLAN.md` P13.1/P13.3/P13.4 are
+reframed as **published baselines to reproduce and extend**, not proposed
+mechanisms.
+
+### Legacy dispatch provenance for X and H — CERTIFIED as `legacy`
+
+Neither original receipt was edited. The evidence chain:
+
+- both arms trained on the same `oracle/train/modeling.py` blob
+  (`e61ca0d`, sha256 `9ccf56e8…`), whose `combine()` has no `mask_order` and
+  restores, weights, then applies the sorted-position mask — byte for byte the
+  legacy placement;
+- `f13581f` (which introduced `mask_order`) is the direct child of `H`'s training
+  commit `3e5454`, and `X` trained earlier still;
+- both ran on image digest `sha256:a754d3e1…`;
+- a fixed, deterministic batch replay (`oracle/eval/dispatch_provenance_replay.py`,
+  court receipt `results/courts/oracle-20261116T054753Z-7abdd2.json`) shows the
+  historical combine bitwise equal to the current `legacy` path and different
+  from `pair` whenever overflow occurs.
+
+`results/t2/PROVENANCE-AMENDMENT-X-and-H.json` binds the receipt hashes, training
+commits, code digest, image digest, replay evidence, inferred mask order
+(`legacy`), and an explicit confidence statement. The capability adapter accepts
+it only under `--provenance-amendment`, validates arm, inferred order, receipt
+digest, and replay digest, and records the amendment digest in downstream
+provenance. Tests cover acceptance and four refusal paths
+(`oracle/tests/test_capability_court.py`, 46 passed in court). A
+corrected-dispatch sensitivity re-evaluation from the same checkpoints is
+registered in the amendment and **not launched**.
+
+Impact is quantified from existing receipts, not re-measured: `X`'s audit block
+and `H`'s own `train.jsonl` routing blocks give each arm's dropped fraction and
+worst sampled layer; the values live in the amendment and in
+`results/t2/dispatch-audit-20261115T234953Z.json`, never hand-copied here.
+
+### Plan — critical paths and tier gate
+
+`docs/PROGRAM-PLAN.md` §0.0 now separates **(a) neural capability** (finish H*,
+certify historical checkpoints, run the fresh Rust suite) from **(b) physical
+execution** (runtime optimisation, trained-module integration, real transfers and
+latency). It states explicitly that **P14.1–P14.3 do not gate the T2 capability
+run**, because that court executes through the PyTorch adapter. The WS14 headers
+and tier index are corrected to match. P14.5 is corrected: Rust cases already
+execute through `cargo test`; the gap is checker coverage and scale, not a
+missing executable path. A dated tier-enforcement gate (2026-11-16) says
+MoSE/GMoE/TYLER reproductions and the sixteen inventions do not start until `H*`
+reports and the first defensible capability measurement exists; exceptions need a
+written, registered justification. `README.md` now says plainly that there is no
+competitive or GPU performance claim while the CPU runtime has measured latency
+receipts.
+
+### Partial T2 record (exploratory)
+
+`results/T2-PARTIAL.md` and its JSON companion are generated by
+`scripts/t2_partial.py` from the stored per-item evaluation receipts. They give
+the paired X-vs-H comparison per task (outcomes, discordant counts, percentile
+paired bootstrap) and the per-arm composite. Recomputed task means match the
+stored summaries exactly. The document states in its first paragraph that it is
+**not** the registered five-arm verdict, that `H*` is outstanding, and that the
+corrected-dispatch runs are outstanding. Direction: `H` is below `X` on the
+composite with an interval excluding zero; the exact values are in the generated
+file, not restated here.
+
+### What this entry does not claim
+
+- No T2 verdict and no cross-arm ordering beyond the exploratory partial above.
+- No capability result: no arm has been scored on the suite.
+- No competitive or GPU performance claim. `H*` was not touched.
+- The provenance amendment certifies what the legacy code *did*, not that the
+  legacy dispatch is correct.
