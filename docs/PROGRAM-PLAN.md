@@ -12,6 +12,17 @@ new workstreams are appended: **WS13** (published mechanisms to reproduce and
 sixteen inventions, 21 items) and **WS14** (runtime and evaluation corrections,
 7 items). No existing P-ID is renumbered, retitled or removed.
 
+**Fourth extension, 2026-11-16 (S24).** Four workstreams are appended and none of
+the 140 existing P-IDs is renumbered, retitled or removed: **WS15** (beyond-MoE
+architectures, 9 items), **WS16** (subtractive intelligence and residual-governed
+control, 35 items), **WS17** (the Phenom collaboration surface, 4 items) and
+**WS18** (the experiment matrix and its incentive guards, 12 items). The
+literature behind every named work is in `docs/PRIOR-ART-AND-NOVELTY.md` §14–§15,
+fetched in rounds 19–24 on 2026-11-16; four of the named works did not resolve
+(DA-MoE, DynaMoE, Dynamic Expert Sharing, the Springer LLM I/O survey) and the
+plan does not cite them as alternatives. The gate that already bound WS13 is
+extended to WS15–WS18 and restated with its date in §20.0.
+
 Companion documents: `docs/MANDATE.md` (requirements),
 `docs/EXPERIMENT-CONTRACT.md` (registered thresholds; T1 is the current
 section), `docs/PRIOR-ART-AND-NOVELTY.md` (what is actually prior art),
@@ -130,6 +141,40 @@ Tier index — new items: WS13 (§18) has **21** items — P13.1–P13.4 and
 P13.6–P13.21 `CANDIDATE` (20), P13.5 `HYPOTHESIS` (1). WS14 (§19) has **7**
 items — P14.1–P14.3 `ACTIVE` as runtime-optimisation work (they **do not** gate
 the T2 capability run; see §0.0) and P14.4–P14.7 `CANDIDATE`.
+
+Tier index — S24 items: WS15–WS18 (§20–§23) have **60** items — `ACTIVE` 1,
+`CANDIDATE` 56, `HYPOTHESIS` 3.
+
+| tier | items | count |
+| --- | --- | ---: |
+| **ACTIVE** | P18.6 (cut-set discovery from stored omission traces, the only diagnostic permitted before the gate) | 1 |
+| **CANDIDATE** | P15.1–P15.8 · P16.1–P16.25, P16.27–P16.31, P16.33–P16.35 · P17.1–P17.4 · P18.1–P18.5, P18.7–P18.12 | 56 |
+| **HYPOTHESIS** | P15.9 (integration) · P16.26 (Braess) · P16.32 (biological control) | 3 |
+
+**Assignments that need a reason.**
+
+- **P18.6 is the only `ACTIVE` item in the four workstreams.** It consumes
+  omission receipts that already exist (`results/M1-FRONTIER.md`,
+  `results/M2-SELECTORS.md`, the T2 per-item rows) and needs no training run and
+  no new model. Every other item here needs either a training run, a new module
+  or a new measurement instrument, so the tier rule (ACTIVE requires evidence
+  being produced in this phase) keeps them at `CANDIDATE`.
+- **P16.26 and P16.32 are `HYPOTHESIS`** because their own evidence base is an
+  analogy: Braess' paradox and the biological principles are each attested only
+  by secondary or citing records (`docs/PRIOR-ART-AND-NOVELTY.md` rows 158,
+  161–168), and neither names a decisive experiment that could run before the
+  gate opens. Keeping them is deliberate — they are why the plan has a
+  subtractive workstream at all — but nothing is scheduled.
+- **P15.9 is `HYPOTHESIS`** because it is defined as "the winners only": it
+  cannot be specified until P15.1–P15.8 report, and specifying it now would be
+  the breadth-without-attribution failure P12.16 names.
+- **P16.34 is `CANDIDATE`, not `ACTIVE`, even though it is pure CPU work.** It
+  requires a new crate and a new trace corpus. A CPU-only implementation is not
+  the same thing as a diagnostic over existing artifacts, and the tier is a
+  statement about commitment and evidence, not about hardware.
+- **P18.12 is `CANDIDATE`** because it is a reporting rule with no execution
+  surface until a WS15/WS16 claim exists. It becomes `ACTIVE` at the first such
+  claim, and it binds that claim from its first sentence.
 
 **Assignments that need a reason, not just a row.**
 
@@ -3462,3 +3507,1181 @@ SELVEDGE's own development loop.
 arm sees it, a custody record, and a rule that a sealed result is published once
 and never re-run for tuning.
 **Depends.** P14.4. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+## 20. WS15 — Beyond-MoE architectures (research hypotheses)
+
+### 20.0 The gate, extended and dated (2026-11-16, S24)
+
+**Statement.** WS15, WS16, WS17 and WS18 **do not start** — no module, no crate,
+no training run, no experiment, no registration beyond a written proposal — until
+both of these exist:
+
+1. **H\* has reported its result**, through the registered reader
+   (`oracle/eval/t2_decision.py`) and not through an exploratory partial; and
+2. **the first defensible capability measurement exists** — a registered T2
+   verdict, or the capability court's executed-suite result, reported with its
+   revision, fixture and receipt.
+
+This is the same gate that already binds WS13 (§18), applied to the new
+workstreams for the same reason: every item below is a *hypothesis about a
+mechanism*, and a hypothesis that is implemented before the program can measure
+capability cannot be distinguished from the mechanism it is meant to test. A
+program that builds four new architectures before it can score one is P12.16's
+failure mode with a larger bill.
+
+**The one exception, and its exact boundary.** **P18.6** (cut-set discovery from
+stored omission traces) may run immediately, because it is a *diagnostic over
+existing artifacts*: it reads `results/M1-FRONTIER.md`, `results/M2-SELECTORS.md`
+and the stored T2 per-item rows, runs on CPU, and trains nothing. The exception
+does **not** extend to a variant that re-executes a model, which would need the
+GPU that `H*` owns, and it does not extend to P16.12 (which must *train*
+architectures against discovered cut sets). Any other exception must be
+registered in advance in `docs/WORK-LOG.md` with what is unblocked, why it cannot
+wait, what it could contaminate, and the operator's approval. An unregistered
+exception is a defect.
+
+**Gate status at the time of writing (2026-11-16, S24, read-only poll).** Closed.
+`H*` is training in the detached court
+`selvedge-oracle-court-20261116T050158Z-739076`: the live log's last progress line
+read `train: step 500/1024 loss=1.4207 tok/s=4767 vram=10.81GiB`, and
+`results/t2/pilot-state.json` records the arm as `running` with `D`, `M`, `X` and
+`H` evaluated. No capability measurement exists: `results/T2-PARTIAL.md` is an
+exploratory X-vs-H record and states that it may not be cited as the registered
+verdict. S24 changed **documents only** — this plan, the prior-art ledger, its
+fetch tool and its audit — and moved no P-status in WS13, WS14 or T2.
+
+**Distance to a frontier claim (one line).** One unrun registered verdict (`H*`
+is at step 500 of 1024 and the five-arm reader has not run) plus one executed
+capability run on the fresh suite stand between the program and its first
+frontier-shaped claim; **no item in WS15–WS18 shortens that distance**, which is
+why the gate holds.
+
+### 20.1 How WS15 is written, and what the ledger already took away
+
+**Phase rule.** Each item is a separate hypothesis with **one decisive
+experiment** and **at least one falsifying control**. No item is a bundle: an
+architecture item that changes three things at once cannot be attributed, and
+P12.16 forbids starting the integration before the parts report.
+
+**Accounting rule (inherited from §18, restated because WS15 changes the
+computation graph).** For every WS15 arm: accessible capacity, active unique
+parameters, bytes moved, cold bytes, *graph-construction cost*, *evidence-
+verification cost* and *wall-clock* are seven separate numbers (P7.7). A
+controller that chooses the computation is counted as active computation, and
+the cost of deciding is reported even when it is small. A WS15 arm that cannot
+state the cost of deciding is not ready to run.
+
+**What the fourth literature pass removed (2026-11-16; §14 of the ledger).**
+Three of the ten named WS15 works did not resolve to the named mechanism —
+DA-MoE is a *graph-learning* mixture (row 137), DynaMoE resolves to solar dynamo
+physics (row 138), Dynamic Expert Sharing has no located work (row 143) — so
+none is named as an alternative below. Every located component of WS15 has a
+published neighbour: variable per-token compute (Expert Choice, row 136),
+conditional depth (Mixture-of-Depths, row 139), weight generation (HyperNetworks,
+row 140), product-key addressing (row 141), test-time memory (Titans, row 142),
+subtractive decoding (DExperts, row 144). **The novelty claimed below is the
+coupling and its measurement, never a component.**
+
+### P15.1 — Obligation-Directed Computation
+
+**What.** Convert input plus retrieved memory into a set of **unresolved
+obligations** (typed, checkable claims the answer must satisfy); assemble the
+**smallest computation graph** that could discharge them under a declared cost
+budget; execute that graph; record which obligation each executed operation
+served. The objective couples three terms — graph construction, evidence
+retrieval, and measured execution cost — into one **obligation-closure**
+objective: minimise cost subject to closure, not maximise accuracy subject to a
+FLOP cap.
+**Why.** Every sparse-execution design in this program chooses *what to compute*
+from a learned gate; none chooses it from *what the answer still owes*. If the
+obligation set is the right interface, the router becomes a planner and the
+routing question (which expert) becomes a sub-question of a better-posed one
+(which operation discharges which obligation). If it is not, the experiment says
+so cheaply, because the same task set and the same evidence store serve the
+control.
+**Decisive experiment.** A1 (P18.1): obligation-directed execution versus
+(a) same-model retrieval plus a fixed workflow and (b) the same model with
+oracle obligations supplied. Arm (b) prices obligation *discovery*; the
+difference between (a) and (b) is the ceiling, and the difference between the
+system and (b) is what discovery costs.
+**Falsifying control.** (i) the fixed workflow receiving **the same retrieved
+evidence in the same order** — so a gain from evidence is not reported as a gain
+from planning; (ii) a **shuffled-obligation** arm whose obligations are permuted
+across tasks, which must not beat the fixed workflow.
+**Kill criterion.** If discovery cost exceeds the cost it saves in two of three
+task families (the stated failure mode: obligation discovery costs more than the
+task), retire P15.1 and record it as the primary negative.
+**Depends.** P12.1, P12.9, P17.1, P17.3. **Acceptance evidence.** one receipt per
+arm with the seven accounting numbers, the per-obligation closure report, and
+the shuffled control. **Status.** open. **Effort.** XL (Phenom-side prototype
+first; no neural training in the first stage). **Tier.** CANDIDATE.
+
+### P15.2 — Attractor-Field Computation
+
+**What.** One **shared transition operator** applied repeatedly, plus a learned
+**energy/field** conditioned on memory and constraints; computation runs until a
+**cost-aware termination** rule fires (predicted improvement below its cost,
+attractor approached, or constraints satisfied). Cost is the measured number of
+operator applications, not a timestep count.
+**Why.** It is the cheapest way to test whether *iterated shared* computation
+buys capability per FLOP, and the program already has the recurrence literature
+(§13 P10.9, P5.11) without having tested the FLOP-matched version. The negative
+result it must beat is explicit: TextNCA's strictly local iterated primitive
+**does not match a parameter-matched Transformer at its scale** (ledger row 149),
+so an attractor-field claim starts from a known failure, not a known win.
+**Decisive experiment.** A2 (P18.2): shared-field recurrence versus a
+**FLOP-matched dense recurrence** (same operator applications, same active
+parameters), versus **sparse MoE** at matched active parameters, versus a
+**memory-augmented dense** model at matched bytes.
+**Falsifying control.** (i) the same operator with **fixed depth** (no
+termination rule) at the same mean cost, which separates the termination rule
+from the recurrence; (ii) a **random-field** arm whose conditioning vector is
+noise, which must not beat fixed depth.
+**Kill criterion.** No registered win over the FLOP-matched dense recurrence in
+two seeds retires the attractor framing; the recurrence itself may survive as a
+baseline.
+**Depends.** P12.1, P12.9, P12.10. **Acceptance evidence.** paired receipts with
+the operator-application count and the FLOP equality printed for every arm.
+**Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P15.3 — Constraint-Lattice Inference (subtractive specialisation)
+
+**What.** The answer is chosen by minimising a **penalised deviation from a base
+distribution**: `y* = argmin_y D(y, y0) + Σ_j λ_j V_j(y)`, where the `V_j` are
+**typed, persistent, evidence-grounded constraints** — each carries the evidence
+that grounds it, its type, and the minimal **counterfactual repair** that would
+satisfy it. Hard constraints are admissible **only** for conditions a verifier
+can decide.
+**Why.** This is the mechanism that makes the program's subtractive half
+*inference* rather than *post-hoc filtering*, and it is the natural consumer of
+evidence: a constraint without its evidence is a heuristic, and an untyped
+constraint cannot be repaired minimally. DExperts (row 144) already shows
+subtractive decoding works for a controlled attribute; the untested part is a
+lattice of typed constraints with per-constraint evidence and repair.
+**Decisive experiment.** A4 (P18.4): constraint-lattice repair versus
+**same-model ordinary verification** at matched model calls, on tasks with
+executable checks.
+**Falsifying control.** (i) the same constraint set applied as a **post-filter**
+(reject and resample) rather than as an objective — a gain from generation rather
+than from repair shows up here; (ii) a **relaxed** arm where every `λ_j` is
+frozen at the value calibrated on a development split, which removes per-item
+tuning.
+**Kill criterion.** If repair does not beat the post-filter control at matched
+calls, the lattice is a filter with extra steps: retire the mechanism and keep
+the filter.
+**Depends.** P12.9, P14.5, P17.1. **Acceptance evidence.** per-item receipts with
+the constraint that fired, its evidence reference, the repair applied, and the
+verifier outcome before and after repair. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P15.4 — Compositional Operator Grammar
+
+**What.** A small **library of typed learned operators** (bind, compare,
+abstract, retrieve, revise, predict), a bounded **program constructor** that
+composes them under a length and cost budget, and an executor. The claim to test
+is **compositional generalisation**: performance on **unseen combinations of
+known operators**, not on unseen operators.
+**Why.** A grammar is the only architecture here whose failure is unambiguous:
+either it composes or it memorises. Sparse MoE is its natural comparator because
+both allocate a small part of a large parameter set per input, and the difference
+— operators versus experts — is exactly the question.
+**Decisive experiment.** A3 (P18.3): operator grammar versus
+**parameter- and FLOP-matched sparse MoE**, evaluated on a held-out split of
+operator *combinations* that never appeared in training.
+**Falsifying control.** (i) the same library with **permuted type signatures**, so
+any gain from type discipline is separated from a gain from the operator set;
+(ii) a **seen-combination** split, where the grammar is expected to tie — if it
+wins there and ties on the unseen split, the gain is memorisation.
+**Kill criterion.** If the grammar does not beat matched sparse MoE on
+**unseen** combinations by the registered margin, retire it: a grammar that only
+wins on seen combinations is a lookup table.
+**Depends.** P12.1, P12.9, P12.10. **Acceptance evidence.** the combination
+manifest with its hash, the per-combination outcome table, and both splits.
+**Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P15.5 — Relation-Activated Networks
+
+**What.** Activate the **relationships** an answer needs — causal, temporal,
+epistemic, semantic edges — rather than the nodes; run shared message passing over
+the **selected edge set**. Report **graph overhead** (edge-selection cost,
+message count, bytes) as a named quantity.
+**Why.** Relation selection is the one form of sparsity in this plan that is
+native to the task rather than to the weights, and it is testable on any input
+that already carries an explicit graph. It also produces a cheap negative: if
+selected-edge message passing cannot beat all-edge passing at the same edge
+budget, the mechanism is a cost, not a capability.
+**Decisive experiment.** On tasks with explicit graphs (the executable-suite
+cases that carry dependency structure), selected-edge versus all-edge passing at
+**equal edge budget** and equal parameter count.
+**Falsifying control.** **random edge selection** at the same edge count; a win
+over all-edge but a tie with random edges means the *budget*, not the relation
+type, did the work.
+**Kill criterion.** Retire if selected-edge does not beat random-edge selection;
+record the graph-overhead number either way.
+**Depends.** P12.9. **Acceptance evidence.** receipts with edge counts, graph
+overhead and the random-edge control. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P15.6 — Disagreement-Driven Computation
+
+**What.** Allocate computation to **consequential contradictions** among
+independent interpretations of the same input: run several cheap interpretations,
+identify disagreements, and spend the budget on the ones whose resolution could
+change the answer.
+**Why.** It is the direct neural analogue of the subtractive workstream: compute
+is spent where *interpretations conflict*, not where a single gate is uncertain.
+The mechanism has a hard prerequisite the plan must state: the disagreements must
+be **calibrated**, and a disagreement signal that is not is worse than a single
+gate.
+**Decisive experiment.** Cost-matched comparison against **one learned gate**
+(the control P16.10 also uses), on the T2 instrument and the fresh suite.
+**Falsifying control.** (i) a **shuffled-pairing** arm that pairs interpretations
+across inputs, so the disagreement signal is meaningless but its statistics are
+identical; (ii) a **calibration arm** reporting reliability diagrams and ECE for
+the disagreement score before any allocation claim is made.
+**Kill criterion.** If allocation never beats the single learned gate at equal
+cost, or if the disagreement score fails calibration, retire it.
+**Depends.** P12.1, P12.9. **Acceptance evidence.** the calibration receipt and
+the cost-matched comparison, in that order. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P15.7 — Memory-Instantiated Microprograms
+
+**What.** Retrieved memories supply a **compact set of coefficients or a low-rank
+update** to a shared resident operator, so different memories instantiate
+different *programs* without different parameters. Long-term storage is separated
+from resident compute, and the **parameter-generation cost is charged** to the
+same budget as the computation it enables.
+**Why.** HyperNetworks (row 140) proved weights can be generated; Titans (row
+142) proved memory can be learned at test time. Neither answers the question this
+program needs answered: whether the *resident* set can be smaller because memory
+supplies the coefficients, at a measured generation cost that is smaller than the
+resident bytes it replaces.
+**Decisive experiment.** Fetched coefficients/low-rank updates versus a stored
+expert bank at **equal bytes read per token**, with generation FLOPs charged to
+the active ledger.
+**Falsifying control.** **random low-rank updates with matched norm** — if any
+perturbation of the operator helps equally, the gain is not from memory content.
+**Kill criterion.** If generation cost plus retrieval bytes exceed the resident
+bytes replaced, with no quality difference, retire the separation claim and keep
+the memory as a plain retrieval store.
+**Depends.** P3.1, P10.1, P12.9. **Acceptance evidence.** a receipt with bytes
+read, generation FLOPs, resident bytes and quality, and the matched-norm control.
+**Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P15.8 — Counterfactual Repair Networks
+
+**What.** A cheap predictor plus a controller that estimates **which single
+missing fact or transformation is most likely to flip the answer**, executes only
+that repair, and repeats while the predicted benefit exceeds the measured cost of
+the next attempt.
+**Why.** It is the cheapest version of "subtractive intelligence" that produces a
+capability number: most failures are one fact away, and a controller that knows
+which fact is a testable claim with an obvious baseline (try repairs until one
+works). It also gives the program a way to price *prediction* against
+*exhaustion*, which is the same trade every item in WS16 makes about caching.
+**Decisive experiment.** Predicted-flip controller versus **exhaustive repair**
+and versus the same model with **no repair**, at matched maximum attempts.
+**Falsifying control.** (i) **random repair order** at matched attempts — the
+controller must beat it; (ii) an **oracle-flip** arm that prices the ceiling.
+**Kill criterion.** If the controller does not beat random order at matched
+attempts, retire the predictor and keep the repair loop as a baseline.
+**Depends.** P12.9, P14.5. **Acceptance evidence.** per-item receipts with the
+predicted flip, the executed flip, the outcome, and the attempt count.
+**Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P15.9 — Integration (the winners only)
+
+**What.** An obligation-directed attractor computer that combines **only** the
+mechanisms that individually passed their kill criteria: a shared transition
+operator, a typed operator library, a persistent field, an obligation
+controller, and evidence verification.
+**Why.** The program keeps this item so that integration is a *decision with a
+record*, not a natural next step. It exists as a hypothesis precisely because it
+cannot be specified before the parts report, and because a combination of
+unvalidated parts cannot attribute anything.
+**Depends.** P15.1–P15.8 each reported with its kill criterion applied, plus
+P13.5. **Acceptance evidence.** the integration pre-registration naming only
+passing mechanisms, with each included part's individual receipt cited.
+**Status.** open. **Effort.** XL (not estimated; no schedule until the parts
+report). **Tier.** HYPOTHESIS.
+
+## 21. WS16 — Subtractive intelligence and residual-governed control
+
+**What this workstream is.** Every other workstream in this plan asks *what to
+compute*. WS16 asks **what to stop doing, when, and at what risk** — and it asks
+it where the answer can be measured today: residency, context, computation and
+capability. It is the program's largest workstream because the neglect was
+genuine: the plan had P11.1–P11.21 on *adding* capability and almost nothing on
+removing it under a stated risk.
+
+**The invariant that makes it honest.** Subtraction has three different meanings
+and they have three different safety guarantees (P16.1). Moving bytes between
+VRAM, RAM and NVMe is **reversible and semantically inert**. Evicting or
+compressing KV/context is **lossy on the conditioning** and needs a declared
+distortion bound. Deselecting computation **changes the answer** and needs a
+capability guarantee, which only P16.12 can supply. No result may be reported
+across these boundaries without naming which one it measured.
+
+**The literature position (§14).** Learned eviction is **not** a novelty surface:
+PARROT learns cache replacement with a Belady oracle (row 145), KV Policy learns
+per-head eviction with an RL reward (row 147), LKV learns budgets and selection
+end-to-end (row 148). What is not published, as far as the fetched records go, is
+the specific conjunction this workstream tests: **residual-derived features, a
+declared risk constraint over a joint multi-item decision, and a deterministic
+observer that can never mutate the model.** Stated as "learned eviction", every
+item below would be prior art.
+
+**One external warning is adopted as a requirement.** The MoE cache evaluation
+work (row 151) finds "the measurement fragile" and isolates replay semantics and
+workload contamination as axes that "change conclusions, not just numbers".
+P16.34 exists because of that finding, and any WS16 result that does not state
+its replay contract is not reportable.
+
+### P16.1 — Residual-Governed Bayesian Eviction (RGBE)
+
+**What.** Per item `i` at time `t`, estimate `R_i = E[C_future(evict i) −
+C_future(keep i) | z_t]` — the *future* cost difference conditioned on the
+observable state — rank by `R_i / bytes`, and choose a **joint multi-item**
+subset under a **risk constraint** `P(ΔL > ε) < δ`, not per-item greedily.
+Separate the three meanings of uncaching (reversible move / lossy context / 
+computation deselection) with their three guarantees.
+**Why.** Priority-per-byte is the standard heuristic (LRU, LFU, GDSF); what it
+lacks is a *risk statement* and a *joint* decision, and those are exactly the
+parts that decide p99 behaviour under contention.
+**Decisive experiment.** In the P16.34 lab: RGBE versus LRU, LFU and the
+cost-based Bayesian variant at equal capacity, reporting the **risk-violation
+rate** and the worst-decile ΔL, not only the mean.
+**Falsifying control.** (i) the same ranking with a **risk-neutral (mean)
+objective**; (ii) the same estimator with `z_t` **shuffled across time**, which
+destroys the conditioning but keeps the state distribution.
+**Kill criterion.** If the risk-constrained joint selection does not reduce the
+worst-decile loss or p99 stall relative to the mean-objective arm at equal bytes,
+the constraint is decoration: retire it and keep the estimator.
+**Depends.** P16.34, P14.1. **Acceptance evidence.** one deterministic replay
+receipt per policy with the risk-violation rate, the worst-decile loss, and the
+shuffled-state control. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P16.2 — DSFB residual fingerprint bank
+
+**What.** A **deterministic observer** (not a trained oracle) that reads execution
+residuals and emits **structural** and **replay** fingerprints. Ten proposed
+motifs are the catalogue: premature eviction, thrashing, regime shift, redundant
+residency, hidden complementarity, cold-start trap, overconfident deselection,
+persistent false alarms, delayed optimisation, policy oscillation. Every
+fingerprint carries its **provenance** (trace window, feature definition, the
+policy that produced it) and an explicit **confusables** field. Rule: **semantic
+similarity is not hash identity** — a fingerprint match is not evidence that two
+cached objects are the same object.
+**Why.** A residual signal is free (the computation already produced it), it is
+interpretable, and it is auditable in a way a learned score is not. The motif
+catalogue is only worth having if each motif is *decidable from the trace* and
+separates from its confusables.
+**Decisive experiment.** Inject each motif into synthetic traces with known
+ground truth; measure per-motif precision and recall, and the false-attribution
+rate between confusable pairs.
+**Falsifying control.** (i) a **time-permuted** trace, which keeps the marginals
+and destroys the motif; (ii) a **replay-fingerprint-only** observer, so a gain
+from structural features is separated from a gain from exact replay.
+**Kill criterion.** If per-motif precision is not materially above the
+permuted-time control, the catalogue is a narrative: retire the motif that fails,
+keep the observer as a diagnostic stream.
+**Depends.** P16.35, P16.34. **Acceptance evidence.** the injection suite, the
+per-motif confusion matrix, and the observer's own self-test. **Status.** open.
+**Effort.** L. **Tier.** CANDIDATE.
+
+### P16.3 — Inverse Bagging
+
+**What.** Bootstrap **counterfactual removal scenarios** and optimise a **high
+quantile / CVaR** of ΔL rather than its mean, with a tunable risk budget.
+**Why.** The mean is the wrong functional when the loss distribution is heavy
+tailed and the decision is one-shot; a policy that is fine on average and
+catastrophic one time in twenty is not a policy this program may ship.
+**Decisive experiment.** CVaR-optimal subset versus mean-optimal subset at equal
+retained bytes, on stored traces; report the worst decile as the primary metric.
+**Falsifying control.** The same bootstrap with **IID resampling** that destroys
+temporal dependence — if the gain survives, it came from the scenario generator,
+not from the risk functional.
+**Kill criterion.** If CVaR selection does not improve the worst decile at equal
+mean loss, retire it.
+**Depends.** P16.34. **Acceptance evidence.** the two subset receipts and the
+IID-resampling control. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.4 — Bayesian Subtractive Averaging
+
+**What.** Retain the **smallest subset** of components whose predictive
+distribution stays within a KL bound of the full-set predictive distribution, at
+a stated cost; exploit **conditional** redundancy (redundancy given the rest, not
+marginal redundancy).
+**Why.** Magnitude pruning and marginal redundancy both miss the case where two
+components are individually useless and jointly essential — the complementarity
+P16.5 measures from the other direction.
+**Decisive experiment.** KL-preserving subset versus magnitude-ranked subset at
+equal retained bytes.
+**Falsifying control.** A **random** subset of equal size; and a check that the
+KL is computed against a *sampled* predictive distribution rather than a Gaussian
+surrogate, so the bound is not a modelling assumption.
+**Kill criterion.** If conditional redundancy is not detected (the subset's KL is
+close to the sum of individual contributions), the Bayesian framing collapses to
+independent pruning: retire it.
+**Depends.** P2.4, P16.34. **Acceptance evidence.** the KL receipt with its
+sampling method and the random-subset control. **Status.** open. **Effort.** M.
+**Tier.** CANDIDATE.
+
+### P16.5 — Complementary Exclusion Search / Inverted BMC
+
+**What.** Measure `ΔL(S)` for subsets and estimate **pairwise interactions**
+`b_ij` (positive = joint removal worse than the additive prediction). Use the
+sign and size to constrain selection (never remove a jointly-essential pair) and
+to train **complementary specialists** (which are pairs that exist to cover each
+other's absence).
+**Why.** Additive importance is the assumption every pruning method makes and no
+method in this plan measures. The inverted form asks which removals are worse
+*than additive*, which is the capability-preserving question.
+**Decisive experiment.** Estimate `b_ij` on a small component set from stored
+omission traces, then test whether a selection constrained by positive `b_ij`
+beats an additive-importance selection at equal deletions.
+**Falsifying control.** `b_ij` estimated on a **held-out split**; a model with
+`b_ij := 0` must lose if the interactions are real. **Kill criterion.** If the
+sign of `b_ij` is not stable across splits, the interactions are noise and the
+item is retired.
+**Depends.** P18.6, P16.34. **Acceptance evidence.** the interaction matrix, its
+split-stability, and the constrained selection receipt. **Status.** open.
+**Effort.** L. **Tier.** CANDIDATE.
+
+### P16.6 — Negative Decision Forests
+
+**What.** Cheap **removal-risk** estimators for CPU-side caching: compare a random
+forest, a calibrated Bayesian classifier, a shallow tree over DSFB features, and
+a tiny neural controller, with controller CPU cost charged.
+**Why.** The cheapest model that is calibrated may win, and the comparison is
+missing from the literature as fetched — the published learners (rows 145, 147)
+optimise reward, not a calibrated removal risk.
+**Decisive experiment.** All four, same traces, same byte budget, in the P16.34
+lab, with controller CPU cost measured.
+**Falsifying control.** (i) the **DSFB-feature ablation** P16.34 requires; (ii)
+the PARROT-style imitation learner (row 145) as the strong published baseline.
+**Kill criterion.** If the shallow tree with DSFB features does not beat both the
+forest without them and the published baseline at equal controller CPU, simplify
+to the tree and record the negative for the forest.
+**Depends.** P16.2, P16.34. **Acceptance evidence.** the four-policy receipt with
+calibration and CPU cost, plus the ablation. **Status.** open. **Effort.** M.
+**Tier.** CANDIDATE.
+
+### P16.7 — Residual Anti-Ensembles
+
+**What.** Predict which disagreements among cheap models are **consequential** and
+run the specialist only when predicted benefit exceeds its cost.
+**Why.** It is the classification-side counterpart of P15.6 and it is the
+cheapest place to test whether "consequence" is learnable at all.
+**Decisive experiment.** Cost-matched comparison against **always running the
+specialist** and against a cost-matched single gate.
+**Falsifying control.** **Random specialist invocation** at the same rate.
+**Kill criterion.** No win over random invocation at equal cost retires it.
+**Depends.** P12.9. **Acceptance evidence.** invocation receipts with the
+consequence prediction and the outcome. **Status.** open. **Effort.** M.
+**Tier.** CANDIDATE.
+
+### P16.8 — Functional Exclusion Geometry
+
+**What.** Define the **deletion distance** `d_delete(i) = D(p(y|x,M),
+p(y|x,M\{m_i}))` — a divergence between the predictive distributions with and
+without component `i` — and compare it against nearest-neighbour redundancy and
+Mahalanobis distance as a predictor of measured removal harm.
+**Why.** If a geometric proxy predicts functional harm, the expensive functional
+measurement can be skipped; if it cannot, every pruning claim resting on a
+geometric proxy is unsupported.
+**Decisive experiment.** Rank correlation between each metric and measured ΔL on
+a held-out set of deletions.
+**Falsifying control.** The metric computed on a **shuffled memory set** (same
+geometry, no correspondence to the true removal).
+**Kill criterion.** If no proxy beats the shuffled control, keep the functional
+measurement as the only admissible signal and retire the geometry claim.
+**Depends.** P16.34, P2.4. **Acceptance evidence.** the correlation table and the
+shuffled control. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.9 — Computational Dormancy
+
+**What.** Four states — **active / resident / dormant / retired** — with predicted
+need, reconstruction cost, confidence and uniqueness per component; cold experts
+are kept as **insurance**, not as waste.
+**Why.** Standard caching has two states and an eviction is final; the biology in
+P16.32 and the economics in P16.14 both say the interesting state is the third
+one.
+**Decisive experiment.** Dormancy policy versus immediate eviction at equal
+bytes, reporting **worst-category** loss and reconstruction cost.
+**Falsifying control.** Dormancy with the **uniqueness** term removed, so a gain
+from insurance is separated from a gain from a larger effective cache.
+**Kill criterion.** If no task loses when dormant components are dropped, the
+insurance never pays: retire it.
+**Depends.** P16.34, P16.14. **Acceptance evidence.** the state-transition trace,
+worst-category loss, and the uniqueness ablation. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P16.10 — Quorum-Gated Computation
+
+**What.** Require **agreement** among independent signals — uncertainty,
+predicted error reduction, a DSFB regime anomaly, memory evidence — before
+spending; measure the **conditional correlations** among them, because correlated
+signals are one signal with extra cost.
+**Why.** The program's gates are single-signal by construction, and the quorum
+hypothesis is cheap to falsify precisely because the correlations are measurable.
+**Decisive experiment.** Quorum versus a **cost-matched single gate** tuned on the
+same split.
+**Falsifying control.** The same quorum with one signal **duplicated** (same
+statistics, one fewer independent source); if the duplicate performs the same,
+independence was not the mechanism.
+**Kill criterion.** If the conditional correlations are high and the quorum does
+not beat the single gate, retire it.
+**Depends.** P16.2, P16.6. **Acceptance evidence.** the correlation matrix, the
+quorum receipt and the duplicate control. **Status.** open. **Effort.** M.
+**Tier.** CANDIDATE.
+
+### P16.11 — Hysteretic Memory Residency / Return-Point Memory Controller
+
+**What.** Promote/demote thresholds with `θ_promote > θ_demote`; the DSFB observer
+adjusts the thresholds; **return-point memory** handles recurring demand cycles;
+compare against ordinary hysteresis and adaptive caching under workload
+transitions.
+**Why.** Thrashing and oscillation are in the motif catalogue (P16.2) precisely
+because a single threshold cannot express "this was evicted and came back".
+**Decisive experiment.** P16.34 lab with abrupt regime changes; primary metric is
+stalls **after** the transition, not the steady-state mean.
+**Falsifying control.** Ordinary hysteresis with the **same two thresholds held
+fixed**; and an adaptive policy that ignores the state history.
+**Kill criterion.** If adaptation does not improve post-transition stalls over
+fixed hysteresis, keep fixed hysteresis and retire the controller.
+**Depends.** P16.2, P16.34. **Acceptance evidence.** the transition trace with
+pre/post windows and both controls. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P16.12 — Capability Cut-Set Protection
+
+**What.** Find **minimal destructive omission sets** `S` with `L_k(S) > ε_k` for a
+task `k` while **every proper subset is safe**; express protection as constraints
+`Σ_{i∈S} z_i ≥ 1`; make them **task-conditioned**; find them with **combinatorial
+interaction covering arrays** so fewer teacher evaluations are needed. Discovered
+sets are fed into **training objectives for new sparse architectures** — never
+applied as post-hoc omission of a dense teacher.
+**Why.** This is the item that turns subtraction from a compression trick into a
+capability guarantee, and it is the only mechanism here that can licence the
+lossy forms of uncaching P16.1 distinguishes. The post-hoc restriction matters:
+omitting groups from a dense teacher measures the teacher, not the student.
+**Decisive experiment.** Covering-array search versus random sampling at equal
+evaluation count; report how many destructive sets each finds and whether the
+found sets replicate.
+**Falsifying control.** (i) **random subsets of equal size**, which must be mostly
+safe if the search works; (ii) the discovered sets **re-tested on a held-out
+split** — a cut set that does not replicate is an overfit, not a cut set.
+**Kill criterion.** If cut sets do not replicate out of sample, retire the
+protection claim and keep the search as an analysis tool.
+**Depends.** P12.9, P12.11, P16.24. **Acceptance evidence.** the cut-set receipts
+with per-subset safety, the covering-array evaluation count, and the replication
+split. **Status.** open. **Effort.** XL (requires training). **Tier.** CANDIDATE.
+
+### P16.13 — Residual Multigrid Inference
+
+**What.** A coarse approximation plus a **hierarchy of corrections**; errors are
+classified by scale and structure, and a controller decides whether the next
+correction pays.
+**Why.** It makes the refinement cost explicit and testable — the same structure
+as successive refinement (row 155) and P16.20, but in the *residual* domain where
+the program already measures.
+**Decisive experiment.** Multigrid versus **matched recurrence**, **early exit**
+and **sparse correction**, all at equal mean corrections.
+**Falsifying control.** **Fixed-depth** correction at the mean number of
+corrections the controller chose.
+**Kill criterion.** No win over fixed depth at equal mean cost retires the
+controller; the hierarchy may survive as a baseline. **Depends.** P12.9.
+**Acceptance evidence.** receipts with the correction histogram and the
+fixed-depth control. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P16.14 — Option-Value Retention
+
+**What.** Keep a rare, hard-to-reconstruct capability while its **option value**
+exceeds the benefit of removal; option value prices both the probability of
+future need and the **cost of rebuilding**.
+**Why.** Frequency-based retention systematically discards the rare capability
+that is expensive to reconstruct, which is exactly the failure P16.29 measures
+from the other side.
+**Decisive experiment.** Option-value retention versus size-based eviction on a
+long trace; report worst-category loss and realised reconstruction cost.
+**Falsifying control.** The same policy with option value computed from
+**frequencies only** (no reconstruction term).
+**Kill criterion.** If reconstruction cost is negligible in practice, option
+value reduces to frequency and the item is retired as redundant with P16.9.
+**Depends.** P16.9, P16.34. **Acceptance evidence.** the retention trace with
+reconstruction events priced. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.15 — Rent-or-Load
+
+**What.** Bounded-regret **online rent-versus-load** with learned advice and a
+conservative fallback; compare LRU and learned caching under unpredictable
+sequences.
+**Why.** The competitive bound is published (row 154), so the item has a hard
+ceiling and a hard floor: the fallback must never be worse than the advice-free
+algorithm, and the advice must help when it is right.
+**Decisive experiment.** Adversarial segments where the prediction is wrong;
+measure regret against the fallback.
+**Falsifying control.** The **advice-free competitive algorithm** (row 154) on the
+same segments.
+**Kill criterion.** If regret exceeds the advice-free algorithm on any adversarial
+segment, the fallback is not conservative: fix the fallback before claiming a win.
+**Depends.** P16.34. **Acceptance evidence.** per-segment regret with the
+fallback's own bound printed. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.16 — Future-Use Certificates
+
+**What.** A liveness-style **proof that an intermediate can never be referenced
+again**, permitting immediate free; measure peak memory against lifetime-based
+eviction on **executable operator graphs** (the P15.4/P17.1 executor, or the
+runtime's own plan).
+**Why.** A proof is strictly better than a prediction, and the executor is the
+first place in this program where the graph is known rather than estimated.
+**Decisive experiment.** Peak memory with certificates versus lifetime eviction at
+identical outputs.
+**Falsifying control.** A deliberately **conservative** certificate that frees
+less; the invariant it tests is that a certificate never frees live data — one
+violation fails the item closed.
+**Kill criterion.** If certificates do not reduce peak memory, the dependency
+graph is not the binding constraint: retire.
+**Depends.** P15.4, P17.1. **Acceptance evidence.** the executor receipt with peak
+memory and the liveness audit. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.17 — Fetch-or-Recompute Scheduling
+
+**What.** In the red-blue pebble framing (row 153), choose **reload vs retain vs
+recompute** at equal outputs and a stated memory ceiling.
+**Why.** The three options are usually collapsed into one (reload), and the
+cheapest of the three is workload-dependent — which is measurable.
+**Decisive experiment.** Optimal schedule under each of the three budgets versus
+the best fixed policy, on a real executed plan with measured costs.
+**Falsifying control.** **Recompute-always** and **retain-always**.
+**Kill criterion.** If the schedule cannot beat the best fixed policy by the
+registered margin, the decision is not worth modelling: retire the scheduler.
+**Depends.** P14.1, P14.2. **Acceptance evidence.** the schedule receipt with the
+measured cost table it used. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.18 — Bandwidth-Aware Prefetching
+
+**What.** Congestion-controlled RAM↔VRAM and NVMe↔RAM transfer; **the metric is
+p99 stall under bursts, not hit rate**, plus wasted bytes.
+**Why.** Hit rate is the metric that made the literature's claims fragile (row
+151); a prefetcher can raise hit rate while making the tail worse.
+**Decisive experiment.** Burst trace; p99 stall and wasted bytes versus
+**prefetch-on-every-prediction** and **no-prefetch**.
+**Falsifying control.** Unconditional prefetch at the same predicted set, with
+congestion control disabled — isolates the controller from the prediction.
+**Kill criterion.** No p99 improvement at equal wasted bytes retires it.
+**Depends.** P14.2. **Acceptance evidence.** the burst trace with p99 and wasted
+bytes for all three arms. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.19 — Transient Neural Views
+
+**What.** Dependency-tracked cached **derived representations** with invalidation
+and incremental refresh.
+**Why.** Derived representations are the cache nobody instruments; a stale view
+is a silent correctness bug, and a re-computed view is a hidden cost. Both are
+measurable on the executor.
+**Decisive experiment.** Dependency-tracked refresh versus recompute-always on a
+workload with repeated derived reads; report recompute count and **staleness
+incidents**.
+**Falsifying control.** Cache keyed by **content hash only** (no dependency
+tracking), which must show either more recomputes or a stale read.
+**Kill criterion.** If no stale read is possible in the workload, the dependency
+tracking is unnecessary: retire it and keep the content-keyed cache.
+**Depends.** P16.16. **Acceptance evidence.** the recompute/staleness receipt and
+the content-hash control. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.20 — Progressive Neural Precision
+
+**What.** A resident **coarse approximation** plus successive-refinement
+correction data fetched on demand; compare with **fixed quantisation at equal
+bytes and equal task loss**.
+**Why.** The fair comparison is two-dimensional — bytes *and* loss — and almost
+every precision claim fixes one and varies the other.
+**Decisive experiment.** Progressive versus fixed precision at equal bytes, with
+the measured loss reported for both.
+**Falsifying control.** (i) fixed quantisation at the same byte budget; (ii) a
+refinement schedule with **random bit allocation**, which separates progressive
+loading from progressive allocation.
+**Kill criterion.** If progressive is not better at equal bytes and equal loss,
+retire it.
+**Depends.** P5.5, P13.1. **Acceptance evidence.** the two-dimensional receipt.
+**Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P16.21 — Evidence-to-Evict
+
+**What.** Sequential hypothesis testing for eviction: gather evidence until the
+decision's confidence suffices, then stop.
+**Why.** Adaptive evidence gathering is the cheapest way to cut controller cost,
+and the error rate at a fixed budget is a fair comparison.
+**Decisive experiment.** Expected probes to reach a decision at a fixed error
+rate, versus a fixed-probe policy.
+**Falsifying control.** Fixed probe count equal to the **mean** of the adaptive
+policy.
+**Kill criterion.** If the adaptive policy's error rate at that budget is worse,
+retire it.
+**Depends.** P16.6. **Acceptance evidence.** probe-count distributions and the
+error rate at matched budget. **Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+### P16.22 — False-Activation-Rate Control (CFAR-style)
+
+**What.** Adapt activation and prefetch thresholds to the **noise regime**; bound
+wasteful activations, and **measure missed useful activations too**.
+**Why.** A threshold tuned on a quiet regime is a false-alarm machine in a noisy
+one; a threshold tuned on the noisy regime misses everything in the quiet one.
+The pair of numbers is the claim (the principle is secondary evidence only; row 156).
+**Decisive experiment.** Sweep the noise regime; compare adaptive versus fixed
+thresholds across regimes.
+**Falsifying control.** A fixed threshold tuned on the **noisiest** regime (the
+conservative choice) and one tuned on the quietest.
+**Kill criterion.** If the adaptive scheme does not dominate both fixed choices
+across the regime sweep (Pareto, not average), retire it.
+**Depends.** P16.2. **Acceptance evidence.** the regime sweep with both error
+kinds. **Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+### P16.23 — Layerwise Error Allowances
+
+**What.** Allocate a **total output-error budget** non-uniformly across layers by
+sensitivity **and interaction**.
+**Why.** Uniform precision is the default and it is not optimal by construction;
+interaction is the part published learned-budget work (row 148) does not report.
+**Decisive experiment.** Allocated allowances versus uniform at equal total error
+budget; report output error and bytes.
+**Falsifying control.** **Sensitivity-only** allocation (no interaction term).
+**Kill criterion.** If the interaction term does not improve at equal budget,
+drop it and keep the sensitivity allocation.
+**Depends.** P16.5, P5.5. **Acceptance evidence.** the allocation receipt with
+sensitivity and interaction contributions separated. **Status.** open.
+**Effort.** M. **Tier.** CANDIDATE.
+
+### P16.24 — Interaction Covering Arrays
+
+**What.** Pairwise and triple **omission testing** with adaptive expansion around
+suspicious combinations. Explicit rule: **do not assume software-fault statistics
+transfer to neural capability** — the NIST result (row 157) is about software.
+**Why.** If interactions do transfer, a covering array finds damaging
+combinations with far fewer evaluations than random sampling; if they do not, the
+item must fail loudly rather than quietly borrowing a software constant.
+**Decisive experiment.** Combinations needed to find `k` damaging sets, versus
+random sampling at equal evaluation count.
+**Falsifying control.** (i) random sampling at equal N; (ii) a **software** dataset
+where the covering array's advantage is known, which validates the implementation
+before it is applied to neurons.
+**Kill criterion.** If damaging neural combinations are **not enriched** over
+random, the transfer assumption is false: retire the transfer and keep the
+testing tool.
+**Depends.** P12.9. **Acceptance evidence.** the enrichment statistic with its
+null distribution, and the software validation. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P16.25 — Computational Resource Markets
+
+**What.** Dynamic **dual prices** for VRAM, I/O and FLOPs; each operation
+justifies its demand at the current price; compare with fixed budgets.
+**Why.** Fixed budgets cannot express "this token needs bytes more than FLOPs",
+and price oscillation is a measurable cost rather than an assumed benefit.
+**Decisive experiment.** Same trace and total resources; compare throughput and
+quality and report **price stability** (oscillation amplitude).
+**Falsifying control.** Fixed budgets with the **best static split** (chosen
+post hoc, which favours the control).
+**Kill criterion.** If price oscillation costs more than the allocation gain,
+retire the market and keep the static split.
+**Depends.** P16.34, P4.1. **Acceptance evidence.** the price trajectory and the
+paired comparison. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P16.26 — Beneficial Path Suppression (Braess-style)
+
+**What.** Test whether **disabling an optional route** improves throughput or
+quality under contention, and distinguish **congestion relief** from a **neural
+quality change**.
+**Why.** The plan keeps this because it is the one place where *removing* an
+option could help for a reason other than compression — and because the
+distinction is exactly the anti-pattern P18.12 exists to prevent.
+**Depends.** a contended multi-route system that does not exist yet. **Acceptance
+evidence.** not specified; no schedule. **Status.** open. **Effort.** not
+estimated. **Tier.** HYPOTHESIS (the literature is secondary only; row 158).
+
+### P16.27 — Compute Peak Shaving
+
+**What.** Defer consolidation, evaluation and prefetch **away from latency-critical
+periods**; measure p99 at equal total work.
+**Why.** Same total work, different tail, and the tail is what a user sees.
+**Decisive experiment.** Shaved versus unshaved schedules at equal total work.
+**Falsifying control.** Deferral by a **fixed timer** with the same deferred
+volume — separates *shaving* from *deferring*.
+**Kill criterion.** No p99 improvement at equal work retires it.
+**Depends.** P16.34, P14.2. **Acceptance evidence.** the schedule receipt with
+p99 and total work. **Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+### P16.28 — Critical-Path Prefetching
+
+**What.** Prefetch **only** data on the likely critical path that cannot be
+fetched within its slack.
+**Why.** Prefetching by frequency wastes bandwidth on data that is already ready;
+"cannot be fetched within slack" is a decidable filter on a known plan.
+**Decisive experiment.** p99 stall at equal prefetch bytes versus
+prefetch-by-frequency.
+**Falsifying control.** **Slack-only** policy with no critical-path estimate.
+**Kill criterion.** If no stall is attributable to a critical-path fetch, retire
+it.
+**Depends.** P16.16, P14.2. **Acceptance evidence.** the attribution of every
+stall to a named dependency. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.29 — Rare-Capability Reserves
+
+**What.** Reserve capacity for **low-frequency, high-consequence** tasks; measure
+**worst-category loss alongside the average**.
+**Why.** Every average-based policy in this program would trade a rare category
+for a common one, and the trade is invisible unless the worst category is
+reported.
+**Decisive experiment.** Reserve versus no-reserve at equal average cost.
+**Falsifying control.** Reserve sized by **frequency only**.
+**Kill criterion.** If reserves do not improve worst-category loss at equal
+average cost, retire them.
+**Depends.** P12.11, P16.9. **Acceptance evidence.** the per-category loss table
+with the worst category named. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.30 — Capability Inventory Networks
+
+**What.** Place components across VRAM/RAM/NVMe by **joint necessity,
+substitutability and recovery lead time**.
+**Why.** Placement by size or frequency ignores that two components can cover for
+each other and that one takes longer to reload.
+**Decisive experiment.** Placement versus size-only placement on the same trace;
+measure cold-byte p95 and reload stalls.
+**Falsifying control.** Placement by **frequency only**, and a placement that
+ignores lead time.
+**Kill criterion.** If lead time and substitutability do not change placement
+outcomes, the inventory model is decoration: retire it.
+**Depends.** P4.2, P8.4. **Acceptance evidence.** the placement receipt with p95
+and stalls, and the two ablations. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P16.31 — Proof-Aware Memory Scheduling
+
+**What.** Use **exact dependency analysis where the graph is known** and learned
+prediction **only** for genuinely uncertain future paths.
+**Why.** A prediction where a proof is available is a risk taken for nothing, and
+the fraction of decisions that were provable is the number that says whether the
+hybrid is real.
+**Decisive experiment.** Hybrid versus learned-only versus exact-only; report
+mispredictions, stalls, and the **provable fraction**.
+**Falsifying control.** Learned-only with the same prediction budget.
+**Kill criterion.** If the provable fraction is negligible, the hybrid is
+learned-only with overhead: retire it.
+**Depends.** P16.16, P16.28. **Acceptance evidence.** the provable-fraction
+receipt and the three-way comparison. **Status.** open. **Effort.** L.
+**Tier.** CANDIDATE.
+
+### P16.32 — Biological control principles
+
+**What.** Six principles kept as a design vocabulary: **homeostatic hysteresis**
+(P16.11), **immune negative selection** (P16.12), **metabolic global allocation**
+(P16.25), **niche partitioning** to reduce expert redundancy (P16.5), **cellular
+repair before recomputation** (P16.14), **developmental specialisation with
+dormancy** (P16.9).
+**Why.** The plan keeps them because each names a control pattern the engineering
+literature does not, and because writing them down stops them being rediscovered
+as inventions.
+**Evidence caveat (mandatory).** Every one of the eight records behind this item
+is **secondary** (`docs/PRIOR-ART-AND-NOVELTY.md` rows 161–168), and one —
+microglial pruning — is weaker than the plan's original wording: neither fetched
+extract attributes pruning to microglia. No biological quantity transfers to a
+neural system in this plan, and no item may cite one as a hyperparameter source.
+**Depends.** none; it is vocabulary. **Acceptance evidence.** none claimed.
+**Status.** open. **Effort.** not estimated. **Tier.** HYPOTHESIS.
+
+### P16.33 — Protected Capability Portfolio
+
+**What.** Capability-constrained selection with **per-category risk allowances**;
+compare against compute-matched sparse baselines.
+**Why.** It is the policy form of P16.12 and the reporting form of P16.29: a
+selection rule that cannot state its per-category allowance is an average in
+disguise.
+**Decisive experiment.** Constrained selection versus unconstrained at equal
+average cost; report worst-category loss.
+**Falsifying control.** Unconstrained selection with the **same average** budget.
+**Kill criterion.** If the constraint does not change worst-category loss, record
+it as a reporting policy rather than a mechanism and retire it as a claim.
+**Depends.** P16.12, P16.29, P12.11. **Acceptance evidence.** the per-category
+risk table for both arms. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P16.34 — Subtractive-intelligence experiment lab (`selvedge-eviction-lab`)
+
+**What.** A Rust crate that runs a **trace-driven, deterministic** comparison of
+LRU, LFU, adaptive conventional caching, Bayesian cost-based selection, the
+negative forest, and the DSFB-informed variants — with **Belady as the offline
+oracle**. Metrics: miss rate, bytes, reload stalls, p95/p99, **eviction regret**,
+controller CPU cost, calibration, and performance **after abrupt regime
+changes**. **First phase uses reversible VRAM eviction only** — no permanent
+neural deselection — and the **DSFB-feature ablation** is mandatory.
+**Why.** Every WS16 claim is a comparison under one trace, and the only way to
+make those comparisons attributable is one binary, one trace format, one
+replay contract. The published baseline (row 145) and the published warning
+(row 151) both apply: the lab must reproduce the published learner and must state
+its replay semantics.
+**Decisive experiment.** All policies on identical traces at identical capacity,
+deterministic replay, Belady as the ceiling.
+**Falsifying control.** The DSFB-feature ablation; the PARROT-style learner (row
+145) as the published baseline; a **replay-semantics perturbation** (per-access
+vs fused-event) that must be reported, since row 151 shows it changes
+conclusions.
+**Kill criterion.** If no policy beats LRU on the registered metric set **and**
+the ablation shows the DSFB features are not responsible, the lab has answered
+its question negatively; it is kept as a benchmark and no WS16 claim is made.
+**Depends.** P16.2 (interface only), P14.1, `docs/SIMULATOR.md` (format and
+calibration), `docs/STORAGE.md` (tier model). **Acceptance evidence.** the crate's
+CPU tests, the oracle replay validation, and one receipt per policy with all nine
+metrics. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P16.35 — Cross-project integration: the observer–controller interface
+
+**What.** Specify the interface by which a **deterministic residual watchdog
+(DSFB)** observes SELVEDGE execution and by which a **guarded policy controller**
+consumes its output: read-only observation points, the fingerprint record, the
+provenance fields, the controller's request/deny protocol, and the rule that the
+**observer must never mutate the running model**.
+**Recorded fact.** `github.com/infinityabundance/dsfb` is a separate repository
+implementing residual diagnostics for sensor fusion, "without ML or LLM", as a
+read-only observer (ledger row 169). **Only the interface is specified here**;
+DSFB is not modified, vendored or re-implemented in this repository.
+**Why.** The transfer from sensor residuals to execution residuals is the
+hypothesis, and it must be a *boundary* with an inert observer rather than a
+shared mutable state.
+**Decisive experiment.** None in this repository (the interface's first consumer
+is P16.2/P16.6 inside the lab). The interface test is structural: a reader runs
+over a trace and emits fingerprints with no write path to the model.
+**Falsifying control.** If the observer needs **any** mutation hook to produce a
+useful fingerprint, the interface is wrong and must be redesigned before any
+result is reported.
+**Depends.** P16.2. **Acceptance evidence.** the interface document, the inert
+observer test, and a statement that DSFB's revision used is pinned and unchanged.
+**Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+## 22. WS17 — Phenom collaboration surface (interface only)
+
+**Scope rule.** This workstream writes **boundary documents**. Nothing in this
+repository implements Phenom, and nothing in this workstream claims that Phenom
+implements obligation-directed computation. The repository was fetched on
+2026-11-16 and its README describes a "Phenomenological Workspace monorepo" and
+"conversation operating system" with storage-tier, event-sourcing, graph, CRDT and
+rendering crates — it contains **no occurrence of "obligation" or "compartment"**
+(ledger row 170). WS17 is therefore a *proposal to* Phenom, and P17.2's mapping is
+a cross-project hypothesis.
+
+### P17.1 — The `phenom-obligation` boundary proposal
+
+**What.** A written boundary with five types — `Obligation`,
+`OperatorDescriptor`, `ExecutionPlan`, `EvidenceReference`, `ResolutionReport` —
+and three invariants: (i) **every selected operation records the obligation it
+serves and its measured cost**; (ii) **every satisfied obligation references the
+evidence that discharged it**; (iii) **unresolved obligations remain observable**
+in the report rather than being silently dropped.
+**Why.** The invariants are the whole value: an obligation system without (i) is
+an unaccounted planner, without (ii) it is an unsupported-claim generator, and
+without (iii) it hides its own failures. They also give the A1 measurement
+(P17.3) something to count.
+**Decisive experiment.** None in this repository; the first consumer is P15.1.
+The structural test is that a `ResolutionReport` **cannot be constructed** without
+the obligation, the operation, the cost and the evidence link, and that an
+unresolved obligation is representable.
+**Falsifying control.** A schema that omits `EvidenceReference` and a planner that
+emits a report with unresolved obligations dropped — both must be rejected by the
+invariant checks, or the invariants are decorative.
+**Depends.** P15.1 (as its first consumer), P17.4. **Acceptance evidence.** the
+boundary document and the invariant table, plus an issue filed against Phenom for
+any type Phenom's existing crates cannot express. **Status.** open. **Effort.** S.
+**Tier.** CANDIDATE.
+
+### P17.2 — The six Phenom compartments, mapped
+
+**What.** A table mapping six Phenom compartments to SELVEDGE mechanisms, with an
+explicit header stating that the mapping is a **cross-project hypothesis** and not
+a description of either system.
+**Why.** Two projects converging on the same vocabulary is either a shared
+mechanism or a shared word; the ledger's rule (an identity is wrong until a
+fetched record supports it) applies to architecture names as much as to papers.
+**Decisive experiment.** None; the table is a document, and its status is
+hypothesis until P17.1's invariants hold on both sides.
+**Depends.** P17.1. **Acceptance evidence.** the table with one row per
+compartment, each row citing the SELVEDGE mechanism and the Phenom crate it maps
+to (or "none located"). **Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+### P17.3 — Shared measurement contract for A1
+
+**What.** One metric set used by both projects for the A1 (obligation closure)
+comparison: **task completion**, **unsupported-claim rate**, **obligation
+coverage**, **extra model calls**, **latency** — each with its definition, its
+denominator and the fixture it is computed on.
+**Why.** A cross-project comparison with two metric definitions is not a
+comparison, and the plan's own history (P14.6: correctness is not
+reference-continuation likelihood) is the reason the contract is written before
+the experiment.
+**Decisive experiment.** None; the contract is checked by computing both numbers
+from one stored receipt and showing they are not conflated.
+**Falsifying control.** A contract that reports a single "score" — rejected by
+definition.
+**Depends.** P17.1, P14.6. **Acceptance evidence.** the contract document and a
+worked example over a stored receipt. **Status.** open. **Effort.** S.
+**Tier.** CANDIDATE.
+
+### P17.4 — A written statement of what A1 measures
+
+**What.** A one-page statement, in both repositories' documents, that
+obligation-directed computation tests **system-level task completion**, not neural
+efficiency: the model is held fixed, the comparison is against the same model with
+retrieval and a fixed workflow, and no parameter, FLOP or bytes-per-token claim is
+made.
+**Why.** Without it, a system-level win will be reported as a model win — the
+anti-pattern P18.12 exists to prevent, in the direction that is hardest to
+notice.
+**Decisive experiment.** None; the statement is a precondition of P15.1 being
+reportable at all.
+**Depends.** none. **Acceptance evidence.** the statement, dated, in this
+repository's `docs/LIMITATIONS.md` and in the A1 pre-registration.
+**Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+## 23. WS18 — Experiment matrix and incentives
+
+**Rule.** Every item here is one registration, one run, one receipt. The matrix
+exists so that no WS15/WS16 mechanism can be reported without its comparator, and
+so that a system-level win and a neural win are structurally hard to confuse.
+
+### P18.1 — A1: obligation closure vs same-model retrieval + fixed workflow
+
+**What.** The A1 experiment of P15.1. **Hypothesis.** Obligation-directed planning
+produces more completed tasks per unit cost than the same model with the same
+evidence and a fixed workflow. **Control.** Same evidence, same order; shuffled
+obligations. **Depends.** P15.1, P17.1, P17.3. **Acceptance evidence.** the
+five-metric contract receipt (P17.3) for every arm. **Status.** open.
+**Effort.** L. **Tier.** CANDIDATE.
+
+### P18.2 — A2: shared field recurrence vs FLOP-matched dense recurrence
+
+**What.** The P15.2 experiment, with the FLOP equality printed. **Control.**
+Fixed depth at the same mean operator applications; random conditioning.
+**Depends.** P15.2. **Acceptance evidence.** paired receipts with the operator-
+application count. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P18.3 — A3: operator grammar vs parameter/FLOP-matched sparse MoE
+
+**What.** The P15.4 experiment on the **unseen-combination** split. **Control.**
+Permuted type signatures; the seen-combination split reported alongside.
+**Depends.** P15.4. **Acceptance evidence.** the combination manifest hash and the
+two splits. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P18.4 — A4: constraint repair vs same-model ordinary verification
+
+**What.** The P15.3 experiment at matched model calls. **Control.** The same
+constraints as a post-filter; frozen `λ_j`.
+**Depends.** P15.3, P14.5. **Acceptance evidence.** per-item verifier outcomes
+before and after repair. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P18.5 — A5: combined architecture vs the best individual mechanism
+
+**What.** The only comparison that can justify integration: the P15.9 combination
+against its **best individual part**, not against the baseline. Running this
+before the parts have individually won is the failure P12.16 names.
+**Control.** Each part alone, at the combination's total cost.
+**Depends.** P15.9, P18.1–P18.4. **Acceptance evidence.** one receipt per part and
+the combination, at equal cost. **Status.** open. **Effort.** XL.
+**Tier.** CANDIDATE.
+
+### P18.6 — Cut-set discovery from omission traces (ACTIVE; the one permitted immediate diagnostic)
+
+**What.** Mine the **existing** omission artifacts — `results/M1-FRONTIER.md`,
+`results/M2-SELECTORS.md` and the stored T2 per-item rows — for **minimal
+destructive omission sets**: subsets `S` where `L_k(S) > ε_k` while every proper
+subset is safe, task-conditioned, with the subset's own receipt cited. The output
+is a candidate cut-set list, an evaluation-count accounting, and — critically — a
+**replication split** (discover on one half of the stored items, confirm on the
+other).
+**Why.** It is the only thing in the four new workstreams that can produce new
+knowledge **without a training run and without a new model**, and it is the input
+P16.5 and P16.12 need. It is also honest about its own limit: stored M1/M2
+traces are likelihood measurements of whole-group omission, so a cut set found
+there is a *candidate* for the capability court, not a capability cut set.
+**Boundary of the exception.** CPU only; the stored receipts only; **no model
+execution**, because `H*` owns the GPU. A variant that re-executes a model is
+P16.5 and is gated.
+**Falsifying control.** Random subsets of equal size drawn from the same stored
+items; if the "destructive" sets are no more harmful than random ones, the trace
+carries no cut-set structure and the result is negative.
+**Kill criterion.** If no minimal destructive set replicates out of sample, report
+the negative and do not feed anything to P16.12.
+**Depends.** P12.2 (the `H*`-target diagnostics, which define what an omission
+trace means), P6.5. **Acceptance evidence.** a CPU receipt in the Docker court
+with an explicit `SELVEDGE_MEM` limit, naming the artifacts and their hashes, the
+per-subset safety table, the replication split, and the evaluation count.
+**Status.** open (not started). **Effort.** M. **Tier.** **ACTIVE**.
+
+### P18.7 — Return-point cache vs conventional policies in the simulator
+
+**What.** P16.11's controller, run **inside `selvedge-sim`** on the trace format
+and calibration already validated (Court F), against LRU/LFU/least-stale.
+**Control.** Fixed hysteresis; and a policy with no return-point state.
+**Depends.** P16.11, `docs/SIMULATOR.md` §5. **Acceptance evidence.** a simulated
+receipt, labelled simulated, with the held-out replay validation in the same file.
+**Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P18.8 — Compiler/pebble-aware memory planning
+
+**What.** P16.17's scheduling, evaluated on the runtime's own plan rather than on
+a synthetic trace, with measured fetch costs.
+**Control.** Recompute-always; retain-always.
+**Depends.** P16.17, P14.1, P14.2. **Acceptance evidence.** the plan receipt with
+the measured cost table. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+
+### P18.9 — Typed execution obligations with liveness (Phenom-side)
+
+**What.** P16.16's certificates on an executable operator graph, with the
+obligation types of P17.1: an operation's obligation, its cost, and its liveness
+interval in one record.
+**Control.** Lifetime-based eviction; a conservative certificate.
+**Depends.** P16.16, P17.1. **Acceptance evidence.** the executor receipt and the
+liveness audit. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P18.10 — Trained multigrid correction architecture
+
+**What.** P16.13 as a **trained** architecture, with the controller and the
+correction hierarchy learned jointly; the comparison is against matched recurrence
+and early exit, not against a dense baseline alone.
+**Control.** Fixed-depth correction at the mean chosen depth.
+**Depends.** P16.13, P12.1. **Acceptance evidence.** the paired receipt with the
+correction histogram. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+
+### P18.11 — Unified resource-price controller
+
+**What.** P16.25 as one controller over VRAM, I/O and FLOPs on the runtime path,
+with the price trajectory reported.
+**Control.** The best static split, chosen post hoc.
+**Depends.** P16.25, P14.2. **Acceptance evidence.** the trajectory receipt and
+the paired comparison. **Status.** open. **Effort.** L. **Tier.** CANDIDATE.
+
+### P18.12 — Anti-pattern guard
+
+**What.** A reporting rule with two clauses, applied to every WS15–WS18 result:
+**(i) no cache-policy win may be presented as a neural-capability win**, and
+**(ii) no neural win may be presented as a system-capability win**. Operationally:
+a result that holds bytes fixed and varies the policy reports a *system* result;
+a result that holds the system fixed and varies the model reports a *neural*
+result; a result that varies both is two results and is reported as two.
+**Why.** This is the failure the whole plan is arranged against — and it is
+cheaper to state once than to catch in review, because the two kinds of win look
+identical in a table.
+**Decisive experiment.** None; the rule has no execution surface until a claim
+exists. It becomes `ACTIVE` at the first such claim, and P14.6's two-column rule
+(verified correctness vs reference-continuation likelihood) is its sibling.
+**Depends.** P6.3, P14.6. **Acceptance evidence.** a review checklist in
+`docs/LIMITATIONS.md` and a per-result statement of which kind of claim is made.
+**Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+
+### 23.1 Closing: what the matrix does not do
+
+The matrix does **not** schedule anything. No item in WS15–WS18 other than P18.6
+may start before the gate in §20.0 opens, and the matrix is written now so that
+when it opens the program cannot substitute a plausible new experiment for the
+registered one. **Distance to a frontier claim: one unrun registered verdict plus
+one executed capability run; no WS15–WS18 item shortens it.**
