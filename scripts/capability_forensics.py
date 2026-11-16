@@ -64,6 +64,17 @@ def pairs(values: list, flag: str) -> dict:
     return named
 
 
+def revision() -> str:
+    """The commit this receipt was produced at (perf-number blocks cite it)."""
+    import subprocess
+
+    try:
+        return subprocess.run(["git", "-C", REPO, "rev-parse", "HEAD"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
 def tokenizer_helpers(hf_root: str):
     """(tokenize, decode, provenance) using the pinned Qwen3 tokenizer.
 
@@ -195,6 +206,7 @@ def main(argv: list[str]) -> int:
         "schema": SCHEMA,
         "stamp": stamp_now(),
         "created_utc": utc_now(),
+        "revision": revision(),
         "command": " ".join(sys.argv),
         "suite": {
             "root": os.path.abspath(args.suite),

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 392, in main
+    result = court.check(generations, args.suite, args.out,
+                         preregistration=args.preregistration,
+    ...<3 lines>...
+                         partial_credit=args.partial_credit,
+                         formats_filter=formats_filter)
+  File "/work/oracle/capability/court.py", line 691, in check
+    raise CourtError("the pre-registration changed after generation")
+capability.court.CourtError: the pre-registration changed after generation

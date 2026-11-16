@@ -42,6 +42,10 @@ SCHEMA_PREREG = "selvedge/capability-preregistration/v1"
 #: acceptance window rather than the scored endpoint; it is a different contract
 #: and is never accepted in place of the scored pre-registration.
 SCHEMA_PREREG_CALIBRATION = "selvedge/capability-calibration-preregistration/v1"
+#: The S30 likelihood-selection instrument registration (v2 of the calibration
+#: preregistration). It binds the selection prompt variant, the ranking mode, the
+#: entropy screen and the selection formats; it is not the v1 endpoint contract.
+SCHEMA_PREREG_INSTRUMENT = "selvedge/capability-calibration-preregistration/v2"
 
 DEFAULT_MAX_NEW_TOKENS = 3072
 DEFAULT_STOPS = ("\n```\n\n## ",)
@@ -427,7 +431,11 @@ def select(adapter, suite_root: str, out: str,
     position = scoring_module.position_audit(records)
     registration_block = None
     if preregistration:
-        registration = load_preregistration(preregistration)
+        ## The v2 contract has its own schema and its own verifier. It is loaded
+        ## as a document rather than through `load_preregistration`, which is the
+        ## v1 endpoint contract and must keep refusing a different schema.
+        with open(preregistration, "r", encoding="utf-8") as handle:
+            registration = json.load(handle)
         problems = scoring_module.verify_registration(
             registration, manifest["suite_sha256"],
             sorted({record["format"] for record in records}))
@@ -512,6 +520,8 @@ def select(adapter, suite_root: str, out: str,
         "instrument": {
             "name": "likelihood-selection",
             "version": "v2",
+            "prompt_variant": scoring_module.PROMPT_VARIANT,
+            "primary_mode": scoring_module.PRIMARY_MODE,
             "primary_metric": format_module.METRIC_EXECUTABLE,
             "diagnostic_metric": format_module.METRIC_DIAGNOSTIC,
             "margin_is_diagnostic": True,
@@ -672,7 +682,10 @@ def check(generations: dict, suite_root: str, out: str,
         # registered threshold), then require that the run was actually made
         # against it. A registered run with no recorded digest is unchecked, so
         # it is refused rather than silently accepted.
-        prereg_problems = verify_preregistration(prereg, manifest)
+        prereg_problems = verify_preregistration(
+            prereg, manifest,
+            formats_seen=sorted({format_module.task_format(task)
+                                 for task in tasks.values()}))
         if prereg_problems:
             raise CourtError(
                 "the pre-registration does not match this suite or its thresholds: "
@@ -984,14 +997,22 @@ def registration_template(manifest: dict) -> dict:
 def load_preregistration(path: str) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
-    if payload.get("schema") not in (SCHEMA_PREREG, SCHEMA_PREREG_CALIBRATION):
-        raise CourtError(f"{path}: schema must be {SCHEMA_PREREG!r} or "
-                         f"{SCHEMA_PREREG_CALIBRATION!r}")
+    if payload.get("schema") not in (SCHEMA_PREREG, SCHEMA_PREREG_CALIBRATION,
+                                     SCHEMA_PREREG_INSTRUMENT):
+        raise CourtError(f"{path}: schema must be {SCHEMA_PREREG!r}, "
+                         f"{SCHEMA_PREREG_CALIBRATION!r} or "
+                         f"{SCHEMA_PREREG_INSTRUMENT!r}")
     return payload
 
 
-def verify_preregistration(prereg: dict, manifest: dict) -> list:
+def verify_preregistration(prereg: dict, manifest: dict,
+                           formats_seen: list | None = None) -> list:
     problems = []
+    if prereg.get("schema") == SCHEMA_PREREG_INSTRUMENT:
+        ## The instrument contract is verified by the module that applies it, so a
+        ## document and the code that consumes it cannot drift apart.
+        return scoring_module.verify_registration(
+            prereg, manifest["suite_sha256"], list(formats_seen or []))
     if prereg.get("schema") == SCHEMA_PREREG_CALIBRATION:
         # The calibration contract binds the calibration suite and the metric
         # separation; the endpoint thresholds are registered separately and are

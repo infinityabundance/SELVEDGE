@@ -1,0 +1,546 @@
+{
+  "arms": [
+    "D",
+    "X"
+  ],
+  "cells": {
+    "diagnostic-identification": {
+      "accuracy_spread": 0.0,
+      "excluded_by_screen": false,
+      "non_saturated": true,
+      "non_zero": true,
+      "per_arm_accuracy": {
+        "D": 0.14285714285714285,
+        "X": 0.14285714285714285
+      }
+    },
+    "patch-selection": {
+      "accuracy_spread": 0.0,
+      "excluded_by_screen": false,
+      "non_saturated": true,
+      "non_zero": true,
+      "per_arm_accuracy": {
+        "D": 0.4782608695652174,
+        "X": 0.4782608695652174
+      }
+    }
+  },
+  "command": "scripts/capability_pilot_analysis.py --result D=results/capability/pilot/D/result.json --result X=results/capability/pilot/X/result.json --selection D=results/capability/pilot/D/selection.json --selection X=results/capability/pilot/X/selection-9g.json --out results/capability/pilot/pilot-analysis-20261116T173000Z.json",
+  "created_utc": "2026-11-16T16:51:10Z",
+  "entropy_screen": {
+    "by_arm": {
+      "D": {
+        "diagnostic-identification": {
+          "counts": {
+            "A": 4,
+            "B": 3,
+            "C": 4,
+            "D": 3
+          },
+          "discriminating": true,
+          "distinct_answers": 4,
+          "entropy_bits": 1.985228,
+          "format": "diagnostic-identification",
+          "items": 14,
+          "max_modal_share": 0.9,
+          "min_entropy_bits": 0.1,
+          "modal_answer": "A",
+          "modal_share": 0.285714,
+          "screen": "scored"
+        },
+        "patch-selection": {
+          "counts": {
+            "A": 13,
+            "B": 2,
+            "C": 8
+          },
+          "discriminating": true,
+          "distinct_answers": 3,
+          "entropy_bits": 1.301574,
+          "format": "patch-selection",
+          "items": 23,
+          "max_modal_share": 0.9,
+          "min_entropy_bits": 0.1,
+          "modal_answer": "A",
+          "modal_share": 0.565217,
+          "screen": "scored"
+        }
+      },
+      "X": {
+        "diagnostic-identification": {
+          "counts": {
+            "A": 4,
+            "B": 4,
+            "C": 3,
+            "D": 3
+          },
+          "discriminating": true,
+          "distinct_answers": 4,
+          "entropy_bits": 1.985228,
+          "format": "diagnostic-identification",
+          "items": 14,
+          "max_modal_share": 0.9,
+          "min_entropy_bits": 0.1,
+          "modal_answer": "A",
+          "modal_share": 0.285714,
+          "screen": "scored"
+        },
+        "patch-selection": {
+          "counts": {
+            "A": 13,
+            "B": 3,
+            "C": 7
+          },
+          "discriminating": true,
+          "distinct_answers": 3,
+          "entropy_bits": 1.370862,
+          "format": "patch-selection",
+          "items": 23,
+          "max_modal_share": 0.9,
+          "min_entropy_bits": 0.1,
+          "modal_answer": "A",
+          "modal_share": 0.565217,
+          "screen": "scored"
+        }
+      }
+    },
+    "excluded": [],
+    "max_modal_answer_share": 0.9,
+    "min_answer_entropy_bits": 0.1
+  },
+  "informative_formats": [
+    "patch-selection",
+    "diagnostic-identification"
+  ],
+  "inputs": {
+    "results": {
+      "D": {
+        "path": "results/capability/pilot/D/result.json",
+        "sha256": "65991d46ac1b1fdb7d2bb7b972af2e03ddd7ae3a59c018b096d6d420a3153ec2"
+      },
+      "X": {
+        "path": "results/capability/pilot/X/result.json",
+        "sha256": "53ab6a20e29ec1d1c371e58ffcbc10e7f82bcd58eec323d4572b6b51da5b606f"
+      }
+    },
+    "selections": {
+      "D": {
+        "path": "results/capability/pilot/D/selection.json",
+        "revision": "dddbc8e0bc58a2047bd1877d5676c5af34d6280e",
+        "sha256": "c45b119f2cf4946084ecf6da06827875b3aad2327700acfeb2cb025729826842",
+        "stamp": "20261116T164829Z"
+      },
+      "X": {
+        "path": "results/capability/pilot/X/selection-9g.json",
+        "revision": "dddbc8e0bc58a2047bd1877d5676c5af34d6280e",
+        "sha256": "ea0b138c2a8f6580d00542a993c61e7417a284e29ef5044c393ee380e660cb65",
+        "stamp": "20261116T164947Z"
+      }
+    }
+  },
+  "instrument": {
+    "diagnostic_metric": "verified_diagnostic",
+    "name": "likelihood-selection",
+    "pooled_with_primary": false,
+    "primary_metric": "verified_task_success",
+    "primary_mode": "content-mean"
+  },
+  "item_outcomes": {
+    "both_pass": 10,
+    "discordant_pairs": 2,
+    "executable_items": 23,
+    "neither_pass": 11,
+    "one_arm_only": {
+      "D": 1,
+      "X": 1
+    },
+    "one_arm_only_ids": {
+      "D": [
+        "concurrency-17-compare-exchange-claim--patch"
+      ],
+      "X": [
+        "semantic-01-overlapping-count--patch"
+      ]
+    },
+    "passes": {
+      "D": 11,
+      "X": 11
+    },
+    "sign_test_p": 1.0
+  },
+  "per_arm": {
+    "D": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 2,
+      "margins": {
+        "diagnostic-identification": {
+          "items": 14,
+          "max": 0.44883374132209264,
+          "mean": 0.19089178010786942,
+          "median": 0.1806133784284013,
+          "min": 0.022013515327671485,
+          "passing_items_median": null
+        },
+        "patch-selection": {
+          "items": 23,
+          "max": 0.1264578378992527,
+          "mean": 0.042460774065500514,
+          "median": 0.026617791706516514,
+          "min": 0.0004643988363677576,
+          "passing_items_median": null
+        }
+      },
+      "per_format": {
+        "diagnostic-identification": {
+          "accuracy": 0.14285714285714285,
+          "diagnostic_items": 14,
+          "diagnostic_passes": 2,
+          "executable_ids": [],
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14,
+          "metric": "verified_diagnostic",
+          "pass_ids": [
+            "borrow-13-mutate-through-shared--diag",
+            "repo-14-crossmodule-borrow--diag"
+          ]
+        },
+        "patch-selection": {
+          "accuracy": 0.4782608695652174,
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_ids": [
+            "borrow-03-self-referential-window--patch",
+            "borrow-05-temporary-lifetime--patch",
+            "borrow-13-mutate-through-shared--patch",
+            "concurrency-11-cell-not-sync--patch",
+            "concurrency-14-poisoned-mutex--patch",
+            "concurrency-17-compare-exchange-claim--patch",
+            "deps-07-feature-conflict--patch",
+            "deps-09-disable-default-features--patch",
+            "deps-14-workspace-inheritance--patch",
+            "failing-01-chunk-boundary--patch",
+            "failing-03-overflow-boundary--patch",
+            "failing-10-last-duplicate-index--patch",
+            "migrate-06-error-variant--patch",
+            "migrate-12-option-result-change--patch",
+            "migrate-13-const-generic--patch",
+            "repo-09-result-propagation--patch",
+            "repo-14-crossmodule-borrow--patch",
+            "repo-18-moved-across-modules--patch",
+            "semantic-01-overlapping-count--patch",
+            "semantic-07-csv-quoting--patch",
+            "semantic-09-token-bucket-refill--patch",
+            "traits-02-coherence--patch",
+            "traits-17-method-not-in-trait--patch"
+          ],
+          "executable_items": 23,
+          "executable_passes": 11,
+          "items": 23,
+          "metric": "verified_task_success",
+          "pass_ids": [
+            "borrow-13-mutate-through-shared--patch",
+            "concurrency-11-cell-not-sync--patch",
+            "concurrency-14-poisoned-mutex--patch",
+            "concurrency-17-compare-exchange-claim--patch",
+            "deps-09-disable-default-features--patch",
+            "deps-14-workspace-inheritance--patch",
+            "failing-01-chunk-boundary--patch",
+            "failing-10-last-duplicate-index--patch",
+            "migrate-12-option-result-change--patch",
+            "semantic-09-token-bucket-refill--patch",
+            "traits-17-method-not-in-trait--patch"
+          ]
+        }
+      },
+      "ranking_agreement": {
+        "content-mean": {
+          "accuracy": 0.35135135135135137,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.14285714285714285,
+              "correct": 2,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.4782608695652174,
+              "correct": 11,
+              "items": 23
+            }
+          },
+          "correct": 13,
+          "items": 37,
+          "scored": true
+        },
+        "content-sum": {
+          "accuracy": 0.2702702702702703,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.43478260869565216,
+              "correct": 10,
+              "items": 23
+            }
+          },
+          "correct": 10,
+          "items": 37,
+          "scored": false
+        },
+        "letter-mean": {
+          "accuracy": 0.16216216216216217,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.07142857142857142,
+              "correct": 1,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.21739130434782608,
+              "correct": 5,
+              "items": 23
+            }
+          },
+          "correct": 6,
+          "items": 37,
+          "scored": false
+        },
+        "letter-sum": {
+          "accuracy": 0.16216216216216217,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.07142857142857142,
+              "correct": 1,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.21739130434782608,
+              "correct": 5,
+              "items": 23
+            }
+          },
+          "correct": 6,
+          "items": 37,
+          "scored": false
+        }
+      }
+    },
+    "X": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 2,
+      "margins": {
+        "diagnostic-identification": {
+          "items": 14,
+          "max": 0.3383113522151968,
+          "mean": 0.16620484778881428,
+          "median": 0.18305214196548458,
+          "min": 0.010040622969881952,
+          "passing_items_median": null
+        },
+        "patch-selection": {
+          "items": 23,
+          "max": 0.12805115309894366,
+          "mean": 0.044757593240339635,
+          "median": 0.035862028329324114,
+          "min": 0.00034172377924251984,
+          "passing_items_median": null
+        }
+      },
+      "per_format": {
+        "diagnostic-identification": {
+          "accuracy": 0.14285714285714285,
+          "diagnostic_items": 14,
+          "diagnostic_passes": 2,
+          "executable_ids": [],
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14,
+          "metric": "verified_diagnostic",
+          "pass_ids": [
+            "borrow-13-mutate-through-shared--diag",
+            "repo-14-crossmodule-borrow--diag"
+          ]
+        },
+        "patch-selection": {
+          "accuracy": 0.4782608695652174,
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_ids": [
+            "borrow-03-self-referential-window--patch",
+            "borrow-05-temporary-lifetime--patch",
+            "borrow-13-mutate-through-shared--patch",
+            "concurrency-11-cell-not-sync--patch",
+            "concurrency-14-poisoned-mutex--patch",
+            "concurrency-17-compare-exchange-claim--patch",
+            "deps-07-feature-conflict--patch",
+            "deps-09-disable-default-features--patch",
+            "deps-14-workspace-inheritance--patch",
+            "failing-01-chunk-boundary--patch",
+            "failing-03-overflow-boundary--patch",
+            "failing-10-last-duplicate-index--patch",
+            "migrate-06-error-variant--patch",
+            "migrate-12-option-result-change--patch",
+            "migrate-13-const-generic--patch",
+            "repo-09-result-propagation--patch",
+            "repo-14-crossmodule-borrow--patch",
+            "repo-18-moved-across-modules--patch",
+            "semantic-01-overlapping-count--patch",
+            "semantic-07-csv-quoting--patch",
+            "semantic-09-token-bucket-refill--patch",
+            "traits-02-coherence--patch",
+            "traits-17-method-not-in-trait--patch"
+          ],
+          "executable_items": 23,
+          "executable_passes": 11,
+          "items": 23,
+          "metric": "verified_task_success",
+          "pass_ids": [
+            "borrow-13-mutate-through-shared--patch",
+            "concurrency-11-cell-not-sync--patch",
+            "concurrency-14-poisoned-mutex--patch",
+            "deps-09-disable-default-features--patch",
+            "deps-14-workspace-inheritance--patch",
+            "failing-01-chunk-boundary--patch",
+            "failing-10-last-duplicate-index--patch",
+            "migrate-12-option-result-change--patch",
+            "semantic-01-overlapping-count--patch",
+            "semantic-09-token-bucket-refill--patch",
+            "traits-17-method-not-in-trait--patch"
+          ]
+        }
+      },
+      "ranking_agreement": {
+        "content-mean": {
+          "accuracy": 0.35135135135135137,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.14285714285714285,
+              "correct": 2,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.4782608695652174,
+              "correct": 11,
+              "items": 23
+            }
+          },
+          "correct": 13,
+          "items": 37,
+          "scored": true
+        },
+        "content-sum": {
+          "accuracy": 0.2972972972972973,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.21428571428571427,
+              "correct": 3,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.34782608695652173,
+              "correct": 8,
+              "items": 23
+            }
+          },
+          "correct": 11,
+          "items": 37,
+          "scored": false
+        },
+        "letter-mean": {
+          "accuracy": 0.16216216216216217,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.07142857142857142,
+              "correct": 1,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.21739130434782608,
+              "correct": 5,
+              "items": 23
+            }
+          },
+          "correct": 6,
+          "items": 37,
+          "scored": false
+        },
+        "letter-sum": {
+          "accuracy": 0.16216216216216217,
+          "by_format": {
+            "diagnostic-identification": {
+              "accuracy": 0.07142857142857142,
+              "correct": 1,
+              "items": 14
+            },
+            "patch-selection": {
+              "accuracy": 0.21739130434782608,
+              "correct": 5,
+              "items": 23
+            }
+          },
+          "correct": 6,
+          "items": 37,
+          "scored": false
+        }
+      }
+    }
+  },
+  "power": {
+    "available_items_per_category": {
+      "api-migration": 3,
+      "concurrency": 3,
+      "dependency-compat": 3,
+      "failing-test": 3,
+      "lifetime-borrow": 3,
+      "repo-scale": 3,
+      "semantic-repair": 3,
+      "trait-impl": 2
+    },
+    "baseline": 0.4782608695652174,
+    "categories": 8,
+    "minimum_detectable_effect": {
+      "absolute_effect": 0.329857766750872,
+      "formula": "z_total * sqrt(Var(d) / (categories * n_available))",
+      "relative_to_baseline": 0.6897026032063687
+    },
+    "n_available": 3,
+    "required_n": {
+      "absolute_effect": 0.04782608695652174,
+      "approximation": "normal approximation to the paired composite mean",
+      "baseline": 0.4782608695652174,
+      "categories": 8,
+      "formula": "n = (z_{1-alpha/2} + z_power)^2 * Var(d) / (categories * (baseline * relative_effect)^2)",
+      "level": 0.95,
+      "n_per_category": 142.7069042608925,
+      "n_per_category_ceil": 143,
+      "power": 0.8,
+      "relative_effect": 0.1,
+      "variance_of_paired_difference": 0.332703213610586,
+      "z_total": 2.801585218112968
+    },
+    "shortfall": true,
+    "variance_of_paired_difference": 0.332703213610586
+  },
+  "rendered": {
+    "arm_D_patch": "11 of 23 patch items pass the executable checker (0.4783); 2 of 14 diagnostics verified (0.1429)",
+    "arm_X_patch": "11 of 23 patch items pass the executable checker (0.4783); 2 of 14 diagnostics verified (0.1429)",
+    "baseline": "0.478261",
+    "informative_formats": "patch-selection, diagnostic-identification",
+    "item_outcomes": "23 executable items: 10 passed by both arms, 11 by neither, and 2 by exactly one",
+    "mde": "0.3299 absolute, 0.69x baseline",
+    "n_available": "3",
+    "required_n": "143 per category",
+    "screen": "D/patch-selection entropy 1.302 bits (scored); D/diagnostic-identification entropy 1.985 bits (scored); X/patch-selection entropy 1.371 bits (scored); X/diagnostic-identification entropy 1.985 bits (scored)",
+    "variance": "0.332703"
+  },
+  "schema": "selvedge/capability-pilot/v1",
+  "stamp": "20261116T165110Z",
+  "statement": "a pilot of the instrument, not a capability comparison: per-format accuracy from the executable checker, the entropy screen, and the measured power inputs. The five-arm comparison is not run here.",
+  "suite": {
+    "root": "/work/fixtures/capability-calibrated",
+    "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6"
+  }
+}

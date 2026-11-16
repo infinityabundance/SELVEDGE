@@ -274,6 +274,28 @@ def test_check_recomputes_the_selection_prompt_hash_and_passes_the_ranking_throu
     assert len(result["items"]) == 37
 
 
+def test_check_accepts_the_v2_instrument_registration(tmp_path):
+    receipt = court.select(
+        _FakeArm(), CALIBRATED, str(tmp_path / "selection.json"),
+        score_fn=_reference_scorer, preregistration=REGISTRATION, repo=REPO)
+    assert receipt["preregistration"]["sha256"]
+    result = court.check(
+        receipt, CALIBRATED, str(tmp_path / "result.json"),
+        preregistration=REGISTRATION, runner=_reference_runner,
+        min_category_items=0,
+        formats_filter=[formats.FORMAT_PATCH, formats.FORMAT_DIAGNOSTIC])
+    assert result["anti_gaming"]["prompt_hashes_match"] is True
+    assert result["preregistration"]["sha256"] is not None
+
+
+def test_a_v2_registration_bound_to_another_suite_is_refused():
+    changed = json.loads(json.dumps(_registration()))
+    changed["suite_sha256"] = "0" * 64
+    manifest = suite.build_manifest(CALIBRATED)
+    assert court.verify_preregistration(
+        changed, manifest, [formats.FORMAT_PATCH])
+
+
 class _FakeArm:
     name = "fake-arm"
     kind = "fake"

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_pilot_analysis.py", line 374, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/capability_pilot_analysis.py", line 181, in main
+    "ranking_agreement": ranking_agreement(selections[arm]),
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/capability_pilot_analysis.py", line 135, in ranking_agreement
+    "scored": mode == selection["instrument"]["primary_mode"] or
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+KeyError: 'primary_mode'

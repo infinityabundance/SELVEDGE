@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 379, in main
+    receipt = court.select(
+              ^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 430, in select
+    registration = load_preregistration(preregistration)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 988, in load_preregistration
+    raise CourtError(f"{path}: schema must be {SCHEMA_PREREG!r} or "
+capability.court.CourtError: docs/capability-calibration-preregistration-v2.json: schema must be 'selvedge/capability-preregistration/v1' or 'selvedge/capability-calibration-preregistration/v1'

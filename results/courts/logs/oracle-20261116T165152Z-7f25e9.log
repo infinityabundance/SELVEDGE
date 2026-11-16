@@ -1,0 +1,9 @@
+capability_forensics: wrote results/capability/forensics/forensics-20261116T173500Z.json
+  prompt tokens: max 909 of 4096 limit; 0 item(s) truncated
+  borrow-03-self-referential-window--patch: ok=True example=C reference=B tokens=361
+  borrow-05-temporary-lifetime--patch: ok=True example=C reference=B tokens=347
+  borrow-13-mutate-through-shared--patch: ok=True example=C reference=C tokens=415
+  borrow-03-self-referential-window--diag: ok=True example=B reference=B tokens=332
+  borrow-05-temporary-lifetime--diag: ok=True example=B reference=D tokens=300
+  arm D: patch {'C': 22} diag {'B': 9} -> response_collapse_copies_the_instruction_example
+  arm X: patch {'C': 15} diag {'B': 4} -> response_collapse_copies_the_instruction_example
