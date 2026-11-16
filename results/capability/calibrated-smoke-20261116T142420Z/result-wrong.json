@@ -1,0 +1,5580 @@
+{
+  "anti_gaming": {
+    "checker_access": "separate-process-after-generation",
+    "checker_visible_to_arm": false,
+    "feedback": "none",
+    "few_shot_hygiene": null,
+    "offline_evidence": "no-default-route",
+    "prompt_hashes_match": true,
+    "tool_mode": "no-tools",
+    "tool_parity": "enforced at comparison time",
+    "tools": false
+  },
+  "command": "scripts/capability_court.py --suite fixtures/capability-calibrated check --generations results/capability/calibrated-smoke-20261116T142420Z/generations-wrong.json --partial-credit --min-category-items 0 --preregistration docs/capability-calibration-preregistration-v1.json --out results/capability/calibrated-smoke-20261116T142420Z/result-wrong.json",
+  "created_utc": "2026-11-16T14:25:14Z",
+  "generations": {
+    "adapter": {
+      "accounting": {
+        "active_unique_params": null,
+        "gpu_residency_bytes": null,
+        "host_residency_bytes": null,
+        "measured_io": null,
+        "offline_teacher_construction_cost": null,
+        "optimizer_flops": null,
+        "task_success": null,
+        "total_accessible_capacity": null,
+        "training_tokens": null
+      },
+      "kind": "fake",
+      "name": "fake-calibrated-wrong",
+      "null_reasons": {
+        "active_unique_params": "scripted fake model; no such measurement exists",
+        "gpu_residency_bytes": "scripted fake model; no such measurement exists",
+        "host_residency_bytes": "scripted fake model; no such measurement exists",
+        "measured_io": "scripted fake model; no such measurement exists",
+        "offline_teacher_construction_cost": "scripted fake model; no such measurement exists",
+        "optimizer_flops": "scripted fake model; no such measurement exists",
+        "total_accessible_capacity": "scripted fake model; no such measurement exists",
+        "training_tokens": "scripted fake model; no such measurement exists"
+      },
+      "provenance": {
+        "checkpoint_sha256": null,
+        "source_model_revision": null
+      },
+      "tools": false
+    },
+    "decoding": {
+      "category_filter": null,
+      "feedback": "none",
+      "few_shot_texts": [],
+      "greedy": true,
+      "max_new_tokens": 3072,
+      "order": "sorted",
+      "seed": 20261115,
+      "stops": [
+        "\n```\n\n## "
+      ]
+    },
+    "few_shot": null,
+    "revision": "0f14423cbd04e46389a01efeab80d265957ba2dc",
+    "schema": "selvedge/capability-generations/v1",
+    "stamp": "20261116T142503Z"
+  },
+  "items": [
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "borrow-03-self-referential-window--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "unwrap_or(\"\")",
+            "kind": "declared",
+            "replace": "unwrap_or(\"x\")"
+          }
+        },
+        "id": "E0382",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "borrow-03-self-referential-window--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.6666666666666666,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 450,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 19,
+          "repeated_line_max": 5,
+          "tokens_out": 66,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "6bb3e934e308cf33b1042d95f54f325ab56cbe25fc518f0321b6701fa0a4772c",
+        "stderr_tail": "      Self { text, first }\n   |                ^^^^  ----- this usage requires that `text` is borrowed for `'static`\n   |                |\n   |                move out of `text` occurs here\n\nSome errors have detailed explanations: E0505, E0597.\nFor more information about an error, try `rustc --explain E0505`.\nerror: could not compile `borrow_03_self_referential_window` (lib) due to 2 previous errors\nerror: could not compile `borrow_03_self_referential_window` (lib test) due to 2 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "borrow-03-self-referential-window--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 66,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "borrow-03-self-referential-window--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.6666666666666666,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "borrow-05-temporary-lifetime--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "format!(\"item {number}\")",
+            "kind": "declared",
+            "replace": "format!(\"item-{number}\")"
+          }
+        },
+        "id": "E0596",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "borrow-05-temporary-lifetime--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 4,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 280,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 10,
+          "repeated_line_max": 2,
+          "tokens_out": 34,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "880753905a56bacfa33b5cb2c22525bb1aa17d0c4e9a9cd9b7b33b90d63bd933",
+        "stderr_tail": "                        |\n  |                            creates a temporary value which is freed while still in use\n9 |     word.to_string()\n  |     ---- borrow later used here\n  |\n  = note: consider using a `let` binding to create a longer lived value\n\nFor more information about this error, try `rustc --explain E0716`.\nerror: could not compile `borrow_05_temporary_lifetime` (lib) due to 1 previous error\nerror: could not compile `borrow_05_temporary_lifetime` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "borrow-05-temporary-lifetime--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 34,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "880753905a56bacfa33b5cb2c22525bb1aa17d0c4e9a9cd9b7b33b90d63bd933",
+        "stderr_tail": "                        |\n  |                            creates a temporary value which is freed while still in use\n9 |     word.to_string()\n  |     ---- borrow later used here\n  |\n  = note: consider using a `let` binding to create a longer lived value\n\nFor more information about this error, try `rustc --explain E0716`.\nerror: could not compile `borrow_05_temporary_lifetime` (lib) due to 1 previous error\nerror: could not compile `borrow_05_temporary_lifetime` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "borrow-05-temporary-lifetime--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "borrow-13-mutate-through-shared--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "entries[index] += 1;",
+            "kind": "declared",
+            "replace": "entries[index] += 2;"
+          }
+        },
+        "id": "E0277",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "borrow-13-mutate-through-shared--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 280,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 10,
+          "repeated_line_max": 2,
+          "tokens_out": 40,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "d38bf60a1d6869e2a433f4e698b8bccda6452ce805a6aec1f87cdce027c8e4ad",
+        "stderr_tail": "ries[index] += 1;\n  |         ^^^^^^^ `entries` is a `&` reference, so it cannot be borrowed as mutable\n  |\nhelp: consider changing this to be a mutable reference\n  |\n4 | pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n  |                        +++\n\nFor more information about this error, try `rustc --explain E0596`.\nerror: could not compile `borrow_13_mutate_through_shared` (lib) due to 1 previous error\nerror: could not compile `borrow_13_mutate_through_shared` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "borrow-13-mutate-through-shared--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 40,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "lifetime-borrow",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7680919c2e9732800cb037490756b3d489b98e3a3418496a1a65738926e205e4",
+        "stderr_tail": "ries[index] += 1;\n  |         ^^^^^^^ `entries` is a `&` reference, so it cannot be borrowed as mutable\n  |\nhelp: consider changing this to be a mutable reference\n  |\n3 | pub fn stamp(entries: &mut Vec<u32>) -> u32 {\n  |                        +++\n\nFor more information about this error, try `rustc --explain E0596`.\nerror: could not compile `borrow_13_mutate_through_shared` (lib) due to 1 previous error\nerror: could not compile `borrow_13_mutate_through_shared` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "borrow-13-mutate-through-shared--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "concurrency-11-cell-not-sync--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "counter.fetch_add(1, Ordering::SeqCst)",
+            "kind": "declared",
+            "replace": "counter.fetch_add(2, Ordering::SeqCst)"
+          }
+        },
+        "id": "E0502",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "concurrency-11-cell-not-sync--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 394,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 15,
+          "repeated_line_max": 2,
+          "tokens_out": 46,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "22080a98df542eec846857e00d8fccd94eaca25cccdef6b77327d377676f12ac",
+        "stderr_tail": "closure\n  --> src/lib.rs:9:25\n   |\n 9 |             scope.spawn(|| {\n   |                         ^^\nnote: required by a bound in `Scope::<'scope, 'env>::spawn`\n  --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/thread/scoped.rs:201:4\n\nFor more information about this error, try `rustc --explain E0277`.\nerror: could not compile `concurrency_11_cell_not_sync` (lib) due to 1 previous error\nerror: could not compile `concurrency_11_cell_not_sync` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "concurrency-11-cell-not-sync--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 46,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "407e4c56730ca61bfddddb257e334ff4bda5c142d86907238a08a89292d1ce8f",
+        "stderr_tail": "`Ordering`\n --> src/lib.rs:3:25\n  |\n3 | use std::sync::atomic::{AtomicU64, Ordering};\n  |                         ^^^^^^^^^  ^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nFor more information about this error, try `rustc --explain E0425`.\nerror: could not compile `concurrency_11_cell_not_sync` (lib) due to 1 previous error; 1 warning emitted\nerror: could not compile `concurrency_11_cell_not_sync` (lib test) due to 1 previous error; 1 warning emitted\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "concurrency-11-cell-not-sync--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "concurrency-14-poisoned-mutex--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 858,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 29,
+          "repeated_line_max": 3,
+          "tokens_out": 83,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "concurrency-14-poisoned-mutex--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 3,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 83,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": {
+        "label": "B",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "concurrency-14-poisoned-mutex--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 3,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "concurrency-17-compare-exchange-claim--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 549,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 19,
+          "repeated_line_max": 3,
+          "tokens_out": 58,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "concurrency-17-compare-exchange-claim--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 4,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 58,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "concurrency",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "a6cf1b7411fdf679893c4e40e34f85187448a188e22c69b35c36a472da4c15c7",
+        "stderr_tail": "warning: unused import: `Ordering`\n  --> src/lib.rs:14:41\n   |\n14 |     use std::sync::atomic::{AtomicBool, Ordering};\n   |                                         ^^^^^^^^\n   |\n   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nerror: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "concurrency-17-compare-exchange-claim--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 4,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "dependency-compat",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "deps-07-feature-conflict--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 701,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 34,
+          "repeated_line_max": 4,
+          "tokens_out": 93,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "fb685f8eeef24432184cbf90f97d0668970d96af79b51eef07d5ac4d19a690c2",
+        "stderr_tail": "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nwarning: unreachable statement\n  --> dep/src/lib.rs:12:5\n   |\n 9 |           return \"fast\";\n   |           ------------- any code following this expression is unreachable\n...\n12 | /     {\n13 | |         return \"safe\";\n14 | |     }\n   | |_____^ unreachable statement\n   |\n   = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default\n\nerror: could not compile `codec` (lib) due to 1 previous error; 1 warning emitted\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "dep/Cargo.toml",
+          "dep/src/lib.rs",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "deps-07-feature-conflict--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 93,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "fb685f8eeef24432184cbf90f97d0668970d96af79b51eef07d5ac4d19a690c2",
+        "stderr_tail": "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nwarning: unreachable statement\n  --> dep/src/lib.rs:12:5\n   |\n 9 |           return \"fast\";\n   |           ------------- any code following this expression is unreachable\n...\n12 | /     {\n13 | |         return \"safe\";\n14 | |     }\n   | |_____^ unreachable statement\n   |\n   = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default\n\nerror: could not compile `codec` (lib) due to 1 previous error; 1 warning emitted\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "Cargo.toml"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "deps-07-feature-conflict--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "dependency-compat",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "deps-09-disable-default-features--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "codec::render(value)",
+            "kind": "declared",
+            "replace": "codec::render(value).to_lowercase()"
+          }
+        },
+        "id": "E0505",
+        "label": "B",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "deps-09-disable-default-features--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 735,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 31,
+          "repeated_line_max": 3,
+          "tokens_out": 99,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "980643aec1cbe2b7c2199152f355f7452a8b1c670fcc78cbfd103ccb8c98ab1d",
+        "stderr_tail": "c`\n  |\nnote: found an item that was configured out\n --> dep/src/lib.rs:5:8\n  |\n4 | #[cfg(feature = \"modern\")]\n  |       ------------------ the item is gated behind the `modern` feature\n5 | pub fn render(value: &str) -> String {\n  |        ^^^^^^\n\nFor more information about this error, try `rustc --explain E0425`.\nerror: could not compile `deps_09_disable_default_features` (lib) due to 1 previous error\nerror: could not compile `deps_09_disable_default_features` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "dep/Cargo.toml",
+          "dep/src/lib.rs",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "deps-09-disable-default-features--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 99,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": {
+        "label": "B",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "78414922cb1810d7e8385c261c42bf48c5c088a57bc80bfe18fcce6f3e8ae00e",
+        "stderr_tail": "c` in this scope\n --> src/lib.rs:4:5\n  |\n4 |     codec::render(value)\n  |     ^^^^^ use of unresolved module or unlinked crate `codec`\n  |\n  = help: if you wanted to use a crate named `codec`, use `cargo add codec` to add it to your `Cargo.toml`\n\nFor more information about this error, try `rustc --explain E0433`.\nerror: could not compile `deps_09_disable_default_features` (lib) due to 1 previous error\nerror: could not compile `deps_09_disable_default_features` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "Cargo.toml"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "deps-09-disable-default-features--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 268,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 10,
+          "repeated_line_max": 2,
+          "tokens_out": 36,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e6a24f71155435e98379aabeaecd82dfdba3596e5ad749a6d537d11b0946cae0",
+        "stderr_tail": "error: failed to parse manifest at `/work/target/capability-work/deps-14-workspace-inheritance--full/Cargo.toml`\n\nCaused by:\n  error inheriting `version` from workspace root manifest's `workspace.package.version`\n\nCaused by:\n  `workspace.package.version` was not defined\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "deps-14-workspace-inheritance--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 36,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "dependency-compat",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cfdfc91c6e42937589962a4b4ff67e27d3f41618924a2ec46b10aa1896297323",
+        "stderr_tail": "error: failed to parse manifest at `/work/target/capability-work/deps-14-workspace-inheritance--patch/Cargo.toml`\n\nCaused by:\n  error inheriting `version` from workspace root manifest's `workspace.package.version`\n\nCaused by:\n  `workspace.package.version` was not defined\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "Cargo.toml"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "deps-14-workspace-inheritance--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "failing-test",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "failing-01-chunk-boundary--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 457,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 18,
+          "repeated_line_max": 4,
+          "tokens_out": 65,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "failing-test",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "failing-01-chunk-boundary--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.8,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 4,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 65,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "failing-test",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "failing-01-chunk-boundary--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.8,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 4,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "failing-test",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "failing-03-overflow-boundary--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 369,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 18,
+          "repeated_line_max": 4,
+          "tokens_out": 46,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "failing-test",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "failing-03-overflow-boundary--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.5,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 46,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "failing-test",
+      "choice": {
+        "label": "B",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "failing-03-overflow-boundary--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.5,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "failing-test",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "failing-10-last-duplicate-index--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 695,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 28,
+          "repeated_line_max": 6,
+          "tokens_out": 100,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "failing-test",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "failing-10-last-duplicate-index--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.75,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 3,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 100,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "failing-test",
+      "choice": {
+        "label": "B",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "failing-10-last-duplicate-index--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.75,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 3,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "migrate-06-error-variant--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "\"empty key\"",
+            "kind": "declared",
+            "replace": "\"empty\""
+          }
+        },
+        "id": "E0382",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "migrate-06-error-variant--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.6666666666666666,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1102,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 40,
+          "repeated_line_max": 5,
+          "tokens_out": 140,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "faaa05fdb7e6df2dbefd3caaed29d31bf17c5560a53e34fbc8bc20be8f0783f1",
+        "stderr_tail": "d` found for enum `table::Error` in the current scope\n --> src/lib.rs:8:27\n  |\n8 |         Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n  |                           ^^^^^^^^ variant, associated function, or constant not found in `table::Error`\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `migrate_06_error_variant` (lib) due to 1 previous error\nerror: could not compile `migrate_06_error_variant` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "dep/Cargo.toml",
+          "dep/src/lib.rs",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "migrate-06-error-variant--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 140,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "5a3b59e7c83d4b102ff00a3d6d1bb38087c1159bc60ac21ea690f51eb0b6d9a3",
+        "stderr_tail": "d` found for enum `table::Error` in the current scope\n --> src/lib.rs:7:27\n  |\n7 |         Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n  |                           ^^^^^^^^ variant, associated function, or constant not found in `table::Error`\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `migrate_06_error_variant` (lib) due to 1 previous error\nerror: could not compile `migrate_06_error_variant` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "migrate-06-error-variant--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "migrate-12-option-result-change--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "count + 1",
+            "kind": "declared",
+            "replace": "count"
+          }
+        },
+        "id": "E0716",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "migrate-12-option-result-change--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 909,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 35,
+          "repeated_line_max": 6,
+          "tokens_out": 122,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "38b0d090428a1df5e792b7a4855a83f8ded758c635382b475d9f4e760af00cfc",
+        "stderr_tail": "on<i64>`\n --> src/lib.rs:7:26\n  |\n7 |     registry.lookup(key) + 1\n  |     -------------------- ^ - {integer}\n  |     |\n  |     Option<i64>\n  |\nnote: `Option<i64>` does not implement `Add<{integer}>`\n --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs:598:0\n  |\n  = note: `Option<i64>` is defined in another crate\n\nFor more information about this error, try `rustc --explain E0369`.\nerror: could not compile `migrate_12_option_result_change` (lib) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "dep/Cargo.toml",
+          "dep/src/lib.rs",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "migrate-12-option-result-change--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 122,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "004609af2bae75cdfc6a40b5c1ddca5244f847d8bef9b1be0117c1440cf76428",
+        "stderr_tail": "on<i64>`\n --> src/lib.rs:6:26\n  |\n6 |     registry.lookup(key) + 1\n  |     -------------------- ^ - {integer}\n  |     |\n  |     Option<i64>\n  |\nnote: `Option<i64>` does not implement `Add<{integer}>`\n --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs:598:0\n  |\n  = note: `Option<i64>` is defined in another crate\n\nFor more information about this error, try `rustc --explain E0369`.\nerror: could not compile `migrate_12_option_result_change` (lib) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "migrate-12-option-result-change--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "migrate-13-const-generic--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "Frame<4>",
+            "kind": "declared",
+            "replace": "Frame<3>"
+          }
+        },
+        "id": "E0507",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "migrate-13-const-generic--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.75,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 3,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 805,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 35,
+          "repeated_line_max": 7,
+          "tokens_out": 121,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "5a9ec8fd014c9afa93a6c021006c37b714c3219a99ab8e23175e610d859ccfae",
+        "stderr_tail": "ined here, with 1 generic parameter: `N`\n --> dep/src/lib.rs:3:12\n  |\n3 | pub struct Frame<const N: usize> {\n  |            ^^^^^ --------------\nhelp: add missing generic argument\n  |\n6 | pub fn make_counter() -> Frame<N> {\n  |                               +++\n\nFor more information about this error, try `rustc --explain E0107`.\nerror: could not compile `migrate_13_const_generic` (lib) due to 1 previous error\nerror: could not compile `migrate_13_const_generic` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "dep/Cargo.toml",
+          "dep/src/lib.rs",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "migrate-13-const-generic--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 121,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "api-migration",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "migrate-13-const-generic--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.75,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 3,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "repo-09-result-propagation--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/cache.rs",
+            "from": "3",
+            "kind": "generic_numeric",
+            "to": "0"
+          }
+        },
+        "id": "E0505",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "1242fc99c84981133999210356a16b414a441a76c4198bff29b8ef848053ce91",
+        "stderr_tail": " `i02` in this scope\n --> src/cache.rs:5:29\n  |\n5 | pub fn cached(key: &str) -> i02 {\n  |                             ^^^\n  |\nhelp: a builtin type with a similar name exists\n  |\n5 - pub fn cached(key: &str) -> i02 {\n5 + pub fn cached(key: &str) -> i32 {\n  |\n\nFor more information about this error, try `rustc --explain E0425`.\nerror: could not compile `repo_09_result_propagation` (lib) due to 1 previous error\nerror: could not compile `repo_09_result_propagation` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/cache.rs",
+          "src/report.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "repo-09-result-propagation--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 985,
+          "degenerate_repetition": true,
+          "fences": 8,
+          "length_capped": false,
+          "lines": 42,
+          "repeated_line_max": 8,
+          "tokens_out": 129,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e90cd0ffd84179cbdb026fc117c198367cdc2a6c6470179b86cdae07db3f5991",
+        "stderr_tail": "unit variant defined here\n  |\n  = note: expected enum `Result<i32, String>`\n             found enum `Option<_>`\nhelp: introduce a new binding instead\n  |\n8 -         None => format!(\"{key}=missing\"),\n8 +         other_none => format!(\"{key}=missing\"),\n  |\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `repo_09_result_propagation` (lib) due to 4 previous errors\nerror: could not compile `repo_09_result_propagation` (lib test) due to 4 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/api.rs",
+          "src/cache.rs",
+          "src/lib.rs",
+          "src/report.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "degenerate_repetition",
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "repo-09-result-propagation--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 129,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/cache.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "repo-09-result-propagation--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.75,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 3,
+        "primary": false,
+        "total": 4
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "repo-14-crossmodule-borrow--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/sync.rs",
+            "from": "0",
+            "kind": "generic_numeric",
+            "to": "1"
+          }
+        },
+        "id": "E0507",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/sync.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "repo-14-crossmodule-borrow--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.6666666666666666,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 666,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 30,
+          "repeated_line_max": 5,
+          "tokens_out": 99,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "d55282182569651e05bbe8a623bc9aad5210fae8035544d246690980c1ede677",
+        "stderr_tail": "--- immutable borrow occurs here\n 8 |     for item in extra {\n 9 |         store.items.push(item.clone());\n   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here\n10 |     }\n11 |     first.len()\n   |     ----- immutable borrow later used here\n\nFor more information about this error, try `rustc --explain E0502`.\nerror: could not compile `repo_14_crossmodule_borrow` (lib) due to 1 previous error\nerror: could not compile `repo_14_crossmodule_borrow` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs",
+          "src/store.rs",
+          "src/sync.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "repo-14-crossmodule-borrow--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 99,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/sync.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "repo-14-crossmodule-borrow--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.6666666666666666,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "repo-18-moved-across-modules--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "unchanged",
+          "reason": "no mutation could be derived for this fixture",
+          "requested": "mutation"
+        },
+        "id": "E0505",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "5240b70235610d56df6b4e27d5313940196961530f171c973afd71e84d9791f8",
+        "stderr_tail": " --> src/registry.rs:4:1\n   |\n 4 | pub struct Registry {\n   | ^^^^^^^^^^^^^^^^^^^ consider implementing `Clone` for this type\n   |\n  ::: src/flow.rs:10:20\n   |\n10 |     let snapshot = registry;\n   |                    -------- you could clone this value\n\nFor more information about this error, try `rustc --explain E0382`.\nerror: could not compile `repo_18_moved_across_modules` (lib) due to 1 previous error\nerror: could not compile `repo_18_moved_across_modules` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/flow.rs",
+          "src/lib.rs",
+          "src/registry.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "repo-18-moved-across-modules--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 913,
+          "degenerate_repetition": false,
+          "fences": 6,
+          "length_capped": false,
+          "lines": 38,
+          "repeated_line_max": 7,
+          "tokens_out": 117,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "5240b70235610d56df6b4e27d5313940196961530f171c973afd71e84d9791f8",
+        "stderr_tail": " --> src/registry.rs:4:1\n   |\n 4 | pub struct Registry {\n   | ^^^^^^^^^^^^^^^^^^^ consider implementing `Clone` for this type\n   |\n  ::: src/flow.rs:10:20\n   |\n10 |     let snapshot = registry;\n   |                    -------- you could clone this value\n\nFor more information about this error, try `rustc --explain E0382`.\nerror: could not compile `repo_18_moved_across_modules` (lib) due to 1 previous error\nerror: could not compile `repo_18_moved_across_modules` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/flow.rs",
+          "src/lib.rs",
+          "src/registry.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "repo-18-moved-across-modules--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 117,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "repo-scale",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "4481299f627cf09b55fdf166ad5a9ca8f94a95091b43942dd659cbe2a28dedd9",
+        "stderr_tail": "  --> src/registry.rs:4:1\n   |\n 4 | pub struct Registry {\n   | ^^^^^^^^^^^^^^^^^^^ consider implementing `Clone` for this type\n   |\n  ::: src/flow.rs:9:20\n   |\n 9 |     let snapshot = registry;\n   |                    -------- you could clone this value\n\nFor more information about this error, try `rustc --explain E0382`.\nerror: could not compile `repo_18_moved_across_modules` (lib) due to 1 previous error\nerror: could not compile `repo_18_moved_across_modules` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/flow.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "repo-18-moved-across-modules--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "semantic-repair",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "semantic-01-overlapping-count--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 383,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 14,
+          "repeated_line_max": 3,
+          "tokens_out": 37,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "semantic-repair",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "semantic-01-overlapping-count--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 3,
+        "fraction": 0.4,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 37,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "semantic-repair",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "semantic-01-overlapping-count--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 4,
+        "fraction": 0.2,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "semantic-repair",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "semantic-07-csv-quoting--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 369,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 18,
+          "repeated_line_max": 4,
+          "tokens_out": 42,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "semantic-repair",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "semantic-07-csv-quoting--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.6,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 3,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 42,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "semantic-repair",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "semantic-07-csv-quoting--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.8,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 4,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "semantic-repair",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "semantic-09-token-bucket-refill--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 436,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 15,
+          "repeated_line_max": 3,
+          "tokens_out": 54,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "semantic-repair",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "74998b3f4a84f3c48447876845b0e426d0f27067f406a0fb4607ff55084d0a75",
+        "stderr_tail": "warning: unused variable: `capacity`\n --> src/lib.rs:3:64\n  |\n3 | pub fn refill(tokens: u32, elapsed_ms: u64, rate_per_sec: u32, capacity: u32) -> u32 {\n  |                                                                ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_capacity`\n  |\n  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nerror: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "semantic-09-token-bucket-refill--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 3,
+        "fraction": 0.4,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 2,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 54,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "semantic-repair",
+      "choice": {
+        "label": "B",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "semantic-09-token-bucket-refill--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": true,
+        "failed": 1,
+        "fraction": 0.8,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 4,
+        "primary": false,
+        "total": 5
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "traits-02-coherence--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "\"text: {self}\"",
+            "kind": "declared",
+            "replace": "\"text:{self}\""
+          }
+        },
+        "id": "E0597",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "traits-02-coherence--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 641,
+          "degenerate_repetition": true,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 27,
+          "repeated_line_max": 8,
+          "tokens_out": 84,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "39cbd2dbe154aebae69850addd69010fab75f9b6635859e75ccf2fd8f7d0f112",
+        "stderr_tail": "ons of trait `Summary` for type `Report`\n  --> src/lib.rs:24:1\n   |\n18 | impl Summary for Report {\n   | ----------------------- first implementation here\n...\n24 | impl<T: Display> Summary for T {\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ conflicting implementation for `Report`\n\nFor more information about this error, try `rustc --explain E0119`.\nerror: could not compile `traits_02_coherence` (lib) due to 1 previous error\nerror: could not compile `traits_02_coherence` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "degenerate_repetition",
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "traits-02-coherence--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 84,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "39cbd2dbe154aebae69850addd69010fab75f9b6635859e75ccf2fd8f7d0f112",
+        "stderr_tail": "ons of trait `Summary` for type `Report`\n  --> src/lib.rs:24:1\n   |\n18 | impl Summary for Report {\n   | ----------------------- first implementation here\n...\n24 | impl<T: Display> Summary for T {\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ conflicting implementation for `Report`\n\nFor more information about this error, try `rustc --explain E0119`.\nerror: could not compile `traits_02_coherence` (lib) due to 1 previous error\nerror: could not compile `traits_02_coherence` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "traits-02-coherence--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "traits-03-object-safety--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "store.len()",
+            "kind": "declared",
+            "replace": "store.len() + 1"
+          }
+        },
+        "id": "E0308",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "traits-03-object-safety--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 2,
+        "fraction": 0.3333333333333333,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 1,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 720,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 27,
+          "repeated_line_max": 7,
+          "tokens_out": 90,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "050b302b054465a6aa8f8e387160f894104b09811965b74d265086b86820bad4",
+        "stderr_tail": "\n   = help: only type `MemoryStore` implements `Store` within this crate; consider using it directly instead.\n   = note: `Store` may be implemented in other crates; if you want to support your users passing their own types here, you can't refer to a specific type\n\nFor more information about this error, try `rustc --explain E0038`.\nerror: could not compile `traits_03_object_safety` (lib) due to 1 previous error\nerror: could not compile `traits_03_object_safety` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "traits-03-object-safety--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 90,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 19,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 3,
+          "repeated_line_max": 1,
+          "tokens_out": 3,
+          "unterminated_fence": false
+        },
+        "kind": "invalid",
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "screen": "stub_returned"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "the answer is a stub, not a body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "files": [],
+        "mode": "fenced_body",
+        "notes": [],
+        "ok": false,
+        "policy": "tolerant",
+        "rejected": [
+          "the answer is a stub, not a body"
+        ]
+      },
+      "failure_class": "stub_returned",
+      "failure_flags": [
+        "stub"
+      ],
+      "format": "body-completion",
+      "id": "traits-17-method-not-in-trait--body",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": null,
+      "status": "invalid_solution",
+      "surface": null,
+      "tier": "easy",
+      "tokens_out": 3,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": {
+        "consequence": {
+          "kind": "mutation",
+          "mutation": {
+            "file": "src/lib.rs",
+            "find": "self.name = new.to_string();",
+            "kind": "declared",
+            "replace": "self.name.push_str(new);"
+          }
+        },
+        "id": "E0308",
+        "label": "A",
+        "verified": false
+      },
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+        "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "tests_failed",
+      "failure_flags": [],
+      "format": "diagnostic-identification",
+      "id": "traits-17-method-not-in-trait--diag",
+      "latency_ms": 1,
+      "metric": "verified_diagnostic",
+      "partial_credit": {
+        "available": true,
+        "failed": 3,
+        "fraction": 0.0,
+        "metric": "fraction_of_hidden_tests_passed",
+        "passed": 0,
+        "primary": false,
+        "total": 3
+      },
+      "status": "test_failed",
+      "surface": null,
+      "tier": "diagnostic",
+      "tokens_out": 1,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 379,
+          "degenerate_repetition": false,
+          "fences": 2,
+          "length_capped": false,
+          "lines": 18,
+          "repeated_line_max": 5,
+          "tokens_out": 63,
+          "unterminated_fence": false
+        },
+        "kind": "files",
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": null,
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "25a254971fe1a521a6ed7839ac93112629df6727a651c21c0acf05a62c779e87",
+        "stderr_tail": "17 |       fn rename(&mut self, new: &str) {\n   |       ^  ------ help: there is an associated function with a similar name: `name`\n   |  _____|\n   | |\n18 | |         self.name = new.to_string();\n19 | |     }\n   | |_____^ not a member of trait `Named`\n\nFor more information about this error, try `rustc --explain E0407`.\nerror: could not compile `traits_17_method_not_in_trait` (lib) due to 1 previous error\nerror: could not compile `traits_17_method_not_in_trait` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [
+        "unchanged_initial"
+      ],
+      "format": "file-replacement",
+      "id": "traits-17-method-not-in-trait--full",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "hard",
+      "tokens_out": 63,
+      "value": 0.0
+    },
+    {
+      "answer": {
+        "flags": {
+          "brace_counts_equal": true,
+          "characters": 1,
+          "degenerate_repetition": false,
+          "fences": 0,
+          "length_capped": false,
+          "lines": 1,
+          "repeated_line_max": 1,
+          "tokens_out": 1,
+          "unterminated_fence": false
+        },
+        "kind": "choice",
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "problems": [],
+        "screen": "invalid_answer"
+      },
+      "category": "trait-impl",
+      "choice": {
+        "label": "A",
+        "reference_matches": false
+      },
+      "diagnostic": null,
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "73dc0c5ee4a6a5d860ce60c477e381b6e60c3481c337f88064b32b66b26c64dd",
+        "stderr_tail": "   | ------------------------------- private method defined here\n\nerror[E0624]: method `rename` is private\n  --> tests/check.rs:20:9\n   |\n20 |     tag.rename(\"\");\n   |         ^^^^^^ private method\n   |\n  ::: src/lib.rs:12:1\n   |\n12 | fn rename(&mut self, new: &str) {\n   | ------------------------------- private method defined here\n\nFor more information about this error, try `rustc --explain E0624`.\nerror: could not compile `traits_17_method_not_in_trait` (test \"check\") due to 3 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "choice_letter",
+        "notes": [],
+        "ok": true,
+        "policy": "tolerant",
+        "rejected": []
+      },
+      "failure_class": "non_compiling",
+      "failure_flags": [],
+      "format": "patch-selection",
+      "id": "traits-17-method-not-in-trait--patch",
+      "latency_ms": 1,
+      "metric": "verified_task_success",
+      "partial_credit": {
+        "available": false,
+        "reason": "the hidden-test run produced no counts (compile_error)"
+      },
+      "status": "compile_error",
+      "surface": null,
+      "tier": "medium",
+      "tokens_out": 1,
+      "value": 0.0
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-calibration-preregistration-v1.json",
+    "primary_relative_threshold": null,
+    "problems": [],
+    "sha256": "5cf48f9644742fd6c67cc7bf812638a82903655860bb80cc74c0c62b0f6198e5"
+  },
+  "revision": "0f14423cbd04e46389a01efeab80d265957ba2dc",
+  "schema": "selvedge/capability-result/v1",
+  "scores": {
+    "by_category": {
+      "api-migration": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "concurrency": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "dependency-compat": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 8,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "failing-test": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "lifetime-borrow": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "repo-scale": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "semantic-repair": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "trait-impl": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 0,
+        "n": 8,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "categories": [
+      "api-migration",
+      "concurrency",
+      "dependency-compat",
+      "failing-test",
+      "lifetime-borrow",
+      "repo-scale",
+      "semantic-repair",
+      "trait-impl"
+    ],
+    "category_minimum_items": 0,
+    "category_minimum_met": true,
+    "counts": {
+      "compile_error": 29,
+      "invalid_solution": 23,
+      "test_failed": 32
+    },
+    "failure_classes": {
+      "non_compiling": 29,
+      "stub_returned": 23,
+      "tests_failed": 32
+    },
+    "formats": {
+      "by_format": {
+        "body-completion": 23,
+        "diagnostic-identification": 14,
+        "file-replacement": 24,
+        "patch-selection": 23
+      },
+      "by_metric": {
+        "verified_diagnostic": 14,
+        "verified_task_success": 70
+      },
+      "by_tier": {
+        "diagnostic": 14,
+        "easy": 23,
+        "hard": 24,
+        "medium": 23
+      },
+      "extraction_policies": {
+        "tolerant": 84
+      }
+    },
+    "items": 84,
+    "pooled": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 70,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_ci": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 70,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_composite": 0.0,
+    "trio": {},
+    "trio_all_surfaces": false,
+    "verified_diagnostic": {
+      "by_category": {
+        "api-migration": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 3,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 3,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "concurrency": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 1,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 1,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "dependency-compat": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 1,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 1,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "lifetime-borrow": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 3,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 3,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "repo-scale": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 3,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 3,
+          "resamples": 10000,
+          "seed": 20261115
+        },
+        "trait-impl": {
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "items": 3,
+          "level": 0.95,
+          "mean": 0.0,
+          "metric": "verified_diagnostic",
+          "n": 3,
+          "resamples": 10000,
+          "seed": 20261115
+        }
+      },
+      "items": 14,
+      "mean": 0.0,
+      "metric": "verified_diagnostic",
+      "pooled_with_primary": false,
+      "statement": "a verified diagnosis is not executable task success; this metric is reported separately and never enters the primary composite"
+    }
+  },
+  "stage": "check",
+  "stamp": "20261116T142514Z",
+  "suite": {
+    "category_filter": null,
+    "category_minimum_items": 0,
+    "counts": {
+      "by_category": {
+        "api-migration": 12,
+        "concurrency": 10,
+        "dependency-compat": 9,
+        "failing-test": 9,
+        "lifetime-borrow": 12,
+        "repo-scale": 12,
+        "semantic-repair": 9,
+        "trait-impl": 11
+      },
+      "probes": 0,
+      "suite": 84,
+      "total": 84,
+      "trio": 0
+    },
+    "root": "/work/fixtures/capability-calibrated",
+    "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6"
+  }
+}

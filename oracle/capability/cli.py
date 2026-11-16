@@ -21,7 +21,7 @@ import json
 import os
 import sys
 
-from . import adapters, court, suite
+from . import adapters, court, formats, suite
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_SUITE = os.path.join(REPO, "fixtures", "capability")
@@ -67,6 +67,14 @@ def main(argv: list[str]) -> int:
         help="write an adapter spec whose answers are the reference solutions; the "
              "result receipt is an instrument check, never an arm result")
     fake.add_argument("--out", required=True)
+
+    fake_cal = subparsers.add_parser(
+        "fake-calibrated",
+        help="write an adapter spec whose answers follow each calibrated format; an "
+             "instrument smoke, never an arm result")
+    fake_cal.add_argument("--out", required=True)
+    fake_cal.add_argument("--answers", default="correct",
+                          choices=["correct", "wrong", "degenerate"])
 
     generate = subparsers.add_parser("generate")
     generate.add_argument("--adapter-spec", default=None)
@@ -240,6 +248,57 @@ def main(argv: list[str]) -> int:
                 "note": "instrument smoke only: answers are the reference solutions"}
         court.write_json_atomic(args.out, spec)
         print(f"capability_court: wrote {len(outputs)} scripted answers -> {args.out}")
+        return 0
+
+    if args.command == "fake-calibrated":
+        collections = suite.load_suite(args.suite)
+        outputs = {}
+        for task in collections["suite"]:
+            fmt = formats.task_format(task)
+            spec = formats.format_spec(task)
+            if args.answers == "degenerate":
+                outputs[task.id] = ("The tests must be run with `cargo test`.\n" * 12)
+                continue
+            if fmt == formats.FORMAT_BODY:
+                if args.answers == "correct":
+                    body = formats.function_body(task.read_reference(spec["template"]),
+                                                 spec["function"])
+                else:
+                    body = "todo!()"
+                outputs[task.id] = "```rust\n" + body.strip() + "\n```"
+            elif fmt == formats.FORMAT_PATCH:
+                candidates = spec["candidates"]
+                if args.answers == "correct":
+                    label = next(c["label"] for c in candidates if c.get("reference"))
+                else:
+                    label = next(c["label"] for c in candidates if not c.get("reference"))
+                outputs[task.id] = label
+            elif fmt == formats.FORMAT_DIAGNOSTIC:
+                options = spec["options"]
+                wanted = "reference" if args.answers == "correct" else None
+                index = next(i for i, option in enumerate(options)
+                             if (option["consequence"]["kind"] == "reference")
+                             == (wanted == "reference"))
+                outputs[task.id] = chr(ord("A") + index)
+            else:
+                if args.answers == "correct":
+                    blocks = []
+                    for path in task.reference_files:
+                        blocks.append("```rust path=" + path + "\n"
+                                      + task.read_reference(path).rstrip() + "\n```")
+                    outputs[task.id] = "\n".join(blocks)
+                else:
+                    from . import checkers
+
+                    blocks = ["```rust path=" + path + "\n" + content.rstrip() + "\n```"
+                              for path, content in checkers.initial_solution(task).items()]
+                    outputs[task.id] = "\n".join(blocks)
+        spec_payload = {"kind": "fake", "name": f"fake-calibrated-{args.answers}",
+                        "outputs": outputs, "accounting": {"task_success": None},
+                        "note": "instrument smoke only; scripted answers per format"}
+        court.write_json_atomic(args.out, spec_payload)
+        print(f"capability_court: wrote {len(outputs)} scripted "
+              f"{args.answers} answers -> {args.out}")
         return 0
 
     if args.command == "generate":

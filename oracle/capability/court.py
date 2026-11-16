@@ -36,6 +36,10 @@ from . import formats as format_module
 SCHEMA_GENERATIONS = "selvedge/capability-generations/v1"
 SCHEMA_RESULT = "selvedge/capability-result/v1"
 SCHEMA_PREREG = "selvedge/capability-preregistration/v1"
+#: The calibration pre-registration (S28) binds the calibration suite and the
+#: acceptance window rather than the scored endpoint; it is a different contract
+#: and is never accepted in place of the scored pre-registration.
+SCHEMA_PREREG_CALIBRATION = "selvedge/capability-calibration-preregistration/v1"
 
 DEFAULT_MAX_NEW_TOKENS = 3072
 DEFAULT_STOPS = ("\n```\n\n## ",)
@@ -605,7 +609,8 @@ def check(generations: dict, suite_root: str, out: str,
             "path": preregistration,
             "sha256": sha256_file(preregistration) if preregistration else None,
             "primary_relative_threshold": (
-                prereg["primary"]["relative_threshold"] if prereg else None),
+                (prereg.get("primary") or {}).get("relative_threshold") if prereg
+                else None),
             "problems": prereg_problems,
         },
         "anti_gaming": {
@@ -738,13 +743,33 @@ def registration_template(manifest: dict) -> dict:
 def load_preregistration(path: str) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
-    if payload.get("schema") != SCHEMA_PREREG:
-        raise CourtError(f"{path}: schema must be {SCHEMA_PREREG!r}")
+    if payload.get("schema") not in (SCHEMA_PREREG, SCHEMA_PREREG_CALIBRATION):
+        raise CourtError(f"{path}: schema must be {SCHEMA_PREREG!r} or "
+                         f"{SCHEMA_PREREG_CALIBRATION!r}")
     return payload
 
 
 def verify_preregistration(prereg: dict, manifest: dict) -> list:
     problems = []
+    if prereg.get("schema") == SCHEMA_PREREG_CALIBRATION:
+        # The calibration contract binds the calibration suite and the metric
+        # separation; the endpoint thresholds are registered separately and are
+        # not consumed by a calibration run.
+        if prereg.get("calibration_suite_sha256") != manifest["suite_sha256"]:
+            problems.append(
+                "the calibration pre-registration binds a different calibration "
+                "suite hash")
+        primary_metric = (prereg.get("primary") or {}).get("metric")
+        if primary_metric != "verified_task_success":
+            problems.append(
+                "the calibration pre-registration does not name executable task "
+                "success as the primary metric")
+        secondary_metric = (prereg.get("secondary") or {}).get("metric")
+        if secondary_metric != "fraction_of_hidden_tests_passed":
+            problems.append(
+                "the calibration pre-registration does not name the partial-credit "
+                "secondary metric")
+        return problems
     if prereg.get("suite_sha256") != manifest["suite_sha256"]:
         problems.append("the pre-registration binds a different suite hash")
     if prereg.get("primary", {}).get("relative_threshold") != PRIMARY_THRESHOLD:

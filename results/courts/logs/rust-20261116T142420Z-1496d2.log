@@ -1,0 +1,17 @@
+capability_court: wrote 84 scripted correct answers -> /tmp/cal-correct.json
+capability_court: generated 84 items -> results/capability/calibrated-smoke-20261116T142420Z/generations-correct.json
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 343, in main
+    result = court.check(generations, args.suite, args.out,
+                         preregistration=args.preregistration,
+    ...<2 lines>...
+                         min_category_items=args.min_category_items,
+                         partial_credit=args.partial_credit)
+  File "/work/oracle/capability/court.py", line 432, in check
+    prereg = load_preregistration(preregistration)
+  File "/work/oracle/capability/court.py", line 742, in load_preregistration
+    raise CourtError(f"{path}: schema must be {SCHEMA_PREREG!r}")
+capability.court.CourtError: docs/capability-calibration-preregistration-v1.json: schema must be 'selvedge/capability-preregistration/v1'

@@ -1,0 +1,137 @@
+{
+  "argv": [
+    "sh",
+    "-c",
+    "\n  for KIND in wrong degenerate; do\n    python3 scripts/capability_court.py --suite fixtures/capability-calibrated fake-calibrated --answers $KIND --out /tmp/cal-$KIND.json &&\n    python3 scripts/capability_court.py --suite fixtures/capability-calibrated generate --adapter-spec /tmp/cal-$KIND.json       --preregistration docs/capability-calibration-preregistration-v1.json       --out results/capability/calibrated-smoke-20261116T142420Z/generations-$KIND.json &&\n    python3 scripts/capability_court.py --suite fixtures/capability-calibrated check       --generations results/capability/calibrated-smoke-20261116T142420Z/generations-$KIND.json       --partial-credit --min-category-items 0       --preregistration docs/capability-calibration-preregistration-v1.json       --out results/capability/calibrated-smoke-20261116T142420Z/result-$KIND.json | tail -2;\n  done"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "0fad634fb629c0cc8f9ad01a2a15691022fc5d735d10663aa6ab5cedacf7e262",
+  "container_name": "selvedge-rust-court-20261116T142502Z-57bce3",
+  "court": "rust",
+  "duration_ms": 12395,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 12884901888,
+        "expected": 12884901888
+      },
+      "memory_swap_bytes": {
+        "actual": 12884901888,
+        "expected": 12884901888
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T14:25:15Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+  "image_ref": "selvedge/rust-court:20261116-1.98-slim-2744951e34ae",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "12g",
+    "memory_bytes": 12884901888,
+    "memory_swap": "12g",
+    "memory_swap_bytes": 12884901888,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/rust-20261116T142502Z-57bce3.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache:ro"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "0f14423cbd04e46389a01efeab80d265957ba2dc",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T142502Z",
+  "started_utc": "2026-11-16T14:25:02Z",
+  "toolchain": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "absent",
+    "pip3": "absent",
+    "python3": "Python 3.13.5",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

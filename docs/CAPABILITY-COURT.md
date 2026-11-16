@@ -1383,6 +1383,25 @@ resolves the failure. The receipt is
 `results/capability/derivation-verify-calibration.json` and its verdict is the
 only evidence that the derived suite is an instrument.
 
+**Instrument smoke (scripted arms, not a model).** The staged path was also run
+end to end through the real checkers with `fake-calibrated`, which writes answers
+in each format from the fixture (an instrument check, never an arm result). The
+receipts are under `results/capability/calibrated-smoke-*/` and the numbers are
+not restated here:
+
+- **correct answers** — the executable composite and `verified_diagnostic` are
+  both at their maximum on their own metrics, with complete partial credit;
+- **deliberately wrong answers** — the executable composite is zero, the answers
+  split across non-compiling, compiled-and-failed and stub classes, and the
+  **secondary** partial-credit mean is non-zero: the separation is visible in one
+  receipt;
+- **degenerate answers** (a repeated line, the observed T2 failure shape) — the
+  composite is zero and every item is classified `degenerate_repetition` without
+  reaching the checker.
+
+Those receipts are evidence that the formats, the taxonomy and the metric
+separation work. They say nothing about any arm.
+
 ## 14. Calibration registration and acceptance window
 
 Registered in `docs/capability-calibration-preregistration-v1.json` before the
