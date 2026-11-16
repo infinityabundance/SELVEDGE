@@ -1,0 +1,30 @@
+{
+  "capability": "Replace a removed constructor with the builder API, including its error path.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "migrate-02-builder",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "empty host",
+    "replace": "bad host"
+  },
+  "observed_failure": "error[E0599]: no function or associated item named `new` found for struct\n`client::Client` in the current scope\n --> src/lib.rs:2:30\n  |\n2 |     let client = client::Client::new(host, port);\n  |                              ^^^ function or associated item not found",
+  "prompt_intro": "The crate does not build against the vendored `client` 2.0.0. The\nconstructor `Client::new(host, port)` was removed; version 2 provides\n`client::builder().host(..).port(..).build()`, which fails with\n`BuildError::EmptyHost` for an empty host. Do not modify `dep/`. Keep\n`pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String>`\nand return the error string `empty host` when the host is empty.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,30 @@
+{
+  "capability": "Add the conversion a new dependency error type requires at every `?` site.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "migrate-03-error-conversion",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "AppError::Invalid { field }",
+    "replace": "AppError::Invalid { field: 0 }"
+  },
+  "observed_failure": "error[E0277]: `?` couldn't convert the error to `AppError`\n --> src/lib.rs:9:48\n  |\n9 |     let tokens = tokens::tokenize(text)?;\n  |                                            ^ the trait `From<tokens::Error>` is not implemented for `AppError`",
+  "prompt_intro": "The crate does not build against the vendored `tokens` 2.0.0. Its error\ntype is now `tokens::Error` with variants `Empty` and `Malformed(usize)`,\nand the application's `AppError` has no conversion from it. Do not modify\n`dep/`. Add the conversion so `?` works, and map the variants exactly:\n`tokens::Error::Empty` becomes `AppError::Empty`, and\n`tokens::Error::Malformed(field)` becomes `AppError::Invalid { field }`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,27 @@
+{
+  "capability": "Replace a non-atomic read-modify-write with an atomic fetch-and-add.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "concurrency-02-lost-update",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "counter.fetch_add(1, Ordering::SeqCst)",
+    "replace": "counter.fetch_add(2, Ordering::SeqCst)"
+  },
+  "observed_failure": "thread 'tests::pair_bumps_twice' panicked at tests/check.rs:6:5:\nassertion `left == right` failed\n  left: 1\n right: 2",
+  "prompt_intro": "`bump_pair` loses an update: both threads load the counter, meet at the\nbarrier, and store the same value plus one, so the counter ends at 1\ninstead of 2. `bump_all` has the same defect at scale. Use an atomic\nread-modify-write so every call adds exactly one. Keep both signatures and\nthe barriers.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

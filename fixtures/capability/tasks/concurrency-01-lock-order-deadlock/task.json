@@ -1,0 +1,31 @@
+{
+  "capability": "Remove a lock-order deadlock by imposing one global acquisition order.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "concurrency-01-lock-order-deadlock",
+  "initial_failure": {
+    "kind": "timeout",
+    "must_contain": [
+      "running 3 tests"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "limits": {
+    "cpu_seconds": 40,
+    "wall_seconds": 25.0
+  },
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*guard_a -= amount;",
+    "replace": "*guard_a += amount;"
+  },
+  "observed_failure": "test tests::two_transfers_apply has been running for over 60 seconds\nno test result: the process is blocked in `Mutex::lock` on both threads",
+  "prompt_intro": "`run_pair` deadlocks. `transfer_a_to_b` and `transfer_b_to_a` each sleep\nwhile holding their first lock, so two concurrent calls in opposite orders\nblock forever. Impose one acquisition order (for example, by comparing the\naddresses of the two mutexes) so both helpers acquire in the same order\nregardless of the direction of the transfer. Keep the public functions and\ntheir effect: `run_pair(x, y, amount)` performs two a-to-b transfers and\nreturns the final balances.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

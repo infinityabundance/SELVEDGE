@@ -1,0 +1,27 @@
+{
+  "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references).",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "borrow-03-self-referential-window",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0597"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unwrap_or(\"\")",
+    "replace": "unwrap_or(\"x\")"
+  },
+  "observed_failure": "error[E0597]: `text` does not live long enough\n  --> src/lib.rs:10:21\n   |\n10 |         let first = text.split_whitespace().next().unwrap_or(\"\");\n   |                     ^^^^ borrowed value does not live long enough\n11 |         Self { text, first }\n   |                      ----- this usage requires that `text` is borrowed for `'static`\n12 |     }\n   | - `text` dropped here while still borrowed\n\nerror[E0505]: cannot move out of `text` because it is borrowed",
+  "prompt_intro": "This crate does not compile. `Window` stores a `&'static str` that points into a `String` the struct itself owns. Remove the stored reference and compute the first word from `self.text` when asked, so `first()` stays valid after `replace()`. Keep the public API: `Window::new(String)`, `first(&self) -> &str`, `replace(&mut self, String)`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

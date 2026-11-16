@@ -1,0 +1,1161 @@
+{
+  "counts": {
+    "by_category": {
+      "api-migration": 4,
+      "concurrency": 3,
+      "dependency-compat": 3,
+      "failing-test": 4,
+      "lifetime-borrow": 4,
+      "probe": 5,
+      "repo-scale": 3,
+      "trait-impl": 3,
+      "trio": 3
+    },
+    "probes": 5,
+    "suite": 24,
+    "total": 32,
+    "trio": 3
+  },
+  "license": "MIT OR Apache-2.0",
+  "root": "/work/fixtures/capability",
+  "schema": "selvedge/capability-manifest/v1",
+  "suite_sha256": "43011091efb3353bc349407051f081c2780f010c395e7b5660ba38c8ca3c85df",
+  "tasks": [
+    {
+      "capability": "Sandbox probe: a compile error is classified as a failure.",
+      "category": "probe",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "probe-compile-error",
+      "initial_failure": null,
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "probe",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": "compile_error",
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "225ba4ba1a3b67f86c43095e7ab35663d218578da919705b804f77b1537ca917"
+    },
+    {
+      "capability": "Sandbox probe: an allocation past RLIMIT_AS aborts and is recorded as OOM.",
+      "category": "probe",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "compile_then_run",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "probe-oom",
+      "initial_failure": null,
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "probe",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": "oom",
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": {
+        "address_space_bytes": 536870912,
+        "cpu_seconds": 20,
+        "file_bytes": 16777216,
+        "open_files": 64,
+        "output_bytes": 262144,
+        "wall_seconds": 10.0
+      },
+      "tree_sha256": "803ef84b46d7bd9dd17a996b273dcd0100530793ac9e3e11db60528c036c7abb"
+    },
+    {
+      "capability": "Sandbox probe: a passing checker run.",
+      "category": "probe",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "probe-pass",
+      "initial_failure": null,
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "probe",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": "pass",
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "72ab7caf06c51dd412c8b68d90aa4d27a87e2fd1a7a3fc42dcb07d47027420b0"
+    },
+    {
+      "capability": "Sandbox probe: a non-terminating test is killed and recorded as a timeout.",
+      "category": "probe",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "compile_then_run",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "probe-timeout",
+      "initial_failure": null,
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "probe",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": "timeout",
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": {
+        "address_space_bytes": 536870912,
+        "cpu_seconds": 20,
+        "file_bytes": 16777216,
+        "open_files": 64,
+        "output_bytes": 262144,
+        "wall_seconds": 5.0
+      },
+      "tree_sha256": "7a78bf6ef1b77613d807221bedaabe0bdb23e29e3200852de4dad7b1b96844fd"
+    },
+    {
+      "capability": "Sandbox probe: a deliberately wrong solution fails.",
+      "category": "probe",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "probe-wrong",
+      "initial_failure": null,
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "probe",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": "fail",
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "211bc410487d0d1f8a5a13623d216c5709126ea33aeb627ef4b907a531c22c6f"
+    },
+    {
+      "capability": "Recognise a reference to a local value and return owned data instead.",
+      "category": "lifetime-borrow",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "borrow-01-local-reference",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0515"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "e2e94338252c4c2e6797e02e5d4ff6583b7626777e1b67d5253d88370b106710"
+    },
+    {
+      "capability": "Resolve a shared/mutable borrow conflict by copying the value out.",
+      "category": "lifetime-borrow",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "borrow-02-mutate-while-borrowed",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0502"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "79cf88b53a341b21951f7da6d3e9dfbc242e17b7ef4eb7d04a68b752e5c101bb"
+    },
+    {
+      "capability": "Replace a self-referential borrow with on-demand slicing (indices, not references).",
+      "category": "lifetime-borrow",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "borrow-03-self-referential-window",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0597"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "e96f4a8476c5ad7f16da64bf0993c272112e217f22f366519937e9093f6268c1"
+    },
+    {
+      "capability": "Collect the keys before mutating the map (iterator invalidation).",
+      "category": "lifetime-borrow",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "borrow-04-iterator-invalidation",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0502"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "0a3780c31a9a3954414485304e8369afa8fc13afe72fcef439e5a6cba18ead89"
+    },
+    {
+      "capability": "Remove a lock-order deadlock by imposing one global acquisition order.",
+      "category": "concurrency",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 40,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 25.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "concurrency-01-lock-order-deadlock",
+      "initial_failure": {
+        "kind": "timeout",
+        "must_contain": [
+          "running 3 tests"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "cf7351d439e8054ffe72dd31b315a77bb8ed7096d544a8a6e3ed1fdf7b0ba6b7"
+    },
+    {
+      "capability": "Replace a non-atomic read-modify-write with an atomic fetch-and-add.",
+      "category": "concurrency",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "concurrency-02-lost-update",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "assertion `left == right` failed"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "1ea908bde4941f9af714a5736356ccab96b34cf36dc61173a3f9b518b88ff4b0"
+    },
+    {
+      "capability": "Recognise a non-Send smart pointer crossing a thread boundary and move to Arc.",
+      "category": "concurrency",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "concurrency-03-send-boundary",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "bdde004d940a344a374512ed2e64b87143e7a01b2e2f32126e77d11e071fed17"
+    },
+    {
+      "capability": "Diagnose a semver requirement that excludes the vendored version, then adapt the API.",
+      "category": "dependency-compat",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "arm",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "deps-01-version-requirement",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "failed to select a version"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "dep/Cargo.toml",
+        "dep/src/lib.rs",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "7c808f53f2dab41eed5af3b24e913331d97d96022ff17c0cd9b8a68e9e6799f0"
+    },
+    {
+      "capability": "Repair code that violates edition-2024 rules (reserved identifier, binding modes).",
+      "category": "dependency-compat",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "deps-02-edition-2024",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "gen"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "99dd71292d55bd444b90febedfbec964d1e87d3fcfa083e2485345a1d2720e76"
+    },
+    {
+      "capability": "Read a dependency's feature declaration and enable the optional API at the caller.",
+      "category": "dependency-compat",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "arm",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "deps-03-optional-feature",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0425"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "dep/Cargo.toml",
+        "dep/src/lib.rs",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "Cargo.toml"
+      ],
+      "run_limits": null,
+      "tree_sha256": "7aea6880573f6b08ecc6a844fca16254b6bcb480b0e4fda8cd37638858f0811d"
+    },
+    {
+      "capability": "Debug a rounding boundary in a chunk count, including overflow safety.",
+      "category": "failing-test",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "failing-01-chunk-boundary",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "1b9294435c89e809bc0c94c048badee5f2ad9396d3c1347ea30a7157f14e4fe5"
+    },
+    {
+      "capability": "Fix a missing empty/short-input case without changing the signature.",
+      "category": "failing-test",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "failing-02-empty-input",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "index out of bounds"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "84d0459ada4f92f41a3aaa6d828d22b1347b0bc9e0635a68c478312dedaf62a7"
+    },
+    {
+      "capability": "Debug a debug-build overflow panic and choose the registered saturation rule.",
+      "category": "failing-test",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "failing-03-overflow-boundary",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "attempt to add with overflow"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "ecf60042205d8efa5c2aab19b4f49793d3a3942cc392924a7feed0eecc528f01"
+    },
+    {
+      "capability": "Replace a partial comparator with a total order that puts NaN last.",
+      "category": "failing-test",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "failing-04-nan-ordering",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "4a642ddb3ef85e2f6808a73641f15f35c004108ef7952c21a7d9dfbbcbc2a8cf"
+    },
+    {
+      "capability": "Migrate to an Option-returning parse API and preserve the caller's error text.",
+      "category": "api-migration",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "migrate-01-signature",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0599"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "dep/Cargo.toml",
+        "dep/src/lib.rs",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "eb4af59a9ab758030e92141244f0980c8697d9765f02b8a59fc3a683ec9c38bb"
+    },
+    {
+      "capability": "Replace a removed constructor with the builder API, including its error path.",
+      "category": "api-migration",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "migrate-02-builder",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0599"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "dep/Cargo.toml",
+        "dep/src/lib.rs",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "ab2742a8c5179e5ded71577cdfb69e3d128333b1712e7a6b94f90f68feb40d78"
+    },
+    {
+      "capability": "Add the conversion a new dependency error type requires at every `?` site.",
+      "category": "api-migration",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "migrate-03-error-conversion",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "dep/Cargo.toml",
+        "dep/src/lib.rs",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "694258ed23251da9415b6a46b4ab30a2c9df8343bf3d9260716dd4d20ce09395"
+    },
+    {
+      "capability": "Bring an extension trait into scope after the method moved into it.",
+      "category": "api-migration",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "migrate-04-trait-import",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0599"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "dep/Cargo.toml",
+        "dep/src/lib.rs",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "309267f203e714ce98d11ee85ad79e8c5e886d8ab0f2e3879edcd5e04ea38a99"
+    },
+    {
+      "capability": "Propagate one lifetime annotation through a three-module call chain.",
+      "category": "repo-scale",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "repo-01-lifetime-propagation",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0106"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs",
+        "src/model.rs",
+        "src/query.rs",
+        "src/report.rs",
+        "src/store.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs",
+        "src/query.rs",
+        "src/report.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "ebed946fbb4e962f2bc7ee5552e9946f9c5059f7c3e078f421d5a711a50c1d92"
+    },
+    {
+      "capability": "Extend a shared error type with conversions so `?` works in a service module.",
+      "category": "repo-scale",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "repo-02-error-propagation",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/error.rs",
+        "src/lib.rs",
+        "src/parse.rs",
+        "src/service.rs",
+        "src/store.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/error.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "97de679630ff9247478a12df69efd59efb826710a5d81b7a2412c0cb02584c08"
+    },
+    {
+      "capability": "Add a missing trait impl and bound shared by three modules.",
+      "category": "repo-scale",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "repo-03-generic-bounds",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs",
+        "src/math.rs",
+        "src/stats.rs",
+        "src/traits.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/stats.rs",
+        "src/traits.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "3a002d58af2db7a16e9661375682f6d306c8521bac168d82318998c774f77fae"
+    },
+    {
+      "capability": "Complete an impl that omits an associated type and keep the generic helper valid.",
+      "category": "trait-impl",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "traits-01-associated-type",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0046"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "d4f3cd3402ca0639cad8b68cb60212740212a775949681cdeda35f90ba124ff9"
+    },
+    {
+      "capability": "Resolve an overlapping blanket impl by implementing the concrete types only.",
+      "category": "trait-impl",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "traits-02-coherence",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0119"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "c2abea0bf8c8771c381e85c379919dbb333de307b390425f18088467af3a29aa"
+    },
+    {
+      "capability": "Make a trait object-safe by removing a generic method, keeping dynamic dispatch.",
+      "category": "trait-impl",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "traits-03-object-safety",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0038"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "suite",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "a23579e911b761edaf4c9efbfb4b64ed045b3041eb6ba0df806147e470886649"
+    },
+    {
+      "capability": "Propagate a lifetime constraint across a lookup/resolve/chain call graph.",
+      "category": "trio",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "trio-01-lifetime-chain",
+      "initial_failure": {
+        "kind": "compile_error",
+        "must_contain": [
+          "E0106"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "trio",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "54e001f079141e352c51b2eb3b20f0608a3f7effbe19ee199941b7cda5ea0a2b"
+    },
+    {
+      "capability": "Compute a minimal topological recompute set, excluding known quantities and rejecting cycles.",
+      "category": "trio",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "trio-02-math-dependency",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "trio",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "2865cc789c73d570bb780efdb171a56fd0ef381f3ed7a59eb9130a3f5d1d3b3c"
+    },
+    {
+      "capability": "Find the shortest premise chain for a quantified conclusion and the minimal strengthening set.",
+      "category": "trio",
+      "checker": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "kind": "cargo_test",
+        "manifest_policy": "locked",
+        "open_files": 256,
+        "timeout_seconds": 45.0
+      },
+      "hidden_files": [
+        "tests/check.rs"
+      ],
+      "id": "trio-03-logic-quantifier",
+      "initial_failure": {
+        "kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ]
+      },
+      "initial_files": [
+        "Cargo.toml",
+        "src/lib.rs"
+      ],
+      "kind": "trio",
+      "license": "MIT OR Apache-2.0",
+      "probe_expectation": null,
+      "reference_files": [
+        "src/lib.rs"
+      ],
+      "run_limits": null,
+      "tree_sha256": "7208ecb3b2a9bb7126f5d2f1566c20286203b0cd2a802a083ca30cb959bdd605"
+    }
+  ]
+}

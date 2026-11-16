@@ -1,0 +1,27 @@
+{
+  "capability": "Recognise a non-Send smart pointer crossing a thread boundary and move to Arc.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "concurrency-03-send-boundary",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "part[start..end].iter().copied().sum::<i64>()",
+    "replace": "part[start..end].iter().copied().take(1).sum::<i64>()"
+  },
+  "observed_failure": "error[E0277]: `Rc<Vec<i64>>` cannot be sent between threads safely\n --> src/lib.rs:10:13\n  |\n10|         let part = Rc::clone(&shared);\n  |             ^^^^^^^^^^^^^^^^^^^^^^^^^ `Rc<Vec<i64>>` is not `Send`",
+  "prompt_intro": "This crate does not build: `Rc<Vec<i64>>` is not `Send`, so the spawned\nworker cannot capture it. Use a thread-safe shared pointer and keep the\nresult identical (the sum of every element, computed in parallel chunks).\nKeep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

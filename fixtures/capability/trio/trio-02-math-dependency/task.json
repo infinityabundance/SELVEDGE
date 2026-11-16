@@ -1,0 +1,60 @@
+{
+  "capability": "Compute a minimal topological recompute set, excluding known quantities and rejecting cycles.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "trio-02-math-dependency",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "if known.contains(&node) || done.contains(&node) {",
+    "replace": "if done.contains(&node) {"
+  },
+  "observed_failure": "thread 'tests::known_inputs_are_pruned' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: [\"c\", \"b\"]\n right: [\"b\", \"c\"]",
+  "operation_items": [
+    {
+      "operation": "close from the target, exclude satisfied nodes, emit in order",
+      "test": "known_inputs_are_pruned"
+    },
+    {
+      "operation": "an empty closure",
+      "test": "a_known_target_needs_nothing"
+    },
+    {
+      "operation": "prune at depth and keep the closure minimal",
+      "test": "intermediate_known_values_are_skipped"
+    },
+    {
+      "operation": "topological order with deduplication",
+      "test": "a_diamond_orders_dependencies_first"
+    },
+    {
+      "operation": "a target outside the relation is rejected",
+      "test": "an_unknown_target_is_an_error"
+    },
+    {
+      "operation": "reject an inconsistent cycle and name its closing node",
+      "test": "a_cycle_is_an_error"
+    }
+  ],
+  "prompt_intro": "`minimal_recompute` must return the outputs that have to be recomputed to\nobtain `target`, in dependency order, with each output appearing once and\nwith outputs in `known` omitted (and their dependencies pruned). If `target`\nis already known, return an empty plan. If the target has no rule and is not\nknown, return `Err(PlanError::Unknown(target))`. If the dependency closure\ncontains a cycle, return `Err(PlanError::Cycle(node))` with the node that\ncloses the cycle. Ties are broken by the order rules are declared.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Given a target, build its dependency relation, close it from the required node while excluding already-satisfied nodes, reject a cycle as an error, and emit the minimal set of declarations to change in dependency order.",
+    "name": "dependency-closure minimal repair",
+    "surface": "numeric-dependency",
+    "transfer_rule": "A trio win requires success on every surface with the per-surface breakdown reported; a pooled or single-surface gain is not transfer."
+  }
+}

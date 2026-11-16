@@ -1,0 +1,27 @@
+{
+  "capability": "Debug a rounding boundary in a chunk count, including overflow safety.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "failing-01-chunk-boundary",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "len.div_ceil(size)",
+    "replace": "len / size"
+  },
+  "observed_failure": "running 1 test\ntest tests::five_items_in_chunks_of_two_need_three_chunks ... FAILED\n\nthread 'tests::five_items_in_chunks_of_two_need_three_chunks' panicked at\nsrc/lib.rs:16:9:\nassertion `left == right` failed\n  left: 2\n right: 3\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. `chunk_count` must return the number of chunks needed to hold `len` items in groups of `size`, treating a size of zero as zero chunks, and it must not overflow for any `usize` input. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

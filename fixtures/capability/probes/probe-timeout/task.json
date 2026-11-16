@@ -1,0 +1,19 @@
+{
+  "capability": "Sandbox probe: a non-terminating test is killed and recorded as a timeout.",
+  "category": "probe",
+  "checker": {
+    "kind": "compile_then_run"
+  },
+  "entry": "src/lib.rs",
+  "id": "probe-timeout",
+  "kind": "probe",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "probe_expectation": "timeout",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "run_limits": {
+    "address_space_bytes": 536870912,
+    "wall_seconds": 5.0
+  },
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,27 @@
+{
+  "capability": "Add a missing trait impl and bound shared by three modules.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "repo-03-generic-bounds",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/stats.rs",
+    "find": ".div_euclid(",
+    "replace": " / ("
+  },
+  "observed_failure": "error[E0277]: the trait bound `u32: AsI64` is not satisfied\n --> src/lib.rs:7:21\n  |\n7 |     math::sum(items)\n  |     ---------- ^^^^^ the trait `AsI64` is not implemented for `u32`",
+  "prompt_intro": "This crate does not build. `lib::total_u32` passes `&[u32]` to a function\nbounded by `AsI64`, but `u32` has no impl, and `stats::mean_floor` forgets\nthe bound entirely. Implement `AsI64` for `u32`, add the missing bound, and\nmake `mean_floor` floor towards negative infinity. Do not change the trait\ndefinition or `math::sum`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

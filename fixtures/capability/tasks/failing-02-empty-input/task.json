@@ -1,0 +1,27 @@
+{
+  "capability": "Fix a missing empty/short-input case without changing the signature.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "failing-02-empty-input",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "index out of bounds"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".unwrap_or(0)",
+    "replace": ".unwrap_or(1)"
+  },
+  "observed_failure": "thread 'tests::single_value_has_no_gap' panicked at src/lib.rs:5:24:\nindex out of bounds: the len is 1 but the index is 1\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible test fails with an index-out-of-bounds panic. `max_gap` must return the largest difference between consecutive values, and 0 for slices with fewer than two elements. Keep the signature `pub fn max_gap(values: &[i64]) -> i64`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

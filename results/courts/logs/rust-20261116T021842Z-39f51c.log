@@ -1,0 +1,10 @@
+compile_error
+error[E0432]: unresolved import `repo_01_lifetime_propagation::describe_cheapest`
+ --> tests/check.rs:1:51
+  |
+1 | use repo_01_lifetime_propagation::{cheapest_name, describe_cheapest, store, Item};
+  |                                                   ^^^^^^^^^^^^^^^^^ no `describe_cheapest` in the root
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `repo_01_lifetime_propagation` (test "check") due to 1 previous error
+

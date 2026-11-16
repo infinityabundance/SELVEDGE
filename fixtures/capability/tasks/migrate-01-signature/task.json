@@ -1,0 +1,30 @@
+{
+  "capability": "Migrate to an Option-returning parse API and preserve the caller's error text.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "migrate-01-signature",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "invalid measurement",
+    "replace": "invalid"
+  },
+  "observed_failure": "error[E0599]: no method named `map_err` found for enum `Option` in the\ncurrent scope\n --> src/lib.rs:4:48\n  |\n4 |     let measurement = units::parse(input).map_err(|error| error.to_string())?;\n  |                                              ^^^^^^^ method not found in `Option<Measurement>`",
+  "prompt_intro": "The crate does not build against the vendored `units` 2.0.0. In version 1, `units::parse` returned `Result<Measurement, ParseError>`; in version 2 it returns `Option<Measurement>` and `parse_strict` returns the `Result`. Do not modify `dep/`. Keep `pub fn load(input: &str) -> Result<f64, String>` and return the error string `invalid measurement` for any unparsable input.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

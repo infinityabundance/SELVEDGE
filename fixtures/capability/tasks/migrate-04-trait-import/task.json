@@ -1,0 +1,30 @@
+{
+  "capability": "Bring an extension trait into scope after the method moved into it.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "migrate-04-trait-import",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".render()",
+    "replace": ".render().replace('h', \"H\")"
+  },
+  "observed_failure": "error[E0599]: no method named `render` found for struct `documents::Doc`\nin the current scope\n --> src/lib.rs:2:31\n  |\n2 |     documents::doc(title).render()\n  |                           ^^^^^^ help: trait `Render` which provides `render`\n  |                                   is implemented, but is not in scope",
+  "prompt_intro": "The crate does not build against the vendored `documents` 2.0.0. The\n`render` method moved from an inherent method into the `Render` trait.\nDo not modify `dep/`. Make `render_doc` compile by changing the\napplication's imports; the output must remain `<h1>{title}</h1>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

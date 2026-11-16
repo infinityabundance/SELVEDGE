@@ -1,0 +1,27 @@
+{
+  "capability": "Resolve a shared/mutable borrow conflict by copying the value out.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "borrow-02-mutate-while-borrowed",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unwrap_or(0)",
+    "replace": "unwrap_or(1)"
+  },
+  "observed_failure": "error[E0502]: cannot borrow `*values` as mutable because it is also\nborrowed as immutable\n --> src/lib.rs:4:5\n  |\n2 |     let last = values.last().unwrap_or(&0);\n  |                ------ immutable borrow occurs here\n3 |     values.push(value);\n  |     ^^^^^^^^^^^^^^^^^^ mutable borrow occurs here\n4 |     *last\n  |     ----- immutable borrow later used here",
+  "prompt_intro": "This crate does not compile. `push_and_report` keeps a borrow of the vector's last element across a push. Return the previous last value (or 0 for an empty vector) without holding the borrow across the mutation. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

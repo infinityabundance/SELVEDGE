@@ -1,0 +1,60 @@
+{
+  "capability": "Find the shortest premise chain for a quantified conclusion and the minimal strengthening set.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "trio-03-logic-quantifier",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "if premise.object == to {",
+    "replace": "if premise.object == to && path.is_empty() {"
+  },
+  "observed_failure": "thread 'tests::a_two_step_chain_is_found' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: None\n right: Some([0, 1])",
+  "operation_items": [
+    {
+      "operation": "one-edge closure, no repair required",
+      "test": "a_direct_all_premise_needs_no_strengthening"
+    },
+    {
+      "operation": "close the target over the premise relation and order it",
+      "test": "a_two_step_chain_is_found"
+    },
+    {
+      "operation": "reduce the edge to the required consistency rule",
+      "test": "a_some_link_must_be_strengthened"
+    },
+    {
+      "operation": "choose the minimal closure",
+      "test": "the_shortest_chain_wins"
+    },
+    {
+      "operation": "an empty closure",
+      "test": "identical_nodes_need_no_premise"
+    },
+    {
+      "operation": "a target outside the relation is rejected",
+      "test": "an_unreachable_target_is_none"
+    }
+  ],
+  "prompt_intro": "`repair_path` must find the shortest premise chain from `from` to `to` and\nreport which premises in that chain must be strengthened from `Some` to\n`All`. `path` holds the premise indices in order; `strengthened` holds the\nindices in that path whose quantifier was `Some`. If `from == to`, return an\nempty path. If no chain exists, return `None`. Ties on length are broken by\nthe lexicographically smallest index sequence.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Given a target, build its dependency relation, close it from the required node while excluding already-satisfied nodes, reject a cycle as an error, and emit the minimal set of declarations to change in dependency order.",
+    "name": "dependency-closure minimal repair",
+    "surface": "quantifier-chain",
+    "transfer_rule": "A trio win requires success on every surface with the per-surface breakdown reported; a pooled or single-surface gain is not transfer."
+  }
+}

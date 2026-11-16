@@ -1,0 +1,27 @@
+{
+  "capability": "Debug a debug-build overflow panic and choose the registered saturation rule.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "failing-03-overflow-boundary",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "attempt to add with overflow"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "saturating_add",
+    "replace": "wrapping_add"
+  },
+  "observed_failure": "thread 'tests::saturates_instead_of_overflowing' panicked at src/lib.rs:5:28:\nattempt to add with overflow\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible test fails with an arithmetic overflow panic. `running_total` must sum bytes and saturate at 255 instead of overflowing or wrapping. Keep the signature `pub fn running_total(values: &[u8]) -> u8`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

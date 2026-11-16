@@ -1,0 +1,27 @@
+{
+  "capability": "Replace a partial comparator with a total order that puts NaN last.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "failing-04-nan-ordering",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "(true, false) => std::cmp::Ordering::Greater",
+    "replace": "(true, false) => std::cmp::Ordering::Less"
+  },
+  "observed_failure": "thread 'tests::nan_sorts_last' panicked at src/lib.rs:15:9:\nassertion `left == right` failed\n  left: [1.0, NaN, 2.0]\n right: [1.0, 2.0, 3.0]\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible test fails because `f64::partial_cmp` returns `None` for NaN and the comparator treats that as equal. Define a total order: finite values ascending, and every NaN after every finite value. Keep the signature `pub fn sort_ascending(values: &mut [f64])`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

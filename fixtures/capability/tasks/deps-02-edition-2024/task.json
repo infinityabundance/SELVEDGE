@@ -1,0 +1,27 @@
+{
+  "capability": "Repair code that violates edition-2024 rules (reserved identifier, binding modes).",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "deps-02-edition-2024",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "gen"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "some {inner}",
+    "replace": "some{}"
+  },
+  "observed_failure": "error: expected identifier, found keyword `gen`\n --> src/lib.rs:8:9\n  |\n8 |     let gen = seed.wrapping_mul(6364136223846793005).wrapping_add(1);\n  |         ^^^ expected identifier, found keyword\n\nerror: binding modifiers may only be written when the default binding mode\nis `move`\n --> src/lib.rs:4:14\n  |\n4 |         Some(ref inner) => format!(\"some {inner}\"),\n  |              ^^^ binding modifier not allowed under `ref` default binding mode",
+  "prompt_intro": "The crate declares edition 2024 but was written for edition 2021 and does\nnot build. `gen` is a reserved keyword in edition 2024, and a `ref` binding\nmodifier is not allowed when the default binding mode is not `move`.\nRename the binding and remove the modifier; do not change the edition.\nKeep both function signatures and their behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

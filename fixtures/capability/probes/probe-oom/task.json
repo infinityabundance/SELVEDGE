@@ -1,0 +1,19 @@
+{
+  "capability": "Sandbox probe: an allocation past RLIMIT_AS aborts and is recorded as OOM.",
+  "category": "probe",
+  "checker": {
+    "kind": "compile_then_run"
+  },
+  "entry": "src/lib.rs",
+  "id": "probe-oom",
+  "kind": "probe",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "probe_expectation": "oom",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "run_limits": {
+    "address_space_bytes": 536870912,
+    "wall_seconds": 10.0
+  },
+  "schema": "selvedge/capability-task/v1"
+}

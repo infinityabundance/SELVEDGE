@@ -1,0 +1,19 @@
+capability_selftest: borrow-01-local-reference: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: borrow-02-mutate-while-borrowed: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: borrow-03-self-referential-window: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: borrow-04-iterator-invalidation: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: concurrency-01-lock-order-deadlock: initial=timeout reference=pass mutation=compile_error
+capability_selftest: concurrency-02-lost-update: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: concurrency-03-send-boundary: initial=compile_error reference=compile_error mutation=compile_error
+capability_selftest: deps-01-version-requirement: initial=compile_error reference=compile_error mutation=compile_error
+capability_selftest: deps-02-edition-2024: initial=compile_error reference=pass mutation=pass
+Traceback (most recent call last):
+  File "/work/scripts/capability_selftest.py", line 266, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/scripts/capability_selftest.py", line 156, in main
+    mutated, mutation = checkers.mutate_reference(task)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/work/oracle/capability/checkers.py", line 293, in mutate_reference
+    raise CheckerError(f"{task.id}: mutation file {path!r} is not in the reference")
+capability.checkers.CheckerError: deps-03-optional-feature: mutation file 'src/lib.rs' is not in the reference

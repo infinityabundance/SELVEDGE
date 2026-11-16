@@ -1,0 +1,47 @@
+capability_selftest: borrow-01-local-reference: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-02-mutate-while-borrowed: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-03-self-referential-window: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: borrow-04-iterator-invalidation: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: concurrency-01-lock-order-deadlock: initial=timeout reference=pass mutation=test_failed
+capability_selftest: concurrency-02-lost-update: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: concurrency-03-send-boundary: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-01-version-requirement: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: deps-02-edition-2024: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: deps-03-optional-feature: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: failing-01-chunk-boundary: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-02-empty-input: initial=test_failed reference=test_failed mutation=test_failed
+capability_selftest: failing-03-overflow-boundary: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: failing-04-nan-ordering: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: migrate-01-signature: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-02-builder: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-03-error-conversion: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: migrate-04-trait-import: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-01-lifetime-propagation: initial=compile_error reference=compile_error mutation=compile_error
+capability_selftest: repo-02-error-propagation: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: repo-03-generic-bounds: initial=compile_error reference=pass mutation=compile_error
+capability_selftest: traits-01-associated-type: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: traits-02-coherence: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: traits-03-object-safety: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: trio-01-lifetime-chain: initial=compile_error reference=pass mutation=test_failed
+capability_selftest: trio-02-math-dependency: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: trio-03-logic-quantifier: initial=test_failed reference=pass mutation=test_failed
+capability_selftest: probe-compile-error: compile_error (expected compile_error)
+Traceback (most recent call last):
+  File "/work/scripts/capability_selftest.py", line 266, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/scripts/capability_selftest.py", line 192, in main
+    run = checkers.run_check(task, checkers.initial_solution(task), args.workroot,
+                             keep=args.keep)
+  File "/work/oracle/capability/checkers.py", line 186, in run_check
+    result = _compile_then_run(task, workdir)
+  File "/work/oracle/capability/checkers.py", line 226, in _compile_then_run
+    run = sandbox.run_bounded([binary, "--test-threads=1"], workdir, task.run_limits)
+  File "/work/oracle/capability/sandbox.py", line 302, in run_bounded
+    limits.validate("run_bounded")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/limits.py", line 74, in validate
+    raise LimitError(
+        f"{where}: address_space_bytes {self.address_space_bytes} is below the "
+        f"measured toolchain floor {TOOLCHAIN_MIN_ADDRESS_SPACE}")
+capability.limits.LimitError: run_bounded: address_space_bytes 536870912 is below the measured toolchain floor 3221225472

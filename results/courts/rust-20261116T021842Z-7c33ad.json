@@ -1,0 +1,135 @@
+{
+  "argv": [
+    "python3",
+    "scripts/capability_authoring.py",
+    "--materialize",
+    "--manifest"
+  ],
+  "container_exit_code": 0,
+  "container_id": "9ba4790021669837d272def6c62d489feaeddefd5103d08dac744b681c042f06",
+  "container_name": "selvedge-rust-court-20261116T021842Z-7c33ad",
+  "court": "rust",
+  "duration_ms": 201,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "memory_swap_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "nano_cpus": {
+        "actual": 2000000000,
+        "expected": 2000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T02:18:42Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+  "image_ref": "selvedge/rust-court:20261116-1.98-slim-2744951e34ae",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "2",
+    "init": true,
+    "memory": "4g",
+    "memory_bytes": 4294967296,
+    "memory_swap": "4g",
+    "memory_swap_bytes": 4294967296,
+    "nano_cpus": 2000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/rust-20261116T021842Z-7c33ad.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache:ro"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "da6354c37d90d25ccde9d534a4ff20e167144bcb",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T021842Z",
+  "started_utc": "2026-11-16T02:18:42Z",
+  "toolchain": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "absent",
+    "pip3": "absent",
+    "python3": "Python 3.13.5",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

@@ -1,0 +1,27 @@
+{
+  "capability": "Recognise a reference to a local value and return owned data instead.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "borrow-01-local-reference",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ":ready",
+    "replace": ":READY"
+  },
+  "observed_failure": "error[E0515]: cannot return value referencing local variable `text`\n --> src/lib.rs:4:5\n  |\n3 |     let text = format!(\"{prefix}:ready\");\n  |         ---- `text` is borrowed here\n4 |     &text\n  |     ^^^^^ returns a value referencing data owned by the current function",
+  "prompt_intro": "This crate does not compile. `label` creates a `String` locally and returns a reference to it. Change the signature to `pub fn label(prefix: &str) -> String` and keep the formatting identical.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

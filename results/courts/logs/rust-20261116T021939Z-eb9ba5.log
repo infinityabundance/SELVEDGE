@@ -1,0 +1,29 @@
+compile_error
+error[E0597]: `text` does not live long enough
+  --> src/lib.rs:10:21
+   |
+ 9 |     pub fn new(text: String) -> Self {
+   |                ---- binding `text` declared here
+10 |         let first = text.split_whitespace().next().unwrap_or("");
+   |                     ^^^^ borrowed value does not live long enough
+11 |         Self { text, first }
+   |                      ----- this usage requires that `text` is borrowed for `'static`
+12 |     }
+   |     - `text` dropped here while still borrowed
+
+error[E0505]: cannot move out of `text` because it is borrowed
+  --> src/lib.rs:11:16
+   |
+ 9 |     pub fn new(text: String) -> Self {
+   |                ---- binding `text` declared here
+10 |         let first = text.split_whitespace().next().unwrap_or("");
+   |                     ---- borrow of `text` occurs here
+11 |         Self { text, first }
+   |                ^^^^  ----- this usage requires that `text` is borrowed for `'static`
+   |                |
+   |                move out of `text` occurs here
+
+Some errors have detailed explanations: E0505, E0597.
+For more information about an error, try `rustc --explain E0505`.
+error: could not compile `borrow_03_self_referential_window` (lib) due to 2 previous errors
+

@@ -1,0 +1,27 @@
+{
+  "capability": "Propagate one lifetime annotation through a three-module call chain.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "repo-01-lifetime-propagation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0106"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/query.rs",
+    "find": "min_by_key(|item| item.price)",
+    "replace": "max_by_key(|item| item.price)"
+  },
+  "observed_failure": "error[E0106]: missing lifetime specifier\n --> src/query.rs:3:54\n  |\n3 | pub fn cheapest(items: &[Item], fallback: &Item) -> Option<&Item> {\n  |                           ----          ----            ^ expected named lifetime parameter\n  |\n  = help: this function's return type contains a borrowed value, but the\n          signature does not say whether it is borrowed from `items` or `fallback`",
+  "prompt_intro": "This crate does not build. `query::cheapest` elides a lifetime across two\ninput references, and `lib::cheapest_name` does the same. Annotate the\nlifetime so the returned reference is tied to the item slice, and thread\nthe same lifetime through `report::describe_cheapest`. Semantics: return\nthe cheapest item, or the fallback when the slice is empty.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

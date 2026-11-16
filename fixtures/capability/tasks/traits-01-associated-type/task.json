@@ -1,0 +1,27 @@
+{
+  "capability": "Complete an impl that omits an associated type and keep the generic helper valid.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "traits-01-associated-type",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "repo.get(0).unwrap_or(0)",
+    "replace": "repo.get(1).unwrap_or(0)"
+  },
+  "observed_failure": "error[E0046]: not all trait items implemented, missing: `Id`\n --> src/lib.rs:11:1\n  |\n11| impl Repo for MemoryRepo {\n  | ^^^^^^^^^^^^^^^^^^^^^^^^ missing `Id` in implementation",
+  "prompt_intro": "This crate does not build: the `Repo` impl for `MemoryRepo` omits the\nassociated type `Id`. Add it (`type Id = u32;`) so the impl matches the\ntrait and the generic helper compiles. Do not change the trait.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

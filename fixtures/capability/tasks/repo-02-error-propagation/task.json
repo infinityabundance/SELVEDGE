@@ -1,0 +1,27 @@
+{
+  "capability": "Extend a shared error type with conversions so `?` works in a service module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "repo-02-error-propagation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/error.rs",
+    "find": "AppError::Parse(error.field)",
+    "replace": "AppError::Parse(0)"
+  },
+  "observed_failure": "error[E0277]: `?` couldn't convert the error to `AppError`\n --> src/service.rs:8:36\n  |\n8 |     for line in lines { rows.push(parse_row(line)?); }\n  |                                    ^^^^^^^^^^^^^^^ the trait\n  |                                    `From<ParseError>` is not implemented for `AppError`",
+  "prompt_intro": "This crate does not build. `service::import` uses `?` on a parse error and\non an I/O error, but `AppError` has neither the variants nor the `From`\nconversions. Add `AppError::Parse(usize)` and `AppError::Io` and the two\nconversions in `src/error.rs`, without changing `parse.rs`, `store.rs` or\n`service.rs`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

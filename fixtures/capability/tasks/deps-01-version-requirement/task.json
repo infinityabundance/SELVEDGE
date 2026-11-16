@@ -1,0 +1,30 @@
+{
+  "capability": "Diagnose a semver requirement that excludes the vendored version, then adapt the API.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "deps-01-version-requirement",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "failed to select a version"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "percent as f64 / 100.0",
+    "replace": "percent as f64"
+  },
+  "observed_failure": "error: failed to select a version for the requirement `scaling = \"^1.2\"`\ncandidate versions found which didn't match: 2.0.0\nlocation searched: `/work/.../dep`\nrequired by package `deps_01_version_requirement v0.1.0`",
+  "prompt_intro": "This crate does not build. Its manifest requires `scaling` version 1.2,\nbut the vendored dependency is 2.0.0, and version 2 changed `scale` from\nan integer factor to an `f64` factor. Update the dependency requirement to\nthe vendored major version and change `scale_percent` so that\n`scale_percent(value, percent)` returns `value * percent / 100.0`. You may\nedit `Cargo.toml`; do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

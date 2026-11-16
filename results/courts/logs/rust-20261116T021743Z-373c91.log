@@ -1,0 +1,82 @@
+===== concurrency-03-send-boundary ref test_failed
+STDOUT: 
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+... 3/4
+sums_every_element --- FAILED
+
+failures:
+
+---- sums_every_element stdout ----
+
+thread '<unnamed>' (131) panicked at src/lib.rs:18:21:
+range start index 6 out of range for slice of length 5
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'sums_every_element' (123) panicked at src/lib.rs:24:37:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+
+
+failures:
+    sums_every_element
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+STDERR: error: test failed, to rerun pass `--test check`
+
+===== deps-01-version-requirement ref pass
+STDOUT: 
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+....
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+STDERR: 
+===== deps-03-optional-feature init compile_error
+STDOUT: 
+STDERR: error[E0425]: cannot find function `normalise_fast` in crate `textkit`
+ --> src/lib.rs:4:14
+  |
+4 |     textkit::normalise_fast(input)
+  |              ^^^^^^^^^^^^^^ not found in `textkit`
+  |
+note: found an item that was configured out
+ --> dep/src/lib.rs:4:8
+  |
+3 | #[cfg(feature = "fast")]
+  |       ---------------- the item is gated behind the `fast` feature
+4 | pub fn normalise_fast(input: &str) -> String {
+  |        ^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `backend` in crate `textkit`
+  --> src/lib.rs:8:14
+   |
+ 8 |     textkit::backend()
+   |              ^^^^^^^ not found in `textkit`
+   |
+note: found an item that was configured out
+  --> dep/src/lib.rs:13:8
+   |
+12 | #[cfg(feature = "fast")]
+   |       ---------------- the item is gated behind the `fast` feature
+13 | pub fn backend() -> &'static str {
+   |        ^^^^^^^
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `deps_03_optional_feature` (lib) due to 2 previous errors
+

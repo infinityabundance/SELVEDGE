@@ -1,0 +1,30 @@
+{
+  "capability": "Read a dependency's feature declaration and enable the optional API at the caller.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "deps-03-optional-feature",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "features = [\"fast\"]",
+    "replace": "features = []"
+  },
+  "observed_failure": "error[E0425]: cannot find function `normalise_fast` in crate `textkit`\n --> src/lib.rs:2:40\n  |\n2 |     textkit::normalise_fast(input)\n  |              ^^^^^^^^^^^^^^ not found in `textkit`",
+  "prompt_intro": "This crate does not build. The vendored `textkit` 2.0.0 exposes\n`normalise_fast` and `backend` only behind its non-default `fast` feature.\nEnable the feature from the application's manifest; do not modify `dep/`\nand do not reimplement the functions. Keep the signatures.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

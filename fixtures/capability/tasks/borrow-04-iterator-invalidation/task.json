@@ -1,0 +1,27 @@
+{
+  "capability": "Collect the keys before mutating the map (iterator invalidation).",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "borrow-04-iterator-invalidation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "key.len() > max_len",
+    "replace": "key.len() >= max_len"
+  },
+  "observed_failure": "error[E0502]: cannot borrow `*map` as mutable because it is also\nborrowed as immutable\n --> src/lib.rs:6:13\n  |\n4 |     for (key, _value) in map.iter() {\n  |                           ------- immutable borrow occurs here\n6 |             map.remove(key);\n  |             ^^^^^^^^^^^^^^^ mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. The loop removes entries while iterating the map. Collect the keys that must go first, then remove them. Return the number removed. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

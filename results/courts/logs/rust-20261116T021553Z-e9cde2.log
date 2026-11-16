@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_selftest.py", line 266, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/scripts/capability_selftest.py", line 137, in main
+    initial = checkers.run_initial(task, args.workroot, keep=args.keep)
+  File "/work/oracle/capability/checkers.py", line 245, in run_initial
+    raise CheckerError(f"{task.id}: could not prepare the initial state: {problems}")
+capability.checkers.CheckerError: borrow-01-local-reference: could not prepare the initial state: ['no files were supplied']

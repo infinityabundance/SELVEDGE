@@ -5,6 +5,13 @@
 # court). The court mounts /work, /cargo and /work/target, runs as the host UID,
 # and never gets the network unless the caller passes --net.
 #
+# python3 (stdlib only) is present because the capability court (P12.8/P12.9)
+# must drive Rust checkers and score their outcomes inside one sandbox: the
+# model runs in the oracle court, which has torch but no cargo, so the check
+# stage needs a python interpreter in an image that also has rustc. No third-
+# party Python packages are installed here, and the harness uses the standard
+# library only for exactly that reason.
+#
 # Build with scripts/build-courts.sh; the resulting image id and base digest are
 # recorded in docker/IMAGES.lock.
 ARG RUST_BASE=rust:1.98-slim
@@ -21,6 +28,8 @@ RUN apt-get update \
         jq \
         pkg-config \
         procps \
+        python3 \
+        python3-minimal \
         util-linux \
     && rm -rf /var/lib/apt/lists/*
 

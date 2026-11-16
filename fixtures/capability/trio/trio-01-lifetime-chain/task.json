@@ -1,0 +1,56 @@
+{
+  "capability": "Propagate a lifetime constraint across a lookup/resolve/chain call graph.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "entry": "src/lib.rs",
+  "id": "trio-01-lifetime-chain",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0106"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*name == key",
+    "replace": "*name != key"
+  },
+  "observed_failure": "error[E0106]: missing lifetime specifier\n --> src/lib.rs:5:52\n  |\n5 | pub fn lookup(table: &Table, key: &str) -> Option<&str> {\n  |                     -----         ----            ^ expected named lifetime parameter",
+  "operation_items": [
+    {
+      "operation": "close the target `value` over the table dependency",
+      "test": "direct_lookup_borrows_the_table"
+    },
+    {
+      "operation": "close over alias -> table in dependency order",
+      "test": "resolution_follows_one_alias"
+    },
+    {
+      "operation": "reject the inconsistent (shorter) provenance and keep the minimal consistent repair",
+      "test": "the_chain_result_outlives_the_alias_slice"
+    },
+    {
+      "operation": "a target outside the relation is not repaired",
+      "test": "an_unknown_key_is_none"
+    },
+    {
+      "operation": "exclude already-satisfied declarations from the repair set",
+      "test": "a_direct_hit_skips_the_alias_table"
+    }
+  ],
+  "prompt_intro": "This crate does not build. `lookup`, `resolve` and `chain` each elide a\nlifetime across two or more input references. Annotate the lifetime so every\nreturned `&str` is tied to the table it came from, never to the alias slice.\nSemantics: `resolve` looks the key up directly, then through the alias table;\n`chain` delegates to `resolve`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Given a target, build its dependency relation, close it from the required node while excluding already-satisfied nodes, reject a cycle as an error, and emit the minimal set of declarations to change in dependency order.",
+    "name": "dependency-closure minimal repair",
+    "surface": "rust-lifetime-chain",
+    "transfer_rule": "A trio win requires success on every surface with the per-surface breakdown reported; a pooled or single-surface gain is not transfer."
+  }
+}
