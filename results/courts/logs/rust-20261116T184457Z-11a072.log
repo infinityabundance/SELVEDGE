@@ -1,0 +1,21 @@
+model=/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 type=qwen3_5 schema=selvedge/model-accounting/v2 layers=24 hidden=1024 intermediate=3584 vocab=248320
+text: 18 linear_attention + 6 full_attention at [3, 7, 11, 15, 19, 23]; delta heads 16x128 conv 4; attention 8q/2kv x 256 (rotary 64 mRoPE [11, 11, 10]); eps=0.000001
+vision: depth=12 hidden=768 intermediate=3072 heads=12 out=1024 patch=16 merge=2 positions=2304
+config_sha256=b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204 checkpoint_digest=<skipped> files=1
+tie config=true lm_head_present=false identical=true treated_as_shared=true compared_elements=0
+tower=mtp tensors=15 checkpoint_elements=20452864 unique_elements=20452864 ffn_elements=11010048 always_active=9442816 executed=false
+tower=text tensors=320 checkpoint_elements=752393024 unique_elements=752393024 ffn_elements=264241152 always_active=488151872 executed=true
+tower=vision tensors=153 checkpoint_elements=100592896 unique_elements=100592896 ffn_elements=0 always_active=100592896 executed=false
+checkpoint tensors=488 elements=873438784 bytes=1746882752 unique=873438784 index_total_bytes=Some(1746882752) index_matches=Some(true)
+dtype=bf16 tensors=452 elements=873436192 bytes=1746872384
+dtype=f32 tensors=36 elements=2592 bytes=10368
+active_path=text-only executed=["text"] excluded=["vision", "mtp"] unique_active=752393024 verdict=consistent
+excluded tower=vision elements=100592896 reason=a text-only execution never reads the vision encoder
+excluded tower=mtp elements=20452864 reason=the MTP head executes only when multi-token drafting is enabled
+shared_read tensor=model.language_model.embed_tokens.weight towers=["text", "mtp"] reason=mtp_use_dedicated_embeddings is false, so the MTP head reads the language model's token embedding
+  + 752393024 text tower unique (tie-aware)
+  - 20452864 mtp head (excluded by the declared path)
+  - 100592896 vision tower (never read by this path)
+ceiling=1000000000 requested=true active=752393024 headroom=247606976 verdict=certified
+the declared path text-only reads 752393024 unique active elements, which is at or below the 1000000000 ceiling; headroom 247606976. The tie is verified (the embedding is the output projection)
+verdict=ok
