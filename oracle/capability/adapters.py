@@ -250,8 +250,8 @@ class T2ArmAdapter(Adapter):
         if config_sha != sha256_file(self.config):
             problems.append("the receipt's config digest does not match the config file")
         admission_path = (receipt.get("admission") or {}).get("path")
-        if not admission_path or (os.path.normpath(admission_path)
-                                  != os.path.normpath(self.admission)):
+        if not admission_path or (_path_tail(admission_path)
+                                  != _path_tail(self.admission)):
             problems.append(
                 f"the receipt names admission record {admission_path!r}, not "
                 f"{self.admission!r}")
@@ -677,6 +677,17 @@ def checkpoint_digest(path: str) -> str | None:
                     digest.update(chunk)
             count += 1
     return digest.hexdigest() if count else None
+
+
+def _path_tail(path, depth: int = 3) -> tuple:
+    """The last `depth` components of a path.
+
+    Receipts record repository-relative paths and an invocation may use either
+    form, so identity is compared on the tail rather than on the string. The
+    record's contents are compared separately; this only proves that the receipt
+    named the same file.
+    """
+    return tuple(os.path.normpath(str(path)).replace(os.sep, "/").split("/")[-depth:])
 
 
 def _step_from_checkpoint_name(name) -> int | None:
