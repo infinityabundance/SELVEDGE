@@ -1,0 +1,61 @@
+{
+  "capability": "Classify variable occurrences as free or bound by the nearest matching quantifier.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "trio-09-quantifier-occurrences",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "if binder == name { depth + 1 } else { depth }",
+    "replace": "if binder != name { depth + 1 } else { depth }"
+  },
+  "observed_failure": "thread 'a_variable_under_an_unrelated_binder_is_free' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: [Bound(0)]\n right: [Free]",
+  "operation_items": [
+    {
+      "operation": "a matching binder governs occurrences in its body",
+      "test": "a_bound_occurrence_is_bound_at_depth_zero"
+    },
+    {
+      "operation": "resolve each occurrence against its own scope",
+      "test": "free_and_bound_occurrences_are_distinguished"
+    },
+    {
+      "operation": "a non-matching binder does not bind the name",
+      "test": "a_variable_under_an_unrelated_binder_is_free"
+    },
+    {
+      "operation": "skip unrelated binders when counting depth",
+      "test": "an_outer_variable_is_bound_at_the_nearest_same_name_binder"
+    },
+    {
+      "operation": "each enclosing same-name binder increases the binding depth",
+      "test": "nested_same_name_binders_increase_the_binding_depth"
+    },
+    {
+      "operation": "the empty occurrence set is stable",
+      "test": "a_formula_without_the_name_has_no_occurrences"
+    }
+  ],
+  "prompt_intro": "The crate builds, but `occurrences` increments the binding depth for every quantifier instead of only for a quantifier binding the queried name, so a variable under an unrelated binder is misclassified. Classify each occurrence as `Free` or `Bound(d)`, where `d` is one less than the number of same-name binders enclosing the occurrence (zero for the outermost). Keep the public API.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Resolve each occurrence against the nearest enclosing binding for that name, distinguish free from bound occurrences, reject or reject-free an unbound name as the surface requires, and never leak an inner scope.",
+    "name": "quantifier/scope resolution",
+    "surface": "logic",
+    "transfer_rule": "A surface is solved only when every task on that surface passes; the trio win requires all three surfaces and is never pooled across them."
+  }
+}

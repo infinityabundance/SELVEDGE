@@ -1,0 +1,31 @@
+{
+  "capability": "Disable a default feature and enable the API-bearing alternative.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "deps-09-disable-default-features",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec::render(value)",
+    "replace": "codec::render(value).to_lowercase()"
+  },
+  "observed_failure": "error[E0425]: cannot find function `render` in crate `codec`\n --> src/lib.rs:3:12\n  |\n3 |     codec::render(value)\n  |            ^^^^^^ not found in `codec`",
+  "prompt_intro": "This crate does not build. The vendored `codec` 2.0.0 enables its `legacy` feature by default, which hides `render`; `render` exists only with the `modern` feature. Disable the defaults and enable `modern`. Do not modify `dep/`. Keep `pub fn render(value: &str) -> String`, which trims and upper-cases.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

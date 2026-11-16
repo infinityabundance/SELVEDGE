@@ -1,0 +1,28 @@
+{
+  "capability": "Add a required trait method and implement it in every module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "repo-09-trait-method-propagation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/json.rs",
+    "find": "\"ok\"",
+    "replace": "\"no\""
+  },
+  "observed_failure": "error[E0046]: not all trait items implemented, missing: `flush`\n --> src/json.rs:4:1\n  |\n4 | impl Sink for Json {\n  | ^^^^^^^^^^^^^^^^^^ missing `flush` in implementation",
+  "prompt_intro": "This crate does not compile. The `Sink` trait gained a required `flush` method; the JSON and CSV implementations do not provide it. Implement `flush` returning `\"ok\"` in both, and keep the pipeline's output `{json};{csv};{flush}`. Keep every signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

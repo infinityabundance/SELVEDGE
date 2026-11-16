@@ -37,6 +37,7 @@ CATEGORIES = (
     "concurrency",
     "trait-impl",
     "repo-scale",
+    "semantic-repair",
     "trio",
     "probe",
 )
@@ -154,6 +155,7 @@ class Task:
             "id": self.id,
             "kind": self.kind,
             "category": self.category,
+            "difficulty": self.metadata.get("difficulty"),
             "capability": self.metadata["capability"],
             "license": self.metadata["license"],
             "tree_sha256": self.tree_sha256,
@@ -225,7 +227,8 @@ def load_task(root: str) -> Task:
     if failure is not None:
         if not isinstance(failure, dict):
             raise SuiteError(f"{where}: initial_failure must be an object")
-        if failure.get("kind") not in ("compile_error", "test_failure", "timeout", "oom"):
+        if failure.get("kind") not in ("compile_error", "test_failure", "timeout", "oom",
+                                       "hidden_test_failure"):
             raise SuiteError(f"{where}: initial_failure.kind is invalid")
         must = failure.get("must_contain")
         if not isinstance(must, list) or not must or not all(isinstance(m, str) and m
@@ -235,6 +238,9 @@ def load_task(root: str) -> Task:
 
     if metadata.get("manifest_policy", "locked") not in ("locked", "arm"):
         raise SuiteError(f"{where}: manifest_policy must be 'locked' or 'arm'")
+    if "difficulty" in metadata and metadata["difficulty"] not in (
+            "easy", "medium", "hard"):
+        raise SuiteError(f"{where}: difficulty must be easy, medium or hard")
 
     limits = limit_module.from_mapping(metadata.get("limits"), f"{where}: limits")
     run_limits = None

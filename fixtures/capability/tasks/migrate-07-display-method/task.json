@@ -1,0 +1,31 @@
+{
+  "capability": "Use a Display implementation after an inherent accessor is removed.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "migrate-07-display-method",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "label.to_string()",
+    "replace": "format!(\"{label}!\")"
+  },
+  "observed_failure": "error[E0599]: no method named `text` found for struct `Label` in the current scope\n --> src/lib.rs:4:11\n  |\n4 |     label.text().to_string()\n  |           ^^^^ method not found in `Label`",
+  "prompt_intro": "The crate does not build against the vendored `labels` 2.0.0. Version 1 had `Label::text`; version 2 removes it and implements `Display` instead. Rewrite `render` to use the `Display` rendering. Do not modify `dep/`. Keep `pub fn render(value: &str) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

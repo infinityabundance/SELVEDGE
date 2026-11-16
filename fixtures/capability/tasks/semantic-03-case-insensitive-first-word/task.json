@@ -1,0 +1,28 @@
+{
+  "capability": "Apply case folding that the passing lowercase example does not exercise.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-03-case-insensitive-first-word",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "word.eq_ignore_ascii_case(name)",
+    "replace": "word == name"
+  },
+  "observed_failure": "the crate builds and tests pass; is_command(\"RUN now\", \"run\") is false\nalthough the contract is case-insensitive",
+  "prompt_intro": "The command detector builds and its lowercase example passes, but the contract is case-insensitive. `is_command(\"RUN now\", \"run\")` must be true, an empty name is never a command, and only the first word is compared. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

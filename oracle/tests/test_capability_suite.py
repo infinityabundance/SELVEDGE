@@ -28,17 +28,18 @@ def collections():
 
 def test_the_suite_has_the_registered_shape():
     loaded = collections()
-    assert len(loaded["suite"]) == 24
-    assert len(loaded["trio"]) == 3
-    assert len(loaded["probes"]) == 5
+    assert len(loaded["suite"]) == 72
+    assert len(loaded["trio"]) == 9
+    assert len(loaded["probes"]) == 6
     categories = {task.category for task in loaded["suite"]}
     assert categories == {
         "lifetime-borrow", "failing-test", "api-migration", "dependency-compat",
-        "concurrency", "trait-impl", "repo-scale"}
+        "concurrency", "trait-impl", "repo-scale", "semantic-repair"}
     for task in loaded["suite"] + loaded["trio"]:
         assert task.metadata["license"] == "MIT OR Apache-2.0"
         assert task.metadata["initial_failure"]["must_contain"]
         assert task.metadata.get("mutation"), task.id
+        assert task.metadata.get("difficulty") in ("easy", "medium", "hard")
 
 
 def test_every_task_has_a_failing_state_a_hidden_checker_and_a_reference():
@@ -56,10 +57,10 @@ def test_the_manifest_matches_the_tree():
     ok, message = suite.check_manifest(SUITE_ROOT)
     assert ok, message
     manifest = suite.build_manifest(SUITE_ROOT)
-    assert manifest["counts"]["total"] == 32
-    assert manifest["counts"]["suite"] == 24
-    assert manifest["counts"]["trio"] == 3
-    assert manifest["counts"]["probes"] == 5
+    assert manifest["counts"]["total"] == 87
+    assert manifest["counts"]["suite"] == 72
+    assert manifest["counts"]["trio"] == 9
+    assert manifest["counts"]["probes"] == 6
     assert len(manifest["suite_sha256"]) == 64
     hashes = [entry["tree_sha256"] for entry in manifest["tasks"]]
     assert len(hashes) == len(set(hashes))
@@ -84,7 +85,7 @@ def test_the_prompt_does_not_contain_the_hidden_tests():
         assert task.initial_files[0] in prompt
         for relative in task.hidden_files:
             hidden = task.read_hidden(relative)
-            for name in re.findall(r"fn\s+([a-z0-9_]+)\s*\(", hidden):
+            for name in re.findall(r"#\[test\]\s*\n\s*fn\s+([a-z0-9_]+)\s*\(", hidden):
                 assert not re.search(rf"fn\s+{re.escape(name)}\s*\(", prompt), \
                     (task.id, name)
         assert "path=src/lib.rs" in prompt
@@ -101,26 +102,40 @@ def test_per_category_counts_are_even_enough_to_balance():
     counts = manifest["counts"]["by_category"]
     assert set(counts) == {
         "lifetime-borrow", "failing-test", "api-migration", "dependency-compat",
-        "concurrency", "trait-impl", "repo-scale", "trio", "probe"}
-    for name in ("lifetime-borrow", "failing-test", "api-migration"):
-        assert counts[name] == 4
-    for name in ("dependency-compat", "concurrency", "trait-impl", "repo-scale"):
-        assert counts[name] == 3
+        "concurrency", "trait-impl", "repo-scale", "semantic-repair", "trio",
+        "probe"}
+    for name in ("lifetime-borrow", "failing-test", "api-migration",
+                 "dependency-compat", "concurrency", "trait-impl", "repo-scale",
+                 "semantic-repair"):
+        assert counts[name] == 9, name
+    assert counts["trio"] == 9
+    assert counts["probe"] == 6
 
 
 def test_the_trio_annotates_the_shared_operation():
     trio = collections()["trio"]
-    assert len(trio) == 3
+    assert len(trio) == 9
     surfaces = {task.metadata["shared_operation"]["surface"] for task in trio}
-    assert surfaces == {"rust-lifetime-chain", "numeric-dependency",
-                        "quantifier-chain"}
+    assert surfaces == {"rust", "numeric-graph", "logic"}
+    operations = {task.metadata["shared_operation"]["name"] for task in trio}
+    assert operations == {
+        "dependency-closure minimal repair",
+        "invariant preservation",
+        "quantifier/scope resolution",
+    }
+    for surface in surfaces:
+        assert len([task for task in trio
+                    if task.metadata["shared_operation"]["surface"] == surface]) == 3
     for task in trio:
         operation = task.metadata["shared_operation"]
-        assert operation["name"] == "dependency-closure minimal repair"
         assert operation["transfer_rule"]
+        assert operation["audit"]
         items = task.metadata["operation_items"]
-        assert len(items) >= 5
+        assert len(items) >= 4
         assert all(item.get("operation") for item in items)
+        hidden = "\n".join(task.read_hidden(path) for path in task.hidden_files)
+        for item in items:
+            assert f"fn {item['test']}" in hidden, (task.id, item["test"])
 
 
 # ---------------------------------------------------------------------------

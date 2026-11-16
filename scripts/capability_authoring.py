@@ -42,10 +42,11 @@ COLLECTIONS = (
 #: Keys a declaration may carry. Anything else is a typo that would be silently
 #: ignored, so it is rejected instead.
 DECLARATION_KEYS = {
-    "id", "kind", "category", "capability", "prompt_intro", "observed_failure",
-    "files", "hidden", "reference", "readonly", "manifest", "manifest_policy",
-    "limits", "run_limits", "initial_failure", "checker", "mutation",
-    "shared_operation", "operation_items", "probe_expectation",
+    "id", "kind", "category", "capability", "difficulty", "prompt_intro",
+    "observed_failure", "files", "hidden", "reference", "readonly", "manifest",
+    "manifest_policy", "limits", "run_limits", "initial_failure", "checker",
+    "mutation", "shared_operation", "operation_items", "probe_expectation",
+    "probe_stdout_contains",
 }
 
 
@@ -64,6 +65,7 @@ def expected_files(declaration: dict) -> dict:
         "id": declaration["id"],
         "kind": declaration.get("kind", "suite"),
         "category": declaration["category"],
+        "difficulty": declaration.get("difficulty", "medium"),
         "capability": declaration["capability"],
         "license": authoring.LICENSE,
         "provenance": authoring.PROVENANCE,
@@ -91,6 +93,8 @@ def expected_files(declaration: dict) -> dict:
         metadata["operation_items"] = declaration["operation_items"]
     if "probe_expectation" in declaration:
         metadata["probe_expectation"] = declaration["probe_expectation"]
+    if "probe_stdout_contains" in declaration:
+        metadata["probe_stdout_contains"] = declaration["probe_stdout_contains"]
 
     manifest = declaration.get("manifest")
     if manifest is None and "Cargo.toml" not in declaration["files"]:
@@ -136,8 +140,19 @@ def _disk_files(root: str) -> dict:
 
 def materialize(root: str) -> list[str]:
     validate_declarations()
+    # The authoring source owns tasks/, trio/ and probes/. The root README is
+    # tracked documentation, not a generated task, so regeneration preserves it.
+    readme = os.path.join(root, "README.md")
+    readme_content = None
+    if os.path.isfile(readme):
+        with open(readme, "r", encoding="utf-8") as handle:
+            readme_content = handle.read()
     if os.path.isdir(root):
         shutil.rmtree(root)
+    if readme_content is not None:
+        os.makedirs(root, exist_ok=True)
+        with open(readme, "w", encoding="utf-8") as handle:
+            handle.write(readme_content)
     written = []
     for collection, declarations in COLLECTIONS:
         for declaration in declarations:
@@ -170,7 +185,8 @@ def check(root: str) -> list[str]:
     for base, _dirs, files in os.walk(root):
         for name in files:
             path = os.path.join(base, name)
-            if os.path.relpath(path, root).endswith("MANIFEST.json"):
+            relative = os.path.relpath(path, root).replace(os.sep, "/")
+            if relative == "MANIFEST.json" or relative == "README.md":
                 continue
             if path not in expected:
                 problems.append(f"unexpected file {os.path.relpath(path, REPO)}")

@@ -1,0 +1,28 @@
+{
+  "capability": "Report channel saturation instead of silently dropping values.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "concurrency-07-silent-channel-drop",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"channel full\"",
+    "replace": "\"full\""
+  },
+  "observed_failure": "thread 'a_full_channel_is_an_error' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: Ok(())\n right: Err(\"channel full\")",
+  "prompt_intro": "The hidden test fails. `send_all` currently ignores every `try_send` error, so a full or disconnected channel loses values silently. It must return `Err(\"channel full\")` for a full channel and `Err(\"disconnected\")` for a disconnected one; otherwise send every value and return `Ok(())`. Keep the signature `pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

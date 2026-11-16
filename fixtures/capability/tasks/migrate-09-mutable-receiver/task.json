@@ -1,0 +1,31 @@
+{
+  "capability": "Bind a value mutably when the new API requires a mutable receiver.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "migrate-09-mutable-receiver",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0596"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "for _ in 0..limit",
+    "replace": "for _ in 0..=limit"
+  },
+  "observed_failure": "error[E0596]: cannot borrow `counter` as mutable, as it is not declared as mutable\n --> src/lib.rs:4:9\n  |\n3 |     let counter = counter::Counter::new();\n  |         ------- help: consider changing this to be mutable: `mut counter`\n4 |         counter.tick();\n  |         ^^^^^^^^^^^^^^ cannot borrow as mutable",
+  "prompt_intro": "The crate does not build against the vendored `counter` 2.0.0. Version 1 used interior mutability and `tick(&self)`; version 2 uses `tick(&mut self)`. Fix the call site so `count_to(limit)` ticks `limit` times and returns the value. Do not modify `dep/`. Keep `pub fn count_to(limit: u32) -> u32`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

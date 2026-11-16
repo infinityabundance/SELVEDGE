@@ -48,6 +48,7 @@ PROBE_STATUS = {
 INITIAL_STATUS = {
     "compile_error": sandbox.STATUS_COMPILE_ERROR,
     "test_failure": sandbox.STATUS_TEST_FAILED,
+    "hidden_test_failure": sandbox.STATUS_TEST_FAILED,
     "timeout": sandbox.STATUS_TIMEOUT,
     "oom": sandbox.STATUS_OOM,
 }
@@ -132,6 +133,10 @@ def main(argv: list[str]) -> int:
         for task in loaded[kind]:
             counts["by_category"][task.category] = (
                 counts["by_category"].get(task.category, 0) + 1)
+            difficulty = task.metadata.get("difficulty", "medium")
+            counts.setdefault("by_difficulty", {})
+            counts["by_difficulty"][difficulty] = (
+                counts["by_difficulty"].get(difficulty, 0) + 1)
 
     os.makedirs(args.workroot, exist_ok=True)
     workroot_budget = limit_module.DEFAULT_WORKDIR_BUDGET_BYTES
@@ -160,6 +165,12 @@ def main(argv: list[str]) -> int:
                             f"({reference['status']}: "
                             f"{(reference.get('evidence') or {}).get('stderr_tail', '')[-300:]})")
 
+        build = checkers.run_build(task, task.reference_solution(), args.workroot,
+                                   keep=args.keep)
+        if build["status"] != sandbox.STATUS_PASS:
+            failures.append(f"{task.id}: the reference did not build for the build-time "
+                            f"measurement ({build['status']})")
+
         mutated, mutation = checkers.mutate_reference(task)
         wrong = checkers.run_check(task, mutated, args.workroot, keep=args.keep)
         mutation_failed = wrong["status"] != sandbox.STATUS_PASS
@@ -171,6 +182,7 @@ def main(argv: list[str]) -> int:
         max_workdir = max(max_workdir, initial["evidence"]["workdir_bytes"] or 0)
         max_workdir = max(max_workdir, reference["evidence"]["workdir_bytes"] or 0)
         max_workdir = max(max_workdir, wrong["evidence"]["workdir_bytes"] or 0)
+        max_workdir = max(max_workdir, build.get("workdir_bytes") or 0)
         if max_workdir > workroot_budget:
             failures.append(f"workdir budget exceeded: {max_workdir} > {workroot_budget}")
             workroot_budget = max_workdir * 2
@@ -190,6 +202,7 @@ def main(argv: list[str]) -> int:
                 "evidence": summarise(initial),
             },
             "reference": summarise(reference),
+            "build": summarise({"evidence": build}),
             "mutation": dict(mutation, status=wrong["status"],
                              evidence=summarise(wrong)),
             "passed": bool(initial_matches and reference_passed and mutation_failed),
@@ -202,6 +215,13 @@ def main(argv: list[str]) -> int:
                                  keep=args.keep)
         expected = PROBE_STATUS[task.metadata["probe_expectation"]]
         matches = run["status"] == expected
+        forged = task.metadata.get("probe_stdout_contains")
+        if forged:
+            output = (run.get("evidence") or {}).get("stdout_tail") or ""
+            matches = matches and forged in output
+            if forged not in output:
+                failures.append(f"{task.id}: the forged stdout marker {forged!r} was not "
+                                f"observed, so the probe did not exercise the path")
         probes_ok += 1 if matches else 0
         if not matches:
             failures.append(f"{task.id}: expected {expected}, got {run['status']}")
@@ -213,6 +233,7 @@ def main(argv: list[str]) -> int:
             "tree_sha256": task.tree_sha256,
             "checker_kind": task.checker_kind,
             "probe_expectation": task.metadata["probe_expectation"],
+            "probe_stdout_contains": task.metadata.get("probe_stdout_contains"),
             "status": run["status"],
             "evidence": summarise(run),
             "passed": matches,
@@ -221,6 +242,12 @@ def main(argv: list[str]) -> int:
               f"(expected {task.metadata['probe_expectation']})", flush=True)
 
     verdict = "pass" if not failures and initial_ok and reference_ok and mutation_ok else "fail"
+    build_by_category: dict[str, int] = {}
+    for item in items:
+        duration = (item.get("build") or {}).get("duration_ms")
+        if duration:
+            category = item.get("category") or "unknown"
+            build_by_category[category] = max(build_by_category.get(category, 0), duration)
     receipt = {
         "schema": SCHEMA,
         "stamp": stamp_now(),
@@ -259,6 +286,8 @@ def main(argv: list[str]) -> int:
             "max_workdir_bytes": max_workdir,
             "max_check_ms": max(
                 (item.get("reference", {}).get("duration_ms") or 0) for item in items),
+            "max_build_ms": max(
+                (item.get("build", {}).get("duration_ms") or 0) for item in items),
         },
         "items": items,
         "derived": {
@@ -275,6 +304,9 @@ def main(argv: list[str]) -> int:
                 limit_module.RUN_ONLY_LIMITS.address_space_bytes / (1024 ** 2)),
             "max_check_ms": max(
                 (item.get("reference", {}).get("duration_ms") or 0) for item in items),
+            "max_build_ms": max(
+                (item.get("build", {}).get("duration_ms") or 0) for item in items),
+            "max_build_ms_by_category": dict(sorted(build_by_category.items())),
             "max_workdir_mib": max_workdir / (1024 ** 2),
             "court_memory_gib": int(court_mem) / (1024 ** 3),
             "workdir_budget_mib": workroot_budget / (1024 ** 2),

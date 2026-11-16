@@ -1,0 +1,28 @@
+{
+  "capability": "Compute from a borrow before moving the owned value.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "borrow-06-move-while-borrowed",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0505"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unwrap_or(\"\").len()",
+    "replace": "unwrap_or(\"x\").len()"
+  },
+  "observed_failure": "error[E0505]: cannot move out of `text` because it is borrowed\n --> src/lib.rs:4:6\n  |\n3 |     let first = text.split_whitespace().next().unwrap_or(\"\");\n  |                 ---- borrow of `text` occurs here\n4 |     (text, first.len())\n  |      ^^^^  ----------- borrow later used here\n  |      move out of `text` occurs here",
+  "prompt_intro": "This crate does not compile. `split_first` moves the owned `String` while a slice of it is still borrowed in the same expression. Return the original string and the byte length of its first whitespace-delimited token. A string with no token reports length 0.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -71,10 +71,10 @@ def test_a_full_pass_yields_a_perfect_balanced_composite(tmp_path):
     _generations, result = run(tmp_path=tmp_path)
     scores = result["scores"]
     assert scores["primary_composite"] == pytest.approx(1.0)
-    assert scores["counts"] == {"pass": 27}
+    assert scores["counts"] == {"pass": 81}
     for category, entry in scores["by_category"].items():
         assert entry["mean"] == pytest.approx(1.0), category
-        assert entry["n"] >= 3
+        assert entry["n"] >= 8
     assert scores["trio_all_surfaces"] is True
     assert result["anti_gaming"]["prompt_hashes_match"] is True
     assert result["anti_gaming"]["checker_visible_to_arm"] is False
@@ -82,13 +82,53 @@ def test_a_full_pass_yields_a_perfect_balanced_composite(tmp_path):
     assert result["anti_gaming"]["offline_evidence"] == "no-default-route"
 
 
-def test_a_failed_category_moves_the_composite_by_one_seventh(tmp_path):
+def test_a_failed_category_moves_the_composite_by_one_eighth(tmp_path):
     tasks = suite.load_suite(SUITE_ROOT)["suite"]
     lifetime = {task.id for task in tasks if task.category == "lifetime-borrow"}
     _generations, result = run(fail=lifetime, tmp_path=tmp_path, name="crippled")
-    assert result["scores"]["primary_composite"] == pytest.approx(6 / 7)
+    assert result["scores"]["primary_composite"] == pytest.approx(7 / 8)
     assert result["scores"]["by_category"]["lifetime-borrow"]["mean"] == 0.0
-    assert result["scores"]["counts"]["test_failed"] == 4
+    assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 9
+    assert result["scores"]["category_minimum_met"] is True
+    assert result["scores"]["counts"]["test_failed"] == 9
+
+
+def test_a_category_filter_scores_only_the_selected_category(tmp_path):
+    adapter = adapters.FakeAdapter(reference_outputs(), name="filtered",
+                                   accounting={"task_success": None})
+    generation_path = os.path.join(str(tmp_path), "gen-filtered.json")
+    generations = court.generate(adapter, SUITE_ROOT, generation_path,
+                                 categories=["lifetime-borrow"])
+    assert {item["category"] for item in generations["items"]} == {"lifetime-borrow"}
+    result = court.check(
+        generations, SUITE_ROOT, os.path.join(str(tmp_path), "result-filtered.json"),
+        categories=["lifetime-borrow"],
+        runner=lambda task, files: {"status": "pass"})
+    assert result["suite"]["category_filter"] == ["lifetime-borrow"]
+    assert result["scores"]["categories"] == ["lifetime-borrow"]
+    assert result["scores"]["by_category"]["lifetime-borrow"]["n"] == 9
+    assert result["scores"]["category_minimum_met"] is True
+
+
+def test_a_category_below_the_minimum_is_refused(tmp_path):
+    adapter = adapters.FakeAdapter(reference_outputs(), name="tiny",
+                                   accounting={"task_success": None})
+    generation_path = os.path.join(str(tmp_path), "gen-tiny.json")
+    generations = court.generate(adapter, SUITE_ROOT, generation_path,
+                                 categories=["lifetime-borrow"])
+    with pytest.raises(court.CourtError, match="below the 10-item minimum"):
+        court.check(
+            generations, SUITE_ROOT, os.path.join(str(tmp_path), "result-tiny.json"),
+            categories=["lifetime-borrow"], min_category_items=10,
+            runner=lambda task, files: {"status": "pass"})
+
+
+def test_an_unknown_category_filter_is_refused(tmp_path):
+    adapter = adapters.FakeAdapter(reference_outputs(), name="unknown",
+                                   accounting={"task_success": None})
+    with pytest.raises(court.CourtError, match="unknown categories"):
+        court.generate(adapter, SUITE_ROOT, os.path.join(str(tmp_path), "gen-x.json"),
+                       categories=["not-a-category"])
 
 
 def test_an_empty_answer_is_a_recorded_failure_not_a_crash(tmp_path):
@@ -100,17 +140,16 @@ def test_an_empty_answer_is_a_recorded_failure_not_a_crash(tmp_path):
     assert result["scores"]["counts"]["invalid_solution"] == 1
 
 
-def test_the_category_balanced_composite_beats_a_pooled_average(tmp_path):
+def test_the_category_balanced_composite_weights_categories_equally(tmp_path):
     tasks = suite.load_suite(SUITE_ROOT)["suite"]
-    # Fail an entire 3-item category and one item of a 4-item category: pooled
-    # success is higher than the category-balanced score, and that is the point.
-    fail = {task.id for task in tasks if task.category == "concurrency"}
-    fail |= {task.id for task in tasks if task.category == "trait-impl" and True}
-    _generations, result = run(fail=fail, tmp_path=tmp_path, name="unbalanced")
-    pooled = result["scores"]["pooled"]["mean"]
-    balanced = result["scores"]["primary_composite"]
-    assert balanced == pytest.approx(5 / 7)
-    assert pooled > balanced
+    # Every category now has nine items, so a whole-category failure costs exactly
+    # one eighth. The unequal-count property is tested directly in
+    # `test_capability_stats.py` (the court's categories are deliberately even).
+    for category in ("concurrency", "trait-impl"):
+        failed = {task.id for task in tasks if task.category == category}
+        _generations, result = run(fail=failed, tmp_path=tmp_path, name=f"no-{category}")
+        assert result["scores"]["primary_composite"] == pytest.approx(7 / 8)
+        assert result["scores"]["pooled"]["mean"] == pytest.approx(7 / 8)
 
 
 def test_compare_meets_the_registered_threshold_by_a_category(tmp_path):
@@ -120,7 +159,7 @@ def test_compare_meets_the_registered_threshold_by_a_category(tmp_path):
     _base_generations, baseline = run(fail=lifetime, tmp_path=tmp_path, name="base")
     comparison = court.compare(arm, baseline)
     assert comparison["primary"]["threshold_met"] is True
-    assert comparison["primary"]["difference"]["relative_difference"] == pytest.approx(1 / 6)
+    assert comparison["primary"]["difference"]["relative_difference"] == pytest.approx(1 / 7)
     assert comparison["primary"]["difference"]["ci_low"] > 0
 
 
@@ -164,11 +203,11 @@ def test_compare_enforces_feedback_parity(tmp_path):
 def test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win(tmp_path):
     """The verdict must require BOTH conditions.
 
-    The arm wins 12.5% relative on the composite (above the 10% threshold, with a
-    CI above zero) by fixing a whole category, but it pays for that by failing one
-    of four `trait-impl` items: a 0.25 absolute regression, five times the
-    registered 0.05 limit. The old code computed this regression and then ignored
-    it, so the arm was reported as a win.
+    The arm wins about 14.5% relative on the composite (above the 10% threshold,
+    with a CI above zero) by fixing a whole category, but it pays for that by
+    failing one of nine `trait-impl` items: a 0.111 absolute regression, more than
+    twice the registered 0.05 limit. The old code computed this regression and
+    then ignored it, so the arm was reported as a win.
     """
     tasks = suite.load_suite(SUITE_ROOT)["suite"]
     whole_category = {task.id for task in tasks if task.category == "lifetime-borrow"}

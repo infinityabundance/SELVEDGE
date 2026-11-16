@@ -15,8 +15,9 @@ evaluation source and fails closed on overlap.
 
 from __future__ import annotations
 
-from . import (concurrency, dependency, failing, lifetime, migration, probes,
-               repo_scale, traits, trio)
+from . import (concurrency, concurrency2, dependency, dependency2, failing,
+               failing2, lifetime, lifetime2, migration, migration2, probes,
+               repo_scale, repo_scale2, semantic, traits, traits2, trio, trio2)
 
 SUITE_TASKS = (
     lifetime.TASKS
@@ -26,8 +27,16 @@ SUITE_TASKS = (
     + concurrency.TASKS
     + traits.TASKS
     + repo_scale.TASKS
+    + lifetime2.TASKS
+    + failing2.TASKS
+    + migration2.TASKS
+    + dependency2.TASKS
+    + concurrency2.TASKS
+    + traits2.TASKS
+    + repo_scale2.TASKS
+    + semantic.TASKS
 )
-TRIO_TASKS = trio.TASKS
+TRIO_TASKS = trio.TASKS + trio2.TASKS
 PROBE_TASKS = probes.TASKS
 
 LICENSE = "MIT OR Apache-2.0"

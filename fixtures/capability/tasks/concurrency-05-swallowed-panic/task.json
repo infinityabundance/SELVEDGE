@@ -1,0 +1,28 @@
+{
+  "capability": "Propagate a worker panic instead of discarding the join error.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "concurrency-05-swallowed-panic",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"worker failed\"",
+    "replace": "\"worker\""
+  },
+  "observed_failure": "thread 'a_panicking_worker_is_an_error' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: Ok(0)\n right: Err(\"worker failed\")",
+  "prompt_intro": "The hidden test fails. `run_workers` joins scoped workers and silently ignores a panicking one. It must return `Err(\"worker failed\")` if any worker panics, and otherwise the sum of the job values. Keep the signature `pub fn run_workers(jobs: &[i32]) -> Result<i32, String>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

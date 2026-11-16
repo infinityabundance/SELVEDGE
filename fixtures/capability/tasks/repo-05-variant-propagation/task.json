@@ -1,0 +1,28 @@
+{
+  "capability": "Propagate a new enum variant through every exhaustive match.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "repo-05-variant-propagation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0004"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/handler.rs",
+    "find": "Event::Pause => \"pause\"",
+    "replace": "Event::Pause => \"hold\""
+  },
+  "observed_failure": "error[E0004]: non-exhaustive patterns: `&Event::Pause` not covered\n --> src/handler.rs:4:11\n  |\n4 |     match event {\n  |           ^^^^^ pattern `&Event::Pause` not covered",
+  "prompt_intro": "This crate does not compile. A `Pause` variant was added to `Event`, but `handler` and `audit` do not handle it. Add the arm to both: `handle` returns `\"pause\"` and `audit::describe` returns `\"P\"`. Keep every existing arm unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

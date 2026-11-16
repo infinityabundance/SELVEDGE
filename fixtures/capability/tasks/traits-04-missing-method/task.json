@@ -1,0 +1,28 @@
+{
+  "capability": "Complete a trait impl that omits a required method.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-04-missing-method",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.side * self.side",
+    "replace": "self.side + self.side"
+  },
+  "observed_failure": "error[E0046]: not all trait items implemented, missing: `name`\n --> src/lib.rs:6:1\n  |\n6 | impl Shape for Square {\n  | ^^^^^^^^^^^^^^^^^^^^^ missing `name` in implementation",
+  "prompt_intro": "This crate does not compile. `Square` implements `Shape` but omits the required `name` method. Implement it returning `\"square\"`. Keep the trait, the struct and `describe` unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

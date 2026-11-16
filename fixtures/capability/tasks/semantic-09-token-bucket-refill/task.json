@@ -1,0 +1,28 @@
+{
+  "capability": "Refill proportionally to elapsed time and respect the capacity bound.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "semantic-09-token-bucket-refill",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".min(capacity)",
+    "replace": ".min(capacity.saturating_sub(1))"
+  },
+  "observed_failure": "the crate builds and tests pass; refill(0, 500, 10, 100) returns 0 where\nproportional refill requires 5, and the capacity bound is ignored",
+  "prompt_intro": "The token-bucket helper builds and its one-second example passes. The contract refills proportionally for sub-second elapsed time and never exceeds `capacity`. `refill(0, 500, 10, 100)` must return 5 and `refill(90, 1000, 20, 100)` must return 100. Fix `refill`. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

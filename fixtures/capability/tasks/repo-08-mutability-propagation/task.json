@@ -1,0 +1,28 @@
+{
+  "capability": "Propagate a mutable receiver through a three-module pipeline.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "repo-08-mutability-propagation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0594"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/update.rs",
+    "find": "state.count += by",
+    "replace": "state.count -= by"
+  },
+  "observed_failure": "error[E0594]: cannot assign to `state.count`, as `state` is not declared as mutable\n --> src/update.rs:3:5\n  |\n3 |     state.count += by;\n  |     ^^^^^^^^^^^^^^^^^ cannot assign",
+  "prompt_intro": "This crate does not compile. `update::bump` assigns through a shared reference, and `run` binds the state immutably. Change the update signature to `&mut State` and make the binding in `run` mutable. Keep `run` returning the count after two increments of one.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

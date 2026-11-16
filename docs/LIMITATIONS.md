@@ -244,9 +244,17 @@ the inference-only, post-hoc selection family.
 the sandbox, the contamination gate and the pre-registration exist and are
 CPU-tested; no model has been evaluated on them.
 
-- **The suite is small and authored.** It is not a benchmark, not a random
-  sample of programming work, and its confidence intervals are over items, not
-  over the population of software tasks.
+- **The suite is authored and still small.** It is not a benchmark and not a
+  random sample of programming work. The P14.4 expansion takes it to 72 scored
+  tasks plus a 9-task trio, nine per category; one item still moves a category
+  by 1/9, and the confidence intervals are over items, not over the population
+  of software tasks. The easy/medium/hard labels are author-assigned, not
+  calibrated.
+- **Correctness and likelihood are not merged.** The suite's judge is executable
+  success (`cargo test` under the sandbox). A reference-continuation
+  likelihood/NLL or KL is a **selector signal only**: it may choose a checkpoint
+  or compare distillation, and it must never be reported as capability. The
+  result schema keeps verified success and any likelihood field separate.
 - **Disjointness is a property of this repository's data, not of a
   checkpoint.** No local test can show that a model never saw these patterns
   during pretraining; the contamination receipt compares our text against
@@ -254,10 +262,17 @@ CPU-tested; no model has been evaluated on them.
   deterministic sample* of the training corpus, and it fails closed on overlap.
 - **The verifier is executable but not complete.** Hidden tests plus one
   authored wrong mutation per task show that the checker discriminates; they do
-  not prove it rejects every wrong program.
-- **The anti-superficial-specialisation trio is below P11.21's item count** and
-  its operation annotations are author-only; no inter-annotator agreement exists
-  yet.
+  not prove it rejects every wrong program. The suite now also proves that a
+  forged successful stdout does not pass.
+- **The anti-superficial-specialisation trio is still below P11.21's item
+  count.** It now has three operation families on three surfaces (nine tasks,
+  three per surface), but the operation annotations are author-only, there is no
+  inter-annotator agreement, and with three tasks per surface an operation-family
+  effect cannot be separated from a surface effect. Per-surface results are
+  reported separately and never pooled.
+- **The expanded suite is not sealed.** Every item is visible to the development
+  loop; P14.7's held-back set does not exist yet, so an in-sample gain cannot be
+  separated from tuning against these exact tasks.
 - **Compiler/test feedback loops are not implemented.** Feedback is recorded and
   parity-enforced, so no arm can currently receive a hidden tool subsidy, but
   the repair loop itself is future work.

@@ -64,6 +64,17 @@ _BROKEN = (
     "}\n"
 )
 
+_FORGED_STDOUT = (
+    "#[cfg(test)]\n"
+    "mod tests {\n"
+    "    #[test]\n"
+    "    fn forges_success_then_fails() {\n"
+    "        println!(\"test result: ok. 3 passed; 0 failed; 0 ignored\");\n"
+    "        assert_eq!(2 + 2, 5);\n"
+    "    }\n"
+    "}\n"
+)
+
 TASKS = [
     {
         "id": "probe-pass",
@@ -118,5 +129,18 @@ TASKS = [
         "files": {"src/lib.rs": _OOM},
         "hidden": {"tests/check.rs": ""},
         "reference": {"src/lib.rs": _OOM},
+    },
+    {
+        "id": "probe-stdout-forgery",
+        "kind": "probe",
+        "category": "probe",
+        "capability": (
+            "Sandbox probe: a test that prints a successful test summary and then "
+            "fails is recorded as a failure; stdout never decides the outcome."),
+        "probe_expectation": "fail",
+        "probe_stdout_contains": "test result: ok. 3 passed",
+        "files": {"src/lib.rs": _FORGED_STDOUT},
+        "hidden": {"tests/check.rs": ""},
+        "reference": {"src/lib.rs": _FORGED_STDOUT},
     },
 ]

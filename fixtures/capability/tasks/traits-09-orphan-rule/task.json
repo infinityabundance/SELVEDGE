@@ -1,0 +1,28 @@
+{
+  "capability": "Respect the orphan rule with a local newtype wrapper.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-09-orphan-rule",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0117"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".join(\",\")",
+    "replace": ".join(\"-\")"
+  },
+  "observed_failure": "error[E0117]: only traits defined in the current crate can be implemented for types defined outside of the crate\n --> src/lib.rs:1:1\n  |\n1 | impl core::fmt::Display for Vec<u8> {\n  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  | `Vec<u8>` is not defined in the current crate",
+  "prompt_intro": "This crate does not compile. It implements `Display` directly for `Vec<u8>`, which the orphan rule forbids. Introduce a local newtype `Bytes(pub Vec<u8>)`, implement `Display` for it (comma-separated decimal bytes), and keep `pub fn render(values: &[u8]) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

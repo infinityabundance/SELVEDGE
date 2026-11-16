@@ -1,0 +1,57 @@
+{
+  "capability": "Preserve a ledger invariant across deposits and withdrawals, rejecting overdraw.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "trio-04-invariant-ledger",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.total -= amount;",
+    "replace": "self.total += amount;"
+  },
+  "observed_failure": "thread 'withdraw_updates_both_components' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: 10\n right: 6",
+  "operation_items": [
+    {
+      "operation": "apply the transition to every component carrying the invariant",
+      "test": "deposit_updates_both_components"
+    },
+    {
+      "operation": "keep total and entries consistent after a partial-state transition",
+      "test": "withdraw_updates_both_components"
+    },
+    {
+      "operation": "reject a violating transition without a partial update",
+      "test": "overdraw_is_rejected_and_leaves_state_unchanged"
+    },
+    {
+      "operation": "precondition check before any component is mutated",
+      "test": "invalid_amount_is_rejected_and_leaves_state_unchanged"
+    },
+    {
+      "operation": "the invariant is closed under a sequence of transitions",
+      "test": "the_invariant_holds_after_a_sequence"
+    }
+  ],
+  "prompt_intro": "The crate builds, but `Ledger` breaks its declared invariant `total == sum(entries)` after a withdrawal and allows an overdraw. Preserve the invariant on every transition: withdraw updates both components, rejects a non-positive amount with `invalid amount`, and rejects an overdraw with `insufficient funds` while leaving the ledger unchanged. Keep the public API.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Given a declared state invariant, apply a transition to every component that carries the invariant, reject a transition that would violate it and leave the state unchanged, and never let a partial update escape.",
+    "name": "invariant preservation",
+    "surface": "rust",
+    "transfer_rule": "A surface is solved only when every task on that surface passes; the trio win requires all three surfaces and is never pooled across them."
+  }
+}

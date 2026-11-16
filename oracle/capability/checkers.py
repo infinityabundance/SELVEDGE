@@ -199,6 +199,25 @@ def run_check(task, solution: dict, workroot: str, keep: bool = False) -> dict:
     }
 
 
+def run_build(task, solution: dict, workroot: str, keep: bool = False) -> dict:
+    """Compile the reference without running tests, for the build-time table.
+
+    `run_check` measures build + test. The task inventory records both, so a
+    slow test cannot be mistaken for a slow build (and the 45 s checker bound is
+    about the whole run, not only compilation).
+    """
+    workdir, problems = prepare(task, solution, workroot)
+    if problems:
+        return {"status": sandbox.STATUS_INVALID, "problems": problems}
+    run = sandbox.run_bounded(
+        ["cargo", "test", "--no-run", "--offline", "--quiet"],
+        workdir, task.limits)
+    result = run.as_dict()
+    if not keep:
+        sandbox.remove_tree(workdir)
+    return result
+
+
 def _crate_name(workdir: str) -> str:
     manifest = os.path.join(workdir, "Cargo.toml")
     with open(manifest, "rb") as handle:
@@ -271,6 +290,12 @@ def run_initial(task, workroot: str, keep: bool = False) -> dict:
         run = sandbox.run_bounded(["cargo", "check", "--offline", "--quiet", "--lib"],
                                   workdir, task.limits)
     elif expected["kind"] == "test_failure":
+        run = sandbox.run_bounded(["cargo", "test", "--offline", "--quiet"],
+                                  workdir, task.limits)
+    elif expected["kind"] == "hidden_test_failure":
+        # The initial state compiles and its own visible tests pass; the hidden
+        # tests are already restored by `prepare`, so this run measures the
+        # behaviour the arm would have shipped. It must fail.
         run = sandbox.run_bounded(["cargo", "test", "--offline", "--quiet"],
                                   workdir, task.limits)
     elif expected["kind"] == "timeout":

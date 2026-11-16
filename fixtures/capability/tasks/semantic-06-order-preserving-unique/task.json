@@ -1,0 +1,28 @@
+{
+  "capability": "Preserve first-occurrence order where sorting happens to pass the visible case.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "semantic-06-order-preserving-unique",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "if seen.insert(*value)",
+    "replace": "if !seen.insert(*value)"
+  },
+  "observed_failure": "the crate builds and tests pass; unique(&[3, 1, 3, 2, 1]) returns\n[1, 2, 3] where the contract requires first-occurrence order",
+  "prompt_intro": "The de-duplication helper builds and its sorted example passes. The contract is first-occurrence order, not sorted order: `unique(&[3, 1, 3, 2, 1]) == [3, 1, 2]`. Fix the helper. Keep `pub fn unique(values: &[i32]) -> Vec<i32>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

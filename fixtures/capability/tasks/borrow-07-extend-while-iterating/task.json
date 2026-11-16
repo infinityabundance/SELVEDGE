@@ -1,0 +1,28 @@
+{
+  "capability": "Collect the additions before mutating the vector under iteration.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "borrow-07-extend-while-iterating",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".filter(|value| *value % 2 == 0)",
+    "replace": ".filter(|value| *value % 2 != 0)"
+  },
+  "observed_failure": "error[E0502]: cannot borrow `*values` as mutable because it is also\nborrowed as immutable\n --> src/lib.rs:4:13\n  |\n3 |     for value in values.iter() {\n  |                  ------ immutable borrow occurs here\n4 |         if value % 2 == 0 {\n  |             ^^^^^^^^^^^^ mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. `double_evens` pushes into the vector while iterating it. Append the double of every even value that was present before the call; values appended by the call are not themselves doubled. Keep the signature and the original order.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

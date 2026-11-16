@@ -1,0 +1,2293 @@
+{
+  "anti_gaming": {
+    "checker_access": "separate-process-after-generation",
+    "checker_visible_to_arm": false,
+    "feedback": "none",
+    "few_shot_hygiene": null,
+    "offline_evidence": "no-default-route",
+    "prompt_hashes_match": true,
+    "tool_mode": "no-tools",
+    "tool_parity": "enforced at comparison time",
+    "tools": false
+  },
+  "command": "scripts/capability_court.py check --generations results/capability/instrument-smoke-20261116T070500Z/generations.json --preregistration docs/capability-preregistration-v2.json --out results/capability/instrument-smoke-20261116T070500Z/result.json",
+  "created_utc": "2026-11-16T06:15:18Z",
+  "generations": {
+    "adapter": {
+      "accounting": {
+        "active_unique_params": null,
+        "gpu_residency_bytes": null,
+        "host_residency_bytes": null,
+        "measured_io": null,
+        "offline_teacher_construction_cost": null,
+        "optimizer_flops": null,
+        "task_success": null,
+        "total_accessible_capacity": null,
+        "training_tokens": null
+      },
+      "kind": "fake",
+      "name": "fake-reference",
+      "null_reasons": {
+        "active_unique_params": "scripted fake model; no such measurement exists",
+        "gpu_residency_bytes": "scripted fake model; no such measurement exists",
+        "host_residency_bytes": "scripted fake model; no such measurement exists",
+        "measured_io": "scripted fake model; no such measurement exists",
+        "offline_teacher_construction_cost": "scripted fake model; no such measurement exists",
+        "optimizer_flops": "scripted fake model; no such measurement exists",
+        "total_accessible_capacity": "scripted fake model; no such measurement exists",
+        "training_tokens": "scripted fake model; no such measurement exists"
+      },
+      "provenance": {
+        "checkpoint_sha256": null,
+        "source_model_revision": null
+      },
+      "tools": false
+    },
+    "decoding": {
+      "category_filter": null,
+      "feedback": "none",
+      "few_shot_texts": [],
+      "greedy": true,
+      "max_new_tokens": 3072,
+      "order": "sorted",
+      "seed": 20261115,
+      "stops": [
+        "\n```\n\n## "
+      ]
+    },
+    "few_shot": null,
+    "revision": "b2f861fb03c104e8a348684c1b223f9bb30b3136",
+    "schema": "selvedge/capability-generations/v1",
+    "stamp": "20261116T061507Z"
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-01-local-reference",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 15,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-02-mutate-while-borrowed",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-03-self-referential-window",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 57,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-04-iterator-invalidation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 45,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-05-return-normalized",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 16,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-06-move-while-borrowed",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 28,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-07-extend-while-iterating",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 36,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-08-iterator-outlives-local",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 26,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-09-owned-excerpt",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 43,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 25.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-01-lock-order-deadlock",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 158,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-02-lost-update",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 71,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-03-send-boundary",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 79,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-04-deterministic-lost-update",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 62,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-05-swallowed-panic",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 72,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-06-guard-crosses-thread",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-07-silent-channel-drop",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 51,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-08-borrowed-thread",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 35,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-09-shared-input",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 73,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-01-version-requirement",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 68,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-02-edition-2024",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 40,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "Cargo.toml"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-03-optional-feature",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-04-path-version-requirement",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 60,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-05-enable-feature",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 51,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-06-edition-reserved-keyword",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 24,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "8c551e77b1204e662a9b7b70782a0dfdec16b70ff8a8e7e8b9adf4bc9e226bbc",
+        "stderr_tail": "warning: unreachable expression\n  --> dep/src/lib.rs:15:5\n   |\n13 |         return \"safe\";\n   |         ------------- any code following this expression is unreachable\n14 |     }\n15 |     \"default\"\n   |     ^^^^^^^^^ unreachable expression\n   |\n   = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default\n\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-07-feature-conflict",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 50,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-08-renamed-package",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 51,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-09-disable-default-features",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 54,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-01-chunk-boundary",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 25,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-02-empty-input",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 25,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-03-overflow-boundary",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 22,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-04-nan-ordering",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 43,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-05-inclusive-range",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 18,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-06-integer-precision",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 21,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-07-case-insensitive-word",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 27,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-08-lower-bound",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 58,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-09-state-cycle",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 40,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-01-signature",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 26,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-02-builder",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 31,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-03-error-conversion",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 68,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-04-trait-import",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 22,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-05-iterator-api",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 29,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-06-error-variant",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 43,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-07-display-method",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 20,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-08-builder-result",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 24,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-09-mutable-receiver",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 30,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 3,
+        "files": [
+          "src/lib.rs",
+          "src/query.rs",
+          "src/report.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-01-lifetime-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 96,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/error.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-02-error-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 86,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/stats.rs",
+          "src/traits.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-03-generic-bounds",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 91,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/model.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-04-module-visibility",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 31,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/audit.rs",
+          "src/handler.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-05-variant-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 59,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/error.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-06-error-conversion",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 41,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/config.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-07-field-rename",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 37,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/lib.rs",
+          "src/update.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-08-mutability-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 55,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/csv.rs",
+          "src/json.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-09-trait-method-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 66,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-01-inclusive-range",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 18,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-02-rounded-average",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 36,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-03-case-insensitive-first-word",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 28,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-04-stable-score-sort",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 32,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-05-saturating-multiply",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 17,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-06-order-preserving-unique",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 38,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-07-csv-quoting",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 30,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-08-char-truncate",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 19,
+      "value": 1.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-09-token-bucket-refill",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-01-associated-type",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 85,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-02-coherence",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 83,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-03-object-safety",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 88,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-04-missing-method",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 62,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-05-supertrait-bound",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 60,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-06-missing-generic-bound",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 44,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-07-associated-const-object-safety",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 70,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-08-conflicting-from",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 42,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-09-orphan-rule",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 53,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-01-lifetime-chain",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "rust",
+      "tokens_out": 105,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-02-math-dependency",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "numeric-graph",
+      "tokens_out": 153,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-03-logic-quantifier",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "logic",
+      "tokens_out": 158,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-04-invariant-ledger",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "rust",
+      "tokens_out": 108,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-05-invariant-graph",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "numeric-graph",
+      "tokens_out": 179,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-06-invariant-substitution",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "logic",
+      "tokens_out": 155,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-07-scope-resolver",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "rust",
+      "tokens_out": 98,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-08-scoped-quantifier-eval",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "numeric-graph",
+      "tokens_out": 119,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-09-quantifier-occurrences",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "logic",
+      "tokens_out": 170,
+      "value": 1.0
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-preregistration-v2.json",
+    "primary_relative_threshold": 0.1,
+    "problems": [],
+    "sha256": "0b9688013f37c3655f63f224bd8e002f0b5173f5af679ecd54d0280f104bf67d"
+  },
+  "revision": "b2f861fb03c104e8a348684c1b223f9bb30b3136",
+  "schema": "selvedge/capability-result/v1",
+  "scores": {
+    "by_category": {
+      "api-migration": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "concurrency": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "dependency-compat": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "failing-test": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "lifetime-borrow": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "repo-scale": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "semantic-repair": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "trait-impl": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "minimum_met": true,
+        "minimum_required": 8,
+        "n": 9,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "categories": [
+      "api-migration",
+      "concurrency",
+      "dependency-compat",
+      "failing-test",
+      "lifetime-borrow",
+      "repo-scale",
+      "semantic-repair",
+      "trait-impl"
+    ],
+    "category_minimum_items": 8,
+    "category_minimum_met": true,
+    "counts": {
+      "pass": 81
+    },
+    "items": 81,
+    "pooled": {
+      "ci_high": 1.0,
+      "ci_low": 1.0,
+      "level": 0.95,
+      "mean": 1.0,
+      "n": 72,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_ci": {
+      "ci_high": 1.0,
+      "ci_low": 1.0,
+      "level": 0.95,
+      "mean": 1.0,
+      "n": 72,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_composite": 1.0,
+    "trio": {
+      "logic": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "numeric-graph": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "rust": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "trio_all_surfaces": true
+  },
+  "stage": "check",
+  "stamp": "20261116T061518Z",
+  "suite": {
+    "category_filter": null,
+    "category_minimum_items": 8,
+    "counts": {
+      "by_category": {
+        "api-migration": 9,
+        "concurrency": 9,
+        "dependency-compat": 9,
+        "failing-test": 9,
+        "lifetime-borrow": 9,
+        "probe": 6,
+        "repo-scale": 9,
+        "semantic-repair": 9,
+        "trait-impl": 9,
+        "trio": 9
+      },
+      "probes": 6,
+      "suite": 72,
+      "total": 87,
+      "trio": 9
+    },
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "c45275173e6787ef390e62255d6dfeecf7d9da4f1b59ea57c621bf0706911c84"
+  }
+}

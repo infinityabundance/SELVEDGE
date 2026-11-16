@@ -1,0 +1,57 @@
+{
+  "capability": "Preserve the degree-sum invariant across edge insertion and removal.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "trio-05-invariant-graph",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.degrees[from as usize] -= 1;",
+    "replace": "self.degrees[from as usize] += 1;"
+  },
+  "observed_failure": "thread 'remove_updates_both_degrees' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: 1\n right: 0",
+  "operation_items": [
+    {
+      "operation": "apply the transition to every component carrying the invariant",
+      "test": "add_updates_both_degrees"
+    },
+    {
+      "operation": "apply the inverse transition to both components symmetrically",
+      "test": "remove_updates_both_degrees"
+    },
+    {
+      "operation": "reject a transition that would violate the declared relation",
+      "test": "a_self_loop_is_rejected_without_a_partial_update"
+    },
+    {
+      "operation": "precondition failure leaves the invariant untouched",
+      "test": "a_missing_edge_is_rejected_without_a_partial_update"
+    },
+    {
+      "operation": "the invariant is closed under mixed transitions",
+      "test": "conservation_holds_after_a_mixed_sequence"
+    }
+  ],
+  "prompt_intro": "The crate builds, but `Graph` breaks its declared invariant `sum(degrees) == 2 * edges.len()` on removal and accepts self-loops. Preserve the invariant on every transition: `remove_edge` decrements both endpoint degrees, `add_edge` rejects a self-loop with `SelfLoop`, and an unknown edge or node is rejected without a partial update. Keep the public API.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Given a declared state invariant, apply a transition to every component that carries the invariant, reject a transition that would violate it and leave the state unchanged, and never let a partial update escape.",
+    "name": "invariant preservation",
+    "surface": "numeric-graph",
+    "transfer_rule": "A surface is solved only when every task on that surface passes; the trio win requires all three surfaces and is never pooled across them."
+  }
+}

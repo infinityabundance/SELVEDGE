@@ -1,0 +1,28 @@
+{
+  "capability": "Recognise that a returned iterator cannot borrow a local collection.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-08-iterator-outlives-local",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0597"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value % 2 == 0",
+    "replace": "value % 2 == 1"
+  },
+  "observed_failure": "error[E0597]: `values` does not live long enough\n --> src/lib.rs:5:5\n  |\n4 |     let values: Vec<i32> = (0..limit).collect();\n  |         ------ binding `values` declared here\n5 |     values.iter().copied().filter(|value| *value % 2 == 0)\n  |     ^^^^^^ borrowed value does not live long enough\n  |     opaque type requires that `values` is borrowed for `'static`",
+  "prompt_intro": "This crate does not compile. `evens` creates a local `Vec` and returns an iterator borrowing it. Return an iterator over the even numbers in `0..limit` without allocating the collection. Keep the signature `pub fn evens(limit: i32) -> impl Iterator<Item = i32>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

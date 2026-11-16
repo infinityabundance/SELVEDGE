@@ -1,0 +1,57 @@
+{
+  "capability": "Perform capture-avoiding substitution, rejecting a capturing transition.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "trio-06-invariant-substitution",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "return None;",
+    "replace": "return Some(term.clone());"
+  },
+  "observed_failure": "thread 'a_shadowed_binder_is_unchanged' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: Some(Lam(\"x\", Var(\"y\")))\n right: Some(Lam(\"x\", Var(\"x\")))",
+  "operation_items": [
+    {
+      "operation": "apply the transition only to free occurrences",
+      "test": "replaces_a_free_variable"
+    },
+    {
+      "operation": "an inner binding masks the transition",
+      "test": "a_shadowed_binder_is_unchanged"
+    },
+    {
+      "operation": "reject the transition when it would change the binding relation",
+      "test": "a_capturing_substitution_is_rejected"
+    },
+    {
+      "operation": "apply the transition where no binding shadows it",
+      "test": "substitution_descends_under_an_unrelated_binder"
+    },
+    {
+      "operation": "the declared free-variable invariant holds after the transition",
+      "test": "the_free_variable_relation_is_preserved"
+    }
+  ],
+  "prompt_intro": "The crate builds, but `substitute` breaks the free-variable invariant: it substitutes inside a lambda that shadows the name, and it captures a replacement's free variable. Make it capture-avoiding: a shadowed binder makes the substitution a no-op, and a substitution that would capture a replacement variable returns `None` with the term unchanged. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Given a declared state invariant, apply a transition to every component that carries the invariant, reject a transition that would violate it and leave the state unchanged, and never let a partial update escape.",
+    "name": "invariant preservation",
+    "surface": "logic",
+    "transfer_rule": "A surface is solved only when every task on that surface passes; the trio win requires all three surfaces and is never pooled across them."
+  }
+}

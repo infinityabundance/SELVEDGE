@@ -1,0 +1,28 @@
+{
+  "capability": "Debug an exclusive range used where the contract is inclusive.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "failing-05-inclusive-range",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "(start..=end)",
+    "replace": "(start..end)"
+  },
+  "observed_failure": "thread 'tests::sums_inclusively' panicked at src/lib.rs:15:9:\nassertion `left == right` failed\n  left: 6\n right: 10\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. `range_sum(start, end)` must sum every integer from `start` through `end`, inclusive. A range whose start is greater than its end is empty. Keep the signature `pub fn range_sum(start: i32, end: i32) -> i32`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Move the lock acquisition into the spawned thread instead of moving the guard.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-06-guard-crosses-thread",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "cannot be sent between threads safely"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "push(value)",
+    "replace": "push(value + 1)"
+  },
+  "observed_failure": "error[E0277]: `MutexGuard<'_, Vec<i32>>` cannot be sent between threads safely\n --> src/lib.rs:6:19\n  |\n6 |     thread::spawn(move || {\n  |                   ^^^^^^^ `MutexGuard<'_, Vec<i32>>` cannot be sent between threads safely",
+  "prompt_intro": "This crate does not compile. `push_from_thread` moves a `MutexGuard` into a spawned thread; guards are not `Send`. Acquire the lock inside the thread instead. Keep the signature `pub fn push_from_thread(values: &Arc<Mutex<Vec<i32>>>, value: i32)`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Use scoped threads for borrows that cannot satisfy a 'static spawn.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "concurrency-08-borrowed-thread",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0521"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "chunk.iter().sum::<i32>()",
+    "replace": "chunk.iter().count() as i32"
+  },
+  "observed_failure": "error[E0521]: borrowed data escapes outside of function\n --> src/lib.rs:4:56\n  |\n3 |     let handles: Vec<_> = values\n  |                           ------ `values` is a reference that is only valid in the function body\n4 |         .chunks(2)\n  |          ^^^^^^^\n  |          `values` escapes the function body here",
+  "prompt_intro": "This crate does not compile. `sum_parallel` sends slices of its input to `thread::spawn`, which requires a `'static` borrow. Use a scoped thread instead. Keep the signature `pub fn sum_parallel(values: &[i32]) -> i32` and the two-element chunks.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

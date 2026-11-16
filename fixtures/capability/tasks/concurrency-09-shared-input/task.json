@@ -1,0 +1,28 @@
+{
+  "capability": "Share an owned input between two threads with Arc instead of moving it twice.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "concurrency-09-shared-input",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value * value",
+    "replace": "value + value"
+  },
+  "observed_failure": "error[E0382]: use of moved value: `values`\n --> src/lib.rs:5:44\n  |\n3 |     let first = thread::spawn(move || values.iter().map(|v| v * v).sum::<i32>());\n  |                                         ------ value moved into closure here\n4 |\n5 |     let second = thread::spawn(move || values.iter().map(|v| v * v).sum::<i32>());\n  |                                            ^^^^^^ value used here after move",
+  "prompt_intro": "This crate does not compile. `square_sum` moves the owned vector into the first worker and then tries to move it into the second. Share it with `Arc` so both workers read the same input, and return their common result. Keep the signature `pub fn square_sum(values: Vec<i32>) -> i32`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

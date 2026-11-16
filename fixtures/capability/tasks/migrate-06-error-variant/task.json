@@ -1,0 +1,31 @@
+{
+  "capability": "Migrate a match arm to a structured error variant and handle the new variant.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "migrate-06-error-variant",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "\"empty key\"",
+    "replace": "\"empty\""
+  },
+  "observed_failure": "error[E0599]: no variant or associated item named `NotFound` found for enum `Error`\n --> src/lib.rs:6:23\n  |\n6 |         Err(table::Error::NotFound) => Err(format!(\"missing {key}\")),\n  |                       ^^^^^^^^ variant or associated item not found in `Error`",
+  "prompt_intro": "The crate does not build against the vendored `table` 2.0.0. Version 1 had `Error::NotFound`; version 2 has `Error::Missing { key: String }` and `Error::Empty`. Rewrite `read` to return `missing <key>` for a missing key and `empty key` for an empty key. Do not modify `dep/`. Keep `pub fn read(table: &[(&'static str, i32)], key: &str) -> Result<i32, String>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

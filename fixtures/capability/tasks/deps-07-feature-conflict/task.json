@@ -1,0 +1,31 @@
+{
+  "capability": "Resolve two mutually exclusive features by selecting the registered one.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "deps-07-feature-conflict",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "mutually exclusive"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec::mode()",
+    "replace": "\"fast\""
+  },
+  "observed_failure": "error: features `fast` and `safe` are mutually exclusive\n --> dep/src/lib.rs:1:1\n  |\n1 | compile_error!(\"features `fast` and `safe` are mutually exclusive\");\n  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+  "prompt_intro": "This crate does not build because the vendored `codec` 2.0.0 declares `fast` and `safe` mutually exclusive, and the manifest enables both. Select `safe` only. Do not modify `dep/`. Keep `pub fn selected() -> &'static str`, which must return the dependency's mode.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

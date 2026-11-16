@@ -1,0 +1,31 @@
+{
+  "capability": "Read a dependency's feature declaration and enable the optional API.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-05-enable-feature",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "could not find"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec::json::to_json(value)",
+    "replace": "codec::json::to_json(value).to_uppercase()"
+  },
+  "observed_failure": "error[E0433]: failed to resolve: could not find `json` in `codec`\n --> src/lib.rs:3:12\n  |\n3 |     codec::json::to_json(value)\n  |            ^^^^ could not find `json` in `codec`",
+  "prompt_intro": "This crate does not build. The vendored `codec` 2.0.0 exposes `json` only when its `json` feature is enabled. Enable that feature in `Cargo.toml`; do not modify `dep/`. Keep `pub fn encode(value: &str) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

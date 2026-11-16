@@ -76,6 +76,12 @@ PRIMARY_THRESHOLD = 0.10
 SECONDARY_MAX_CATEGORY_REGRESSION = 0.05
 CAPACITY_ACTIVE_TOLERANCE = 0.05
 
+#: P14.4: a category needs at least this many scored items before its mean is
+#: reported as a category result. With fewer, one item moves the category mean by
+#: more than 1/8 and the stratified interval is too wide to support the claim.
+MIN_CATEGORY_ITEMS = 8
+TRIO_SURFACES = ("rust", "numeric-graph", "logic")
+
 
 class CourtError(RuntimeError):
     """The court refuses to produce a result."""
@@ -177,6 +183,7 @@ def few_shot_disjoint(few_shot_texts: list, collections: dict) -> dict:
 def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_MAX_NEW_TOKENS,
              stops: tuple = DEFAULT_STOPS, seed: int = DEFAULT_SEED,
              order: str = "sorted", only: list | None = None,
+             categories: list | None = None,
              preregistration: str | None = None,
              few_shot_texts: list | None = None,
              repo: str | None = None) -> dict:
@@ -185,6 +192,12 @@ def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_M
     collections = suite_module.load_suite(suite_root)
     manifest = suite_module.build_manifest(suite_root)
     tasks = collections["suite"] + collections["trio"]
+    if categories:
+        wanted_categories = set(categories)
+        tasks = [task for task in tasks if task.category in wanted_categories]
+        missing_categories = wanted_categories - {task.category for task in tasks}
+        if missing_categories:
+            raise CourtError(f"unknown categories: {sorted(missing_categories)}")
     if only:
         wanted = set(only)
         tasks = [task for task in tasks if task.id in wanted]
@@ -242,6 +255,7 @@ def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_M
             "stops": list(stops),
             "seed": seed,
             "order": order,
+            "category_filter": sorted(categories) if categories else None,
             "greedy": True,
             "feedback": "none",
             "few_shot_texts": list(few_shot_texts or []),
@@ -283,7 +297,9 @@ def sha256_bytes(data: bytes) -> str:
 
 def check(generations: dict, suite_root: str, out: str,
           preregistration: str | None = None, runner=None,
-          keep: bool = False, workroot: str | None = None) -> dict:
+          keep: bool = False, workroot: str | None = None,
+          categories: list | None = None,
+          min_category_items: int = MIN_CATEGORY_ITEMS) -> dict:
     from . import checkers
 
     runner = runner or (lambda task, files: checkers.run_check(
@@ -292,6 +308,13 @@ def check(generations: dict, suite_root: str, out: str,
         os.path.abspath(__file__))))
     collections = suite_module.load_suite(suite_root)
     tasks = {task.id: task for kind in ("suite", "trio") for task in collections[kind]}
+    if categories:
+        wanted_categories = set(categories)
+        tasks = {task_id: task for task_id, task in tasks.items()
+                 if task.category in wanted_categories}
+        missing_categories = wanted_categories - {task.category for task in tasks.values()}
+        if missing_categories:
+            raise CourtError(f"unknown categories: {sorted(missing_categories)}")
     manifest = suite_module.build_manifest(suite_root)
 
     if generations.get("schema") != SCHEMA_GENERATIONS:
@@ -378,12 +401,30 @@ def check(generations: dict, suite_root: str, out: str,
             },
         })
 
-    suite_categories = sorted({task.category for task in collections["suite"]})
+    suite_categories = sorted({task.category for task in tasks.values()
+                               if task.kind == "suite"})
+    if not suite_categories:
+        raise CourtError("the run selected no suite category")
     scored = {category: per_category.get(category, [])
               for category in suite_categories}
     empty_categories = [category for category, values in scored.items() if not values]
     if empty_categories:
         raise CourtError(f"the run did not cover categories {empty_categories}")
+
+    category_report = {
+        category: dict(
+            stats.bootstrap_mean(values),
+            minimum_required=min_category_items,
+            minimum_met=len(values) >= min_category_items,
+        )
+        for category, values in scored.items()
+    }
+    category_minimum_met = all(entry["minimum_met"] for entry in category_report.values())
+    if min_category_items > 0 and not category_minimum_met:
+        short = {category: entry["n"] for category, entry in category_report.items()
+                 if not entry["minimum_met"]}
+        raise CourtError(
+            f"categories below the {min_category_items}-item minimum: {short}")
 
     composite = stats.composite(scored)
     composite_ci = stats.stratified_mean(scored)
@@ -405,6 +446,8 @@ def check(generations: dict, suite_root: str, out: str,
             "root": os.path.abspath(suite_root),
             "suite_sha256": manifest["suite_sha256"],
             "counts": manifest["counts"],
+            "category_filter": sorted(categories) if categories else None,
+            "category_minimum_items": min_category_items,
         },
         "generations": {
             "schema": generations.get("schema"),
@@ -435,8 +478,10 @@ def check(generations: dict, suite_root: str, out: str,
         "scores": {
             "primary_composite": composite,
             "primary_ci": composite_ci,
-            "by_category": {category: stats.bootstrap_mean(values)
-                            for category, values in scored.items()},
+            "by_category": category_report,
+            "category_minimum_items": min_category_items,
+            "category_minimum_met": category_minimum_met,
+            "categories": suite_categories,
             "pooled": stats.bootstrap_mean([value for values in scored.values()
                                             for value in values]),
             "trio": trio,
@@ -463,10 +508,14 @@ def registration_template(manifest: dict) -> dict:
         "registered_utc": utc_now(),
         "suite_sha256": manifest["suite_sha256"],
         "primary": {
-            "endpoint": "category-balanced mean verified task success on the 24-task suite",
+            "endpoint": (
+                "category-balanced mean verified task success on the "
+                f"{manifest['counts']['suite']}-task suite"),
             "definition": "equal weight per category; the arithmetic mean inside each "
-                          "category; three categories are compile-repair and four are "
-                          "behavioural repair",
+                          "category; categories are reported separately and never "
+                          "pooled",
+            "suite_items": manifest["counts"]["suite"],
+            "category_minimum_items": MIN_CATEGORY_ITEMS,
             "relative_threshold": PRIMARY_THRESHOLD,
             "bootstrap": {
                 "kind": "paired percentile, items resampled within category, "
@@ -482,8 +531,9 @@ def registration_template(manifest: dict) -> dict:
         },
         "trio": {
             "rule": "a transfer claim requires success on every surface "
-                    "(rust-lifetime-chain, numeric-dependency, quantifier-chain) with "
-                    "the per-surface breakdown reported",
+                    f"({', '.join(TRIO_SURFACES)}) with the per-surface breakdown "
+                    "reported; results are never pooled across surfaces",
+            "surfaces": list(TRIO_SURFACES),
             "requires_all_surfaces": True,
         },
         "capacity_scaling": {
@@ -544,6 +594,12 @@ def verify_preregistration(prereg: dict, manifest: dict) -> list:
             or prereg.get("primary", {}).get("bootstrap", {}).get("resamples")
             != stats.RESAMPLES):
         problems.append("the pre-registered bootstrap seed or resample count changed")
+    recorded_items = prereg.get("primary", {}).get("suite_items")
+    if recorded_items is not None and recorded_items != manifest["counts"]["suite"]:
+        problems.append("the pre-registration binds a different suite item count")
+    recorded_minimum = prereg.get("primary", {}).get("category_minimum_items")
+    if recorded_minimum is not None and recorded_minimum != MIN_CATEGORY_ITEMS:
+        problems.append("the pre-registered category minimum changed")
     return problems
 
 

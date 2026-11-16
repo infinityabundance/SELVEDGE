@@ -1,0 +1,28 @@
+{
+  "capability": "Replace a non-atomic load-and-store pair with an atomic read-modify-write.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-04-deterministic-lost-update",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "counter.fetch_add(1, Ordering::SeqCst)",
+    "replace": "counter.store(1, Ordering::SeqCst)"
+  },
+  "observed_failure": "thread 'both_increments_are_counted' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: 1\n right: 2",
+  "prompt_intro": "The hidden test fails. Two threads load a counter, synchronise on a barrier, and store `loaded + 1`. Both increments must be counted. Rewrite `increment_pair` using an atomic read-modify-write and keep the barrier so the race is still exercised. Keep the signature `pub fn increment_pair() -> usize`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

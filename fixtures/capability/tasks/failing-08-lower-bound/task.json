@@ -1,0 +1,28 @@
+{
+  "capability": "Fix a binary-search return value without breaking insertion points.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "failing-08-lower-bound",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "values[mid] < target",
+    "replace": "values[mid] <= target"
+  },
+  "observed_failure": "thread 'tests::finds_a_present_value' panicked at src/lib.rs:17:9:\nassertion `left == right` failed\n  left: 2\n right: 1\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. `lower_bound(values, target)` returns the index of the first element equal to `target`, or the index at which `target` would be inserted to keep the sorted slice ordered. Return `values.len()` when every element is smaller. Keep the signature `pub fn lower_bound(values: &[i32], target: i32) -> usize`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -55,7 +55,7 @@ TASKS = [
             "  |\n"
             "5 | pub fn lookup(table: &Table, key: &str) -> Option<&str> {\n"
             "  |                     -----         ----            ^ expected named lifetime parameter"),
-        "shared_operation": dict(_OPERATION, surface="rust-lifetime-chain"),
+        "shared_operation": dict(_OPERATION, surface="rust"),
         "files": {
             "src/lib.rs": (
                 "//! A table, an alias table, and a resolution chain.\n"
@@ -206,7 +206,7 @@ TASKS = [
             "assertion `left == right` failed\n"
             "  left: [\"c\", \"b\"]\n"
             " right: [\"b\", \"c\"]"),
-        "shared_operation": dict(_OPERATION, surface="numeric-dependency"),
+        "shared_operation": dict(_OPERATION, surface="numeric-graph"),
         "files": {
             "src/lib.rs": (
                 "//! Recompute planning over declared rules.\n"
@@ -404,7 +404,7 @@ TASKS = [
             "assertion `left == right` failed\n"
             "  left: None\n"
             " right: Some([0, 1])"),
-        "shared_operation": dict(_OPERATION, surface="quantifier-chain"),
+        "shared_operation": dict(_OPERATION, surface="logic"),
         "files": {
             "src/lib.rs": (
                 "//! Quantified premise chains.\n"

@@ -81,6 +81,8 @@ def main(argv: list[str]) -> int:
     generate.add_argument("--order", default="sorted")
     generate.add_argument("--only", default=None,
                           help="comma-separated task ids (a subset run)")
+    generate.add_argument("--category", default=None,
+                          help="comma-separated suite categories (a stratified subset run)")
     generate.add_argument("--preregistration", default=None)
     generate.add_argument("--few-shot", default=None,
                           help="JSON array of few-shot example strings")
@@ -91,6 +93,10 @@ def main(argv: list[str]) -> int:
     check.add_argument("--preregistration", default=None)
     check.add_argument("--workroot", default="/work/target/capability-work")
     check.add_argument("--keep", action="store_true")
+    check.add_argument("--category", default=None,
+                       help="comma-separated suite categories to score")
+    check.add_argument("--min-category-items", type=int, default=court.MIN_CATEGORY_ITEMS,
+                       help="refuse a category with fewer scored items (default: %(default)s)")
 
     compare = subparsers.add_parser("compare")
     compare.add_argument("--arm", required=True)
@@ -194,9 +200,11 @@ def main(argv: list[str]) -> int:
             if not isinstance(few_shot, list):
                 raise SystemExit("--few-shot must be a JSON array of strings")
         only = args.only.split(",") if args.only else None
+        categories = args.category.split(",") if args.category else None
         receipt = court.generate(
             adapter, args.suite, args.out,
             max_new_tokens=args.max_new_tokens, order=args.order, only=only,
+            categories=categories,
             preregistration=args.preregistration, few_shot_texts=few_shot,
             repo=REPO)
         print(f"capability_court: generated {len(receipt['items'])} items -> {args.out}")
@@ -204,15 +212,21 @@ def main(argv: list[str]) -> int:
 
     if args.command == "check":
         generations = load_json(args.generations)
+        categories = args.category.split(",") if args.category else None
         result = court.check(generations, args.suite, args.out,
                              preregistration=args.preregistration,
-                             keep=args.keep, workroot=args.workroot)
+                             keep=args.keep, workroot=args.workroot,
+                             categories=categories,
+                             min_category_items=args.min_category_items)
         scores = result["scores"]
         print(f"capability_court: composite {scores['primary_composite']:.4f} "
               f"[{scores['primary_ci']['ci_low']:.4f}, {scores['primary_ci']['ci_high']:.4f}]")
         for category, entry in sorted(scores["by_category"].items()):
-            print(f"  {category:18s} {entry['mean']:.4f} (n={entry['n']})")
-        print(f"  counts {scores['counts']}")
+            print(f"  {category:18s} {entry['mean']:.4f} "
+                  f"[{entry['ci_low']:.4f}, {entry['ci_high']:.4f}] "
+                  f"(n={entry['n']}, min {entry['minimum_required']})")
+        print(f"  category minimum met {scores['category_minimum_met']}; "
+              f"counts {scores['counts']}")
         return 0
 
     if args.command == "compare":

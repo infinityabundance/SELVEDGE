@@ -4,6 +4,7 @@
   "checker": {
     "kind": "cargo_test"
   },
+  "difficulty": "medium",
   "entry": "src/lib.rs",
   "id": "trio-01-lifetime-chain",
   "initial_failure": {
@@ -50,7 +51,7 @@
     "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
     "definition": "Given a target, build its dependency relation, close it from the required node while excluding already-satisfied nodes, reject a cycle as an error, and emit the minimal set of declarations to change in dependency order.",
     "name": "dependency-closure minimal repair",
-    "surface": "rust-lifetime-chain",
+    "surface": "rust",
     "transfer_rule": "A trio win requires success on every surface with the per-surface breakdown reported; a pooled or single-surface gain is not transfer."
   }
 }

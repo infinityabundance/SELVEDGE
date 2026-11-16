@@ -1,0 +1,31 @@
+{
+  "capability": "Replace a removed collection-returning API with the callback API.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "migrate-05-iterator-api",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0425"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "item.name.to_string()",
+    "replace": "item.name.to_uppercase()"
+  },
+  "observed_failure": "error[E0425]: cannot find function `collect` in crate `items`\n --> src/lib.rs:3:28\n  |\n3 |     items::collect(input).into_iter().map(|item| item.name.to_string()).collect()\n  |                            ^^^^^^^ not found in `items`",
+  "prompt_intro": "The crate does not build against the vendored `items` 2.0.0. Version 1 returned a `Vec<Item>`; version 2 removed that function and provides `items::scan(input, &mut |item| ...)`, which visits each item. Rewrite `names` using `scan`. Do not modify `dep/`. Keep `pub fn names(input: &str) -> Vec<String>`. Empty comma-separated segments are skipped.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Move an integer division after the multiplication that needs the precision.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "failing-06-integer-precision",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "cents * percent / 100",
+    "replace": "cents * percent / 99"
+  },
+  "observed_failure": "thread 'tests::keeps_the_remainder' panicked at src/lib.rs:16:9:\nassertion `left == right` failed\n  left: 50\n right: 99\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. `percent_of(cents, percent)` must return `cents * percent / 100`, truncated to whole cents. The current code divides before multiplying, so it loses every remainder. Keep the signature `pub fn percent_of(cents: u64, percent: u64) -> u64`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Add the From conversion that lets ? cross a module error boundary.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "repo-06-error-conversion",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/error.rs",
+    "find": "AppError::Missing(key)",
+    "replace": "AppError::Parse(key)"
+  },
+  "observed_failure": "error[E0277]: the `?` operator can only be used in a function that returns `Result` or `Option`\n --> src/service.rs:5:35\n  |\n5 |     let value = store::read(key, data)?;\n  |                                   ^ cannot use the `?` operator in a function that returns `Result<String, AppError>`\n  |\n  = help: the trait `From<StoreError>` is not implemented for `AppError`",
+  "prompt_intro": "This crate does not compile. `service::load` uses `?` on a `StoreError`, but its return type is `AppError`; no conversion exists. Implement `From<StoreError> for AppError`: `Corrupt(key)` becomes `AppError::Corrupt(key)` and `NotFound(key)` becomes `AppError::Missing(key)`. Keep every signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

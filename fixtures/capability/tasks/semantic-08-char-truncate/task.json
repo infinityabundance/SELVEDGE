@@ -1,0 +1,28 @@
+{
+  "capability": "Truncate by characters, not bytes, so multi-byte input is not split.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "semantic-08-char-truncate",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "take(max_chars)",
+    "replace": "take(max_chars + 1)"
+  },
+  "observed_failure": "the crate builds and tests pass; truncate(\"h\u00e9llo\", 2) panics with\n'byte index 2 is not a char boundary'",
+  "prompt_intro": "The truncation helper builds and its ASCII example passes. The contract limits the result to `max_chars` characters; it must not split a UTF-8 character. Fix `truncate`. Keep `pub fn truncate(text: &str, max_chars: usize) -> String`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

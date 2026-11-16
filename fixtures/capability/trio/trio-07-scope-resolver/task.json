@@ -1,0 +1,53 @@
+{
+  "capability": "Resolve a name to the nearest enclosing binding in a scope chain.",
+  "category": "trio",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "trio-07-scope-resolver",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "trio",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "return Some(depth);",
+    "replace": "return Some(depth + 1);"
+  },
+  "observed_failure": "thread 'the_innermost_binding_wins' panicked at tests/check.rs:\nassertion `left == right` failed\n  left: Some(1)\n right: Some(0)",
+  "operation_items": [
+    {
+      "operation": "resolve to the nearest enclosing binding",
+      "test": "the_innermost_binding_wins"
+    },
+    {
+      "operation": "count the scopes crossed to the binding",
+      "test": "an_outer_binding_is_found_at_its_distance"
+    },
+    {
+      "operation": "a name with no binding is free",
+      "test": "a_free_name_is_none"
+    },
+    {
+      "operation": "an inner scope never leaks past a shadowing binding",
+      "test": "shadowing_across_three_levels_resolves_innermost"
+    }
+  ],
+  "prompt_intro": "The crate builds, but `resolve` returns the outermost matching binding instead of the nearest one. Return the distance to the nearest binding for the name (0 is the queried scope), or `None` when the name is free. Keep the public API.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1",
+  "shared_operation": {
+    "audit": "author annotation only; no inter-annotator agreement yet (P11.21 gap)",
+    "definition": "Resolve each occurrence against the nearest enclosing binding for that name, distinguish free from bound occurrences, reject or reject-free an unbound name as the surface requires, and never leak an inner scope.",
+    "name": "quantifier/scope resolution",
+    "surface": "rust",
+    "transfer_rule": "A surface is solved only when every task on that surface passes; the trio win requires all three surfaces and is never pooled across them."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "capability": "Diagnose a version requirement that excludes the only vendored version.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-04-path-version-requirement",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "failed to select a version"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "mathx::twice(value)",
+    "replace": "mathx::twice(value) + 1"
+  },
+  "observed_failure": "error: failed to select a version for the requirement `mathx = \"^3\"`\ncandidate versions found which didn't match: 2.0.0\nlocation searched: `/work/.../dep`\nrequired by package `deps_04_path_version_requirement v0.1.0`",
+  "prompt_intro": "This crate does not build. Its manifest requires `mathx` version 3, but the only vendored copy is 2.0.0 and its API is unchanged. Correct the version requirement. You may edit `Cargo.toml`; do not modify `dep/`. Keep `pub fn twice(value: i64) -> i64`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

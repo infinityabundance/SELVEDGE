@@ -1,0 +1,17 @@
+{
+  "capability": "Sandbox probe: a test that prints a successful test summary and then fails is recorded as a failure; stdout never decides the outcome.",
+  "category": "probe",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "probe-stdout-forgery",
+  "kind": "probe",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "probe_expectation": "fail",
+  "probe_stdout_contains": "test result: ok. 3 passed",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

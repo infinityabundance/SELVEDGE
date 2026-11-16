@@ -4,13 +4,17 @@ Status: **instrument implemented and CPU-tested; the suite is authored, hashed
 and contamination-checked; no arm has been evaluated on it.** The GPU belongs to
 the running T2 pilot, so this session builds and proves the measurement machinery
 and records the exact commands for the first real run. The evidence is two
-receipts at revision `d7d62061c966a5b57d945fc3fc96893389fb49b9`:
+receipts at revision `b2f861f`:
 
-- `results/capability/selftest-20261116T023557Z.json` — every checker outcome;
-- `results/capability/contamination-20261116T023550Z.json` — disjointness.
+- `results/capability/selftest-20261116T064500Z.json` — every checker outcome,
+  the per-task build time and the six sandbox-probe outcomes;
+- `results/capability/contamination-20261116T065000Z.json` — disjointness over the
+  expanded suite.
 
-The pre-registration is `docs/capability-preregistration.json`, written before
-any arm run and bound to the suite hash.
+The original pre-registration is `docs/capability-preregistration.json` (the
+24-task suite, retained unchanged). The expanded suite is registered separately
+in `docs/capability-preregistration-v2.json`, written before any arm run against
+it and bound to the new suite hash.
 
 This document implements `docs/PROGRAM-PLAN.md` P12.8 (three levels), P12.9
 (fresh Rust suite), P12.10 (control matrix), P12.11 (thresholds) and P11.21
@@ -54,8 +58,24 @@ demo; Level 3 without Level 2 is a product demo with no capacity story.
 Suite size, from the self-test receipt:
 
 <!-- BEGIN GENERATED: cap-suite-tasks -->
-24 tasks
+72 tasks
 <!-- END GENERATED: cap-suite-tasks -->
+
+Items are spread across three author-assigned difficulty bands (the label is an
+editorial judgement, not a measured difficulty):
+
+- easy:
+<!-- BEGIN GENERATED: cap-diff-easy -->
+19
+<!-- END GENERATED: cap-diff-easy -->
+- medium:
+<!-- BEGIN GENERATED: cap-diff-medium -->
+42
+<!-- END GENERATED: cap-diff-medium -->
+- hard:
+<!-- BEGIN GENERATED: cap-diff-hard -->
+26
+<!-- END GENERATED: cap-diff-hard -->
 
 Every item is original to this repository, authored in
 `fixtures/capability/tasks/`, and licensed `MIT OR Apache-2.0`, the same terms as
@@ -67,32 +87,42 @@ Items per category, from the same receipt:
 
 - lifetime-borrow:
 <!-- BEGIN GENERATED: cap-cat-lifetime -->
-4
+9
 <!-- END GENERATED: cap-cat-lifetime -->
 - failing-test:
 <!-- BEGIN GENERATED: cap-cat-failing -->
-4
+9
 <!-- END GENERATED: cap-cat-failing -->
 - api-migration:
 <!-- BEGIN GENERATED: cap-cat-migration -->
-4
+9
 <!-- END GENERATED: cap-cat-migration -->
 - dependency-compat:
 <!-- BEGIN GENERATED: cap-cat-dependency -->
-3
+9
 <!-- END GENERATED: cap-cat-dependency -->
 - concurrency:
 <!-- BEGIN GENERATED: cap-cat-concurrency -->
-3
+9
 <!-- END GENERATED: cap-cat-concurrency -->
 - trait-impl:
 <!-- BEGIN GENERATED: cap-cat-trait -->
-3
+9
 <!-- END GENERATED: cap-cat-trait -->
 - repo-scale:
 <!-- BEGIN GENERATED: cap-cat-repo -->
-3
+9
 <!-- END GENERATED: cap-cat-repo -->
+- semantic-repair:
+<!-- BEGIN GENERATED: cap-cat-semantic -->
+9
+<!-- END GENERATED: cap-cat-semantic -->
+
+The categories are deliberately separate. `failing-test` starts from a red
+visible assertion; `semantic-repair` starts from a **green** visible assertion
+and a behavioural defect that only the hidden tests expose
+(`initial_failure.kind = hidden_test_failure`). Mixing them would hide that
+distinction in the aggregate.
 
 The failing state and the checker for each category:
 
@@ -105,6 +135,7 @@ The failing state and the checker for each category:
 | concurrency | deadlock (timeout), lost update (assertion), `!Send` (compile error) | `cargo test` |
 | trait-impl | missing associated type, coherence conflict, non-object-safe trait | `cargo test` |
 | repo-scale | needs a repair propagated through three or four files | `cargo test` |
+| semantic-repair | compiles and its visible test passes; hidden behavioural tests fail | `cargo test` with hidden tests restored |
 
 Each task directory has the same shape, and `scripts/capability_authoring.py
 --check` fails if the tracked tree and the authoring source disagree:
@@ -129,36 +160,85 @@ Three anti-gaming properties are structural, not procedural:
 3. **Vendored dependencies are read-only.** A migration task cannot be answered
    by reverting the dependency: `dep/` is restored after the arm writes.
 
-The self-test proves each task discriminates before the suite can be used. At
-revision `0c4b050`:
+The self-test proves each task discriminates before the suite can be used. At the
+receipt stamp `20261116T061200Z` (revision `b2f861f`):
 
 - failing states that fail exactly as declared:
 <!-- BEGIN GENERATED: cap-initial-ok -->
-27
+81
 <!-- END GENERATED: cap-initial-ok -->
-- tasks checked:
+- tasks checked (suite plus trio):
 <!-- BEGIN GENERATED: cap-tasks-checked -->
-27
+81
 <!-- END GENERATED: cap-tasks-checked -->
 - reference solutions that pass:
 <!-- BEGIN GENERATED: cap-reference-ok -->
-27
+81
 <!-- END GENERATED: cap-reference-ok -->
 - deliberately wrong mutations that fail:
 <!-- BEGIN GENERATED: cap-mutation-ok -->
-27
+81
 <!-- END GENERATED: cap-mutation-ok -->
 - sandbox probes with the expected outcome:
 <!-- BEGIN GENERATED: cap-probes-ok -->
-5
+6
 <!-- END GENERATED: cap-probes-ok -->
 - sandbox probes defined:
 <!-- BEGIN GENERATED: cap-probe-tasks -->
-5 probes
+6 probes
 <!-- END GENERATED: cap-probe-tasks -->
 
-The last two lines are the point: a checker that cannot reject a wrong answer is
-not a measurement, and a wrong answer that hangs is not a failure it can see.
+Per-task build time (compile only, `cargo test --no-run`) and full checker time
+are recorded for every item in the receipt (`items[].build.duration_ms` and
+`items[].reference.duration_ms`). The slowest build observed in each category:
+
+- lifetime-borrow:
+<!-- BEGIN GENERATED: cap-build-lifetime -->
+164 ms
+<!-- END GENERATED: cap-build-lifetime -->
+- failing-test:
+<!-- BEGIN GENERATED: cap-build-failing -->
+114 ms
+<!-- END GENERATED: cap-build-failing -->
+- api-migration:
+<!-- BEGIN GENERATED: cap-build-migration -->
+114 ms
+<!-- END GENERATED: cap-build-migration -->
+- dependency-compat:
+<!-- BEGIN GENERATED: cap-build-dependency -->
+114 ms
+<!-- END GENERATED: cap-build-dependency -->
+- concurrency:
+<!-- BEGIN GENERATED: cap-build-concurrency -->
+164 ms
+<!-- END GENERATED: cap-build-concurrency -->
+- trait-impl:
+<!-- BEGIN GENERATED: cap-build-trait -->
+164 ms
+<!-- END GENERATED: cap-build-trait -->
+- repo-scale:
+<!-- BEGIN GENERATED: cap-build-repo -->
+114 ms
+<!-- END GENERATED: cap-build-repo -->
+- semantic-repair:
+<!-- BEGIN GENERATED: cap-build-semantic -->
+164 ms
+<!-- END GENERATED: cap-build-semantic -->
+- trio:
+<!-- BEGIN GENERATED: cap-build-trio -->
+164 ms
+<!-- END GENERATED: cap-build-trio -->
+
+The largest build over every scored item is:
+
+<!-- BEGIN GENERATED: cap-max-build-ms -->
+164 ms
+<!-- END GENERATED: cap-max-build-ms -->
+
+so the 45 s checker bound is not close to binding and every crate is small
+enough to compile and test inside it. The last two self-test lines are the point:
+a checker that cannot reject a wrong answer is not a measurement, and a wrong
+answer that hangs is not a failure it can see.
 
 ### Verifier quality, stated per item
 
@@ -182,34 +262,46 @@ implied:
 Trio size, from the self-test receipt:
 
 <!-- BEGIN GENERATED: cap-trio-tasks -->
-3 tasks
+9 tasks
 <!-- END GENERATED: cap-trio-tasks -->
 
-| surface | task | what the hidden tests require |
-| --- | --- | --- |
-| `rust-lifetime-chain` | `trio-01-lifetime-chain` | annotate one lifetime through lookup → resolve → chain so the returned `&str` is tied to the table, never to a short-lived alias slice |
-| `numeric-dependency` | `trio-02-math-dependency` | return the minimal dependency-ordered recompute set for a target, excluding known values, rejecting cycles, deterministic tie-break |
-| `quantifier-chain` | `trio-03-logic-quantifier` | return the shortest premise chain for a quantified conclusion and the indices that must be strengthened from `Some` to `All` |
+Three operation families are applied on each of three surfaces, each surface in
+its own crate with its own hidden checker:
 
-**The shared operation**, annotated per hidden test in each `task.json`:
-*build the dependency relation induced by a target, close it from the required
-node while excluding already-satisfied nodes, reject an inconsistent cycle, and
-emit the minimal ordered set of declarations to change.*
+| operation family | Rust | numeric/graph | logic |
+| --- | --- | --- | --- |
+| dependency-closure minimal repair | `trio-01-lifetime-chain` | `trio-02-math-dependency` | `trio-03-logic-quantifier` |
+| invariant preservation | `trio-04-invariant-ledger` | `trio-05-invariant-graph` | `trio-06-invariant-substitution` |
+| quantifier/scope resolution | `trio-07-scope-resolver` | `trio-08-scoped-quantifier-eval` | `trio-09-quantifier-occurrences` |
 
-**How a win is judged.** Not on a pooled score. The check stage reports each
-surface separately (`scores.trio`) and sets `trio_all_surfaces` only when every
-surface is fully solved. The pre-registration says a transfer claim requires
-success on every surface with the per-surface breakdown reported; a gain on one
-surface is not transfer.
+**The shared operations**, annotated per hidden test in each `task.json`:
 
-**Honest boundary.** This is a trio, not the P11.21 suite. P11.21 asks for at
+1. *dependency-closure minimal repair* — build the dependency relation induced
+   by a target, close it from the required node while excluding already-satisfied
+   nodes, reject an inconsistent cycle, and emit the minimal ordered set of
+   declarations to change.
+2. *invariant preservation* — identify the state relation, apply a transition to
+   every component that carries it, and reject (leaving state unchanged) any
+   transition that would break it.
+3. *quantifier/scope resolution* — resolve each occurrence against the nearest
+   enclosing binding for that name, distinguish free from bound occurrences, and
+   never leak an inner binding.
+
+**How a win is judged.** Not on a pooled score. The check stage aggregates by
+surface across all three operation families (`scores.trio`) and sets
+`trio_all_surfaces` only when every surface is fully solved (all three tasks in
+that surface pass). The pre-registration says a transfer claim requires success
+on every surface with the per-surface breakdown reported; a gain on one surface,
+or on one operation family, is not transfer.
+
+**Honest boundary.** This is nine tasks, not the P11.21 suite. P11.21 asks for at
 least forty items per domain and an inter-annotator agreement check; this has
-one task per surface with five or six annotated operation items each, annotated
-by the author only. The operation annotation is therefore an author claim, not
-an independently audited one, and §9 records that as an open gap. The trio is
-usable now as a *pre-registered transfer probe*; it is not usable as the
-published anti-specialisation instrument until the item count and the agreement
-check exist.
+three tasks per surface, with four to six operation-annotated tests each,
+annotated by the author only. The operation annotation is therefore an author
+claim, not an independently audited one, and §9 records that as an open gap.
+The trio is usable now as a *pre-registered transfer probe*; it is not usable as
+the published anti-specialisation instrument until the item count and the
+agreement check exist.
 
 ## 4. Contamination
 
@@ -221,7 +313,7 @@ Method, in the two units the brief requires:
   item against the pinned held-out windows the KL metric uses.
 
 Items compared per source, from
-`results/capability/contamination-20261116T023550Z.json`:
+`results/capability/contamination-20261116T065000Z.json`:
 
 - HumanEval items (prompt, solution, test):
 <!-- BEGIN GENERATED: cap-contam-humaneval -->
@@ -266,6 +358,12 @@ disjoint
 <!-- END GENERATED: cap-contam-verdict -->
 
 The corpus comparison is a **bounded deterministic sample** — the first
+After the P14.4 expansion the script was re-run against the same sources. It
+walks the fixture tree rather than a list, so every new task was hashed and
+shingled automatically; the receipt binds the expanded suite hash and reports
+the same coverage rule. The verdict stayed `disjoint`.
+
+The corpus comparison is a **bounded deterministic sample** — the first
 documents in sorted file order, capped per source — and the receipt records the
 document and character counts plus the rule. It is not a full-corpus pass, and
 the script fails closed if a corpus source is absent rather than reporting a
@@ -305,7 +403,7 @@ Every checker invocation runs under all of the following, recorded per item:
 <!-- END GENERATED: cap-run-only-timeout-s -->
 - court container memory:
 <!-- BEGIN GENERATED: cap-court-mem-gib -->
-12 GiB
+10 GiB
 <!-- END GENERATED: cap-court-mem-gib -->
 - workdir budget:
 <!-- BEGIN GENERATED: cap-workdir-budget-mib -->
@@ -335,12 +433,19 @@ Evidence that each outcome is handled, from the self-test receipt:
 | `probe-compile-error` | compile error | `compile_error` | exit 101, `E0308` |
 | `probe-timeout` | timeout | `timeout` | killed by signal 9 after the wall bound |
 | `probe-oom` | allocation failure | `oom` | aborted by signal 6 with the allocator's message under the run-only `RLIMIT_AS` |
+| `probe-stdout-forgery` | assertion failure | `test_failed` | exit 101; the test printed `test result: ok. 3 passed` and then asserted a falsehood, so stdout did not decide the outcome |
 
 The OOM probe is an **allocator abort under `RLIMIT_AS`**, not a cgroup OOM
 kill: its `cgroup_oom_kill_delta` is zero and the receipt says so. A cgroup kill
 would be recorded with a non-zero delta from `/sys/fs/cgroup/memory.events` and
 the container's `memory.peak`; both counters are read for every run, so the two
 events are distinguishable rather than conflated.
+
+The stdout-forgery probe closes the last non-behavioural escape hatch: an answer
+that prints the expected test summary does not pass, because the recorded status
+is the subprocess outcome and the hidden behaviour still fails. The self-test
+also requires the forged marker to appear in the captured stdout, so the probe
+cannot silently stop exercising the path.
 
 Other recorded properties:
 
@@ -364,7 +469,7 @@ Largest observed workdir:
 Slowest checker run:
 
 <!-- BEGIN GENERATED: cap-max-check-ms -->
-164 ms
+165 ms
 <!-- END GENERATED: cap-max-check-ms -->
 
 ## 6. The harness: adapters, scoring and anti-gaming
@@ -392,11 +497,16 @@ recorded as an invalid answer — never silently repaired.
 failure with a duration, not a hang.
 
 **Scoring.** Per item, success is 1 or 0. The primary composite is the
-equal-weight mean of the seven suite categories, each the arithmetic mean of its
+equal-weight mean of the eight suite categories, each the arithmetic mean of its
 items; this prevents the category with the most items from setting the score.
 The CI is a paired percentile bootstrap resampling items within category, with
-categories weighted equally, 10,000 resamples, seed `20261115`. The trio is
-scored separately by surface and never pooled into the primary.
+categories weighted equally, 10,000 resamples, seed `20261115`. Every category
+is also reported with its own interval, its `n`, and the registered 8-item
+minimum; a category below that minimum refuses the result. `--category` on
+`generate` and `check` scores a stratified subset (all selected categories must
+still meet the minimum), and the receipt records `suite.category_filter`. The
+trio is scored separately by surface and never pooled into the primary; the
+pooled item mean is reported for transparency but never used as the endpoint.
 
 **Anti-gaming checks**, all implemented and CPU-tested:
 
@@ -424,20 +534,30 @@ null.
 
 ## 7. Pre-registered thresholds (P12.11)
 
-Written before any arm run in `docs/capability-preregistration.json`, bound to
-this suite hash:
+The original registration is `docs/capability-preregistration.json`, written for
+the 24-task suite. It is retained byte-for-byte. **Dated addition, 2026-11-16
+(S21, P14.4):** the expanded 72-task suite is registered separately in
+`docs/capability-preregistration-v2.json` with the same 10% relative threshold,
+the same paired bootstrap and seed, plus the 8-item per-category minimum and the
+three shared surfaces. The v1 file is not edited; a run against the expanded
+suite must name v2, and a run against the historical 24-task suite must name v1.
+The hash below is the v2 binding:
 
 <!-- BEGIN GENERATED: cap-suite-sha -->
-092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc
+c45275173e6787ef390e62255d6dfeecf7d9da4f1b59ea57c621bf0706911c84
 <!-- END GENERATED: cap-suite-sha -->
 
 The registered rules:
 
 - **Primary endpoint.** The category-balanced mean verified task success on the
-  twenty-four-task suite. A win requires a **10% relative** improvement with a
+  72-task suite. A win requires a **10% relative** improvement with a
   paired 95% CI lower bound above zero, and no category regressing by more than
   0.05 absolute. A single-item difference is not a win (the CPU test asserts
   the decision rule rejects it).
+- **Per-category minimum.** A category result is valid only with at least eight
+  scored items. The expanded suite has nine per category, so one item moves a
+  category by 1/9; that is still a small instrument, but it is no longer the
+  1/4-to-1/3 movement of the original suite.
 
   **Correction, 2026-11-16 (S16C).** This rule was written correctly and the code
   did not enforce it: `court.compare()` computed the regression set and then
@@ -454,8 +574,9 @@ The registered rules:
   (it used to skip the comparison), and `compare()` refuses an externally
   supplied threshold, a tampered recorded threshold, and any registered /
   unregistered mix.
-- **Trio.** A transfer claim requires success on every surface, reported
-  per surface.
+- **Trio.** A transfer claim requires success on every surface (`rust`,
+  `numeric-graph`, `logic`), aggregated over the three operation families and
+  reported per surface; results are never pooled across surfaces.
 - **Capacity scaling (Level 2).** At approximately fixed active unique
   parameters (within 5% of the smallest rung), fit log(cold bytes per token)
   against log(total accessible capacity); the slope's 95% CI upper bound must be
@@ -488,10 +609,14 @@ A win establishes, at the pre-registered threshold and on this instrument:
 
 A win does **not** establish:
 
-- **general coding ability.** These are twenty-four authored repair tasks in
-  seven categories. They are not a benchmark, they are not a random sample of
+- **general coding ability.** These are authored repair tasks in eight
+  categories. They are not a benchmark, they are not a random sample of
   programming work, and the item count is small. A confidence interval over
-  items is not a claim about the population of software tasks.
+  items is not a claim about the population of software tasks. The suite size
+  above is the only authoritative count in this document.
+- **a difficulty ranking.** The easy/medium/hard labels are author-assigned and
+  were not calibrated against any solver; they exist to keep the suite from
+  being uniformly trivial, not to support a difficulty claim.
 - **contamination-free pretraining.** The suite is disjoint from every
   registered evaluation source and from a bounded sample of the training corpus.
   No local test can prove a model never saw these patterns; disjointness is a
@@ -499,7 +624,9 @@ A win does **not** establish:
 - **that a Level 1 gain is a Level 3 product.** Level 3 needs offline
   responsiveness and a product-branch baseline; neither is measured here.
 - **that the trio proves transfer.** It is a pre-registered probe with an author
-  annotation and three surfaces, not the P11.21 instrument.
+  annotation, three surfaces and three operation families, not the P11.21
+  instrument. With three tasks per surface, an operation-family effect cannot be
+  separated from a surface effect.
 - **that the verifier is complete.** One declared mutation per task is a
   discrimination check, not a proof that the hidden tests reject every wrong
   program.
@@ -510,23 +637,31 @@ A win does **not** establish:
 
 1. **No arm has been evaluated.** Every number here describes the instrument.
    The pre-pilot commands are §10.
-2. **The trio is under P11.21's item count.** One task per surface, author-only
-   operation annotation, no inter-annotator agreement.
-3. **Feedback repair loops are not implemented.** Feedback is recorded and
+2. **The trio is under P11.21's item count.** Three tasks per surface across
+   three operation families, author-only operation annotation, no
+   inter-annotator agreement.
+3. **Nine items per category is still small.** One item moves a category by 1/9
+   and the stratified interval over nine binary outcomes is wide. The suite is
+   no longer a smoke signal, but it is not a calibrated benchmark; item
+   difficulty and discrimination are not estimated.
+4. **The expanded suite is not sealed.** Every item is visible to the
+   development loop. P14.7's sealed holdback does not exist yet, so an in-sample
+   gain cannot be separated from tuning against these exact tasks.
+5. **Feedback repair loops are not implemented.** Feedback is recorded and
    parity-enforced; the loop that feeds compiler output back is future work.
-4. **The corpus contamination check is a bounded sample**, not the full 754 MB
+6. **The corpus contamination check is a bounded sample**, not the full 754 MB
    cache. Coverage is in the receipt; a full pass needs a streaming implementation
    with a bounded shingle set.
-5. **Mutation testing is shallow.** One authored wrong answer per task; a
+7. **Mutation testing is shallow.** One authored wrong answer per task; a
    mutation campaign or property-based tests would strengthen the verifier.
-6. **No 3B–8B quantised baseline exists locally**, so the product branch is
+8. **No 3B–8B quantised baseline exists locally**, so the product branch is
    planned, not measured.
-7. **The Rust-runtime adapter is untested end to end** — it needs the built
+9. **The Rust-runtime adapter is untested end to end** — it needs the built
    binary and the 0.6B bundle; its interface and its accounting fields are
    covered by the CPU tests, but no generation has run through it.
-8. **The HF adapter's residency and I/O fields are null with reasons.** The
-   PyTorch path does not expose device read counters; that is a limitation of the
-   adapter, not of the model.
+10. **The HF adapter's residency and I/O fields are null with reasons.** The
+    PyTorch path does not expose device read counters; that is a limitation of the
+    adapter, not of the model.
 
 ## 10. Exact commands for the first real runs
 
@@ -547,7 +682,7 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-admission "results/train/admission/t2/$ARM.json" \
   --t2-training-receipt "results/t2/$ARM/run.json" \
   --t2-mask-order legacy \
-  --preregistration docs/capability-preregistration.json \
+  --preregistration docs/capability-preregistration-v2.json \
   --out "results/capability/runs/t2-$ARM/generations.json"
 
 # the same for D, M, X, and H* with
@@ -583,7 +718,7 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-training-receipt "results/t2/X/run.json" \
   --t2-mask-order legacy \
   --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json \
-  --preregistration docs/capability-preregistration.json \
+  --preregistration docs/capability-preregistration-v2.json \
   --out "results/capability/runs/t2-X/generations.json"
 ```
 
@@ -603,8 +738,19 @@ Step 2, check (CPU, rust court; the court needs `cargo` and the checker sandbox)
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py check \
   --generations "results/capability/runs/t2-$ARM/generations.json" \
-  --preregistration docs/capability-preregistration.json \
+  --preregistration docs/capability-preregistration-v2.json \
   --out "results/capability/runs/t2-$ARM/result.json"
+```
+
+A stratified subset is explicit and still has to clear the category minimum:
+
+```bash
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
+  python3 scripts/capability_court.py check \
+  --generations "results/capability/runs/t2-$ARM/generations.json" \
+  --category lifetime-borrow \
+  --preregistration docs/capability-preregistration-v2.json \
+  --out "results/capability/runs/t2-$ARM/result-lifetime.json"
 ```
 
 Step 3, the Level 1 comparison against a control row:
@@ -627,7 +773,7 @@ SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py generate \
   --adapter-spec results/capability/adapters/rust-exact.json \
   --only borrow-01-local-reference,failing-01-chunk-boundary,trio-01-lifetime-chain \
-  --preregistration docs/capability-preregistration.json \
+  --preregistration docs/capability-preregistration-v2.json \
   --out results/capability/runs/rust-exact-subset/generations.json
 ```
 
@@ -646,9 +792,10 @@ with `results/capability/adapters/rust-exact.json` containing:
 ```
 
 Substitute `BUNDLE_PATH` with the relative path printed by the `ls` above. The
-subset is a subset *by construction*: a subset run cannot produce a primary
-composite (the check stage refuses a missing category), so it measures the
-instrument's integration, never a capability claim.
+The subset is a subset *by construction*: the check stage requires every
+selected category and at least eight items per category, so a three-item subset
+cannot produce a primary composite. It measures the instrument's integration,
+never a capability claim.
 
 ### (c) D/M complementarity (P8.1) through the verifier
 
@@ -695,16 +842,18 @@ STAMP=$(date -u +%Y%m%dT%H%M%SZ)
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- sh -c "
   python3 scripts/capability_court.py fake-reference --out /tmp/cap-spec.json &&
   python3 scripts/capability_court.py generate --adapter-spec /tmp/cap-spec.json \
-    --preregistration docs/capability-preregistration.json \
+    --preregistration docs/capability-preregistration-v2.json \
     --out results/capability/instrument-smoke-$STAMP/generations.json &&
   python3 scripts/capability_court.py check \
     --generations results/capability/instrument-smoke-$STAMP/generations.json \
-    --preregistration docs/capability-preregistration.json \
+    --preregistration docs/capability-preregistration-v2.json \
     --out results/capability/instrument-smoke-$STAMP/result.json"
 ```
 
-The committed smoke run is
-`results/capability/instrument-smoke-20261116T023255Z/`: the scripted arm emits
-the reference solutions, every real checker runs, and the pre-registration
-verifies. Its receipt is evidence that the pipeline works, not evidence about
-any model.
+The committed v2 smoke run is
+`results/capability/instrument-smoke-20261116T070500Z/`: the scripted arm emits
+the reference solutions, every real checker runs, the composite and all eight
+per-category intervals are printed, and the category minimum is met. Its receipt
+is evidence that the pipeline works, not evidence about any model. The historical
+24-task v1 smoke run `results/capability/instrument-smoke-20261116T023255Z/` is
+retained unchanged.

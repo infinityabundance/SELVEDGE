@@ -1,0 +1,28 @@
+{
+  "capability": "Saturate a multiplication that the small visible example never pushes to the bound.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "semantic-05-saturating-multiply",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value.saturating_mul(factor)",
+    "replace": "value.wrapping_mul(factor)"
+  },
+  "observed_failure": "the crate builds and tests pass; scale(u32::MAX / 2 + 1, 2) panics with\n'attempt to multiply with overflow' where the contract requires saturation",
+  "prompt_intro": "The scaling helper builds and its small example passes. The contract says the product saturates at `u32::MAX`; it must never panic or wrap. Fix `scale` while keeping `pub fn scale(value: u32, factor: u32) -> u32`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

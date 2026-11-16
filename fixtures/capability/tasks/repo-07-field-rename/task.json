@@ -1,0 +1,28 @@
+{
+  "capability": "Rename a shared struct field without changing its callers' contract.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "repo-07-field-rename",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0609"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/config.rs",
+    "find": "path: path.to_string()",
+    "replace": "path: path.to_uppercase()"
+  },
+  "observed_failure": "error[E0609]: no field `path` on type `&Config`\n --> src/reader.rs:4:24\n  |\n4 |     format!(\"{}:{}\", config.path, config.retries)\n  |                        ^^^^ unknown field",
+  "prompt_intro": "This crate does not compile. The shared `Config` field is still called `source`, while `reader` and `writer` already use the new public name `path`. Rename the field to `path`; keep `retries`, the constructor and all module behaviour unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

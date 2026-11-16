@@ -25,9 +25,13 @@ Each task directory contains:
 | `reference/` | one reference solution that must pass the checker |
 
 The manifest's `tasks[]` entries carry the fields P12.9 asks for: `tree_sha256`,
-`license`, `capability`, `checker.kind`, `checker.timeout_seconds`,
-`checker.address_space_bytes`, plus the failing-state expectation and the
-reference/hidden file lists.
+`license`, `capability`, `difficulty` (an author label, not a measurement),
+`checker.kind`, `checker.timeout_seconds`, `checker.address_space_bytes`, plus
+the failing-state expectation and the reference/hidden file lists. The eight
+suite categories are `lifetime-borrow`, `failing-test`, `api-migration`,
+`dependency-compat`, `concurrency`, `trait-impl`, `repo-scale` and
+`semantic-repair` (compile-clean but behaviourally wrong); `trio` and `probe`
+are separate collections and never enter the primary composite.
 
 ## Regenerating
 
@@ -43,4 +47,5 @@ SELVEDGE_MEM=4g SELVEDGE_CPUS=2 scripts/court rust -- \
 
 Do not edit the materialised files by hand: `--check` fails closed on drift.
 `MANIFEST.json` is the hash record a run is bound to; the pre-registration in
-`docs/capability-preregistration.json` pins the suite hash.
+`docs/capability-preregistration-v2.json` pins the expanded suite hash (v1 pins
+the historical 24-task suite and is retained unchanged).

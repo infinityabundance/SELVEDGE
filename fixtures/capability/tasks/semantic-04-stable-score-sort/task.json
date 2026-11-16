@@ -1,0 +1,28 @@
+{
+  "capability": "Add the documented tie-break that the visible data never triggers.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "semantic-04-stable-score-sort",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "left.0.cmp(&right.0)",
+    "replace": "right.0.cmp(&left.0)"
+  },
+  "observed_failure": "the crate builds and tests pass; equal scores keep input order where the\ncontract requires name-ascending tie-break",
+  "prompt_intro": "The ranking helper builds and its visible example passes because the scores are distinct. The contract is: score descending, ties by name ascending. Fix the tie-break. Keep the signature `pub fn ranked(entries: &[(String, u32)]) -> Vec<String>`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

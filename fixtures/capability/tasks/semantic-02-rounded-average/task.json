@@ -1,0 +1,28 @@
+{
+  "capability": "Replace truncating division with the documented half-up rounding.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-02-rounded-average",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "len / 2",
+    "replace": "len / 3"
+  },
+  "observed_failure": "the crate builds and tests pass; average(&[1, 2]) returns 1 where the\ncontract requires half-up rounding to 2",
+  "prompt_intro": "The average helper builds and its visible example passes, but the contract says the mean of integer values is rounded half up. `average(&[1, 2])` must return 2, not 1. Keep the signature `pub fn average(values: &[u32]) -> u32` and return 0 for an empty slice.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Repair a transition table so every state follows the declared cycle.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "failing-09-state-cycle",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Light::Green => Light::Yellow",
+    "replace": "Light::Green => Light::Red"
+  },
+  "observed_failure": "thread 'tests::green_follows_red_then_yellow' panicked at src/lib.rs:21:9:\nassertion `left == right` failed\n  left: Green\n right: Yellow\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out",
+  "prompt_intro": "The visible unit test fails. The traffic light cycles `Red -> Green -> Yellow -> Red`. `next(light)` returns the following state. Keep the enum and the signature `pub fn next(light: Light) -> Light`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

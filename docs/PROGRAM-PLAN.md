@@ -3368,7 +3368,11 @@ the *frontier* claim needs the larger one.
 **Acceptance evidence.** the expanded authoring source, its manifest and hash, an
 updated contamination receipt, and a **new** pre-registration that supersedes
 (does not edit) the current one.
-**Depends.** P12.9. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
+**Depends.** P12.9. **Status.** partial: S21 expanded the suite from 24 to 72
+scored tasks plus a 9-task trio, re-hashed it, re-ran contamination and wrote
+`docs/capability-preregistration-v2.json` as an append-only supersession. The
+"hundreds" target and the sealed set (P14.7) remain open. **Effort.** XL.
+**Tier.** CANDIDATE.
 
 ### P14.5 — Strengthen checker coverage and scale for Rust cases
 
@@ -3388,8 +3392,13 @@ test is too weak) are the other half of the gap.
 **Acceptance evidence.** a receipt showing, per tested item, the executed
 command, exit status and outcome class; plus the count of items still scored
 without execution, with a reason for each, and the growth of the executed set.
-**Depends.** P12.9. **Status.** partial (execution exists; coverage and scale do
-not). **Effort.** L. **Tier.** CANDIDATE (gates each new suite expansion).
+**Depends.** P12.9. **Status.** partial, improved by S21: all 81 scored tasks
+(suite plus trio) now have an executed `cargo test` checker, a reference, a
+build-time measurement and a rejected mutation, so the suite has no item scored
+by reference-continuation likelihood; the executor and the OOM/timeout probes
+are self-tested. What remains is scale and independence of the sandbox, plus
+stronger property-based checkers. **Effort.** L. **Tier.** CANDIDATE (gates each
+new suite expansion).
 
 ### P14.6 — Keep correctness separate from reference-continuation likelihood
 
@@ -3404,7 +3413,12 @@ must never be read as capability results.
 **Acceptance evidence.** the schema change in the result receipt (two named
 fields), a test that refuses a capability table whose rows omit either, and a
 paragraph in `docs/LIMITATIONS.md` naming the distinction.
-**Depends.** P12.9, P14.5. **Status.** open. **Effort.** S. **Tier.** CANDIDATE.
+**Depends.** P12.9, P14.5. **Status.** partial: the rule is written in
+`docs/LIMITATIONS.md` and `docs/CAPABILITY-COURT.md` — verified success is the
+endpoint and likelihood/NLL is only a selector signal — and the result receipt
+reports no likelihood as capability. The schema test that refuses a table
+missing either named column is not implemented yet. **Effort.** S. **Tier.**
+CANDIDATE.
 
 ### P14.7 — A sealed evaluation set for external comparison
 

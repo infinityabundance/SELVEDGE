@@ -2483,3 +2483,27 @@ never re-measures. Learned-parameter counts are reported per arm.
   the T2.5/T2.6 risk is not what limited the hybrid, and the miss is elsewhere.
   This is stated as a negative result for the interaction term, not for
   composition (P8.2 answers that).
+
+---
+
+# Dated addition — 2026-11-16 (S21, P14.4): capability suite registration
+
+The P12.9 fresh Rust suite referenced by P8.2.6 and P11.1.1 was expanded from 24
+to 72 scored tasks (nine in each of eight categories) plus a 9-task
+triple-surface trio. This addition changes no threshold, arm, kill condition or
+historical measurement.
+
+- The original registration `docs/capability-preregistration.json` remains
+  byte-for-byte as written and continues to bind the historical 24-task suite.
+- The expanded suite is registered separately in
+  `docs/capability-preregistration-v2.json` with the same 10% relative primary
+  threshold, the same paired category-stratified bootstrap (seed `20261115`,
+  10,000 resamples), an 8-item per-category minimum, and three reported trio
+  surfaces (`rust`, `numeric-graph`, `logic`). Its suite binding is the hash in
+  `fixtures/capability/MANIFEST.json`.
+- P8.2.6's "fresh task set and its contamination receipt are copied by
+  reference (hash)" now means the expanded manifest and the contamination
+  receipt `results/capability/contamination-20261116T065000Z.json`.
+- P11.1.1's 200-item P12.9 failure artifact and its target-layer registration are
+  unaffected and still do not exist at this revision; the expansion does not
+  supply that artifact.

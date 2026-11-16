@@ -1,0 +1,31 @@
+{
+  "capability": "Alias a vendored package whose package name differs from the import name.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "deps-08-renamed-package",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "no matching package named"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "textkit::normalise(value)",
+    "replace": "textkit::normalise(value).to_lowercase()"
+  },
+  "observed_failure": "error: no matching package named `textkit` found\nlocation searched: `/work/.../dep`\nrequired by package `deps_08_renamed_package v0.1.0`",
+  "prompt_intro": "This crate does not build. The vendored dependency's package is named `textkit-impl`, but the code imports it as `textkit`. Add the manifest field that maps the import name to the package name. Do not modify `dep/`. Keep `pub fn normalise(value: &str) -> String`, which trims and upper-cases its input.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

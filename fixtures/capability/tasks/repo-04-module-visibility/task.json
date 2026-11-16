@@ -1,0 +1,28 @@
+{
+  "capability": "Widen a module-private helper to crate visibility for a sibling module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "repo-04-module-visibility",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0603"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/model.rs",
+    "find": "unwrap_or(0)",
+    "replace": "unwrap_or(1)"
+  },
+  "observed_failure": "error[E0603]: function `load` is private\n --> src/service.rs:1:19\n  |\n1 | use crate::model::load;\n  |                   ^^^^ private function",
+  "prompt_intro": "This crate does not compile. `service::run` calls `model::load`, which is private to the model module. Make `load` visible within the crate; do not make it part of the public API and do not change its behaviour. Invalid lines count as 0.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}
