@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-11-16T06:54:42Z",
+  "created_utc": "2026-11-16T07:07:48Z",
   "deferred": [
     {
       "how": "scripts/court --gpu oracle -- python3 oracle/eval/capture_activations.py ... (see --deferred-commands)",
@@ -1153,7 +1153,8 @@
     "A small router direction is a necessary, not sufficient, condition for an unused expert: usage is measured separately in section 3 and the receipt keeps the two apart.",
     "Path magnitudes are computed from saved modules on saved hidden states, without capacity dispatch. The deployed path drops overflow pairs (H's evaluation receipt records a dropped pair fraction), so these magnitudes are the module's own scale, not the deployed mixture.",
     "The row-usage measurement is a property of the addressing function and the calibration slice, identical for every arm that shares the geometry. It says which rows the path reads, not which rows matter.",
-    "Mutual information between expert choice and row popularity is a dependence measure on one arm's calibration states. It cannot distinguish 'the memory causes the routing' from 'both are driven by the token', which is why the permutation null is reported with it."
+    "Mutual information between expert choice and row popularity is a dependence measure on one arm's calibration states. It cannot distinguish 'the memory causes the routing' from 'both are driven by the token', which is why the permutation null is reported with it.",
+    "The H* checkpoints analysed are the ones the live run had on disk; H* keeps only its most recent checkpoints, so a file may rotate away afterwards. The receipt records their steps, paths and sha256, which identifies the analysis, but re-verifying a digest needs the file."
   ],
   "memory": {
     "H": {
@@ -2998,9 +2999,9 @@
   },
   "outputs": {
     "markdown": "results/H-DIAGNOSTICS.md",
-    "receipt": "results/t2/H-DIAGNOSTICS-20261116T065442Z.json"
+    "receipt": "results/t2/H-DIAGNOSTICS-20261116T070748Z.json"
   },
-  "revision": "d3fe4559965eed1d51f0ad75b177ab4586b450c5",
+  "revision": "ecae13e5fac06ac8a00a8c728379089aee307a27",
   "routers": {
     "H": {
       "layers": 28,
@@ -6254,7 +6255,7 @@
     ],
     "not_measured": "anything requiring H's or X's own hidden states"
   },
-  "stamp": "20261116T065442Z",
+  "stamp": "20261116T070748Z",
   "usage": {
     "Hstar": {
       "dead_experts_in_utility": {},

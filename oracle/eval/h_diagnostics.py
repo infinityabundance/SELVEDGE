@@ -1106,6 +1106,10 @@ def analyse(args) -> dict:
         "dependence measure on one arm's calibration states. It cannot "
         "distinguish 'the memory causes the routing' from 'both are driven by "
         "the token', which is why the permutation null is reported with it.",
+        "The H* checkpoints analysed are the ones the live run had on disk; H* "
+        "keeps only its most recent checkpoints, so a file may rotate away "
+        "afterwards. The receipt records their steps, paths and sha256, which "
+        "identifies the analysis, but re-verifying a digest needs the file.",
     ]
     return receipt
 
