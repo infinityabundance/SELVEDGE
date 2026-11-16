@@ -367,3 +367,42 @@ The following remain true and are added to rather than replaced by the S28 work.
   toolchain links a one-file crate; the enforced memory bound for the workload
   is the container's. A cgroup OOM kill and an allocator abort under
   `RLIMIT_AS` are recorded distinctly, and the probe receipt shows the latter.
+
+## What the S35 registrations do not establish
+
+The session that generated the status blocks, registered T4, amended the
+capability endpoint and corrected the WS19 dependency graph produced **no
+measurement of any model**. Its numbers are arithmetic over receipted inputs, and
+the limits of that are worth stating as plainly as the numbers:
+
+1. **T4 has no data.** It registers arms, an endpoint and a decision rule. `D_eq`,
+   `D_kl` and `B_kl` do not exist as checkpoints, and `B_kl`'s active union has not
+   been computed by the ledger. A T4 result cannot be quoted until each arm has a
+   receipt, and a T4 miss is not a statement about routed specialists in general.
+2. **The amended capability endpoint is unexercised.** v5 is registered, the court
+   enforces its kind, minimum and refusals, and no run has been scored against it.
+   Its minimum absolute effect is derived from the *measured* variance of a
+   calibration pass whose suite version was refused (§17.5), so the minimum is as
+   good as that variance estimate and no better. The discrimination endpoint is
+   `not_available`: it has no fixture and no scoring receipt.
+3. **The teacher throughput is an estimate, not a measurement.** It is a student
+   token rate times a parameter ratio times a declared forward-vs-fwd+bwd fraction.
+   The first training run must measure the teacher's actual rate before the budget
+   is fixed; if the estimate is wrong the launch record must say so.
+4. **The memory-scale parameters are arithmetic on rows × hidden width.** They say
+   what a table costs to hold and what a token reads. They say nothing about
+   quality at any scale, and the quality/traffic measurement is the stage itself.
+5. **The per-pass state bytes are modelled at bf16** from the receipted head counts
+   and context lengths. No kernel allocates them yet, so no measured residency
+   exists. They are also *not* part of the per-token unique-active weight union:
+   they are memory residency, and conflating the two would be the accounting error
+   this repository exists to avoid.
+6. **The literature pass read abstracts and landing pages.** Every verdict in
+   `docs/PRIOR-ART-AND-NOVELTY.md` §18 is about what a fetched record says, not
+   about what a method section proves. Three of the plan's questions were found to
+   be published; that narrows our claim, and it does not establish that nothing
+   wider is unpublished (§8's caveat stands).
+7. **The status court checks claims, not truth.** It proves that the documents
+   agree with the receipts. If a receipt is wrong, the documents will agree with a
+   wrong receipt; the receipts' own gates are what defend against that, and they
+   are separate courts.

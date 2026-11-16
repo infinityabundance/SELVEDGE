@@ -904,3 +904,92 @@ artifacts is a separate, tighter claim and is not made yet.
 for this phase.
 - **No kernel work.** The four missing kernels and the three-stage Court E plan
 are registered in `docs/RUNTIME.md` §13 and nothing in it is implemented.
+
+## M7 — status is derived, the trade is registered, and the plan stops waiting on kernels (S35, CPU-only)
+
+Four things changed in this session, and none of them is a measurement of a model.
+The session exists because the documents had drifted from the receipts and because
+the plan had stopped describing routes to a win.
+
+### The status no longer disagrees with the receipts
+
+The two documents that describe "current state" — `README.md` and this file — were
+hand-written, and they said a run was training and that no verdict existed when
+every arm was evaluated and the verdict was published. That is a defect, not a
+wording preference, so status is now **generated**:
+
+- `scripts/status_consistency.py` owns three blocks (`readme-status`,
+  `report-status`, `report-t2-arm-state`), derived from
+  `results/t2/pilot-state.json`, `results/t2-verdict.json` and
+  `results/capability/runs/t2-comparison.json`. They are declared in
+  `docs/perf-numbers.json` under `external_regions`, so the perf-numbers court
+  still refuses a generated region nobody owns.
+- The `status_consistency` court re-derives every block and **also** refuses a
+  sentence that contradicts a receipt: a run said to be training when every arm is
+  evaluated, a verdict said not to exist when one does, a capability suite said
+  never to have run when five arms were scored on it, an arm said to be
+  unevaluated when it is. Present-tense claims are checked; past-tense history is
+  allowed and tested as allowed.
+- `scripts/courts/status_consistency_negative_cases.sh` proves eight cases fail
+  closed and one history case passes. It runs in the Python court.
+
+### The K18 trade is a registered question now, not a footnote
+
+K18 failed, correctly: `X`'s task gain came with a KL regression the conjunctive
+rule forbids. What the rule could not answer is whether the trade is worth having
+at **matched inference cost**, so `docs/EXPERIMENT-CONTRACT.md` **T4** registers
+that as its own question with four arms (`X` re-used, a parameter-matched dense
+adapter, a dense adapter given a registered compute cap to reach `X`'s KL, and a
+KL-matched logit blend), a minimum absolute effect derived from the interval the
+question repeats, and three recorded next routes. T4 does not re-open K18 and
+cannot be cited as K18 passing.
+
+### The capability endpoint is reachable now, and the arithmetic says why
+
+The calibration pass measured the baseline at the floor, and the registered
+10%-relative endpoint needs a six-figure item count **per category** at that
+baseline. That is not a strict endpoint, it is an unreachable one, so
+`docs/capability-preregistration-v5.json` supersedes v4 **without editing it**:
+the primary becomes an **absolute effect** with a minimum derived from the
+conservative measured variance at the registered n, the per-category regression
+clause becomes disclosed-and-blocking-for-transfer instead of a power sink, and a
+**discrimination endpoint** (candidate-ranking accuracy) is registered and
+explicitly unavailable until a fixture binds it. The court code enforces the new
+endpoint kind, refuses a mixed comparison and refuses a re-thresholded one; the
+numbers are in `docs/CAPABILITY-COURT.md` §7.3 and the receipt is
+`results/capability/endpoint-amendment-20261116T193000Z.json`.
+
+### The plan's dependency graph was too wide, and three "questions" were published
+
+WS19 treated the Rust kernels as a gate on the whole program. The reference
+forward is validated, so the gate is narrower: the **accounting** half of P19.0
+gates any audited-union sentence, the **kernel** half gates only stages 5–6, and
+stages 1–4 run on the reference. Stage 1 is therefore `ACTIVE` and is the next
+measurement. The teacher route moved from an offline logit cache to **online
+teacher forwards** (the cache was the disk constraint; the remaining constraint is
+a throughput requirement, printed as an estimate). Stage 2 registers the row-scale
+question and labels the 67M-parameter table a development configuration. Stage 4
+became pass- and state-conditioned addressing with three controls, mandatory
+per-pass temporal-state independence and chunking equivalence, and the state bytes
+accounted.
+
+The sixth literature pass then removed three of the plan's open questions:
+Engram publishes a U-shaped compute-versus-memory scaling law, Memory Grafting
+builds a table from a larger model's hidden states at matched budget with numbers,
+and SCONE owns "scale accessible memory at fixed accelerator cost". Per-pass
+KV/state is the published default, and Cross-Loop Query Handoff shows later passes
+retrieve differently through attention queries. The residual gap is stated in one
+sentence in `docs/PRIOR-ART-AND-NOVELTY.md` §18.3, and three wider sentences are
+explicitly forbidden there.
+
+### What this session does not establish
+
+- **Nothing was trained, scored or served.** No GPU work happened; no registered
+  receipt was modified.
+- **No number here is a measurement of a model.** The teacher throughput, the
+  memory-scale parameters and the per-pass state bytes are arithmetic over
+  receipted inputs, labelled as arithmetic.
+- **No claim that the new endpoint is right.** It is reachable, which the old one
+  was not; whether it is the best endpoint is a question for a scored run.
+- **No novelty.** The literature pass narrowed the claim and forbade the wider
+  sentences; it did not establish absence (§8's caveat applies).
