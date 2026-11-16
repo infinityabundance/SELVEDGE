@@ -244,6 +244,7 @@ def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_M
             "order": order,
             "greedy": True,
             "feedback": "none",
+            "few_shot_texts": list(few_shot_texts or []),
         },
         "preregistration": {
             "path": preregistration,
@@ -315,6 +316,10 @@ def check(generations: dict, suite_root: str, out: str,
     missing = sorted(set(tasks) - set(outputs))
     if missing:
         raise CourtError(f"generations receipt is missing items: {missing[:5]}")
+    # The prompt the arm saw includes any few-shot prefix recorded at generation,
+    # so the hash check must rebuild it rather than compare against the bare task
+    # prompt.
+    few_shot_texts = list((generations.get("decoding") or {}).get("few_shot_texts") or [])
 
     rows = []
     per_category: dict[str, list] = {}
@@ -324,7 +329,10 @@ def check(generations: dict, suite_root: str, out: str,
     for task_id in sorted(tasks):
         task = tasks[task_id]
         recorded_prompt = outputs[task_id]["prompt_sha256"]
-        expected_prompt = sha256_bytes(task_prompt(task).encode("utf-8"))
+        prompt_text = task_prompt(task)
+        if few_shot_texts:
+            prompt_text = "\n\n".join(few_shot_texts + [prompt_text])
+        expected_prompt = sha256_bytes(prompt_text.encode("utf-8"))
         if recorded_prompt != expected_prompt:
             prompt_ok = False
         text = outputs[task_id]["output"]["text"]

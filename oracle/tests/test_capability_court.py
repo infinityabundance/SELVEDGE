@@ -179,6 +179,15 @@ def test_few_shot_hygiene_rejects_a_leaked_item(tmp_path):
         run(tmp_path=tmp_path, name="leak", few_shot=[leak])
 
 
+def test_a_disjoint_few_shot_example_is_scored_with_the_same_prompt(tmp_path):
+    example = "Example: prefer clear names and short functions."
+    generations, result = run(tmp_path=tmp_path, name="fewshot",
+                              few_shot=[example])
+    assert result["anti_gaming"]["prompt_hashes_match"] is True
+    assert generations["decoding"]["few_shot_texts"] == [example]
+    assert result["scores"]["primary_composite"] == pytest.approx(1.0)
+
+
 def test_the_control_matrix_rejects_missing_and_unexplained_fields():
     with pytest.raises(court.CourtError, match="no reason"):
         court.control_row("frozen student", {})
