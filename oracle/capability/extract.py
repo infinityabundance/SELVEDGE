@@ -86,8 +86,10 @@ def path_problem(path: str, allowed: set[str], manifest_policy: str) -> str | No
         return f"path is harness-owned: {path!r}"
     if "/" not in normalised and normalised not in ALLOWED_TOP_FILES:
         return f"top-level file is not allowed: {path!r}"
-    if normalised == "Cargo.toml" and manifest_policy != "arm":
-        return "the crate manifest is locked for this task"
+    if normalised == "Cargo.toml":
+        if manifest_policy != "arm":
+            return "the crate manifest is locked for this task"
+        return None
     if normalised not in allowed:
         # New source files are allowed; new non-Rust files are not.
         if normalised.startswith("src/") and normalised.endswith(".rs"):

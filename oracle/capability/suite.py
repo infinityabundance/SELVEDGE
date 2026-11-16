@@ -129,8 +129,9 @@ class Task:
 
     def allowed_paths(self) -> set[str]:
         """Files an arm may return: everything in the failing state, plus new
-        `src/**.rs` files."""
-        return set(self.initial_files)
+        `src/**.rs` files. A locked manifest is not writable."""
+        return {relative for relative in self.initial_files
+                if not (relative == "Cargo.toml" and self.manifest_policy == "locked")}
 
     def read_initial(self, relative: str) -> str:
         with open(self.initial_path(relative), "r", encoding="utf-8") as handle:

@@ -1987,7 +1987,9 @@ validated (each item checked by hand to require the shared operation) before use
 operation annotation and an inter-annotator agreement check.
 **Kill criterion.** the suite is rejected if a competent solver cannot be shown to use
 the shared operation on ≥ 90% of items in a documented sample.
-**Depends.** P12.9. **Status.** open. **Effort.** L.
+**Depends.** P12.9. **Status.** the trio is implemented and operation-annotated
+(`docs/CAPABILITY-COURT.md`); P11.21's per-domain item minimum and
+inter-annotator agreement remain open. **Effort.** L.
 
 ---
 
@@ -2125,7 +2127,7 @@ uninterpretable systems get built.
 **Why.** Each level is a different claim and they fail independently. Level 2 without
 Level 1 is a storage demo; Level 3 without Level 2 is a product demo with no capacity
 story.
-**Depends.** P12.7 (L1), P2.2 (L2), P12.9 (L3). **Status.** open.
+**Depends.** P12.7 (L1), P2.2 (L2), P12.9 (L3). **Status.** harness implemented and CPU-tested (`docs/CAPABILITY-COURT.md`); no level run yet.
 **Acceptance evidence.** one receipt per level with the accounting triple (P7.7) and
 the controls of P12.10. **Effort.** XL.
 
@@ -2141,7 +2143,7 @@ Public code benchmarks are contaminated and their tests are imperfect; saying so
 item is the difference between a measurement and a leaderboard number.
 **Depends.** none. **Acceptance evidence.** the suite's manifest with per-item
 verifier and provenance fields; a contamination check receipt; a documented
-verifier-false-positive rate on a hand-audited sample. **Status.** open. **Effort.** L.
+verifier-false-positive rate on a hand-audited sample. **Status.** suite authored, hashed and contamination-checked; checkers self-tested in `docs/CAPABILITY-COURT.md`; no arm evaluated. **Effort.** L.
 
 ### P12.10 — The control matrix
 
@@ -2165,8 +2167,7 @@ I/O, task success (with paired CIs).
 **Why.** A capacity claim is only as honest as its row set. Row 4 and row 8 are the
 two rows most often missing and most able to kill a result.
 **Depends.** P12.9, P7.7. **Acceptance evidence.** one generated table, every cell
-traceable to a receipt; schema rejects a row missing any field. **Status.** open.
-**Effort.** L.
+traceable to a receipt; schema rejects a row missing any field. **Status.** schema implemented and CPU-tested; no row measured. **Effort.** L.
 
 ### P12.11 — Frontier thresholds, fixed before any frontier run
 
@@ -2185,7 +2186,7 @@ drawn after the fact. The split branches exist because a 1B research result cann
 be presented as a product result.
 **Depends.** P12.10. **Acceptance evidence.** the thresholds in the contract before
 the first frontier run; receipts for each bullet; the two branches reported
-separately with their own baselines. **Status.** open. **Effort.** M.
+separately with their own baselines. **Status.** thresholds pre-registered in `docs/capability-preregistration.json`; no frontier run. **Effort.** M.
 
 ### P12.12 — Three distinguishable achievement claims
 

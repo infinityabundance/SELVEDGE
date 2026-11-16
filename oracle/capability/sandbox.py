@@ -366,6 +366,7 @@ def run_bounded(argv: list, cwd: str, limits: Limits, drop_privileges: bool = Tr
 
     # The two files are evidence only; keeping them would make every workdir
     # grow with compiler output. The digests and tails are what is recorded.
+    workdir_bytes = tree_bytes(cwd)
     for path in (stdout_path, stderr_path):
         try:
             os.unlink(path)
@@ -390,7 +391,7 @@ def run_bounded(argv: list, cwd: str, limits: Limits, drop_privileges: bool = Tr
         cgroup_oom_kill_delta=oom_kill_delta,
         cgroup_oom_delta=oom_delta,
         cgroup_memory_peak_bytes=peak,
-        workdir_bytes=tree_bytes(cwd),
+        workdir_bytes=workdir_bytes,
         command=[os.path.basename(argv[0])] + [str(arg) for arg in argv[1:]],
     )
 

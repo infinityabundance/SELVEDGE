@@ -10,9 +10,9 @@ mod tests {
 
     #[test]
     fn nan_sorts_last() {
-        let mut values = [3.0, f64::NAN, 1.0, 2.0];
+        let mut values = [3.5, f64::NAN, 1.5, 2.5];
         sort_ascending(&mut values);
-        assert_eq!(&values[..3], &[1.0, 2.0, 3.0]);
+        assert_eq!(&values[..3], &[1.5, 2.5, 3.5]);
         assert!(values[3].is_nan());
     }
 }
