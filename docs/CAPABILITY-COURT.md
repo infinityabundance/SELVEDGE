@@ -12,7 +12,7 @@ receipts at revision `572f6e4`:
   expanded suite.
 
 The original pre-registration is `docs/capability-preregistration.json` (the
-24-task suite, retained unchanged). The first expansion was registered in v2;
+historical suite, retained unchanged). The first expansion was registered in v2;
 a same-session near-duplicate audit replaced sixteen tasks and the final fixture
 is registered in `docs/capability-preregistration-v3.json`, written before any
 arm run against it and bound to the final suite hash.
@@ -295,14 +295,14 @@ that surface pass). The pre-registration says a transfer claim requires success
 on every surface with the per-surface breakdown reported; a gain on one surface,
 or on one operation family, is not transfer.
 
-**Honest boundary.** This is nine tasks, not the P11.21 suite. P11.21 asks for at
-least forty items per domain and an inter-annotator agreement check; this has
-three tasks per surface, with four to six operation-annotated tests each,
-annotated by the author only. The operation annotation is therefore an author
-claim, not an independently audited one, and §9 records that as an open gap.
-The trio is usable now as a *pre-registered transfer probe*; it is not usable as
-the published anti-specialisation instrument until the item count and the
-agreement check exist.
+**Honest boundary.** This is the trio sized above, not the P11.21 suite. P11.21
+asks for at least forty items per domain and an inter-annotator agreement check;
+this has the per-surface task count above, with the operation annotations in
+each task, annotated by the author only. The operation annotation is therefore
+an author claim, not an independently audited one, and §9 records that as an
+open gap. The trio is usable now as a *pre-registered transfer probe*; it is not
+usable as the published anti-specialisation instrument until the item count and
+the agreement check exist.
 
 ## 4. Contamination
 
@@ -536,16 +536,16 @@ null.
 ## 7. Pre-registered thresholds (P12.11)
 
 The original registration is `docs/capability-preregistration.json`, written for
-the 24-task suite. It is retained byte-for-byte. **Dated addition, 2026-11-16
+the historical suite. It is retained byte-for-byte. **Dated addition, 2026-11-16
 (S21, P14.4):** the first expansion was registered in
 `docs/capability-preregistration-v2.json` with the same 10% relative threshold,
-the same paired bootstrap and seed, the 8-item per-category minimum and the
+the same paired bootstrap and seed, the registered per-category minimum and the
 three shared surfaces. **Dated correction, same day (S21, QA):** a near-duplicate
 audit replaced sixteen tasks that reused an existing capability; the corrected
-72-task fixture is registered in `docs/capability-preregistration-v3.json` and
+fixture is registered in `docs/capability-preregistration-v3.json` and
 supersedes v2 without editing it. A run against the expanded suite must name v3;
-a run against the historical 24-task suite must name v1. The hash below is the
-v3 binding:
+a run against the historical suite must name v1. The hash below is the v3
+binding:
 
 <!-- BEGIN GENERATED: cap-suite-sha -->
 3f7933966680a9663b178817e245027bf61895523e094e8f1ef369f6767585d8
@@ -554,14 +554,16 @@ v3 binding:
 The registered rules:
 
 - **Primary endpoint.** The category-balanced mean verified task success on the
-  72-task suite. A win requires a **10% relative** improvement with a
-  paired 95% CI lower bound above zero, and no category regressing by more than
+  expanded suite (size in §2). A win requires a **10% relative** improvement with
+  a paired 95% CI lower bound above zero, and no category regressing by more than
   0.05 absolute. A single-item difference is not a win (the CPU test asserts
   the decision rule rejects it).
-- **Per-category minimum.** A category result is valid only with at least eight
-  scored items. The expanded suite has nine per category, so one item moves a
-  category by 1/9; that is still a small instrument, but it is no longer the
-  1/4-to-1/3 movement of the original suite.
+- **Per-category minimum.** A category result is valid only with at least the
+  registered number of scored items (see
+  `docs/capability-preregistration-v3.json`). The expanded suite has the
+  per-category count in §2, so one item still moves a category by roughly a
+  tenth; that is still a small instrument, but it is no longer the
+  quarter-to-third movement of the original suite.
 
   **Correction, 2026-11-16 (S16C).** This rule was written correctly and the code
   did not enforce it: `court.compare()` computed the regression set and then
@@ -613,8 +615,8 @@ A win establishes, at the pre-registered threshold and on this instrument:
 
 A win does **not** establish:
 
-- **general coding ability.** These are authored repair tasks in eight
-  categories. They are not a benchmark, they are not a random sample of
+- **general coding ability.** These are authored repair tasks in the categories
+  listed in §2. They are not a benchmark, they are not a random sample of
   programming work, and the item count is small. A confidence interval over
   items is not a claim about the population of software tasks. The suite size
   above is the only authoritative count in this document.
@@ -628,8 +630,8 @@ A win does **not** establish:
 - **that a Level 1 gain is a Level 3 product.** Level 3 needs offline
   responsiveness and a product-branch baseline; neither is measured here.
 - **that the trio proves transfer.** It is a pre-registered probe with an author
-  annotation, three surfaces and three operation families, not the P11.21
-  instrument. With three tasks per surface, an operation-family effect cannot be
+  annotation, the surfaces and operation families listed in §3, not the P11.21
+  instrument. With so few tasks per surface, an operation-family effect cannot be
   separated from a surface effect.
 - **that the verifier is complete.** One declared mutation per task is a
   discrimination check, not a proof that the hidden tests reject every wrong
@@ -641,13 +643,13 @@ A win does **not** establish:
 
 1. **No arm has been evaluated.** Every number here describes the instrument.
    The pre-pilot commands are §10.
-2. **The trio is under P11.21's item count.** Three tasks per surface across
-   three operation families, author-only operation annotation, no
-   inter-annotator agreement.
-3. **Nine items per category is still small.** One item moves a category by 1/9
-   and the stratified interval over nine binary outcomes is wide. The suite is
-   no longer a smoke signal, but it is not a calibrated benchmark; item
-   difficulty and discrimination are not estimated.
+2. **The trio is under P11.21's item count.** The per-surface and per-operation
+   counts in §3 are small, the operation annotation is author-only, and there is
+   no inter-annotator agreement.
+3. **The per-category count is still small.** One item still moves a category
+   materially and the stratified interval over the available binary outcomes is
+   wide. The suite is no longer a smoke signal, but it is not a calibrated
+   benchmark; item difficulty and discrimination are not estimated.
 4. **The expanded suite is not sealed.** Every item is visible to the
    development loop. P14.7's sealed holdback does not exist yet, so an in-sample
    gain cannot be separated from tuning against these exact tasks.
@@ -797,9 +799,9 @@ with `results/capability/adapters/rust-exact.json` containing:
 
 Substitute `BUNDLE_PATH` with the relative path printed by the `ls` above. The
 The subset is a subset *by construction*: the check stage requires every
-selected category and at least eight items per category, so a three-item subset
-cannot produce a primary composite. It measures the instrument's integration,
-never a capability claim.
+selected category and at least the registered per-category minimum, so a subset
+that small cannot produce a primary composite. It measures the instrument's
+integration, never a capability claim.
 
 ### (c) D/M complementarity (P8.1) through the verifier
 

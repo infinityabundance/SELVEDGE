@@ -3368,10 +3368,10 @@ the *frontier* claim needs the larger one.
 **Acceptance evidence.** the expanded authoring source, its manifest and hash, an
 updated contamination receipt, and a **new** pre-registration that supersedes
 (does not edit) the current one.
-**Depends.** P12.9. **Status.** partial: S21 expanded the suite from 24 to 72
-scored tasks plus a 9-task trio, re-hashed it, re-ran contamination and wrote
-`docs/capability-preregistration-v3.json` as an append-only supersession (v2
-registered the first pass and was itself superseded after the near-duplicate
+**Depends.** P12.9. **Status.** partial: S21 expanded the suite to the size
+recorded in `docs/CAPABILITY-COURT.md` §2, re-hashed it, re-ran contamination and
+wrote `docs/capability-preregistration-v3.json` as an append-only supersession
+(v2 registered the first pass and was itself superseded after the near-duplicate
 audit). The "hundreds" target and the sealed set (P14.7) remain open. **Effort.**
 XL. **Tier.** CANDIDATE.
 
@@ -3393,8 +3393,8 @@ test is too weak) are the other half of the gap.
 **Acceptance evidence.** a receipt showing, per tested item, the executed
 command, exit status and outcome class; plus the count of items still scored
 without execution, with a reason for each, and the growth of the executed set.
-**Depends.** P12.9. **Status.** partial, improved by S21: all 81 scored tasks
-(suite plus trio) now have an executed `cargo test` checker, a reference, a
+**Depends.** P12.9. **Status.** partial, improved by S21: every scored task in
+the suite and trio now has an executed `cargo test` checker, a reference, a
 build-time measurement and a rejected mutation, so the suite has no item scored
 by reference-continuation likelihood; the executor and the OOM/timeout probes
 are self-tested. What remains is scale and independence of the sandbox, plus

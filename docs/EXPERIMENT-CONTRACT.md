@@ -2488,17 +2488,16 @@ never re-measures. Learned-parameter counts are reported per arm.
 
 # Dated addition — 2026-11-16 (S21, P14.4): capability suite registration
 
-The P12.9 fresh Rust suite referenced by P8.2.6 and P11.1.1 was expanded from 24
-to 72 scored tasks (nine in each of eight categories) plus a 9-task
-triple-surface trio. This addition changes no threshold, arm, kill condition or
-historical measurement.
+The P12.9 fresh Rust suite referenced by P8.2.6 and P11.1.1 was expanded to the
+size recorded in `docs/CAPABILITY-COURT.md` §2, with a triple-surface trio. This
+addition changes no threshold, arm, kill condition or historical measurement.
 
 - The original registration `docs/capability-preregistration.json` remains
   byte-for-byte as written and continues to bind the historical 24-task suite.
 - The expanded suite is registered in
   `docs/capability-preregistration-v3.json` with the same 10% relative primary
   threshold, the same paired category-stratified bootstrap (seed `20261115`,
-  10,000 resamples), an 8-item per-category minimum, and three reported trio
+  10,000 resamples), the registered per-category minimum, and the reported trio
   surfaces (`rust`, `numeric-graph`, `logic`). v2 registered the first pass and
   was superseded without being edited after the near-duplicate audit. The final
   suite binding is the hash in `fixtures/capability/MANIFEST.json`.
