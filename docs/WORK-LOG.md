@@ -3418,3 +3418,115 @@ constant.
 - No novelty for the loop stage, and no completed novelty argument for per-pass
   memory — only a narrowed residual claim and a falsification design.
 - No legal opinion on the LFM Open License.
+
+## 2026-11-16 — S33: the anchor becomes auditable, and the reference the kernels must match
+
+S32 registered the frontier program and recorded, correctly, that its gate (P19.0)
+did not exist: `selvedge inspect-model` refused Qwen3.5, so every count in
+`docs/FRONTIER-TARGET.md` was an element sum by component rather than an audit.
+This session closes the gate's **accounting half** and produces an independent
+reference forward. It does not close the kernel half, and says so.
+
+### What ran
+
+- **Rust court**, offline, model cache mounted read-only:
+  `cargo test --workspace` (all green, 14 new tests for the v2 auditor),
+  `cargo clippy --workspace --all-targets -- -D warnings`, `cargo fmt -- --check`,
+  and two `inspect-model` invocations against the real checkpoint.
+- **Oracle court, GPU device-passthrough**: a transformers capability probe, a
+  smoke forward of the new reference, and the parity driver — 4 prompts ×
+  (vendor forward, reference forward, reference forward again, greedy 12 from the
+  vendor, greedy 8 from the reference), plus a dtype and a state test.
+- **Python court**: the union arithmetic, `perf_numbers --write` and
+  `perf_numbers --check`, `commit_identity`.
+
+### What was built
+
+1. **Accounting schema v2** (`crates/selvedge-convert/src/accounting_qwen35.rs`,
+   ~1,900 lines with tests). v1 is untouched; the CLI dispatches on `model_type`
+   and an unknown type still fails closed. v2 reads the nested `text_config`,
+   validates `layer_types` against `full_attention_interval` instead of trusting
+   either, derives every tensor shape from the config, classifies each tensor into
+   exactly one tower, and refuses anything it cannot classify.
+2. **A declared execution path** (`--active-path text-only | text-and-mtp`), with
+   the checks that make the declaration mean something: the towers must exist in
+   the bytes, the text path's tensors must be namespace-disjoint from every
+   excluded tower (computed, not assumed), and cross-tower reads are recorded —
+   `mtp_use_dedicated_embeddings` is false here, so the MTP head reads the language
+   model's embedding and the receipt says so instead of double counting it.
+3. **A tie that is verified rather than trusted.** There is no `lm_head.weight`,
+   so the receipt records *tie by absence plus config* with `compared_elements: 0`
+   rather than pretending a byte comparison happened. A declared tie with a
+   distinct `lm_head.weight` and a declared untied pair with no `lm_head.weight`
+   are both refused.
+4. **A Hub cross-check that can actually fail.** The auditor sums bytes
+   dtype-aware and compares to `model.safetensors.index.json`
+   `metadata.total_size`. The checkpoint has 36 f32 tensors (every `A_log` and
+   `linear_attn.norm.weight`), and without that fact the byte sum is off by 5,184
+   — the element count alone cannot tell 1,746,877,568 from 1,746,882,752.
+5. **`--certify-ceiling`** with the component arithmetic and an exit code.
+6. **`oracle/reference/qwen35.py`**: an independent text-path forward with every
+   equation documented against the config, bf16 and fp32, and
+   `scripts/s33_reference_parity.py` as its evidence driver.
+7. **`scripts/s33_budget_union.py`**: the per-token union the ceiling rule is
+   about, from the component counts, with declared design constants.
+
+### The numbers
+
+- Text tower, tie-aware: 752,393,024. Vision: 100,592,896. MTP: 20,452,864.
+  Checkpoint: 873,438,784 elements / 1,746,882,752 bytes, equal to the Hub's
+  declared total to the byte. Every one of those is also a checked expectation.
+- `--certify-ceiling 1000000000` on the declared text-only path: certified,
+  headroom 247,606,976. On `text-and-mtp`: 772,845,888, headroom 227,154,112.
+- Planned per-token union: 759,405,376 (adapters shared across passes) or
+  777,296,704 (distinct per pass), both with a **dense** FFN; with vision and MTP
+  also executed, 880,451,136 / 898,342,464, leaving 101,657,536 in the worst case.
+- `transformers==5.23.0` supports Qwen3.5 natively (`Qwen3_5ForConditionalGeneration`),
+  so it is the pinned vendor reference and the independent forward is compared
+  against it rather than replacing it.
+
+### What it decided
+
+- **The anchor is now auditable and its declared path is certifiable.** P19.0's
+  acceptance evidence (i) is satisfied and (ii) is satisfied in a stronger form
+  than the plan's wording: vision and MTP are not refused wholesale, they are
+  accounted separately and enter the union only when a declared path names them.
+- **P19.0 is not done.** Evidence (iii) — Court E parity for the text path — is
+  not satisfied and cannot be until four kernels exist. The tier stays
+  `CANDIDATE`, and `docs/RUNTIME.md` §13 registers the kernels, the per-kernel
+  test vectors, their tolerances and the E1/E2/E3 order.
+- **The ceiling is not the binding constraint.** Every reading of the planned
+  union fits with room to spare, so no stage below may hide execution behind the
+  ceiling rule. What decides the design is whether the mechanism helps.
+- **No FLOP number is emitted for this model.** A DeltaNet layer is a scan; the
+  v1 formulas would print a number with no meaning, and `--contexts` is refused
+  for `qwen3_5` rather than answered.
+
+### Failures and fixes
+
+**F1 — the reference's five bugs, all caught by running it.** (a) RoPE frequency
+tensors built on the CPU while the model was on the GPU; (b) the gated RMSNorm
+applied over the whole value vector instead of per value head (the gain is 128
+wide, not 2,048); (c) `cos`/`sin` broadcast on the wrong axis for `[batch, heads,
+T, dim]`; (d) an fp32 rebuild that passed mangled `ParameterDict` keys back into
+the loader; (e) an odd rotary width in the tiny test config (head_dim 2 at factor
+0.5), which the auditor correctly refused. Each was a real defect that the
+"does it say Paris?" check or the shape assertions caught within one run.
+**F2 — the first `qwen3_5` test run failed 11 of 14 tests on one config value**,
+for the same reason as F1(e): a rotary dimension of 1 is not a positive even
+number, and the auditor was right. **F3 — the first clippy pass failed on five
+lints** (two derivable `Default` impls, `% 2 != 0`, an `expect` in the shape
+builder, a manual `Option::map`); fixed rather than allowed. **F4 — the first
+`perf_numbers --write` refused** because the budget receipt was not yet tracked,
+which is the guard working: a generated number must come from a committed
+receipt.
+
+### What this entry does not claim
+
+- **No executed set.** The auditor is not an executor-watcher. Court E for this
+  model does not exist.
+- **No bitwise vendor parity.** Four prompts, argmax equality, 8/8 greedy tokens,
+  cosine ≥ 0.99978 — strong evidence, not bitwise.
+- **No kernel work.** Nothing in `docs/RUNTIME.md` §13 is implemented.
+- **No capability, latency, FLOP or novelty claim** for the anchor. No training
+  was started and no registered receipt was modified.

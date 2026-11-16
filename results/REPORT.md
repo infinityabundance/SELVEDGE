@@ -23,10 +23,14 @@ capability comparison between arms is claimed, and the five-arm comparison could
 not be decided at the available item count.
 
 The next phase — a frontier program on a hybrid 0.8B anchor — is **registered and
-unstarted**: `docs/PROGRAM-PLAN.md` §24 (WS19) and §25 (WS20), with the verified
-model identity, architecture facts, auditor refusal and disk arithmetic in
-`docs/FRONTIER-TARGET.md`. Its first stage is blocked on a toolchain extension
-(P19.0) that does not exist yet.
+started only as far as its gate**: `docs/PROGRAM-PLAN.md` §24 (WS19) and §25
+(WS20), with the verified model identity, architecture facts, auditor accounting
+and disk arithmetic in `docs/FRONTIER-TARGET.md`. Its first stage is P19.0, the
+toolchain gate. S33 closed that gate's **accounting and reference half**: the
+auditor now accounts the checkpoint by tower and certifies a declared execution
+path, and an independent reference forward is validated against the vendor
+runtime. Its **kernel half is not started**: the runtime still cannot execute the
+anchor, which is registered in `docs/RUNTIME.md` §13.
 
 This file states what is established, with the receipt that establishes it, and
 what is not. It is not a benchmark report for the frontier phase: no latency,
@@ -181,6 +185,33 @@ exists, so all locality conclusions are conditional on the trained model's
   <!-- BEGIN GENERATED: report-acceptable-kl -->
 0.05
   <!-- END GENERATED: report-acceptable-kl -->
+
+Qwen3.5-0.8B, the frontier anchor, accounted at S33 (schema v2). The counts are
+from `results/accounting/20261116T183609Z-qwen35-08b-text-only.json`; the union is
+from `results/accounting/20261116T184127Z-qwen35-budget-union.json`.
+
+- Text tower, unique and tie-aware (the declared text-only path):
+  <!-- BEGIN GENERATED: report-qwen35-text-unique -->
+752393024
+  <!-- END GENERATED: report-qwen35-text-unique -->
+- Certified active union of that path against the 1e9 ceiling:
+  <!-- BEGIN GENERATED: report-qwen35-active-text-only -->
+752393024
+  <!-- END GENERATED: report-qwen35-active-text-only -->
+- Headroom left by that certificate:
+  <!-- BEGIN GENERATED: report-qwen35-headroom -->
+247606976
+  <!-- END GENERATED: report-qwen35-headroom -->
+- Planned per-token union with depth-LoRA, memory projections and memory rows
+  read (adapters shared across the four passes):
+  <!-- BEGIN GENERATED: report-qwen35-union -->
+759405376
+  <!-- END GENERATED: report-qwen35-union -->
+- Worst-case headroom printed by that receipt (distinct adapters per pass, vision
+  and MTP both executed):
+  <!-- BEGIN GENERATED: report-qwen35-union-worst-headroom -->
+101657536
+  <!-- END GENERATED: report-qwen35-union-worst-headroom -->
 
 ## T2, measured
 
@@ -773,3 +804,78 @@ designed as a four-arm falsification, not as a result.
 What this section does not claim: no capability number, no harness run, no
 audited unique-active count, and no novelty. No training was started. The T2
 verdict and every registered receipt are unchanged.
+
+## M6 — the anchor becomes auditable, and what is still missing (S33)
+
+S32 left the frontier program blocked on a toolchain gap: `selvedge inspect-model`
+refused Qwen3.5, so "audited unique active" had no instrument behind it. S33
+closed the **accounting** half of that gate and produced the reference the future
+kernels must match. It did **not** make the anchor executable.
+
+### The auditor now accounts the anchor, by tower and by declared path
+
+`inspect-model` dispatches on `model_type`. Qwen3 keeps accounting schema v1
+untouched; Qwen3.5 gets schema v2: nested `text_config`, the
+`model.language_model.*` namespace, and three towers (`text`, `vision`, `mtp`)
+that are counted separately, with every tensor required to belong to exactly one.
+
+The four element counts S32 derived from the header are reproduced **exactly**,
+and each is now a checked expectation (`--expect-totals`) that fails the run if it
+drifts. The dtype-aware byte sum — not the element count — reproduces the Hub's
+`metadata.total_size` to the byte, which is the external check S32 could not make.
+
+Receipts: `results/accounting/20261116T183609Z-qwen35-08b-text-only.json`,
+`...-text-and-mtp.json`, `...-refused-untied.json`; court receipts
+`results/courts/rust-20261116T183609Z-9be033.json` and
+`rust-20261116T183625Z-e0e559.json`.
+
+### The execution path is now an input to the audit
+
+`--active-path text-only | text-and-mtp` makes the declaration testable rather
+than prose. The auditor checks that the declared towers exist, that the text path's
+tensors are namespace-disjoint from every excluded tower (computed from the names),
+that a tied claim agrees with the bytes, and that declared totals match observed
+ones. `--certify-ceiling 1000000000` prints the component arithmetic and a verdict
+and sets the exit code. A deliberately inconsistent declaration on the real
+checkpoint — `--assume-untied` against a checkpoint with no `lm_head.weight` —
+exits 1 with a named refusal, and 14 offline tests cover the refusal set.
+
+### An independent reference forward exists and agrees with the vendor runtime
+
+`oracle/reference/qwen35.py` re-derives the text path from the config and shapes
+only: zero-centred RMSNorm, depthwise causal conv + SiLU, the gated delta rule in
+fp32 recurrent form, per-value-head gated norm, partial RoPE (64 of 256 per head,
+half-split pairing; mRoPE degenerates for text), fused attention output gate,
+SwiGLU, tied head. Every equation is documented in the module against the config.
+
+Against `transformers==5.23.0` on four pinned prompts: argmax equal on every
+position, 8/8 identical greedy tokens, cosine ≥ 0.99978. Bitwise deterministic
+in-process. The fp32 path picks the same next token. The DeltaNet state carried
+across a chunk boundary reproduces the whole-sequence layer output exactly, while
+a fresh state does not — so the state is both necessary and correctly carried.
+Receipt: `results/reference/20261116T184032Z-qwen35-reference.json`, with four
+logit artifacts and their SHA-256.
+
+### The ceiling is not what binds the design
+
+The per-token union for the planned path — dense FFN, depth-LoRA rank 16 on 8
+layers, memory projections and gates, 256 memory rows read per pass — is
+registered in `results/accounting/20261116T184127Z-qwen35-budget-union.json` with
+both readings of adapter reuse, and with vision and MTP variants. Every reading is
+under 1e9; the worst leaves more than a hundred million elements of headroom. The
+FFN is counted dense, so each headroom figure is a floor.
+
+### What this does not claim
+
+- **No executed set.** The auditor proves a declared set is consistent and under
+the ceiling. It does not watch a kernel read a pointer. Court E still does not
+exist for this model.
+- **No bitwise vendor parity.** Argmax equality and identical greedy tokens are
+strong; they are not bitwise. The runtime's f32 comparison to the committed
+artifacts is a separate, tighter claim and is not made yet.
+- **No FLOP or latency number** for the hybrid. No FLOP formula is defined for a
+  DeltaNet scan here, so schema v2 emits none rather than inventing one.
+- **No capability number, no harness run, no novelty.** No training was started
+for this phase.
+- **No kernel work.** The four missing kernels and the three-stage Court E plan
+are registered in `docs/RUNTIME.md` §13 and nothing in it is implemented.
