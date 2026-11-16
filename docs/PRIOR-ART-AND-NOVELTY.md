@@ -118,6 +118,16 @@ total in §1 is short by four. This pass does not rewrite the earlier arithmetic
 (it would be editing a previous verdict's bookkeeping without re-reading its
 receipts). Counting rows instead: 114 numbered rows before this pass, 135 after.
 
+**Sixth pass, 2026-11-16 (S35).** Twenty queries were issued (round 29,
+`results/prior-art/prior-art-fetch-20261116-round29-s35-gap.jsonl`), **none**
+rate-limited. Nine numbered rows were added (§18): `VERIFIED` 7 (194–200),
+`PARTIAL` 1 (202), `UNSUPPORTED` 1 (201, MoLE as named). Four gap questions were
+searched and their verdicts recorded in §18.2: (a) `PARTIAL`, with a nearest match
+in attention-query handoff; (b) the mechanism exists and is the published default,
+so it is not a novelty; (c) answered by a work already in the ledger (Memory
+Grafting), not by the query; (d) answered by SCONE and Engram. The residual claim
+is restated in one sentence in §18.3.
+
 ## 2. Verification table — novelty-boundary list
 
 | # | work | id / venue | status | recorded evidence | overlap with SELVEDGE |

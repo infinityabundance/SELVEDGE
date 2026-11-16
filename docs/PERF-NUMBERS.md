@@ -11,6 +11,14 @@ Nothing here is a performance claim. These are machine facts about the
 workstation and toolchain this program is built against, published so that later
 experiments can be compared against a named environment.
 
+**Not every generated region is a number**, and those are declared rather than
+merged into this file. A multi-line block (the status blocks in `README.md` and
+`results/REPORT.md`, the per-arm state table) is owned by its own generator and
+listed in the manifest under `external_regions` with an `owner`. This checker
+still refuses an undeclared region and refuses a declared region the document does
+not print; it never renders one. Current owners: `scripts/status_consistency.py`
+(`readme-status`, `report-status`, `report-t2-arm-state`).
+
 Host facts come from the hardware probe receipt under `results/hardware/`. That
 receipt names, in its `evidence` field, the court receipts that produced each
 section, and it was collected inside a court container with a hard memory limit,

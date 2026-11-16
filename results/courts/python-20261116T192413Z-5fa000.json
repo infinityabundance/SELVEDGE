@@ -1,0 +1,144 @@
+{
+  "argv": [
+    "python3",
+    "-m",
+    "pytest",
+    "oracle/tests/test_capability_court.py",
+    "oracle/tests/test_capability_stats.py",
+    "oracle/tests/test_capability_suite.py",
+    "oracle/tests/test_capability_sandbox.py",
+    "oracle/tests/test_capability_compare.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "6495d5a72b5b783f8c5bc823c05116f36019de175007e0a91b551cd51ae97d85",
+  "container_name": "selvedge-python-court-20261116T192413Z-5fa000",
+  "court": "python",
+  "duration_ms": 40445,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "memory_swap_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "nano_cpus": {
+        "actual": 4000000000,
+        "expected": 4000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T19:24:53Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:d97269011cc9afa012af6c647f48b94171bcf586b19de7fcb7c4270c3e341f2b",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:d97269011cc9afa012af6c647f48b94171bcf586b19de7fcb7c4270c3e341f2b",
+  "image_ref": "selvedge/python-court:20261114-3.12-slim-f03542f9bbe7",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "4",
+    "init": true,
+    "memory": "6g",
+    "memory_bytes": 6442450944,
+    "memory_swap": "6g",
+    "memory_swap_bytes": 6442450944,
+    "nano_cpus": 4000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/python-20261116T192413Z-5fa000.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "d4b470c578cda34e986944e54c2954e86a7b60b0",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T192413Z",
+  "started_utc": "2026-11-16T19:24:13Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}
