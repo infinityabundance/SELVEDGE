@@ -10,8 +10,12 @@ activation magnitude at matched realized active parameters. The reports are
 `results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; the registered contract
 is `docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendments A3 and A4).
 The correction of record for physical accounting is `docs/M2-CORRECTION.md`.
-The first *trained* branch — the T2 five-arm capacity matrix — is launched and
-in progress; see "T2, in progress" below. Its result is not claimed here.
+The first *trained* branch — the T2 five-arm capacity matrix — is running; see
+"T2, in progress" below. Its result is not claimed here. The P12.1 audit of the
+routed-overflow mask found a real defect in the dispatcher that produced every
+routed arm; it is corrected behind a default-off flag so the registered
+comparison is unchanged, and it is reported separately in
+`docs/P12.1-DISPATCH-AUDIT.md`.
 
 This file states what is established, with the receipt that establishes it, and
 what is not. It is not a benchmark report: no latency, throughput or quality
@@ -181,16 +185,15 @@ As of the last poll before this commit (`scripts/poll-t2-pilot.sh`,
 | --- | --- | --- |
 | `D` (dense control) | **completed** — trained the registered budget and evaluated | `results/t2/D/run.json`, `results/t2/D/eval.json`, `results/eval/t2-D.json` |
 | `M` (memory only) | **completed** — trained the registered budget and evaluated | `results/t2/M/run.json`, `results/t2/M/eval.json`, `results/eval/t2-M.json` |
-| `X` (specialists) | **trained; evaluating** — training receipt written, evaluation court launched | `results/t2/X/run.json`; evaluation not yet summarised |
-| `H` (naive hybrid) | **pending** | — |
+| `X` (specialists) | **completed** — trained the registered budget and evaluated | `results/t2/X/run.json`, `results/t2/X/eval.json`, `results/eval/t2-X.json` |
+| `H` (naive hybrid) | **training** — launched after `X` evaluated | `results/t2/H/run.json` in progress |
 | `H*` (error-directed hybrid) | **pending** | — |
 
-Two of five arms have both a training receipt and an evaluation summary; one has
-a training receipt only. The two hybrids, which carry the registered K15/K16
-comparison, have not started. The pilot is therefore **not separable from
-"unfinished"** and no ordering between arms is stated here, deliberately — an
-early ordering is exactly the reading that T2.8 and the one-seed risk in
-`results/T2-PLAN.md` §5 forbid.
+Three of five arms have both a training receipt and an evaluation summary. The
+two hybrids, which carry the registered K15/K16 comparison, have not finished.
+The pilot is therefore **not separable from "unfinished"** and no ordering
+between arms is stated here, deliberately — an early ordering is exactly the
+reading that T2.8 and the one-seed risk in `results/T2-PLAN.md` §5 forbid.
 
 Read-only monitoring is `scripts/poll-t2-pilot.sh` (one report) or `--follow`. It
 reads state, per-arm logs, `docker ps` and free disk; it writes nothing to the
@@ -199,15 +202,38 @@ GPU work was performed.
 
 ### What still has to happen before a verdict
 
-1. `X`'s evaluation summary (`results/t2/X/eval.json`).
-2. `H` training and evaluation.
-3. `H*` training (its label phase runs at its warm-up step, then the router is
+1. `H` training and evaluation.
+2. `H*` training (its label phase runs at its warm-up step, then the router is
    frozen) and evaluation.
-4. `oracle/eval/t2_decision.py` applied to the five summaries, then
+3. `oracle/eval/t2_decision.py` applied to the five summaries, then
    `scripts/finish-t2-pilot.sh` to render `results/T2-PILOT.md` and run the
    courts.
 
 The remaining order is fixed by `scripts/run-t2-pilot.sh`, not by this document.
+
+### The routed-overflow audit, kept separate from the verdict
+
+The P12.1 audit found a real defect in the shared dispatch: the capacity
+**validity mask is built in expert-sorted pair order and applied after the pairs
+are restored to token order**, so a pair is gated by another pair's validity
+whenever any expert overflowed. The finished routed arm's own training log shows
+that overflow is routine, not a corner case, and the toy reproduction shows an
+overflowing pair reading another token's activation.
+
+What this report therefore says about provenance, and nothing more:
+
+* every routed arm (`X`, and `H`/`H*` as they finish) was trained and is being
+  evaluated by a dispatcher whose overflow mask is misapplied;
+* the correction is `mask_order="pair"`, **off by default**, recorded in every
+  run receipt, so no registered arm, threshold or comparison has changed;
+* the correction, its reproduction, the measured overflow rate and the list of
+affected receipts are in `docs/P12.1-DISPATCH-AUDIT.md` and
+  `results/t2/dispatch-audit-20261115T234953Z.json`, and the follow-up runs that
+  measure whether the verdict moved are registered as P12.1a.
+
+No T2 quality number appears in this section, because the pilot is unfinished and
+the audit is not a verdict either: it is a statement about which code produced
+which receipt.
 
 ## Not established
 

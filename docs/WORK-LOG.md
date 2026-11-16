@@ -1439,3 +1439,181 @@ happen" list are in `results/REPORT.md`.
 
 None started here. The next GPU job is whatever `scripts/run-t2-pilot.sh` does
 next; the next *program* step is the audit and diagnostics named above.
+
+## 2026-11-16 — S10: the routed-overflow audit, the H*-target diagnostics and the P8 harness
+
+The detached T2 pilot owned the GPU for this session (`X` evaluated, `H`
+training, `H*` pending at the time of writing), so nothing here used the GPU,
+started a container or touched the pilot. Three pieces of pre-scaling work
+landed, all CPU-only and all receipted.
+
+### P12.1 — the validity mask is applied to the wrong pairs
+
+**The finding.** `_RoutedDispatch.dispatch` builds `valid` in capacity-sorted
+pair order; `combine` restores the pair outputs to token-major order and *then*
+multiplies by `valid`. Token-major pair `p` is therefore gated by the validity
+of the pair whose sorted position is `p`, which is a different pair whenever an
+expert overflowed. Two consequences, both reproduced: a pair that was executed
+is silently dropped, and an overflowing pair is retained and reads a clamped
+buffer row that can hold another token's activation. The module docstring
+claimed the opposite, which is why the defect survived the T2 review.
+
+**How it was established, not asserted.**
+
+1. `oracle/train/reference_dispatch.py` transcribes the documented semantics
+   independently (explicit pair loops, explicit buffer rows, no scatter, no
+   reshape-and-reduce) and can model both mask placements.
+2. `oracle/tests/test_p12_1_dispatch.py` checks the shipped code against it: the
+   dispatch halves agree bitwise, `legacy` reproduces the sorted-order placement
+   exactly, the opt-in `pair` placement reproduces the documented semantics
+   exactly, and the case matrix (ties, duplicate expert ids, `k = 1`, `k = m`,
+   one token, zero tokens, `k = 0`, capacity factors below one) agrees in both.
+   The headline toy case asserts that an overflowing pair receives exactly
+   `weight * E_3(hidden[other token])` under the shipped placement.
+3. `oracle/eval/dispatch_audit.py` measures the incidence in the finished routed
+   arm from its own training log. Overflow is routine. Sampled (forward, layer)
+   pairs that overflowed:
+
+<!-- BEGIN GENERATED: worklog-p121-overflow-samples -->
+555
+<!-- END GENERATED: worklog-p121-overflow-samples -->
+
+   out of
+
+<!-- BEGIN GENERATED: worklog-p121-layer-samples -->
+1428
+<!-- END GENERATED: worklog-p121-layer-samples -->
+
+   sampled. Dropped fraction of all pairs:
+
+<!-- BEGIN GENERATED: worklog-p121-dropped-percent -->
+0.896%
+<!-- END GENERATED: worklog-p121-dropped-percent -->
+
+   The worst sampled layer lost, at training step
+
+<!-- BEGIN GENERATED: worklog-p121-worst-step -->
+660
+<!-- END GENERATED: worklog-p121-worst-step -->
+
+   this fraction of its pairs:
+
+<!-- BEGIN GENERATED: worklog-p121-worst-percent -->
+24.95%
+<!-- END GENERATED: worklog-p121-worst-percent -->
+
+   The mis-assignment counters (a *model* of the permutation, labelled as such)
+   give this fraction of pairs, consistent with the analytic `2p(1-p)`:
+
+<!-- BEGIN GENERATED: worklog-p121-misassigned-percent -->
+1.653%
+<!-- END GENERATED: worklog-p121-misassigned-percent -->
+
+
+**The correction.** `mask_order ∈ {"legacy", "pair"}`, default `legacy`, plus an
+exposed `capacity_factor` so tests can reach overflow deterministically instead
+of patching a module constant. `build_arm`, `loop.py --mask-order` and
+`baseline.py --mask-order` expose it, and every run receipt records it. The
+registered arms, thresholds and comparison are untouched; re-training under the
+corrected placement would be a different arm, so it is registered separately as
+P12.1a (evaluation-only re-score of `X` first, then the T2.8 replication tier).
+
+**What is affected.** `X`'s training and evaluation receipts, and `H`/`H*` as
+they finish. `D` and `M` contain no routed dispatch. Single-token decode cannot
+overflow (capacity is one row per expert); batched prefill can, and the
+evaluation receipts written before this audit do not record it, so
+evaluation-time exposure is now recorded going forward. `H*`'s utility labels
+are unaffected because they run with `full_bank=True`, which bypasses the
+router entirely.
+
+### P12.2 — the H* target: tooling now, numbers when the artifact exists
+
+There is no utility label artifact on disk, because `H*` has not run. Rather
+than report an empty diagnostic, `oracle/eval/t2_diagnostics.py` implements the
+three measurements the plan asks for and fails closed with that reason:
+
+* what per-expert standardisation deletes (KL between the absolute and the
+  standardised target, per-expert means and spreads, the first-component energy
+  share, and the pairwise correlation structure);
+* whether routing is expert identity or token features, using the exact split
+  `z_e(t) = w_e.mean(h) + w_e.(h - mean(h))`, with top-1 and top-4 overlaps
+  against the utility oracle;
+* whether the four/five boundary is inside the label noise (`routing_margin` over
+  the per-expert label standard deviation, with a percentile bootstrap).
+
+The deployed-budget gap — full-bank leave-one-out versus the router's own top-4
+— is declared **blocked**, with the pass recipe and the exact command written
+down. `docs/T2-DIAGNOSTICS.md` fixes the decision rules before the measurement
+and registers the successor target as **P12.17**: deployed-budget labels,
+learned per-expert offsets retaining the absolute utility, the temperature set
+to the measured label noise instead of one standardised unit, and an
+interaction-aware set value whose interaction term is measured and reported.
+
+### P8.1/P8.2 — the fresh set, three selectors, bounded composition
+
+* `oracle/eval/fresh_tasks.py`: hand-authored items with embedded checkers and a
+  reference continuation per item for the language-model instrument. Item count:
+
+<!-- BEGIN GENERATED: worklog-p8-items -->
+26
+<!-- END GENERATED: worklog-p8-items -->
+
+  The by-domain split is in the contamination receipt and in
+  `docs/P8-HARNESS.md`.
+* `oracle/eval/fresh_contamination.py`: disjointness checked, not asserted —
+  8-word text shingles against HumanEval, GSM8K and TruthfulQA, and 13-token
+  shingles against the pinned held-out windows in the model's own tokenizer.
+  Verdict `disjoint`, zero offenders; it fails closed on any overlap.
+* `oracle/eval/complementarity.py`: the pre-registered fixed rule, a logistic
+  router on prefix features (optionally plus a hidden-state summary) trained on
+  one half and scored on the other, and a non-deployable oracle; paired
+  percentile bootstrap against `always-D` and `always-M`; selector cost per
+  decision; and a completion-loss instrument so the same path serves the
+  self-test and the checkpoint run.
+* `oracle/train/composition.py`: `y = S + a r_D + b r_M` with a zero-initialised
+  gate projected onto an L2 ball, a three-way interference report (accounted /
+  added effect of M / deviation from D alone) because only one of those is
+  bounded, and the composed admission config. `scripts/p8-composition-admission.sh`
+  admitted it through the Rust ledger. Active unique parameters:
+
+<!-- BEGIN GENERATED: worklog-p8-compose-active -->
+774371384
+<!-- END GENERATED: worklog-p8-compose-active -->
+
+  of which the gate, declared as a selector:
+
+<!-- BEGIN GENERATED: worklog-p8-compose-gate -->
+57400
+<!-- END GENERATED: worklog-p8-compose-gate -->
+
+  The Python mirror agrees with the ledger.
+
+No arm has been scored on the fresh set: that needs the GPU. `--run-composition`
+is the one entry point that does not exist yet, and it needs a trained gate.
+
+### Verified courts at this revision
+
+- `oracle` — the full CPU suite, all passing.
+- `rust` — the composed arm admitted by `selvedge admit`.
+- `perf_numbers` — every generated region matches its receipt, including the
+  new `p121-*` and `p8-*` blocks.
+- `commit_identity` — OK.
+
+### Limitations
+
+- The mis-assignment rate is a *model* of the permutation (uniform random
+  pairing conditional on the recorded counts), not a measurement of the actual
+  permutation; the exact dropped count is measured.
+- The audit covers only the routed arm that has finished. It must be re-run after
+  `H` and `H*` finish so the receipt covers all three.
+- P12.2 has no numbers yet, by construction, and says so in every place a reader
+  might expect one.
+- The Rust items are checked textually, not by invoking `rustc`.
+- The fresh set is small: one set, one seed, no power analysis.
+
+### Next experiment
+
+None started here. The next GPU job is whatever `scripts/run-t2-pilot.sh` does
+next (`H` then `H*`). The next program steps remain P12.1a (evaluation-only
+re-score of `X` under the corrected placement) and P12.2 (run the diagnostics the
+moment `H*` writes its labels).
