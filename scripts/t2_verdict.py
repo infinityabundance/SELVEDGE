@@ -286,13 +286,11 @@ class Receipts:
         self._load()
 
     def _arm_paths(self, arm: str) -> tuple[str, str, str, str]:
-        run_name = "Hstar" if arm == "H*" else arm
         cfg = os.path.join(REPO, "results", "train", "admission-configs", "t2",
                            f"{arm}.json")
         adm = os.path.join(REPO, "results", "train", "admission", "t2", f"{arm}.json")
         run = os.path.join(REPO, self.run_root, arm, "run.json")
         ev = os.path.join(REPO, self.eval_root, f"t2-{arm}.json")
-        del run_name
         return cfg, adm, run, ev
 
     def _load(self) -> None:
