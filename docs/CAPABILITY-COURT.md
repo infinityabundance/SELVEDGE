@@ -366,8 +366,8 @@ registered fixture, so they are reported for a future supersession):
 2
 <!-- END GENERATED: cap-similarity-historical -->
 
-The screen is not decorative. It rejected, and forced the replacement of, ITEMS
-in several earlier drafts of this expansion: two dependency tasks that both
+The screen is not decorative. It rejected, and forced the replacement or
+rework of, twelve items across two authoring passes: two dependency tasks that both
 computed the same multiplicative checksum and asserted the same values, a
 repo-scale task that repeated the api-migration padding task's assertions, a
 sealed atomic-increment task whose diagnostic restated a scored atomic task,
