@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/work/oracle/reference/qwen35.py", line 692, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 669, in main
+    logits = model.forward(ids)
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 593, in forward
+    mixed = self._attention(normed, layer, cos, sin)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 550, in _attention
+    q, k = apply_rope(q.unsqueeze(0), k.unsqueeze(0), cos, sin)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 247, in apply_rope
+    q_out = torch.cat(((q_rot * cos) + (rotate_half(q_rot) * sin), q_pass), dim=-1)
+                        ~~~~~~^~~~~
+RuntimeError: The size of tensor a (8) must match the size of tensor b (5) at non-singleton dimension 1

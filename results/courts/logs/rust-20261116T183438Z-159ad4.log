@@ -1,0 +1,282 @@
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.35s
+     Running tests/accounting_qwen35.rs (target/debug/deps/accounting_qwen35-d6ba0063e97deaaf)
+
+running 14 tests
+test an_unknown_active_path_is_rejected ... ok
+test declaring_mtp_on_a_checkpoint_without_mtp_is_refused ... FAILED
+test a_vision_tensor_without_a_vision_config_is_unclassified ... FAILED
+test a_certificate_above_the_ceiling_fails_closed ... FAILED
+test a_hub_total_that_disagrees_with_the_header_sum_is_refused ... FAILED
+test declaring_a_tie_against_a_distinct_lm_head_is_refused ... FAILED
+test declaring_untied_without_an_lm_head_is_refused ... FAILED
+test dedicated_mtp_embeddings_are_refused_rather_than_guessed ... FAILED
+test expected_totals_must_match_exactly ... FAILED
+test layer_types_must_agree_with_the_attention_interval ... ok
+test model_type_detection_reads_the_nested_config ... ok
+test mtp_included_adds_the_head_once_and_certifies_the_union ... FAILED
+test text_only_excludes_the_vision_tower_and_the_mtp_head ... FAILED
+test tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence ... FAILED
+
+failures:
+
+---- declaring_mtp_on_a_checkpoint_without_mtp_is_refused stdout ----
+
+thread 'declaring_mtp_on_a_checkpoint_without_mtp_is_refused' (124) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:775:72:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::report_has_mtp
+             at ./tests/accounting_qwen35.rs:775:72
+   5: accounting_qwen35::declaring_mtp_on_a_checkpoint_without_mtp_is_refused
+             at ./tests/accounting_qwen35.rs:756:14
+   6: accounting_qwen35::declaring_mtp_on_a_checkpoint_without_mtp_is_refused::{closure#0}
+             at ./tests/accounting_qwen35.rs:750:58
+   7: <accounting_qwen35::declaring_mtp_on_a_checkpoint_without_mtp_is_refused::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   8: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- a_vision_tensor_without_a_vision_config_is_unclassified stdout ----
+
+thread 'a_vision_tensor_without_a_vision_config_is_unclassified' (121) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:791:5:
+unexpected error: FFN tensor map is inconsistent: rotary dimension 1 is not a positive even number
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: accounting_qwen35::a_vision_tensor_without_a_vision_config_is_unclassified
+             at ./tests/accounting_qwen35.rs:791:5
+   3: accounting_qwen35::a_vision_tensor_without_a_vision_config_is_unclassified::{closure#0}
+             at ./tests/accounting_qwen35.rs:780:61
+   4: <accounting_qwen35::a_vision_tensor_without_a_vision_config_is_unclassified::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- a_certificate_above_the_ceiling_fails_closed stdout ----
+
+thread 'a_certificate_above_the_ceiling_fails_closed' (119) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:661:61:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::a_certificate_above_the_ceiling_fails_closed
+             at ./tests/accounting_qwen35.rs:661:61
+   5: accounting_qwen35::a_certificate_above_the_ceiling_fails_closed::{closure#0}
+             at ./tests/accounting_qwen35.rs:646:50
+   6: <accounting_qwen35::a_certificate_above_the_ceiling_fails_closed::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- a_hub_total_that_disagrees_with_the_header_sum_is_refused stdout ----
+
+thread 'a_hub_total_that_disagrees_with_the_header_sum_is_refused' (120) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:818:5:
+unexpected error: FFN tensor map is inconsistent: rotary dimension 1 is not a positive even number
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: accounting_qwen35::a_hub_total_that_disagrees_with_the_header_sum_is_refused
+             at ./tests/accounting_qwen35.rs:818:5
+   3: accounting_qwen35::a_hub_total_that_disagrees_with_the_header_sum_is_refused::{closure#0}
+             at ./tests/accounting_qwen35.rs:798:63
+   4: <accounting_qwen35::a_hub_total_that_disagrees_with_the_header_sum_is_refused::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- declaring_a_tie_against_a_distinct_lm_head_is_refused stdout ----
+
+thread 'declaring_a_tie_against_a_distinct_lm_head_is_refused' (123) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:696:78:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::declaring_a_tie_against_a_distinct_lm_head_is_refused
+             at ./tests/accounting_qwen35.rs:696:78
+   5: accounting_qwen35::declaring_a_tie_against_a_distinct_lm_head_is_refused::{closure#0}
+             at ./tests/accounting_qwen35.rs:681:59
+   6: <accounting_qwen35::declaring_a_tie_against_a_distinct_lm_head_is_refused::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- declaring_untied_without_an_lm_head_is_refused stdout ----
+
+thread 'declaring_untied_without_an_lm_head_is_refused' (125) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:739:61:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::declaring_untied_without_an_lm_head_is_refused
+             at ./tests/accounting_qwen35.rs:739:61
+   5: accounting_qwen35::declaring_untied_without_an_lm_head_is_refused::{closure#0}
+             at ./tests/accounting_qwen35.rs:725:52
+   6: <accounting_qwen35::declaring_untied_without_an_lm_head_is_refused::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- dedicated_mtp_embeddings_are_refused_rather_than_guessed stdout ----
+
+thread 'dedicated_mtp_embeddings_are_refused_rather_than_guessed' (126) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:934:5:
+unexpected error: FFN tensor map is inconsistent: rotary dimension 1 is not a positive even number
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: accounting_qwen35::dedicated_mtp_embeddings_are_refused_rather_than_guessed
+             at ./tests/accounting_qwen35.rs:934:5
+   3: accounting_qwen35::dedicated_mtp_embeddings_are_refused_rather_than_guessed::{closure#0}
+             at ./tests/accounting_qwen35.rs:914:62
+   4: <accounting_qwen35::dedicated_mtp_embeddings_are_refused_rather_than_guessed::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- expected_totals_must_match_exactly stdout ----
+
+thread 'expected_totals_must_match_exactly' (127) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:878:61:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::expected_totals_must_match_exactly
+             at ./tests/accounting_qwen35.rs:878:61
+   5: accounting_qwen35::expected_totals_must_match_exactly::{closure#0}
+             at ./tests/accounting_qwen35.rs:858:40
+   6: <accounting_qwen35::expected_totals_must_match_exactly::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- mtp_included_adds_the_head_once_and_certifies_the_union stdout ----
+
+thread 'mtp_included_adds_the_head_once_and_certifies_the_union' (130) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:627:61:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::mtp_included_adds_the_head_once_and_certifies_the_union
+             at ./tests/accounting_qwen35.rs:627:61
+   5: accounting_qwen35::mtp_included_adds_the_head_once_and_certifies_the_union::{closure#0}
+             at ./tests/accounting_qwen35.rs:611:61
+   6: <accounting_qwen35::mtp_included_adds_the_head_once_and_certifies_the_union::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- text_only_excludes_the_vision_tower_and_the_mtp_head stdout ----
+
+thread 'text_only_excludes_the_vision_tower_and_the_mtp_head' (131) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:580:78:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::text_only_excludes_the_vision_tower_and_the_mtp_head
+             at ./tests/accounting_qwen35.rs:580:78
+   5: accounting_qwen35::text_only_excludes_the_vision_tower_and_the_mtp_head::{closure#0}
+             at ./tests/accounting_qwen35.rs:569:58
+   6: <accounting_qwen35::text_only_excludes_the_vision_tower_and_the_mtp_head::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence stdout ----
+
+thread 'tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence' (132) panicked at crates/selvedge-convert/tests/accounting_qwen35.rs:538:78:
+called `Result::unwrap()` on an `Err` value: InconsistentFfn { reason: "rotary dimension 1 is not a positive even number" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1870:5
+   3: <core::result::Result<selvedge_convert::accounting_qwen35::Qwen35AccountingReport, selvedge_convert::error::ConvertError>>::unwrap
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs:1231:23
+   4: accounting_qwen35::tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence
+             at ./tests/accounting_qwen35.rs:538:78
+   5: accounting_qwen35::tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence::{closure#0}
+             at ./tests/accounting_qwen35.rs:527:66
+   6: <accounting_qwen35::tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    a_certificate_above_the_ceiling_fails_closed
+    a_hub_total_that_disagrees_with_the_header_sum_is_refused
+    a_vision_tensor_without_a_vision_config_is_unclassified
+    declaring_a_tie_against_a_distinct_lm_head_is_refused
+    declaring_mtp_on_a_checkpoint_without_mtp_is_refused
+    declaring_untied_without_an_lm_head_is_refused
+    dedicated_mtp_embeddings_are_refused_rather_than_guessed
+    expected_totals_must_match_exactly
+    mtp_included_adds_the_head_once_and_certifies_the_union
+    text_only_excludes_the_vision_tower_and_the_mtp_head
+    tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence
+
+test result: FAILED. 3 passed; 11 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p selvedge-convert --test accounting_qwen35`

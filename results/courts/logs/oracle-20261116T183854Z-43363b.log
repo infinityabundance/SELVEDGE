@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/oracle/reference/qwen35.py", line 682, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 659, in main
+    logits = model.forward(ids)
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 585, in forward
+    mixed = self._linear_attention(normed, layer)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 507, in _linear_attention
+    self.w(f"{prefix}.norm.weight")[None, :].expand_as(core),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: The expanded size of the tensor (2048) must match the existing size (128) at non-singleton dimension 1.  Target sizes: [5, 2048].  Tensor sizes: [1, 128]

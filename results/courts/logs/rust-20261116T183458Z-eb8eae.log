@@ -1,0 +1,22 @@
+   Compiling selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.14s
+     Running tests/accounting_qwen35.rs (target/debug/deps/accounting_qwen35-d6ba0063e97deaaf)
+
+running 14 tests
+test an_unknown_active_path_is_rejected ... ok
+test dedicated_mtp_embeddings_are_refused_rather_than_guessed ... ok
+test a_vision_tensor_without_a_vision_config_is_unclassified ... ok
+test layer_types_must_agree_with_the_attention_interval ... ok
+test a_certificate_above_the_ceiling_fails_closed ... ok
+test model_type_detection_reads_the_nested_config ... ok
+test declaring_mtp_on_a_checkpoint_without_mtp_is_refused ... ok
+test declaring_untied_without_an_lm_head_is_refused ... ok
+test a_hub_total_that_disagrees_with_the_header_sum_is_refused ... ok
+test declaring_a_tie_against_a_distinct_lm_head_is_refused ... ok
+test mtp_included_adds_the_head_once_and_certifies_the_union ... ok
+test text_only_excludes_the_vision_tower_and_the_mtp_head ... ok
+test expected_totals_must_match_exactly ... ok
+test tiny_qwen35_separates_towers_and_verifies_the_tie_by_absence ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

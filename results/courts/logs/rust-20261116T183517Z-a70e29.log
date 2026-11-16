@@ -1,0 +1,100 @@
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+error: this `impl` can be derived
+   --> crates/selvedge-convert/src/accounting_qwen35.rs:131:1
+    |
+131 | / impl Default for ActivePath {
+132 | |     fn default() -> Self {
+133 | |         Self::TextOnly
+134 | |     }
+135 | | }
+    | |_^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#derivable_impls
+    = note: `-D clippy::derivable-impls` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::derivable_impls)]`
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+ 89 + #[derive(Default)]
+ 90 | pub enum ActivePath {
+ 91 |     /// Language model only: the vision tower and the MTP head are not read.
+ 92 ~     #[default]
+ 93 ~     TextOnly,
+    |
+
+error: this `impl` can be derived
+   --> crates/selvedge-convert/src/accounting_qwen35.rs:149:1
+    |
+149 | / impl Default for TieAssertion {
+150 | |     fn default() -> Self {
+151 | |         Self::FromConfig
+152 | |     }
+153 | | }
+    | |_^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+139 + #[derive(Default)]
+140 | pub enum TieAssertion {
+141 |     /// Use `tie_word_embeddings` from the config and verify it against bytes.
+142 ~     #[default]
+143 ~     FromConfig,
+    |
+
+error: manual implementation of `.is_multiple_of()`
+   --> crates/selvedge-convert/src/accounting_qwen35.rs:700:27
+    |
+700 |     if rotary_dim == 0 || rotary_dim % 2 != 0 {
+    |                           ^^^^^^^^^^^^^^^^^^^ help: replace with: `!rotary_dim.is_multiple_of(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_is_multiple_of
+    = note: `-D clippy::manual-is-multiple-of` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_is_multiple_of)]`
+
+error: used `expect()` on a `Result` value
+   --> crates/selvedge-convert/src/accounting_qwen35.rs:926:25
+    |
+926 |         let layer_u32 = u32::try_from(layer).expect("layer index checked against u32");
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if this value is an `Err`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+    = note: `-D clippy::expect-used` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::expect_used)]`
+
+error: manual implementation of `Option::map`
+    --> crates/selvedge-convert/src/accounting_qwen35.rs:1847:24
+     |
+1847 |       let vision_facts = match &config.vision_config {
+     |  ________________________^
+1848 | |         Some(vision) => Some(VisionFacts {
+1849 | |             depth: vision.depth,
+1850 | |             hidden: vision.hidden_size,
+...    |
+1861 | |         None => None,
+1862 | |     };
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_map
+     = note: `-D clippy::manual-map` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::manual_map)]`
+help: try
+     |
+1847 ~     let vision_facts = config.vision_config.as_ref().map(|vision| VisionFacts {
+1848 +             depth: vision.depth,
+1849 +             hidden: vision.hidden_size,
+1850 +             intermediate: vision.intermediate_size,
+1851 +             heads: vision.num_heads,
+1852 +             out_hidden: vision.out_hidden_size,
+1853 +             patch_size: vision.patch_size,
+1854 +             spatial_merge_size: vision.spatial_merge_size,
+1855 +             temporal_patch_size: vision.temporal_patch_size,
+1856 +             in_channels: vision.in_channels,
+1857 +             position_embeddings: vision.num_position_embeddings,
+1858 +             hidden_act: vision.hidden_act.clone(),
+1859 ~         });
+     |
+
+error: could not compile `selvedge-convert` (lib) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `selvedge-convert` (lib test) due to 5 previous errors

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/oracle/reference/qwen35.py", line 678, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 655, in main
+    logits = model.forward(ids)
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 568, in forward
+    cos, sin = rope_tables(
+               ^^^^^^^^^^^^
+  File "/work/oracle/reference/qwen35.py", line 214, in rope_tables
+    freqs = positions.float()[:, None] * inv_freq[None, :]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!
