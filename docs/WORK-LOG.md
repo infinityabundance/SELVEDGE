@@ -1770,3 +1770,88 @@ No ordering between arms is stated, before or after this session.
   and the distributed LoRA repairing none, because the fixture deletes the only
   class-carrying hidden signal. That is a property of the fixture by
   construction and is not evidence about the 0.6B student.
+
+## M3 part 2 — trace-driven execution and deadline simulator (`selvedge-sim`)
+
+Date: 2026-11-16. Revision: `29eeac7` and its receipts. CPU only; the detached T2
+pilot kept the GPU.
+
+### What was built
+
+A new crate, `crates/selvedge-sim`, and the CLI surface `selvedge trace
+export|inspect|generate`, `selvedge simulate`, `selvedge envelope build|apply`
+and `selvedge sim calibrate|validate|compare-store|pareto|placement`.
+
+- **Trace format.** `selvedge/execution-trace/v1` JSONL plus a hashed sidecar
+  manifest. The record schema has no field for an expected set, a target or a
+  future token, and every struct denies unknown fields, so a trace that carries
+  one fails to load. Exact mode requires a declared basis and the only accepted
+  basis is a whole-bundle plan read.
+- **Calibration.** Empirical distributions for transfer, SHA-256, queue wait,
+  insertion, eviction and host-RAM copy, sampled from the measured per-request
+  JSONL, plus a log-log size law from `io-scan`. Exponential and lognormal fits
+  are recorded with quantile residuals; the exponential fit is much worse, which
+  is why the empirical grid is the model of record.
+- **Engine.** Coalesced runs, per-run transfer plus verification, bounded
+  in-flight bytes with visible backpressure, eviction and insertion cost,
+  preemption and cancellation of speculative transfers, exposed-stall
+  accounting, per-record deadlines, a two-timescale phase working set, and
+  execution envelopes built from a disjoint prefix. Byte conservation is a
+  named invariant checked on every run and property-tested.
+- **Policies and predictors.** LRU, LFU, least-stale and pinned reproduce the
+  measured engine's semantics; predictors are advisory behind a trait, and a
+  non-deployable oracle predictor is labelled by `uses_future()`.
+- **Placement.** Sequential, frequency-sorted, co-access-blocked and
+  replicated-hot layouts; the surrogate weight is `lift × marginal coalescing
+  cost`, with a seeded record-level bootstrap on the strongest edges, and the
+  layout decision is made by the simulator, not by the surrogate.
+
+### What was measured or validated
+
+- **Four held-out replays.** Calibrated on `plan-order` and `lru-1of4`, then
+  replayed on `lru-1of2`, `least-stale-1of4` and `none-cold` for the 0.6B bundle
+  and `lru-1of2` for the 1.7B bundle. Every hit/miss decision matched the
+  engine's record and the device-byte prediction was exact; the stall
+  discrepancies are in `docs/SIMULATOR.md` and the receipts.
+- **Live store comparison.** Executed the same whole-bundle trace through
+  `ShardStore::read_required` and through the simulator. Bytes and hit counts
+  agreed exactly; the stall shape agreed within a few percent; the absolute
+  latency check failed because the host was saturated by the T2 pilot during the
+  run (same-window `io-scan` recorded the drift). That failure is kept in the
+  receipt with the environment note and is reported as inconclusive, not as a
+  simulator defect.
+- **Pareto, placement and envelope receipts** on the reconstructed 1.7B M2
+  trace and on synthetic traces, with generated plots.
+
+### Tests
+
+All CPU, in the rust court: the workspace suite passes, including 73 tests in
+`selvedge-sim` (52 unit, 21 engine/property/replay). New named tests include
+`replay_reproduces_hand_computed_schedule`, `coalescing_merges_adjacent_extents`,
+`coalescing_never_bridges_beyond_gap`, `backpressure_wait_and_fail_modes`,
+`cancellation_returns_the_server`, `prefetch_saved_stall_when_it_completes_in_time`,
+`prefetch_never_changes_the_selected_set`, `deadline_misses_are_counted`,
+`two_timescale_cold_change_is_charged_to_the_phase`,
+`envelope_invalidation_on_excursion`, `envelope_utility_is_bytes_and_time`,
+`divergence_is_reported_as_a_percentage`,
+`byte_accounting_is_conserved_under_random_configurations`, and the placement
+invariants (`sequential_is_a_permutation_of_extents`,
+`replication_amplification_is_accounted`, `objective_prices_replication`).
+
+### A real bug found by the tests
+
+The inverse standard-normal quantile used for the lognormal residual table was
+missing Acklam's leading sign and used `sqrt(-log p)` instead of
+`sqrt(-2 log p)` for the tail region, which swapped and compressed both tails.
+The residual table showed a large error for a known lognormal sample; the fix is
+in `calibration::normal_quantile` and is pinned by
+`normal_quantile_matches_known_values` and `normal_quantile_has_unit_moments`.
+
+### What is not true
+
+- No GPU, PCIe or pinned-buffer number is simulated or measured.
+- The absolute simulator-vs-store latency comparison is *not* established; it is
+  confounded by host contention and must be re-run on an idle host.
+- No trained-router trace exists. Locality, envelope and placement conclusions
+  are conditional on a trained model's routing statistics.
+- `--compute-ns` is an assumption supplied by the caller, never a measurement.

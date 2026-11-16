@@ -1,0 +1,84 @@
+{
+  "schema": "selvedge/sim-validation/v1",
+  "stamp": "20261116T011233Z",
+  "revision": "29eeac7552e7",
+  "calibration": {
+    "stamp": "20261116T011233Z",
+    "revision": "29eeac7552e7",
+    "shard_bytes": 3145728,
+    "transfer_p50_ns": 3023058,
+    "verify_p50_ns": 1234256,
+    "size_law_points": [
+      [
+        4096,
+        133630
+      ],
+      [
+        65536,
+        282017
+      ],
+      [
+        1048576,
+        1135723
+      ],
+      [
+        8388608,
+        9571237
+      ]
+    ]
+  },
+  "target": {
+    "path": "results/store/metrics-17b-r1/lru-1of2.jsonl",
+    "sha256": "69cd5a617e4d854ae053bed8ac53bd155c5add99005ecfe1a87f5e7417547ba2",
+    "bytes": 1454774,
+    "role": "target_metrics"
+  },
+  "arm": "lru-1of2",
+  "policy": "lru",
+  "capacity_bytes": 2113929216,
+  "out_of_sample": true,
+  "seed": 6781830485412478977,
+  "reads": 2688,
+  "hits_recorded": 672,
+  "hits_replayed": 672,
+  "hit_mismatches": 0,
+  "first_mismatch": null,
+  "measured_stall": {
+    "n": 2688,
+    "mean_ns": 3447844.423735119,
+    "p50_ns": 4252295,
+    "p90_ns": 5186189,
+    "p95_ns": 5419455,
+    "p99_ns": 5963973,
+    "max_ns": 17457878,
+    "total_ns": 9267805811
+  },
+  "predicted_stall": {
+    "n": 2688,
+    "mean_ns": 3341971.8303571427,
+    "p50_ns": 4113089,
+    "p90_ns": 4959759,
+    "p95_ns": 5286883,
+    "p99_ns": 6871745,
+    "max_ns": 15833932,
+    "total_ns": 8983220280
+  },
+  "stall_discrepancy_pct": {
+    "mean": -3.070689403766145,
+    "p50": -3.273667513660271,
+    "p95": -2.446223836160647,
+    "p99": 15.220927391857744
+  },
+  "bytes": {
+    "measured_device_bytes": 6341787648,
+    "predicted_device_bytes": 6341787648,
+    "discrepancy_pct": 0.0
+  },
+  "verdict": "pass",
+  "verdict_reason": "within the pre-registered tolerances",
+  "notes": [
+    "the hit/miss check is exact: it replays the policy over the recorded read order and compares every decision with the engine's own record",
+    "out_of_sample=true: a false value means the latency comparison resamples the same file it was calibrated on and is not a prediction",
+    "prefetch events are excluded from the replay; the measured prefetch arm is a batch event, not a sequence of required reads"
+  ]
+}

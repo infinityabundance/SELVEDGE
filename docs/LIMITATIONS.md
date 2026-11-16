@@ -147,6 +147,23 @@ teacher KL, PPL ratio and top-1 agreement on pinned held-out text.
 - **The storage measurements are single-node.** One consumer NVMe device, one
   kernel, one page-cache policy. They are repeated, but they do not generalise
   to a different drive, firmware, filesystem or concurrency level.
+- **The simulator is calibrated on one host and one device, and does not model
+  a GPU tier.** Its transfer and verification distributions come from the
+  measured per-request JSONL; simulated queue depth above one is a what-if,
+  because the measured engine reads synchronously. The one non-measured curve
+  is the log-log size law for request sizes that were not measured. GPU staging,
+  PCIe and pinned-buffer effects are absent, so no GPU-latency claim is possible
+  from a simulation.
+- **The live simulator-vs-store comparison was run on a contended host.** The
+  device bytes and hit counts agreed exactly and the p95/p50 shape was within a
+  few percent, but the absolute latency comparison failed its tolerance because
+  the detached T2 pilot was saturating the CPU and the drive; a same-window
+  `io-scan` recorded the drift. Absolute latency validation on an idle host is
+  outstanding.
+- **No trained-router execution trace exists.** The T2 per-step records carry no
+  routing field, and the M2 selector decisions come from a degraded, untrained
+  setting. Every simulator locality conclusion is conditional on a trained
+  model's routing statistics.
 
 ## M2 selectors: what the per-token result does not establish
 

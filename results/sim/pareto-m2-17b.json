@@ -1,0 +1,221 @@
+{
+  "schema": "selvedge/sim-pareto/v1",
+  "stamp": "20261116T011233Z",
+  "revision": "29eeac7552e7",
+  "trace_id": "swiglu-c4de86a90d4a-fe4c159deaf6-m2-magnitude",
+  "trace_sha256": "10175a06bafdb6acd51a6cc36662eceecbd101f03bfa19bfc2d7592fcc95a3f5",
+  "calibration": {
+    "stamp": "20261116T011233Z",
+    "revision": "29eeac7552e7",
+    "shard_bytes": 3145728,
+    "transfer_p50_ns": 3023058,
+    "verify_p50_ns": 1234256,
+    "size_law_points": [
+      [
+        4096,
+        133630
+      ],
+      [
+        65536,
+        282017
+      ],
+      [
+        1048576,
+        1135723
+      ],
+      [
+        8388608,
+        9571237
+      ]
+    ]
+  },
+  "quality": "fixed: every arm executes the trace's selected sets exactly; no quality trade is present in this table",
+  "rows": [
+    {
+      "arm": "none-cold",
+      "policy": "none",
+      "cache_bytes": 0,
+      "cache_fraction": 0.0,
+      "records": 256,
+      "bytes_per_record": 47185920.0,
+      "bytes_per_shard": 3145728.0,
+      "p50_stall_ns": 66575092,
+      "p95_stall_ns": 75736140,
+      "p99_stall_ns": 88502003,
+      "hit_rate": 0.0,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lru-0.125",
+      "policy": "lru",
+      "cache_bytes": 528482304,
+      "cache_fraction": 0.125,
+      "records": 256,
+      "bytes_per_record": 40808448.0,
+      "bytes_per_shard": 2720563.2,
+      "p50_stall_ns": 63307048,
+      "p95_stall_ns": 72668005,
+      "p99_stall_ns": 89965023,
+      "hit_rate": 0.13515625,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lru-0.250",
+      "policy": "lru",
+      "cache_bytes": 1056964608,
+      "cache_fraction": 0.25,
+      "records": 256,
+      "bytes_per_record": 34209792.0,
+      "bytes_per_shard": 2280652.8,
+      "p50_stall_ns": 51634186,
+      "p95_stall_ns": 72857039,
+      "p99_stall_ns": 80277543,
+      "hit_rate": 0.275,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lru-0.500",
+      "policy": "lru",
+      "cache_bytes": 2113929216,
+      "cache_fraction": 0.5,
+      "records": 256,
+      "bytes_per_record": 23359488.0,
+      "bytes_per_shard": 1557299.2,
+      "p50_stall_ns": 30269233,
+      "p95_stall_ns": 68599834,
+      "p99_stall_ns": 82683091,
+      "hit_rate": 0.5049479166666667,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lru-1.000",
+      "policy": "lru",
+      "cache_bytes": 4227858432,
+      "cache_fraction": 1.0,
+      "records": 256,
+      "bytes_per_record": 14561280.0,
+      "bytes_per_shard": 970752.0,
+      "p50_stall_ns": 14451972,
+      "p95_stall_ns": 67035390,
+      "p99_stall_ns": 80277543,
+      "hit_rate": 0.69140625,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lfu-0.125",
+      "policy": "lfu",
+      "cache_bytes": 528482304,
+      "cache_fraction": 0.125,
+      "records": 256,
+      "bytes_per_record": 41435136.0,
+      "bytes_per_shard": 2762342.4,
+      "p50_stall_ns": 62537268,
+      "p95_stall_ns": 74704226,
+      "p99_stall_ns": 87329310,
+      "hit_rate": 0.121875,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lfu-0.250",
+      "policy": "lfu",
+      "cache_bytes": 1056964608,
+      "cache_fraction": 0.25,
+      "records": 256,
+      "bytes_per_record": 34136064.0,
+      "bytes_per_shard": 2275737.6,
+      "p50_stall_ns": 52480269,
+      "p95_stall_ns": 72441564,
+      "p99_stall_ns": 97295085,
+      "hit_rate": 0.2765625,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lfu-0.500",
+      "policy": "lfu",
+      "cache_bytes": 2113929216,
+      "cache_fraction": 0.5,
+      "records": 256,
+      "bytes_per_record": 22818816.0,
+      "bytes_per_shard": 1521254.4,
+      "p50_stall_ns": 28648238,
+      "p95_stall_ns": 69108602,
+      "p99_stall_ns": 82683091,
+      "hit_rate": 0.51640625,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "lfu-1.000",
+      "policy": "lfu",
+      "cache_bytes": 4227858432,
+      "cache_fraction": 1.0,
+      "records": 256,
+      "bytes_per_record": 14561280.0,
+      "bytes_per_shard": 970752.0,
+      "p50_stall_ns": 14451972,
+      "p95_stall_ns": 67035390,
+      "p99_stall_ns": 80277543,
+      "hit_rate": 0.69140625,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "least_stale-0.125",
+      "policy": "least_stale",
+      "cache_bytes": 528482304,
+      "cache_fraction": 0.125,
+      "records": 256,
+      "bytes_per_record": 40808448.0,
+      "bytes_per_shard": 2720563.2,
+      "p50_stall_ns": 63307048,
+      "p95_stall_ns": 72668005,
+      "p99_stall_ns": 89965023,
+      "hit_rate": 0.13515625,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "least_stale-0.250",
+      "policy": "least_stale",
+      "cache_bytes": 1056964608,
+      "cache_fraction": 0.25,
+      "records": 256,
+      "bytes_per_record": 34209792.0,
+      "bytes_per_shard": 2280652.8,
+      "p50_stall_ns": 51634186,
+      "p95_stall_ns": 72857039,
+      "p99_stall_ns": 80277543,
+      "hit_rate": 0.275,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "least_stale-0.500",
+      "policy": "least_stale",
+      "cache_bytes": 2113929216,
+      "cache_fraction": 0.5,
+      "records": 256,
+      "bytes_per_record": 23359488.0,
+      "bytes_per_shard": 1557299.2,
+      "p50_stall_ns": 30269233,
+      "p95_stall_ns": 68599834,
+      "p99_stall_ns": 82683091,
+      "hit_rate": 0.5049479166666667,
+      "wasted_bytes": 0
+    },
+    {
+      "arm": "least_stale-1.000",
+      "policy": "least_stale",
+      "cache_bytes": 4227858432,
+      "cache_fraction": 1.0,
+      "records": 256,
+      "bytes_per_record": 14561280.0,
+      "bytes_per_shard": 970752.0,
+      "p50_stall_ns": 14451972,
+      "p95_stall_ns": 67035390,
+      "p99_stall_ns": 80277543,
+      "hit_rate": 0.69140625,
+      "wasted_bytes": 0
+    }
+  ],
+  "notes": [
+    "bytes/token and p95 are simulated, not measured; the simulator is validated by the metrics replay and the live store comparison",
+    "a smaller cache is not a quality change in exact mode: it costs bytes and latency, never a different selection"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "schema": "selvedge/sim-report/v1",
+  "stamp": "20261116T011233Z",
+  "revision": "29eeac7552e7",
+  "trace_id": "swiglu-c4de86a90d4a-fe4c159deaf6-m2-magnitude",
+  "trace_sha256": "10175a06bafdb6acd51a6cc36662eceecbd101f03bfa19bfc2d7592fcc95a3f5",
+  "trace_source": "reconstructed",
+  "calibration": {
+    "stamp": "20261116T011233Z",
+    "revision": "29eeac7552e7",
+    "shard_bytes": 3145728,
+    "transfer_p50_ns": 3023058,
+    "verify_p50_ns": 1234256,
+    "size_law_points": [
+      [
+        4096,
+        133630
+      ],
+      [
+        65536,
+        282017
+      ],
+      [
+        1048576,
+        1135723
+      ],
+      [
+        8388608,
+        9571237
+      ]
+    ]
+  },
+  "config": {
+    "policy": "lru",
+    "cache_bytes": 1056964608,
+    "queue_depth": 1,
+    "max_in_flight_bytes": 536870912,
+    "coalesce_gap_bytes": 0,
+    "max_run_bytes": 33554432,
+    "verify": true,
+    "compute_ns_per_record": 0,
+    "deadline_ns": null,
+    "seed": 6781830485412478977,
+    "backpressure": "wait",
+    "predictor": "none",
+    "predictor_uses_future": false,
+    "two_timescale": false,
+    "working_set_source": "none",
+    "start_record": 0
+  },
+  "summary": {
+    "records": 256,
+    "evaluated_records": 256,
+    "stall": {
+      "n": 256,
+      "mean_ns": 48875000.2265625,
+      "p50_ns": 51634186,
+      "p90_ns": 70175058,
+      "p95_ns": 72857039,
+      "p99_ns": 80277543,
+      "max_ns": 97295085,
+      "total_ns": 12512000058
+    },
+    "bytes_needed": 12079595520,
+    "bytes_hit": 3321888768,
+    "bytes_required_miss": 8757706752,
+    "bytes_device_read": 8757706752,
+    "bytes_overread": 0,
+    "bytes_prefetch": 0,
+    "bytes_prefetch_used": 0,
+    "bytes_prefetch_wasted": 0,
+    "bytes_prefetch_cancelled": 0,
+    "bytes_wasted": 0,
+    "bytes_phase_cold": 0,
+    "hits": 1056,
+    "misses": 2784,
+    "evictions": 2448,
+    "evicted_bytes": 7700742144,
+    "evicted_unused_bytes": 5700059136,
+    "prefetch_candidates": 0,
+    "prefetch_accepted": 0,
+    "prefetch_rejected_capacity": 0,
+    "envelope_invalidations": 0,
+    "backpressure_waits": 0,
+    "deadline_misses": 0,
+    "deadline_ns": null,
+    "end_mono_ns": 12512000058,
+    "errors": []
+  },
+  "phases": [
+    {
+      "phase_id": "m2-context",
+      "records": 256,
+      "bytes_needed": 12079595520,
+      "bytes_device_read": 8757706752,
+      "bytes_phase_cold": 0,
+      "stall": {
+        "n": 256,
+        "mean_ns": 48875000.2265625,
+        "p50_ns": 51634186,
+        "p90_ns": 70175058,
+        "p95_ns": 72857039,
+        "p99_ns": 80277543,
+        "max_ns": 97295085,
+        "total_ns": 12512000058
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "task": "unlabelled",
+      "records": 256,
+      "bytes_needed": 12079595520,
+      "bytes_device_read": 8757706752,
+      "bytes_phase_cold": 0,
+      "stall_p95_ns": 72857039
+    }
+  ],
+  "placement": null,
+  "envelope": null,
+  "notes": [
+    "simulated, not measured: see the calibration receipt and the validation receipts",
+    "the selection is the trace's; a policy changes latency, bytes and residency only"
+  ]
+}

@@ -15,6 +15,7 @@ flowchart TD
     convert[selvedge-convert<br/>safetensors, SwiGLU groups, Court A]
     fixtures[selvedge-fixtures<br/>deterministic synthetic bundle]
     cli[selvedge-cli<br/>doctor, inspect, convert, validate, courts]
+    sim[selvedge-sim<br/>traces, calibrated execution simulation]
 
     core --> format
     core --> convert
@@ -26,6 +27,10 @@ flowchart TD
     format --> cli
     convert --> cli
     fixtures --> cli
+    core --> sim
+    format --> sim
+    store[selvedge-store] --> sim
+    sim --> cli
 ```
 
 `selvedge-core` has no dependency on the filesystem format, the CLI or a model
@@ -41,11 +46,20 @@ Later phases slot in on the right:
 ```text
 selvedge-convert  -> produces Manifest + payload (S2, implemented)
 selvedge-atlas    -> consumes SelectionDecision / produces selectors (S3)
-selvedge-store    -> implements CostModel / Backend / residency (S4+)
-selvedge-sim      -> replays ExecutionTrace against CostModel (S4+)
+selvedge-store    -> implements CostModel / Backend / residency (S4+, implemented)
+selvedge-sim      -> replays ExecutionTrace against CostModel (S4+, implemented)
 selvedge-runtime  -> executes exact or approximate plans (later)
 selvedge-bench    -> measurement harness (later)
 ```
+
+`selvedge-sim` owns the trace boundary and the simulator. It depends on core,
+format and store, and is the only crate that consumes an `ExecutionTrace`. Its
+contracts are: a trace records what was selected and never what should have
+been selected; a prefetch is advisory and can only cost stall or waste; a
+simulation names its calibration, seed and trace digest; and every report
+carries the four byte-conservation identities. `docs/SIMULATOR.md` is the
+method document, including what is simulated versus measured and what remains
+unvalidated.
 
 ## Core data contracts
 
@@ -504,7 +518,7 @@ the value later benchmark rows must carry.
 | synthetic fixtures | implemented | deterministic PRNG, tracked bundle and safetensors checkpoint |
 | GGUF | **not implemented** | later; packed block boundaries must not be sliced as floats |
 | teacher oracle, attribution, selectors | **partially implemented** | teacher oracle, accounting, real-activation parity and the static group-omission frontier exist; per-token attribution and selectors do not |
-| execution traces, simulator, scheduler | **not implemented** | later |
+| execution traces, simulator, scheduler | **implemented (M3 part 2)** | `selvedge-sim`: versioned traces, calibrated event simulation, envelopes, placement, validation against the measured store; see `docs/SIMULATOR.md`. GPU staging is still declared only |
 | real inference backend, CUDA kernels | **not implemented** | the Rust build compiles no CUDA; the oracle image only uses the pinned CUDA torch for teacher instrumentation |
 | quality measurements | **partially implemented** | the KL/PPL/top-1 frontier in `results/M1-FRONTIER.md` is measured and receipted; no capability benchmark exists, and no latency or I/O measurement exists |
 
@@ -585,6 +599,22 @@ versions, precision flags, seed, realized active count and per-article metrics.
   requested, transferred and useful bytes separate so waste is explicit.
 - `Config::config_hash` in every benchmark row, alongside the model revision,
   dataset revision, seed and command.
+
+### Trace and simulator boundaries (M3 part 2, implemented)
+
+- Produce an `ExecutionTrace` only from a validated bundle's own shard ids, and
+  label it `measured`, `reconstructed` or `synthetic`. A fixture reconstruction
+  is not a measurement and says so in its notes.
+- An exact-mode trace must declare its basis; the only accepted basis is a
+  whole-bundle plan read. A selector that predicts a subset cannot be exported
+  as exact.
+- Calibrate from measured receipts and report the fit residuals. The empirical
+  distribution is the model of record; a parametric family is never substituted
+  silently.
+- Report simulated and measured quantities separately, and validate the
+  simulator against the real engine on held-out arms before quoting it.
+- Envelope utility is bytes not transferred and exposed time saved; never a
+  prediction score.
 
 ## Bound behavior
 

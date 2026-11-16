@@ -1,6 +1,7 @@
 # SELVEDGE results — honest current state
 
-Status: **M2 complete; M3 part 1 (storage) measured; the T2 trained branch is
+Status: **M2 complete; M3 part 1 (storage) measured; M3 part 2 (trace simulator)
+implemented and validated on held-out arms; the T2 trained branch is
 running.** The pre-registered M1 frontier and the M2 per-token
 selector/oracle experiment have been measured. M1 rejected static whole-group
 omission. M2 rejects the inference-only, post-hoc per-token selection branch:
@@ -97,6 +98,22 @@ number has been measured, and none is claimed.
     alignment, checksum and cache-residency sweeps are three-repeat measurements
     with ranges and CVs in `docs/STORAGE.md` and the `results/store` and
     `results/io` summaries.
+15. **A trace-driven execution simulator exists, is calibrated from those
+    measurements, and is validated on held-out arms.** `selvedge-sim` owns a
+    versioned execution trace that can only describe what was selected, an
+    empirical cost model (with exponential-versus-lognormal residual evidence),
+    a discrete-event engine with coalescing, backpressure, cancellation,
+    deadlines, execution envelopes and a two-timescale working set, and a
+    placement study whose layouts are ranked by the simulator. Calibrated on
+    `plan-order` and `lru-1of4`, it replayed three other 0.6B arms and one 1.7B
+    arm with **zero hit/miss mismatches and an exact device-byte prediction**;
+    the stall discrepancies are in `docs/SIMULATOR.md`. The live
+    simulator-versus-store comparison agreed exactly on bytes and hit counts and
+    agreed on the p95/p50 shape, but its absolute latency check failed because
+    the host was saturated by the T2 pilot; that is recorded as inconclusive, not
+    as a result. No GPU transfer is simulated, and no trained-router trace
+exists, so all locality conclusions are conditional on the trained model's
+    routing statistics.
 
 ## Numbers (generated from receipts)
 

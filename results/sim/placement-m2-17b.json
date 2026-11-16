@@ -1,0 +1,269 @@
+{
+  "calibration": {
+    "revision": "29eeac7552e7",
+    "shard_bytes": 3145728,
+    "size_law_points": [
+      [
+        4096,
+        133630
+      ],
+      [
+        65536,
+        282017
+      ],
+      [
+        1048576,
+        1135723
+      ],
+      [
+        8388608,
+        9571237
+      ]
+    ],
+    "stamp": "20261116T011233Z",
+    "transfer_p50_ns": 3023058,
+    "verify_p50_ns": 1234256
+  },
+  "notes": [
+    "layouts are proposals from the surrogate; the measured comparison is the simulator row",
+    "a replicated layout's extra bytes are storage amplification, not free"
+  ],
+  "revision": "29eeac7552e7",
+  "rows": [
+    {
+      "amplification": 1.0,
+      "bytes_device_read": 8757706752,
+      "bytes_per_record": 34209792.0,
+      "estimated_stall_saved_ns": 0.0,
+      "kind": "sequential",
+      "objective": 0.0,
+      "p50_stall_ns": 51634186,
+      "p95_stall_ns": 72857039,
+      "p99_stall_ns": 80277543,
+      "placed_bytes": 4227858432,
+      "replicated_bytes": 0,
+      "unused_prefetch_bytes": 0
+    },
+    {
+      "amplification": 1.0,
+      "bytes_device_read": 8757706752,
+      "bytes_per_record": 34209792.0,
+      "estimated_stall_saved_ns": 0.0,
+      "kind": "frequency_sorted",
+      "objective": 0.0,
+      "p50_stall_ns": 53066485,
+      "p95_stall_ns": 73103127,
+      "p99_stall_ns": 83308927,
+      "placed_bytes": 4227858432,
+      "replicated_bytes": 0,
+      "unused_prefetch_bytes": 0
+    },
+    {
+      "amplification": 1.0,
+      "bytes_device_read": 8757706752,
+      "bytes_per_record": 34209792.0,
+      "estimated_stall_saved_ns": 0.0,
+      "kind": "co_access_blocked",
+      "objective": 0.0,
+      "p50_stall_ns": 54676154,
+      "p95_stall_ns": 72363317,
+      "p99_stall_ns": 80859567,
+      "placed_bytes": 4227858432,
+      "replicated_bytes": 0,
+      "unused_prefetch_bytes": 0
+    },
+    {
+      "amplification": 1.0,
+      "bytes_device_read": 8757706752,
+      "bytes_per_record": 34209792.0,
+      "estimated_stall_saved_ns": 0.0,
+      "kind": "replicated_hot",
+      "objective": 0.0,
+      "p50_stall_ns": 52118731,
+      "p95_stall_ns": 72618744,
+      "p99_stall_ns": 84747027,
+      "placed_bytes": 4227858432,
+      "replicated_bytes": 0,
+      "unused_prefetch_bytes": 0
+    }
+  ],
+  "schema": "selvedge/sim-placement-comparison/v1",
+  "stamp": "20261116T011233Z",
+  "trace_id": "swiglu-c4de86a90d4a-fe4c159deaf6-m2-magnitude",
+  "trace_sha256": "10175a06bafdb6acd51a6cc36662eceecbd101f03bfa19bfc2d7592fcc95a3f5",
+  "weights": {
+    "checked_edges": 32,
+    "edges": 6534,
+    "notes": [
+      "lift is measured against independence over the trace's records; a lift interval is a seeded record-level bootstrap percentile range, not a significance test",
+      "the coalescing saving comes from the calibrated size law, not from a direct measurement of every pair"
+    ],
+    "records": 256,
+    "shards": 1185,
+    "stable_edges": 0,
+    "stable_fraction": 0.0,
+    "top_edges": [
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:04ab3eb4890e4a341da778badea2e1099bd5080e4e025cf163369e81a0c5e438",
+        "co_access": 2,
+        "lift": 34.13333333333333,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:0984f4bf9ffbef01a87c495baa6f68a8e48768185ec91d985494c33445352021",
+        "co_access": 2,
+        "lift": 34.13333333333333,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:2d3d933c56a1e0d08eef37e283f3a2dbab815fdefd7759ff38f24f55c2bbf978",
+        "co_access": 2,
+        "lift": 12.8,
+        "lift_high": 51.2,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:56afc818860ea025cd4c33e80a947e13041649dbb955d1faa9e974d222c556d0",
+        "co_access": 2,
+        "lift": 34.13333333333333,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:6a5599dcb8e1d62153876a1d67129089d9c1129db272f73a512bafcd35a605e4",
+        "co_access": 2,
+        "lift": 20.48,
+        "lift_high": 128.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:75524de84f42740faf68b2b2051b3c059ae0b331283adbc4cb7fac3a14abf1e8",
+        "co_access": 2,
+        "lift": 34.13333333333333,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:7599fe9b109961077940f214fa34c50d1c97a96054d56da0a471cb4206ee51e8",
+        "co_access": 2,
+        "lift": 12.8,
+        "lift_high": 51.2,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:9c151ef1eb6181bc29268990d066ffbb79a67dbc2330a27dfba5d478ab501282",
+        "co_access": 2,
+        "lift": 20.48,
+        "lift_high": 128.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:dcb57f9d13a437df85958891982e44e1acbaf1a843666af5a16b6b8c0f90d950",
+        "co_access": 2,
+        "lift": 20.48,
+        "lift_high": 128.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:de549949b7a908b777001409c247302f6365066bcc43f19b8b4331f6ac849c18",
+        "co_access": 2,
+        "lift": 34.13333333333333,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:f38d225ec190bf6e006457fb47f1919419a4b1e608caedca6782376e03c6300c",
+        "co_access": 2,
+        "lift": 34.13333333333333,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0015f19d617769960525c55df4a9e8c5a950267a1a042d87f28e205bb5406a90",
+        "b": "sha256:fd3f1cee764cd0b93a1153ccfcb5fed5d64abaaed625237b9cf5c046d0724e65",
+        "co_access": 2,
+        "lift": 12.8,
+        "lift_high": 51.2,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0039430cbd81426c02ea06e2524f00aa63050e3d4cb310c604d191b3e0557b47",
+        "b": "sha256:5afa7104a35274bfc06d990f33ccae36167200cd1e016808a50e948773b4253f",
+        "co_access": 2,
+        "lift": 128.0,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0039430cbd81426c02ea06e2524f00aa63050e3d4cb310c604d191b3e0557b47",
+        "b": "sha256:5dd14522830d03cff9c617db71fb8c76343040a91f3d834877cfdfdf0e952236",
+        "co_access": 2,
+        "lift": 128.0,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0039430cbd81426c02ea06e2524f00aa63050e3d4cb310c604d191b3e0557b47",
+        "b": "sha256:693a96671e2c23750ee5adca2c0366cd8eba943d3534ce67c8d4970595e5a72a",
+        "co_access": 2,
+        "lift": 51.2,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      },
+      {
+        "a": "sha256:0039430cbd81426c02ea06e2524f00aa63050e3d4cb310c604d191b3e0557b47",
+        "b": "sha256:c190efd48f1b99aff0d88e4bfe9883e6b28c210dd8d2d763928e67b2a5cb8917",
+        "co_access": 2,
+        "lift": 51.2,
+        "lift_high": 256.0,
+        "lift_low": 0.0,
+        "marginal_ns": 0.0,
+        "weight": 0.0
+      }
+    ],
+    "weighting": "w(a,b) = lift(a,b) * (L(ba) + L(bb) - L(ba + bb))"
+  }
+}

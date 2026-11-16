@@ -1,0 +1,111 @@
+{
+  "schema": "selvedge/sim-store-comparison/v1",
+  "stamp": "20261116T011233Z",
+  "revision": "29eeac7552e7",
+  "bundle": "results/artifacts/qwen3-0.6b-ffn-g16/swiglu-ad15450e2cc2-76dd1b90442e.slv",
+  "trace_id": "swiglu-ad15450e2cc2-76dd1b90442e-whole-bundle",
+  "trace_sha256": "802ec13177f485c55f70a93e0bbdcd8519464659140b1c8a758342be8650afcb",
+  "policy": "none",
+  "cache_bytes": 0,
+  "seed": 6781830485412478977,
+  "cold": {
+    "store": {
+      "pass": "cold",
+      "records": 2,
+      "stall": {
+        "n": 2,
+        "mean_ns": 15376148622.0,
+        "p50_ns": 15013207448,
+        "p90_ns": 15739089796,
+        "p95_ns": 15739089796,
+        "p99_ns": 15739089796,
+        "max_ns": 15739089796,
+        "total_ns": 30752297244
+      },
+      "device_bytes": 2113929216,
+      "bytes_used": 2113929216,
+      "hits": 0,
+      "elapsed_ns": 30973988093
+    },
+    "sim": {
+      "pass": "cold",
+      "stall": {
+        "n": 2,
+        "mean_ns": 1503370139.0,
+        "p50_ns": 1472486304,
+        "p90_ns": 1534253974,
+        "p95_ns": 1534253974,
+        "p99_ns": 1534253974,
+        "max_ns": 1534253974,
+        "total_ns": 3006740278
+      },
+      "device_bytes": 2113929216,
+      "bytes_needed": 2113929216,
+      "bytes_wasted": 0
+    },
+    "p50_discrepancy_pct": -90.19206049673177,
+    "p95_discrepancy_pct": -90.2519523435852,
+    "p99_discrepancy_pct": -90.2519523435852,
+    "bytes_discrepancy_pct": 0.0,
+    "store_p95_over_p50": 1.0483495848914484,
+    "sim_p95_over_p50": 1.0419478740360495,
+    "shape_p95_discrepancy_pct": -0.6106465770253283,
+    "shape_p99_discrepancy_pct": -0.6106465770253283,
+    "verdict": "defect",
+    "shape_verdict": "pass"
+  },
+  "warm": {
+    "store": {
+      "pass": "warm",
+      "records": 2,
+      "stall": {
+        "n": 2,
+        "mean_ns": 14884625068.0,
+        "p50_ns": 14864115666,
+        "p90_ns": 14905134470,
+        "p95_ns": 14905134470,
+        "p99_ns": 14905134470,
+        "max_ns": 14905134470,
+        "total_ns": 29769250136
+      },
+      "device_bytes": 2113929216,
+      "bytes_used": 2113929216,
+      "hits": 0,
+      "elapsed_ns": 29991419265
+    },
+    "sim": {
+      "pass": "warm",
+      "stall": {
+        "n": 2,
+        "mean_ns": 1503370139.0,
+        "p50_ns": 1472486304,
+        "p90_ns": 1534253974,
+        "p95_ns": 1534253974,
+        "p99_ns": 1534253974,
+        "max_ns": 1534253974,
+        "total_ns": 3006740278
+      },
+      "device_bytes": 2113929216,
+      "bytes_needed": 2113929216,
+      "bytes_wasted": 0
+    },
+    "p50_discrepancy_pct": -90.09368376103163,
+    "p95_discrepancy_pct": -89.70654054085834,
+    "p99_discrepancy_pct": -89.70654054085834,
+    "bytes_discrepancy_pct": 0.0,
+    "store_p95_over_p50": 1.0027595858994711,
+    "sim_p95_over_p50": 1.0419478740360495,
+    "shape_p95_discrepancy_pct": 3.908044229906478,
+    "shape_p99_discrepancy_pct": 3.908044229906478,
+    "verdict": "defect",
+    "shape_verdict": "pass"
+  },
+  "environment": "host shared with the T2 training pilot; the same-window quick io-scan is results/io/io-scan-06b-contended.json",
+  "notes": [
+    "the store's page-cache drop is an advisory posix_fadvise; the cold pass is reported as advisory-cold, not as proof of a device read",
+    "the warm pass reuses whatever the first pass left in the page cache; it is a page-cache measurement, not a cache-policy win",
+    "the simulator is charged the measured insertion, eviction and hit-copy costs on the same path as the store, so the comparison is of scheduling, not of components it does not model",
+    "the absolute latency verdict compares a simulated host to the measured host: when the environment is contended, the absolute check fails while the byte count and the p95/p50 shape stat still pass. Read the environment field before calling a divergence a simulator defect",
+    "the executed set is the union of the trace's selections in both runs; exact mode semantics are unchanged by construction"
+  ]
+}
