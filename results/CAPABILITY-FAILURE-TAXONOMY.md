@@ -33,7 +33,7 @@ Arms: D, H, H*, M, X. Arm/item outcomes: 765.
 
 ## Truncation evidence
 
-Unterminated fence in the answer: 207. Token cap reached without an unterminated fence: 93. the stored receipts record the batch's decoded width, not the item's; `cap_only` is therefore corroborating evidence, while an unterminated fence is direct evidence in the answer.
+Unterminated fence in the answer: 207. Token cap reached without an unterminated fence: 93. The stored receipts record the batch's decoded width, not the item's; `cap_only` is therefore corroborating evidence, while an unterminated fence is direct evidence in the answer.
 
 ## Per task category
 

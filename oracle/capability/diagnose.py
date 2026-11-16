@@ -442,10 +442,11 @@ def render_report(receipt: dict) -> str:
         [[reason, count] for reason, count in
          summary["by_rejection_reason"].items()]))
     lines.extend(["", "## Truncation evidence", ""])
+    statement = summary["truncation"]["statement"]
     lines.append(f"Unterminated fence in the answer: {summary['truncation']['unterminated_fence']}. "
                  f"Token cap reached without an unterminated fence: "
                  f"{summary['truncation']['cap_only']}. "
-                 + summary["truncation"]["statement"] + ".")
+                 + statement[0].upper() + statement[1:] + ".")
     lines.extend(["", "## Per task category", ""])
     lines.extend(_table(
         ["category", "tasks", "extractable", "compilable", "terminal", "passed"],
