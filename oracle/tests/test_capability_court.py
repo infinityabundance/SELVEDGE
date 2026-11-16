@@ -25,6 +25,19 @@ from capability import adapters, court, suite  # noqa: E402
 SUITE_ROOT = os.path.join(REPO, "fixtures", "capability")
 
 
+def test_the_t2_adapter_can_import_both_model_modules():
+    """The adapter imports `modeling` from train and `harness` from eval.
+
+    The first real generate stage failed with `No module named 'harness'`
+    because only `oracle/train` was inserted. This asserts both source
+    directories are on the list and that each contains a module the adapter
+    imports, so the regression cannot come back silently.
+    """
+    directories = adapters.model_path_dirs()
+    assert any(os.path.isfile(os.path.join(d, "harness.py")) for d in directories)
+    assert any(os.path.isfile(os.path.join(d, "modeling.py")) for d in directories)
+
+
 def reference_answer(task) -> str:
     return "\n".join(
         f"```rust path={path}\n{task.read_reference(path).rstrip()}\n```"

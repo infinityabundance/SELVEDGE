@@ -67,6 +67,11 @@ BUDGET_TOKENS = STEPS * 65536
 SEED = 1001
 PREREG = "docs/capability-preregistration-v4.json"
 AMENDMENT = "results/t2/PROVENANCE-AMENDMENT-X-and-H.json"
+# H*'s arm receipt does not carry the mask order, but its training loop recorded it
+# in run-meta.json and summary.json; this amendment certifies that record and binds
+# the receipt (see results/t2/provenance-replay-Hstar-*.json for the audit).
+HSTAR_AMENDMENT = "results/t2/PROVENANCE-AMENDMENT-Hstar.json"
+AMENDMENTS = {"X": AMENDMENT, "H": AMENDMENT, "H*": HSTAR_AMENDMENT}
 SENSITIVITY_LABEL = "S1"
 GPU_BUSY_MIB = 3000
 HEAVY_APP_MIB = 512
@@ -74,7 +79,12 @@ MEM_BUCKETS_GIB = (16, 24, 32, 48)
 HEADROOM_FACTOR = 1.5
 RESERVE_GIB = 2.0
 CAPABILITY_CHECK_MEM_GIB = 12
-CPU_STAGE_MEM_GIB = {"verdict": 8, "compare": 8}
+CPU_STAGE_MEM_GIB = {"verdict": 8, "compare": 8, "harvest": 8}
+# The interpreter every in-container stage runs. It is resolved on PATH *inside*
+# the court image, never from the host: `sys.executable` is the host's path
+# (`/usr/bin/python3` here) and does not exist in the minimal images, which made
+# the instrument stage exit 127 on the first real run (S27).
+INTERPRETER = "python3"
 
 
 class StageFailure(RuntimeError):
@@ -307,12 +317,21 @@ class Runner:
         command += [court_name, "--"] + argv
         wrapped = command
         if self.mode == "systemd":
+            # `systemd-run` does NOT inherit the caller's environment, so the
+            # limits must be passed with --setenv as well as as unit properties.
+            # Without this the court silently fell back to its own 8g default
+            # while the state recorded 16g/24g (S27, first capability run).
+            setenv = [f"--setenv={name}={value}"
+                      for name, value in sorted(
+                          self._env(mem_gib, cpus, pids, tmp_gib).items())
+                      if name.startswith("SELVEDGE_")]
             wrapped = [
                 "systemd-run", "--user", "--collect", "--pipe", f"--unit={unit}",
                 f"--property=MemoryMax={mem_gib}G",
                 f"--property=MemorySwapMax={mem_gib}G",
                 f"--property=TasksMax={pids}",
                 f"--property=CPUQuota={int(cpus * 100)}%",
+                *setenv,
                 "--", *command,
             ]
         record = {"argv": command, "wrapped": wrapped, "mem_gib": mem_gib,
@@ -325,8 +344,11 @@ class Runner:
             print("DRY RUN: " + " ".join(wrapped))
             return record
         started = utc_now()
+        offset = 0
         if self.log_path:
             os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
+            if os.path.isfile(self.log_path):
+                offset = os.path.getsize(self.log_path)
             with open(self.log_path, "a", encoding="utf-8") as log:
                 log.write(f"\n[{started}] {' '.join(wrapped)}\n")
                 log.flush()
@@ -336,11 +358,41 @@ class Runner:
             completed = subprocess.run(wrapped, env=env, cwd=self.repo)
         record.update({"exit_code": completed.returncode, "started_utc": started,
                        "finished_utc": utc_now()})
+        self._verify_applied_memory(record, offset)
         if completed.returncode != 0:
             raise StageFailure(
                 f"command failed with exit {completed.returncode}: "
                 f"{' '.join(command)}", completed.returncode)
         return record
+
+    def _verify_applied_memory(self, record: dict, offset: int) -> None:
+        """The court's own report of the limit it applied must match the request.
+
+        The court prints `memory=<n>g` after re-inspecting its container's cgroup,
+        so this catches a limit that never reached it. In systemd mode a missing
+        report is a failure: it means the court did not run. Under `--runner
+        direct` against a scripted court there is no such line, so absence is
+        recorded and nothing is claimed.
+        """
+        if not self.log_path or not os.path.isfile(self.log_path):
+            return
+        with open(self.log_path, "r", encoding="utf-8", errors="replace") as log:
+            log.seek(offset)
+            text = log.read()
+        matches = re.findall(r"\bmemory=(\d+)g\b", text)
+        if not matches:
+            record["applied_memory_gib"] = None
+            if self.mode == "systemd":
+                raise StageFailure(
+                    "the court reported no applied memory limit; the limit never "
+                    "reached the container", 4)
+            return
+        applied = int(matches[-1])
+        record["applied_memory_gib"] = applied
+        if applied != record["mem_gib"]:
+            raise StageFailure(
+                f"the container applied {applied} GiB but the stage declared "
+                f"{record['mem_gib']} GiB", 4)
 
     def cgroup(self, unit: str) -> dict:
         """What systemd actually applied, read after the unit stopped."""
@@ -698,25 +750,35 @@ class Pipeline:
                 "with scripts/run-t2-pilot.sh --resume --arms 'H*'")
         court_receipt = ""
         name = os.path.basename(pending).removesuffix(".json")
-        log = self.path(f"results/courts/logs/{name}.log")
-        argv = [sys.executable, "scripts/t2_pilot.py", "arm-receipt",
+        log_rel = f"results/courts/logs/{name}.log"
+        # The writer runs in the python court like every other stage (directive 1)
+        # and therefore takes repository-relative paths, not host absolute ones.
+        absolute = os.path.abspath(pending)
+        state_rel = (os.path.relpath(absolute, self.repo)
+                     if absolute.startswith(self.repo + os.sep) else pending)
+        argv = [INTERPRETER, "scripts/t2_pilot.py", "arm-receipt",
                 "--arm", "H*", "--run-name", "Hstar",
-                "--training-state", pending, "--consume",
+                "--training-state", state_rel, "--consume",
                 "--launch-revision", git_revision(self.repo),
                 "--container", name,
                 "--court-receipt", court_receipt or "",
-                "--court-log", log,
+                "--court-log", log_rel,
                 "--started-utc", started or "",
                 "--finished-utc", utc_now(),
                 "--exit-code", "0"]
-        completed = subprocess.run(argv, cwd=self.repo, capture_output=True,
-                                   text=True)
-        if completed.returncode != 0:
+        try:
+            self.runner.run(argv, mem_gib=CPU_STAGE_MEM_GIB["harvest"],
+                            unit=f"selvedge-post-hstar-harvest-{stamp_now()}",
+                            cpus=2, tmp_gib=2, court_name="python",
+                            dry_run=self.args.dry_run,
+                            note="compose the H* training receipt from its court state")
+        except StageFailure as error:
             raise StageFailure(
                 "verify: could not harvest the H* training receipt: "
-                + (completed.stderr.strip() or completed.stdout.strip()))
-        return {"harvested": True, "path": "results/t2/H*/run.json",
-                "stdout": completed.stdout.strip()[-500:]}
+                + error.reason) from error
+        if not os.path.isfile(run_receipt):
+            raise StageFailure("verify: the harvest ran but wrote no H* run receipt")
+        return {"harvested": True, "path": "results/t2/H*/run.json"}
 
     def verify(self) -> None:
         sizing = size_stage(self.repo, "verify", "H*")
@@ -864,7 +926,7 @@ class Pipeline:
         checkpoint = self.checkpoint("H*")
         if self.args.dry_run:
             self.runner.run(
-                [sys.executable, "oracle/eval/baseline.py", "--profile", "t2",
+                [INTERPRETER, "oracle/eval/baseline.py", "--profile", "t2",
                  "--arm", "H*", "--seed", str(SEED),
                  "--checkpoint", os.path.relpath(checkpoint, self.repo),
                  "--config", self.config_path("H*"),
@@ -882,7 +944,7 @@ class Pipeline:
             receipt = load_json(self.path(out_rel))
         else:
             self.runner.run(
-                [sys.executable, "oracle/eval/baseline.py", "--profile", "t2",
+                [INTERPRETER, "oracle/eval/baseline.py", "--profile", "t2",
                  "--arm", "H*", "--seed", str(SEED),
                  "--checkpoint", os.path.relpath(checkpoint, self.repo),
                  "--config", self.config_path("H*"),
@@ -919,7 +981,7 @@ class Pipeline:
                          f"{arm}:{os.path.relpath(self.checkpoint(arm), self.repo)}:"
                          f"{self.config_path(arm)}:{self.admission_path(arm)}:t2"]
         self.runner.run(
-            [sys.executable, "oracle/eval/instrument_check.py", *students],
+            [INTERPRETER, "oracle/eval/instrument_check.py", *students],
             mem_gib=sizing["limit_gib"],
             unit=f"selvedge-post-hstar-instrument-{stamp_now()}",
             gpu=True, dry_run=self.args.dry_run, note="P2.4 both-target check")
@@ -967,11 +1029,12 @@ class Pipeline:
         if arm in ROUTED:
             if provenance.get("dispatch_mask_order") not in ("legacy", "pair"):
                 return None
-            if arm in ("X", "H"):
+            if arm in AMENDMENTS:
                 amendment = provenance.get("provenance_amendment") or {}
                 if not amendment.get("used"):
                     return None
-                if amendment.get("sha256") != sha256_file(self.path(AMENDMENT)):
+                if amendment.get("sha256") != sha256_file(
+                        self.path(AMENDMENTS[arm])):
                     return None
         return result
 
@@ -1004,7 +1067,7 @@ class Pipeline:
                                f"generations.json")
             result_rel = (f"results/capability/runs/t2-{run_name(arm)}/result.json")
             sizing = size_stage(self.repo, "capability-generate", arm)
-            generate = [sys.executable, "scripts/capability_court.py", "generate",
+            generate = [INTERPRETER, "scripts/capability_court.py", "generate",
                         "--t2-arm", arm,
                         "--t2-checkpoint",
                         os.path.relpath(self.checkpoint(arm), self.repo),
@@ -1014,16 +1077,24 @@ class Pipeline:
                         "--t2-mask-order", self._mask_order(arm),
                         "--preregistration", PREREG,
                         "--out", generations_rel]
-            if arm in ("X", "H"):
-                generate += ["--provenance-amendment", AMENDMENT]
-            self.runner.run(
+            if arm in AMENDMENTS:
+                generate += ["--provenance-amendment", AMENDMENTS[arm]]
+            generate_record = self.runner.run(
                 generate, mem_gib=sizing["limit_gib"],
                 unit=f"selvedge-post-hstar-cap-{run_name(arm).lower()}-{stamp_now()}",
                 gpu=True, dry_run=self.args.dry_run,
                 note=f"capability generate, {arm}")
             if self.args.dry_run:
                 continue
-            check = [sys.executable, "scripts/capability_court.py", "check",
+            # A generate that exits zero without writing its receipt is not a
+            # success: the check stage would then fail on a missing file and the
+            # reason would name the wrong stage (S27, after a stopped unit).
+            if not os.path.isfile(os.path.join(directory, "generations.json")):
+                raise StageFailure(
+                    f"capability: {arm}'s generate exited "
+                    f"{generate_record.get('exit_code')} but wrote no "
+                    f"{generations_rel}")
+            check = [INTERPRETER, "scripts/capability_court.py", "check",
                      "--generations", generations_rel,
                      "--preregistration", PREREG,
                      "--out", result_rel]
@@ -1064,7 +1135,7 @@ class Pipeline:
             out_rel = f"results/t2/{arm}/eval-pair-mask.json"
             if self.args.dry_run:
                 self.runner.run(
-                    [sys.executable, "oracle/eval/baseline.py", "--profile", "t2",
+                    [INTERPRETER, "oracle/eval/baseline.py", "--profile", "t2",
                      "--arm", arm, "--seed", str(SEED),
                      "--checkpoint", os.path.relpath(self.checkpoint(arm), self.repo),
                      "--config", self.config_path(arm),
@@ -1083,7 +1154,7 @@ class Pipeline:
                 receipt = current
             else:
                 self.runner.run(
-                    [sys.executable, "oracle/eval/baseline.py", "--profile", "t2",
+                    [INTERPRETER, "oracle/eval/baseline.py", "--profile", "t2",
                      "--arm", arm, "--seed", str(SEED),
                      "--checkpoint", os.path.relpath(self.checkpoint(arm), self.repo),
                      "--config", self.config_path(arm),
@@ -1120,7 +1191,7 @@ class Pipeline:
         sizing = size_stage(self.repo, "verdict")
         self.begin("verdict", mem_gib=sizing["limit_gib"], sizing=sizing,
                    outputs=["results/t2-verdict.json", "results/T2-VERDICT.md"])
-        argv = [sys.executable, "scripts/t2_verdict.py",
+        argv = [INTERPRETER, "scripts/t2_verdict.py",
                 "--repo-root", self.repo,
                 "--d0", "results/eval/t2-D0.json",
                 "--sensitivity", "X=results/t2/X/eval-pair-mask.json",
@@ -1160,7 +1231,7 @@ class Pipeline:
         sizing = size_stage(self.repo, "compare")
         self.begin("compare", mem_gib=sizing["limit_gib"], sizing=sizing,
                    outputs=["results/capability/runs/t2-comparison.json"])
-        argv = [sys.executable, "scripts/capability_compare.py",
+        argv = [INTERPRETER, "scripts/capability_compare.py",
                 "--repo-root", self.repo]
         for arm in ARMS:
             argv += ["--result",

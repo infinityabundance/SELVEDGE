@@ -48,6 +48,20 @@ class AdapterError(RuntimeError):
     """The adapter cannot produce a measurement; fail rather than guess."""
 
 
+def model_path_dirs() -> list:
+    """The source directories a T2 adapter imports from, in insertion order.
+
+    `modeling` and `load_admission` live in `oracle/train`; `harness` (the tokenizer
+    and model-path helper) lives in `oracle/eval`. Both are needed and neither is
+    on `sys.path` when the capability court is launched as
+    `python3 scripts/capability_court.py`, so the adapter inserts both. Inserting
+    only `train` made the first real generate stage die with
+    `ModuleNotFoundError: No module named 'harness'` (S27).
+    """
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return [os.path.join(base, "train"), os.path.join(base, "eval")]
+
+
 @dataclass
 class Request:
     item_id: str
@@ -159,10 +173,9 @@ class T2ArmAdapter(Adapter):
     def _load(self):
         if self._loaded is not None:
             return self._loaded
-        train_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                 "train")
-        if train_dir not in sys.path:
-            sys.path.insert(0, train_dir)
+        for directory in model_path_dirs():
+            if directory not in sys.path:
+                sys.path.insert(0, directory)
         import torch
         from transformers import AutoModelForCausalLM
         import harness
@@ -573,9 +586,19 @@ class HFAdapter(Adapter):
 
 
 def greedy_generate(model, tokenizer, requests: list, device, batch: int) -> list:
-    """Greedy decoding with fixed seed, fixed stop strings and no sampling."""
+    """Greedy decoding with fixed seed, fixed stop strings and no sampling.
+
+    The forward pass runs under the same bf16 autocast the training loop
+    (`oracle/train/loop.py`) and the registered evaluation instrument
+    (`oracle/eval/harness.py`) use. The arm's extra modules hold fp32 parameters
+    while the frozen base is bf16, so the mixed-dtype matmuls are only defined
+    inside autocast; without it the first real generate stage died with
+    `expected mat1 and mat2 to have the same dtype` (S27). Autocast here is not a
+    new numeric path: it is the one every other measurement of these arms used.
+    """
     import torch
 
+    device_type = "cuda" if str(device).startswith("cuda") else "cpu"
     results = []
     for start in range(0, len(requests), batch):
         chunk = requests[start:start + batch]
@@ -587,7 +610,9 @@ def greedy_generate(model, tokenizer, requests: list, device, batch: int) -> lis
         stops = sorted({stop for request in chunk for stop in request.stops})
         torch.manual_seed(chunk[0].seed)
         began = time.monotonic_ns()
-        with torch.inference_mode():
+        with torch.inference_mode(), torch.autocast(
+                device_type, dtype=torch.bfloat16,
+                enabled=device_type == "cuda"):
             generated = model.generate(
                 **encoded, max_new_tokens=max_new, do_sample=False, num_beams=1,
                 pad_token_id=tokenizer.eos_token_id,

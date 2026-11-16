@@ -101,8 +101,11 @@ def eval_receipt(arm: str, digest: str, config_sha: str, admission_sha: str,
 def capability_result(arm: str, root: str) -> dict:
     prereg_path = os.path.join(root, "docs/capability-preregistration-v4.json")
     prereg = json.load(open(prereg_path, encoding="utf-8"))
-    amendment_path = os.path.join(root, "results/t2/"
-                                        "PROVENANCE-AMENDMENT-X-and-H.json")
+    amendment_path = (os.path.join(root, "results/t2/"
+                                   "PROVENANCE-AMENDMENT-Hstar.json")
+                      if arm == "H*" else
+                      os.path.join(root, "results/t2/"
+                                   "PROVENANCE-AMENDMENT-X-and-H.json"))
     rows = []
     by_category = {}
     for category in CATEGORIES:
@@ -123,7 +126,7 @@ def capability_result(arm: str, root: str) -> dict:
         "dispatch_mask_order": "legacy" if arm in ("X", "H", "H*") else None,
         "checkpoint_verification": {"checked": True},
     }
-    if arm in ("X", "H"):
+    if arm in ("X", "H", "H*"):
         provenance["provenance_amendment"] = {
             "used": True, "sha256": sha256(amendment_path),
             "inferred_mask_order": "legacy"}
@@ -249,6 +252,16 @@ def build_repo(root: str) -> dict:
                                                          "results/t2/X/run.json")),
             "results/t2/H/run.json": sha256(os.path.join(root,
                                                          "results/t2/H/run.json")),
+        }},
+    })
+    dump(os.path.join(root, "results/t2/PROVENANCE-AMENDMENT-Hstar.json"), {
+        "schema": "selvedge/t2-provenance-amendment/v1",
+        "decision": "CERTIFIED",
+        "subject_arms": ["H*"],
+        "inferred_mask_order": "legacy",
+        "adapter_consumption": {"binding_sha256": {
+            "results/t2/H*/run.json": sha256(os.path.join(
+                root, "results/t2/H*/run.json")),
         }},
     })
 

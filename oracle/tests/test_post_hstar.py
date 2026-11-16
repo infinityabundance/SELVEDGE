@@ -246,6 +246,26 @@ def test_dry_run_launches_nothing(environment):
         "a dry run must not leave state a real resume would skip"
 
 
+def test_every_container_stage_uses_the_image_interpreter(environment):
+    """A host absolute interpreter path does not exist inside the image.
+
+    The first real run of this pipeline failed the instrument stage with exit
+    127 because the argv carried the host's `/usr/bin/python3`. The scripted
+    court never noticed, since it reads the script name and ignores the
+    interpreter, so the regression is asserted here on the recorded argv.
+    """
+    root = environment["root"]
+    assert run(root, environment, "--resume") == 0
+    recorded = calls(root)
+    assert recorded
+    for entry in recorded:
+        argv = entry["argv"]
+        inner = argv[argv.index("--") + 1:]
+        assert inner, entry
+        assert inner[0] == "python3", entry
+        assert not inner[0].startswith("/"), entry
+
+
 def test_memory_sizing_is_derived_from_a_measured_peak(environment):
     root = environment["root"]
     sizing = post_hstar.size_stage(root, "capability-generate", "H*")
@@ -255,3 +275,49 @@ def test_memory_sizing_is_derived_from_a_measured_peak(environment):
     small = post_hstar.size_stage(root, "capability-generate", "D")
     assert small["limit_gib"] == 16
     assert small["arithmetic"]["floor_gib"] == 16
+
+
+def test_the_systemd_unit_receives_the_limit_in_its_environment(tmp_path):
+    """`systemd-run` does not inherit the caller's environment.
+
+    Without --setenv the court fell back to its own 8g default while the state
+    recorded 16g/24g, so the declared limit was never applied (S27).
+    """
+    runner = post_hstar.Runner(str(tmp_path), "court", mode="systemd",
+                               log_path=str(tmp_path / "log"))
+    record = runner.run(["python3", "x.py"], mem_gib=24, unit="u", dry_run=True)
+    wrapped = record["wrapped"]
+    assert "--setenv=SELVEDGE_MEM=24g" in wrapped, wrapped
+    assert "--setenv=SELVEDGE_TMP=8g" in wrapped, wrapped
+    assert "--property=MemoryMax=24G" in wrapped, wrapped
+
+
+def test_a_mismatched_applied_limit_fails_closed(tmp_path):
+    log = tmp_path / "log"
+    log.write_text("court: oracle image=x memory=8g cpus=8 pids=1024 tmp=4g\n",
+                   encoding="utf-8")
+    runner = post_hstar.Runner(str(tmp_path), "court", mode="systemd",
+                               log_path=str(log))
+    with pytest.raises(post_hstar.StageFailure) as failure:
+        runner._verify_applied_memory({"mem_gib": 16}, 0)
+    assert "applied 8 GiB" in failure.value.reason
+
+
+def test_a_matching_applied_limit_is_recorded(tmp_path):
+    log = tmp_path / "log"
+    log.write_text("court: oracle image=x memory=16g cpus=8\n", encoding="utf-8")
+    runner = post_hstar.Runner(str(tmp_path), "court", mode="systemd",
+                               log_path=str(log))
+    record = {"mem_gib": 16}
+    runner._verify_applied_memory(record, 0)
+    assert record["applied_memory_gib"] == 16
+
+
+def test_a_systemd_stage_that_reports_no_limit_fails_closed(tmp_path):
+    log = tmp_path / "log"
+    log.write_text("nothing about limits here\n", encoding="utf-8")
+    runner = post_hstar.Runner(str(tmp_path), "court", mode="systemd",
+                               log_path=str(log))
+    with pytest.raises(post_hstar.StageFailure) as failure:
+        runner._verify_applied_memory({"mem_gib": 16}, 0)
+    assert "no applied memory limit" in failure.value.reason

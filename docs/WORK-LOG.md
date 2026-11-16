@@ -2725,3 +2725,111 @@ torch-free capability / post-`H*` / verdict modules; the court re-inspected the
 applied cgroup limits and recorded an enforcement match. The torch-dependent
 modules were not collected in this image (no `torch`), which is the same split
 earlier sessions used; no GPU was touched.
+
+### Failures on the real run, and the instrument fixes
+
+Four defects surfaced in the first real execution of the pipeline. None of them
+is a threshold, a metric or a registered rule: each is launch arithmetic or an
+import/compute-path bug that the CPU tests could not reach, and each is now
+fixed with a regression test where a CPU test can reach it.
+
+**F1 — the container was handed the host's interpreter path (exit 127).** The
+instrument stage passed `sys.executable` to the command that runs *inside* the
+court image, which resolved to the host's `/usr/bin/python3`; the image has its
+interpreter at `/usr/local/bin/python3`, so the stage died instantly. Fixed by
+naming the interpreter as `python3` and letting the image resolve it on `PATH` —
+the same convention `scripts/run-t2-pilot.sh` uses. Regression test:
+`test_every_container_stage_uses_the_image_interpreter` asserts, over the
+recorded argv of a full run, that every container stage starts with a bare
+`python3` and never an absolute path. The scripted court had hidden this because
+it reads the script name and ignores the interpreter.
+
+**F2 — `ModuleNotFoundError: No module named 'harness'` in `generate`.**
+`oracle/capability/adapters.py` inserted `oracle/train` on `sys.path` but
+imported `harness`, which lives in `oracle/eval`; every other module in the tree
+inserts the eval directory. The path setup is now one named function
+(`model_path_dirs`) that returns both, and
+`test_the_t2_adapter_can_import_both_model_modules` asserts that each directory
+contains a module the adapter imports. The CPU tests had not reached it because
+they use the scripted fake adapter, not the real `T2CheckpointAdapter`.
+
+**F3 — mixed-dtype matmul in greedy decoding.** With the import fixed, `generate`
+died on `expected mat1 and mat2 to have the same dtype, but got:
+c10::BFloat16 != float`. The arms' extra modules hold fp32 parameters while the
+frozen base is bf16, so those matmuls are only defined inside autocast. The
+training loop (`oracle/train/loop.py`) and the registered evaluation instrument
+(`oracle/eval/harness.py`) both run under
+`torch.autocast("cuda", dtype=torch.bfloat16)`; the newly written generation path
+was the only forward pass in the tree that did not. It now does, so generation
+uses the *same* registered compute path as every other measurement of these
+arms — this is not a new numeric path and no metric changes. No CPU test can
+exercise this (it needs torch and a GPU), so the evidence is the stage itself:
+the run fails closed with the dtype error rather than producing a number.
+
+**F4 — the declared memory limit never reached the container.** This one is the
+serious one, and it is a directive-2 defect. `systemd-run` does **not** inherit
+the caller's environment, so the `SELVEDGE_MEM`/`SELVEDGE_CPUS`/`SELVEDGE_PIDS`/
+`SELVEDGE_TMP` values the pipeline set on the subprocess were dropped; the court
+fell back to its built-in `8g` default while the stage state recorded `16g`
+(D) and `24g` (the hybrids). `docker inspect` on the running container showed
+`Memory=8589934592` against a declared 16 GiB. The limits are now passed with
+`--setenv=` on the unit as well as `--property=MemoryMax=`, and after every stage
+the runner re-reads the court's own `memory=<n>g` report of the limit it applied
+to the container's cgroup and **fails closed** on a mismatch or on a missing
+report in systemd mode. Verified on the re-run: `docker inspect` reports
+`Memory=17179869184` and `MemorySwap=17179869184` with `PidsLimit=1024`, and the
+court line reads `memory=16g`. Tests:
+`test_the_systemd_unit_receives_the_limit_in_its_environment`,
+`test_a_mismatched_applied_limit_fails_closed`,
+`test_a_matching_applied_limit_is_recorded`,
+`test_a_systemd_stage_that_reports_no_limit_fails_closed`.
+
+The same run also exposed a resumability gap that is now closed: a `generate`
+that exits zero without writing its receipt was only discovered by the *check*
+stage failing on a missing file, which names the wrong stage. The capability
+stage now verifies the receipt exists immediately after `generate` and fails with
+the arm, the exit code and the missing path named.
+
+One honest note on the sequence: the first `generate` for `D` was stopped by the
+operator **after** F4 was detected and before it wrote its receipt, which is why
+the state records a `check` failure with a `FileNotFoundError` for that attempt.
+It was a deliberate stop to avoid running four arms under a limit the state
+misreported, it is retained in `results/t2/post-hstar-state.json`, and the arm
+was re-run from scratch under the corrected arithmetic.
+
+**F5 — `H*`'s arm receipt does not carry the dispatch mask order, so the adapter
+refused it.** `generate` for `H*` failed closed with "the training receipt
+records no dispatch mask placement (P12.1)". The cause is a composition defect,
+not a missing measurement: `oracle/train/loop.py` writes
+`"dispatch_mask_order": arm_model.mask_order()` — read back from the
+*constructed* model — into both `run-meta.json` and `summary.json`, and both
+retain `legacy` for this run; `scripts/t2_pilot.py arm-receipt` simply never
+copied the field into `results/t2/<arm>/run.json`. The composer now copies it
+(with the summary as a fallback) plus the dispatch-exposure block, so later arms
+carry it.
+
+`H*`'s receipt is preserved byte-for-byte rather than recomposed, because
+recomposing it would have dropped `run.argv` (the training state that supplied it
+was consumed) and changed a receipt the verify stage already bound. Instead the
+arm is certified the way the program already certifies provenance:
+
+- `scripts/provenance_audit.py` (new, CPU only, standard library) writes
+  `results/t2/provenance-replay-Hstar-20261116T122413Z.json`. It reads the order
+the loop recorded in both artifacts, checks that they agree with each other and
+  with the dispatch-exposure block, checks that `oracle/train/loop.py` and
+  `oracle/train/modeling.py` are **byte-identical to the blobs at the launch
+  revision** (`8ac067f`, git blob ids recomputed over the file bytes), and checks
+  that the record is *informative*: the placements differ only on overflow and
+  this run dropped 251,785,734 of 8,408,236,032 pairs;
+- `results/t2/PROVENANCE-AMENDMENT-Hstar.json` certifies `H*` as `legacy`, binds
+  `results/t2/H*/run.json` by sha256 and names that audit as its replay receipt.
+  Its own text states that the value is **recorded, not inferred** — unlike `X`
+  and `H`, whose order had to be inferred from a pre-correction code blob.
+
+The pipeline now passes the right amendment per arm (`X`/`H` → the S20
+amendment, `H*` → this one) and its freshness check requires the matching
+amendment digest for whichever arm is routed. The verify stage's recorded
+`dispatch_mask_order: null` for `H*` is left as it was: it is an accurate record
+of what that receipt said at the time, and the amendment is what supplies the
+missing field. This is instrument/provenance work; no threshold, arm or metric
+changed, and no measurement was redone.

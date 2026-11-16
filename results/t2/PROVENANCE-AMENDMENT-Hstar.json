@@ -1,0 +1,58 @@
+{
+  "adapter_consumption": {
+    "binding_sha256": {
+      "results/t2/H*/run.json": "52e6090c125bfed7022d9c62f18898cc0b79d2a8c2afb7fed606e6dd25176b51"
+    }
+  },
+  "author": "S27",
+  "confidence": {
+    "level": "high",
+    "not_certified_for": "Any arm whose training artifacts do not record a mask order, and any arm trained at a revision where oracle/train/loop.py does not write the field from the constructed model.",
+    "statement": "The record comes from the model object that was built and trained. run-meta.json and summary.json agree, the dispatch exposure block agrees, and the two code files that produced the record are byte-identical to the blobs at the launch revision (git blob ids checked over the file bytes). The run dropped 251,785,734 of 8,408,236,032 pairs, so the two placements mask different positions and the record is informative rather than vacuous."
+  },
+  "created_utc": "2026-11-16T12:25:00Z",
+  "decision": "CERTIFIED",
+  "evidence_chain": {
+    "code_facts": {
+      "launch_revision": "8ac067fa3b887f7d7ca26bb47234a541966c2b16",
+      "loop_py": {
+        "launch_blob": "4a1b33f93e230c0de5af02cd8f7a4825da313cfe",
+        "path": "oracle/train/loop.py",
+        "record_sites": "two write sites, both arm_model.mask_order()"
+      },
+      "modeling_py": {
+        "defines_mask_order": true,
+        "launch_blob": "4ab2e1d759107a253c20980bed82553215da5069",
+        "path": "oracle/train/modeling.py"
+      }
+    },
+    "replay": {
+      "conclusion": "legacy",
+      "kind": "recorded-order audit, no model loaded, CPU only",
+      "receipt": "results/t2/provenance-replay-Hstar-20261116T122413Z.json",
+      "receipt_sha256": "747dea17e6780b64762e448951bbfa3e8bb163da04b35f353bdb471cc6517e8c"
+    },
+    "retained_artifacts": {
+      "run_meta": {
+        "path": "results/artifacts/train/t2/Hstar/run-meta.json",
+        "sha256": "4cd12dd44c42b7b396fc76fb6fef46b31d46a51b2709e1ca674c8fbbefb062ab"
+      },
+      "summary": {
+        "path": "results/artifacts/train/t2/Hstar/summary.json",
+        "sha256": "d6902d6881ad1eb1cf86bbf36c77fc2ce9cc3dc3dd62ebb667354d1ec210c652"
+      }
+    }
+  },
+  "inferred_mask_order": "legacy",
+  "limitations": [
+    "This certifies what the training run recorded, not a re-execution of the run.",
+    "The receipt still does not carry the field; the composer defect that dropped it is fixed in scripts/t2_pilot.py so later arms will, but this receipt is preserved byte-for-byte."
+  ],
+  "purpose": "Certify the routed-dispatch mask order of the T2 arm H*, whose arm receipt (results/t2/H*/run.json) does not carry dispatch_mask_order even though the training loop recorded it. The receipt is NOT edited; this amendment binds it by hash and points at the retained training artifacts that carry the record.",
+  "schema": "selvedge/t2-provenance-amendment/v1",
+  "stamp": "20261116T122500Z",
+  "subject_arms": [
+    "H*"
+  ],
+  "why_this_is_recorded_not_inferred": "X and H predate the mask_order correction, so their order had to be inferred from a pre-correction code blob (results/t2/PROVENANCE-AMENDMENT-X-and-H.json). H* was trained at 8ac067f, after the correction: oracle/train/loop.py writes \"dispatch_mask_order\": arm_model.mask_order() into run-meta.json and summary.json, i.e. it records the order the *constructed* model holds rather than the requested default. Both artifacts record 'legacy'. The field name in this schema is 'inferred_mask_order' for compatibility with the verifier; for this arm the value is recorded, not inferred."
+}

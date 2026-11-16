@@ -592,6 +592,14 @@ def cmd_arm_receipt(args) -> int:
             "load_balance": meta.get("load_balance"),
             "router_phase": (summary or {}).get("router_phase"),
         },
+        # The training loop records this from the *constructed* model (see
+        # `arm_model.mask_order()` in oracle/train/loop.py) in both run-meta.json
+        # and summary.json. The composer used to drop it, which left a routed arm
+        # with no recorded dispatch placement even though the run had one, and
+        # the capability adapter correctly refused it (S27).
+        "dispatch_mask_order": (meta.get("dispatch_mask_order")
+                                or (summary or {}).get("dispatch_mask_order")),
+        "dispatch": (summary or {}).get("dispatch"),
         "resource": {
             "gpu": meta.get("gpu"),
             "torch": meta.get("torch"),
