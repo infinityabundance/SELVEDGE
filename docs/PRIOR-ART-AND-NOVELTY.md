@@ -83,6 +83,14 @@ They were fetched in rounds 18–18d
 are in §12. New rows: `VERIFIED` 9, `PARTIAL` 4, `UNSUPPORTED` 7, plus
 one supplementary `VERIFIED` (PonderNet).
 
+**Correction to the third-pass counts, 2026-11-16 (S20).** Rows 115 (MoSE),
+117 (GMoE) and 118 (TYLER) were false negatives caused by arXiv-only search and
+by landing pages that had not yet served an abstract. All three were re-fetched
+directly at their venues and are now `VERIFIED` (§12.1, §12.1b). The third pass
+is therefore `VERIFIED` 12, `PARTIAL` 2, `UNSUPPORTED` 6, plus one supplementary
+`VERIFIED` (PonderNet). The pre-correction counts above are retained as history,
+not as the current tally.
+
 **Count discrepancy, recorded not repaired.** The second-pass paragraph above
 says "95 named works" while its own category counts (76 + 9 + 14) sum to 99. The
 eighteen-point row table in §10 and §10.1 is the authoritative record; the prose
@@ -476,16 +484,58 @@ status is `UNSUPPORTED` and the queries attempted are listed in the row.
 
 | # | work | id / venue | status | recorded evidence | what it supports |
 | ---: | --- | --- | --- | --- | --- |
-| 115 | **MoSE** (claimed: adaptive expert widths, ICML 2026) | ICML 2026 as cited; **not located** | **UNSUPPORTED** | three queries: `all:"MoSE" AND all:"slimmable"` (0 hits), `all:"adaptive expert width" OR all:"adaptive widths for experts"` (0 hits), `all:"MoSE" AND all:"experts"` (6 hits, none about widths — the MOsE hits are "Mixture-of-Shape-Experts" 2504.09601, a shape-dictionary prompt method for SAM, and "Swin2-MoSE" 2404.18924, image super-resolution) | **Nothing about slimmable expert widths.** The *mechanism* is nonetheless published as MatFormer's nested granularity (row 118) and slimmable networks; only the name is unfound. P13.1 must be framed as "nested-width experts (MatFormer-style) applied to a sharded expert bank", never as a reproduction of MoSE |
+| 115 | **MoSE** — Mixture of Slimmable Experts | ICML 2026, PMLR **306:119816–119836** (`https://proceedings.mlr.press/v306/tastan26a.html`) | **VERIFIED** (2026-11-16, S20; supersedes the round-18 `UNSUPPORTED` verdict) | fetched 2026-11-16 UTC. *MoSE: Mixture of Slimmable Experts for Efficient and Adaptive Language Models*, Nurbek Tastan, Stefanos Laskaridis, Karthik Nandakumar, Samuel Horváth. Abstract: "each expert has a **nested, slimmable structure that can be executed at variable widths**"; conditional computation "not only over **which** experts are activated but also over **how much** of each expert is utilized"; "a single pretrained MoSE model can support a more continuous spectrum of accuracy-compute trade-offs at inference time". Training = "multi-width training with standard MoE objectives"; inference maps "router confidence/probabilities to expert widths under a fixed budget" (incl. lightweight test-time training). Code: `https://github.com/tnurbek/mose`. **Round-18 history retained:** three arXiv queries found no widths work; that was a **venue false negative** — the paper lives in PMLR volume 306, not in arXiv's front search. | exactly P13.1: nested/variable expert width under a fixed compute budget. P13.1 is a **reproduction and extension of published MoSE**, not a proposed SELVEDGE mechanism |
 | 116 | **MoRE** — Mixture of Reused Experts | arXiv 2609.18176 (COLM 2026 as cited; the arXiv record does not name a venue) | **VERIFIED** | abstract: "shares expert pools across groups of adjacent layers. Each layer retains its own router but selects from a larger shared pool, expanding the diversity of routing combinations without additional parameters"; "lightweight learnable depth embeddings" let shared experts distinguish layers | exactly the P13.2 mechanism: shared pool over adjacent layers + per-layer router + depth embeddings |
-| 117 | **GMoE** — Global Mixture of Experts with Logit Propagation | ACL 2026 long 2065 (`aclanthology.org/2026.acl-long.2065/`) | **PARTIAL** | landing page: title "GMoE: Global Mixture of Experts with Logit Propagation", Geonwoo Hong and Taehwan Kim, Proceedings of the 64th ACL (Vol. 1: Long Papers), 2026. **The page serves no abstract** | the title supports *global experts* and *logit propagation*. It does **not** evidence a **recurrent router that propagates routing state across layers**, which is the P13.3 claim. P13.3's state-carrying router is PROPOSED until the full text is read |
-| 118 | **TYLER** — Typed Latent Reasoning for Language Models | EMNLP 2026 main 2004 (`aclanthology.org/2026.emnlp-main.2004/`) | **PARTIAL** | landing page: title "TYLER: Typed Latent Reasoning for Language Models —— When to Think, What to Compute, and How Much to Allocate", Hanyu Lin, Min Cai, Jiawei Wen, Haodi Zhang, EMNLP 2026. **No abstract on the page** | the title supports *typed latent reasoning* plus a *when/what/how-much* allocation decision. It does **not** evidence the specific operator set (planning, state update, procedural abstraction) or that the budget is *learned*. P13.4 may cite TYLER for the framing only |
+| 117 | **GMoE** — Global Mixture of Experts with Logit Propagation | ACL 2026 long 2065, pp. 44599–44614 (`https://aclanthology.org/2026.acl-long.2065/`; DOI 10.18653/v1/2026.acl-long.2065) | **VERIFIED** (2026-11-16, S20; supersedes the round-18 `PARTIAL` identity-only verdict) | fetched 2026-11-16 UTC; the full abstract is now served (Geonwoo Hong, Taehwan Kim): "GMoE uses **Global Experts shared across all layers** and adds a **Local Expert per layer**"; "a Global Router with a **GRU-based recurrent component shared across layers** and layer-specific routing heads that **propagate routing logits across layers**"; this "couples routing decisions across layers, progressively refines routing paths". **Round-18 history retained:** the landing page served no abstract on the earlier pass; a page that does not serve an abstract is *not* evidence the mechanism is unstated. | exactly P13.3: a recurrent, state-carrying router plus global + per-layer local experts, with routing logits propagated across layers. P13.3 is a **reproduction and extension of published GMoE**, not a proposal |
+| 118 | **TYLER** — Typed Latent Reasoning for Language Models | EMNLP 2026 main 2004, pp. 45650–45670 (`https://aclanthology.org/2026.emnlp-main.2004/`; DOI 10.18653/2026.emnlp-main.2004) | **VERIFIED** (2026-11-16, S20; supersedes the round-18 `PARTIAL` identity-only verdict) | fetched 2026-11-16 UTC; the full abstract is now served (Hanyu Lin, Min Cai, Jiawei Wen, Haodi Zhang): "TYLER **learns a policy** that, at each decoding step, chooses between emitting a visible token and **invoking a typed latent operator**"; the operators "support **global planning, local state updates, or reusable procedural abstraction**"; +14.49 over CoT and +4.30 over the strongest baseline, and it "generalizes ... with the lowest forgetting". **Round-18 history retained:** no abstract was served on the earlier pass; that is a transient fetch gap, not evidence the mechanism is unstated. | exactly P13.4: a learned policy over typed latent operators with per-step allocation. P13.4 is a **reproduction and extension of published TYLER**, not a proposal |
 
-**Verdict on the WS13 premise.** "Reproduce four published mechanisms" is
-supported for **one** of the four at full evidence (MoRE), *identity-only* for two
-(GMoE, TYLER), and **not locatable** for one (MoSE). WS13 is therefore written as
-four competing programmes with their own controls, not as a replication of a
-known result set.
+**Verdict on the WS13 premise (corrected 2026-11-16, S20).** "Reproduce four
+published mechanisms" is supported for **all four** at full evidence: MoSE
+(row 115), MoRE (row 116), GMoE (row 117), TYLER (row 118). The round-18
+verdict below is retained only as superseded history; it was produced by
+arXiv-only searches and by landing pages that served no abstract, and neither
+is evidence of non-existence.
+
+> *Superseded history (2026-11-16, S16C round 18, retained verbatim):* "Reproduce four
+> published mechanisms" is supported for **one** of the four at full evidence (MoRE),
+> *identity-only* for two (GMoE, TYLER), and **not locatable** for one (MoSE).
+> WS13 is therefore written as four competing programmes with their own controls,
+> not as a replication of a known result set.
+>
+> *Correction:* this was a **retrieval false negative**, not a factual finding. WS13
+> is therefore built as **four published baselines to reproduce and extend**, each
+> with its own controls and a measured SELVEDGE delta.
+
+### 12.1b Retrieval false negatives (method lesson, 2026-11-16 S20)
+
+A failed fetch is not evidence of non-existence, and this ledger must never
+convert one into a negative verdict. The round-18 failures were produced by
+four mechanisms, each of which can silently return zero hits for a real paper:
+
+1. **Wrong index.** MoSE is an ICML 2026 paper whose canonical record is the PMLR
+   volume index (`proceedings.mlr.press/v306/`), not arXiv. arXiv field searches
+   cannot see it.
+2. **Abstracts not yet on a landing page.** ACL Anthology serves title/venue/authors
+   before (or while) the abstract is populated; a title that renders without an
+   abstract is a fetch gap, not an abstract-less paper.
+3. **Field-query syntax.** `ti:` is not accepted by the HTML search endpoint
+   (`scripts/prior_art_fetch.py`), so `ti:` rounds return artefactual zeros.
+4. **Homonym capture.** "MoSE" also names Mixture-of-Shape-Experts (2504.09601)
+   and Swin2-MoSE (2404.18924); a homonym hit is not the target and a homonym
+   *only* result does not prove the target absent.
+
+**Rule.** `UNSUPPORTED` means "not located by the recorded searches"; it must
+carry the queries, and it must be re-tested against a venue-native index before
+it is allowed to shape a plan. Rows 115/117/118 were re-fetched directly at
+their venues and all three flipped to `VERIFIED`.
+
+**Consistency check.** `scripts/prior_art_fetch.py` is a *fetch* tool and has no
+ledger-consistency mode, so there is no automated check to re-run. The ledger
+counts in §1 were therefore recounted by hand over the §12 rows: sixteen named
+rows in §12.2 plus four in §12.1 is 20; with rows 115/117/118 moved, the third
+pass is **VERIFIED 12, PARTIAL 2, UNSUPPORTED 6**, plus one supplementary
+`VERIFIED` (PonderNet). A row-level audit (`scripts/prior_art_audit.py`, added
+this pass) reproduces that arithmetic and fails closed on future drift.
 
 ### 12.2 Nearest prior art for the sixteen inventions (P13.6–P13.21)
 
@@ -516,16 +566,31 @@ known result set.
 
 ## 13. Consequential findings from the third pass
 
-1. **MoSE is the weakest citation in the strategy note and it is load-bearing.**
-   Three searches find no work matching "adaptive expert widths" under that name;
-   the only MoSE in the corpus is a shape-dictionary prompt method for image
-   segmentation. P13.1 stays in the plan, but as a **MatFormer-style nested-width
-   expert** experiment with a MatFormer citation, not as a MoSE reproduction.
-2. **Two of the four "published" WS13 mechanisms are title-only.** GMoE and TYLER
-   are verified by title, venue and authors and by nothing else: their landing
-   pages serve no abstract. The strategy note's descriptions of them (a *recurrent
-   routing state*; a *learned* typed-operator budget) are stronger than the fetched
-   record and are now marked PROPOSED parts of P13.3 and P13.4.
+1. **MoSE is real and is the direct basis for P13.1.** *(Corrected 2026-11-16, S20;
+   the round-18 text is retained as superseded below.)* MoSE = *Mixture of
+   Slimmable Experts* (Tastan et al., ICML 2026, PMLR 306:119816–119836) and it
+   states nested/slimmable experts executable at variable widths under a fixed
+   budget. P13.1 is therefore a **reproduction and extension of a published
+   baseline**, not a proposal.
+
+   > *Superseded:* "MoSE is the weakest citation ... Three searches find no work
+   > matching 'adaptive expert widths' under that name; the only MoSE in the corpus
+   > is a shape-dictionary prompt method for image segmentation. P13.1 stays in the
+   > plan, but as a MatFormer-style nested-width expert experiment with a MatFormer
+   > citation, not as a MoSE reproduction." — This was a venue false negative; the
+   > paper is in PMLR, not arXiv.
+2. **All four WS13 mechanisms are fully evidenced.** *(Corrected 2026-11-16, S20.)*
+   GMoE (ACL 2026 long 2065) states a GRU-based recurrent router shared across
+   layers with routing-logit propagation, plus global and per-layer local experts;
+   TYLER (EMNLP 2026 main 2004) states a learned policy over typed latent
+   operators with per-step allocation. Both abstracts are now served and both
+   support their P13 claims in full. P13.3 and P13.4 are **reproductions and
+   extensions**, not proposals.
+
+   > *Superseded:* "Two of the four 'published' WS13 mechanisms are title-only ...
+   > their landing pages serve no abstract ... now marked PROPOSED." — The pages
+   > were fetched again and serve full abstracts; a missing abstract on one fetch
+   > is a transient gap, not a mechanism that was never stated.
 3. **Six of the sixteen nearest-prior-art citations could not be located.**
    CROWN, CoLT5, function vectors, HAWQ, DEER and the robustness ReCode are all
    standard works; the ledger nonetheless cannot cite them, and the plan must not
@@ -533,13 +598,17 @@ known result set.
    P13.15, P13.21) says so in its own text. P13.18 is the seventh: its mechanism
    has no located prior art at all, and the work chosen as its neighbour (SMEAR)
    turned out to be about soft expert merging, not phase switching.
-4. **Two homonyms are live hazards.** "MoSE" = Mixture-of-Shape-Experts
-   (2504.09601); "ReCode" = Updating Code API Knowledge (2506.20495). Both would
-   read as a correct citation to a casual check and neither supports the claim.
-5. **Two strategy-note identities were wrong.** SMEAR is 2306.03745 (soft merging
-   of experts); 2310.17680 is CodeFusion, a diffusion code model. MoSE could not be
-   matched to any work about widths. In both cases the mechanism may still be real;
-   the citation was not.
+4. **One homonym is a live hazard, one is retired.** *(Corrected 2026-11-16, S20.)*
+   "ReCode" = Updating Code API Knowledge (2506.20495) is still a homonym hazard.
+   "MoSE" is **no longer** a hazard in the negative sense: the target MoSE
+   (PMLR v306) is real and distinct from Mixture-of-Shape-Experts (2504.09601);
+   the shape-expert paper is an unrelated homonym, not evidence against MoSE.
+5. **One strategy-note identity was wrong; MoSE's was not.** *(Corrected
+   2026-11-16, S20.)* SMEAR is 2306.03745 (soft merging of experts) and
+   2310.17680 is CodeFusion. MoSE is correctly identified as PMLR v306 and needs
+   no re-specification. **The general lesson stands:** an identity is wrong
+   until a fetched primary record supports it — but a failed fetch is not that
+   record, so it can never by itself falsify an identity.
 6. **The most defensible novelty in the sixteen is the conjunction, not any one
    mechanism.** Every invention has a located neighbour for its *component*
    (task vectors, Reflexion, MatFormer, GPTQ, self-consistency, LoRA, selective
