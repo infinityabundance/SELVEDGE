@@ -1,0 +1,41 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Generating test split:   0%|          | 0/164 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 164/164 [00:00<00:00, 65868.61 examples/s]
+  0%|          | 0/8 [00:00<?, ?it/s]100%|██████████| 8/8 [00:00<00:00, 2939.76it/s]
+Running generate_until requests:   0%|          | 0/8 [00:00<?, ?it/s][transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+Running generate_until requests:  12%|█▎        | 1/8 [00:12<01:26, 12.42s/it]Running generate_until requests: 100%|██████████| 8/8 [00:12<00:00,  1.55s/it]
+  humaneval: pass@1,create_test=0.500000 stderr=0.1889822365046136 n=8 wall=25.0s peak_gib=1.695
+/usr/local/lib/python3.12/site-packages/nltk/downloader.py:1554: UserWarning: NLTK will not authorize the non-private download directory '/tmp/nltk_data': it (or an ancestor) is world- or group-writable, so another local user could plant files there. Choose a private location such as ~/nltk_data.
+  for msg in self.incr_download(
+/usr/local/lib/python3.12/site-packages/nltk/downloader.py:980: UserWarning: NLTK will not authorize the non-private download directory '/tmp/nltk_data': it (or an ancestor) is world- or group-writable, so another local user could plant files there. Choose a private location such as ~/nltk_data.
+  for msg in self.incr_download(info_or_id, download_dir, force, (), extract):
+[nltk_data] Downloading package punkt_tab to /tmp/nltk_data...
+[nltk_data]   Unzipping tokenizers/punkt_tab.zip.
+Downloaded punkt_tab on rank 0
+Generating train split:   0%|          | 0/541 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 541/541 [00:00<00:00, 173069.82 examples/s]
+  0%|          | 0/8 [00:00<?, ?it/s]100%|██████████| 8/8 [00:00<00:00, 75065.84it/s]
+Running generate_until requests:   0%|          | 0/8 [00:00<?, ?it/s]Running generate_until requests:  12%|█▎        | 1/8 [00:14<01:44, 14.92s/it]Running generate_until requests: 100%|██████████| 8/8 [00:14<00:00,  1.87s/it]
+  ifeval: prompt_level_strict_acc,none=0.125000 stderr=0.125 n=8 wall=23.1s peak_gib=1.704
+Generating train split:   0%|          | 0/1119 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 1119/1119 [00:00<00:00, 432255.13 examples/s]
+Generating test split:   0%|          | 0/1172 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1172/1172 [00:00<00:00, 593113.45 examples/s]
+Generating validation split:   0%|          | 0/299 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 299/299 [00:00<00:00, 281250.71 examples/s]
+Overwriting default num_fewshot of arc_challenge from None to 25
+  0%|          | 0/8 [00:00<?, ?it/s]100%|██████████| 8/8 [00:00<00:00, 78.74it/s]100%|██████████| 8/8 [00:00<00:00, 78.69it/s]
+Tokenizing inputs:   0%|          | 0/32 [00:00<?, ?it/s]Tokenizing inputs: 100%|██████████| 32/32 [00:00<00:00, 646.06it/s]
+Running loglikelihood requests:   0%|          | 0/32 [00:00<?, ?it/s]Running loglikelihood requests:   3%|▎         | 1/32 [00:00<00:06,  4.54it/s]Running loglikelihood requests:  16%|█▌        | 5/32 [00:00<00:02, 12.88it/s]Running loglikelihood requests:  28%|██▊       | 9/32 [00:00<00:01, 16.13it/s]Running loglikelihood requests:  41%|████      | 13/32 [00:00<00:01, 18.08it/s]Running loglikelihood requests:  53%|█████▎    | 17/32 [00:00<00:00, 19.80it/s]Running loglikelihood requests:  66%|██████▌   | 21/32 [00:01<00:00, 21.02it/s]Running loglikelihood requests:  78%|███████▊  | 25/32 [00:01<00:00, 22.20it/s]Running loglikelihood requests:  91%|█████████ | 29/32 [00:01<00:00, 23.47it/s]Running loglikelihood requests: 100%|██████████| 32/32 [00:01<00:00, 21.83it/s]
+  arc_challenge: acc_norm,none=0.250000 stderr=0.16366341767699427 n=8 wall=10.7s peak_gib=7.537
+Ignoring part of dataset_info from the dataset card: The `splits` field in YAML is malformed or missing the name/num_examples/num_bytes fields
+Ignoring part of dataset_info from the dataset card: The `splits` field in YAML is malformed or missing the name/num_examples/num_bytes fields
+Ignoring part of dataset_info from the dataset card: The `splits` field in YAML is malformed or missing the name/num_examples/num_bytes fields
+Ignoring part of dataset_info from the dataset card: The `splits` field in YAML is malformed or missing the name/num_examples/num_bytes fields
+Generating train split:   0%|          | 0/138384 [00:00<?, ? examples/s]Generating train split:  36%|███▌      | 50000/138384 [00:00<00:00, 492898.96 examples/s]Generating train split:  85%|████████▌ | 118000/138384 [00:00<00:00, 595063.67 examples/s]Generating train split: 100%|██████████| 138384/138384 [00:00<00:00, 602385.74 examples/s]
+Generating validation split:   0%|          | 0/17944 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 17944/17944 [00:00<00:00, 705849.28 examples/s]
+Generating test split:   0%|          | 0/17210 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 17210/17210 [00:00<00:00, 2277671.71 examples/s]
+Overwriting default num_fewshot of triviaqa from None to 5
+  0%|          | 0/8 [00:00<?, ?it/s]100%|██████████| 8/8 [00:00<00:00, 524.06it/s]
+Running generate_until requests:   0%|          | 0/8 [00:00<?, ?it/s]Running generate_until requests:  12%|█▎        | 1/8 [00:00<00:00,  7.58it/s]Running generate_until requests: 100%|██████████| 8/8 [00:00<00:00, 60.59it/s]
+  triviaqa: exact_match,remove_whitespace=0.000000 stderr=0.0 n=8 wall=22.9s peak_gib=1.749
+  !! triviaqa scored exactly 0: this is a defect signal until the prompt, stop sequence and extraction are diagnosed from the logged samples
+run: wrote results/frontier/anchor-smoke4-20261116T195500Z.json

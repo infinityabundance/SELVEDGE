@@ -1,0 +1,138 @@
+{
+  "argv": [
+    "sh",
+    "-lc",
+    "lm_eval --tasks list > /tmp/tasks.txt 2>/dev/null; wc -l /tmp/tasks.txt; grep -nE \"mmlu_pro|^mmlu |^mmlu$|gsm8k|minerva_math|humaneval|ifeval|arc_challenge|triviaqa|mmlu_redux\" /tmp/tasks.txt | head -40; echo \"=== head ===\"; head -5 /tmp/tasks.txt"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "f7ca675f0d9112f13bffabdaba32493ef0d3632cc9e5ffc7898e48efad3f1c03",
+  "container_name": "selvedge-eval-court-20261116T192724Z-9a5885",
+  "court": "eval",
+  "duration_ms": 7746,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 8589934592,
+        "expected": 8589934592
+      },
+      "memory_swap_bytes": {
+        "actual": 8589934592,
+        "expected": 8589934592
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T19:27:32Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "8g",
+    "memory_bytes": 8589934592,
+    "memory_swap": "8g",
+    "memory_swap_bytes": 8589934592,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/eval-20261116T192724Z-9a5885.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache",
+    "/home/one/.cache/selvedge/hf/datasets:/datasets-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T192724Z",
+  "started_utc": "2026-11-16T19:27:24Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": false
+}

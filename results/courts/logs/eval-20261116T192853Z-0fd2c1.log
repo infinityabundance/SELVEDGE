@@ -1,0 +1,40 @@
+45:    get_dtype,
+87:        dtype: str | torch.dtype | None = "auto",
+88:        softmax_dtype: str | torch.dtype | None = None,
+89:        mixed_precision_dtype: str | torch.dtype | None = None,
+97:        # only used if `parallelize=True`.
+98:        parallelize: bool | None = False,
+124:                arguments (device, parallelize, dtype, etc.) are ignored.
+149:                ``"cuda:0"``, ``"mps"``). Ignored when using ``parallelize=True``
+151:            dtype: Data type for model weights. Can be a string (``"float16"``,
+152:                ``"bfloat16"``, ``"float32"``) or a ``torch.dtype``. ``"auto"``
+153:                uses the dtype specified in the model config.
+154:            softmax_dtype: Override dtype for softmax computation, which can help
+156:                dtype.
+157:            mixed_precision_dtype: Override dtype for forward pass computation in
+175:            parallelize: Whether to naively split the model across multiple GPUs
+176:                using ``device_map="auto"``. For more fine-grained control,
+179:                ``parallelize=True``. Can be an integer (bytes) or a string
+182:                ``parallelize=True``. Can be an integer (bytes) or a string
+186:                ``parallelize=True``.
+190:                exclusive with ``parallelize``. Requires launching with
+220:                "`pretrained` model kwarg is not of type `str`. Many other model arguments may be ignored. Please do not launch via accelerate or use `parallelize=True` if passing an existing model this way."
+222:            assert not parallelize, (
+223:                "`parallelize=True` is not compatible with passing pre-initialized model to `pretrained`"
+239:                if parallelize:
+241:                        "`tp_plan` and `parallelize=True` are mutually exclusive. Choose either one for parallelization."
+272:                not parallelize
+310:                        f"Using `accelerate launch` or `parallelize=True`, device '{device}' will be overridden when placing model."
+371:                dtype=dtype,
+373:                parallelize=parallelize,
+426:        self.softmax_dtype = (
+427:            get_dtype(softmax_dtype) if softmax_dtype is not None else None
+429:        self.mixed_precision_dtype = (
+430:            get_dtype(mixed_precision_dtype)
+431:            if mixed_precision_dtype is not None
+444:                parallelize
+451:                # if not using HF Accelerate or device_map
+457:                        "Failed to place model onto specified device. This may be because the model is quantized via `bitsandbytes` or `device_map` is provided. If the desired GPU is being used, this message is safe to ignore."
+467:                    if parallelize:
+469:                            "You are both using a HF Accelerate `device_map` (`--model_args parallelize=True`) and launching via `accelerate launch`. This will attempt to do model and data parallelism depending on the resources available."
+508:        parallelize: bool | None = None,

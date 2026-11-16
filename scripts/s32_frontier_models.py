@@ -499,6 +499,14 @@ def cmd_fetch(args) -> int:
     if status != 200 or not isinstance(meta, dict):
         raise ProbeError(f"cannot resolve {args.id}: {status} {detail[:200]}")
     revision = meta.get("sha")
+    hub_main_sha = revision
+    if getattr(args, "revision", None):
+        # Pinned fetch: the caller names the SHA a pre-registration pins. If the
+        # branch has moved since, main no longer matches and the receipt says so;
+        # the fetched bytes are still the pinned ones.
+        revision = args.revision
+    if not revision:
+        raise ProbeError(f"cannot resolve {args.id}: no revision")
     tree_url = f"https://huggingface.co/api/models/{args.id}/tree/{revision}?recursive=true"
     tree_status, tree, tree_detail = http_json(tree_url, 64 * 1024 * 1024)
     if tree_status != 200 or not isinstance(tree, list):
@@ -532,6 +540,8 @@ def cmd_fetch(args) -> int:
         "accessed_utc": utcnow(),
         "id": args.id,
         "model_revision": revision,
+        "hub_main_sha": hub_main_sha,
+        "revision_is_hub_main": revision == hub_main_sha,
         "cache_dir": args.cache_dir,
         "cache_free_bytes_before": free_before,
         "cache_free_bytes_after": None,
@@ -848,6 +858,7 @@ def main(argv: list[str]) -> int:
 
     fetch = sub.add_parser("fetch")
     fetch.add_argument("--id", required=True)
+    fetch.add_argument("--revision", default=None, help="fetch this pinned SHA instead of main")
     fetch.add_argument("--out", required=True)
     fetch.add_argument("--cache-dir", default=os.environ.get("HF_HOME", "/hf-cache"))
     fetch.add_argument("--chunk-bytes", type=int, default=4 * 1024 * 1024)

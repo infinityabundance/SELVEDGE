@@ -1,0 +1,275 @@
+{
+  "schema": "selvedge/anchor-preregistration/v1",
+  "campaign": "WS19 anchor scoreboard (S36)",
+  "registered_utc": "2026-11-16T19:40:00Z",
+  "purpose": "One anchored, harness-measured capability scoreboard for the WS19 anchor model and its gap reference, produced before any training run, so that every later stage is measured against a fixed instrument instead of a moving one.",
+  "limits_derived_from": [
+    "results/frontier/anchor-smoke4-20261116T195500Z.json",
+    "results/frontier/anchor-smoke5-20261116T200500Z.json"
+  ],
+  "models": [
+    {
+      "id": "Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "role": "anchor (text tower 752,393,024 elements, under the 1e9 ceiling)",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "Qwen/Qwen3.5-2B-Base",
+      "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "role": "gap upper end (text tower 1,881,825,088 elements, reference only: over the ceiling)",
+      "license": "Apache-2.0"
+    }
+  ],
+  "harness": {
+    "name": "EleutherAI/lm-evaluation-harness",
+    "commit": "d6de81643928d653435c431bae19945d41d32520",
+    "model": "hf",
+    "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+    "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+    "note": "the harness commit is pinned by docker/Dockerfile.eval and re-checked at run time; a run under a different commit fails closed"
+  },
+  "model_args": {
+    "dtype": "bfloat16",
+    "trust_remote_code": "false",
+    "parallelize": "false",
+    "add_bos_token": "false"
+  },
+  "model_load_note": "transformers 5.23.0 resolves model_type qwen3_5 to Qwen3_5ForCausalLM ('VLM compatibility' in its auto mapping), so the scored path is the text tower only: 752,393,024 parameters for the 0.8B checkpoint, verified at load. The vision tower and the MTP head are never instantiated, which is why the harness sees a 752M model rather than an 873M checkpoint.",
+  "kernel_note": "causal_conv1d and flash-linear-attention are not installed in the eval court, so transformers runs its reference PyTorch implementations of the short convolution and the gated delta rule. That is the exact path, not an approximation; it is also the slow path, which is what the sample limits below are sized against.",
+  "prompting": {
+    "apply_chat_template": false,
+    "fewshot_as_multiturn": false,
+    "system_instruction": null,
+    "rationale": "both checkpoints are Base models: they have no instruction-tuning and no chat contract, so every task uses the harness's own completion-style doc_to_text with the harness's own few-shot demonstrations. No per-model prompt tuning of any kind is permitted; the identical config applies to both models, and the run refuses a pre-registration change between them."
+  },
+  "sampling": {
+    "do_sample": false,
+    "temperature": 0.0,
+    "note": "generation is greedy. Task-level until/max_gen_toks come from the harness yaml and are recorded per run in the receipt's harness_config; no global gen_kwargs override is passed."
+  },
+  "seed": {
+    "random_seed": 0,
+    "numpy": 1234,
+    "torch": 1234,
+    "fewshot": 1234
+  },
+  "max_batch_size": null,
+  "bootstrap_iters": 100000,
+  "seed_note": "bootstrap_iters is the harness default so that the reported standard errors are the harness's own, not a shortened approximation.",
+  "families": [
+    {
+      "name": "knowledge",
+      "definition": "MMLU-Pro and MMLU: textbook knowledge, multiple choice and generation",
+      "members": [
+        "mmlu_pro",
+        "mmlu"
+      ]
+    },
+    {
+      "name": "math",
+      "definition": "GSM8K and MATH: grade-school arithmetic and competition mathematics",
+      "members": [
+        "gsm8k",
+        "minerva_math500"
+      ]
+    }
+  ],
+  "win_condition": {
+    "registered_text": "close at least half the gap on one family",
+    "reading": "for at least one family in `families`, the WS19 target model must reach anchor_mean + 0.5 * (upper_mean - anchor_mean), where both means are the unweighted mean of the family's member scores measured with this exact config on this exact instrument",
+    "why_unweighted": "the member tasks do not draw from one population, so weighting by item count would let MMLU's 14042 items decide a family mean that GSM8K's 1319 items are equally supposed to describe. Equal weight per task is the conservative reading and is fixed here, before any score exists."
+  },
+  "tasks": [
+    {
+      "name": "mmlu_pro",
+      "family": "knowledge",
+      "num_fewshot": 5,
+      "limit": 36,
+      "n_available": 12032,
+      "primary_metric": "exact_match,custom-extract",
+      "reason": "generation with chain-of-thought; the most expensive task in the set. `limit` counts per subject for a group task, which was checked against the harness's own request counter: 500 would have queued 6790 generations (2.7 h), 36 queues 504 (0.7 h). 36 per subject across all 14 subjects is stratified and identical for both models.",
+      "batch_size": 8,
+      "limit_semantics": "the harness applies `limit` per subtask for a group task, so 36 is 36 items per subject across all 14 MMLU-Pro subjects = 504 items, not 36 in total",
+      "n_sampled": 504
+    },
+    {
+      "name": "mmlu",
+      "family": "knowledge",
+      "num_fewshot": 5,
+      "limit": null,
+      "n_available": 14042,
+      "primary_metric": "acc",
+      "reason": "loglikelihood over four choices: no generation, and the measured steady-state rate is 126 requests/s at batch 2, so the full 14042-item test set costs about 7.5 min per model and is used in full. Batch 2 (not 4) because the harness materialises logits for every position: a 5-shot prompt can be ~2956 tokens, and batch 4 asked for 5.47 GiB of log_softmax on top of 5.0 GiB of logits and was refused by the device; the measured peak at batch 2 is 9.70 GiB, inside the 15.61 GiB device.",
+      "batch_size": 2,
+      "limit_semantics": "limit is null: the group runs every item of all 57 subjects (14042)"
+    },
+    {
+      "name": "gsm8k",
+      "family": "math",
+      "num_fewshot": 5,
+      "limit": null,
+      "n_available": 1319,
+      "primary_metric": "exact_match,strict-match",
+      "reason": "the registered 1319-item test set, in full, at the harness yaml's own 5-shot CoT config.",
+      "batch_size": 8
+    },
+    {
+      "name": "minerva_math500",
+      "family": "math",
+      "num_fewshot": 4,
+      "limit": null,
+      "n_available": 500,
+      "primary_metric": "math_verify",
+      "reason": "a fixed 500-problem subset of MATH (the Minerva MATH-500 split the harness ships), 4-shot, scored with symbolic math_verify rather than string match.",
+      "batch_size": 8
+    },
+    {
+      "name": "humaneval",
+      "family": "code",
+      "num_fewshot": 0,
+      "limit": null,
+      "n_available": 164,
+      "primary_metric": "pass@1,create_test",
+      "reason": "the full 164-problem set. pass@1 is measured by executing generated code in the container (unsafe_code: true in the harness yaml), which is why the court is the only place this runs.",
+      "batch_size": 8
+    },
+    {
+      "name": "ifeval",
+      "family": "instruction",
+      "num_fewshot": 0,
+      "limit": null,
+      "n_available": 541,
+      "primary_metric": "prompt_level_strict_acc",
+      "reason": "the full 541 prompts, 0-shot, strict prompt-level instruction accuracy. A Base model is expected to score near zero here; that is a finding about the checkpoint, not a defect, and it is why a zero is diagnosed before it is recorded.",
+      "batch_size": 8
+    },
+    {
+      "name": "arc_challenge",
+      "family": "knowledge",
+      "num_fewshot": 25,
+      "limit": null,
+      "n_available": 1172,
+      "primary_metric": "acc_norm",
+      "reason": "the full 1172-item test set at the standard 25-shot setting; length-normalised accuracy as the primary metric because that is the reported ARC-Challenge convention.",
+      "batch_size": 4,
+      "limit_semantics": "single task, limit is null: all 1172 test items"
+    },
+    {
+      "name": "triviaqa",
+      "family": "knowledge",
+      "num_fewshot": 5,
+      "limit": 1000,
+      "n_available": 17944,
+      "primary_metric": "exact_match",
+      "reason": "the harness task uses the rc.nocontext config; 1000 of 17944 validation items, first-N, deterministic and identical for both models.",
+      "batch_size": 8
+    }
+  ],
+  "excluded_models": [
+    {
+      "id": "google/gemma-3-1b-it",
+      "reason": "gated (manual): the weight shard answers HTTP 401 to an anonymous request, so the checkpoint cannot be fetched, hashed, or scored without accepting Google's terms. Not scored."
+    },
+    {
+      "id": "LiquidAI/LFM2.5-1.2B-Instruct",
+      "reason": "LFM Open License v1.0, not an OSI licence, with no redistribution clearance; it stays a stretch model pending legal review and is not part of this anchored scoreboard."
+    }
+  ],
+  "policy": {
+    "identical_config": "the same pre-registration file, and therefore the same tasks, few-shot counts, limits, prompt templates, stop sequences and extraction filters, is used for both models. `gap` refuses to compare receipts produced under different pre-registration digests.",
+    "silent_zero_guard": "a task that scores exactly 0.0 is flagged in the receipt and fails the run's exit code; the prompt, the stop sequence and the answer extraction must be diagnosed from the logged samples before a zero may be recorded as a result.",
+    "no_fallback": "the run refuses to fall back to CPU when CUDA is unavailable, and refuses to load a checkpoint whose cached file sizes differ from models/FRONTIER.lock.json."
+  },
+  "batch_sizing": {
+    "rule": "fixed batch sizes, not `auto`: the harness autotuner allocates until it hits the device ceiling, which both wastes the measurement (peak allocated becomes the autotuner's failed attempt) and trips the 16 GiB device limit shared with the desktop session",
+    "generation_tasks": 8,
+    "loglikelihood_tasks": 4,
+    "derived_from": "the smoke receipt in `limits_derived_from`, whose per-task peak allocated memory was measured at these batch sizes",
+    "loglikelihood_note": "the harness materialises logits for every position, so a loglikelihood batch costs batch x seq x 248320 x 2 bytes; at batch 16 a ~1000-token MMLU prompt asked for 22.47 GiB and was refused by the device, at batch 4 the same shape is ~5.6 GiB of logits, which is the number the measured peak confirms"
+  },
+  "smoke_arithmetic": {
+    "note": "Every rate below is measured on the anchor model in the eval court with the batch sizes this file pins; the projection is items / measured rate, and the actual wall clock is recorded per task in the run receipt. A smoke number is a measurement of speed, never a score: `gap` refuses a receipt carrying \"smoke\": true.",
+    "measured": {
+      "mmlu_pro": {
+        "items": 112,
+        "wall_s": 160.2,
+        "items_per_s": 0.699
+      },
+      "mmlu": {
+        "items": 456,
+        "requests": 1824,
+        "wall_s": 84.4,
+        "scoring_s": 14.0,
+        "requests_per_s": 130.3
+      },
+      "gsm8k": {
+        "items": 100,
+        "wall_s": 43.9,
+        "items_per_s": 2.28
+      },
+      "minerva_math500": {
+        "items": 100,
+        "wall_s": 47.0,
+        "items_per_s": 2.13
+      },
+      "humaneval": {
+        "items": 8,
+        "wall_s": 25.0,
+        "items_per_s": 0.32
+      },
+      "ifeval": {
+        "items": 8,
+        "wall_s": 23.1,
+        "items_per_s": 0.35
+      },
+      "arc_challenge": {
+        "items": 8,
+        "requests": 32,
+        "wall_s": 10.7,
+        "requests_per_s": 21.8
+      },
+      "triviaqa": {
+        "items": 100,
+        "wall_s": 24.2,
+        "items_per_s": 4.13
+      }
+    },
+    "projection_anchor_minutes": {
+      "mmlu_pro": 11.9,
+      "mmlu": 10.0,
+      "gsm8k": 9.6,
+      "minerva_math500": 3.9,
+      "humaneval": 8.5,
+      "ifeval": 26.0,
+      "arc_challenge": 3.6,
+      "triviaqa": 4.0
+    },
+    "projection_total_minutes": 77.5,
+    "projection_upper_bound_note": "the 2B reference has 2.5x the text-tower elements, so its projection is roughly 2.5x the anchor total (~3.2 h). Both models run one at a time, each in its own court invocation with its own receipt."
+  },
+  "memory_sizing": {
+    "measured_container_peak_bytes": 2449051648,
+    "measured_container_peak_source": "results/frontier/anchor-smoke5-20261116T200500Z.json (cgroup memory.peak at SELVEDGE_MEM=8g)",
+    "limit": "8g",
+    "arithmetic": "2,449,051,648 B x 1.5 = 3,673,577,472 B, plus the 1 GiB floor margin = 4,747,456,768 B, which is below the 8 GiB (8,589,934,592 B) court limit actually applied",
+    "device_peak_note": "the device peak (torch.cuda.max_memory_allocated) is a separate budget: 9.70 GiB on the longest MMLU loglikelihood batch out of 15.61 GiB total, which is why the loglikelihood batch size is 2 and not 4."
+  },
+  "smoke_runs_without_receipts": [
+    {
+      "attempt": "results/courts/logs/eval-20261116T193544Z-3c240c.log",
+      "yielded": "mmlu_pro 56 items in 88.0 s (0.64 items/s), peak allocated 13.15 GiB \u2014 the peak is the batch autotuner's, which is why batch sizes are fixed in this file",
+      "aborted_because": "the run asserted on a metric-key shape (`acc` vs `acc,none`) before writing its receipt"
+    },
+    {
+      "attempt": "results/courts/logs/eval-20261116T194749Z-af7dfa.log",
+      "yielded": "mmlu at batch 4 refused an allocation of 5.47 GiB on top of 5.0 GiB of logits",
+      "aborted_because": "device OOM during batch-4 loglikelihood; the batch size in this file is the corrected one"
+    },
+    {
+      "attempt": "results/courts/logs/eval-20261116T195000Z-e89666.log",
+      "yielded": "mmlu 456 items in 84.4 s at batch 2, peak allocated 9.70 GiB",
+      "aborted_because": "Humaneval needs HF_ALLOW_CODE_EVAL=1 for the code_eval metric; the receipt was not written"
+    }
+  ]
+}

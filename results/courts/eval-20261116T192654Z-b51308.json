@@ -1,0 +1,138 @@
+{
+  "argv": [
+    "sh",
+    "-lc",
+    "python3 - <<PY\nimport torch, time\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\np=\"/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68\"\nt0=time.time()\ntok=AutoTokenizer.from_pretrained(p)\nprint(\"tok\", type(tok).__name__, tok.__class__.__module__, \"chat_template:\", getattr(tok,\"chat_template\",None) is not None)\nm=AutoModelForCausalLM.from_pretrained(p, dtype=torch.bfloat16, low_cpu_mem_usage=True)\nprint(\"cls\", type(m).__module__+\".\"+type(m).__name__)\nprint(\"params\", sum(x.numel() for x in m.parameters()))\nprint(\"load_s\", round(time.time()-t0,1))\nm=m.to(\"cuda\").eval()\nprint(\"vram_after_load_gib\", round(torch.cuda.memory_allocated()/2**30,3))\nids=tok(\"The capital of France is\", return_tensors=\"pt\").to(\"cuda\")\nout=m.generate(**ids, max_new_tokens=16, do_sample=False)\nprint(\"greedy:\", repr(tok.decode(out[0], skip_special_tokens=True)))\nprint(\"peak_gib\", round(torch.cuda.max_memory_allocated()/2**30,3))\nPY"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "0dbc233ed335577bd57bf50e2aa819a7917027af327b2e83c3d983be2065d02e",
+  "container_name": "selvedge-eval-court-20261116T192654Z-b51308",
+  "court": "eval",
+  "duration_ms": 9485,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 25769803776,
+        "expected": 25769803776
+      },
+      "memory_swap_bytes": {
+        "actual": 25769803776,
+        "expected": 25769803776
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T19:27:03Z",
+  "gpu": {
+    "detail": "--gpus all unavailable: docker: Error response from daemon: failed to discover GPU vendor from CDI: no known GPU vendor found  Run 'docker run --help' for more information",
+    "mode": "device-passthrough"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "24g",
+    "memory_bytes": 25769803776,
+    "memory_swap": "24g",
+    "memory_swap_bytes": 25769803776,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/eval-20261116T192654Z-b51308.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache",
+    "/home/one/.cache/selvedge/hf/datasets:/datasets-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T192654Z",
+  "started_utc": "2026-11-16T19:26:54Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": false
+}

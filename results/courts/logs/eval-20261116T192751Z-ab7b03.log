@@ -1,0 +1,121 @@
+|arabic_leaderboard_arabic_mt_arc_challenge       |lm_eval/tasks/arabic_leaderboard_complete/arabic_leaderboard_arabic_mt_arc_challenge/arabic_leaderboard_arabic_mt_arc_challenge.yaml         |
+|arabic_leaderboard_arabic_mt_arc_challenge_light |lm_eval/tasks/arabic_leaderboard_light/arabic_leaderboard_arabic_mt_arc_challenge_light/arabic_leaderboard_arabic_mt_arc_challenge_light.yaml|
+|humaneval_infilling                              |lm_eval/tasks/humaneval_infilling/humaneval_infilling.yaml                                                                                   |
+|leaderboard_instruction_following                |lm_eval/tasks/leaderboard/ifeval/_leaderboard_instruction_following.yaml                                                                     |
+|minerva_math                                     |lm_eval/tasks/benchmarks/minerva_math.yaml                                                                                                   |
+|mmlu_pro                                         |lm_eval/tasks/mmlu_pro/_mmlu_pro.yaml                                                                                                        |
+|mmlu_pro_llama                                   |lm_eval/tasks/llama3/instruct/mmlu_pro/_mmlu_pro.yaml                                                                                        |
+|mmlu_pro_plus                                    |lm_eval/tasks/mmlu-pro-plus/_mmlu_pro_plus.yaml                                                                                              |
+|mmlu_prox_af                                     |lm_eval/tasks/mmlu_prox/af/_mmlu_prox_af.yaml                                                                                                |
+|mmlu_prox_ar                                     |lm_eval/tasks/mmlu_prox/ar/_mmlu_prox_ar.yaml                                                                                                |
+|mmlu_prox_bn                                     |lm_eval/tasks/mmlu_prox/bn/_mmlu_prox_bn.yaml                                                                                                |
+|mmlu_prox_cs                                     |lm_eval/tasks/mmlu_prox/cs/_mmlu_prox_cs.yaml                                                                                                |
+|mmlu_prox_de                                     |lm_eval/tasks/mmlu_prox/de/_mmlu_prox_de.yaml                                                                                                |
+|mmlu_prox_en                                     |lm_eval/tasks/mmlu_prox/en/_mmlu_prox_en.yaml                                                                                                |
+|mmlu_prox_es                                     |lm_eval/tasks/mmlu_prox/es/_mmlu_prox_es.yaml                                                                                                |
+|mmlu_prox_fr                                     |lm_eval/tasks/mmlu_prox/fr/_mmlu_prox_fr.yaml                                                                                                |
+|mmlu_prox_hi                                     |lm_eval/tasks/mmlu_prox/hi/_mmlu_prox_hi.yaml                                                                                                |
+|mmlu_prox_hu                                     |lm_eval/tasks/mmlu_prox/hu/_mmlu_prox_hu.yaml                                                                                                |
+|mmlu_prox_id                                     |lm_eval/tasks/mmlu_prox/id/_mmlu_prox_id.yaml                                                                                                |
+|mmlu_prox_it                                     |lm_eval/tasks/mmlu_prox/it/_mmlu_prox_it.yaml                                                                                                |
+|mmlu_prox_ja                                     |lm_eval/tasks/mmlu_prox/ja/_mmlu_prox_ja.yaml                                                                                                |
+|mmlu_prox_ko                                     |lm_eval/tasks/mmlu_prox/ko/_mmlu_prox_ko.yaml                                                                                                |
+|mmlu_prox_lite_af                                |lm_eval/tasks/mmlu_prox/af/_mmlu_prox_lite_af.yaml                                                                                           |
+|mmlu_prox_lite_ar                                |lm_eval/tasks/mmlu_prox/ar/_mmlu_prox_lite_ar.yaml                                                                                           |
+|mmlu_prox_lite_bn                                |lm_eval/tasks/mmlu_prox/bn/_mmlu_prox_lite_bn.yaml                                                                                           |
+|mmlu_prox_lite_cs                                |lm_eval/tasks/mmlu_prox/cs/_mmlu_prox_lite_cs.yaml                                                                                           |
+|mmlu_prox_lite_de                                |lm_eval/tasks/mmlu_prox/de/_mmlu_prox_lite_de.yaml                                                                                           |
+|mmlu_prox_lite_en                                |lm_eval/tasks/mmlu_prox/en/_mmlu_prox_lite_en.yaml                                                                                           |
+|mmlu_prox_lite_es                                |lm_eval/tasks/mmlu_prox/es/_mmlu_prox_lite_es.yaml                                                                                           |
+|mmlu_prox_lite_fr                                |lm_eval/tasks/mmlu_prox/fr/_mmlu_prox_lite_fr.yaml                                                                                           |
+|mmlu_prox_lite_hi                                |lm_eval/tasks/mmlu_prox/hi/_mmlu_prox_lite_hi.yaml                                                                                           |
+|mmlu_prox_lite_hu                                |lm_eval/tasks/mmlu_prox/hu/_mmlu_prox_lite_hu.yaml                                                                                           |
+|mmlu_prox_lite_id                                |lm_eval/tasks/mmlu_prox/id/_mmlu_prox_lite_id.yaml                                                                                           |
+|mmlu_prox_lite_it                                |lm_eval/tasks/mmlu_prox/it/_mmlu_prox_lite_it.yaml                                                                                           |
+|mmlu_prox_lite_ja                                |lm_eval/tasks/mmlu_prox/ja/_mmlu_prox_lite_ja.yaml                                                                                           |
+|mmlu_prox_lite_ko                                |lm_eval/tasks/mmlu_prox/ko/_mmlu_prox_lite_ko.yaml                                                                                           |
+|mmlu_prox_lite_mr                                |lm_eval/tasks/mmlu_prox/mr/_mmlu_prox_lite_mr.yaml                                                                                           |
+|mmlu_prox_lite_ne                                |lm_eval/tasks/mmlu_prox/ne/_mmlu_prox_lite_ne.yaml                                                                                           |
+|mmlu_prox_lite_pt                                |lm_eval/tasks/mmlu_prox/pt/_mmlu_prox_lite_pt.yaml                                                                                           |
+|mmlu_prox_lite_ru                                |lm_eval/tasks/mmlu_prox/ru/_mmlu_prox_lite_ru.yaml                                                                                           |
+=== run help ===
+usage: lm-eval run --model <model> --tasks <task> <task> --model_args <arg=value> <arg=value> [options]
+
+Evaluate language models on various benchmarks and tasks.
+
+options:
+  -h, --help            show this help message and exit
+
+configuration:
+  --config <path>, -C <path>
+                        Set initial arguments from YAML config
+
+model and tasks:
+  --tasks <task> [<task> ...], -t <task> [<task> ...]
+                        Space (or comma-separated) list of task names or
+                        groupings. Use 'lm-eval ls tasks' to see all available
+                        tasks.
+  --model <model>, -M <model>
+                        Model name (default: hf)
+  --model_args <arg> [<arg> ...], -a <arg> [<arg> ...]
+                        Model arguments as 'key=val,key2=val2' or `key=val`
+                        `key2=val2`
+  --apply_chat_template [<template>]
+                        Apply chat template to prompts (optional template
+                        name)
+  --limit <limit>, -L <limit>
+                        Limit examples per task (integer count or fraction)
+  --use_cache <path>, -c <path>
+                        Path to cache model responses (skips repeated
+                        inference)
+
+evaluation settings:
+  --num_fewshot <n>, -f <n>
+                        Number of examples in few-shot context
+  --batch_size <size>, -b <size>
+                        Batch size: 'auto', 'auto:N' (auto-tune N times), or
+                        integer (default: 1)
+  --max_batch_size <n>  Maximum batch size when using --batch_size auto
+  --device <device>     Device to use (e.g. cuda, cuda:0, cpu, mps)
+  --gen_kwargs <arg> [<arg> ...]
+                        Generation arguments as `temperature=0,stop=["stop"]`
+                        or `key=val` `key2=val2`.Values should be parsable
+                        with ast.literal_eval.
+
+data and output (see also: --limit):
+  --output_path <path>, -o <path>
+                        Output dir or json file for results (and samples)
+  --log_samples, -s     Save all model outputs and documents for post-hoc
+                        analysis
+  --samples <json>, -E <json>
+                        JSON mapping task names to sample indices, e.g.
+                        '{"task1": [0,1,2]}'. Incompatible with --limit.
+
+caching and performance (see also: --use_cache):
+  --cache_requests [true|refresh|delete]
+                        Cache preprocessed prompts; bare flag defaults to
+                        'true'
+  --check_integrity     Run task test suite validation
+
+instruct formatting (see also: --apply_chat_template):
+  --system_instruction <text>
+                        Add custom system instruction.
+  --fewshot_as_multiturn [<bool>]
+                        Use fewshot as multi-turn conversation. Auto-enabled
+                        with --apply_chat_template. Use 'false' to disable.
+
+task management:
+  --include_path <path>
+                        Additional directory for external tasks
+  --plugins <module> [<module> ...]
+                        Comma-separated plugin modules to import before
+                        evaluation so their @register_* decorators run
+                        (models, filters, metrics, aggregations). Use for
+                        local or unpublished components; pip-installed
+                        packages that declare an 'lm_eval.*' entry point are
+                        discovered automatically.
+
+logging and tracking:
+  --verbosity <level>, -v <level>
+                        (Deprecated) Log level. Use LMEVAL_LOG_LEVEL env var
+                        instead

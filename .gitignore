@@ -52,3 +52,10 @@ results/**/*.gguf
 # (see docs/STORAGE.md).
 results/store/metrics-*/
 results/store/*.tmp.json
+
+# Raw harness result files for the WS19 anchor scoreboard. One MMLU result is
+# ~200 MB of JSON and is past GitHub's per-file limit, so the tracked form is the
+# lossless *.json.gz archive; results/frontier/anchor-raw/INDEX.json pins both
+# digests for every file, and scripts/s36_anchor.py rebuild reads either form.
+results/frontier/anchor-raw/*.json
+!results/frontier/anchor-raw/INDEX.json

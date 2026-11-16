@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/s36_anchor.py", line 723, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s36_anchor.py", line 716, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "/work/scripts/s36_anchor.py", line 159, in cmd_lock
+    "smoke": bool(args.smoke),
+                  ^^^^^^^^^^
+AttributeError: 'Namespace' object has no attribute 'smoke'

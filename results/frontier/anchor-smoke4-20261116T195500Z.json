@@ -1,0 +1,626 @@
+{
+  "argv": [
+    "scripts/s36_anchor.py",
+    "run",
+    "--model-id",
+    "Qwen/Qwen3.5-0.8B-Base",
+    "--tasks",
+    "humaneval",
+    "ifeval",
+    "arc_challenge",
+    "triviaqa",
+    "--limit",
+    "8",
+    "--smoke",
+    "--out",
+    "results/frontier/anchor-smoke4-20261116T195500Z.json"
+  ],
+  "cgroup": {
+    "memory.current": "2481471488",
+    "memory.max": "17179869184",
+    "memory.peak": "3226771456",
+    "memory.swap.max": "0"
+  },
+  "court": {
+    "cpus": "8",
+    "cuda_alloc_conf": "expandable_segments:True",
+    "memory_limit": "16g",
+    "memory_limit_bytes": "17179869184",
+    "name": "eval",
+    "pids_limit": "1024",
+    "tmpfs_bytes": "2147483648"
+  },
+  "device": {
+    "cuda_runtime": "13.2",
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "requested": "cuda:0",
+    "torch": "2.15.0+cu132",
+    "total_memory_bytes": 16765091840
+  },
+  "finished_utc": "2026-11-16T19:54:13Z",
+  "harness": {
+    "commit": "d6de81643928d653435c431bae19945d41d32520",
+    "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+    "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+    "name": "EleutherAI/lm-evaluation-harness",
+    "version": "0.4.14.dev0"
+  },
+  "limit_override": 8,
+  "model": {
+    "directory": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "id": "Qwen/Qwen3.5-0.8B-Base",
+    "license": "Apache-2.0",
+    "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "role": "anchor (text tower 752,393,024 elements, under the 1e9 ceiling)"
+  },
+  "model_args_resolved": "dtype=bfloat16,trust_remote_code=false,parallelize=false,add_bos_token=false,pretrained=/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "preregistration": {
+    "path": "docs/anchor-preregistration-v1.json",
+    "sha256": "4dc4167a60f0e4b063743b773075e46f6483fb4db6eedc91c8fa10cb57374968"
+  },
+  "prompting": {
+    "apply_chat_template": false,
+    "fewshot_as_multiturn": false,
+    "rationale": "both checkpoints are Base models: they have no instruction-tuning and no chat contract, so every task uses the harness's own completion-style doc_to_text with the harness's own few-shot demonstrations. No per-model prompt tuning of any kind is permitted; the identical config applies to both models, and the run refuses a pre-registration change between them.",
+    "system_instruction": null
+  },
+  "revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+  "schema": "selvedge/anchor-run/v1",
+  "smoke": true,
+  "stamp": "20261116T195240Z",
+  "started_utc": "2026-11-16T19:52:40Z",
+  "tasks": [
+    {
+      "all_metrics": {
+        "alias": "humaneval",
+        "name": "humaneval",
+        "pass@1,create_test": 0.5,
+        "pass@1_stderr,create_test": 0.1889822365046136,
+        "sample_len": 8
+      },
+      "cgroup": {
+        "memory.current": "1678618624",
+        "memory.max": "17179869184",
+        "memory.peak": "1750949888",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858771.561772,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_path": "openai/openai_humaneval",
+        "doc_to_target": "{{test}}\ncheck({{entry_point}})",
+        "doc_to_text": "{{prompt}}",
+        "fewshot_delimiter": "\n\n",
+        "filter_list": [
+          {
+            "filter": [
+              {
+                "filter_fn": "<function build_predictions at 0x7f822ed359e0>",
+                "function": "custom"
+              }
+            ],
+            "name": "create_test"
+          }
+        ],
+        "generation_kwargs": {
+          "do_sample": false,
+          "max_gen_toks": 1024,
+          "until": [
+            "\nclass",
+            "\ndef",
+            "\n#",
+            "\nif",
+            "\nprint"
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "k": [
+              1
+            ],
+            "metric": "def pass_at_k(references: list[str], predictions: list[list[str]], k: list[int] = None):\n    global compute_\n    assert k is not None\n    if isinstance(k, int):\n        k = [k]\n    res = compute_.compute(\n        references=references,\n        predictions=predictions,\n        k=k,\n    )\n    return res[0]\n"
+          }
+        ],
+        "num_fewshot": 0,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "humaneval"
+      },
+      "n_samples": {
+        "logged": 8,
+        "sample_count": null,
+        "subtasks": {
+          "humaneval": {
+            "effective": 8,
+            "original": 164
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 1819674112,
+      "peak_memory_reserved_bytes": 1866465280,
+      "pre_registered": {
+        "family": "code",
+        "limit": 8,
+        "limit_from_preregistration": null,
+        "num_fewshot": 0,
+        "registered_reason": "the full 164-problem set. pass@1 is measured by executing generated code in the container (unsafe_code: true in the harness yaml), which is why the court is the only place this runs."
+      },
+      "primary_metric": "pass@1,create_test",
+      "primary_metric_registered": "pass@1,create_test",
+      "raw_result": "results/frontier/anchor-raw/20261116T195240Z-Qwen__Qwen3.5-0.8B-Base-humaneval.json",
+      "score": 0.5,
+      "stderr": 0.1889822365046136,
+      "task": "humaneval",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "humaneval",
+        "resolved_config": {
+          "dataset_path": "openai/openai_humaneval",
+          "doc_to_target": "{{test}}\ncheck({{entry_point}})",
+          "doc_to_text": "{{prompt}}",
+          "filter_list": [
+            {
+              "filter": [
+                {
+                  "filter_fn": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/humaneval/utils.build_predictions",
+                  "function": "custom"
+                }
+              ],
+              "name": "create_test"
+            }
+          ],
+          "generation_kwargs": {
+            "do_sample": false,
+            "max_gen_toks": 1024,
+            "until": [
+              "\nclass",
+              "\ndef",
+              "\n#",
+              "\nif",
+              "\nprint"
+            ]
+          },
+          "metadata": {
+            "version": 1.0
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "k": [
+                1
+              ],
+              "metric": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/humaneval/utils.pass_at_k"
+            }
+          ],
+          "num_fewshot": 0,
+          "output_type": "generate_until",
+          "repeats": 1,
+          "task": "humaneval",
+          "test_split": "test",
+          "unsafe_code": true
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/humaneval/humaneval.yaml": {
+            "bytes": 623,
+            "sha256": "dd448f236e88f9f61a00c3c5f6703216d21aae9c6ca64cdb63139acd39fdddc6"
+          },
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/humaneval/utils.py": {
+            "bytes": 1054,
+            "sha256": "5f77adbf75b4342a6113fea30168ea57b4e5c3877ffd3b4942cb338b3edb2c95"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/humaneval/humaneval.yaml"
+      },
+      "wall_clock_s": 25.0,
+      "zero_score": "False"
+    },
+    {
+      "all_metrics": {
+        "alias": "ifeval",
+        "inst_level_loose_acc,none": 0.2857142857142857,
+        "inst_level_loose_acc_stderr,none": "N/A",
+        "inst_level_strict_acc,none": 0.2857142857142857,
+        "inst_level_strict_acc_stderr,none": "N/A",
+        "name": "ifeval",
+        "prompt_level_loose_acc,none": 0.125,
+        "prompt_level_loose_acc_stderr,none": 0.125,
+        "prompt_level_strict_acc,none": 0.125,
+        "prompt_level_strict_acc_stderr,none": 0.125,
+        "sample_len": 8
+      },
+      "cgroup": {
+        "memory.current": "1809272832",
+        "memory.max": "17179869184",
+        "memory.peak": "1839644672",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858796.55397,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_path": "google/IFEval",
+        "doc_to_target": 0,
+        "doc_to_text": "prompt",
+        "fewshot_delimiter": "\n\n",
+        "generation_kwargs": {
+          "do_sample": false,
+          "max_gen_toks": 1280,
+          "temperature": 0.0,
+          "until": []
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "prompt_level_strict_acc"
+          },
+          {
+            "aggregation": "def agg_inst_level_acc(items):\n    flat_items = [item for sublist in items for item in sublist]\n    inst_level_acc = sum(flat_items) / len(flat_items)\n    return inst_level_acc\n",
+            "higher_is_better": true,
+            "metric": "inst_level_strict_acc"
+          },
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "prompt_level_loose_acc"
+          },
+          {
+            "aggregation": "def agg_inst_level_acc(items):\n    flat_items = [item for sublist in items for item in sublist]\n    inst_level_acc = sum(flat_items) / len(flat_items)\n    return inst_level_acc\n",
+            "higher_is_better": true,
+            "metric": "inst_level_loose_acc"
+          }
+        ],
+        "num_fewshot": 0,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "ifeval"
+      },
+      "n_samples": {
+        "logged": 8,
+        "sample_count": null,
+        "subtasks": {
+          "ifeval": {
+            "effective": 8,
+            "original": 541
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 1830147072,
+      "peak_memory_reserved_bytes": 1893728256,
+      "pre_registered": {
+        "family": "instruction",
+        "limit": 8,
+        "limit_from_preregistration": null,
+        "num_fewshot": 0,
+        "registered_reason": "the full 541 prompts, 0-shot, strict prompt-level instruction accuracy. A Base model is expected to score near zero here; that is a finding about the checkpoint, not a defect, and it is why a zero is diagnosed before it is recorded."
+      },
+      "primary_metric": "prompt_level_strict_acc,none",
+      "primary_metric_registered": "prompt_level_strict_acc",
+      "raw_result": "results/frontier/anchor-raw/20261116T195240Z-Qwen__Qwen3.5-0.8B-Base-ifeval.json",
+      "score": 0.125,
+      "stderr": 0.125,
+      "task": "ifeval",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "ifeval",
+        "resolved_config": {
+          "dataset_name": null,
+          "dataset_path": "google/IFEval",
+          "doc_to_target": 0,
+          "doc_to_text": "prompt",
+          "generation_kwargs": {
+            "do_sample": false,
+            "max_gen_toks": 1280,
+            "temperature": 0.0,
+            "until": []
+          },
+          "metadata": {
+            "version": 4.0
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "metric": "prompt_level_strict_acc"
+            },
+            {
+              "aggregation": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/ifeval/utils.agg_inst_level_acc",
+              "higher_is_better": true,
+              "metric": "inst_level_strict_acc"
+            },
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "metric": "prompt_level_loose_acc"
+            },
+            {
+              "aggregation": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/ifeval/utils.agg_inst_level_acc",
+              "higher_is_better": true,
+              "metric": "inst_level_loose_acc"
+            }
+          ],
+          "num_fewshot": 0,
+          "output_type": "generate_until",
+          "process_results": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/ifeval/utils.process_results",
+          "task": "ifeval",
+          "test_split": "train"
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/ifeval/ifeval.yaml": {
+            "bytes": 729,
+            "sha256": "3d8a3eb32de03f6a23ac87b46951d972a4ec7cb137e753365c0271594e38f84b"
+          },
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/ifeval/utils.py": {
+            "bytes": 4510,
+            "sha256": "1ab8f14808c826f93f2364883487ed63cf4267980bf4761fda8053899c013632"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/ifeval/ifeval.yaml"
+      },
+      "wall_clock_s": 23.1,
+      "zero_score": false
+    },
+    {
+      "all_metrics": {
+        "acc,none": 0.0,
+        "acc_norm,none": 0.25,
+        "acc_norm_stderr,none": 0.16366341767699427,
+        "acc_stderr,none": 0.0,
+        "alias": "arc_challenge",
+        "name": "arc_challenge",
+        "sample_len": 8
+      },
+      "cgroup": {
+        "memory.current": "1875607552",
+        "memory.max": "17179869184",
+        "memory.peak": "1907392512",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858819.6376083,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_name": "ARC-Challenge",
+        "dataset_path": "allenai/ai2_arc",
+        "doc_to_choice": "{{choices.text}}",
+        "doc_to_target": "{{choices.label.index(answerKey)}}",
+        "doc_to_text": "Question: {{question}}\nAnswer:",
+        "fewshot_delimiter": "\n\n",
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "acc"
+          },
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "acc_norm"
+          }
+        ],
+        "num_fewshot": 25,
+        "output_type": "multiple_choice",
+        "target_delimiter": " ",
+        "task": "arc_challenge"
+      },
+      "n_samples": {
+        "logged": 8,
+        "sample_count": null,
+        "subtasks": {
+          "arc_challenge": {
+            "effective": 8,
+            "original": 1172
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 8092325376,
+      "peak_memory_reserved_bytes": 8394899456,
+      "pre_registered": {
+        "family": "knowledge",
+        "limit": 8,
+        "limit_from_preregistration": null,
+        "num_fewshot": 25,
+        "registered_reason": "the full 1172-item test set at the standard 25-shot setting; length-normalised accuracy as the primary metric because that is the reported ARC-Challenge convention."
+      },
+      "primary_metric": "acc_norm,none",
+      "primary_metric_registered": "acc_norm",
+      "raw_result": "results/frontier/anchor-raw/20261116T195240Z-Qwen__Qwen3.5-0.8B-Base-arc_challenge.json",
+      "score": 0.25,
+      "stderr": 0.16366341767699427,
+      "task": "arc_challenge",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "arc_challenge",
+        "resolved_config": {
+          "dataset_name": "ARC-Challenge",
+          "dataset_path": "allenai/ai2_arc",
+          "doc_to_choice": "{{choices.text}}",
+          "doc_to_decontamination_query": "Question: {{question}}\nAnswer:",
+          "doc_to_target": "{{choices.label.index(answerKey)}}",
+          "doc_to_text": "Question: {{question}}\nAnswer:",
+          "metadata": {
+            "version": 1.0
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "metric": "acc"
+            },
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "metric": "acc_norm"
+            }
+          ],
+          "output_type": "multiple_choice",
+          "should_decontaminate": true,
+          "tag": [
+            "ai2_arc"
+          ],
+          "task": "arc_challenge",
+          "test_split": "test",
+          "training_split": "train",
+          "validation_split": "validation"
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/arc/arc_challenge.yaml": {
+            "bytes": 71,
+            "sha256": "682621c26ae24b1065a2d732460a55a8ef2b9f2544574431666c9309a9efd7bd"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/arc/arc_challenge.yaml"
+      },
+      "wall_clock_s": 10.7,
+      "zero_score": false
+    },
+    {
+      "all_metrics": {
+        "alias": "triviaqa",
+        "exact_match,remove_whitespace": 0.0,
+        "exact_match_stderr,remove_whitespace": 0.0,
+        "name": "triviaqa",
+        "sample_len": 8
+      },
+      "cgroup": {
+        "memory.current": "2481537024",
+        "memory.max": "17179869184",
+        "memory.peak": "3226771456",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858830.348027,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_name": "rc.nocontext",
+        "dataset_path": "mandarjoshi/trivia_qa",
+        "doc_to_target": "{{answer.aliases}}",
+        "doc_to_text": "Question: {{question}}?\nAnswer:",
+        "fewshot_delimiter": "\n\n",
+        "filter_list": [
+          {
+            "filter": [
+              {
+                "function": "remove_whitespace"
+              },
+              {
+                "function": "take_first"
+              }
+            ],
+            "name": "remove_whitespace"
+          }
+        ],
+        "generation_kwargs": {
+          "do_sample": false,
+          "temperature": 0.0,
+          "until": [
+            "\n",
+            ".",
+            ","
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "ignore_case": true,
+            "ignore_punctuation": true,
+            "metric": "exact_match"
+          }
+        ],
+        "num_fewshot": 5,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "triviaqa"
+      },
+      "n_samples": {
+        "logged": 8,
+        "sample_count": null,
+        "subtasks": {
+          "triviaqa": {
+            "effective": 8,
+            "original": 17944
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 1878036480,
+      "peak_memory_reserved_bytes": 8394899456,
+      "pre_registered": {
+        "family": "knowledge",
+        "limit": 8,
+        "limit_from_preregistration": 1000,
+        "num_fewshot": 5,
+        "registered_reason": "the harness task uses the rc.nocontext config; 1000 of 17944 validation items, first-N, deterministic and identical for both models."
+      },
+      "primary_metric": "exact_match,remove_whitespace",
+      "primary_metric_registered": "exact_match",
+      "raw_result": "results/frontier/anchor-raw/20261116T195240Z-Qwen__Qwen3.5-0.8B-Base-triviaqa.json",
+      "score": 0.0,
+      "stderr": 0.0,
+      "task": "triviaqa",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "triviaqa",
+        "resolved_config": {
+          "dataset_name": "rc.nocontext",
+          "dataset_path": "mandarjoshi/trivia_qa",
+          "doc_to_decontamination_query": "question",
+          "doc_to_target": "{{answer.aliases}}",
+          "doc_to_text": "Question: {{question}}?\nAnswer:",
+          "filter_list": [
+            {
+              "filter": [
+                {
+                  "function": "remove_whitespace"
+                },
+                {
+                  "function": "take_first"
+                }
+              ],
+              "name": "remove_whitespace"
+            }
+          ],
+          "generation_kwargs": {
+            "do_sample": false,
+            "temperature": 0.0,
+            "until": [
+              "\n",
+              ".",
+              ","
+            ]
+          },
+          "metadata": {
+            "version": 3.0
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "ignore_case": true,
+              "ignore_punctuation": true,
+              "metric": "exact_match"
+            }
+          ],
+          "output_type": "generate_until",
+          "should_decontaminate": true,
+          "target_delimiter": " ",
+          "task": "triviaqa",
+          "training_split": "train",
+          "validation_split": "validation"
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/triviaqa/default.yaml": {
+            "bytes": 706,
+            "sha256": "fe8213422754e69878226b7f4aedd13afe099a837884203552b0d44ae1759c88"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/triviaqa/default.yaml"
+      },
+      "wall_clock_s": 22.9,
+      "zero_score": true
+    }
+  ],
+  "zero_score_tasks": [
+    "triviaqa"
+  ]
+}

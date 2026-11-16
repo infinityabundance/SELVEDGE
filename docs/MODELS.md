@@ -370,3 +370,32 @@ revision is printed and must equal the pinned revision.
   later comparison must pin the template too.
 - The license text is reproduced for audit convenience. The authoritative file
   is the one in the cache, whose SHA-256 is recorded.
+
+## Frontier checkpoints are locked separately (`models/FRONTIER.lock.json`)
+
+The two checkpoints the WS19 scoreboard scores are **not** in
+`models/MODELS.lock.json`. That file pins the teacher candidates the oracle lock
+verifies, and `oracle/fetch_models.py` regenerates it wholesale from
+`models/model-spec.json`; adding a frontier entry there would either be dropped on
+the next teacher fetch or create a lock entry nothing in the serving path can run
+(the reasoning is in `docs/FRONTIER-TARGET.md` §2).
+
+Instead `models/FRONTIER.lock.json` records, per checkpoint: the pinned revision,
+the Hub's own tree listing at that revision (declared byte size and LFS oid per
+file), the cached file's computed sha256, whether the sha256 equals the Hub's LFS
+oid, the licence id from the model card, the `LICENSE` file's hash and opening
+lines, and the cache filesystem's free bytes before and after.
+
+It is produced by `scripts/s36_anchor.py lock` — in the eval court, with network
+only for the Hub tree — and it fails closed on a cached file that is absent, a
+size that disagrees with the Hub, a sha256 that disagrees with the LFS oid, or a
+cached file the Hub tree does not list. The scoreboard run re-checks every locked
+file's byte size before it loads a checkpoint, so a silently truncated or replaced
+weight file cannot be scored.
+
+Both pinned checkpoints are Apache-2.0: the model card's `license` field says
+`apache-2.0` and the cached `LICENSE` file is the Apache License 2.0 text with the
+same hash for both (`50cbab8a892c5f29...`). The two reference models that cannot be
+scored are excluded in `docs/anchor-preregistration-v1.json` with reasons rather
+than omitted: `google/gemma-3-1b-it` is gated and `LiquidAI/LFM2.5-1.2B-Instruct`
+is under the non-OSI LFM Open License v1.0.

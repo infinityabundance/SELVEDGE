@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/s36_anchor.py", line 1245, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s36_anchor.py", line 1238, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "/work/scripts/s36_anchor.py", line 872, in cmd_rebuild
+    if observed and abs(observed["score"] - metrics[metric_key]) > 1e-9:
+                        ~~~~~~~~^^^^^^^^^
+KeyError: 'score'

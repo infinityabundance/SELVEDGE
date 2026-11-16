@@ -1,0 +1,540 @@
+{
+  "argv": [
+    "scripts/s36_anchor.py",
+    "run",
+    "--model-id",
+    "Qwen/Qwen3.5-0.8B-Base",
+    "--tasks",
+    "triviaqa",
+    "gsm8k",
+    "minerva_math500",
+    "--limit",
+    "100",
+    "--smoke",
+    "--out",
+    "results/frontier/anchor-smoke5-20261116T200500Z.json"
+  ],
+  "cgroup": {
+    "memory.current": "1736871936",
+    "memory.max": "8589934592",
+    "memory.peak": "2449051648",
+    "memory.swap.max": "0"
+  },
+  "court": {
+    "cpus": "8",
+    "cuda_alloc_conf": "expandable_segments:True",
+    "memory_limit": "8g",
+    "memory_limit_bytes": "8589934592",
+    "name": "eval",
+    "pids_limit": "1024",
+    "tmpfs_bytes": "2147483648"
+  },
+  "device": {
+    "cuda_runtime": "13.2",
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "requested": "cuda:0",
+    "torch": "2.15.0+cu132",
+    "total_memory_bytes": 16765091840
+  },
+  "finished_utc": "2026-11-16T19:56:48Z",
+  "harness": {
+    "commit": "d6de81643928d653435c431bae19945d41d32520",
+    "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+    "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+    "name": "EleutherAI/lm-evaluation-harness",
+    "version": "0.4.14.dev0"
+  },
+  "limit_override": 100,
+  "model": {
+    "directory": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "id": "Qwen/Qwen3.5-0.8B-Base",
+    "license": "Apache-2.0",
+    "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "role": "anchor (text tower 752,393,024 elements, under the 1e9 ceiling)"
+  },
+  "model_args_resolved": "dtype=bfloat16,trust_remote_code=false,parallelize=false,add_bos_token=false,pretrained=/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "preregistration": {
+    "path": "docs/anchor-preregistration-v1.json",
+    "sha256": "4dc4167a60f0e4b063743b773075e46f6483fb4db6eedc91c8fa10cb57374968"
+  },
+  "prompting": {
+    "apply_chat_template": false,
+    "fewshot_as_multiturn": false,
+    "rationale": "both checkpoints are Base models: they have no instruction-tuning and no chat contract, so every task uses the harness's own completion-style doc_to_text with the harness's own few-shot demonstrations. No per-model prompt tuning of any kind is permitted; the identical config applies to both models, and the run refuses a pre-registration change between them.",
+    "system_instruction": null
+  },
+  "revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+  "schema": "selvedge/anchor-run/v1",
+  "smoke": true,
+  "stamp": "20261116T195445Z",
+  "started_utc": "2026-11-16T19:54:45Z",
+  "tasks": [
+    {
+      "all_metrics": {
+        "alias": "triviaqa",
+        "exact_match,remove_whitespace": 0.13,
+        "exact_match_stderr,remove_whitespace": 0.033799766898963114,
+        "name": "triviaqa",
+        "sample_len": 100
+      },
+      "cgroup": {
+        "memory.current": "1646387200",
+        "memory.max": "8589934592",
+        "memory.peak": "2449051648",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858893.4016445,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_name": "rc.nocontext",
+        "dataset_path": "mandarjoshi/trivia_qa",
+        "doc_to_target": "{{answer.aliases}}",
+        "doc_to_text": "Question: {{question}}?\nAnswer:",
+        "fewshot_delimiter": "\n\n",
+        "filter_list": [
+          {
+            "filter": [
+              {
+                "function": "remove_whitespace"
+              },
+              {
+                "function": "take_first"
+              }
+            ],
+            "name": "remove_whitespace"
+          }
+        ],
+        "generation_kwargs": {
+          "do_sample": false,
+          "temperature": 0.0,
+          "until": [
+            "\n",
+            ".",
+            ","
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "ignore_case": true,
+            "ignore_punctuation": true,
+            "metric": "exact_match"
+          }
+        ],
+        "num_fewshot": 5,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "triviaqa"
+      },
+      "n_samples": {
+        "logged": 100,
+        "sample_count": null,
+        "subtasks": {
+          "triviaqa": {
+            "effective": 100,
+            "original": 17944
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 1937012224,
+      "peak_memory_reserved_bytes": 1979711488,
+      "pre_registered": {
+        "family": "knowledge",
+        "limit": 100,
+        "limit_from_preregistration": 1000,
+        "num_fewshot": 5,
+        "registered_reason": "the harness task uses the rc.nocontext config; 1000 of 17944 validation items, first-N, deterministic and identical for both models."
+      },
+      "primary_metric": "exact_match,remove_whitespace",
+      "primary_metric_registered": "exact_match",
+      "raw_result": "results/frontier/anchor-raw/20261116T195445Z-Qwen__Qwen3.5-0.8B-Base-triviaqa.json",
+      "score": 0.13,
+      "stderr": 0.033799766898963114,
+      "task": "triviaqa",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "triviaqa",
+        "resolved_config": {
+          "dataset_name": "rc.nocontext",
+          "dataset_path": "mandarjoshi/trivia_qa",
+          "doc_to_decontamination_query": "question",
+          "doc_to_target": "{{answer.aliases}}",
+          "doc_to_text": "Question: {{question}}?\nAnswer:",
+          "filter_list": [
+            {
+              "filter": [
+                {
+                  "function": "remove_whitespace"
+                },
+                {
+                  "function": "take_first"
+                }
+              ],
+              "name": "remove_whitespace"
+            }
+          ],
+          "generation_kwargs": {
+            "do_sample": false,
+            "temperature": 0.0,
+            "until": [
+              "\n",
+              ".",
+              ","
+            ]
+          },
+          "metadata": {
+            "version": 3.0
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "ignore_case": true,
+              "ignore_punctuation": true,
+              "metric": "exact_match"
+            }
+          ],
+          "output_type": "generate_until",
+          "should_decontaminate": true,
+          "target_delimiter": " ",
+          "task": "triviaqa",
+          "training_split": "train",
+          "validation_split": "validation"
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/triviaqa/default.yaml": {
+            "bytes": 706,
+            "sha256": "fe8213422754e69878226b7f4aedd13afe099a837884203552b0d44ae1759c88"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/triviaqa/default.yaml"
+      },
+      "wall_clock_s": 24.2,
+      "zero_score": false
+    },
+    {
+      "all_metrics": {
+        "alias": "gsm8k",
+        "exact_match,flexible-extract": 0.42,
+        "exact_match,strict-match": 0.41,
+        "exact_match_stderr,flexible-extract": 0.049604496374885836,
+        "exact_match_stderr,strict-match": 0.049431107042371025,
+        "name": "gsm8k",
+        "sample_len": 100
+      },
+      "cgroup": {
+        "memory.current": "1705381888",
+        "memory.max": "8589934592",
+        "memory.peak": "2449051648",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858917.5739634,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_name": "main",
+        "dataset_path": "openai/gsm8k",
+        "doc_to_target": "{{answer}}",
+        "doc_to_text": "Question: {{question}}\nAnswer:",
+        "fewshot_delimiter": "\n\n",
+        "filter_list": [
+          {
+            "filter": [
+              {
+                "function": "regex",
+                "regex_pattern": "#### (\\-?[0-9\\.\\,]+)"
+              },
+              {
+                "function": "take_first"
+              }
+            ],
+            "name": "strict-match"
+          },
+          {
+            "filter": [
+              {
+                "function": "regex",
+                "group_select": -1,
+                "regex_pattern": "(-?[$0-9.,]{2,})|(-?[0-9]+)"
+              },
+              {
+                "function": "take_first"
+              }
+            ],
+            "name": "flexible-extract"
+          }
+        ],
+        "generation_kwargs": {
+          "do_sample": false,
+          "temperature": 0.0,
+          "until": [
+            "Question:",
+            "</s>",
+            "<|im_end|>"
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "ignore_case": true,
+            "ignore_punctuation": false,
+            "metric": "exact_match",
+            "regexes_to_ignore": [
+              ",",
+              "\\$",
+              "(?s).*#### ",
+              "\\.$"
+            ]
+          }
+        ],
+        "num_fewshot": 5,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "gsm8k"
+      },
+      "n_samples": {
+        "logged": 200,
+        "sample_count": null,
+        "subtasks": {
+          "gsm8k": {
+            "effective": 100,
+            "original": 1319
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 3197540864,
+      "peak_memory_reserved_bytes": 3384803328,
+      "pre_registered": {
+        "family": "math",
+        "limit": 100,
+        "limit_from_preregistration": null,
+        "num_fewshot": 5,
+        "registered_reason": "the registered 1319-item test set, in full, at the harness yaml's own 5-shot CoT config."
+      },
+      "primary_metric": "exact_match,strict-match",
+      "primary_metric_registered": "exact_match,strict-match",
+      "raw_result": "results/frontier/anchor-raw/20261116T195445Z-Qwen__Qwen3.5-0.8B-Base-gsm8k.json",
+      "score": 0.41,
+      "stderr": 0.049431107042371025,
+      "task": "gsm8k",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "gsm8k",
+        "resolved_config": {
+          "dataset_name": "main",
+          "dataset_path": "openai/gsm8k",
+          "doc_to_target": "{{answer}}",
+          "doc_to_text": "Question: {{question}}\nAnswer:",
+          "fewshot_split": "train",
+          "filter_list": [
+            {
+              "filter": [
+                {
+                  "function": "regex",
+                  "regex_pattern": "#### (\\-?[0-9\\.\\,]+)"
+                },
+                {
+                  "function": "take_first"
+                }
+              ],
+              "name": "strict-match"
+            },
+            {
+              "filter": [
+                {
+                  "function": "regex",
+                  "group_select": -1,
+                  "regex_pattern": "(-?[$0-9.,]{2,})|(-?[0-9]+)"
+                },
+                {
+                  "function": "take_first"
+                }
+              ],
+              "name": "flexible-extract"
+            }
+          ],
+          "generation_kwargs": {
+            "do_sample": false,
+            "temperature": 0.0,
+            "until": [
+              "Question:",
+              "</s>",
+              "<|im_end|>"
+            ]
+          },
+          "metadata": {
+            "version": 3.0
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "ignore_case": true,
+              "ignore_punctuation": false,
+              "metric": "exact_match",
+              "regexes_to_ignore": [
+                ",",
+                "\\$",
+                "(?s).*#### ",
+                "\\.$"
+              ]
+            }
+          ],
+          "num_fewshot": 5,
+          "output_type": "generate_until",
+          "repeats": 1,
+          "tag": [
+            "math_word_problems"
+          ],
+          "task": "gsm8k",
+          "test_split": "test",
+          "training_split": "train"
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/gsm8k/gsm8k.yaml": {
+            "bytes": 1014,
+            "sha256": "82eb1780b263bc040729032b3e076990c7933f42163c91e359f38820dd1d8833"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/gsm8k/gsm8k.yaml"
+      },
+      "wall_clock_s": 43.9,
+      "zero_score": "False"
+    },
+    {
+      "all_metrics": {
+        "alias": "minerva_math500",
+        "exact_match,none": 0.26,
+        "exact_match_stderr,none": 0.0440844002276808,
+        "math_verify,none": 0.28,
+        "math_verify_stderr,none": 0.045126085985421296,
+        "name": "minerva_math500",
+        "sample_len": 100
+      },
+      "cgroup": {
+        "memory.current": "1736667136",
+        "memory.max": "8589934592",
+        "memory.peak": "2449051648",
+        "memory.swap.max": "0"
+      },
+      "date": 1794858961.4930754,
+      "git_hash": "22c51d6",
+      "harness_config": {
+        "dataset_name": "default",
+        "dataset_path": "HuggingFaceH4/MATH-500",
+        "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+        "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+        "fewshot_delimiter": "\n\n",
+        "generation_kwargs": {
+          "do_sample": false,
+          "temperature": 0.0,
+          "until": [
+            "Problem:"
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "exact_match"
+          },
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "math_verify"
+          }
+        ],
+        "num_fewshot": 4,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "minerva_math500"
+      },
+      "n_samples": {
+        "logged": 100,
+        "sample_count": null,
+        "subtasks": {
+          "minerva_math500": {
+            "effective": 100,
+            "original": 500
+          }
+        }
+      },
+      "peak_memory_allocated_bytes": 2790812672,
+      "peak_memory_reserved_bytes": 3384803328,
+      "pre_registered": {
+        "family": "math",
+        "limit": 100,
+        "limit_from_preregistration": null,
+        "num_fewshot": 4,
+        "registered_reason": "a fixed 500-problem subset of MATH (the Minerva MATH-500 split the harness ships), 4-shot, scored with symbolic math_verify rather than string match."
+      },
+      "primary_metric": "math_verify,none",
+      "primary_metric_registered": "math_verify",
+      "raw_result": "results/frontier/anchor-raw/20261116T195445Z-Qwen__Qwen3.5-0.8B-Base-minerva_math500.json",
+      "score": 0.28,
+      "stderr": 0.045126085985421296,
+      "task": "minerva_math500",
+      "task_definition": {
+        "kind": "Kind.TASK",
+        "name": "minerva_math500",
+        "resolved_config": {
+          "dataset_name": "default",
+          "dataset_path": "HuggingFaceH4/MATH-500",
+          "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+          "doc_to_text": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/utils.doc_to_text",
+          "fewshot_config": {
+            "sampler": "first_n",
+            "samples": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/utils.list_fewshot_samples"
+          },
+          "generation_kwargs": {
+            "do_sample": false,
+            "temperature": 0,
+            "until": [
+              "Problem:"
+            ]
+          },
+          "metadata": {
+            "version": 3.1
+          },
+          "metric_list": [
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "metric": "exact_match"
+            },
+            {
+              "aggregation": "mean",
+              "higher_is_better": true,
+              "metric": "math_verify"
+            }
+          ],
+          "num_fewshot": 4,
+          "output_type": "generate_until",
+          "process_docs": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/utils.process_docs",
+          "process_results": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/utils.process_results",
+          "tag": [
+            "math_word_problems"
+          ],
+          "task": "minerva_math500",
+          "test_split": "test",
+          "training_split": null
+        },
+        "yaml_and_utils": {
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/minerva_math500.yaml": {
+            "bytes": 154,
+            "sha256": "97e4131398d38905fd9478980f6bf77bff3d93a5b96d45d60a6ca100610688f6"
+          },
+          "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/utils.py": {
+            "bytes": 11561,
+            "sha256": "e6b10f05b1990d3e82a4414bbf8c04a9f6b7e029c00dfe336a040ecf78acdab0"
+          }
+        },
+        "yaml_path": "/usr/local/lib/python3.12/site-packages/lm_eval/tasks/minerva_math/minerva_math500.yaml"
+      },
+      "wall_clock_s": 47.0,
+      "zero_score": false
+    }
+  ],
+  "zero_score_tasks": []
+}
