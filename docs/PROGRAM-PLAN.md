@@ -3478,9 +3478,14 @@ task, and tolerant extraction of the discarded answers rescued nothing that
 passed. The suite size therefore does not buy a capability comparison on its own.
 S28 derived a 24-source calibration split in four formats (84 items, all
 CPU-verified) and registered a calibration protocol
-(`docs/capability-calibration-preregistration-v1.json`); the item difficulty,
-discrimination and ladder are still unmeasured, so P14.4's acceptance evidence —
-"item difficulty and discrimination estimated by a solver" — is still not met.
+(`docs/capability-calibration-preregistration-v1.json`). **S29 ran that protocol
+on all five arms and it refused a suite version** (`docs/CAPABILITY-COURT.md`
+§17): item difficulty and discrimination were measured, and they show the arms
+answer with a constant rather than conditioning on the item, so almost every
+item retired and the ladder could not be shown monotone. P14.4's acceptance
+evidence — "item difficulty and discrimination estimated by a solver" — is
+measured but **not met**, because the measurement says the instrument cannot
+discriminate at this scale.
 
 **The measured gap this leaves.** The expansion does not buy the 10% claim it was
 made for. The analytic (normal-approximation) MDE lands almost exactly on the
@@ -3636,22 +3641,26 @@ larger n but a solver that answers the question, or a re-registered single-lette
 instrument with a per-item response-entropy screen (§17.6); either must be
 calibrated before it supports a claim.
 
-**Depends.** P14.4, P14.6, P14.7. **Status.** partially advanced by S28 — the
-**measured-variance** half is designed and registered, the GPU pass is not run.
+**Depends.** P14.4, P14.6, P14.7. **Status.** partially advanced by S28 and
+S29 — the **measured-variance** half is implemented and the GPU pass has run.
 S28 implemented and CPU-tested: a per-item calibration mode (`calibrate`) that
 computes pass probability, partial-credit spread, item–total correlation, the
 acceptance window, cell retirement and reformatting, the monotone-ladder check,
 and `required_n` from the **measured** baseline and the **measured** paired
-difference variance over the ten arm pairs; a calibration pre-registration
+difference variance over every arm pair; a calibration pre-registration
 (`docs/capability-calibration-preregistration-v1.json`) that fixes the window and
 states that no n is claimed until the pass runs; and the exact GPU commands
 (`docs/CAPABILITY-COURT.md` §15). It also fixes the two instrument defects that
 made the old per-item evidence unusable: the adapter now records a real
 `finish_reason` and a per-item token count instead of `"stop"` and the batch
-width, and the taxonomy shows the old format was a floor. **Not done:** the
-calibration pass itself, the calibrated suite version, and therefore any
-simulated power curve from a real outcome matrix. Until those exist this item
-remains open and no n, MDE or power figure may be claimed from it.
+width, and the taxonomy shows the old format was a floor. S29 ran the pass and
+measured the baseline and the paired variances for the first time; the receipt
+is `results/capability/calibration-20261116T164100Z.json` and the numbers are
+generated in `docs/CAPABILITY-COURT.md` §17.4. **Not done:** a calibrated suite
+version, and therefore any simulated power curve from a real outcome matrix.
+The measured pass shows that the binding constraint is the solver's ability to
+condition on an item, not n, so closing this item needs the solver-population or
+re-registered-instrument work in §17.6 before any power figure can be claimed.
 **Effort.** XL. **Tier.** CANDIDATE.
 
 ## 20. WS15 — Beyond-MoE architectures (research hypotheses)
