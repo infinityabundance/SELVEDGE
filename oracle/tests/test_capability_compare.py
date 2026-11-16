@@ -271,6 +271,39 @@ def test_not_measured_records_the_missing_d0_comparator(environment):
     assert payload["arms"]["M"]["composite"] < payload["arms"]["D"]["composite"]
 
 
+def test_an_all_zero_matrix_reports_an_undefined_relative_difference(
+        environment, capsys):
+    """Every arm scoring zero is a real outcome, not a crash.
+
+    The relative difference is undefined against a zero baseline, so it is
+    reported as undefined and the gate fails. This path was hit by the real run:
+    every arm scored 0/153 on the Rust suite and the reader raised TypeError in
+    its print instead of saying so (S27).
+    """
+    root = environment["root"]
+    zero = {category: 0 for category in CATEGORIES}
+    arguments = []
+    for arm in ("D", "M", "X", "H", "H*"):
+        path = os.path.join(root, f"zero-{arm}.json")
+        dump(path, result_receipt(zero, digest=environment["digest"],
+                                  suite_hash=environment["suite_hash"], name=arm,
+                                  provenance=provenance(
+                                      arm,
+                                      sha256(environment["amendment"]))))
+        arguments += ["--result", f"{arm}={path}"]
+    out = os.path.join(root, "zero-comparison.json")
+    arguments += ["--preregistration", PREREG, "--out", out,
+                  "--amendment", environment["amendment"]]
+    assert capability_compare.main(arguments) == 0
+    printed = capsys.readouterr().out
+    assert "undefined (baseline is zero)" in printed
+    payload = json.load(open(out, encoding="utf-8"))
+    assert payload["gate"]["passes"] is False
+    for comparison in payload["comparisons"].values():
+        assert comparison["primary"]["difference"]["relative_difference"] is None
+        assert comparison["primary"]["improvement_met"] is False
+
+
 def test_main_returns_three_on_refusal(environment, capsys):
     environment["paths"].pop("D")
     arguments = []

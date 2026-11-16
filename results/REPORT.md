@@ -171,27 +171,92 @@ exists, so all locality conclusions are conditional on the trained model's
 0.05
   <!-- END GENERATED: report-acceptable-kl -->
 
-## T2, in progress
+## T2, measured
 
 The first trained branch is registered in `docs/EXPERIMENT-CONTRACT.md` T2 (with
 amendments A8 and A9). Five arms — a dense-adapter control `D`, the hashed
 memory path `M`, routed specialists `X`, a naive hybrid `H` and an
-error-directed hybrid `H*` — train from one frozen Qwen3-0.6B core, on one data
-order, at one token budget and one seed, and are then evaluated on the full
+error-directed hybrid `H*` — trained from one frozen Qwen3-0.6B core, on one data
+order, at one token budget and one seed, and were then evaluated on the full
 registered suite. The decision rule K15-K19 is fixed in the contract and applied
-mechanically by `oracle/eval/t2_decision.py`.
+mechanically by `oracle/eval/t2_decision.py` (the pilot report) and
+`scripts/t2_verdict.py` (the post-`H*` verdict, which re-derives it from the
+receipts and refuses on any missing or mismatched one).
 
 Where the evidence lives: `results/t2/pilot-state.json` (phase status,
 timestamps, exit codes, per-arm argv and hashes), `results/t2/<arm>/run.json`
 (git SHA, config hash, seed, data-order hash, admission record, throughput,
 VRAM, wall-clock, checkpoint hash), `results/eval/t2-*.json` (the registered
-harness) and `results/T2-PILOT.md` (the published report, generated from the
-decision receipt by `scripts/t2_report.py`).
+harness), `results/T2-PILOT.md` (the published report, rendered from the
+decision receipt), `results/T2-VERDICT.md` (the verdict document, rendered from
+`results/t2-verdict.json`) and `results/capability/runs/t2-comparison.json` (the
+verified-task comparison).
 
-**No T2 quality claim is made in this file while the pilot is unfinished.** A
-partial pilot is not a result: the arms that have finished are not interpreted
-before the ones that have not, and the verdict appears only in
-`results/T2-PILOT.md`.
+**The registered outcome is below, and it is a negative one.** Both documents
+are generated from receipts and re-rendered by their own `--check`; their numbers
+are not restated here.
+
+<!-- BEGIN GENERATED: report-t2-outcome -->
+error_direction_not_supported
+<!-- END GENERATED: report-t2-outcome -->
+
+### What was decided, and what it means
+
+- **`H*` vs `H` (K15) fails.** Error-directed routing did not produce a
+  decisive gain over the naive hybrid at this scale on either endpoint, so WS3's
+  central bet is recorded as a negative result. No bank scaling follows, and the
+  mechanism is not carried into WS4/WS5 without a new pre-registration.
+- **`H*` vs `D` (K16) fails.** The error-directed hybrid is *worse* than the
+  equally-trained dense adapter on the primary composite, and its KL is worse
+  too. Conditional capacity did not beat dense capacity of equal active size at
+  this budget.
+- **`X` vs `D` (K18) fails** despite a positive composite difference, because the
+  pooled KL regressed by more than the registered margin. This is the
+  conjunctive rule doing its job: an apparent task gain paid for with a
+  distributional loss is not a win.
+- **`M` vs `D0` (K17) passes**, the one positive: the hashed memory path closes
+  most of the frozen-reference gap on the decisive statistic while holding active
+  parameters equal.
+
+Two things this does **not** say. It does not say error-directed capacity is
+impossible — it says it is not supported at 0.6B active / 67M tokens / one seed.
+And it is one seed per arm: no seed-level interval is claimed, and `D_M` and `HL`
+are registered and unrun.
+
+### The verified-task comparison: a floor, not a ranking
+
+The capability court scored all five arms on the same fresh Rust suite under the
+registered pre-registration. Its gate and its outcome:
+
+<!-- BEGIN GENERATED: report-t2-capability-outcome -->
+conditional_capacity_not_supported_on_verified_tasks
+<!-- END GENERATED: report-t2-capability-outcome -->
+
+**No arm scored a verified task.** Every arm's output was either unparseable
+(`invalid_solution`) or failed to compile (`compile_error`); one `H` and one `H*`
+item compiled and then failed a hidden behavioural test, which is the one place
+the instrument demonstrably reached the model's output end to end. The reference
+solutions pass the same checkers, so the court is not broken — a 0.6B distilled
+model asked to emit complete replacement files for multi-file Rust crates with
+hidden tests is simply outside this instrument's reach.
+
+That makes the verified-task comparison **uninformative rather than negative for
+`H*`**: a floor effect cannot rank arms, so it must not be read as "the hybrid is
+no better at Rust tasks". It is also a *different* result from the KL/PC endpoint
+above, and the two are reported separately (P14.6): the KL numbers are
+distillation measurements, the capability numbers are correctness measurements,
+and no cache or systems number is presented as either. The per-arm table, the
+per-category intervals (all degenerate at the floor) and the undefined relative
+differences are in `results/capability/runs/t2-comparison.json`; the power
+analysis that says this suite could not resolve a 10% effect even with a
+non-zero baseline is quoted in §"Capability court" below and in
+`docs/CAPABILITY-COURT.md` §7.1.
+
+The measured floor also invalidates one assumption of that power analysis: it
+models a 0.5 baseline success rate. The real baseline here is zero, so the
+variance term it used is optimistic and the effective power is *lower* than the
+reported figure. Closing this is P14.8's job, and the first thing it must do is
+estimate item difficulty from actual solver runs rather than assume a baseline.
 
 ### Pilot state, recorded read-only
 
@@ -204,14 +269,12 @@ As of the last poll before this commit (`scripts/poll-t2-pilot.sh`,
 | `M` (memory only) | **completed** — trained the registered budget and evaluated | `results/t2/M/run.json`, `results/t2/M/eval.json`, `results/eval/t2-M.json` |
 | `X` (specialists) | **completed** — trained the registered budget and evaluated | `results/t2/X/run.json`, `results/t2/X/eval.json`, `results/eval/t2-X.json` |
 | `H` (naive hybrid) | **completed** — trained the registered budget and evaluated; the evaluation was re-run under the corrected instrument (below) | `results/t2/H/run.json`, `results/t2/H/eval.json`, `results/eval/t2-H.json`, `results/t2/H/launch-eval.json` |
-| `H*` (error-directed hybrid) | **pending** | — |
+| `H*` (error-directed hybrid) | **completed** — trained the registered budget and evaluated; the post-`H*` pipeline then ran the instrument check, the verified-task court, the corrected-dispatch sensitivity and the verdict | `results/t2/H*/run.json`, `results/t2/H*/eval.json`, `results/eval/t2-H*.json`, `results/t2-verdict.json`, `results/T2-VERDICT.md` |
 
-Four of five arms have both a training receipt and an evaluation summary. The
-last hybrid has not finished, and the pilot is therefore **not separable from
-"unfinished"**: no ordering between arms is stated here, deliberately — an
-early ordering is exactly the reading that T2.8 and the one-seed risk in
-`results/T2-PLAN.md` §5 forbid. The per-arm numbers that do exist are in
-`results/t2/<arm>/eval.json` and `docs/WORK-LOG.md`; they are not interpreted.
+All five arms have both a training receipt and an evaluation summary, so the
+pilot is separable and the verdict is published in `results/T2-PILOT.md` and
+`results/T2-VERDICT.md`. The per-arm numbers are in `results/t2/<arm>/eval.json`
+and `docs/WORK-LOG.md`; this section interprets only the registered decision.
 
 ### The evaluation instrument, corrected before the hybrid numbers were read
 

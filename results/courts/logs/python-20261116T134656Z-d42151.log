@@ -1,0 +1,26 @@
+t2_verdict: wrote results/t2-verdict.json and results/T2-VERDICT.md (71 published region(s))
+T2 verdict (20261116T134706Z) — outcome: error_direction_not_supported
+
+arm       PC  KL mixed     HE   GSM8K    MC1
+D0    0.1982    0.5977  0.189   0.103  0.302
+D     0.2126    0.4890  0.220   0.137  0.282
+M     0.2139    0.5239  0.128   0.210  0.304
+X     0.2450    0.5028  0.226   0.227  0.283
+H     0.1935    0.5110  0.207   0.097  0.277
+H*    0.1872    0.5021  0.207   0.080  0.274
+
+H*-H   decisive=P1 PC -0.0064 [-0.0276,+0.0151] -> FAIL
+H*-D   decisive=PC PC -0.0254 [-0.0484,-0.0024] -> FAIL
+X-D    decisive=PC PC +0.0324 [+0.0051,+0.0604] -> FAIL
+M-D0   decisive=P1 PC +0.0156 [-0.0094,+0.0399] -> PASS
+M-D    decisive=P1 PC +0.0013 [-0.0248,+0.0268] -> FAIL
+H*-D0  decisive=P1 PC -0.0111 [-0.0356,+0.0128] -> FAIL
+X-H    decisive=PC PC +0.0515 [+0.0262,+0.0767] -> PASS
+
+K15: FAIL
+K16: FAIL
+K17: PASS
+K18: FAIL
+K19: FAIL
+
+K15 fails: error-directed routing is not supported at this scale. WS3's central bet is recorded as a negative result, no bank scaling follows, and the mechanism is not carried into WS4/WS5 without a new pre-registration.

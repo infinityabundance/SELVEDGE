@@ -264,6 +264,10 @@ def test_every_container_stage_uses_the_image_interpreter(environment):
         assert inner, entry
         assert inner[0] == "python3", entry
         assert not inner[0].startswith("/"), entry
+        # No stage may hand the container a host path: the container sees the
+        # repository as its working directory, not as the host mount point.
+        leaked = [part for part in inner if part == root]
+        assert not leaked, entry
 
 
 def test_memory_sizing_is_derived_from_a_measured_peak(environment):

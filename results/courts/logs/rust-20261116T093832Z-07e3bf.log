@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 214, in main
+    generations = load_json(args.generations)
+  File "/work/oracle/capability/cli.py", line 32, in load_json
+    with open(path, "r", encoding="utf-8") as handle:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/capability/runs/t2-D/generations.json'

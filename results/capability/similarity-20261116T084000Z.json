@@ -1,0 +1,62 @@
+{
+  "command": "scripts/capability_similarity.py --out results/capability/similarity-20261116T084000Z.json",
+  "created_utc": "2026-11-16T08:14:21Z",
+  "items": 177,
+  "maxima": {
+    "assertion": 1.0,
+    "code": 0.606557,
+    "diagnostic": 1.0
+  },
+  "metric": "set Jaccard over token shingles per view",
+  "pairs_compared": 15576,
+  "rejected_pairs": [],
+  "rejection_scope": "pairs with at least one item authored in this expansion; historical pairs above a threshold are reported, not rejected, because replacing them would change the already-registered suite",
+  "replaced": [],
+  "reported_pairs": [
+    {
+      "left": "deps-04-unknown-feature",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-05-workspace-member",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scope": "historical",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.606557,
+        "diagnostic": 0.042254
+      }
+    },
+    {
+      "left": "deps-08-renamed-package",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-09-disable-default-features",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "assertion_reject",
+      "scope": "historical",
+      "scores": {
+        "assertion": 0.625,
+        "code": 0.304348,
+        "diagnostic": 0.0
+      }
+    }
+  ],
+  "rules": {
+    "assertion_reject": 0.6,
+    "code_reject": 0.6,
+    "cross_view_code_floor": 0.3,
+    "diagnostic_reject": 0.75,
+    "report_code": 0.4
+  },
+  "schema": "selvedge/capability-similarity/v1",
+  "stamp": "20261116T081421Z",
+  "verdict": "pass",
+  "widths": {
+    "assertion": 3,
+    "code": 4,
+    "diagnostic": 2
+  }
+}

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 204, in main
+    receipt = court.generate(
+              ^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 233, in generate
+    adapter_metadata = adapter.metadata()
+                       ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 365, in metadata
+    _torch, _tokenizer, _model, _device, state = self._load()
+                                                 ^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 168, in _load
+    import harness
+ModuleNotFoundError: No module named 'harness'

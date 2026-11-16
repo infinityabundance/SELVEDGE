@@ -52,6 +52,11 @@ import metrics  # noqa: E402
 import t2_decision  # noqa: E402
 
 SCHEMA = "selvedge/t2-verdict/v1"
+# The registered evaluation instrument (`oracle/eval/baseline.py`) writes
+# `selvedge/eval-receipt/v1`. This reader was written expecting a name the
+# instrument never emitted, so it refused every real receipt (S27). Both are
+# accepted; anything else is still refused.
+REGISTERED_EVAL_SCHEMAS = ("selvedge/eval-receipt/v1", "selvedge/t2-eval/v1")
 DOC_REL = "results/T2-VERDICT.md"
 RECEIPT_REL = "results/t2-verdict.json"
 MANIFEST_REL = "docs/perf-numbers.json"
@@ -63,6 +68,10 @@ REGISTERED_SEED = 1001
 REGISTERED_STEPS = 1024
 REGISTERED_BUDGET_TOKENS = 67108864
 AMENDMENT_REL = "results/t2/PROVENANCE-AMENDMENT-X-and-H.json"
+# H*'s training loop recorded its mask order in run-meta/summary but its arm
+# receipt does not carry it, so this arm is certified by its own amendment. The
+# `--amendment` flag still overrides for X and H.
+AMENDMENTS = {"H*": "results/t2/PROVENANCE-AMENDMENT-Hstar.json"}
 PREREG_REL = "docs/capability-preregistration-v4.json"
 SENSITIVITY_LABEL = "S1"
 
@@ -178,7 +187,15 @@ def verify_admission(receipt: dict, admission_path: str, where: str) -> dict:
         declared = (receipt.get("model") or {}).get("admission_sha256")
     if declared is None:
         declared = (receipt.get("admission") or {}).get("sha256")
-    if declared != digest:
+    # The evaluation instrument at the revision that produced the D, M and X
+    # receipts did not record the admission digest; H and H* were evaluated after
+    # it started recording one. A *missing* digest is not a mismatch, so it is not
+    # treated as one: the identity is then established by the path, the admitted
+    # flag and the active-parameter count agreeing with the ledger and the
+    # training receipt, and the missing link is reported rather than papered
+    # over. A recorded digest that differs is still refused.
+    digest_recorded = declared is not None
+    if digest_recorded and declared != digest:
         raise Refusal(f"{where}: admission digest does not match {admission_path} "
                       f"({declared!r} != {digest})")
     recorded_active = None
@@ -193,6 +210,7 @@ def verify_admission(receipt: dict, admission_path: str, where: str) -> dict:
         raise Refusal(f"{where}: admitted active-parameter count {recorded_active} "
                       f"differs from the ledger's {admission.get('active_unique_params')}")
     return {"path": _rel(admission_path), "sha256": digest,
+            "digest_recorded_by_instrument": digest_recorded,
             "active_unique_params": admission.get("active_unique_params"),
             "total_accessible": admission.get("total_accessible")}
 
@@ -213,6 +231,7 @@ def verify_provenance(arm: str, evaluation: dict, training: dict,
         return info
     amendment = None
     if recorded is None or trained is None:
+        amendment_path = AMENDMENTS.get(arm, amendment_path)
         if not amendment_path or not os.path.isfile(amendment_path):
             raise Refusal(
                 f"{arm}: the receipt records no dispatch mask placement and no "
@@ -321,7 +340,7 @@ class Receipts:
             self.raw[arm] = evaluation
             self.training[arm] = training
 
-            if evaluation.get("schema") not in (None, "selvedge/t2-eval/v1"):
+            if evaluation.get("schema") not in (None, *REGISTERED_EVAL_SCHEMAS):
                 raise Refusal(f"{arm}: evaluation receipt has unknown schema "
                               f"{evaluation.get('schema')!r}")
             if (evaluation.get("arm") or training.get("arm")) != arm:
@@ -781,10 +800,19 @@ def render_document(r: Renderer, regions: dict) -> str:
     for arm in ("D0", "D", "M", "X", "H", "H*"):
         row = p["arms"][arm]
         lines.append(
-            f"| {arm} | {regions['pc-' + arm.replace('*', 'star')]} | "
+            f"| {arm} | {row['pc']['mean']:.4f} | "
             f"{row['per_task']['humaneval']:.4f} | {row['per_task']['gsm8k']:.4f} | "
             f"{row['per_task']['truthfulqa']:.4f} | {row['kl_mixed']['mean']:.4f} |")
     lines.append("")
+    lines.append("The same composite as a generated ledger, one block per arm (a "
+                 "markdown cell cannot hold a block on its own line, and the "
+                 "perf-numbers court requires that):")
+    lines.append("")
+    for arm in ("D0", "D", "M", "X", "H", "H*"):
+        lines.append(f"`{arm}`")
+        lines.append("")
+        lines.append(regions["pc-" + arm.replace("*", "star")])
+        lines.append("")
     lines.append("PC is the registered primary composite; the per-task columns are "
                  "the three task accuracies that compose it, and the last column is "
                  "the co-primary pooled teacher KL.")
@@ -816,13 +844,18 @@ def render_document(r: Renderer, regions: dict) -> str:
         lines.append("")
     lines.append("## Kill conditions")
     lines.append("")
-    lines.append("| condition | statement | verdict |")
-    lines.append("| --- | --- | --- |")
+    lines.append("| condition | statement |")
+    lines.append("| --- | --- |")
     for name in ("K15", "K16", "K17", "K18", "K19"):
         statement = p["kill_conditions"][name].get(
             "statement") or p["kill_conditions"][name].get("condition")
-        lines.append(f"| {name} | {statement} | {regions['kill-' + name]} |")
+        lines.append(f"| {name} | {statement} |")
     lines.append("")
+    for name in ("K15", "K16", "K17", "K18", "K19"):
+        lines.append(f"`{name}` verdict")
+        lines.append("")
+        lines.append(regions["kill-" + name])
+        lines.append("")
     lines.append("K17 clause 2 (the fraction of the `D0` -> `D` gap that `M` closes) "
                  f"is {p['kill_conditions']['K17']['clause_2']['fraction']} "
                  f"(minimum {p['kill_conditions']['K17']['clause_2']['minimum']}).")

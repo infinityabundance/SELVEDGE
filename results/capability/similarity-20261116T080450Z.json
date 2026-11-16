@@ -1,0 +1,423 @@
+{
+  "command": "scripts/capability_similarity.py --out results/capability/similarity-20261116T080450Z.json",
+  "created_utc": "2026-11-16T08:04:50Z",
+  "items": 177,
+  "maxima": {
+    "assertion": 1.0,
+    "code": 1.0,
+    "diagnostic": 1.0
+  },
+  "metric": "set Jaccard over token shingles per view",
+  "pairs_compared": 15576,
+  "rejected_pairs": [
+    {
+      "left": "concurrency-13-atomic-fetch-or",
+      "left_category": "concurrency",
+      "left_kind": "suite",
+      "right": "sealed-concurrency-03-fetch-update-noop",
+      "right_category": "concurrency",
+      "right_kind": "sealed",
+      "rule": "diagnostic_reject",
+      "scores": {
+        "assertion": 0.205882,
+        "code": 0.317708,
+        "diagnostic": 0.875
+      }
+    },
+    {
+      "left": "deps-04-unknown-feature",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-05-workspace-member",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.606557,
+        "diagnostic": 0.042254
+      }
+    },
+    {
+      "left": "deps-08-renamed-package",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-09-disable-default-features",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 0.625,
+        "code": 0.304348,
+        "diagnostic": 0.0
+      }
+    },
+    {
+      "left": "deps-10-edition-unsafe-attribute",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-13-wrong-lib-path",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.411765,
+        "diagnostic": 0.028169
+      }
+    },
+    {
+      "left": "deps-10-edition-unsafe-attribute",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-14-workspace-inheritance",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.411765,
+        "diagnostic": 0.027027
+      }
+    },
+    {
+      "left": "deps-10-edition-unsafe-attribute",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-15-missing-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.411765,
+        "diagnostic": 0.033333
+      }
+    },
+    {
+      "left": "deps-10-edition-unsafe-attribute",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-17-invalid-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.411765,
+        "diagnostic": 0.04
+      }
+    },
+    {
+      "left": "deps-10-edition-unsafe-attribute",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-01-missing-workspace-key",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.411765,
+        "diagnostic": 0.051948
+      }
+    },
+    {
+      "left": "deps-10-edition-unsafe-attribute",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-02-resolver-type",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "assertion_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.411765,
+        "diagnostic": 0.075472
+      }
+    },
+    {
+      "left": "deps-11-lib-name-mismatch",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-16-missing-dependency-dir",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.868421,
+        "diagnostic": 0.028986
+      }
+    },
+    {
+      "left": "deps-11-lib-name-mismatch",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-18-default-features-type",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.837838,
+        "diagnostic": 0.079365
+      }
+    },
+    {
+      "left": "deps-13-wrong-lib-path",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-14-workspace-inheritance",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.054795
+      }
+    },
+    {
+      "left": "deps-13-wrong-lib-path",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-15-missing-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.067797
+      }
+    },
+    {
+      "left": "deps-13-wrong-lib-path",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-17-invalid-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.012821
+      }
+    },
+    {
+      "left": "deps-13-wrong-lib-path",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-01-missing-workspace-key",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.078947
+      }
+    },
+    {
+      "left": "deps-13-wrong-lib-path",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-02-resolver-type",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.017544
+      }
+    },
+    {
+      "left": "deps-14-workspace-inheritance",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-15-missing-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.404255
+      }
+    },
+    {
+      "left": "deps-14-workspace-inheritance",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-17-invalid-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.025
+      }
+    },
+    {
+      "left": "deps-14-workspace-inheritance",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-01-missing-workspace-key",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.133333
+      }
+    },
+    {
+      "left": "deps-14-workspace-inheritance",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-02-resolver-type",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.016667
+      }
+    },
+    {
+      "left": "deps-15-missing-package-name",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-17-invalid-package-name",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.014925
+      }
+    },
+    {
+      "left": "deps-15-missing-package-name",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-01-missing-workspace-key",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.109375
+      }
+    },
+    {
+      "left": "deps-15-missing-package-name",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-02-resolver-type",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.021739
+      }
+    },
+    {
+      "left": "deps-16-missing-dependency-dir",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "deps-18-default-features-type",
+      "right_category": "dependency-compat",
+      "right_kind": "suite",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 0.911765,
+        "diagnostic": 0.014706
+      }
+    },
+    {
+      "left": "deps-17-invalid-package-name",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-01-missing-workspace-key",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.011628
+      }
+    },
+    {
+      "left": "deps-17-invalid-package-name",
+      "left_category": "dependency-compat",
+      "left_kind": "suite",
+      "right": "sealed-deps-02-resolver-type",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.125
+      }
+    },
+    {
+      "left": "migrate-16-required-config-argument",
+      "left_category": "api-migration",
+      "left_kind": "suite",
+      "right": "repo-15-caller-not-updated",
+      "right_category": "repo-scale",
+      "right_kind": "suite",
+      "rule": "diagnostic_reject",
+      "scores": {
+        "assertion": 0.75,
+        "code": 0.457143,
+        "diagnostic": 0.827586
+      }
+    },
+    {
+      "left": "sealed-deps-01-missing-workspace-key",
+      "left_category": "dependency-compat",
+      "left_kind": "sealed",
+      "right": "sealed-deps-02-resolver-type",
+      "right_category": "dependency-compat",
+      "right_kind": "sealed",
+      "rule": "code_reject",
+      "scores": {
+        "assertion": 1.0,
+        "code": 1.0,
+        "diagnostic": 0.015385
+      }
+    }
+  ],
+  "replaced": [],
+  "reported_pairs": [],
+  "rules": {
+    "assertion_reject": 0.6,
+    "code_reject": 0.6,
+    "cross_view_code_floor": 0.3,
+    "diagnostic_reject": 0.75,
+    "report_code": 0.4
+  },
+  "schema": "selvedge/capability-similarity/v1",
+  "stamp": "20261116T080450Z",
+  "verdict": "reject",
+  "widths": {
+    "assertion": 3,
+    "code": 4,
+    "diagnostic": 2
+  }
+}

@@ -1,0 +1,168 @@
+[2026-11-16T09:22:04Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T09:22:04Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T09:22:04Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:22:04Z] [preflight] start
+[2026-11-16T09:22:04Z] [preflight] ok
+[2026-11-16T09:22:04Z] [verify] start
+[2026-11-16T09:22:10Z] [verify] ok
+[2026-11-16T09:22:10Z] [eval] start
+[2026-11-16T09:22:13Z] [eval] H* receipt is already current for this checkpoint
+[2026-11-16T09:22:13Z] [eval] ok
+[2026-11-16T09:22:13Z] [instrument] start
+[2026-11-16T09:22:16Z] FAILED in stage instrument: command failed with exit 127: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- /usr/bin/python3 oracle/eval/instrument_check.py --student D0 --student D:results/artifacts/train/t2/D/step-001024.pt:results/train/admission-configs/t2/D.json:results/train/admission/t2/D.json:t2 --student M:results/artifacts/train/t2/M/step-001024.pt:results/train/admission-configs/t2/M.json:results/train/admission/t2/M.json:t2 --student X:results/artifacts/train/t2/X/step-001024.pt:results/train/admission-configs/t2/X.json:results/train/admission/t2/X.json:t2 --student H:results/artifacts/train/t2/H/step-001024.pt:results/train/admission-configs/t2/H.json:results/train/admission/t2/H.json:t2 --student H*:results/artifacts/train/t2/Hstar/step-001024.pt:results/train/admission-configs/t2/H*.json:results/train/admission/t2/H*.json:t2
+[2026-11-16T09:22:16Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:23:34Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T09:23:34Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T09:23:34Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:23:34Z] [preflight] already done; skipping
+[2026-11-16T09:23:34Z] [verify] already done; skipping
+[2026-11-16T09:23:34Z] [eval] already done; skipping
+[2026-11-16T09:23:34Z] [instrument] start
+[2026-11-16T09:25:04Z] [instrument] ok
+[2026-11-16T09:25:04Z] [capability] start
+[2026-11-16T09:25:09Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+[2026-11-16T09:25:09Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:32:38Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T09:32:38Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T09:32:38Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:32:38Z] [preflight] already done; skipping
+[2026-11-16T09:32:38Z] [verify] already done; skipping
+[2026-11-16T09:32:38Z] [eval] already done; skipping
+[2026-11-16T09:32:38Z] [instrument] already done; skipping
+[2026-11-16T09:32:39Z] [capability] start
+[2026-11-16T09:32:55Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+[2026-11-16T09:32:55Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:35:14Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T09:35:14Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T09:35:14Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:35:14Z] [preflight] already done; skipping
+[2026-11-16T09:35:14Z] [verify] already done; skipping
+[2026-11-16T09:35:14Z] [eval] already done; skipping
+[2026-11-16T09:35:14Z] [instrument] already done; skipping
+[2026-11-16T09:35:14Z] [capability] start
+[2026-11-16T09:38:32Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-D/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/result.json
+[2026-11-16T09:38:32Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:39:39Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T09:39:39Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T09:39:39Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:39:39Z] [preflight] already done; skipping
+[2026-11-16T09:39:39Z] [verify] already done; skipping
+[2026-11-16T09:39:39Z] [eval] already done; skipping
+[2026-11-16T09:39:39Z] [instrument] already done; skipping
+[2026-11-16T09:39:39Z] [capability] start
+[2026-11-16T11:54:16Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm H* --t2-checkpoint results/artifacts/train/t2/Hstar/step-001024.pt --t2-config results/train/admission-configs/t2/H*.json --t2-admission results/train/admission/t2/H*.json --t2-training-receipt results/t2/H*/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-Hstar/generations.json
+[2026-11-16T11:54:16Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T12:24:55Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T12:24:55Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T12:24:55Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T12:24:55Z] [preflight] already done; skipping
+[2026-11-16T12:24:55Z] [verify] already done; skipping
+[2026-11-16T12:24:55Z] [eval] already done; skipping
+[2026-11-16T12:24:55Z] [instrument] already done; skipping
+[2026-11-16T12:24:55Z] [capability] start
+[2026-11-16T12:24:55Z] [capability] D result is already current; not re-running
+[2026-11-16T12:24:55Z] [capability] M result is already current; not re-running
+[2026-11-16T12:24:55Z] [capability] X result is already current; not re-running
+[2026-11-16T12:24:55Z] [capability] H result is already current; not re-running
+[2026-11-16T13:04:51Z] [capability] ok
+[2026-11-16T13:04:51Z] [sensitivity] start
+[2026-11-16T13:27:21Z] [sensitivity] ok
+[2026-11-16T13:27:21Z] [verdict] start
+[2026-11-16T13:27:22Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root /mnt/1tb_kingston/SELVEDGE --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:27:22Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:35:28Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T13:35:29Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T13:35:29Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:35:29Z] [preflight] already done; skipping
+[2026-11-16T13:35:29Z] [verify] already done; skipping
+[2026-11-16T13:35:29Z] [eval] already done; skipping
+[2026-11-16T13:35:29Z] [instrument] already done; skipping
+[2026-11-16T13:35:29Z] [capability] already done; skipping
+[2026-11-16T13:35:29Z] [sensitivity] already done; skipping
+[2026-11-16T13:35:29Z] [verdict] start
+[2026-11-16T13:35:30Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:35:30Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:37:28Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T13:37:28Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T13:37:28Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:37:28Z] [preflight] already done; skipping
+[2026-11-16T13:37:28Z] [verify] already done; skipping
+[2026-11-16T13:37:28Z] [eval] already done; skipping
+[2026-11-16T13:37:28Z] [instrument] already done; skipping
+[2026-11-16T13:37:28Z] [capability] already done; skipping
+[2026-11-16T13:37:28Z] [sensitivity] already done; skipping
+[2026-11-16T13:37:28Z] [verdict] start
+[2026-11-16T13:37:30Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:37:30Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:39:46Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T13:39:46Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T13:39:46Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:39:46Z] [preflight] already done; skipping
+[2026-11-16T13:39:46Z] [verify] already done; skipping
+[2026-11-16T13:39:46Z] [eval] already done; skipping
+[2026-11-16T13:39:46Z] [instrument] already done; skipping
+[2026-11-16T13:39:46Z] [capability] already done; skipping
+[2026-11-16T13:39:46Z] [sensitivity] already done; skipping
+[2026-11-16T13:39:46Z] [verdict] start
+[2026-11-16T13:40:06Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:40:06Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:41:32Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T13:41:32Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T13:41:32Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:41:32Z] [preflight] already done; skipping
+[2026-11-16T13:41:32Z] [verify] already done; skipping
+[2026-11-16T13:41:32Z] [eval] already done; skipping
+[2026-11-16T13:41:32Z] [instrument] already done; skipping
+[2026-11-16T13:41:32Z] [capability] already done; skipping
+[2026-11-16T13:41:32Z] [sensitivity] already done; skipping
+[2026-11-16T13:41:32Z] [verdict] start
+[2026-11-16T13:41:43Z] [verdict] ok
+[2026-11-16T13:41:43Z] [compare] start
+[2026-11-16T13:41:45Z] FAILED in stage compare: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/capability_compare.py --repo-root . --result D=results/capability/runs/t2-D/result.json --result M=results/capability/runs/t2-M/result.json --result X=results/capability/runs/t2-X/result.json --result H=results/capability/runs/t2-H/result.json --result H*=results/capability/runs/t2-Hstar/result.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-comparison.json
+[2026-11-16T13:41:45Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:43:40Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T13:43:40Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+[2026-11-16T13:43:40Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:43:40Z] [preflight] already done; skipping
+[2026-11-16T13:43:40Z] [verify] already done; skipping
+[2026-11-16T13:43:40Z] [eval] already done; skipping
+[2026-11-16T13:43:40Z] [instrument] already done; skipping
+[2026-11-16T13:43:40Z] [capability] already done; skipping
+[2026-11-16T13:43:40Z] [sensitivity] already done; skipping
+[2026-11-16T13:43:40Z] [verdict] already done; skipping
+[2026-11-16T13:43:40Z] [compare] start
+[2026-11-16T13:43:42Z] [compare] ok
+[2026-11-16T13:43:42Z] post-H* pipeline complete; state: results/t2/post-hstar-state.json
+[2026-11-16T13:46:56Z] post-hstar: repo=/mnt/1tb_kingston/SELVEDGE runner=systemd resume=1
+[2026-11-16T13:46:56Z] post-hstar: python3
+/mnt/1tb_kingston/SELVEDGE/scripts/post_hstar.py
+--resume
+--force
+--stage
+verdict
+[2026-11-16T13:46:56Z] post-H* pipeline starting: stages=verdict runner=systemd resume=True
+[2026-11-16T13:46:56Z] [verdict] start
+[2026-11-16T13:47:07Z] [verdict] ok
+[2026-11-16T13:47:07Z] post-H* pipeline complete; state: results/t2/post-hstar-state.json

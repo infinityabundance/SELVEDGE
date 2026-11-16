@@ -18,3 +18,702 @@
 [2026-11-16T08:34:27Z] [compare] start
 [2026-11-16T08:34:27Z] [compare] ok
 [2026-11-16T08:34:27Z] post-H* pipeline complete; state: results/t2/post-hstar-state.dry-run.json
+[2026-11-16T09:22:04Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:22:04Z] [preflight] start
+[2026-11-16T09:22:04Z] [preflight] ok
+[2026-11-16T09:22:04Z] [verify] start
+[2026-11-16T09:22:10Z] [verify] ok
+[2026-11-16T09:22:10Z] [eval] start
+[2026-11-16T09:22:13Z] [eval] H* receipt is already current for this checkpoint
+[2026-11-16T09:22:13Z] [eval] ok
+[2026-11-16T09:22:13Z] [instrument] start
+
+[2026-11-16T09:22:13Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-instrument-20261116T092213Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- /usr/bin/python3 oracle/eval/instrument_check.py --student D0 --student D:results/artifacts/train/t2/D/step-001024.pt:results/train/admission-configs/t2/D.json:results/train/admission/t2/D.json:t2 --student M:results/artifacts/train/t2/M/step-001024.pt:results/train/admission-configs/t2/M.json:results/train/admission/t2/M.json:t2 --student X:results/artifacts/train/t2/X/step-001024.pt:results/train/admission-configs/t2/X.json:results/train/admission/t2/X.json:t2 --student H:results/artifacts/train/t2/H/step-001024.pt:results/train/admission-configs/t2/H.json:results/train/admission/t2/H.json:t2 --student H*:results/artifacts/train/t2/Hstar/step-001024.pt:results/train/admission-configs/t2/H*.json:results/train/admission/t2/H*.json:t2
+Running as unit: selvedge-post-hstar-instrument-20261116T092213Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=device-passthrough
+selvedge-court: 1: exec: /usr/bin/python3: not found
+court: oracle exit=127 enforcement=ok receipt=results/courts/oracle-20261116T092213Z-1c75e8.json log=results/courts/logs/oracle-20261116T092213Z-1c75e8.log
+[2026-11-16T09:22:16Z] FAILED in stage instrument: command failed with exit 127: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- /usr/bin/python3 oracle/eval/instrument_check.py --student D0 --student D:results/artifacts/train/t2/D/step-001024.pt:results/train/admission-configs/t2/D.json:results/train/admission/t2/D.json:t2 --student M:results/artifacts/train/t2/M/step-001024.pt:results/train/admission-configs/t2/M.json:results/train/admission/t2/M.json:t2 --student X:results/artifacts/train/t2/X/step-001024.pt:results/train/admission-configs/t2/X.json:results/train/admission/t2/X.json:t2 --student H:results/artifacts/train/t2/H/step-001024.pt:results/train/admission-configs/t2/H.json:results/train/admission/t2/H.json:t2 --student H*:results/artifacts/train/t2/Hstar/step-001024.pt:results/train/admission-configs/t2/H*.json:results/train/admission/t2/H*.json:t2
+[2026-11-16T09:22:16Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:23:34Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:23:34Z] [preflight] already done; skipping
+[2026-11-16T09:23:34Z] [verify] already done; skipping
+[2026-11-16T09:23:34Z] [eval] already done; skipping
+[2026-11-16T09:23:34Z] [instrument] start
+
+[2026-11-16T09:23:34Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-instrument-20261116T092334Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 oracle/eval/instrument_check.py --student D0 --student D:results/artifacts/train/t2/D/step-001024.pt:results/train/admission-configs/t2/D.json:results/train/admission/t2/D.json:t2 --student M:results/artifacts/train/t2/M/step-001024.pt:results/train/admission-configs/t2/M.json:results/train/admission/t2/M.json:t2 --student X:results/artifacts/train/t2/X/step-001024.pt:results/train/admission-configs/t2/X.json:results/train/admission/t2/X.json:t2 --student H:results/artifacts/train/t2/H/step-001024.pt:results/train/admission-configs/t2/H.json:results/train/admission/t2/H.json:t2 --student H*:results/artifacts/train/t2/Hstar/step-001024.pt:results/train/admission-configs/t2/H*.json:results/train/admission/t2/H*.json:t2
+Running as unit: selvedge-post-hstar-instrument-20261116T092334Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=device-passthrough
+instrument: student D0 profile=t1
+instrument: student D profile=t2
+instrument: student M profile=t2
+instrument: student X profile=t2
+instrument: student H profile=t2
+instrument: student H* profile=t2
+{
+  "decision": "compact_target_adequate_for_training_report_both_at_eval",
+  "pooled": {
+    "D": {
+      "bias": -0.40044469363056123,
+      "compact": 1.3296969525516034,
+      "full": 1.730141644924879,
+      "identity_check": {
+        "measured_bias": -0.694903984504046,
+        "minus_p_tail_entropy_plus_kl": -0.6949039832424556,
+        "positions": "valid subset (teacher tail mass >= floor), pooled per position, not means of means"
+      },
+      "p_tail": 0.05001716892584227,
+      "tail_entropy": 5.321511134505272,
+      "tail_kl": 1.4799350403249263,
+      "valid_fraction": 0.5805676655843854,
+      "windows": 160
+    },
+    "D0": {
+      "bias": -0.4000205195974559,
+      "compact": 1.4416029892861844,
+      "full": 1.8416235156357288,
+      "identity_check": {
+        "measured_bias": -0.691681276616858,
+        "minus_p_tail_entropy_plus_kl": -0.6916812745337669,
+        "positions": "valid subset (teacher tail mass >= floor), pooled per position, not means of means"
+      },
+      "p_tail": 0.05001716892584227,
+      "tail_entropy": 5.321511134505272,
+      "tail_kl": 1.443743385374546,
+      "valid_fraction": 0.5805676655843854,
+      "windows": 160
+    },
+    "H": {
+      "bias": -0.4025654864031821,
+      "compact": 1.351601704210043,
+      "full": 1.754167214408517,
+      "identity_check": {
+        "measured_bias": -0.6976514960340199,
+        "minus_p_tail_entropy_plus_kl": -0.6976515081511555,
+        "positions": "valid subset (teacher tail mass >= floor), pooled per position, not means of means"
+      },
+      "p_tail": 0.05001716892584227,
+      "tail_entropy": 5.321511134505272,
+      "tail_kl": 1.5116209536790848,
+      "valid_fraction": 0.5805676655843854,
+      "windows": 160
+    },
+    "H*": {
+      "bias": -0.4017524505965412,
+      "compact": 1.3439031470566989,
+      "full": 1.7456555973738432,
+      "identity_check": {
+        "measured_bias": -0.6964875394794469,
+        "minus_p_tail_entropy_plus_kl": -0.6964875368975875,
+        "positions": "valid subset (teacher tail mass >= floor), pooled per position, not means of means"
+      },
+      "p_tail": 0.05001716892584227,
+      "tail_entropy": 5.321511134505272,
+      "tail_kl": 1.4896202459931374,
+      "valid_fraction": 0.5805676655843854,
+      "windows": 160
+    },
+    "M": {
+      "bias": -0.3944573596585542,
+      "compact": 1.3724693844094873,
+      "full": 1.7669267568737268,
+      "identity_check": {
+        "measured_bias": -0.6866151973405741,
+        "minus_p_tail_entropy_plus_kl": -0.6866151924702484,
+        "positions": "valid subset (teacher tail mass >= floor), pooled per position, not means of means"
+      },
+      "p_tail": 0.05001716892584227,
+      "tail_entropy": 5.321511134505272,
+      "tail_kl": 1.4035055048763752,
+      "valid_fraction": 0.5805676655843854,
+      "windows": 160
+    },
+    "X": {
+      "bias": -0.39975408660247924,
+      "compact": 1.345703373849392,
+      "full": 1.7454574577510358,
+      "identity_check": {
+        "measured_bias": -0.6963575160131145,
+        "minus_p_tail_entropy_plus_kl": -0.6963575152209531,
+        "positions": "valid subset (teacher tail mass >= floor), pooled per position, not means of means"
+      },
+      "p_tail": 0.05001716892584227,
+      "tail_entropy": 5.321511134505272,
+      "tail_kl": 1.491079580783844,
+      "valid_fraction": 0.5805676655843854,
+      "windows": 160
+    }
+  },
+  "sign_agreement": true,
+  "spearman": 0.9428571428571428
+}
+instrument: receipt=results/train/instrument-20261116T092338Z.json
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T092334Z-a8d5fe.json log=results/courts/logs/oracle-20261116T092334Z-a8d5fe.log
+[2026-11-16T09:25:04Z] [instrument] ok
+[2026-11-16T09:25:04Z] [capability] start
+
+[2026-11-16T09:25:04Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-d-20261116T092504Z --property=MemoryMax=16G --property=MemorySwapMax=16G --property=TasksMax=1024 --property=CPUQuota=800% -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+Running as unit: selvedge-post-hstar-cap-d-20261116T092504Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=device-passthrough
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 204, in main
+    receipt = court.generate(
+              ^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 233, in generate
+    adapter_metadata = adapter.metadata()
+                       ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 365, in metadata
+    _torch, _tokenizer, _model, _device, state = self._load()
+                                                 ^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 168, in _load
+    import harness
+ModuleNotFoundError: No module named 'harness'
+court: oracle exit=1 enforcement=ok receipt=results/courts/oracle-20261116T092504Z-adf30c.json log=results/courts/logs/oracle-20261116T092504Z-adf30c.log
+[2026-11-16T09:25:09Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+[2026-11-16T09:25:09Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:32:38Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:32:38Z] [preflight] already done; skipping
+[2026-11-16T09:32:38Z] [verify] already done; skipping
+[2026-11-16T09:32:38Z] [eval] already done; skipping
+[2026-11-16T09:32:38Z] [instrument] already done; skipping
+[2026-11-16T09:32:39Z] [capability] start
+
+[2026-11-16T09:32:39Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-d-20261116T093239Z --property=MemoryMax=16G --property=MemorySwapMax=16G --property=TasksMax=1024 --property=CPUQuota=800% -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+Running as unit: selvedge-post-hstar-cap-d-20261116T093239Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=device-passthrough
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 204, in main
+    receipt = court.generate(
+              ^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 234, in generate
+    generated = adapter.generate(requests)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 432, in generate
+    return greedy_generate(model, tokenizer, requests, device, self.batch)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 604, in greedy_generate
+    generated = model.generate(
+                ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 158, in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py", line 3007, in generate
+    result = decoding_method(
+             ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py", line 3207, in _sample
+    outputs = self._prefill(
+              ^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py", line 4319, in _prefill
+    return self(**model_inputs, return_dict=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 469, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+                                       ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 361, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 405, in forward
+    hidden_states = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/modeling_layers.py", line 121, in forward_with_checkpointing
+    return forward(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 313, in forward
+    hidden_states = self.mlp(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 357, in forward
+    extra = self.extra(hidden_states)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/modeling.py", line 334, in forward
+    gate = F.linear(hidden_states, self.gate)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: expected mat1 and mat2 to have the same dtype, but got: c10::BFloat16 != float
+court: oracle exit=1 enforcement=ok receipt=results/courts/oracle-20261116T093239Z-327a17.json log=results/courts/logs/oracle-20261116T093239Z-327a17.log
+[2026-11-16T09:32:55Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+[2026-11-16T09:32:55Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:35:14Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:35:14Z] [preflight] already done; skipping
+[2026-11-16T09:35:14Z] [verify] already done; skipping
+[2026-11-16T09:35:14Z] [eval] already done; skipping
+[2026-11-16T09:35:14Z] [instrument] already done; skipping
+[2026-11-16T09:35:14Z] [capability] start
+
+[2026-11-16T09:35:14Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-d-20261116T093514Z --property=MemoryMax=16G --property=MemorySwapMax=16G --property=TasksMax=1024 --property=CPUQuota=800% -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+Running as unit: selvedge-post-hstar-cap-d-20261116T093514Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=device-passthrough
+
+[2026-11-16T09:38:32Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-check-d-20261116T093832Z --property=MemoryMax=12G --property=MemorySwapMax=12G --property=TasksMax=1024 --property=CPUQuota=800% -- /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-D/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/result.json
+Running as unit: selvedge-post-hstar-check-d-20261116T093832Z.service
+court: rust image=selvedge/rust-court:20261116-1.98-slim-2744951e34ae memory=8g cpus=8 pids=1024 tmp=2g network=none gpu=none
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ~~~~^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 214, in main
+    generations = load_json(args.generations)
+  File "/work/oracle/capability/cli.py", line 32, in load_json
+    with open(path, "r", encoding="utf-8") as handle:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/capability/runs/t2-D/generations.json'
+court: rust exit=1 enforcement=ok receipt=results/courts/rust-20261116T093832Z-07e3bf.json log=results/courts/logs/rust-20261116T093832Z-07e3bf.log
+[2026-11-16T09:38:32Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-D/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/result.json
+[2026-11-16T09:38:32Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T09:39:39Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T09:39:39Z] [preflight] already done; skipping
+[2026-11-16T09:39:39Z] [verify] already done; skipping
+[2026-11-16T09:39:39Z] [eval] already done; skipping
+[2026-11-16T09:39:39Z] [instrument] already done; skipping
+[2026-11-16T09:39:39Z] [capability] start
+
+[2026-11-16T09:39:39Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-d-20261116T093939Z --property=MemoryMax=16G --property=MemorySwapMax=16G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=16g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/generations.json
+Running as unit: selvedge-post-hstar-cap-d-20261116T093939Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=16g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+capability_court: generated 153 items -> results/capability/runs/t2-D/generations.json
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T093939Z-a38970.json log=results/courts/logs/oracle-20261116T093939Z-a38970.log
+
+[2026-11-16T10:02:30Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-check-d-20261116T100230Z --property=MemoryMax=12G --property=MemorySwapMax=12G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=12g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=4g -- /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-D/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-D/result.json
+Running as unit: selvedge-post-hstar-check-d-20261116T100230Z.service
+court: rust image=selvedge/rust-court:20261116-1.98-slim-2744951e34ae memory=12g cpus=8 pids=1024 tmp=4g network=none gpu=none
+capability_court: composite 0.0000 [0.0000, 0.0000]
+  api-migration      0.0000 [0.0000, 0.0000] (n=18, min 18)
+  concurrency        0.0000 [0.0000, 0.0000] (n=18, min 18)
+  dependency-compat  0.0000 [0.0000, 0.0000] (n=18, min 18)
+  failing-test       0.0000 [0.0000, 0.0000] (n=18, min 18)
+  lifetime-borrow    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  repo-scale         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  semantic-repair    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  trait-impl         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  category minimum met True; counts {'compile_error': 48, 'invalid_solution': 105}
+court: rust exit=0 enforcement=ok receipt=results/courts/rust-20261116T100230Z-d28aad.json log=results/courts/logs/rust-20261116T100230Z-d28aad.log
+
+[2026-11-16T10:02:33Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-m-20261116T100233Z --property=MemoryMax=16G --property=MemorySwapMax=16G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=16g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm M --t2-checkpoint results/artifacts/train/t2/M/step-001024.pt --t2-config results/train/admission-configs/t2/M.json --t2-admission results/train/admission/t2/M.json --t2-training-receipt results/t2/M/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-M/generations.json
+Running as unit: selvedge-post-hstar-cap-m-20261116T100233Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=16g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+capability_court: generated 153 items -> results/capability/runs/t2-M/generations.json
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T100233Z-2d61e2.json log=results/courts/logs/oracle-20261116T100233Z-2d61e2.log
+
+[2026-11-16T10:26:32Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-check-m-20261116T102632Z --property=MemoryMax=12G --property=MemorySwapMax=12G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=12g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=4g -- /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-M/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-M/result.json
+Running as unit: selvedge-post-hstar-check-m-20261116T102632Z.service
+court: rust image=selvedge/rust-court:20261116-1.98-slim-2744951e34ae memory=12g cpus=8 pids=1024 tmp=4g network=none gpu=none
+capability_court: composite 0.0000 [0.0000, 0.0000]
+  api-migration      0.0000 [0.0000, 0.0000] (n=18, min 18)
+  concurrency        0.0000 [0.0000, 0.0000] (n=18, min 18)
+  dependency-compat  0.0000 [0.0000, 0.0000] (n=18, min 18)
+  failing-test       0.0000 [0.0000, 0.0000] (n=18, min 18)
+  lifetime-borrow    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  repo-scale         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  semantic-repair    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  trait-impl         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  category minimum met True; counts {'compile_error': 57, 'invalid_solution': 96}
+court: rust exit=0 enforcement=ok receipt=results/courts/rust-20261116T102632Z-709a32.json log=results/courts/logs/rust-20261116T102632Z-709a32.log
+
+[2026-11-16T10:26:35Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-x-20261116T102635Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=24g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm X --t2-checkpoint results/artifacts/train/t2/X/step-001024.pt --t2-config results/train/admission-configs/t2/X.json --t2-admission results/train/admission/t2/X.json --t2-training-receipt results/t2/X/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-X/generations.json --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json
+Running as unit: selvedge-post-hstar-cap-x-20261116T102635Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+capability_court: generated 153 items -> results/capability/runs/t2-X/generations.json
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T102635Z-e7b865.json log=results/courts/logs/oracle-20261116T102635Z-e7b865.log
+
+[2026-11-16T11:08:42Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-check-x-20261116T110842Z --property=MemoryMax=12G --property=MemorySwapMax=12G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=12g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=4g -- /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-X/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-X/result.json
+Running as unit: selvedge-post-hstar-check-x-20261116T110842Z.service
+court: rust image=selvedge/rust-court:20261116-1.98-slim-2744951e34ae memory=12g cpus=8 pids=1024 tmp=4g network=none gpu=none
+capability_court: composite 0.0000 [0.0000, 0.0000]
+  api-migration      0.0000 [0.0000, 0.0000] (n=18, min 18)
+  concurrency        0.0000 [0.0000, 0.0000] (n=18, min 18)
+  dependency-compat  0.0000 [0.0000, 0.0000] (n=18, min 18)
+  failing-test       0.0000 [0.0000, 0.0000] (n=18, min 18)
+  lifetime-borrow    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  repo-scale         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  semantic-repair    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  trait-impl         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  category minimum met True; counts {'invalid_solution': 135, 'compile_error': 18}
+court: rust exit=0 enforcement=ok receipt=results/courts/rust-20261116T110842Z-efabf7.json log=results/courts/logs/rust-20261116T110842Z-efabf7.log
+
+[2026-11-16T11:08:44Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-h-20261116T110844Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=24g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm H --t2-checkpoint results/artifacts/train/t2/H/step-001024.pt --t2-config results/train/admission-configs/t2/H.json --t2-admission results/train/admission/t2/H.json --t2-training-receipt results/t2/H/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-H/generations.json --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json
+Running as unit: selvedge-post-hstar-cap-h-20261116T110844Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+capability_court: generated 153 items -> results/capability/runs/t2-H/generations.json
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T110844Z-12bd51.json log=results/courts/logs/oracle-20261116T110844Z-12bd51.log
+
+[2026-11-16T11:53:58Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-check-h-20261116T115358Z --property=MemoryMax=12G --property=MemorySwapMax=12G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=12g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=4g -- /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-H/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-H/result.json
+Running as unit: selvedge-post-hstar-check-h-20261116T115358Z.service
+court: rust image=selvedge/rust-court:20261116-1.98-slim-2744951e34ae memory=12g cpus=8 pids=1024 tmp=4g network=none gpu=none
+capability_court: composite 0.0000 [0.0000, 0.0000]
+  api-migration      0.0000 [0.0000, 0.0000] (n=18, min 18)
+  concurrency        0.0000 [0.0000, 0.0000] (n=18, min 18)
+  dependency-compat  0.0000 [0.0000, 0.0000] (n=18, min 18)
+  failing-test       0.0000 [0.0000, 0.0000] (n=18, min 18)
+  lifetime-borrow    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  repo-scale         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  semantic-repair    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  trait-impl         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  category minimum met True; counts {'invalid_solution': 74, 'compile_error': 78, 'test_failed': 1}
+court: rust exit=0 enforcement=ok receipt=results/courts/rust-20261116T115358Z-ce574e.json log=results/courts/logs/rust-20261116T115358Z-ce574e.log
+
+[2026-11-16T11:54:03Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-hstar-20261116T115403Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=24g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm H* --t2-checkpoint results/artifacts/train/t2/Hstar/step-001024.pt --t2-config results/train/admission-configs/t2/H*.json --t2-admission results/train/admission/t2/H*.json --t2-training-receipt results/t2/H*/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-Hstar/generations.json
+Running as unit: selvedge-post-hstar-cap-hstar-20261116T115403Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 204, in main
+    receipt = court.generate(
+              ^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 233, in generate
+    adapter_metadata = adapter.metadata()
+                       ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 378, in metadata
+    _torch, _tokenizer, _model, _device, state = self._load()
+                                                 ^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 202, in _load
+    self._verification = self._verify_receipt(state)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 307, in _verify_receipt
+    raise AdapterError(
+capability.adapters.AdapterError: the checkpoint does not match its training receipt results/t2/H*/run.json: the training receipt records no dispatch mask placement (P12.1), so a routed checkpoint's dispatch semantics are unverified; supply a certified --provenance-amendment if one exists
+court: oracle exit=1 enforcement=ok receipt=results/courts/oracle-20261116T115403Z-f88d23.json log=results/courts/logs/oracle-20261116T115403Z-f88d23.log
+[2026-11-16T11:54:16Z] FAILED in stage capability: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm H* --t2-checkpoint results/artifacts/train/t2/Hstar/step-001024.pt --t2-config results/train/admission-configs/t2/H*.json --t2-admission results/train/admission/t2/H*.json --t2-training-receipt results/t2/H*/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-Hstar/generations.json
+[2026-11-16T11:54:16Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T12:24:55Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T12:24:55Z] [preflight] already done; skipping
+[2026-11-16T12:24:55Z] [verify] already done; skipping
+[2026-11-16T12:24:55Z] [eval] already done; skipping
+[2026-11-16T12:24:55Z] [instrument] already done; skipping
+[2026-11-16T12:24:55Z] [capability] start
+[2026-11-16T12:24:55Z] [capability] D result is already current; not re-running
+[2026-11-16T12:24:55Z] [capability] M result is already current; not re-running
+[2026-11-16T12:24:55Z] [capability] X result is already current; not re-running
+[2026-11-16T12:24:55Z] [capability] H result is already current; not re-running
+
+[2026-11-16T12:24:55Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-cap-hstar-20261116T122455Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=24g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=6c09915bbceeebb4e6689e1f83c1a6a384a854eb --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 scripts/capability_court.py generate --t2-arm H* --t2-checkpoint results/artifacts/train/t2/Hstar/step-001024.pt --t2-config results/train/admission-configs/t2/H*.json --t2-admission results/train/admission/t2/H*.json --t2-training-receipt results/t2/H*/run.json --t2-mask-order legacy --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-Hstar/generations.json --provenance-amendment results/t2/PROVENANCE-AMENDMENT-Hstar.json
+Running as unit: selvedge-post-hstar-cap-hstar-20261116T122455Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+capability_court: generated 153 items -> results/capability/runs/t2-Hstar/generations.json
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T122455Z-e627a1.json log=results/courts/logs/oracle-20261116T122455Z-e627a1.log
+
+[2026-11-16T13:04:46Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-check-hstar-20261116T130446Z --property=MemoryMax=12G --property=MemorySwapMax=12G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=12g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=4g -- /mnt/1tb_kingston/SELVEDGE/scripts/court rust -- python3 scripts/capability_court.py check --generations results/capability/runs/t2-Hstar/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-Hstar/result.json
+Running as unit: selvedge-post-hstar-check-hstar-20261116T130446Z.service
+court: rust image=selvedge/rust-court:20261116-1.98-slim-2744951e34ae memory=12g cpus=8 pids=1024 tmp=4g network=none gpu=none
+capability_court: composite 0.0000 [0.0000, 0.0000]
+  api-migration      0.0000 [0.0000, 0.0000] (n=18, min 18)
+  concurrency        0.0000 [0.0000, 0.0000] (n=18, min 18)
+  dependency-compat  0.0000 [0.0000, 0.0000] (n=18, min 18)
+  failing-test       0.0000 [0.0000, 0.0000] (n=18, min 18)
+  lifetime-borrow    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  repo-scale         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  semantic-repair    0.0000 [0.0000, 0.0000] (n=18, min 18)
+  trait-impl         0.0000 [0.0000, 0.0000] (n=18, min 18)
+  category minimum met True; counts {'compile_error': 92, 'invalid_solution': 60, 'test_failed': 1}
+court: rust exit=0 enforcement=ok receipt=results/courts/rust-20261116T130446Z-7eaa74.json log=results/courts/logs/rust-20261116T130446Z-7eaa74.log
+[2026-11-16T13:04:51Z] [capability] ok
+[2026-11-16T13:04:51Z] [sensitivity] start
+
+[2026-11-16T13:05:01Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-sens-x-20261116T130501Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=24g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 oracle/eval/baseline.py --profile t2 --arm X --seed 1001 --checkpoint results/artifacts/train/t2/X/step-001024.pt --config results/train/admission-configs/t2/X.json --admission results/train/admission/t2/X.json --mask-order pair --out results/t2/X/eval-pair-mask.json
+Running as unit: selvedge-post-hstar-sens-x-20261116T130501Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+eval: loaded 112 tensors; 112 trainable
+eval: vram[models_loaded] allocated=5.63GiB reserved=5.65GiB
+eval: vram[distributional] allocated=5.89GiB reserved=5.93GiB
+eval: generated 8/164
+eval: generated 88/164
+eval: generated 164/164
+eval: vram[humaneval] allocated=3.00GiB reserved=3.06GiB
+eval: generated 8/300
+eval: generated 88/300
+eval: generated 168/300
+eval: generated 248/300
+eval: vram[gsm8k] allocated=3.04GiB reserved=3.21GiB
+eval: truthfulqa 0/817
+eval: truthfulqa 100/817
+eval: truthfulqa 200/817
+eval: truthfulqa 300/817
+eval: truthfulqa 400/817
+eval: truthfulqa 500/817
+eval: truthfulqa 600/817
+eval: truthfulqa 700/817
+eval: truthfulqa 800/817
+eval: vram[truthfulqa] allocated=3.04GiB reserved=3.21GiB
+{
+  "arm": "X",
+  "gsm8k": 0.2,
+  "kl_mixed": 0.5032137185335159,
+  "mc1": 0.2802937576499388,
+  "out": "results/t2/X/eval-pair-mask.json",
+  "pass_at_1": 0.23170731707317074,
+  "seconds": 643.175,
+  "vram_peak_gib": 5.886
+}
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T130501Z-af70aa.json log=results/courts/logs/oracle-20261116T130501Z-af70aa.log
+
+[2026-11-16T13:16:02Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-sens-h-20261116T131602Z --property=MemoryMax=24G --property=MemorySwapMax=24G --property=TasksMax=1024 --property=CPUQuota=800% --setenv=SELVEDGE_CPUS=8 --setenv=SELVEDGE_MEM=24g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=8g -- /mnt/1tb_kingston/SELVEDGE/scripts/court --gpu oracle -- python3 oracle/eval/baseline.py --profile t2 --arm H --seed 1001 --checkpoint results/artifacts/train/t2/H/step-001024.pt --config results/train/admission-configs/t2/H.json --admission results/train/admission/t2/H.json --mask-order pair --out results/t2/H/eval-pair-mask.json
+Running as unit: selvedge-post-hstar-sens-h-20261116T131602Z.service
+court: oracle image=selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60 memory=24g cpus=8 pids=1024 tmp=8g network=none gpu=device-passthrough
+eval: loaded 124 tensors; 124 trainable
+eval: vram[models_loaded] allocated=6.14GiB reserved=6.15GiB
+eval: vram[distributional] allocated=6.39GiB reserved=6.44GiB
+eval: generated 8/164
+eval: generated 88/164
+eval: generated 164/164
+eval: vram[humaneval] allocated=3.50GiB reserved=3.56GiB
+eval: generated 8/300
+eval: generated 88/300
+eval: generated 168/300
+eval: generated 248/300
+eval: vram[gsm8k] allocated=3.55GiB reserved=3.71GiB
+eval: truthfulqa 0/817
+eval: truthfulqa 100/817
+eval: truthfulqa 200/817
+eval: truthfulqa 300/817
+eval: truthfulqa 400/817
+eval: truthfulqa 500/817
+eval: truthfulqa 600/817
+eval: truthfulqa 700/817
+eval: truthfulqa 800/817
+eval: vram[truthfulqa] allocated=3.55GiB reserved=3.71GiB
+{
+  "arm": "H",
+  "gsm8k": 0.08333333333333333,
+  "kl_mixed": 0.5107078168541194,
+  "mc1": 0.27539779681762544,
+  "out": "results/t2/H/eval-pair-mask.json",
+  "pass_at_1": 0.1951219512195122,
+  "seconds": 672.007,
+  "vram_peak_gib": 6.394
+}
+court: oracle exit=0 enforcement=ok receipt=results/courts/oracle-20261116T131602Z-8016de.json log=results/courts/logs/oracle-20261116T131602Z-8016de.log
+[2026-11-16T13:27:21Z] [sensitivity] ok
+[2026-11-16T13:27:21Z] [verdict] start
+
+[2026-11-16T13:27:21Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-verdict-20261116T132721Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root /mnt/1tb_kingston/SELVEDGE --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+Running as unit: selvedge-post-hstar-verdict-20261116T132721Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+t2_verdict: REFUSED — required receipt(s) missing: D admission: results/train/admission/t2/D.json; D config: results/train/admission-configs/t2/D.json; D eval: results/eval/t2-D.json; D run: results/t2/D/run.json; D0 eval: results/eval/t2-D0.json; H admission: results/train/admission/t2/H.json; H config: results/train/admission-configs/t2/H.json; H eval: results/eval/t2-H.json; H run: results/t2/H/run.json; H* admission: results/train/admission/t2/H*.json; H* config: results/train/admission-configs/t2/H*.json; H* eval: results/eval/t2-H*.json; H* run: results/t2/H*/run.json; M admission: results/train/admission/t2/M.json; M config: results/train/admission-configs/t2/M.json; M eval: results/eval/t2-M.json; M run: results/t2/M/run.json; X admission: results/train/admission/t2/X.json; X config: results/train/admission-configs/t2/X.json; X eval: results/eval/t2-X.json; X run: results/t2/X/run.json
+court: python exit=3 enforcement=ok receipt=results/courts/python-20261116T132721Z-9bac0e.json log=results/courts/logs/python-20261116T132721Z-9bac0e.log
+[2026-11-16T13:27:22Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root /mnt/1tb_kingston/SELVEDGE --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:27:22Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:35:29Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:35:29Z] [preflight] already done; skipping
+[2026-11-16T13:35:29Z] [verify] already done; skipping
+[2026-11-16T13:35:29Z] [eval] already done; skipping
+[2026-11-16T13:35:29Z] [instrument] already done; skipping
+[2026-11-16T13:35:29Z] [capability] already done; skipping
+[2026-11-16T13:35:29Z] [sensitivity] already done; skipping
+[2026-11-16T13:35:29Z] [verdict] start
+
+[2026-11-16T13:35:29Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-verdict-20261116T133529Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+Running as unit: selvedge-post-hstar-verdict-20261116T133529Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+t2_verdict: REFUSED — D: evaluation receipt has unknown schema 'selvedge/eval-receipt/v1'
+court: python exit=3 enforcement=ok receipt=results/courts/python-20261116T133529Z-e17279.json log=results/courts/logs/python-20261116T133529Z-e17279.log
+[2026-11-16T13:35:30Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:35:30Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:37:28Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:37:28Z] [preflight] already done; skipping
+[2026-11-16T13:37:28Z] [verify] already done; skipping
+[2026-11-16T13:37:28Z] [eval] already done; skipping
+[2026-11-16T13:37:28Z] [instrument] already done; skipping
+[2026-11-16T13:37:28Z] [capability] already done; skipping
+[2026-11-16T13:37:28Z] [sensitivity] already done; skipping
+[2026-11-16T13:37:28Z] [verdict] start
+
+[2026-11-16T13:37:28Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-verdict-20261116T133728Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+Running as unit: selvedge-post-hstar-verdict-20261116T133728Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+t2_verdict: REFUSED — D evaluation: admission digest does not match /work/results/train/admission/t2/D.json (None != 795f09d134cfe835c2806845e767812c422e77e4873994e6f35fc0361bd5fd2e)
+court: python exit=3 enforcement=ok receipt=results/courts/python-20261116T133728Z-b7885a.json log=results/courts/logs/python-20261116T133728Z-b7885a.log
+[2026-11-16T13:37:30Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:37:30Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:39:46Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:39:46Z] [preflight] already done; skipping
+[2026-11-16T13:39:46Z] [verify] already done; skipping
+[2026-11-16T13:39:46Z] [eval] already done; skipping
+[2026-11-16T13:39:46Z] [instrument] already done; skipping
+[2026-11-16T13:39:46Z] [capability] already done; skipping
+[2026-11-16T13:39:46Z] [sensitivity] already done; skipping
+[2026-11-16T13:39:46Z] [verdict] start
+
+[2026-11-16T13:39:46Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-verdict-20261116T133946Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+Running as unit: selvedge-post-hstar-verdict-20261116T133946Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+t2_verdict: REFUSED — H*: the provenance amendment does not cover this arm
+court: python exit=3 enforcement=ok receipt=results/courts/python-20261116T133946Z-854848.json log=results/courts/logs/python-20261116T133946Z-854848.log
+[2026-11-16T13:40:06Z] FAILED in stage verdict: command failed with exit 3: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+[2026-11-16T13:40:06Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:41:32Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:41:32Z] [preflight] already done; skipping
+[2026-11-16T13:41:32Z] [verify] already done; skipping
+[2026-11-16T13:41:32Z] [eval] already done; skipping
+[2026-11-16T13:41:32Z] [instrument] already done; skipping
+[2026-11-16T13:41:32Z] [capability] already done; skipping
+[2026-11-16T13:41:32Z] [sensitivity] already done; skipping
+[2026-11-16T13:41:32Z] [verdict] start
+
+[2026-11-16T13:41:32Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-verdict-20261116T134132Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+Running as unit: selvedge-post-hstar-verdict-20261116T134132Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+t2_verdict: wrote results/t2-verdict.json and results/T2-VERDICT.md (71 published region(s))
+T2 verdict (20261116T134143Z) — outcome: error_direction_not_supported
+
+arm       PC  KL mixed     HE   GSM8K    MC1
+D0    0.1982    0.5977  0.189   0.103  0.302
+D     0.2126    0.4890  0.220   0.137  0.282
+M     0.2139    0.5239  0.128   0.210  0.304
+X     0.2450    0.5028  0.226   0.227  0.283
+H     0.1935    0.5110  0.207   0.097  0.277
+H*    0.1872    0.5021  0.207   0.080  0.274
+
+H*-H   decisive=P1 PC -0.0064 [-0.0276,+0.0151] -> FAIL
+H*-D   decisive=PC PC -0.0254 [-0.0484,-0.0024] -> FAIL
+X-D    decisive=PC PC +0.0324 [+0.0051,+0.0604] -> FAIL
+M-D0   decisive=P1 PC +0.0156 [-0.0094,+0.0399] -> PASS
+M-D    decisive=P1 PC +0.0013 [-0.0248,+0.0268] -> FAIL
+H*-D0  decisive=P1 PC -0.0111 [-0.0356,+0.0128] -> FAIL
+X-H    decisive=PC PC +0.0515 [+0.0262,+0.0767] -> PASS
+
+K15: FAIL
+K16: FAIL
+K17: PASS
+K18: FAIL
+K19: FAIL
+
+K15 fails: error-directed routing is not supported at this scale. WS3's central bet is recorded as a negative result, no bank scaling follows, and the mechanism is not carried into WS4/WS5 without a new pre-registration.
+court: python exit=0 enforcement=ok receipt=results/courts/python-20261116T134132Z-415b85.json log=results/courts/logs/python-20261116T134132Z-415b85.log
+[2026-11-16T13:41:43Z] [verdict] ok
+[2026-11-16T13:41:43Z] [compare] start
+
+[2026-11-16T13:41:43Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-compare-20261116T134143Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/capability_compare.py --repo-root . --result D=results/capability/runs/t2-D/result.json --result M=results/capability/runs/t2-M/result.json --result X=results/capability/runs/t2-X/result.json --result H=results/capability/runs/t2-H/result.json --result H*=results/capability/runs/t2-Hstar/result.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-comparison.json
+Running as unit: selvedge-post-hstar-compare-20261116T134143Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+Traceback (most recent call last):
+  File "/work/scripts/capability_compare.py", line 398, in <module>
+    sys.exit(main(sys.argv[1:]))
+capability_compare: conditional_capacity_not_supported_on_verified_tasks
+  the conditional-capacity gate does not pass: H*-H, H*-D did not clear the conjunctive registered rule; no win is claimed
+
+arm  composite  receipt
+D       0.0000  results/capability/runs/t2-D/result.json
+M       0.0000  results/capability/runs/t2-M/result.json
+X       0.0000  results/capability/runs/t2-X/result.json
+H       0.0000  results/capability/runs/t2-H/result.json
+H*      0.0000  results/capability/runs/t2-Hstar/result.json
+
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/capability_compare.py", line 386, in main
+    print(f"{label:6} relative {diff['relative_difference']:+.4f} "
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported format string passed to NoneType.__format__
+court: python exit=1 enforcement=ok receipt=results/courts/python-20261116T134143Z-16b1dd.json log=results/courts/logs/python-20261116T134143Z-16b1dd.log
+[2026-11-16T13:41:45Z] FAILED in stage compare: command failed with exit 1: /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/capability_compare.py --repo-root . --result D=results/capability/runs/t2-D/result.json --result M=results/capability/runs/t2-M/result.json --result X=results/capability/runs/t2-X/result.json --result H=results/capability/runs/t2-H/result.json --result H*=results/capability/runs/t2-Hstar/result.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-comparison.json
+[2026-11-16T13:41:45Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+[2026-11-16T13:43:40Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=systemd resume=True
+[2026-11-16T13:43:40Z] [preflight] already done; skipping
+[2026-11-16T13:43:40Z] [verify] already done; skipping
+[2026-11-16T13:43:40Z] [eval] already done; skipping
+[2026-11-16T13:43:40Z] [instrument] already done; skipping
+[2026-11-16T13:43:40Z] [capability] already done; skipping
+[2026-11-16T13:43:40Z] [sensitivity] already done; skipping
+[2026-11-16T13:43:40Z] [verdict] already done; skipping
+[2026-11-16T13:43:40Z] [compare] start
+
+[2026-11-16T13:43:40Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-compare-20261116T134340Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/capability_compare.py --repo-root . --result D=results/capability/runs/t2-D/result.json --result M=results/capability/runs/t2-M/result.json --result X=results/capability/runs/t2-X/result.json --result H=results/capability/runs/t2-H/result.json --result H*=results/capability/runs/t2-Hstar/result.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-comparison.json
+Running as unit: selvedge-post-hstar-compare-20261116T134340Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+capability_compare: conditional_capacity_not_supported_on_verified_tasks
+  the conditional-capacity gate does not pass: H*-H, H*-D did not clear the conjunctive registered rule; no win is claimed
+
+arm  composite  receipt
+D       0.0000  results/capability/runs/t2-D/result.json
+M       0.0000  results/capability/runs/t2-M/result.json
+X       0.0000  results/capability/runs/t2-X/result.json
+H       0.0000  results/capability/runs/t2-H/result.json
+H*      0.0000  results/capability/runs/t2-Hstar/result.json
+
+H*-H   relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+H*-D   relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+X-D    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+M-D    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+X-H    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+H-D    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+
+not measured: M-D0 — K17's registered comparator is the frozen D0, which has no verified-task row in this instrument; substituting D would be a different estimand, so the comparison is not measured here and is recorded as such
+receipt: results/capability/runs/t2-comparison.json
+court: python exit=0 enforcement=ok receipt=results/courts/python-20261116T134340Z-7d0144.json log=results/courts/logs/python-20261116T134340Z-7d0144.log
+[2026-11-16T13:43:42Z] [compare] ok
+[2026-11-16T13:43:42Z] post-H* pipeline complete; state: results/t2/post-hstar-state.json
+[2026-11-16T13:46:56Z] post-H* pipeline starting: stages=verdict runner=systemd resume=True
+[2026-11-16T13:46:56Z] [verdict] start
+
+[2026-11-16T13:46:56Z] systemd-run --user --collect --pipe --unit=selvedge-post-hstar-verdict-20261116T134656Z --property=MemoryMax=8G --property=MemorySwapMax=8G --property=TasksMax=1024 --property=CPUQuota=400% --setenv=SELVEDGE_CPUS=4 --setenv=SELVEDGE_MEM=8g --setenv=SELVEDGE_PIDS=1024 --setenv=SELVEDGE_REVISION=afe55469298555bad8f15925254264628611a93e --setenv=SELVEDGE_TMP=2g -- /mnt/1tb_kingston/SELVEDGE/scripts/court python -- python3 scripts/t2_verdict.py --repo-root . --d0 results/eval/t2-D0.json --sensitivity X=results/t2/X/eval-pair-mask.json --sensitivity H=results/t2/H/eval-pair-mask.json --out results/t2-verdict.json --doc results/T2-VERDICT.md --write
+Running as unit: selvedge-post-hstar-verdict-20261116T134656Z.service
+court: python image=selvedge/python-court:20261114-3.12-slim-f03542f9bbe7 memory=8g cpus=4 pids=1024 tmp=2g network=none gpu=none
+t2_verdict: wrote results/t2-verdict.json and results/T2-VERDICT.md (71 published region(s))
+T2 verdict (20261116T134706Z) — outcome: error_direction_not_supported
+
+arm       PC  KL mixed     HE   GSM8K    MC1
+D0    0.1982    0.5977  0.189   0.103  0.302
+D     0.2126    0.4890  0.220   0.137  0.282
+M     0.2139    0.5239  0.128   0.210  0.304
+X     0.2450    0.5028  0.226   0.227  0.283
+H     0.1935    0.5110  0.207   0.097  0.277
+H*    0.1872    0.5021  0.207   0.080  0.274
+
+H*-H   decisive=P1 PC -0.0064 [-0.0276,+0.0151] -> FAIL
+H*-D   decisive=PC PC -0.0254 [-0.0484,-0.0024] -> FAIL
+X-D    decisive=PC PC +0.0324 [+0.0051,+0.0604] -> FAIL
+M-D0   decisive=P1 PC +0.0156 [-0.0094,+0.0399] -> PASS
+M-D    decisive=P1 PC +0.0013 [-0.0248,+0.0268] -> FAIL
+H*-D0  decisive=P1 PC -0.0111 [-0.0356,+0.0128] -> FAIL
+X-H    decisive=PC PC +0.0515 [+0.0262,+0.0767] -> PASS
+
+K15: FAIL
+K16: FAIL
+K17: PASS
+K18: FAIL
+K19: FAIL
+
+K15 fails: error-directed routing is not supported at this scale. WS3's central bet is recorded as a negative result, no bank scaling follows, and the mechanism is not carried into WS4/WS5 without a new pre-registration.
+court: python exit=0 enforcement=ok receipt=results/courts/python-20261116T134656Z-d42151.json log=results/courts/logs/python-20261116T134656Z-d42151.log
+[2026-11-16T13:47:07Z] [verdict] ok
+[2026-11-16T13:47:07Z] post-H* pipeline complete; state: results/t2/post-hstar-state.json

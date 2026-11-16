@@ -1,0 +1,4384 @@
+{
+  "anti_gaming": {
+    "checker_access": "separate-process-after-generation",
+    "checker_visible_to_arm": false,
+    "feedback": "none",
+    "few_shot_hygiene": null,
+    "offline_evidence": "no-default-route",
+    "prompt_hashes_match": true,
+    "tool_mode": "no-tools",
+    "tool_parity": "enforced at comparison time",
+    "tools": false
+  },
+  "command": "scripts/capability_court.py check --generations results/capability/runs/t2-X/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-X/result.json",
+  "created_utc": "2026-11-16T11:08:44Z",
+  "generations": {
+    "adapter": {
+      "accounting": {
+        "active_unique_params": 772440064,
+        "gpu_residency_bytes": null,
+        "host_residency_bytes": null,
+        "measured_io": null,
+        "offline_teacher_construction_cost": null,
+        "optimizer_flops": null,
+        "task_success": null,
+        "total_accessible_capacity": 948600832,
+        "training_tokens": null
+      },
+      "kind": "t2-arm",
+      "name": "t2-X",
+      "null_reasons": {
+        "gpu_residency_bytes": "measured after the first generation",
+        "host_residency_bytes": "not instrumented for the training-model path",
+        "measured_io": "the PyTorch path does not expose device read counters",
+        "offline_teacher_construction_cost": "no teacher at inference",
+        "optimizer_flops": "not recorded in the arm's admission record",
+        "task_success": "filled by the check stage",
+        "training_tokens": "not recorded in the arm's admission record"
+      },
+      "provenance": {
+        "admission": "results/train/admission/t2/X.json",
+        "admission_revision": null,
+        "admission_stamp": null,
+        "arm": "X",
+        "checkpoint": "results/artifacts/train/t2/X/step-001024.pt",
+        "checkpoint_sha256": "9504267555fb49862f9c5060dea2c2749540958ba0278c0dd3fc1c197271b58a",
+        "checkpoint_step": 1024,
+        "checkpoint_verification": {
+          "checked": true,
+          "mask_order": "legacy",
+          "provenance_amendment": {
+            "decision": "CERTIFIED",
+            "inferred_mask_order": "legacy",
+            "path": "results/t2/PROVENANCE-AMENDMENT-X-and-H.json",
+            "replay_receipt": "results/t2/provenance-replay-20261116T055200Z.json",
+            "replay_receipt_sha256": "9d45ac7be7dfd083ed98d8514a7dd2695be5a5573c065acfd5aed85c61a3fd10",
+            "sha256": "63abcc5fe137a51ae2a0fada652a776d041a566a144b9b1ef7f82c3056cc305c",
+            "used": true
+          },
+          "receipt": "results/t2/X/run.json",
+          "receipt_sha256": "4a3fb310f2ae4c92dbd89cacf678ce963e2e615a3bb615f73867fcf4f2a7e9c9",
+          "step": 1024
+        },
+        "config": "results/train/admission-configs/t2/X.json",
+        "dispatch_mask_order": "legacy",
+        "provenance_amendment": {
+          "decision": "CERTIFIED",
+          "inferred_mask_order": "legacy",
+          "path": "results/t2/PROVENANCE-AMENDMENT-X-and-H.json",
+          "replay_receipt": "results/t2/provenance-replay-20261116T055200Z.json",
+          "replay_receipt_sha256": "9d45ac7be7dfd083ed98d8514a7dd2695be5a5573c065acfd5aed85c61a3fd10",
+          "sha256": "63abcc5fe137a51ae2a0fada652a776d041a566a144b9b1ef7f82c3056cc305c",
+          "used": true
+        },
+        "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+      },
+      "tools": false
+    },
+    "decoding": {
+      "category_filter": null,
+      "feedback": "none",
+      "few_shot_texts": [],
+      "greedy": true,
+      "max_new_tokens": 3072,
+      "order": "sorted",
+      "seed": 20261115,
+      "stops": [
+        "\n```\n\n## "
+      ]
+    },
+    "few_shot": null,
+    "revision": "6c09915bbceeebb4e6689e1f83c1a6a384a854eb",
+    "schema": "selvedge/capability-generations/v1",
+    "stamp": "20261116T110841Z"
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-01-local-reference",
+      "latency_ms": 17839,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-02-mutate-while-borrowed",
+      "latency_ms": 17839,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 85,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-03-self-referential-window",
+      "latency_ms": 17839,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-04-iterator-invalidation",
+      "latency_ms": 17839,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-05-temporary-lifetime",
+      "latency_ms": 17674,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-06-move-while-borrowed",
+      "latency_ms": 17674,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 85,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-07-overlapping-mut-borrows",
+      "latency_ms": 17674,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "2bb77546cf77a67a67fbb59788934cacc914905692a5efe93e40857744265034",
+        "stderr_tail": "error[E0432]: unresolved import `borrow_08_iterator_outlives_local::evens`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_08_iterator_outlives_local::evens;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-----\n  |                                        |\n  |                                        no `evens` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_08_iterator_outlives_local` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-08-iterator-outlives-local",
+      "latency_ms": 17674,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-09-struct-lifetime",
+      "latency_ms": 17788,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-10-assign-while-borrowed",
+      "latency_ms": 17788,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-11-move-out-of-borrowed",
+      "latency_ms": 17788,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-12-move-out-of-drop-type",
+      "latency_ms": 17788,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-13-mutate-through-shared",
+      "latency_ms": 17753,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "b192f9b129025967107183aad9aaa4a3c9994be39ae2973a114932e0b394b40f",
+        "stderr_tail": "gle Quote), but it is not\n   |\n29 - ```\n29 + '''\n   |\n\nerror: expected one of `!` or `::`, found keyword `crate`\n --> src/lib.rs:3:5\n  |\n3 | The crate is not built. `join_then_measure` consumes `parts` and then asks for its length. Compute the length before the consumption....\n  |     ^^^^^ expected one of `!` or `::`\n\nerror: could not compile `borrow_14_borrow_after_move` (lib test) due to 10 previous errors\nerror: could not compile `borrow_14_borrow_after_move` (lib) due to 10 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-14-borrow-after-move",
+      "latency_ms": 17753,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-15-return-local-table-entry",
+      "latency_ms": 17753,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-16-closure-borrows-local",
+      "latency_ms": 17753,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-17-two-input-lifetimes",
+      "latency_ms": 17948,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-18-refcell-double-borrow",
+      "latency_ms": 17948,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-01-lock-order-deadlock",
+      "latency_ms": 17948,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ada81344be404bb188cbe629f410ccc0e1e016347a973531d1224a8c5b167390",
+        "stderr_tail": "(Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n513 - ```rust\n513 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:514:26\n    |\n514 | use std::sync::atomic::{\n    |                        -^\n    |                        |\n    |                        unclosed delimiter\n\nerror: could not compile `concurrency_02_lost_update` (lib) due to 63 previous errors\nerror: could not compile `concurrency_02_lost_update` (lib test) due to 63 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 31,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-02-lost-update",
+      "latency_ms": 17948,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-03-send-boundary",
+      "latency_ms": 17772,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-04-mutex-critical-section",
+      "latency_ms": 17772,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-05-swallowed-panic",
+      "latency_ms": 17772,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 307,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-06-guard-crosses-thread",
+      "latency_ms": 17772,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 70,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-07-silent-channel-drop",
+      "latency_ms": 17757,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 85,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-08-borrowed-thread",
+      "latency_ms": 17757,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-09-shared-input",
+      "latency_ms": 17757,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-10-condvar-without-predicate",
+      "latency_ms": 17757,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-11-cell-not-sync",
+      "latency_ms": 17729,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-12-shared-arc-moved",
+      "latency_ms": 17729,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-13-atomic-fetch-or",
+      "latency_ms": 17729,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-14-poisoned-mutex",
+      "latency_ms": 17729,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-15-mutex-read-modify-write",
+      "latency_ms": 17857,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-16-non-reentrant-lock",
+      "latency_ms": 17857,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cbf4410162dea017c531470e34066f4020c5de4194d2958a3062292a2abeb81e",
+        "stderr_tail": " src/lib.rs:582:33\n    |\n581 | pub fn claim(flag: &AtomicBool) -> bool {\n    |                                         - unclosed delimiter\n582 |     flag.compare_exchange(true,\n    |                          -     ^\n    |                          |\n    |                          unclosed delimiter\n\nerror: could not compile `concurrency_17_compare_exchange_claim` (lib) due to 56 previous errors\nerror: could not compile `concurrency_17_compare_exchange_claim` (lib test) due to 56 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 26,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-17-compare-exchange-claim",
+      "latency_ms": 17857,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-18-barrier-early-return",
+      "latency_ms": 17857,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-01-version-requirement",
+      "latency_ms": 17865,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-02-edition-2024",
+      "latency_ms": 17865,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 113,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-03-optional-feature",
+      "latency_ms": 17865,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-04-unknown-feature",
+      "latency_ms": 17865,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-05-workspace-member",
+      "latency_ms": 17807,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-06-edition-unsafe-block",
+      "latency_ms": 17807,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 341,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-07-feature-conflict",
+      "latency_ms": 17807,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-08-renamed-package",
+      "latency_ms": 17807,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-09-disable-default-features",
+      "latency_ms": 17822,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-10-edition-unsafe-attribute",
+      "latency_ms": 17822,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-11-lib-name-mismatch",
+      "latency_ms": 17822,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-12-edition-2015-paths",
+      "latency_ms": 17822,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-13-wrong-lib-path",
+      "latency_ms": 17886,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-14-workspace-inheritance",
+      "latency_ms": 17886,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-15-missing-package-name",
+      "latency_ms": 17886,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "9686ef065772c215e46b6a8ddcd905b280732db370d1afe4f0eff07d6d1abad2",
+        "stderr_tail": "error: failed to load manifest for dependency `codec`\n\nCaused by:\n  failed to read `/work/target/capability-work/deps-16-missing-dependency-dir/dep/Cargo.toml`\n\nCaused by:\n  No such file or directory (os error 2)\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 75,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-16-missing-dependency-dir",
+      "latency_ms": 17886,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-17-invalid-package-name",
+      "latency_ms": 17699,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-18-default-features-type",
+      "latency_ms": 17699,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-01-chunk-boundary",
+      "latency_ms": 17699,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-02-empty-input",
+      "latency_ms": 17699,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-03-overflow-boundary",
+      "latency_ms": 17741,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-04-nan-ordering",
+      "latency_ms": 17741,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-05-inclusive-range",
+      "latency_ms": 17741,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "0a920df44a9ad86dae7a28e3a89c676e85c8ea8e33d1f44a1a6d028c5d1bd01e",
+        "stderr_tail": "rave Accent) looks like ''' (Single Quote), but it is not\n    |\n488 - ```rust\n488 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:490:30\n    |\n490 | pub fn percent_of(cents: u64\n    |                  -          ^\n    |                  |\n    |                  unclosed delimiter\n\nerror: could not compile `failing_06_integer_precision` (lib test) due to 142 previous errors\nerror: could not compile `failing_06_integer_precision` (lib) due to 142 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 69,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-06-integer-precision",
+      "latency_ms": 17741,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-07-common-prefix",
+      "latency_ms": 152,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-08-lower-bound",
+      "latency_ms": 152,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-09-state-cycle",
+      "latency_ms": 152,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-10-last-duplicate-index",
+      "latency_ms": 152,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-11-wrap-counts-the-space",
+      "latency_ms": 17848,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-12-roman-subtractive",
+      "latency_ms": 17848,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-13-duration-minutes-field",
+      "latency_ms": 17848,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-14-century-leap-year",
+      "latency_ms": 17848,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-15-run-length-count",
+      "latency_ms": 17743,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 280,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-16-merge-adjacent",
+      "latency_ms": 17743,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-17-partial-last-page",
+      "latency_ms": 17743,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-18-negative-caesar-shift",
+      "latency_ms": 17743,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-01-signature",
+      "latency_ms": 18440,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 42,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-02-builder",
+      "latency_ms": 18440,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-03-error-conversion",
+      "latency_ms": 18440,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "477a3371e52c1e531742d963a93c16a64fae16234d0cab158a50f45ea3d3720b",
+        "stderr_tail": "oken: `\n   --> src/lib.rs:672:1\n    |\n672 | ```rust\n    | ^^^\n    |\n    = note: character appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n672 - ```rust\n672 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=dep/Cargo.toml\n  | ^^^^ unexpected token\n\nerror: could not compile `migrate_04_trait_import` (lib) due to 83 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 41,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-04-trait-import",
+      "latency_ms": 18440,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-05-iterator-api",
+      "latency_ms": 18228,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-06-error-variant",
+      "latency_ms": 18228,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-07-display-method",
+      "latency_ms": 18228,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 91,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-08-path-api",
+      "latency_ms": 18228,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "39de3145fc4ca6df7dac96b36440bdd7d535997f02a616ca71fa578d51b20784",
+        "stderr_tail": "src/lib.rs:586:25\n    |\n583 | pub fn count_to(limit: u32) -> u32 {\n    |                                    - unclosed delimiter\n584 |     let counter = counter::Counter::new();\n585 |     for _ in 0..limit {\n    |                       - unclosed delimiter\n586 |         counter.tick();\n    |                        ^\n\nerror: could not compile `migrate_09_mutable_receiver` (lib) due to 115 previous errors\nerror: could not compile `migrate_09_mutable_receiver` (lib test) due to 115 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 57,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-09-mutable-receiver",
+      "latency_ms": 17917,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-10-method-renamed",
+      "latency_ms": 17917,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-11-owned-argument",
+      "latency_ms": 17917,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "05169ea0d63c03fcc2833f0133b6c47c74f5a86f36b9583ef20efdbe5f565e93",
+        "stderr_tail": "   --> src/lib.rs:586:1\n    |\n586 | ```rust\n    | ^^^\n    |\n    = note: character appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n586 - ```rust\n586 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=dep/Cargo.toml\n  | ^^^^ unexpected token\n\nerror: could not compile `migrate_12_option_result_change` (lib) due to 71 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 35,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-12-option-result-change",
+      "latency_ms": 17917,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 38,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-13-const-generic",
+      "latency_ms": 17900,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-14-new-enum-variant",
+      "latency_ms": 17900,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 237,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-15-function-renamed",
+      "latency_ms": 17900,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 307,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-16-required-config-argument",
+      "latency_ms": 17900,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-17-field-renamed",
+      "latency_ms": 18541,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-18-conversion-bound",
+      "latency_ms": 18541,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-01-lifetime-propagation",
+      "latency_ms": 18541,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "9620884677af75e886a8a7a3b4fc6537a46a016c7bd6982c8127fad33bec8eef",
+        "stderr_tail": "imes\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n603 - ```rust\n603 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `use`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | use crate::error::AppError;\n  | ^^^ unexpected token\n\nerror: could not compile `repo_02_error_propagation` (lib) due to 83 previous errors\nerror: could not compile `repo_02_error_propagation` (lib test) due to 83 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 41,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-02-error-propagation",
+      "latency_ms": 18541,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-03-generic-bounds",
+      "latency_ms": 333,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-04-module-visibility",
+      "latency_ms": 333,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-05-variant-propagation",
+      "latency_ms": 333,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "513aa14087a3ba73dd2e5c9a13b4e01e6e29c8bb1ac580841ab8253ea58594ff",
+        "stderr_tail": "o_06_moved_module_import::report`\n --> tests/check.rs:1:35\n  |\n1 | use repo_06_moved_module_import::{fetch, report::describe};\n  |                                   ^^^^^  ^^^^^^ could not find `report` in `repo_06_moved_module_import`\n  |                                   |\n  |                                   no `fetch` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `repo_06_moved_module_import` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-06-moved-module-import",
+      "latency_ms": 333,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-07-field-rename",
+      "latency_ms": 17923,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-08-mutability-propagation",
+      "latency_ms": 17923,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-09-result-propagation",
+      "latency_ms": 17923,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-10-missing-module-file",
+      "latency_ms": 17923,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-11-private-field",
+      "latency_ms": 17737,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-12-returned-local-reference",
+      "latency_ms": 17737,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-13-undeclared-module-path",
+      "latency_ms": 17737,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-14-crossmodule-borrow",
+      "latency_ms": 17737,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-15-caller-not-updated",
+      "latency_ms": 17776,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-16-missing-associated-item",
+      "latency_ms": 17776,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-17-opaque-return-method",
+      "latency_ms": 17776,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-18-moved-across-modules",
+      "latency_ms": 17776,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-01-overlapping-count",
+      "latency_ms": 17799,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-02-rounded-average",
+      "latency_ms": 17799,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "3682a1755d7c2883defecc310229940df1963c2dc8ed1eaf3788b7e4036a0973",
+        "stderr_tail": "Accent) looks like ''' (Single Quote), but it is not\n    |\n855 - ```text\n855 + '''text\n    |\n\nerror: expected one of `!` or `::`, found keyword `crate`\n --> src/lib.rs:1:5\n  |\n1 | The crate must be able to build and test with `cargo test --no-verify`.\n  |     ^^^^^ expected one of `!` or `::`\n\nerror: could not compile `semantic_03_case_insensitive_first_word` (lib) due to 286 previous errors\nerror: could not compile `semantic_03_case_insensitive_first_word` (lib test) due to 286 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 141,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-03-case-insensitive-first-word",
+      "latency_ms": 17799,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-04-stable-score-sort",
+      "latency_ms": 17799,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-05-lowercase-hex",
+      "latency_ms": 171,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-06-order-preserving-unique",
+      "latency_ms": 171,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-07-csv-quoting",
+      "latency_ms": 171,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-08-char-truncate",
+      "latency_ms": 171,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-09-token-bucket-refill",
+      "latency_ms": 17717,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-10-round-half-even",
+      "latency_ms": 17717,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-11-leading-zero-id",
+      "latency_ms": 17717,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "fb0fabef1780ec43bcf6182e4b970dcd308de104dded3393996ef34dc8ffd9d5",
+        "stderr_tail": "ears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n663 - ```rust\n663 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `use`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | use std::fs::File;\n  | ^^^ unexpected token\n\nerror: could not compile `semantic_12_split_once` (lib) due to 123 previous errors\nerror: could not compile `semantic_12_split_once` (lib test) due to 123 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 61,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-12-split-once",
+      "latency_ms": 17717,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-13-inverted-clamp",
+      "latency_ms": 17685,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-14-url-encode-plus",
+      "latency_ms": 17685,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "81dd21e07aea673c1a49811fa30c86a3ea5e38d83a08da66b09a343711b9aa0c",
+        "stderr_tail": "ode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n839 - ```rust\n839 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `test`\n --> src/lib.rs:1:5\n  |\n1 | The test must be run with `cargo test --no-verify` to avoid the test\n  |     ^^^^ expected one of `!` or `::`\n\nerror: could not compile `semantic_15_shorten_with_ellipsis` (lib test) due to 202 previous errors\nerror: could not compile `semantic_15_shorten_with_ellipsis` (lib) due to 202 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 98,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-15-shorten-with-ellipsis",
+      "latency_ms": 17685,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-16-numeric-string-sort",
+      "latency_ms": 17685,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-17-adjacent-dedup",
+      "latency_ms": 17751,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-18-email-domain-case",
+      "latency_ms": 17751,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-01-associated-type",
+      "latency_ms": 17751,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 85,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-02-coherence",
+      "latency_ms": 17751,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-03-object-safety",
+      "latency_ms": 17789,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-04-missing-method",
+      "latency_ms": 17789,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-05-supertrait-bound",
+      "latency_ms": 17789,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-06-method-ambiguity",
+      "latency_ms": 17789,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-07-add-impl",
+      "latency_ms": 17760,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-08-method-signature",
+      "latency_ms": 17760,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-09-orphan-rule",
+      "latency_ms": 17760,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-10-associated-type-value",
+      "latency_ms": 17760,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-11-blanket-impl-bound",
+      "latency_ms": 17741,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-12-associated-const",
+      "latency_ms": 17741,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-13-default-method-missing-item",
+      "latency_ms": 17741,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "b021aa65807a7da90675fafcc7fe32c8ab3d65700ebb4a07e58d197ab10df056",
+        "stderr_tail": "xtra_type_parameter::Doc`, `traits_14_extra_type_parameter::Encode`\n --> tests/check.rs:1:38\n  |\n1 | use traits_14_extra_type_parameter::{Doc, Encode};\n  |                                      ^^^  ^^^^^^ no `Encode` in the root\n  |                                      |\n  |                                      no `Doc` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `traits_14_extra_type_parameter` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-14-extra-type-parameter",
+      "latency_ms": 17741,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "a37ae73012617f2a07f9ad773546dc8bbd9c720ecab4e757fec876c306452b02",
+        "stderr_tail": "   |\n39 - ```\n39 + '''\n   |\n\nerror: expected one of `!` or `::`, found keyword `crate`\n --> src/lib.rs:3:5\n  |\n3 | The crate is not built. `Encode` takes a type parameter for the value it encodes, and the impl omits it. Implement `Encode<u8>` and k...\n  |     ^^^^^ expected one of `!` or `::`\n\nerror: could not compile `traits_15_generic_trait_missing_argument` (lib test) due to 10 previous errors\nerror: could not compile `traits_15_generic_trait_missing_argument` (lib) due to 10 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-15-generic-trait-missing-argument",
+      "latency_ms": 17652,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-16-method-arity",
+      "latency_ms": 17652,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-17-method-not-in-trait",
+      "latency_ms": 17652,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 307,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-18-duplicate-inherent-method",
+      "latency_ms": 17652,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-01-lifetime-chain",
+      "latency_ms": 17907,
+      "status": "invalid_solution",
+      "surface": "rust",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "f801662f75ad5e3bda21e6a9feee3ef6e7bd8bf3819f1f48abe883805d1d0d71",
+        "stderr_tail": "uote), but it is not\n    |\n443 - ```rust\n443 + '''rust\n    |\n\nerror[E0765]: unterminated double quote string\n   --> src/lib.rs:458:48\n    |\n458 |     let mut content = content.replace(\"Hello\", \"Hello\n    |                                                ^^^^^^\n\nFor more information about this error, try `rustc --explain E0765`.\nerror: could not compile `trio_02_math_dependency` (lib test) due to 47 previous errors\nerror: could not compile `trio_02_math_dependency` (lib) due to 47 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 23,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-02-math-dependency",
+      "latency_ms": 17907,
+      "status": "compile_error",
+      "surface": "numeric-graph",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-03-logic-quantifier",
+      "latency_ms": 17907,
+      "status": "invalid_solution",
+      "surface": "logic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 280,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-04-invariant-ledger",
+      "latency_ms": 17907,
+      "status": "invalid_solution",
+      "surface": "rust",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "0720c815ecf9650707dc2f1ac64c06865af2b71053fc1c396fb618797f9fd1ce",
+        "stderr_tail": "ter appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n511 - ```rust\n511 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `trio_05_invariant_graph` (lib test) due to 145 previous errors\nerror: could not compile `trio_05_invariant_graph` (lib) due to 145 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 72,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-05-invariant-graph",
+      "latency_ms": 17993,
+      "status": "compile_error",
+      "surface": "numeric-graph",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 156,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-06-invariant-substitution",
+      "latency_ms": 17993,
+      "status": "invalid_solution",
+      "surface": "logic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-07-scope-resolver",
+      "latency_ms": 17993,
+      "status": "invalid_solution",
+      "surface": "rust",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-08-scoped-quantifier-eval",
+      "latency_ms": 17993,
+      "status": "invalid_solution",
+      "surface": "numeric-graph",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-09-quantifier-occurrences",
+      "latency_ms": 575,
+      "status": "invalid_solution",
+      "surface": "logic",
+      "tokens_out": 4,
+      "value": 0.0
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-preregistration-v4.json",
+    "primary_relative_threshold": 0.1,
+    "problems": [],
+    "sha256": "a95723b6d2d46e7cd04267a4d897441fb3e1e107bb96aff12227166936dbbec2"
+  },
+  "revision": "6c09915bbceeebb4e6689e1f83c1a6a384a854eb",
+  "schema": "selvedge/capability-result/v1",
+  "scores": {
+    "by_category": {
+      "api-migration": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "concurrency": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "dependency-compat": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "failing-test": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "lifetime-borrow": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "repo-scale": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "semantic-repair": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "trait-impl": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "categories": [
+      "api-migration",
+      "concurrency",
+      "dependency-compat",
+      "failing-test",
+      "lifetime-borrow",
+      "repo-scale",
+      "semantic-repair",
+      "trait-impl"
+    ],
+    "category_minimum_items": 18,
+    "category_minimum_met": true,
+    "counts": {
+      "compile_error": 18,
+      "invalid_solution": 135
+    },
+    "items": 153,
+    "pooled": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 144,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_ci": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 144,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_composite": 0.0,
+    "trio": {
+      "logic": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "numeric-graph": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "rust": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "trio_all_surfaces": false
+  },
+  "stage": "check",
+  "stamp": "20261116T110844Z",
+  "suite": {
+    "category_filter": null,
+    "category_minimum_items": 18,
+    "counts": {
+      "by_category": {
+        "api-migration": 18,
+        "concurrency": 18,
+        "dependency-compat": 18,
+        "failing-test": 18,
+        "lifetime-borrow": 18,
+        "probe": 6,
+        "repo-scale": 18,
+        "semantic-repair": 18,
+        "trait-impl": 18,
+        "trio": 9
+      },
+      "probes": 6,
+      "suite": 144,
+      "total": 159,
+      "trio": 9
+    },
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "7347e1e94b7ddcd3d04f1580646b392fc1591a25e71b299a663fc7f837f0a207"
+  }
+}

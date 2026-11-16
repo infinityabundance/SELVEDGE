@@ -1,0 +1,40 @@
+............F.                                                           [100%]
+=================================== FAILURES ===================================
+_______ test_an_all_zero_matrix_reports_an_undefined_relative_difference _______
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_an_all_zero_matrix_report0', 'paths': {'D': '/tmp/pytest-of-unknown/pyt.../PROVENANCE-AMENDMENT-X-and-H.json', 'digest': 'a95723b6d2d46e7cd04267a4d897441fb3e1e107bb96aff12227166936dbbec2', ...}
+capsys = <_pytest.capture.CaptureFixture object at 0x7f09cab1c290>
+
+    def test_an_all_zero_matrix_reports_an_undefined_relative_difference(
+            environment, capsys):
+        """Every arm scoring zero is a real outcome, not a crash.
+    
+        The relative difference is undefined against a zero baseline, so it is
+        reported as undefined and the gate fails. This path was hit by the real run:
+        every arm scored 0/153 on the Rust suite and the reader raised TypeError in
+        its print instead of saying so (S27).
+        """
+        root = environment["root"]
+        zero = {category: 0 for category in CATEGORIES}
+        arguments = []
+        for arm in ("D", "M", "X", "H", "H*"):
+            path = os.path.join(root, f"zero-{arm}.json")
+            dump(path, result_receipt(zero, digest=environment["digest"],
+                                      suite_hash=environment["suite_hash"], name=arm,
+                                      provenance=provenance(
+                                          arm,
+                                          sha256(environment["amendment"]))))
+            arguments += ["--result", f"{arm}={path}"]
+        out = os.path.join(root, "zero-comparison.json")
+        arguments += ["--preregistration", PREREG, "--out", out]
+>       assert capability_compare.main(arguments) == 0
+E       AssertionError: assert 3 == 0
+E        +  where 3 = <function main at 0x7f09ca22a520>(['--result', 'D=/tmp/pytest-of-unknown/pytest-0/test_an_all_zero_matrix_report0/zero-D.json', '--result', 'M=/tmp/pyte...report0/zero-M.json', '--result', 'X=/tmp/pytest-of-unknown/pytest-0/test_an_all_zero_matrix_report0/zero-X.json', ...])
+E        +    where <function main at 0x7f09ca22a520> = capability_compare.main
+
+oracle/tests/test_capability_compare.py:296: AssertionError
+----------------------------- Captured stderr call -----------------------------
+capability_compare: REFUSED — X: the certified provenance amendment '/tmp/pytest-of-unknown/pytest-0/test_an_all_zero_matrix_report0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json' is not available to verify the result
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_compare.py::test_an_all_zero_matrix_reports_an_undefined_relative_difference
+1 failed, 13 passed in 3.35s

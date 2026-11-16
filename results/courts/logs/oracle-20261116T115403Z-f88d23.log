@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_court.py", line 13, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/cli.py", line 204, in main
+    receipt = court.generate(
+              ^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/court.py", line 233, in generate
+    adapter_metadata = adapter.metadata()
+                       ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 378, in metadata
+    _torch, _tokenizer, _model, _device, state = self._load()
+                                                 ^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 202, in _load
+    self._verification = self._verify_receipt(state)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/capability/adapters.py", line 307, in _verify_receipt
+    raise AdapterError(
+capability.adapters.AdapterError: the checkpoint does not match its training receipt results/t2/H*/run.json: the training receipt records no dispatch mask placement (P12.1), so a routed checkpoint's dispatch semantics are unverified; supply a certified --provenance-amendment if one exists

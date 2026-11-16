@@ -1,0 +1,4263 @@
+{
+  "anti_gaming": {
+    "checker_access": "separate-process-after-generation",
+    "checker_visible_to_arm": false,
+    "feedback": "none",
+    "few_shot_hygiene": null,
+    "offline_evidence": "no-default-route",
+    "prompt_hashes_match": true,
+    "tool_mode": "no-tools",
+    "tool_parity": "enforced at comparison time",
+    "tools": false
+  },
+  "command": "scripts/capability_court.py check --generations results/capability/runs/t2-H/generations.json --preregistration docs/capability-preregistration-v4.json --out results/capability/runs/t2-H/result.json",
+  "created_utc": "2026-11-16T11:54:03Z",
+  "generations": {
+    "adapter": {
+      "accounting": {
+        "active_unique_params": 774543360,
+        "gpu_residency_bytes": null,
+        "host_residency_bytes": null,
+        "measured_io": null,
+        "offline_teacher_construction_cost": null,
+        "optimizer_flops": null,
+        "task_success": null,
+        "total_accessible_capacity": 1219137536,
+        "training_tokens": null
+      },
+      "kind": "t2-arm",
+      "name": "t2-H",
+      "null_reasons": {
+        "gpu_residency_bytes": "measured after the first generation",
+        "host_residency_bytes": "not instrumented for the training-model path",
+        "measured_io": "the PyTorch path does not expose device read counters",
+        "offline_teacher_construction_cost": "no teacher at inference",
+        "optimizer_flops": "not recorded in the arm's admission record",
+        "task_success": "filled by the check stage",
+        "training_tokens": "not recorded in the arm's admission record"
+      },
+      "provenance": {
+        "admission": "results/train/admission/t2/H.json",
+        "admission_revision": null,
+        "admission_stamp": null,
+        "arm": "H",
+        "checkpoint": "results/artifacts/train/t2/H/step-001024.pt",
+        "checkpoint_sha256": "6efc58de7f6cbc86a42b5b2919430bb02d32c48b386c6c0a984c3c0095fb6207",
+        "checkpoint_step": 1024,
+        "checkpoint_verification": {
+          "checked": true,
+          "mask_order": "legacy",
+          "provenance_amendment": {
+            "decision": "CERTIFIED",
+            "inferred_mask_order": "legacy",
+            "path": "results/t2/PROVENANCE-AMENDMENT-X-and-H.json",
+            "replay_receipt": "results/t2/provenance-replay-20261116T055200Z.json",
+            "replay_receipt_sha256": "9d45ac7be7dfd083ed98d8514a7dd2695be5a5573c065acfd5aed85c61a3fd10",
+            "sha256": "63abcc5fe137a51ae2a0fada652a776d041a566a144b9b1ef7f82c3056cc305c",
+            "used": true
+          },
+          "receipt": "results/t2/H/run.json",
+          "receipt_sha256": "8efa893ed38c7a3116a71a800cdbbffd6abaff48159350f22729b00d5bdfaa3a",
+          "step": 1024
+        },
+        "config": "results/train/admission-configs/t2/H.json",
+        "dispatch_mask_order": "legacy",
+        "provenance_amendment": {
+          "decision": "CERTIFIED",
+          "inferred_mask_order": "legacy",
+          "path": "results/t2/PROVENANCE-AMENDMENT-X-and-H.json",
+          "replay_receipt": "results/t2/provenance-replay-20261116T055200Z.json",
+          "replay_receipt_sha256": "9d45ac7be7dfd083ed98d8514a7dd2695be5a5573c065acfd5aed85c61a3fd10",
+          "sha256": "63abcc5fe137a51ae2a0fada652a776d041a566a144b9b1ef7f82c3056cc305c",
+          "used": true
+        },
+        "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+      },
+      "tools": false
+    },
+    "decoding": {
+      "category_filter": null,
+      "feedback": "none",
+      "few_shot_texts": [],
+      "greedy": true,
+      "max_new_tokens": 3072,
+      "order": "sorted",
+      "seed": 20261115,
+      "stops": [
+        "\n```\n\n## "
+      ]
+    },
+    "few_shot": null,
+    "revision": "6c09915bbceeebb4e6689e1f83c1a6a384a854eb",
+    "schema": "selvedge/capability-generations/v1",
+    "stamp": "20261116T115358Z"
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-01-local-reference",
+      "latency_ms": 18559,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7b754a95d83cac3837746415bc7574b741afa635cae0c69665236fb876e840e4",
+        "stderr_tail": "ort(values: &mut Vec<i32>, value: i32) -> i32 {\n    |                                                                  - unclosed delimiter\n483 |     let last = values.last().unwrap_or(&0);\n484 |     values.push(value\n    |                -     ^\n    |                |\n    |                unclosed delimiter\n\nerror: could not compile `borrow_02_mutate_while_borrowed` (lib) due to 109 previous errors\nerror: could not compile `borrow_02_mutate_while_borrowed` (lib test) due to 109 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 54,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-02-mutate-while-borrowed",
+      "latency_ms": 18559,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "89ce02b079b86150384af99a697fde33690629ec57c689450ee3696e838a2ab3",
+        "stderr_tail": "error[E0432]: unresolved import `borrow_03_self_referential_window::Window`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_03_self_referential_window::Window;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^------\n  |                                        |\n  |                                        no `Window` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_03_self_referential_window` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-03-self-referential-window",
+      "latency_ms": 18559,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-04-iterator-invalidation",
+      "latency_ms": 18559,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-05-temporary-lifetime",
+      "latency_ms": 18457,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "c23b2439a5cd6346b31f146e000ffae0b534a7d795f87fc49c82e3b0c06ff75b",
+        "stderr_tail": "error[E0432]: unresolved import `borrow_06_move_while_borrowed::split_first`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_06_move_while_borrowed::split_first;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-----------\n  |                                    |\n  |                                    no `split_first` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_06_move_while_borrowed` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-06-move-while-borrowed",
+      "latency_ms": 18457,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "1fa832333ad196333c7b47a6d4040a8d308af2631a03255e65c820bcae7fd64b",
+        "stderr_tail": "once at a time\n362 + error[E0499]: cannot borrow `self.value' as mutable more than once at a time\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub struct Counter {\n  | ^^^ unexpected token\n\nerror: could not compile `borrow_07_overlapping_mut_borrows` (lib) due to 139 previous errors\nerror: could not compile `borrow_07_overlapping_mut_borrows` (lib test) due to 139 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 35,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-07-overlapping-mut-borrows",
+      "latency_ms": 18457,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-08-iterator-outlives-local",
+      "latency_ms": 18457,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "1b1a42b35a50ddd36b7d4f1be7c2301b6613811cab6bae528b30a642d5da32ec",
+        "stderr_tail": "2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n539 - ```text\n539 + '''text\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | pub struct View {\n  | ^^^ unexpected token\n\nerror: could not compile `borrow_09_struct_lifetime` (lib test) due to 135 previous errors\nerror: could not compile `borrow_09_struct_lifetime` (lib) due to 135 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 67,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-09-struct-lifetime",
+      "latency_ms": 18566,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "d2350125863ca1cbc95dff0672abaac390ff557ec46fd244d50148189e32f67a",
+        "stderr_tail": "solved import `borrow_10_assign_while_borrowed::compare_with_last`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_10_assign_while_borrowed::compare_with_last;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-----------------\n  |                                      |\n  |                                      no `compare_with_last` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_10_assign_while_borrowed` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-10-assign-while-borrowed",
+      "latency_ms": 18566,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-11-move-out-of-borrowed",
+      "latency_ms": 18566,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-12-move-out-of-drop-type",
+      "latency_ms": 18566,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "06508161947be32a2dab8bcc7bff629da72408eed6ec37ee350e78ffc7ccc3ea",
+        "stderr_tail": "error[E0432]: unresolved import `borrow_13_mutate_through_shared::stamp`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_13_mutate_through_shared::stamp;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-----\n  |                                      |\n  |                                      no `stamp` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_13_mutate_through_shared` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-13-mutate-through-shared",
+      "latency_ms": 579,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 80,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "abbc81d903c17260bae5011ff2c8ae9ab9923d68192944adbbe3d51a2e55c28c",
+        "stderr_tail": "error[E0432]: unresolved import `borrow_14_borrow_after_move::join_then_measure`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_14_borrow_after_move::join_then_measure;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-----------------\n  |                                  |\n  |                                  no `join_then_measure` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_14_borrow_after_move` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-14-borrow-after-move",
+      "latency_ms": 579,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 80,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-15-return-local-table-entry",
+      "latency_ms": 579,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 80,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "borrow-16-closure-borrows-local",
+      "latency_ms": 579,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 80,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "588aa4751d57161b668369ebcd58f6f81eb9e6b6d58d0f85366700e7f8ca7566",
+        "stderr_tail": "error[E0432]: unresolved import `borrow_17_two_input_lifetimes::longer`\n --> tests/check.rs:1:5\n  |\n1 | use borrow_17_two_input_lifetimes::longer;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^------\n  |                                    |\n  |                                    no `longer` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `borrow_17_two_input_lifetimes` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-17-two-input-lifetimes",
+      "latency_ms": 18752,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e8892f19338cb859ff76dce66d836b2a8ee01e45026abff1410f4f6183462787",
+        "stderr_tail": "losed delimiter\n   --> src/lib.rs:572:41\n    |\n561 | impl Ledger {\n    |             - unclosed delimiter\n...\n572 |     pub fn entries(&self) -> Vec<i64> {\n    |                                       -^\n    |                                       |\n    |                                       unclosed delimiter\n\nerror: could not compile `borrow_18_refcell_double_borrow` (lib test) due to 47 previous errors\nerror: could not compile `borrow_18_refcell_double_borrow` (lib) due to 47 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 23,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-18-refcell-double-borrow",
+      "latency_ms": 18752,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-01-lock-order-deadlock",
+      "latency_ms": 18752,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-02-lost-update",
+      "latency_ms": 18752,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ffcc7a9f8f0259746da9c2686485577784cbf2a6c6827b285203259a7c8ed711",
+        "stderr_tail": "s not\n    |\n324 -   |             ^^^^^^^^^^^^^^^^^^^^^^^^^ `\n324 +   |             ^^^^^^^^^^^^^^^^^^^^^^^^^ '\n    |\n\nerror: expected one of `!` or `::`, found keyword `use`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | use std::rc::Rc;\n  | ^^^ unexpected token\n\nerror: could not compile `concurrency_03_send_boundary` (lib) due to 296 previous errors\nerror: could not compile `concurrency_03_send_boundary` (lib test) due to 296 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 38,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-03-send-boundary",
+      "latency_ms": 18617,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "abdc410948924f084e262e10ae5162bc3f9f38a45881a0a2a0f21f854a1e1d34",
+        "stderr_tail": "b fn increment_pair(counter: &Arc<Mutex<usize>>) {\n    |                                                    - unclosed delimiter\n492 |     let barrier = Arc::new(Barrier::new(2));\n493 |     thread::scope(|\n    |                  - ^\n    |                  |\n    |                  unclosed delimiter\n\nerror: could not compile `concurrency_04_mutex_critical_section` (lib) due to 49 previous errors\nerror: could not compile `concurrency_04_mutex_critical_section` (lib test) due to 49 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 24,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-04-mutex-critical-section",
+      "latency_ms": 18617,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ae40522387efba84b18df1af19647f16add04a12915bbe67eeaffb12e28868cb",
+        "stderr_tail": " ''' (Single Quote), but it is not\n    |\n579 - ```rust\n579 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub fn run_workers(jobs: &[i32]) -> Result<i32, String> {\n  | ^^^ unexpected token\n\nerror: could not compile `concurrency_05_swallowed_panic` (lib) due to 51 previous errors\nerror: could not compile `concurrency_05_swallowed_panic` (lib test) due to 51 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 25,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-05-swallowed-panic",
+      "latency_ms": 18617,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cbca32f9298777c431ce0d2c0e69a1d1d0257ae62f3f2a61362d373db07de3ad",
+        "stderr_tail": "es\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n543 - ```rust\n543 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `concurrency_06_guard_crosses_thread` (lib) due to 93 previous errors\nerror: could not compile `concurrency_06_guard_crosses_thread` (lib test) due to 93 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 46,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-06-guard-crosses-thread",
+      "latency_ms": 18617,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "87ed76418d0f5a974a516e49c9745e2965d6b9772fcc834c73a2813e4a35d8e3",
+        "stderr_tail": "error: this file contains an unclosed delimiter\n   --> src/lib.rs:529:8\n    |\n525 | pub fn send_all(sender: &SyncSender<i32>, values: &[i32]) -> Result<(), String> {\n    |                                                                                 - unclosed delimiter\n...\n529 |     Ok\n    |       ^\n\nerror: could not compile `concurrency_07_silent_channel_drop` (lib) due to 107 previous errors\nerror: could not compile `concurrency_07_silent_channel_drop` (lib test) due to 107 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 53,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-07-silent-channel-drop",
+      "latency_ms": 18502,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "063f7e09804b88d2d136003ee0a4b8dc4dcc6db135de4da0fb2a75ea1d764e56",
+        "stderr_tail": "character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n379 - ```text\n379 + '''text\n    |\n\nerror: expected one of `!` or `::`, found keyword `use`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | use std::thread;\n  | ^^^ unexpected token\n\nerror: could not compile `concurrency_08_borrowed_thread` (lib test) due to 203 previous errors\nerror: could not compile `concurrency_08_borrowed_thread` (lib) due to 203 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 35,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-08-borrowed-thread",
+      "latency_ms": 18502,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "23dfba6f7eee1877cddce96d6db7c2d324268812657ffc2ece85430edf2936c9",
+        "stderr_tail": "0382]: use of moved value: `values'\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:309:43\n    |\n309 | 3 |     let first = thread::spawn(move ||\n    |                                  -       ^\n    |                                  |\n    |                                  unclosed delimiter\n\nerror: could not compile `concurrency_09_shared_input` (lib) due to 111 previous errors\nerror: could not compile `concurrency_09_shared_input` (lib test) due to 111 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 28,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-09-shared-input",
+      "latency_ms": 18502,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 220,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-10-condvar-without-predicate",
+      "latency_ms": 18502,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "c1c9d6ec2f9ee6ccc8e3aae3969415319948c11264e13fa3401b1d3727551015",
+        "stderr_tail": "error[E0432]: unresolved import `concurrency_11_cell_not_sync::count_with`\n --> tests/check.rs:3:5\n  |\n3 | use concurrency_11_cell_not_sync::count_with;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^----------\n  |                                   |\n  |                                   no `count_with` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `concurrency_11_cell_not_sync` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-11-cell-not-sync",
+      "latency_ms": 18509,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "a6df7911c5cd4882e5a5b752041db9199e6dbdf44eb411b23ca02a697d6a7687",
+        "stderr_tail": "nother 200 unclosed delimiters begin from here\n    |                         |                  |\n    |                         |                  unclosed delimiter\n    |                         unclosed delimiter\n...\n362 | 7 |         handles.push(std::thread::\n    |                                       ^\n\nerror: could not compile `concurrency_12_shared_arc_moved` (lib) due to 143 previous errors\nerror: could not compile `concurrency_12_shared_arc_moved` (lib test) due to 143 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 36,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-12-shared-arc-moved",
+      "latency_ms": 18509,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "concurrency-13-atomic-fetch-or",
+      "latency_ms": 18509,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "5eff5eeddb24ef01a7d54ef14e8b7e9d7cff755a9c29e1e36852216c250105d0",
+        "stderr_tail": "         unclosed delimiter\n509 |         std::thread::scope(|scope| {\n    |                           -        - another 3 unclosed delimiters begin from here\n    |                           |\n    |                           unclosed delimiter\n510 |             scope.spawn(|| {\n    |                             ^\n\nerror: could not compile `concurrency_14_poisoned_mutex` (lib test) due to 77 previous errors\nerror: could not compile `concurrency_14_poisoned_mutex` (lib) due to 77 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 26,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-14-poisoned-mutex",
+      "latency_ms": 18509,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ce77fa463dd50b5b806b89f46bb72be5ebd731d22a513c882da44be60cb14cae",
+        "stderr_tail": "p: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n493 - ```text\n493 + '''text\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `concurrency_15_mutex_read_modify_write` (lib) due to 31 previous errors\nerror: could not compile `concurrency_15_mutex_read_modify_write` (lib test) due to 31 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 15,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-15-mutex-read-modify-write",
+      "latency_ms": 18625,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "039f773b5bce8787a306bb141e467476d28567816038484d4539fc1ed6c87aca",
+        "stderr_tail": " Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n     |\n1151 - ```text\n1151 + '''text\n     |\n\nerror: expected one of `!` or `::`, found `[`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // Cargo.toml\n5 | [package]\n  | ^ unexpected token\n\nerror: could not compile `concurrency_16_non_reentrant_lock` (lib) due to 569 previous errors\nerror: could not compile `concurrency_16_non_reentrant_lock` (lib test) due to 569 previous errors\n",
+        "wall_seconds": 25.0
+      },
+      "extraction": {
+        "fence_count": 284,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-16-non-reentrant-lock",
+      "latency_ms": 18625,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "605cdc93c25e5c7f684a8122eecae0ba5c3729bef524b3aecf6e443a306ef3f4",
+        "stderr_tail": "^^^^^^^^^^^^^^\n   |\nhelp: if you meant to write a string literal, use double quotes\n   |\n26 - thread 'tests::visible_first_claim' panicked at src/lib.rs:12:9:\n26 + thread \"tests::visible_first_claim\" panicked at src/lib.rs:12:9:\n   |\n\nFor more information about this error, try `rustc --explain E0762`.\nerror: could not compile `concurrency_17_compare_exchange_claim` (lib) due to 6 previous errors\nerror: could not compile `concurrency_17_compare_exchange_claim` (lib test) due to 6 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-17-compare-exchange-claim",
+      "latency_ms": 18625,
+      "status": "test_failed",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ffb65cdd2efb2411d31a6136e72f123383df648eb799b9499846bf786f68d525",
+        "stderr_tail": "\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n542 - ```text\n542 + '''text\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `concurrency_18_barrier_early_return` (lib test) due to 263 previous errors\nerror: could not compile `concurrency_18_barrier_early_return` (lib) due to 263 previous errors\n",
+        "wall_seconds": 25.0
+      },
+      "extraction": {
+        "fence_count": 131,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-18-barrier-early-return",
+      "latency_ms": 18625,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 67,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-01-version-requirement",
+      "latency_ms": 18581,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7cefb859fbc140b0c13d707ac22933f2426999b48a32edde8dae5190aff120a8",
+        "stderr_tail": "ter '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n408 - ```rust\n408 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:410:36\n    |\n410 | pub fn describe(value: &Option<u32\n    |                -                  ^\n    |                |\n    |                unclosed delimiter\n\nerror: could not compile `deps_02_edition_2024` (lib) due to 57 previous errors\nerror: could not compile `deps_02_edition_2024` (lib test) due to 57 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 28,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-02-edition-2024",
+      "latency_ms": 18581,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-03-optional-feature",
+      "latency_ms": 18581,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-04-unknown-feature",
+      "latency_ms": 18581,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-05-workspace-member",
+      "latency_ms": 18548,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "277d459beaff04f246266691081be1a6605f3541ed620d22a228a2c0c01b2794",
+        "stderr_tail": "e character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n619 - ```rust\n619 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `#`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | #![deny(unsafe_op_in_unsafe_fn)]\n  | ^ unexpected token\n\nerror: could not compile `deps_06_edition_unsafe_block` (lib) due to 91 previous errors\nerror: could not compile `deps_06_edition_unsafe_block` (lib test) due to 91 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 45,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-06-edition-unsafe-block",
+      "latency_ms": 18548,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 192,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-07-feature-conflict",
+      "latency_ms": 18548,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-08-renamed-package",
+      "latency_ms": 18548,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-09-disable-default-features",
+      "latency_ms": 18556,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "15aae03fcfebcb8b9b5d2f08007c5dc758d33478d18921c2571b6433bbaea1fb",
+        "stderr_tail": "42\n    |\n446 | pub extern \"C\" fn checksum(bytes: &[u8]) -> u8 {\n    |                                                - unclosed delimiter\n447 |     bytes.iter().fold(0u8, |total, byte|\n    |                      -                  ^\n    |                      |\n    |                      unclosed delimiter\n\nerror: could not compile `deps_10_edition_unsafe_attribute` (lib) due to 113 previous errors\nerror: could not compile `deps_10_edition_unsafe_attribute` (lib test) due to 113 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 56,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-10-edition-unsafe-attribute",
+      "latency_ms": 18556,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-11-lib-name-mismatch",
+      "latency_ms": 18556,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cb5327ecc6251b8b58d8798e81b3b0021292eaec0a257294975a07e2873cb73e",
+        "stderr_tail": "but it is not\n    |\n979 - ```rust\n979 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:982:37\n    |\n982 | pub fn label_of() -> &'static str {\n    |                                   -^\n    |                                   |\n    |                                   unclosed delimiter\n\nerror: could not compile `deps_12_edition_2015_paths` (lib) due to 247 previous errors\nerror: could not compile `deps_12_edition_2015_paths` (lib test) due to 247 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 123,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-12-edition-2015-paths",
+      "latency_ms": 18556,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ea0ec73b62b997f0964d359d3b30b2ab4556c508d089ae9fc5a26f3c86999a36",
+        "stderr_tail": "error: can't find lib `deps_13_wrong_lib_path` at path `/work/target/capability-work/deps-13-wrong-lib-path/src/other.rs`\n --> /work/target/capability-work/deps-13-wrong-lib-path/Cargo.toml\nerror: can't find lib `deps_13_wrong_lib_path` at path `/work/target/capability-work/deps-13-wrong-lib-path/src/other.rs`\n --> /work/target/capability-work/deps-13-wrong-lib-path/Cargo.toml\nerror: could not compile due to 2 previous target resolution errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 86,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-13-wrong-lib-path",
+      "latency_ms": 18601,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-14-workspace-inheritance",
+      "latency_ms": 18601,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-15-missing-package-name",
+      "latency_ms": 18601,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "9686ef065772c215e46b6a8ddcd905b280732db370d1afe4f0eff07d6d1abad2",
+        "stderr_tail": "error: failed to load manifest for dependency `codec`\n\nCaused by:\n  failed to read `/work/target/capability-work/deps-16-missing-dependency-dir/dep/Cargo.toml`\n\nCaused by:\n  No such file or directory (os error 2)\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 63,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-16-missing-dependency-dir",
+      "latency_ms": 18601,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-17-invalid-package-name",
+      "latency_ms": 18444,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 192,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "deps-18-default-features-type",
+      "latency_ms": 18444,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-01-chunk-boundary",
+      "latency_ms": 18444,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "7caa2bba3509fe8eafc9871099f8dcc223eabec40578452fcf32cd5884b0f002",
+        "stderr_tail": "elp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n468 - ```rust\n468 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | pub fn max_gap(values: &[i64]) -> i64 {\n  | ^^^ unexpected token\n\nerror: could not compile `failing_02_empty_input` (lib) due to 65 previous errors\nerror: could not compile `failing_02_empty_input` (lib test) due to 65 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 32,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-02-empty-input",
+      "latency_ms": 18444,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "d4af272be1c5a9c90c9ff34af82e3a68fbca7d9885ba2a709de21bb2275df9f6",
+        "stderr_tail": " like ''' (Single Quote), but it is not\n    |\n630 - ```text\n630 + '''text\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:637:11\n    |\n632 | pub fn running_total(values: &[u8]) -> u8 {\n    |                                           - unclosed delimiter\n...\n637 |     total\n    |          ^\n\nerror: could not compile `failing_03_overflow_boundary` (lib test) due to 117 previous errors\nerror: could not compile `failing_03_overflow_boundary` (lib) due to 117 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 58,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-03-overflow-boundary",
+      "latency_ms": 18471,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "851919498f9e843808a8cae6dde1ca7e790a2dcad421a88d769d40d728e77aed",
+        "stderr_tail": " (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n423 - ```rust\n423 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub fn sort_ascending(values: &mut [f64]) {\n  | ^^^ unexpected token\n\nerror: could not compile `failing_04_nan_ordering` (lib test) due to 123 previous errors\nerror: could not compile `failing_04_nan_ordering` (lib) due to 123 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 61,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-04-nan-ordering",
+      "latency_ms": 18471,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "c609e91e342be0394dcf3a9fa9d65cedf94b3e9665ff8ac7ac20d5c82b632d0a",
+        "stderr_tail": "    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:526:49\n    |\n526 | pub fn range_sum(start: i32, end: i32) -> i32 {\n    |                                               -^\n    |                                               |\n    |                                               unclosed delimiter\n\nerror: could not compile `failing_05_inclusive_range` (lib test) due to 177 previous errors\nerror: could not compile `failing_05_inclusive_range` (lib) due to 177 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 88,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-05-inclusive-range",
+      "latency_ms": 18471,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "147e49819a8111772d529d8a936a5714544d9fc85b1c97f1bec49667053fb8c2",
+        "stderr_tail": "Quote), but it is not\n    |\n486 - ```rust\n486 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:489:13\n    |\n488 | pub fn percent_of(cents: u64, percent: u64) -> u64 {\n    |                                                    - unclosed delimiter\n489 |     cents *\n    |            ^\n\nerror: could not compile `failing_06_integer_precision` (lib test) due to 141 previous errors\nerror: could not compile `failing_06_integer_precision` (lib) due to 141 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 70,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-06-integer-precision",
+      "latency_ms": 18471,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-07-common-prefix",
+      "latency_ms": 18506,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e6cb211e4717aee29065702248898e00dde8b9e4020223ad06629a15fc8cfbf6",
+        "stderr_tail": "                              - unclosed delimiter\n...\n507 |     while low < high {\n    |                      - unclosed delimiter\n508 |         let mid = (low + high) / 2;\n509 |         if values[mid] < target {\n    |                                 - unclosed delimiter\n510 |             low = mid\n    |                      ^\n\nerror: could not compile `failing_08_lower_bound` (lib test) due to 53 previous errors\nerror: could not compile `failing_08_lower_bound` (lib) due to 53 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 26,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-08-lower-bound",
+      "latency_ms": 18506,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ff7f1dde33d40b5693fcaf4442736f9943273beb3966f19b56114e69eee55baf",
+        "stderr_tail": " '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:614:23\n    |\n610 | pub fn next(light: Light) -> Light {\n    |                                    - unclosed delimiter\n611 |     match light {\n    |                 - unclosed delimiter\n...\n614 |         Light::Yellow\n    |                      ^\n\nerror: could not compile `failing_09_state_cycle` (lib) due to 113 previous errors\nerror: could not compile `failing_09_state_cycle` (lib test) due to 113 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 56,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-09-state-cycle",
+      "latency_ms": 18506,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-10-last-duplicate-index",
+      "latency_ms": 18506,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-11-wrap-counts-the-space",
+      "latency_ms": 18523,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-12-roman-subtractive",
+      "latency_ms": 18523,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-13-duration-minutes-field",
+      "latency_ms": 18523,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-14-century-leap-year",
+      "latency_ms": 18523,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "8edd05b463fd2d87be7c08ed093550eb2d3f37c52e4d90dc3bcb957727181719",
+        "stderr_tail": "error[E0432]: unresolved import `failing_15_run_length_count::encode`\n --> tests/check.rs:1:5\n  |\n1 | use failing_15_run_length_count::encode;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^------\n  |                                  |\n  |                                  no `encode` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `failing_15_run_length_count` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-15-run-length-count",
+      "latency_ms": 18490,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-16-merge-adjacent",
+      "latency_ms": 18490,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-17-partial-last-page",
+      "latency_ms": 18490,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "failing-18-negative-caesar-shift",
+      "latency_ms": 18490,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 39,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-01-signature",
+      "latency_ms": 19155,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "0019fa8fec86a0b618d9bbc49765d874e6cba3e617d75fc41349e3e063aefd97",
+        "stderr_tail": "acter '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n457 - ```rust\n457 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:460:16\n    |\n459 | pub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    |                                                                             - unclosed delimiter\n460 |     let client\n    |               ^\n\nerror: could not compile `migrate_02_builder` (lib) due to 113 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 56,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-02-builder",
+      "latency_ms": 19155,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "1714e981a0b03c8ca6216d5d827a1fd6982e20f1107d9ce4ddf03204a64e0512",
+        "stderr_tail": "_fields`, `migrate_03_error_conversion::AppError`\n --> tests/check.rs:1:35\n  |\n1 | use migrate_03_error_conversion::{count_fields, AppError};\n  |                                   ^^^^^^^^^^^^  ^^^^^^^^ no `AppError` in the root\n  |                                   |\n  |                                   no `count_fields` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `migrate_03_error_conversion` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-03-error-conversion",
+      "latency_ms": 19155,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "260c2eab2c4d8fc1b56ffcbb414ba6bd181ebccd3d060597645e5409a4582912",
+        "stderr_tail": "ins an unclosed delimiter\n   --> src/lib.rs:643:43\n    |\n641 | impl Render for Doc {\n    |                     - unclosed delimiter\n642 |     fn render(&self) -> String {\n    |                                - unclosed delimiter\n643 |         format!(\"<h1>{}</h1>\", self.title\n    |                - unclosed delimiter      ^\n\nerror: could not compile `migrate_04_trait_import` (lib) due to 145 previous errors\nerror: could not compile `migrate_04_trait_import` (lib test) due to 145 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 72,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-04-trait-import",
+      "latency_ms": 19155,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "75b8b72f646c20f7f62ddc6fc83a7e364220134f09253b6bf2500032132aaaab",
+        "stderr_tail": "ust\n    | ^^^\n    |\n    = note: character appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n514 - ```rust\n514 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub fn names(input: &str) -> Vec<String> {\n  | ^^^ unexpected token\n\nerror: could not compile `migrate_05_iterator_api` (lib) due to 149 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 74,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-05-iterator-api",
+      "latency_ms": 18950,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 192,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-06-error-variant",
+      "latency_ms": 18950,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-07-display-method",
+      "latency_ms": 18950,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-08-path-api",
+      "latency_ms": 18950,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cd668e9561cec5615cc6c260ad0bff3a3ea7ca21f7f39a29e99566e667f6b669",
+        "stderr_tail": "(Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n603 - ```rust\n603 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub fn count_to(limit: u32) -> u32 {\n  | ^^^ unexpected token\n\nerror: could not compile `migrate_09_mutable_receiver` (lib) due to 113 previous errors\nerror: could not compile `migrate_09_mutable_receiver` (lib test) due to 113 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 56,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-09-mutable-receiver",
+      "latency_ms": 18603,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "fbf61cac95191900914b90fb098dfe6b48c39788ba441365e4e1cd2bc4fb7045",
+        "stderr_tail": "588 | pub fn running_total(values: &[i64]) -> i64 {\n    |                                             - unclosed delimiter\n589 |     let mut tally = stats::Tally::new();\n590 |     for value in values {\n    |                         - unclosed delimiter\n591 |         tally.push(*value);\n    |                            ^\n\nerror: could not compile `migrate_10_method_renamed` (lib) due to 109 previous errors\nerror: could not compile `migrate_10_method_renamed` (lib test) due to 109 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 54,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-10-method-renamed",
+      "latency_ms": 18603,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "0743cc9a332d840512200620f03f461f7a0a0de13e1d03c819efd484bc01bacf",
+        "stderr_tail": "' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n752 - ```rust\n752 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:755:10\n    |\n754 | pub fn plate(text: String) -> String {\n    |                                      - unclosed delimiter\n755 |     name\n    |         ^\n\nerror: could not compile `migrate_11_owned_argument` (lib) due to 217 previous errors\nerror: could not compile `migrate_11_owned_argument` (lib test) due to 217 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 108,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-11-owned-argument",
+      "latency_ms": 18603,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "70b986b1118b4b297d6950e84d88791a9e5557958c5e3ff526b20816ebf4ea68",
+        "stderr_tail": " `\n   --> src/lib.rs:548:1\n    |\n548 | ```rust\n    | ^^^\n    |\n    = note: character appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n548 - ```rust\n548 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `migrate_12_option_result_change` (lib) due to 121 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 60,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-12-option-result-change",
+      "latency_ms": 18603,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "19d86edfc6249a08d47c0bd264d7d052028e07c4d62f5a0cfe760f07e2d20b32",
+        "stderr_tail": "error[E0432]: unresolved import `migrate_13_const_generic::make_counter`\n --> tests/check.rs:1:5\n  |\n1 | use migrate_13_const_generic::make_counter;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^------------\n  |                               |\n  |                               no `make_counter` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `migrate_13_const_generic` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-13-const-generic",
+      "latency_ms": 18519,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "08f649d4cf9ff50fb7f0577c40cb5eeb1b10d7746d425193a91ef132f253b757",
+        "stderr_tail": "lp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n702 - ```\n702 + '''\n    |\n\nerror: expected one of `!` or `::`, found keyword `use`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | use status::State;\n  | ^^^ unexpected token\n\nerror: could not compile `migrate_14_new_enum_variant` (lib) due to 110 previous errors\nerror: could not compile `migrate_14_new_enum_variant` (lib test) due to 110 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 54,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-14-new-enum-variant",
+      "latency_ms": 18519,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-15-function-renamed",
+      "latency_ms": 18519,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-16-required-config-argument",
+      "latency_ms": 18519,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "migrate-17-field-renamed",
+      "latency_ms": 19162,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "a16a6e5389d724b212f64c0a781d68125b035d07057b0c679acda1d115107272",
+        "stderr_tail": "ars 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n670 - ```rust\n670 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `migrate_18_conversion_bound` (lib) due to 205 previous errors\nerror: could not compile `migrate_18_conversion_bound` (lib test) due to 205 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 102,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-18-conversion-bound",
+      "latency_ms": 19162,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-01-lifetime-propagation",
+      "latency_ms": 19162,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-02-error-propagation",
+      "latency_ms": 19162,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 117,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-03-generic-bounds",
+      "latency_ms": 18686,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 171,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-04-module-visibility",
+      "latency_ms": 18686,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "19c89891b8d640f9d142af985dcbf57879e5ca449fbf2dc2fea72089282322e5",
+        "stderr_tail": "11 |     pub enum Event {\n    |                         - unclosed delimiter\n...\n 95 | 11 |     pub enum Event {\n    |                         - unclosed delimiter\n...\n103 | 11 |     pub enum Event {\n    |                         - another 41 unclosed delimiters begin from here\n...\n420 | error[E000\n    |           ^\n\nerror: could not compile `repo_05_variant_propagation` (lib test) due to 283 previous errors\nerror: could not compile `repo_05_variant_propagation` (lib) due to 283 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 51,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-05-variant-propagation",
+      "latency_ms": 18686,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-06-moved-module-import",
+      "latency_ms": 18686,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-07-field-rename",
+      "latency_ms": 18652,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cd959532bc75eaf77428a1fa7ccd2d9258a48d272897ddd2859b0d0c83afd0dc",
+        "stderr_tail": "' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n619 - ```rust\n619 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:626:23\n    |\n625 | pub fn run() -> i32 {\n    |                     - unclosed delimiter\n626 |     let state = state\n    |                      ^\n\nerror: could not compile `repo_08_mutability_propagation` (lib) due to 91 previous errors\nerror: could not compile `repo_08_mutability_propagation` (lib test) due to 91 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 45,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-08-mutability-propagation",
+      "latency_ms": 18652,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-09-result-propagation",
+      "latency_ms": 18652,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "39ba71d3dc268ed4b10bec314ab2c5f6abd6ff5f05e1d1ff3879762e53e93ff2",
+        "stderr_tail": "p: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n845 - ```rust\n845 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `crate`\n --> src/lib.rs:1:5\n  |\n1 | The crate must be able to build with `cargo build --no-verify`.\n  |     ^^^^^ expected one of `!` or `::`\n\nerror: could not compile `repo_10_missing_module_file` (lib) due to 172 previous errors\nerror: could not compile `repo_10_missing_module_file` (lib test) due to 172 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 84,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-10-missing-module-file",
+      "latency_ms": 18652,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-11-private-field",
+      "latency_ms": 151,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-12-returned-local-reference",
+      "latency_ms": 151,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-13-undeclared-module-path",
+      "latency_ms": 151,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-14-crossmodule-borrow",
+      "latency_ms": 151,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 4,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "repo-15-caller-not-updated",
+      "latency_ms": 18565,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "1d7a19161b407e43762871c9fb166357ecbd60e87d2d541e8b15c765483de5a8",
+        "stderr_tail": "ter '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n716 - ```rust\n716 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:728:15\n    |\n725 | impl Sink for Memory {\n    |                      - unclosed delimiter\n...\n728 |     fn accept\n    |              ^\n\nerror: could not compile `repo_16_missing_associated_item` (lib test) due to 113 previous errors\nerror: could not compile `repo_16_missing_associated_item` (lib) due to 113 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 56,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-16-missing-associated-item",
+      "latency_ms": 18565,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ea9b34360802f9f630c4c60e9a2c3803489713429ea3f608fd2e876ce71337d0",
+        "stderr_tail": "ppears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n     |\n1125 - ```text\n1125 + '''text\n     |\n\nerror: expected one of `!` or `::`, found `#`\n --> src/lib.rs:4:1\n  |\n3 | ```text\n  |        - expected one of `!` or `::`\n4 | # Cargo.toml\n  | ^ unexpected token\n\nerror: could not compile `repo_17_opaque_return_method` (lib test) due to 367 previous errors\nerror: could not compile `repo_17_opaque_return_method` (lib) due to 367 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 183,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-17-opaque-return-method",
+      "latency_ms": 18565,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "df6060c6e925cb1386a6edbadcb9ac2071e0ebcf16106d6f0e97c25b26a43d5e",
+        "stderr_tail": "error: expected one of `!` or `::`, found `.`\n --> src/lib.rs:1:12\n  |\n1 | test_output.txt\n  |            ^ expected one of `!` or `::`\n\nerror: could not compile `repo_18_moved_across_modules` (lib test) due to 1 previous error\nerror: could not compile `repo_18_moved_across_modules` (lib) due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-18-moved-across-modules",
+      "latency_ms": 18565,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "4079587be78892fe4fed004a210042fd7a46d88446b1a16c51dbfebeafb43786",
+        "stderr_tail": "ks like ''' (Single Quote), but it is not\n    |\n543 - ```rust\n543 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:544:30\n    |\n544 | pub fn count_occurrences(hay\n    |                         -   ^\n    |                         |\n    |                         unclosed delimiter\n\nerror: could not compile `semantic_01_overlapping_count` (lib) due to 183 previous errors\nerror: could not compile `semantic_01_overlapping_count` (lib test) due to 183 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 91,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-01-overlapping-count",
+      "latency_ms": 18497,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "b1d3f71e9c956990becdc6be4b7c3948666ba82eaddc3c40dd40b2662b3dccf2",
+        "stderr_tail": "' (Single Quote), but it is not\n    |\n536 - ```rust\n536 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:541:20\n    |\n537 | pub fn average(values: &[u32]) -> u32 {\n    |                                       - unclosed delimiter\n...\n541 |     values.iter().\n    |                   ^\n\nerror: could not compile `semantic_02_rounded_average` (lib test) due to 249 previous errors\nerror: could not compile `semantic_02_rounded_average` (lib) due to 249 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 83,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-02-rounded-average",
+      "latency_ms": 18497,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "3e0ae0b0dc3c8635db4f919785b7a11997462d61ee39f95c28bc1698971ffab8",
+        "stderr_tail": "nicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n444 - ```text\n444 + '''text\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `semantic_03_case_insensitive_first_word` (lib test) due to 129 previous errors\nerror: could not compile `semantic_03_case_insensitive_first_word` (lib) due to 129 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 64,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-03-case-insensitive-first-word",
+      "latency_ms": 18497,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "16395d17f842b4088fcfc069b487edbf4457bf665233dbbb99ba029a178161ba",
+        "stderr_tail": "unclosed delimiter\n   --> src/lib.rs:368:52\n    |\n365 | pub fn ranked(entries: &[(String, u32)]) -> Vec<String> {\n    |                                                         - unclosed delimiter\n...\n368 |     sorted.into_iter().map(|(name, _score)| name).\n    |                                                   ^\n\nerror: could not compile `semantic_04_stable_score_sort` (lib) due to 83 previous errors\nerror: could not compile `semantic_04_stable_score_sort` (lib test) due to 83 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 41,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-04-stable-score-sort",
+      "latency_ms": 18497,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "916a5d340bf42284f31b682495c9ec90ef7dd81e2cbaa44a67930f721ae29ec4",
+        "stderr_tail": "'`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n514 - ```rust\n514 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub fn hex(bytes: &[u8]) -> String {\n  | ^^^ unexpected token\n\nerror: could not compile `semantic_05_lowercase_hex` (lib) due to 149 previous errors\nerror: could not compile `semantic_05_lowercase_hex` (lib test) due to 149 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 74,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-05-lowercase-hex",
+      "latency_ms": 18485,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "2493d4d98998b3cad0d556f2f63d420180217aeebbd917aa73f696f417f14fc9",
+        "stderr_tail": "e Accent) looks like ''' (Single Quote), but it is not\n    |\n616 - ```text\n616 + '''text\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | pub fn unique(values: &[i32]) -> Vec<i32> {\n  | ^^^ unexpected token\n\nerror: could not compile `semantic_06_order_preserving_unique` (lib) due to 609 previous errors\nerror: could not compile `semantic_06_order_preserving_unique` (lib test) due to 609 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 153,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-06-order-preserving-unique",
+      "latency_ms": 18485,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "df8f24f814f766d198e9d602e901cc8bb315ae0f381f964e98ec93dbb29069bb",
+        "stderr_tail": "p: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n649 - ```text\n649 + '''text\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | pub fn field(value: &str) -> String {\n  | ^^^ unexpected token\n\nerror: could not compile `semantic_07_csv_quoting` (lib test) due to 641 previous errors\nerror: could not compile `semantic_07_csv_quoting` (lib) due to 641 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 161,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-07-csv-quoting",
+      "latency_ms": 18485,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-08-char-truncate",
+      "latency_ms": 18485,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-09-token-bucket-refill",
+      "latency_ms": 18469,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 162,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-10-round-half-even",
+      "latency_ms": 18469,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "0058515ed2980aa9da59e2f5870c8b1bf74aadeb1e15a42aeb08ae35fb2b351b",
+        "stderr_tail": "acter appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n801 - ```rust\n801 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found `[`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | [workspace]\n  | ^ unexpected token\n\nerror: could not compile `semantic_11_leading_zero_id` (lib) due to 269 previous errors\nerror: could not compile `semantic_11_leading_zero_id` (lib test) due to 269 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 134,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-11-leading-zero-id",
+      "latency_ms": 18469,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-12-split-once",
+      "latency_ms": 18469,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-13-inverted-clamp",
+      "latency_ms": 18471,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 91,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-14-url-encode-plus",
+      "latency_ms": 18471,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-15-shorten-with-ellipsis",
+      "latency_ms": 18471,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "cfbaaa3f25d9b65ad2afc395dc250bda38762491be4624f030c9aab3d7285c52",
+        "stderr_tail": " is not\n    |\n390 - ```rust\n390 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:392:28\n    |\n392 | pub fn sorted(values: &[u3\n    |              -         -  ^\n    |              |         |\n    |              |         unclosed delimiter\n    |              unclosed delimiter\n\nerror: could not compile `semantic_16_numeric_string_sort` (lib) due to 89 previous errors\nerror: could not compile `semantic_16_numeric_string_sort` (lib test) due to 89 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 44,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-16-numeric-string-sort",
+      "latency_ms": 18471,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "semantic-17-adjacent-dedup",
+      "latency_ms": 18583,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "semantic-repair",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "9b1e7030f2f5b0db129bdea70bf7130ca0dc10257359411c5ae918fe1c7e6a38",
+        "stderr_tail": "error[E0432]: unresolved import `semantic_18_email_domain_case::normalise`\n --> tests/check.rs:1:5\n  |\n1 | use semantic_18_email_domain_case::normalise;\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---------\n  |                                    |\n  |                                    no `normalise` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `semantic_18_email_domain_case` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "semantic-18-email-domain-case",
+      "latency_ms": 18583,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "d785481bb0f66dfb0917178b159e2ac41c89eea215754bc5b4bebc9c27258bd0",
+        "stderr_tail": "ter '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n493 - ```rust\n493 + '''rust\n    |\n\nerror: this file contains an unclosed delimiter\n   --> src/lib.rs:497:8\n    |\n495 | impl Repo for MemoryRepo {\n    |                          - unclosed delimiter\n496 |     type Id = u32;\n497 |     fn\n    |       ^\n\nerror: could not compile `traits_01_associated_type` (lib) due to 73 previous errors\nerror: could not compile `traits_01_associated_type` (lib test) due to 73 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 36,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-01-associated-type",
+      "latency_ms": 18583,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-02-coherence",
+      "latency_ms": 18583,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "44987c25f85932a299ecd2a33ca7e0fc20ced23bca7d55e9436670643af59f36",
+        "stderr_tail": "' (Grave Accent) looks like ''' (Single Quote), but it is not\n    |\n794 - ```rust\n794 + '''rust\n    |\n\nerror: expected one of `!` or `::`, found keyword `pub`\n --> src/lib.rs:5:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | // src/lib.rs\n5 | pub fn count(store: &dyn Store) -> usize {\n  | ^^^ unexpected token\n\nerror: could not compile `traits_03_object_safety` (lib) due to 229 previous errors\nerror: could not compile `traits_03_object_safety` (lib test) due to 229 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 114,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-03-object-safety",
+      "latency_ms": 18537,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "54ee33f87df127539d021137190492c05a1c409317416ee013876ae47b70b339",
+        "stderr_tail": ".\n 52 | 6 | impl Shape for Square {\n    |                           - unclosed delimiter\n...\n 60 | 6 | impl Shape for Square {\n    |                           - unclosed delimiter\n...\n 68 | 6 | impl Shape for Square {\n    |                           - another 48 unclosed delimiters begin from here\n...\n448 | ```\n    |    ^\n\nerror: could not compile `traits_04_missing_method` (lib test) due to 323 previous errors\nerror: could not compile `traits_04_missing_method` (lib) due to 323 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 55,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-04-missing-method",
+      "latency_ms": 18537,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-05-supertrait-bound",
+      "latency_ms": 18537,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-06-method-ambiguity",
+      "latency_ms": 18537,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-07-add-impl",
+      "latency_ms": 18467,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "2642c24840acf4fb605c4a9534bdb3c91f54ca564e2d7a56aad02149448b8514",
+        "stderr_tail": " unclosed delimiter\n...\n 66 | 9 |     fn encode(&self, value: u64) -> String {\n    |                                                - another 38 unclosed delimiters begin from here\n...\n363 |   |                          ^^^ expected `u32`, found `u64`\n    |                                                             ^\n\nerror: could not compile `traits_08_method_signature` (lib test) due to 347 previous errors\nerror: could not compile `traits_08_method_signature` (lib) due to 347 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 44,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-08-method-signature",
+      "latency_ms": 18467,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "bc5f121eea86bbed6d2b965c82be39db2103bebf7d457a6d392a41a3d82c1374",
+        "stderr_tail": " for Vec<u8> {\n    |                                         - unclosed delimiter\n...\n 70 | 1 | impl core::fmt::Display for Vec<u8> {\n    |                                         - another 31 unclosed delimiters begin from here\n...\n340 | 1 | impl core::fmt::Display for Vec<u8> {\n    |                                          ^\n\nerror: could not compile `traits_09_orphan_rule` (lib) due to 145 previous errors\nerror: could not compile `traits_09_orphan_rule` (lib test) due to 145 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 37,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-09-orphan-rule",
+      "latency_ms": 18467,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "64051019d499291d724aa18bd0d4f2301852b67a2eaa5a39b3c8673f233c6179",
+        "stderr_tail": " let mut out = Vec::new();\n496 |     for _ in 0..limit {\n    |                       - unclosed delimiter\n497 |         match sequence.next_item() {\n    |                                    - unclosed delimiter\n498 |             Some(item) => out.push(item),\n499 |             None =>\n    |                    ^\n\nerror: could not compile `traits_10_associated_type_value` (lib test) due to 73 previous errors\nerror: could not compile `traits_10_associated_type_value` (lib) due to 73 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 36,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-10-associated-type-value",
+      "latency_ms": 18467,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-11-blanket-impl-bound",
+      "latency_ms": 18530,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-12-associated-const",
+      "latency_ms": 18530,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "0124f9b514b36345c2b157f0800291b490716d1a2bcffadaec85f9ac69a88d39",
+        "stderr_tail": "ult_method_missing_item::Report`\n --> tests/check.rs:1:45\n  |\n1 | use traits_13_default_method_missing_item::{Doc, Report};\n  |                                             ^^^  ^^^^^^ no `Report` in the root\n  |                                             |\n  |                                             no `Doc` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `traits_13_default_method_missing_item` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-13-default-method-missing-item",
+      "latency_ms": 18530,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-14-extra-type-parameter",
+      "latency_ms": 18530,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "2ea8197a7e76d2b7023d2c8c87fd0551fb4c4aaf3bb6f1b85554bbc8bb94672a",
+        "stderr_tail": "                    - unclosed delimiter\n...\n 59 | 7 | impl Encode for Hex {\n    |                         - unclosed delimiter\n...\n 67 | 7 | impl Encode for Hex {\n    |                         - another 54 unclosed delimiters begin from here\n...\n499 | 7 | impl Encode\n    |                ^\n\nerror: could not compile `traits_15_generic_trait_missing_argument` (lib test) due to 243 previous errors\nerror: could not compile `traits_15_generic_trait_missing_argument` (lib) due to 243 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 61,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-15-generic-trait-missing-argument",
+      "latency_ms": 18447,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "fa8c96a259b3dbd17ff951593cf3d79659ba4369054d8394d067a3f1916b4066",
+        "stderr_tail": "t the declaration in trait `Scale::scale` has 2\n330 + error[E0050]: method `scale` has 1 parameter but the declaration in trait `Scale::scale' has 2\n    |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `traits_16_method_arity` (lib test) due to 237 previous errors\nerror: could not compile `traits_16_method_arity` (lib) due to 237 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 40,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-16-method-arity",
+      "latency_ms": 18447,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "ea4fa3f9f969bba3dd18fe774a8bf0fb5fef24c1b2c82bbe762ca87a0fe79b49",
+        "stderr_tail": "acter appears 2 more times\nhelp: Unicode character '`' (Grave Accent) looks like ''' (Single Quote), but it is not\n   |\n30 - ```\n30 + '''\n   |\n\nerror: expected one of `!` or `::`, found `path`\n --> src/lib.rs:4:1\n  |\n3 | ```rust\n  |        - expected one of `!` or `::`\n4 | path=src/lib.rs\n  | ^^^^ unexpected token\n\nerror: could not compile `traits_17_method_not_in_trait` (lib) due to 12 previous errors\nerror: could not compile `traits_17_method_not_in_trait` (lib test) due to 12 previous errors\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "full_text",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-17-method-not-in-trait",
+      "latency_ms": 18447,
+      "status": "compile_error",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "traits-18-duplicate-inherent-method",
+      "latency_ms": 18447,
+      "status": "invalid_solution",
+      "surface": null,
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-01-lifetime-chain",
+      "latency_ms": 18713,
+      "status": "invalid_solution",
+      "surface": "rust",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "c1c738db36fc7d037abb1c58ed06e9aa0d56edbc734816b2e2b288ee686610ba",
+        "stderr_tail": "ndency::{minimal_recompute, PlanError, Rule};\n  |                               ^^^^^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^ no `Rule` in the root\n  |                               |                  |\n  |                               |                  no `PlanError` in the root\n  |                               no `minimal_recompute` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `trio_02_math_dependency` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-02-math-dependency",
+      "latency_ms": 18713,
+      "status": "compile_error",
+      "surface": "numeric-graph",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-03-logic-quantifier",
+      "latency_ms": 18713,
+      "status": "invalid_solution",
+      "surface": "logic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 512,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-04-invariant-ledger",
+      "latency_ms": 18713,
+      "status": "invalid_solution",
+      "surface": "rust",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 192,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-05-invariant-graph",
+      "latency_ms": 18712,
+      "status": "invalid_solution",
+      "surface": "numeric-graph",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "3de5ddd45fb4b824a42304c437af7b7e2a7027806f3e70b559b7df3a1e5ad6f2",
+        "stderr_tail": "titution::{free_vars, substitute, Term};\n  |                                      ^^^^^^^^^  ^^^^^^^^^^  ^^^^ no `Term` in the root\n  |                                      |          |\n  |                                      |          no `substitute` in the root\n  |                                      no `free_vars` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `trio_06_invariant_substitution` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-06-invariant-substitution",
+      "latency_ms": 18712,
+      "status": "compile_error",
+      "surface": "logic",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": null,
+        "problems": [
+          "no code block and no recognisable Rust body"
+        ],
+        "stderr_sha256": null,
+        "stderr_tail": "",
+        "wall_seconds": null
+      },
+      "extraction": {
+        "fence_count": 0,
+        "files": [],
+        "mode": "invalid",
+        "ok": false,
+        "rejected": [
+          "no code block and no recognisable Rust body"
+        ]
+      },
+      "id": "trio-07-scope-resolver",
+      "latency_ms": 18712,
+      "status": "invalid_solution",
+      "surface": "rust",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "530fe7d123049dbb308431cfc3a5045a47b86dfd235753cc0c4fe3c6e3027f54",
+        "stderr_tail": "_scoped_quantifier_eval::eval`, `trio_08_scoped_quantifier_eval::Expr`\n --> tests/check.rs:1:38\n  |\n1 | use trio_08_scoped_quantifier_eval::{eval, Expr};\n  |                                      ^^^^  ^^^^ no `Expr` in the root\n  |                                      |\n  |                                      no `eval` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `trio_08_scoped_quantifier_eval` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-08-scoped-quantifier-eval",
+      "latency_ms": 18712,
+      "status": "compile_error",
+      "surface": "numeric-graph",
+      "tokens_out": 3072,
+      "value": 0.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "171c317c56895cd52fdfafe7362f57685cdbe5e37ad72464eef1638e68deec82",
+        "stderr_tail": "ces, Formula, Occurrence};\n  |                                      ^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^ no `Occurrence` in the root\n  |                                      |            |\n  |                                      |            no `Formula` in the root\n  |                                      no `occurrences` in the root\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `trio_09_quantifier_occurrences` (test \"check\") due to 1 previous error\n",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_entry",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-09-quantifier-occurrences",
+      "latency_ms": 1533,
+      "status": "compile_error",
+      "surface": "logic",
+      "tokens_out": 50,
+      "value": 0.0
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-preregistration-v4.json",
+    "primary_relative_threshold": 0.1,
+    "problems": [],
+    "sha256": "a95723b6d2d46e7cd04267a4d897441fb3e1e107bb96aff12227166936dbbec2"
+  },
+  "revision": "6c09915bbceeebb4e6689e1f83c1a6a384a854eb",
+  "schema": "selvedge/capability-result/v1",
+  "scores": {
+    "by_category": {
+      "api-migration": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "concurrency": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "dependency-compat": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "failing-test": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "lifetime-borrow": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "repo-scale": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "semantic-repair": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "trait-impl": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "minimum_met": true,
+        "minimum_required": 18,
+        "n": 18,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "categories": [
+      "api-migration",
+      "concurrency",
+      "dependency-compat",
+      "failing-test",
+      "lifetime-borrow",
+      "repo-scale",
+      "semantic-repair",
+      "trait-impl"
+    ],
+    "category_minimum_items": 18,
+    "category_minimum_met": true,
+    "counts": {
+      "compile_error": 78,
+      "invalid_solution": 74,
+      "test_failed": 1
+    },
+    "items": 153,
+    "pooled": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 144,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_ci": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "level": 0.95,
+      "mean": 0.0,
+      "n": 144,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_composite": 0.0,
+    "trio": {
+      "logic": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "numeric-graph": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "rust": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "level": 0.95,
+        "mean": 0.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "trio_all_surfaces": false
+  },
+  "stage": "check",
+  "stamp": "20261116T115403Z",
+  "suite": {
+    "category_filter": null,
+    "category_minimum_items": 18,
+    "counts": {
+      "by_category": {
+        "api-migration": 18,
+        "concurrency": 18,
+        "dependency-compat": 18,
+        "failing-test": 18,
+        "lifetime-borrow": 18,
+        "probe": 6,
+        "repo-scale": 18,
+        "semantic-repair": 18,
+        "trait-impl": 18,
+        "trio": 9
+      },
+      "probes": 6,
+      "suite": 144,
+      "total": 159,
+      "trio": 9
+    },
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "7347e1e94b7ddcd3d04f1580646b392fc1591a25e71b299a663fc7f837f0a207"
+  }
+}

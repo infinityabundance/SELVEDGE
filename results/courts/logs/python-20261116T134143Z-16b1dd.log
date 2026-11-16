@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/work/scripts/capability_compare.py", line 398, in <module>
+    sys.exit(main(sys.argv[1:]))
+capability_compare: conditional_capacity_not_supported_on_verified_tasks
+  the conditional-capacity gate does not pass: H*-H, H*-D did not clear the conjunctive registered rule; no win is claimed
+
+arm  composite  receipt
+D       0.0000  results/capability/runs/t2-D/result.json
+M       0.0000  results/capability/runs/t2-M/result.json
+X       0.0000  results/capability/runs/t2-X/result.json
+H       0.0000  results/capability/runs/t2-H/result.json
+H*      0.0000  results/capability/runs/t2-Hstar/result.json
+
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/capability_compare.py", line 386, in main
+    print(f"{label:6} relative {diff['relative_difference']:+.4f} "
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported format string passed to NoneType.__format__

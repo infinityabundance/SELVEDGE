@@ -383,7 +383,13 @@ def main(argv: list[str]) -> int:
     for label, comparison in payload["comparisons"].items():
         primary = comparison["primary"]
         diff = primary["difference"]
-        print(f"{label:6} relative {diff['relative_difference']:+.4f} "
+        relative = diff["relative_difference"]
+        # A zero baseline makes the relative difference undefined. Printing it is
+        # not cosmetic: on this run every arm scored zero, and the reader crashed
+        # instead of saying so (S27). Undefined is reported as undefined.
+        shown = ("undefined (baseline is zero)" if relative is None
+                 else f"{relative:+.4f}")
+        print(f"{label:6} relative {shown} "
               f"[{diff['ci_low']:+.4f},{diff['ci_high']:+.4f}] "
               f"improvement={primary['improvement_met']} "
               f"-> {'PASS' if primary['threshold_met'] else 'FAIL'}")

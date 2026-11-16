@@ -114,7 +114,7 @@ def build_fixture(root: str, accuracy: dict, *, routed_mask_in_receipt: bool = F
             "dispatch_mask_order": dispatch,
         })
         evaluation = {
-            "schema": "selvedge/t2-eval/v1",
+            "schema": "selvedge/eval-receipt/v1",
             "arm": arm,
             "stamp": "20261116T000000Z",
             "revision": "b" * 40,
@@ -143,7 +143,7 @@ def build_fixture(root: str, accuracy: dict, *, routed_mask_in_receipt: bool = F
                       "checkpoint": checkpoint}
 
     d0 = {
-        "schema": "selvedge/t2-eval/v1",
+        "schema": "selvedge/eval-receipt/v1",
         "arm": "D",
         "stamp": "20261115T000000Z",
         "revision": "b" * 40,
@@ -207,6 +207,29 @@ def fixture(tmp_path, monkeypatch):
     return root, paths
 
 
+def test_the_registered_instrument_schema_is_accepted(fixture):
+    """The eval instrument writes `selvedge/eval-receipt/v1`.
+
+    This reader once required a name the instrument never emitted and refused
+    every real receipt; the fixture carried the same wrong string, so the test
+    agreed with the bug (S27).
+    """
+    root, paths = fixture
+    receipt = json.load(open(paths["D"]["eval"], encoding="utf-8"))
+    assert receipt["schema"] == "selvedge/eval-receipt/v1"
+    assert run_verdict(root, paths) == 0
+
+
+def test_an_unknown_evaluation_schema_is_refused(fixture, capsys):
+    root, paths = fixture
+    receipt = json.load(open(paths["D"]["eval"], encoding="utf-8"))
+    receipt["schema"] = "selvedge/nonsense/v1"
+    json.dump(receipt, open(paths["D"]["eval"], "w", encoding="utf-8"))
+    assert run_verdict(root, paths) == 3
+    assert "unknown schema" in capsys.readouterr().err
+    assert not os.path.isfile(os.path.join(root, "results/t2-verdict.json"))
+
+
 def test_a_complete_receipt_set_produces_the_registered_win(fixture):
     root, paths = fixture
     assert run_verdict(root, paths) == 0
@@ -242,6 +265,24 @@ def test_config_hash_mismatch_is_refused(fixture, capsys):
         handle.write('{"arm": "X", "total_accessible": 1}\n')
     assert run_verdict(root, paths) == 3
     assert "config digest does not match" in capsys.readouterr().err
+
+
+def test_a_missing_admission_digest_is_reported_not_invented(fixture):
+    """Three receipts predate the instrument recording the admission digest.
+
+    A missing digest is not a mismatch. The verdict accepts the receipt, records
+    that the digest was not recorded, and still binds the arm by path, the
+    admitted flag and the active-parameter count (S27).
+    """
+    root, paths = fixture
+    receipt = json.load(open(paths["D"]["eval"], encoding="utf-8"))
+    receipt["model"].pop("admission_sha256", None)
+    json.dump(receipt, open(paths["D"]["eval"], "w", encoding="utf-8"))
+    assert run_verdict(root, paths) == 0
+    payload = json.load(open(os.path.join(root, "results/t2-verdict.json")))
+    admission = payload["guards"]["D"]["admission"]
+    assert admission["digest_recorded_by_instrument"] is False
+    assert admission["active_unique_params"]
 
 
 def test_admission_hash_mismatch_is_refused(fixture, capsys):

@@ -1,0 +1,31 @@
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting oracle/tests/test_post_hstar.py _______________
+/usr/local/lib/python3.12/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+/usr/local/lib/python3.12/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+/usr/local/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+oracle/tests/test_post_hstar.py:37: in <module>
+    import post_hstar  # noqa: E402
+    ^^^^^^^^^^^^^^^^^
+E     File "/work/scripts/post_hstar.py", line 320
+E       self._env(mem_gib, cpus, pids, tmp_gib).items()
+E       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   SyntaxError: expected 'else' after 'if' expression
+=========================== short test summary info ============================
+ERROR oracle/tests/test_post_hstar.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.08s

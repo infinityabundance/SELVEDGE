@@ -1192,7 +1192,10 @@ class Pipeline:
         self.begin("verdict", mem_gib=sizing["limit_gib"], sizing=sizing,
                    outputs=["results/t2-verdict.json", "results/T2-VERDICT.md"])
         argv = [INTERPRETER, "scripts/t2_verdict.py",
-                "--repo-root", self.repo,
+                # The reader runs inside the court, where the repository is the
+                # working directory. A host absolute path does not exist there,
+                # and every required receipt was reported missing (S27).
+                "--repo-root", ".",
                 "--d0", "results/eval/t2-D0.json",
                 "--sensitivity", "X=results/t2/X/eval-pair-mask.json",
                 "--sensitivity", "H=results/t2/H/eval-pair-mask.json",
@@ -1232,7 +1235,7 @@ class Pipeline:
         self.begin("compare", mem_gib=sizing["limit_gib"], sizing=sizing,
                    outputs=["results/capability/runs/t2-comparison.json"])
         argv = [INTERPRETER, "scripts/capability_compare.py",
-                "--repo-root", self.repo]
+                "--repo-root", "."]
         for arm in ARMS:
             argv += ["--result",
                      f"{arm}=results/capability/runs/t2-{run_name(arm)}/result.json"]

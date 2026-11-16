@@ -1,0 +1,19 @@
+capability_compare: conditional_capacity_not_supported_on_verified_tasks
+  the conditional-capacity gate does not pass: H*-H, H*-D did not clear the conjunctive registered rule; no win is claimed
+
+arm  composite  receipt
+D       0.0000  results/capability/runs/t2-D/result.json
+M       0.0000  results/capability/runs/t2-M/result.json
+X       0.0000  results/capability/runs/t2-X/result.json
+H       0.0000  results/capability/runs/t2-H/result.json
+H*      0.0000  results/capability/runs/t2-Hstar/result.json
+
+H*-H   relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+H*-D   relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+X-D    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+M-D    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+X-H    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+H-D    relative undefined (baseline is zero) [+0.0000,+0.0000] improvement=False -> FAIL
+
+not measured: M-D0 — K17's registered comparator is the frozen D0, which has no verified-task row in this instrument; substituting D would be a different estimand, so the comparison is not measured here and is recorded as such
+receipt: results/capability/runs/t2-comparison.json

@@ -2484,12 +2484,20 @@ note naming the mask's semantics and a test that the mask is applied to the righ
 tokens; a reference-implementation receipt; a dated correction entry in
 `docs/WORK-LOG.md` if anything is wrong, explicitly not folding into T2's registered
 numbers.
-**Status.** running (pilot `running`: `D`, `M` and `X` evaluated, `H` evaluated,
-`H*` training and polled read-only). The post-`H*` execution pipeline is built and
-CPU-tested (2026-11-16, S22): `scripts/post-hstar.sh` runs verify, evaluate,
-capability court, the registered sensitivity `S1` and the verdict in order with
-per-stage limits and a resumable state, and `scripts/t2_verdict.py` refuses to
-emit a verdict from missing or mismatched receipts. **Audit outcome (2026-11-15, revision `642a32b`): the defect is
+**Status.** **done (S27).** The pilot ran to `done`; `results/T2-PILOT.md` is the
+published report (63 generated regions, re-rendered and compared by
+`scripts/t2_report.py --check`, numbers checked by `perf_numbers`) and
+`results/T2-VERDICT.md` is the post-`H*` verdict document from
+`scripts/t2_verdict.py`. **Registered outcome: `error_direction_not_supported`**
+(K15 fails, K16 fails, K17 passes, K18 fails, K19 fails); the negative is kept as
+the result and nothing is scaled. The post-`H*` execution pipeline is built and
+CPU-tested (2026-11-16, S22) and was executed end to end (S27):
+`scripts/post-hstar.sh` ran verify, evaluate, the capability court, the
+registered sensitivity `S1` and the verdict in order with per-stage limits and a
+resumable state, and `scripts/t2_verdict.py` refused to emit a verdict from
+missing or mismatched receipts — it refused four times for real before the
+receipts verified.
+**Audit outcome (2026-11-15, revision `642a32b`): the defect is
 real and reproduced.** `valid` is built in capacity-sorted pair order and applied
 after the restore, so pair `p` is gated by another pair's validity whenever an
 expert overflowed; an overflowing pair is retained and reads a clamped buffer row
@@ -2515,10 +2523,15 @@ can answer that, and the decisive pair is cheap.
 **Depends.** P12.1, T2's published verdict. **Acceptance evidence.** two
 receipts (evaluation, V2 training) with `dispatch_mask_order: pair`, and a
 decision note that states whether the registered verdict survives, in the
-registered words, without editing it. **Status.** open (blocked on the GPU the
-pilot owns). The evaluation-only step is registered as `S1` in contract T2.12
-A10 and wired as the `sensitivity` stage of `scripts/post-hstar.sh`; the V2
-retraining tier remains open. **Effort.** M.
+registered words, without editing it. **Status.** **evaluation-only step done
+(S27)**: `results/t2/X/eval-pair-mask.json` and `results/t2/H/eval-pair-mask.json`
+are the `S1` receipts under `mask_order=pair`, and the decision note is in
+`results/T2-VERDICT.md` (sensitivity section) — both arms move by less than one
+percentage point of PC in the same direction, the registered verdict stands
+unchanged, and nothing is re-thresholded. The **V2 retraining tier (the T2.8
+replication with `--mask-order pair`) is not run**; it remains open and it is the
+smallest honest way to test whether the corrected dispatch changes any verdict.
+**Effort.** M.
 
 ### P12.2 — Diagnose H*'s target: leave-one-out, per-expert normalisation, deployed-budget utility
 

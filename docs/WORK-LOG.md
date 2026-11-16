@@ -2833,3 +2833,142 @@ amendment digest for whichever arm is routed. The verify stage's recorded
 of what that receipt said at the time, and the amendment is what supplies the
 missing field. This is instrument/provenance work; no threshold, arm or metric
 changed, and no measurement was redone.
+
+### Three more reader defects, all the same class (host paths, stale names)
+
+**F6 — the verdict reader was handed the host repository path.**
+`scripts/t2_verdict.py --repo-root /mnt/...` runs *inside* the court, where the
+repository is the working directory; every required receipt was reported missing
+and the reader refused. The verdict and compare stages now pass `--repo-root .`,
+which resolves correctly in the container and in the scripted-court fixture. The
+argv regression test now also asserts that no stage hands the container the host
+repository path.
+
+**F7 — the verdict reader required a schema the instrument never emits.** It
+gated on `selvedge/t2-eval/v1`; `oracle/eval/baseline.py` writes
+`selvedge/eval-receipt/v1`, and every real receipt — including the frozen `D0`
+reference — carries the latter. The test fixture carried the same wrong string,
+so the test agreed with the bug. Both names are now accepted, anything else is
+still refused, and two tests pin it: the registered-instrument schema is
+accepted and an unknown schema is refused.
+
+**F8 — three receipts predate the instrument recording the admission digest.**
+`D`, `M` and `X` were evaluated before `baseline.py` started writing
+`model.admission_sha256`; `H` and `H*` have it. The reader refused the arms
+whose digest was *missing*, which conflates "not recorded" with "mismatched".
+A missing digest is no longer treated as a mismatch: a recorded digest must
+still match (the mismatch test still fails closed), a missing one is reported as
+`digest_recorded_by_instrument: false`, and the identity is established by the
+path, the admitted flag and the active-parameter count agreeing with the ledger
+and the training receipt. The verdict document says so rather than implying a
+binding it does not have.
+
+**F9 — the comparison reader crashed on a zero baseline.** With every arm at
+zero the relative difference is undefined and the JSON is correct, but the
+summary print used a float format on `None` and raised `TypeError` *after*
+writing the receipt. It now prints `undefined (baseline is zero)`, the gate
+fails, and a test pins the all-zero case end to end.
+
+**F10 — the verdict document emitted sentinels the perf-numbers court cannot
+see.** Five kill-condition verdicts and six per-arm composites were emitted
+*inside markdown table cells*, and the court requires a sentinel to occupy its
+own line, so those eleven numbers could never be verified. The tables now carry
+plain rendered values (covered by the document's byte-for-byte `--check`) and
+the same numbers are repeated as standalone generated blocks below each table.
+The verdict stage was re-run with `--force`; `perf_numbers` now verifies all 660
+blocks.
+
+### The run
+
+`H*` finished its registered budget and the orchestrator composed its receipt and
+ran its evaluation; the post-`H*` pipeline then ran all eight stages to `done`
+under `systemd-run --user --collect --unit=selvedge-post-hstar` with a 4 GiB
+outer limit (the earlier T2 orchestrator unit's measured peak was 74 MiB) and
+per-stage `SELVEDGE_MEM` values re-derived from each workload's measured VRAM
+peak. The post-`H*` state records **ten failed stage attempts before success** —
+the ten are the ten defects above, each named, and nothing after a failure ran.
+
+`H*` training, measured. Tokens:
+
+<!-- BEGIN GENERATED: worklog-hstar-tokens -->
+67108864
+<!-- END GENERATED: worklog-hstar-tokens -->
+
+Throughput, tokens per second:
+
+<!-- BEGIN GENERATED: worklog-hstar-tok-per-s -->
+5031
+<!-- END GENERATED: worklog-hstar-tok-per-s -->
+
+Peak VRAM in GiB (allocated, the loop's own counter):
+
+<!-- BEGIN GENERATED: worklog-hstar-vram-gib -->
+10.81
+<!-- END GENERATED: worklog-hstar-vram-gib -->
+
+GPU-hours of wall-clock:
+
+<!-- BEGIN GENERATED: worklog-hstar-gpu-hours -->
+4.05
+<!-- END GENERATED: worklog-hstar-gpu-hours -->
+
+Each value above is a generated block on its own line, so the perf-numbers court
+re-resolves it from `results/t2/H*/run.json`.
+
+### What the runs decided
+
+**T2's registered verdict stands: `error_direction_not_supported`.** `K15` fails
+(`H*` vs `H` is not decisive on the primary composite and the KL difference is
+inside the registered margin), `K16` fails (`H*` is worse than `D` on the primary
+composite), `K18` fails (`X` beats `D` on the composite but regresses pooled KL
+beyond the margin), and `K17` passes (`M` vs `D0`). The negative is kept as the
+result: no bank scaling, and the mechanism does not move into WS4/WS5 without a
+new pre-registration. Numbers: `results/T2-VERDICT.md` and `results/T2-PILOT.md`,
+both generated.
+
+**The corrected-dispatch sensitivity `S1` changes nothing.** `X` and `H`
+re-evaluated with `mask_order=pair`: both move by less than one percentage point
+of the primary composite, in the same (negative) direction, and the registered
+verdict is untouched. The V2 retraining tier is **not** run.
+
+**The verified-task comparison is a floor effect, not a ranking.** All five arms
+scored zero verified tasks on the 144-task suite plus trio. Outputs were
+unparseable or failed to compile, except two items (one `H`, one `H*`) that
+compiled and then failed a hidden test. The reference solutions pass the same
+checkers and the self-test proves the court reaches them, so this is not an
+instrument failure; it is a 0.6B distilled model outside the instrument's reach.
+The comparison's registered outcome is
+`conditional_capacity_not_supported_on_verified_tasks` with every relative
+difference undefined.
+
+**This is the honest reading, and it is not a capability claim either way.** A
+floor cannot rank arms, so the null says nothing about `H*` versus `H` on Rust
+tasks; it says the suite does not discriminate at this scale. It also breaks an
+assumption of the P14.4 power analysis, which models a 0.5 baseline: the real
+baseline is zero, so the effective power is *lower* than the reported figure.
+That is recorded in `results/REPORT.md` and is P14.8's first job (estimate item
+difficulty from real solver runs rather than assume a baseline). Nothing here is
+presented as a systems or cache result.
+
+### Verification performed (receipts, not prose)
+
+- The python court ran the torch-free test modules after each fix; the final
+  counts are 16 post-`H*` tests, 50 capability-court tests, 14 comparison tests
+  and 15 verdict tests, all passing, each run with an explicit court limit and a
+  recorded enforcement match.
+- Every GPU stage ran in the oracle court with a container limit re-checked
+  after start (`docker inspect`: `Memory=17179869184` and swap equal for the
+  16 GiB arms; `25769803776` for the 24 GiB hybrid arms) and the runner re-read
+  the court's own `memory=<n>g` line, failing closed on a mismatch.
+- `commit_identity` and `perf_numbers` pass before every push; `perf_numbers`
+  verifies 660 blocks, including the eleven verdict numbers that were previously
+  unverifiable.
+
+### What this entry does not claim
+
+- No capability win, and no capability loss: the verified-task comparison is
+  uninformative at this scale and is reported as such.
+- No seed-level result: one seed per arm, `D_M` and `HL` registered and unrun.
+- No sealed-set result: the 24 sealed tasks were never scored by any arm.
+- No claim that the corrected dispatch is irrelevant in general: only that it
+  moves neither `X` nor `H` past the registered thresholds at this checkpoint.

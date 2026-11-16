@@ -1,0 +1,387 @@
+{
+  "arithmetic": {
+    "available_gib": 91.958,
+    "fits": true,
+    "largest_stage_limit_gib": 24,
+    "required_gib": 26.0,
+    "reserve_gib": 2.0,
+    "source": "/proc/meminfo"
+  },
+  "containers": [],
+  "gpu": {
+    "available": true,
+    "compute_apps": [
+      {
+        "name": "/usr/bin/kwin_wayland",
+        "pid": "1873",
+        "used_mib": 101
+      },
+      {
+        "name": "/usr/bin/sunshine",
+        "pid": "3137",
+        "used_mib": 253
+      },
+      {
+        "name": "/home/one/.local/zed.app/libexec/zed-editor",
+        "pid": "1145275",
+        "used_mib": 164
+      }
+    ],
+    "total_mib": 16376,
+    "used_mib": 1311
+  },
+  "memory": {
+    "available_gib": 91.958,
+    "source": "/proc/meminfo",
+    "total_gib": 125.47
+  },
+  "ok": true,
+  "problems": [],
+  "revision": "6c09915bbceeebb4e6689e1f83c1a6a384a854eb",
+  "schema": "selvedge/t2-post-hstar-preflight/v1",
+  "sizing": {
+    "stages": {
+      "capability-check": {
+        "basis": "cargo + checker sandbox under the court's 45 s wall bound (docs/CAPABILITY-COURT.md \u00a710), no model weights",
+        "limit_gib": 12,
+        "peak_source": null,
+        "peaks": []
+      },
+      "capability-generate-D": {
+        "arithmetic": {
+          "bucket_gib": 16,
+          "floor_gib": 16,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 8.966,
+          "required_gib": 13.449
+        },
+        "basis": "1.5x the measured VRAM peak (8.966 GiB), bucketed to 16 GiB, with a 16 GiB floor for this arm",
+        "limit_gib": 16,
+        "peak_source": "results/eval/t2-D.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/D/summary.json",
+            "vram_peak_gib": 5.452732086181641
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/D/run.json",
+            "vram_peak_gib": 5.452732086181641
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-D.json",
+            "vram_peak_gib": 8.966
+          }
+        ]
+      },
+      "capability-generate-H": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 24,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 10.857,
+          "required_gib": 16.286
+        },
+        "basis": "1.5x the measured VRAM peak (10.857 GiB), bucketed to 24 GiB, with a 24 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-H.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/H/summary.json",
+            "vram_peak_gib": 10.857304096221924
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/H/run.json",
+            "vram_peak_gib": 10.857304096221924
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-H.json",
+            "vram_peak_gib": 6.394
+          }
+        ]
+      },
+      "capability-generate-H*": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 24,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 10.813,
+          "required_gib": 16.219
+        },
+        "basis": "1.5x the measured VRAM peak (10.813 GiB), bucketed to 24 GiB, with a 24 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-H*.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/Hstar/summary.json",
+            "vram_peak_gib": 10.812920570373535
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/H*/run.json",
+            "vram_peak_gib": 10.812920570373535
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-H*.json",
+            "vram_peak_gib": 6.394
+          }
+        ]
+      },
+      "capability-generate-M": {
+        "arithmetic": {
+          "bucket_gib": 16,
+          "floor_gib": 16,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 8.373,
+          "required_gib": 12.559
+        },
+        "basis": "1.5x the measured VRAM peak (8.373 GiB), bucketed to 16 GiB, with a 16 GiB floor for this arm",
+        "limit_gib": 16,
+        "peak_source": "results/eval/t2-M.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/M/summary.json",
+            "vram_peak_gib": 4.207472801208496
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/M/run.json",
+            "vram_peak_gib": 4.207472801208496
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-M.json",
+            "vram_peak_gib": 8.373
+          }
+        ]
+      },
+      "capability-generate-X": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 16,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 11.596,
+          "required_gib": 17.394
+        },
+        "basis": "1.5x the measured VRAM peak (11.596 GiB), bucketed to 24 GiB, with a 16 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-X.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/X/summary.json",
+            "vram_peak_gib": 8.817480564117432
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/X/run.json",
+            "vram_peak_gib": 8.817480564117432
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-X.json",
+            "vram_peak_gib": 11.596
+          }
+        ]
+      },
+      "compare": {
+        "basis": "CPU-only reader over receipts; numpy arrays over items",
+        "limit_gib": 8,
+        "peak_source": null,
+        "peaks": []
+      },
+      "eval": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 24,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 10.813,
+          "required_gib": 16.219
+        },
+        "basis": "1.5x the measured VRAM peak (10.813 GiB), bucketed to 24 GiB, with a 24 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-H*.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/Hstar/summary.json",
+            "vram_peak_gib": 10.812920570373535
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/H*/run.json",
+            "vram_peak_gib": 10.812920570373535
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-H*.json",
+            "vram_peak_gib": 6.394
+          }
+        ]
+      },
+      "instrument": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 24,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 11.596,
+          "required_gib": 17.394
+        },
+        "basis": "1.5x the measured VRAM peak (11.596 GiB), bucketed to 24 GiB, with a 24 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-H*.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/D/summary.json",
+            "vram_peak_gib": 5.452732086181641
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/D/run.json",
+            "vram_peak_gib": 5.452732086181641
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-D.json",
+            "vram_peak_gib": 8.966
+          },
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/M/summary.json",
+            "vram_peak_gib": 4.207472801208496
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/M/run.json",
+            "vram_peak_gib": 4.207472801208496
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-M.json",
+            "vram_peak_gib": 8.373
+          },
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/X/summary.json",
+            "vram_peak_gib": 8.817480564117432
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/X/run.json",
+            "vram_peak_gib": 8.817480564117432
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-X.json",
+            "vram_peak_gib": 11.596
+          },
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/H/summary.json",
+            "vram_peak_gib": 10.857304096221924
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/H/run.json",
+            "vram_peak_gib": 10.857304096221924
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-H.json",
+            "vram_peak_gib": 6.394
+          },
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/Hstar/summary.json",
+            "vram_peak_gib": 10.812920570373535
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/H*/run.json",
+            "vram_peak_gib": 10.812920570373535
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-H*.json",
+            "vram_peak_gib": 6.394
+          }
+        ]
+      },
+      "sensitivity-H": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 24,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 10.857,
+          "required_gib": 16.286
+        },
+        "basis": "1.5x the measured VRAM peak (10.857 GiB), bucketed to 24 GiB, with a 24 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-H.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/H/summary.json",
+            "vram_peak_gib": 10.857304096221924
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/H/run.json",
+            "vram_peak_gib": 10.857304096221924
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-H.json",
+            "vram_peak_gib": 6.394
+          }
+        ]
+      },
+      "sensitivity-X": {
+        "arithmetic": {
+          "bucket_gib": 24,
+          "floor_gib": 16,
+          "headroom_factor": 1.5,
+          "measured_peak_gib": 11.596,
+          "required_gib": 17.394
+        },
+        "basis": "1.5x the measured VRAM peak (11.596 GiB), bucketed to 24 GiB, with a 16 GiB floor for this arm",
+        "limit_gib": 24,
+        "peak_source": "results/eval/t2-X.json",
+        "peaks": [
+          {
+            "kind": "training summary",
+            "source": "results/artifacts/train/t2/X/summary.json",
+            "vram_peak_gib": 8.817480564117432
+          },
+          {
+            "kind": "training receipt",
+            "source": "results/t2/X/run.json",
+            "vram_peak_gib": 8.817480564117432
+          },
+          {
+            "kind": "evaluation receipt",
+            "source": "results/eval/t2-X.json",
+            "vram_peak_gib": 11.596
+          }
+        ]
+      },
+      "verdict": {
+        "basis": "CPU-only reader over receipts; numpy arrays over items",
+        "limit_gib": 8,
+        "peak_source": null,
+        "peaks": []
+      }
+    }
+  },
+  "stamp": "20261116T092204Z",
+  "utc": "2026-11-16T09:22:04Z"
+}

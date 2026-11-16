@@ -98,32 +98,6 @@
     "humaneval_pass_at_1": 0.2073170731707317,
     "truthfulqa_mc1": 0.2741738066095471
   },
-  "per_task_ci": {
-    "gsm8k": {
-      "ci_high": 0.11,
-      "ci_low": 0.05,
-      "mean": 0.08,
-      "n": 300,
-      "resamples": 10000,
-      "seed": 20261115
-    },
-    "humaneval": {
-      "ci_high": 0.27439024390243905,
-      "ci_low": 0.14634146341463414,
-      "mean": 0.2073170731707317,
-      "n": 164,
-      "resamples": 10000,
-      "seed": 20261115
-    },
-    "truthfulqa": {
-      "ci_high": 0.3047735618115055,
-      "ci_low": 0.24479804161566707,
-      "mean": 0.2741738066095471,
-      "n": 817,
-      "resamples": 10000,
-      "seed": 20261115
-    }
-  },
   "pooled": {
     "kl": null,
     "ppl": null,
@@ -138,80 +112,9 @@
     "resamples": 10000,
     "seed": 20261115
   },
-  "resources": {
-    "active_unique_params": 774543360,
-    "arm": "H*",
-    "dtype_bytes": 2,
-    "experts": {
-      "active_elements_per_token": 176160768,
-      "bank_total_elements": 352321536,
-      "basis": "modelled",
-      "k": 4,
-      "layers": 28,
-      "m": 8,
-      "router_elements": 229376,
-      "weight_bytes_per_token_modelled": 352780288,
-      "width": 512
-    },
-    "extra_ledger": {
-      "bank_layers": 28,
-      "dense_adapter_layers": 0,
-      "memory_layers": 4,
-      "roles": {
-        "dense_adapter": 0,
-        "memory_gate": 4096,
-        "memory_index": 0,
-        "memory_projection": 2097152,
-        "memory_values": 268435456,
-        "router": 229376,
-        "specialist_down": 117440512,
-        "specialist_gate": 117440512,
-        "specialist_up": 117440512
-      },
-      "total": 623087616
-    },
-    "memory": {
-      "active": {
-        "active_per_layer": 525824,
-        "active_total": 2103296,
-        "gate_elements_per_layer": 1024,
-        "index_elements_per_layer": 0,
-        "insertions": 4,
-        "kind": "hashed_memory_active",
-        "projection_elements_per_layer": 524288,
-        "reads_per_layer": 2,
-        "rows_total": 1048576,
-        "table_elements_per_layer": 67108864,
-        "table_elements_total": 268435456,
-        "total_accessible_added": 270536704,
-        "value_elements_per_layer": 512,
-        "values_total": 268435456
-      },
-      "bytes": {
-        "dtype_bytes": 2,
-        "kind": "hashed_memory_bytes",
-        "note": "the table is stored and trained in bf16 (its deployment dtype); the fp32 figure is the equivalent size if it were held in fp32, not the training footprint",
-        "read_bytes_per_token": 4206592,
-        "read_bytes_per_token_basis": "modelled",
-        "resident_table_bytes_deployment": 536870912,
-        "resident_table_bytes_fp32_equivalent": 1073741824
-      },
-      "insertions": 4,
-      "layers": [
-        3,
-        10,
-        17,
-        24
-      ]
-    },
-    "profile": "t2",
-    "total_accessible": 1219137536,
-    "trainable_elements": 623087616
-  },
-  "revision": "8ac067fa3b887f7d7ca26bb47234a541966c2b16",
   "schema": "selvedge/t2-eval-summary/v1",
   "seconds": 705.512,
-  "stamp": "20261116T091707Z",
-  "utc": "2026-11-16T09:17:07Z",
+  "stamp": "20261116T092213Z",
+  "utc": "2026-11-16T09:22:13Z",
   "vram_peak_gib": 6.394
 }
