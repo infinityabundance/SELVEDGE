@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/s32_frontier_models.py", line 750, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s32_frontier_models.py", line 743, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "/work/scripts/s32_frontier_models.py", line 611, in cmd_disk
+    cache_stat = os.statvfs(args.cache_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/one/.cache/selvedge/hf'

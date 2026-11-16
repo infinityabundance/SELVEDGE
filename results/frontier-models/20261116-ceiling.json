@@ -1,0 +1,403 @@
+{
+  "accessed_utc": "2026-11-16T18:16:17Z",
+  "ceiling_elements": 1000000000,
+  "definition": "A dense token's unique-active elements are the elements its execution touches, each counted once (ties once). The 'text path' excludes the vision tower because a text-only runtime never executes it; it is reported with and without the MTP head because whether MTP executes per token depends on the decoding mode.",
+  "models": [
+    {
+      "components": {
+        "mtp": {
+          "attention": 7340544,
+          "embedding": 0,
+          "ffn": 11010048,
+          "norm": 2102272
+        },
+        "text": {
+          "attention": 233822016,
+          "embedding": 254279680,
+          "ffn": 264241152,
+          "norm": 50176
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 56669184,
+          "norm": 43923712
+        }
+      },
+      "id": "Qwen/Qwen3.5-0.8B",
+      "lm_head_present": false,
+      "mtp_elements": 20452864,
+      "ok": true,
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "text_always_active_elements": 488151872,
+      "text_elements": 752393024,
+      "text_executed_per_token_elements": 752393024,
+      "text_ffn_elements": 264241152,
+      "text_plus_mtp_per_token_elements": 772845888,
+      "tie_verified_at_checkpoint": true,
+      "tie_word_embeddings_declared": true,
+      "total_elements": 873438784,
+      "under_ceiling_full_checkpoint": true,
+      "under_ceiling_text_path": true,
+      "vision_elements": 100592896
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 7340544,
+          "embedding": 0,
+          "ffn": 11010048,
+          "norm": 2102272
+        },
+        "text": {
+          "attention": 233822016,
+          "embedding": 254279680,
+          "ffn": 264241152,
+          "norm": 50176
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 56669184,
+          "norm": 43923712
+        }
+      },
+      "id": "Qwen/Qwen3.5-0.8B-Base",
+      "lm_head_present": false,
+      "mtp_elements": 20452864,
+      "ok": true,
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "text_always_active_elements": 488151872,
+      "text_elements": 752393024,
+      "text_executed_per_token_elements": 752393024,
+      "text_ffn_elements": 264241152,
+      "text_plus_mtp_per_token_elements": 772845888,
+      "tie_verified_at_checkpoint": true,
+      "tie_word_embeddings_declared": true,
+      "total_elements": 873438784,
+      "under_ceiling_full_checkpoint": true,
+      "under_ceiling_text_path": true,
+      "vision_elements": 100592896
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 14680576,
+          "embedding": 0,
+          "ffn": 37748736,
+          "norm": 8398848
+        },
+        "text": {
+          "attention": 467195712,
+          "embedding": 508559360,
+          "ffn": 905969664,
+          "norm": 100352
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 201449472,
+          "norm": 129967104
+        }
+      },
+      "id": "Qwen/Qwen3.5-2B",
+      "lm_head_present": false,
+      "mtp_elements": 60828160,
+      "ok": true,
+      "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "text_always_active_elements": 975855424,
+      "text_elements": 1881825088,
+      "text_executed_per_token_elements": 1881825088,
+      "text_ffn_elements": 905969664,
+      "text_plus_mtp_per_token_elements": 1942653248,
+      "tie_verified_at_checkpoint": true,
+      "tie_word_embeddings_declared": true,
+      "total_elements": 2274069824,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 331416576
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 14680576,
+          "embedding": 0,
+          "ffn": 37748736,
+          "norm": 8398848
+        },
+        "text": {
+          "attention": 467195712,
+          "embedding": 508559360,
+          "ffn": 905969664,
+          "norm": 100352
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 201449472,
+          "norm": 129967104
+        }
+      },
+      "id": "Qwen/Qwen3.5-2B-Base",
+      "lm_head_present": false,
+      "mtp_elements": 60828160,
+      "ok": true,
+      "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "text_always_active_elements": 975855424,
+      "text_elements": 1881825088,
+      "text_executed_per_token_elements": 1881825088,
+      "text_ffn_elements": 905969664,
+      "text_plus_mtp_per_token_elements": 1942653248,
+      "tie_verified_at_checkpoint": true,
+      "tie_word_embeddings_declared": true,
+      "total_elements": 2274069824,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 331416576
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 36700672,
+          "embedding": 0,
+          "ffn": 70778880,
+          "norm": 13120000
+        },
+        "text": {
+          "attention": 1304961536,
+          "embedding": 635699200,
+          "ffn": 2264924160,
+          "norm": 166400
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 201449472,
+          "norm": 132064768
+        }
+      },
+      "id": "Qwen/Qwen3.5-4B",
+      "lm_head_present": false,
+      "mtp_elements": 120599552,
+      "ok": true,
+      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "text_always_active_elements": 1940827136,
+      "text_elements": 4205751296,
+      "text_executed_per_token_elements": 4205751296,
+      "text_ffn_elements": 2264924160,
+      "text_plus_mtp_per_token_elements": 4326350848,
+      "tie_verified_at_checkpoint": true,
+      "tie_word_embeddings_declared": true,
+      "total_elements": 4659865088,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 333514240
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 36700672,
+          "embedding": 0,
+          "ffn": 70778880,
+          "norm": 13120000
+        },
+        "text": {
+          "attention": 1304961536,
+          "embedding": 635699200,
+          "ffn": 2264924160,
+          "norm": 166400
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 201449472,
+          "norm": 132064768
+        }
+      },
+      "id": "Qwen/Qwen3.5-4B-Base",
+      "lm_head_present": false,
+      "mtp_elements": 120599552,
+      "ok": true,
+      "revision": "1001bb4d826a52d1f399e183466143f4da7b741b",
+      "text_always_active_elements": 1940827136,
+      "text_elements": 4205751296,
+      "text_executed_per_token_elements": 4205751296,
+      "text_ffn_elements": 2264924160,
+      "text_plus_mtp_per_token_elements": 4326350848,
+      "tie_verified_at_checkpoint": true,
+      "tie_word_embeddings_declared": true,
+      "total_elements": 4659865088,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 333514240
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 58720768,
+          "embedding": 0,
+          "ffn": 150994944,
+          "norm": 33574912
+        },
+        "text": {
+          "attention": 2087461376,
+          "embedding": 2034237440,
+          "ffn": 4831838208,
+          "norm": 266240
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 267890544,
+          "norm": 188119936
+        }
+      },
+      "id": "Qwen/Qwen3.5-9B",
+      "lm_head_present": true,
+      "mtp_elements": 243290624,
+      "ok": true,
+      "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "text_always_active_elements": 4121965056,
+      "text_elements": 8953803264,
+      "text_executed_per_token_elements": 8953803264,
+      "text_ffn_elements": 4831838208,
+      "text_plus_mtp_per_token_elements": 9197093888,
+      "tie_verified_at_checkpoint": false,
+      "tie_word_embeddings_declared": false,
+      "total_elements": 9653104368,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 456010480
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 58720768,
+          "embedding": 0,
+          "ffn": 150994944,
+          "norm": 33574912
+        },
+        "text": {
+          "attention": 2087461376,
+          "embedding": 2034237440,
+          "ffn": 4831838208,
+          "norm": 266240
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 267890544,
+          "norm": 188119936
+        }
+      },
+      "id": "Qwen/Qwen3.5-9B-Base",
+      "lm_head_present": true,
+      "mtp_elements": 243290624,
+      "ok": true,
+      "revision": "68c46c4b3498877f3ef123c856ecfde50c39f404",
+      "text_always_active_elements": 4121965056,
+      "text_elements": 8953803264,
+      "text_executed_per_token_elements": 8953803264,
+      "text_ffn_elements": 4831838208,
+      "text_plus_mtp_per_token_elements": 9197093888,
+      "tie_verified_at_checkpoint": false,
+      "tie_word_embeddings_declared": false,
+      "total_elements": 9653104368,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 456010480
+    },
+    {
+      "id": "LiquidAI/LFM2.5-1.2B",
+      "ok": false,
+      "reason": "accounting incomplete (weights not readable without access)"
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 0,
+          "norm": 0
+        },
+        "text": {
+          "attention": 62915328,
+          "embedding": 134219776,
+          "ffn": 805306368,
+          "norm": 167899136
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 0,
+          "norm": 0
+        }
+      },
+      "id": "LiquidAI/LFM2.5-1.2B-Instruct",
+      "lm_head_present": false,
+      "mtp_elements": 0,
+      "ok": true,
+      "revision": "b9d816ab510f9a28dca37cb182e9da8b0226e13c",
+      "text_always_active_elements": 365034240,
+      "text_elements": 1170340608,
+      "text_executed_per_token_elements": 1170340608,
+      "text_ffn_elements": 805306368,
+      "text_plus_mtp_per_token_elements": 1170340608,
+      "tie_verified_at_checkpoint": false,
+      "tie_word_embeddings_declared": false,
+      "total_elements": 1170340608,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 0
+    },
+    {
+      "components": {
+        "mtp": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 0,
+          "norm": 0
+        },
+        "text": {
+          "attention": 62915328,
+          "embedding": 134219776,
+          "ffn": 805306368,
+          "norm": 167899136
+        },
+        "vision": {
+          "attention": 0,
+          "embedding": 0,
+          "ffn": 0,
+          "norm": 0
+        }
+      },
+      "id": "LiquidAI/LFM2.5-1.2B-Base",
+      "lm_head_present": false,
+      "mtp_elements": 0,
+      "ok": true,
+      "revision": "7453bca97ca1e67754c4035a4b4c584e1c9dd725",
+      "text_always_active_elements": 365034240,
+      "text_elements": 1170340608,
+      "text_executed_per_token_elements": 1170340608,
+      "text_ffn_elements": 805306368,
+      "text_plus_mtp_per_token_elements": 1170340608,
+      "tie_verified_at_checkpoint": false,
+      "tie_word_embeddings_declared": false,
+      "total_elements": 1170340608,
+      "under_ceiling_full_checkpoint": false,
+      "under_ceiling_text_path": false,
+      "vision_elements": 0
+    },
+    {
+      "id": "google/gemma-3-1b-it",
+      "ok": false,
+      "reason": "accounting incomplete (weights not readable without access)"
+    }
+  ],
+  "probe_receipt": "/work/results/frontier-models/20261116-probe-p2.json",
+  "probe_revision": "5eaeee0847becdb43add509374683e49c9fd6fa9",
+  "probe_stamp": "20261116T181237Z",
+  "revision": "5eaeee0847becdb43add509374683e49c9fd6fa9",
+  "schema": "selvedge/frontier-ceiling/v1",
+  "stamp": "20261116T181617Z"
+}
