@@ -24,6 +24,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 import time
 from dataclasses import dataclass, field
 
@@ -100,6 +101,118 @@ class Adapter:
 
     def generate(self, requests: list) -> list:
         raise NotImplementedError
+
+
+class T2ArmAdapter(Adapter):
+    """One trained T2 arm: the frozen 0.6B base plus its checkpointed modules.
+
+    The arm is rebuilt with the same `build_arm` and seed the training loop used,
+    then the checkpoint's `model` state dict is loaded, so the arm being scored
+    is the arm that was trained. Active unique parameters come from the Rust
+    admission record (the ledger), never from an assertion in this file.
+    """
+
+    kind = "t2-arm"
+
+    def __init__(self, arm: str, checkpoint: str, config: str, admission: str,
+                 hf_root: str, device: str | None = None, batch: int = 4,
+                 accounting: str | None = None, seed: int = 1001):
+        self.arm = arm
+        self.checkpoint = checkpoint
+        self.config = config
+        self.admission = admission
+        self.hf_root = hf_root
+        self.device_name = device
+        self.batch = batch
+        self.accounting_path = accounting
+        self.seed = seed
+        self.name = f"t2-{arm}"
+        self.tools = False
+        self._loaded = None
+        self._admission = None
+
+    def _load(self):
+        if self._loaded is not None:
+            return self._loaded
+        train_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                 "train")
+        if train_dir not in sys.path:
+            sys.path.insert(0, train_dir)
+        import torch
+        from transformers import AutoModelForCausalLM
+        import harness
+        from modeling import build_arm, load_admission
+
+        config, admission = load_admission(self.config, self.admission)
+        self._admission = admission
+        device = self.device_name or ("cuda" if torch.cuda.is_available() else "cpu")
+        base_path = harness.model_path(self.hf_root, "0.6b")
+        base = AutoModelForCausalLM.from_pretrained(
+            base_path, dtype=torch.bfloat16, local_files_only=True,
+            trust_remote_code=False, attn_implementation="sdpa")
+        base.to(device)
+        base.eval()
+        arm_model = build_arm(base, self.arm, config, admission, self.seed, profile="t2")
+        arm_model.model.to(device)
+        state = torch.load(self.checkpoint, map_location=device, weights_only=False)
+        arm_model.model.load_state_dict(state["model"], strict=False)
+        arm_model.model.eval()
+        tokenizer = harness.load_tokenizer(self.hf_root)
+        self._loaded = (torch, tokenizer, arm_model.model, device, state)
+        return self._loaded
+
+    def metadata(self) -> dict:
+        _torch, _tokenizer, _model, _device, state = self._load()
+        admission = self._admission or {}
+        declared = {}
+        if self.accounting_path:
+            with open(self.accounting_path, "r", encoding="utf-8") as handle:
+                declared = json.load(handle)
+        reasons = {
+            "training_tokens": "not recorded in the arm's admission record",
+            "optimizer_flops": "not recorded in the arm's admission record",
+            "offline_teacher_construction_cost": "no teacher at inference",
+            "host_residency_bytes": "not instrumented for the training-model path",
+            "measured_io": "the PyTorch path does not expose device read counters",
+            "task_success": "filled by the check stage",
+            "gpu_residency_bytes": "measured after the first generation",
+        }
+        accounting = {
+            "training_tokens": declared.get("training_tokens"),
+            "optimizer_flops": declared.get("optimizer_flops"),
+            "offline_teacher_construction_cost": declared.get(
+                "offline_teacher_construction_cost"),
+            # From the Rust ledger's admission record.
+            "active_unique_params": admission.get("active_unique_params"),
+            "total_accessible_capacity": admission.get("total_accessible"),
+            "gpu_residency_bytes": None,
+            "host_residency_bytes": None,
+            "measured_io": declared.get("measured_io"),
+            "task_success": None,
+        }
+        return {
+            "name": self.name,
+            "kind": self.kind,
+            "tools": self.tools,
+            "accounting": accounting,
+            "null_reasons": {field: reasons[field] for field in accounting
+                             if accounting[field] is None},
+            "provenance": {
+                "arm": self.arm,
+                "checkpoint": self.checkpoint,
+                "checkpoint_step": state.get("step"),
+                "checkpoint_sha256": checkpoint_digest_file(self.checkpoint),
+                "config": self.config,
+                "admission": self.admission,
+                "admission_stamp": admission.get("stamp"),
+                "admission_revision": admission.get("revision"),
+                "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+            },
+        }
+
+    def generate(self, requests: list) -> list:
+        _torch, tokenizer, model, device, _state = self._load()
+        return greedy_generate(model, tokenizer, requests, device, self.batch)
 
 
 class FakeAdapter(Adapter):
@@ -255,6 +368,38 @@ class HFAdapter(Adapter):
         return results
 
 
+def greedy_generate(model, tokenizer, requests: list, device, batch: int) -> list:
+    """Greedy decoding with fixed seed, fixed stop strings and no sampling."""
+    import torch
+
+    results = []
+    for start in range(0, len(requests), batch):
+        chunk = requests[start:start + batch]
+        prompts = [request.prompt for request in chunk]
+        encoded = tokenizer(prompts, return_tensors="pt", padding=True,
+                            truncation=True, max_length=4096, padding_side="left")
+        encoded = {key: value.to(device) for key, value in encoded.items()}
+        max_new = max(request.max_new_tokens for request in chunk)
+        stops = sorted({stop for request in chunk for stop in request.stops})
+        torch.manual_seed(chunk[0].seed)
+        began = time.monotonic_ns()
+        with torch.inference_mode():
+            generated = model.generate(
+                **encoded, max_new_tokens=max_new, do_sample=False, num_beams=1,
+                pad_token_id=tokenizer.eos_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+                stop_strings=stops or None, tokenizer=tokenizer,
+            )
+        elapsed = (time.monotonic_ns() - began) // 1_000_000
+        new_tokens = generated[:, encoded["input_ids"].shape[1]:]
+        for text in tokenizer.batch_decode(new_tokens, skip_special_tokens=True):
+            results.append(Generation(
+                text=text, finish_reason="stop",
+                tokens_out=int(new_tokens.shape[1]),
+                latency_ms=elapsed // max(1, len(chunk))))
+    return results
+
+
 class RustRuntimeAdapter(Adapter):
     """The Rust runtime in exact mode, one subprocess per prompt.
 
@@ -370,6 +515,20 @@ class RustRuntimeAdapter(Adapter):
 # ---------------------------------------------------------------------------
 
 
+def sha256_file(path: str) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def checkpoint_digest_file(path: str) -> str | None:
+    if not os.path.isfile(path):
+        return None
+    return sha256_file(path)
+
+
 def checkpoint_digest(path: str) -> str | None:
     """SHA-256 over a checkpoint's files, or None when the path is not a tree."""
     if not os.path.isdir(path):
@@ -413,4 +572,10 @@ def adapter_from_spec(spec: dict) -> Adapter:
                                   threads=int(spec.get("threads", 8)),
                                   cache_bytes=spec.get("cache_bytes"),
                                   mode=spec.get("mode", "exact"))
+    if kind == "t2-arm":
+        return T2ArmAdapter(spec["arm"], spec["checkpoint"], spec["config"],
+                            spec["admission"], spec.get("hf_root", "/hf-cache"),
+                            device=spec.get("device"),
+                            batch=int(spec.get("batch", 4)),
+                            accounting=spec.get("accounting"))
     raise AdapterError(f"unknown adapter kind {kind!r}")

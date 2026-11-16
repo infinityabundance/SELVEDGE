@@ -624,4 +624,23 @@ SELVEDGE_MEM=8g SELVEDGE_CPUS=4 scripts/court oracle -- \
 SELVEDGE_MEM=8g SELVEDGE_CPUS=4 scripts/court python -m pytest \
   oracle/tests/test_capability_suite.py oracle/tests/test_capability_stats.py \
   oracle/tests/test_capability_court.py oracle/tests/test_capability_sandbox.py
+
+# 5. the staged path end to end through the real checkers, with a scripted arm
+#    (an instrument check, not an arm result: adapter.kind is `fake`)
+STAMP=$(date -u +%Y%m%dT%H%M%SZ)
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- sh -c "
+  python3 scripts/capability_court.py fake-reference --out /tmp/cap-spec.json &&
+  python3 scripts/capability_court.py generate --adapter-spec /tmp/cap-spec.json \
+    --preregistration docs/capability-preregistration.json \
+    --out results/capability/instrument-smoke-$STAMP/generations.json &&
+  python3 scripts/capability_court.py check \
+    --generations results/capability/instrument-smoke-$STAMP/generations.json \
+    --preregistration docs/capability-preregistration.json \
+    --out results/capability/instrument-smoke-$STAMP/result.json"
 ```
+
+The committed smoke run is
+`results/capability/instrument-smoke-20261116T023255Z/`: the scripted arm emits
+the reference solutions, every real checker runs, and the pre-registration
+verifies. Its receipt is evidence that the pipeline works, not evidence about
+any model.

@@ -1,0 +1,429 @@
+{
+  "adapter": {
+    "accounting": {
+      "active_unique_params": null,
+      "gpu_residency_bytes": null,
+      "host_residency_bytes": null,
+      "measured_io": null,
+      "offline_teacher_construction_cost": null,
+      "optimizer_flops": null,
+      "task_success": null,
+      "total_accessible_capacity": null,
+      "training_tokens": null
+    },
+    "kind": "fake",
+    "name": "fake-reference",
+    "null_reasons": {
+      "active_unique_params": "scripted fake model; no such measurement exists",
+      "gpu_residency_bytes": "scripted fake model; no such measurement exists",
+      "host_residency_bytes": "scripted fake model; no such measurement exists",
+      "measured_io": "scripted fake model; no such measurement exists",
+      "offline_teacher_construction_cost": "scripted fake model; no such measurement exists",
+      "optimizer_flops": "scripted fake model; no such measurement exists",
+      "total_accessible_capacity": "scripted fake model; no such measurement exists",
+      "training_tokens": "scripted fake model; no such measurement exists"
+    },
+    "provenance": {
+      "checkpoint_sha256": null,
+      "source_model_revision": null
+    },
+    "tools": false
+  },
+  "command": "scripts/capability_court.py generate --adapter-spec /tmp/cap-spec.json --preregistration docs/capability-preregistration.json --out results/capability/instrument-smoke-20261116T023255Z/generations.json",
+  "created_utc": "2026-11-16T02:32:55Z",
+  "decoding": {
+    "feedback": "none",
+    "greedy": true,
+    "max_new_tokens": 3072,
+    "order": "sorted",
+    "seed": 20261115,
+    "stops": [
+      "\n```\n\n## "
+    ]
+  },
+  "few_shot": null,
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-01-local-reference",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Label construction.\n\npub fn label(prefix: &str) -> String {\n    format!(\"{prefix}:ready\")\n}\n```",
+        "tokens_out": 15
+      },
+      "prompt_sha256": "eddc8f05bd5e6509dc2dcdc5fc778336b7ead72419d01d76d34e7b1667e45f67"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-02-mutate-while-borrowed",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Push a value and report the value that was last before it.\n\npub fn push_and_report(values: &mut Vec<i32>, value: i32) -> i32 {\n    let last = values.last().copied().unwrap_or(0);\n    values.push(value);\n    last\n}\n```",
+        "tokens_out": 33
+      },
+      "prompt_sha256": "cd3d9d546522140b243c11943aadbb76f4acbb8c7ecc236cfceb168671097674"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-03-self-referential-window",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A window over a text, computing its first word on demand.\n\npub struct Window {\n    text: String,\n}\n\nimpl Window {\n    pub fn new(text: String) -> Self {\n        Self { text }\n    }\n\n    pub fn first(&self) -> &str {\n        self.text.split_whitespace().next().unwrap_or(\"\")\n    }\n\n    pub fn replace(&mut self, text: String) {\n        self.text = text;\n    }\n}\n```",
+        "tokens_out": 57
+      },
+      "prompt_sha256": "09ee624675c5112dd319220e9006f41149ca8bd86b22f376129d38b619608fd2"
+    },
+    {
+      "category": "lifetime-borrow",
+      "id": "borrow-04-iterator-invalidation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Remove every key longer than a bound.\n\nuse std::collections::BTreeMap;\n\npub fn drop_long_keys(map: &mut BTreeMap<String, i32>, max_len: usize) -> usize {\n    let doomed: Vec<String> = map\n        .keys()\n        .filter(|key| key.len() > max_len)\n        .cloned()\n        .collect();\n    for key in &doomed {\n        map.remove(key);\n    }\n    doomed.len()\n}\n```",
+        "tokens_out": 45
+      },
+      "prompt_sha256": "b2961141ca1e7cc6d3216335fbbd98b17096ec3568a13179f7f3c70d7e804c3a"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-01-lock-order-deadlock",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Two accounts with one global lock order.\n\nuse std::sync::{Barrier, Mutex, MutexGuard};\n\nfn lock_pair<'a>(\n    a: &'a Mutex<i64>,\n    b: &'a Mutex<i64>,\n) -> (MutexGuard<'a, i64>, MutexGuard<'a, i64>) {\n    if (a as *const Mutex<i64>) < (b as *const Mutex<i64>) {\n        let guard_a = a.lock().unwrap();\n        let guard_b = b.lock().unwrap();\n        (guard_a, guard_b)\n    } else {\n        let guard_b = b.lock().unwrap();\n        let guard_a = a.lock().unwrap();\n        (guard_a, guard_b)\n    }\n}\n\npub fn transfer_a_to_b(a: &Mutex<i64>, b: &Mutex<i64>, amount: i64) {\n    let (mut guard_a, mut guard_b) = lock_pair(a, b);\n    *guard_a -= amount;\n    *guard_b += amount;\n}\n\npub fn transfer_b_to_a(b: &Mutex<i64>, a: &Mutex<i64>, amount: i64) {\n    let (mut guard_a, mut guard_b) = lock_pair(a, b);\n    *guard_a += amount;\n    *guard_b -= amount;\n}\n\npub fn run_pair(x: i64, y: i64, amount: i64) -> (i64, i64) {\n    let a = Mutex::new(x);\n    let b = Mutex::new(y);\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_a_to_b(&a, &b, amount);\n        });\n        scope.spawn(|| {\n            barrier.wait();\n            transfer_b_to_a(&b, &a, -amount);\n        });\n    });\n    (a.into_inner().unwrap(), b.into_inner().unwrap())\n}\n```",
+        "tokens_out": 158
+      },
+      "prompt_sha256": "2a9318df4c5e5eb092fc76a6e27de86629b664e17f207c0e90cf17cb895c00ae"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-02-lost-update",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A counter incremented atomically from two threads.\n\nuse std::sync::atomic::{AtomicUsize, Ordering};\nuse std::sync::Barrier;\n\npub fn bump_pair(counter: &AtomicUsize) {\n    let barrier = Barrier::new(2);\n    std::thread::scope(|scope| {\n        for _ in 0..2 {\n            scope.spawn(|| {\n                barrier.wait();\n                counter.fetch_add(1, Ordering::SeqCst);\n            });\n        }\n    });\n}\n\npub fn bump_all(counter: &AtomicUsize, threads: usize, per_thread: usize) {\n    std::thread::scope(|scope| {\n        for _ in 0..threads {\n            scope.spawn(|| {\n                for _ in 0..per_thread {\n                    counter.fetch_add(1, Ordering::Relaxed);\n                }\n            });\n        }\n    });\n}\n```",
+        "tokens_out": 71
+      },
+      "prompt_sha256": "c9ecc6a28f7f1028b8563937ce96a9dd2e2091a8fad24dc16fad2647b51c3b3c"
+    },
+    {
+      "category": "concurrency",
+      "id": "concurrency-03-send-boundary",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Sum a vector across worker threads with a thread-safe pointer.\n\nuse std::sync::Arc;\n\npub fn total_in_threads(data: Vec<i64>) -> i64 {\n    if data.is_empty() {\n        return 0;\n    }\n    let shared = Arc::new(data);\n    let workers = 4.min(shared.len());\n    let chunk = shared.len().div_ceil(workers);\n    let handles: Vec<_> = (0..workers)\n        .map(|index| {\n            let part = Arc::clone(&shared);\n            std::thread::spawn(move || {\n                let start = (index * chunk).min(part.len());\n                let end = ((index + 1) * chunk).min(part.len());\n                part[start..end].iter().copied().sum::<i64>()\n            })\n        })\n        .collect();\n    handles\n        .into_iter()\n        .map(|handle| handle.join().unwrap())\n        .sum()\n}\n```",
+        "tokens_out": 79
+      },
+      "prompt_sha256": "62ba57362c113a4cd5d529de8297e797a17b422adcb2fcd22ea99ec3bc567995"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-01-version-requirement",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_01_version_requirement\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\nscaling = { path = \"dep\", version = \"2\" }\n```\n```rust path=src/lib.rs\n//! Percentage scaling through the vendored crate.\n\npub fn scale_percent(value: f64, percent: i64) -> f64 {\n    scaling::scale(value, percent as f64 / 100.0)\n}\n\npub fn dependency_label() -> &'static str {\n    scaling::label()\n}\n```",
+        "tokens_out": 68
+      },
+      "prompt_sha256": "fca09da501226f767aa8e927968d5981e3b0b993712a6a70db6ef3d7f0278b5b"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-02-edition-2024",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Edition 2024.\n\npub fn describe(value: &Option<u32>) -> String {\n    match value {\n        Some(inner) => format!(\"some {inner}\"),\n        None => \"none\".to_string(),\n    }\n}\n\npub fn next_value(seed: u64) -> u64 {\n    let state = seed.wrapping_mul(6364136223846793005).wrapping_add(1);\n    state % 100\n}\n```",
+        "tokens_out": 40
+      },
+      "prompt_sha256": "14dbbcaaeb57071fdca492b42d27c4b96c4a6ad3b347cad463b6bfcc293b6753"
+    },
+    {
+      "category": "dependency-compat",
+      "id": "deps-03-optional-feature",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=Cargo.toml\n[package]\nname = \"deps_03_optional_feature\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\nmembers = [\".\", \"dep\"]\n\n[lib]\npath = \"src/lib.rs\"\n\n[dependencies]\ntextkit = { path = \"dep\", features = [\"fast\"] }\n```",
+        "tokens_out": 33
+      },
+      "prompt_sha256": "86ccc970b215438f733759843bbd062e7c2bc0a59685f5f5daa1b3ea8bf865e8"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-01-chunk-boundary",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Chunk arithmetic.\n\npub fn chunk_count(len: usize, size: usize) -> usize {\n    if size == 0 {\n        return 0;\n    }\n    len.div_ceil(size)\n}\n```",
+        "tokens_out": 25
+      },
+      "prompt_sha256": "ad24d404a6640d5b6cbfb4c40eab1fd55bd46eeecdf27cdb0eb88d8536ca333b"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-02-empty-input",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Largest gap between consecutive values.\n\npub fn max_gap(values: &[i64]) -> i64 {\n    values\n        .windows(2)\n        .map(|pair| pair[1] - pair[0])\n        .max()\n        .unwrap_or(0)\n}\n```",
+        "tokens_out": 25
+      },
+      "prompt_sha256": "edc0608e8ba9f68195f785668e56e0424081174df2d27943d8e4f09591dc2671"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-03-overflow-boundary",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Running total over bytes.\n\npub fn running_total(values: &[u8]) -> u8 {\n    values\n        .iter()\n        .fold(0u8, |total, value| total.saturating_add(*value))\n}\n```",
+        "tokens_out": 22
+      },
+      "prompt_sha256": "45913306504e98f1ef592f30110768c37a4e142c940a5081406631caa8189e5d"
+    },
+    {
+      "category": "failing-test",
+      "id": "failing-04-nan-ordering",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Sort floats ascending with NaN ordered last.\n\npub fn sort_ascending(values: &mut [f64]) {\n    values.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {\n        (true, true) => std::cmp::Ordering::Equal,\n        (true, false) => std::cmp::Ordering::Greater,\n        (false, true) => std::cmp::Ordering::Less,\n        (false, false) => a.partial_cmp(b).expect(\"finite values compare\"),\n    });\n}\n```",
+        "tokens_out": 43
+      },
+      "prompt_sha256": "c834a0923beb1cef1d0e91b2bb5114dd38f98d5547f71033bc849beb324579be"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-01-signature",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Load a measurement through the unit crate.\n\npub fn load(input: &str) -> Result<f64, String> {\n    units::parse(input)\n        .map(|measurement| measurement.value)\n        .ok_or_else(|| \"invalid measurement\".to_string())\n}\n```",
+        "tokens_out": 26
+      },
+      "prompt_sha256": "d9a2884af29a00aa31488cfeaf7d61dd7f7c3c5e600371f05d6b31fa9f316e33"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-02-builder",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Connect and build an endpoint.\n\npub fn connect(host: &str, port: u16, path: &str) -> Result<String, String> {\n    client::builder()\n        .host(host)\n        .port(port)\n        .build()\n        .map(|client| client.endpoint(path))\n        .map_err(|_| \"empty host\".to_string())\n}\n```",
+        "tokens_out": 31
+      },
+      "prompt_sha256": "b8d52ddda5ea9f104da2cec41f326c9b54322f6406dbc8e98f68055cd1ab730d"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-03-error-conversion",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Count fields, converting the dependency error into the application\n//! error.\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Empty,\n    Invalid { field: usize },\n}\n\nimpl From<tokens::Error> for AppError {\n    fn from(error: tokens::Error) -> Self {\n        match error {\n            tokens::Error::Empty => AppError::Empty,\n            tokens::Error::Malformed(field) => AppError::Invalid { field },\n        }\n    }\n}\n\npub fn count_fields(text: &str) -> Result<usize, AppError> {\n    let tokens = tokens::tokenize(text)?;\n    Ok(tokens.len())\n}\n```",
+        "tokens_out": 68
+      },
+      "prompt_sha256": "388352628190f91ca82457e7f40601c40c75510e8dda5228e07f63c4546f2006"
+    },
+    {
+      "category": "api-migration",
+      "id": "migrate-04-trait-import",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Render a document via the extension trait.\n\nuse documents::Render;\n\npub fn render_doc(title: &str) -> String {\n    documents::doc(title).render()\n}\n```",
+        "tokens_out": 22
+      },
+      "prompt_sha256": "4e7be1e58822933457486ebaa5716f569eac70fcd88edea58097d1b57fe1dc89"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-01-lifetime-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Prices, queries and reports.\n\npub mod model;\npub mod query;\npub mod report;\npub mod store;\n\npub use model::Item;\n\npub fn cheapest_name<'a>(items: &'a [Item], fallback: &'a Item) -> &'a str {\n    query::cheapest(items, fallback).name.as_str()\n}\n```\n```rust path=src/query.rs\n//! The cheapest item.\n\nuse crate::model::Item;\n\npub fn cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> &'a Item {\n    items.iter().min_by_key(|item| item.price).unwrap_or(fallback)\n}\n```\n```rust path=src/report.rs\n//! Render a one-line report.\n\nuse crate::model::Item;\nuse crate::query;\n\npub fn describe_cheapest<'a>(items: &'a [Item], fallback: &'a Item) -> String {\n    let item = query::cheapest(items, fallback);\n    format!(\"{} costs {}\", item.name, item.price)\n}\n```",
+        "tokens_out": 96
+      },
+      "prompt_sha256": "3ea2f8597da96d22cda21751542dc56a6397b2450a8a587322bd121a922b4725"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-02-error-propagation",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/error.rs\n//! The application error.\n\nuse crate::parse::ParseError;\n\n#[derive(Debug, PartialEq)]\npub enum AppError {\n    Missing,\n    Parse(usize),\n    Io,\n}\n\nimpl core::fmt::Display for AppError {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        match self {\n            AppError::Missing => write!(formatter, \"missing\"),\n            AppError::Parse(field) => write!(formatter, \"malformed field {field}\"),\n            AppError::Io => write!(formatter, \"io error\"),\n        }\n    }\n}\n\nimpl std::error::Error for AppError {}\n\nimpl From<ParseError> for AppError {\n    fn from(error: ParseError) -> Self {\n        AppError::Parse(error.field)\n    }\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(_error: std::io::Error) -> Self {\n        AppError::Io\n    }\n}\n```",
+        "tokens_out": 86
+      },
+      "prompt_sha256": "9fe5e01a20e462617a6b7bdd5bc2a72a307440bd6a170dcd70ff0863a5bd273b"
+    },
+    {
+      "category": "repo-scale",
+      "id": "repo-03-generic-bounds",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/stats.rs\n//! Flooring mean.\n\nuse crate::traits::AsI64;\n\npub fn mean_floor<T: AsI64>(items: &[T]) -> i64 {\n    if items.is_empty() {\n        return 0;\n    }\n    let total: i64 = items.iter().map(|value| value.as_i64()).sum();\n    total.div_euclid(items.len() as i64)\n}\n```\n```rust path=src/traits.rs\n//! The conversion trait shared by the modules.\n\npub trait AsI64 {\n    fn as_i64(&self) -> i64;\n}\n\nimpl AsI64 for i32 {\n    fn as_i64(&self) -> i64 {\n        i64::from(*self)\n    }\n}\n\nimpl AsI64 for i64 {\n    fn as_i64(&self) -> i64 {\n        *self\n    }\n}\n\nimpl AsI64 for u32 {\n    fn as_i64(&self) -> i64 {\n        i64::from(*self)\n    }\n}\n```",
+        "tokens_out": 91
+      },
+      "prompt_sha256": "be515daf5b2018fecc6633e3dc8112709f1dee8f3627cec4f00cbf4c68b31bd0"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-01-associated-type",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A repository trait with an associated identifier type.\n\nuse std::collections::BTreeMap;\n\npub trait Repo {\n    type Id;\n    fn get(&self, id: Self::Id) -> Option<i64>;\n    fn put(&mut self, id: Self::Id, value: i64);\n}\n\n#[derive(Default)]\npub struct MemoryRepo {\n    items: BTreeMap<u32, i64>,\n}\n\nimpl Repo for MemoryRepo {\n    type Id = u32;\n\n    fn get(&self, id: u32) -> Option<i64> {\n        self.items.get(&id).copied()\n    }\n\n    fn put(&mut self, id: u32, value: i64) {\n        self.items.insert(id, value);\n    }\n}\n\npub fn first_value<R: Repo<Id = u32>>(repo: &R) -> i64 {\n    repo.get(0).unwrap_or(0)\n}\n```",
+        "tokens_out": 85
+      },
+      "prompt_sha256": "4ff48cea4b5f4bb4fe66905db6a2c6142da9acb702e2b70194410cf85033a86f"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-02-coherence",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Summaries for a report and for text.\n\nuse core::fmt::Display;\n\npub trait Summary {\n    fn summary(&self) -> String;\n}\n\n#[derive(Debug)]\npub struct Report(pub String);\n\nimpl Display for Report {\n    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n        write!(formatter, \"{}\", self.0)\n    }\n}\n\nimpl Summary for Report {\n    fn summary(&self) -> String {\n        format!(\"report: {}\", self.0)\n    }\n}\n\nimpl Summary for &str {\n    fn summary(&self) -> String {\n        format!(\"text: {self}\")\n    }\n}\n\npub fn summary_of_text(text: &str) -> String {\n    text.summary()\n}\n```",
+        "tokens_out": 83
+      },
+      "prompt_sha256": "aa7d71b8c7b169fb2fdce90db8c9477eb9c8d45ed572bb9a71ae98014874b014"
+    },
+    {
+      "category": "trait-impl",
+      "id": "traits-03-object-safety",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A small key-value store used through dynamic dispatch.\n\nuse std::collections::BTreeMap;\n\npub trait Store {\n    fn get(&self, key: &str) -> Option<i64>;\n    fn put(&mut self, key: &str, value: i64);\n    fn len(&self) -> usize;\n}\n\n#[derive(Default)]\npub struct MemoryStore {\n    items: BTreeMap<String, i64>,\n}\n\nimpl Store for MemoryStore {\n    fn get(&self, key: &str) -> Option<i64> {\n        self.items.get(key).copied()\n    }\n\n    fn put(&mut self, key: &str, value: i64) {\n        self.items.insert(key.to_string(), value);\n    }\n\n    fn len(&self) -> usize {\n        self.items.len()\n    }\n}\n\npub fn count(store: &dyn Store) -> usize {\n    store.len()\n}\n```",
+        "tokens_out": 88
+      },
+      "prompt_sha256": "ef0d01f3a6af67db969df86c71a22a8345cacdba73ea7435700343d4da71d40e"
+    },
+    {
+      "category": "trio",
+      "id": "trio-01-lifetime-chain",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! A table, an alias table, and a resolution chain.\n\npub type Table = [(&'static str, &'static str)];\n\npub fn lookup<'a>(table: &'a Table, key: &str) -> Option<&'a str> {\n    table\n        .iter()\n        .find(|(name, _value)| *name == key)\n        .map(|(_name, value)| *value)\n}\n\npub fn resolve<'a>(\n    table: &'a Table,\n    aliases: &[(&'static str, &'static str)],\n    key: &str,\n) -> Option<&'a str> {\n    if let Some(value) = lookup(table, key) {\n        return Some(value);\n    }\n    aliases\n        .iter()\n        .find(|(alias, _target)| *alias == key)\n        .and_then(|(_alias, target)| lookup(table, target))\n}\n\npub fn chain<'a>(\n    table: &'a Table,\n    aliases: &[(&'static str, &'static str)],\n    key: &str,\n) -> Option<&'a str> {\n    resolve(table, aliases, key)\n}\n```",
+        "tokens_out": 105
+      },
+      "prompt_sha256": "77630c2d66234566bb8c65413ae72fead574f442b35327dfdf1ac323e26e87a1"
+    },
+    {
+      "category": "trio",
+      "id": "trio-02-math-dependency",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Recompute planning over declared rules.\n\n#[derive(Debug, Clone, Copy)]\npub struct Rule {\n    pub output: &'static str,\n    pub inputs: &'static [&'static str],\n}\n\n#[derive(Debug, PartialEq)]\npub enum PlanError {\n    Unknown(&'static str),\n    Cycle(&'static str),\n}\n\nfn visit(\n    rules: &[Rule],\n    known: &[&str],\n    node: &'static str,\n    done: &mut Vec<&'static str>,\n    visiting: &mut Vec<&'static str>,\n    plan: &mut Vec<&'static str>,\n) -> Result<(), PlanError> {\n    if known.contains(&node) || done.contains(&node) {\n        return Ok(());\n    }\n    if visiting.contains(&node) {\n        return Err(PlanError::Cycle(node));\n    }\n    let rule = rules\n        .iter()\n        .find(|rule| rule.output == node)\n        .ok_or(PlanError::Unknown(node))?;\n    visiting.push(node);\n    for input in rule.inputs {\n        visit(rules, known, input, done, visiting, plan)?;\n    }\n    visiting.pop();\n    done.push(node);\n    plan.push(node);\n    Ok(())\n}\n\npub fn minimal_recompute(\n    rules: &[Rule],\n    known: &[&str],\n    target: &'static str,\n) -> Result<Vec<&'static str>, PlanError> {\n    if known.contains(&target) {\n        return Ok(Vec::new());\n    }\n    let mut plan = Vec::new();\n    let mut done = Vec::new();\n    let mut visiting = Vec::new();\n    visit(rules, known, target, &mut done, &mut visiting, &mut plan)?;\n    Ok(plan)\n}\n```",
+        "tokens_out": 153
+      },
+      "prompt_sha256": "f00d733fa061441c4057e8a9e1d0f953e05e066b8c785dd5b54e33b4d75fff74"
+    },
+    {
+      "category": "trio",
+      "id": "trio-03-logic-quantifier",
+      "output": {
+        "extra": {},
+        "finish_reason": "stop",
+        "latency_ms": 1,
+        "text": "```rust path=src/lib.rs\n//! Quantified premise chains.\n\nuse std::collections::VecDeque;\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum Quantifier {\n    All,\n    Some,\n}\n\n#[derive(Debug, Clone, Copy)]\npub struct Premise {\n    pub subject: &'static str,\n    pub quantifier: Quantifier,\n    pub object: &'static str,\n}\n\n#[derive(Debug, PartialEq)]\npub struct Repair {\n    pub path: Vec<usize>,\n    pub strengthened: Vec<usize>,\n}\n\npub fn repair_path(\n    premises: &[Premise],\n    from: &'static str,\n    to: &'static str,\n) -> Option<Repair> {\n    if from == to {\n        return Some(Repair { path: Vec::new(), strengthened: Vec::new() });\n    }\n    let mut queue: VecDeque<(&'static str, Vec<usize>)> = VecDeque::new();\n    let mut seen: Vec<&'static str> = vec![from];\n    queue.push_back((from, Vec::new()));\n    while let Some((node, path)) = queue.pop_front() {\n        for (index, premise) in premises.iter().enumerate() {\n            if premise.subject != node || seen.contains(&premise.object) {\n                continue;\n            }\n            let mut next_path = path.clone();\n            next_path.push(index);\n            if premise.object == to {\n                let strengthened = next_path\n                    .iter()\n                    .copied()\n                    .filter(|index| premises[*index].quantifier == Quantifier::Some)\n                    .collect();\n                return Some(Repair { path: next_path, strengthened });\n            }\n            seen.push(premise.object);\n            queue.push_back((premise.object, next_path));\n        }\n    }\n    None\n}\n```",
+        "tokens_out": 158
+      },
+      "prompt_sha256": "7f1ce15be2d0bb1c419472af415becf9f866bb8c89e1dd2d632781a5918c8306"
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-preregistration.json",
+    "sha256": "ba883d657a12a3020b17585f4f1df215d7e5619265a822944ad69bcbdfc2d02d"
+  },
+  "revision": "08646acdc2989f35e5679b29751873245be362ad",
+  "schema": "selvedge/capability-generations/v1",
+  "stage": "generate",
+  "stamp": "20261116T023255Z",
+  "suite": {
+    "counts": {
+      "by_category": {
+        "api-migration": 4,
+        "concurrency": 3,
+        "dependency-compat": 3,
+        "failing-test": 4,
+        "lifetime-borrow": 4,
+        "probe": 5,
+        "repo-scale": 3,
+        "trait-impl": 3,
+        "trio": 3
+      },
+      "probes": 5,
+      "suite": 24,
+      "total": 32,
+      "trio": 3
+    },
+    "prompt_hashes": {
+      "borrow-01-local-reference": "eddc8f05bd5e6509dc2dcdc5fc778336b7ead72419d01d76d34e7b1667e45f67",
+      "borrow-02-mutate-while-borrowed": "cd3d9d546522140b243c11943aadbb76f4acbb8c7ecc236cfceb168671097674",
+      "borrow-03-self-referential-window": "09ee624675c5112dd319220e9006f41149ca8bd86b22f376129d38b619608fd2",
+      "borrow-04-iterator-invalidation": "b2961141ca1e7cc6d3216335fbbd98b17096ec3568a13179f7f3c70d7e804c3a",
+      "concurrency-01-lock-order-deadlock": "2a9318df4c5e5eb092fc76a6e27de86629b664e17f207c0e90cf17cb895c00ae",
+      "concurrency-02-lost-update": "c9ecc6a28f7f1028b8563937ce96a9dd2e2091a8fad24dc16fad2647b51c3b3c",
+      "concurrency-03-send-boundary": "62ba57362c113a4cd5d529de8297e797a17b422adcb2fcd22ea99ec3bc567995",
+      "deps-01-version-requirement": "fca09da501226f767aa8e927968d5981e3b0b993712a6a70db6ef3d7f0278b5b",
+      "deps-02-edition-2024": "14dbbcaaeb57071fdca492b42d27c4b96c4a6ad3b347cad463b6bfcc293b6753",
+      "deps-03-optional-feature": "86ccc970b215438f733759843bbd062e7c2bc0a59685f5f5daa1b3ea8bf865e8",
+      "failing-01-chunk-boundary": "ad24d404a6640d5b6cbfb4c40eab1fd55bd46eeecdf27cdb0eb88d8536ca333b",
+      "failing-02-empty-input": "edc0608e8ba9f68195f785668e56e0424081174df2d27943d8e4f09591dc2671",
+      "failing-03-overflow-boundary": "45913306504e98f1ef592f30110768c37a4e142c940a5081406631caa8189e5d",
+      "failing-04-nan-ordering": "c834a0923beb1cef1d0e91b2bb5114dd38f98d5547f71033bc849beb324579be",
+      "migrate-01-signature": "d9a2884af29a00aa31488cfeaf7d61dd7f7c3c5e600371f05d6b31fa9f316e33",
+      "migrate-02-builder": "b8d52ddda5ea9f104da2cec41f326c9b54322f6406dbc8e98f68055cd1ab730d",
+      "migrate-03-error-conversion": "388352628190f91ca82457e7f40601c40c75510e8dda5228e07f63c4546f2006",
+      "migrate-04-trait-import": "4e7be1e58822933457486ebaa5716f569eac70fcd88edea58097d1b57fe1dc89",
+      "repo-01-lifetime-propagation": "3ea2f8597da96d22cda21751542dc56a6397b2450a8a587322bd121a922b4725",
+      "repo-02-error-propagation": "9fe5e01a20e462617a6b7bdd5bc2a72a307440bd6a170dcd70ff0863a5bd273b",
+      "repo-03-generic-bounds": "be515daf5b2018fecc6633e3dc8112709f1dee8f3627cec4f00cbf4c68b31bd0",
+      "traits-01-associated-type": "4ff48cea4b5f4bb4fe66905db6a2c6142da9acb702e2b70194410cf85033a86f",
+      "traits-02-coherence": "aa7d71b8c7b169fb2fdce90db8c9477eb9c8d45ed572bb9a71ae98014874b014",
+      "traits-03-object-safety": "ef0d01f3a6af67db969df86c71a22a8345cacdba73ea7435700343d4da71d40e",
+      "trio-01-lifetime-chain": "77630c2d66234566bb8c65413ae72fead574f442b35327dfdf1ac323e26e87a1",
+      "trio-02-math-dependency": "f00d733fa061441c4057e8a9e1d0f953e05e066b8c785dd5b54e33b4d75fff74",
+      "trio-03-logic-quantifier": "7f1ce15be2d0bb1c419472af415becf9f866bb8c89e1dd2d632781a5918c8306"
+    },
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc"
+  }
+}

@@ -47,8 +47,23 @@ def main(argv: list[str]) -> int:
     register.add_argument("--out", default=DEFAULT_PREREG)
     register.add_argument("--force", action="store_true")
 
+    fake = subparsers.add_parser(
+        "fake-reference",
+        help="write an adapter spec whose answers are the reference solutions; the "
+             "result receipt is an instrument check, never an arm result")
+    fake.add_argument("--out", required=True)
+
     generate = subparsers.add_parser("generate")
-    generate.add_argument("--adapter-spec", required=True)
+    generate.add_argument("--adapter-spec", default=None)
+    generate.add_argument("--t2-arm", default=None,
+                          help="T2 arm letter (D, M, X, H, H*)")
+    generate.add_argument("--t2-checkpoint", default=None)
+    generate.add_argument("--t2-config", default=None)
+    generate.add_argument("--t2-admission", default=None)
+    generate.add_argument("--t2-accounting", default=None)
+    generate.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
+    generate.add_argument("--device", default=None)
+    generate.add_argument("--batch", type=int, default=4)
     generate.add_argument("--out", required=True)
     generate.add_argument("--max-new-tokens", type=int,
                           default=court.DEFAULT_MAX_NEW_TOKENS)
@@ -113,9 +128,40 @@ def main(argv: list[str]) -> int:
               f"{payload['suite_sha256'][:12]}")
         return 0
 
+    if args.command == "fake-reference":
+        collections = suite.load_suite(args.suite)
+        outputs = {}
+        for kind in ("suite", "trio"):
+            for task in collections[kind]:
+                blocks = []
+                for path in task.reference_files:
+                    blocks.append("```rust path=" + path + "\n"
+                                  + task.read_reference(path).rstrip() + "\n```")
+                outputs[task.id] = "\n".join(blocks)
+        spec = {"kind": "fake", "name": "fake-reference", "outputs": outputs,
+                "accounting": {"task_success": None},
+                "note": "instrument smoke only: answers are the reference solutions"}
+        court.write_json_atomic(args.out, spec)
+        print(f"capability_court: wrote {len(outputs)} scripted answers -> {args.out}")
+        return 0
+
     if args.command == "generate":
-        spec = load_json(args.adapter_spec)
-        adapter = adapters.adapter_from_spec(spec)
+        if args.t2_arm:
+            missing = [name for name, value in (
+                ("--t2-checkpoint", args.t2_checkpoint),
+                ("--t2-config", args.t2_config),
+                ("--t2-admission", args.t2_admission)) if not value]
+            if missing:
+                raise SystemExit(f"--t2-arm needs {', '.join(missing)}")
+            adapter = adapters.T2ArmAdapter(
+                args.t2_arm, args.t2_checkpoint, args.t2_config, args.t2_admission,
+                args.hf_root, device=args.device, batch=args.batch,
+                accounting=args.t2_accounting)
+        elif args.adapter_spec:
+            spec = load_json(args.adapter_spec)
+            adapter = adapters.adapter_from_spec(spec)
+        else:
+            raise SystemExit("give --adapter-spec or --t2-arm")
         few_shot = None
         if args.few_shot:
             few_shot = load_json(args.few_shot)

@@ -1,0 +1,890 @@
+{
+  "anti_gaming": {
+    "checker_access": "separate-process-after-generation",
+    "checker_visible_to_arm": false,
+    "feedback": "none",
+    "few_shot_hygiene": null,
+    "prompt_hashes_match": true,
+    "tool_parity": "enforced at comparison time",
+    "tools": false
+  },
+  "command": "scripts/capability_court.py check --generations results/capability/instrument-smoke-20261116T023255Z/generations.json --preregistration docs/capability-preregistration.json --out results/capability/instrument-smoke-20261116T023255Z/result.json",
+  "created_utc": "2026-11-16T02:32:59Z",
+  "generations": {
+    "adapter": {
+      "accounting": {
+        "active_unique_params": null,
+        "gpu_residency_bytes": null,
+        "host_residency_bytes": null,
+        "measured_io": null,
+        "offline_teacher_construction_cost": null,
+        "optimizer_flops": null,
+        "task_success": null,
+        "total_accessible_capacity": null,
+        "training_tokens": null
+      },
+      "kind": "fake",
+      "name": "fake-reference",
+      "null_reasons": {
+        "active_unique_params": "scripted fake model; no such measurement exists",
+        "gpu_residency_bytes": "scripted fake model; no such measurement exists",
+        "host_residency_bytes": "scripted fake model; no such measurement exists",
+        "measured_io": "scripted fake model; no such measurement exists",
+        "offline_teacher_construction_cost": "scripted fake model; no such measurement exists",
+        "optimizer_flops": "scripted fake model; no such measurement exists",
+        "total_accessible_capacity": "scripted fake model; no such measurement exists",
+        "training_tokens": "scripted fake model; no such measurement exists"
+      },
+      "provenance": {
+        "checkpoint_sha256": null,
+        "source_model_revision": null
+      },
+      "tools": false
+    },
+    "decoding": {
+      "feedback": "none",
+      "greedy": true,
+      "max_new_tokens": 3072,
+      "order": "sorted",
+      "seed": 20261115,
+      "stops": [
+        "\n```\n\n## "
+      ]
+    },
+    "few_shot": null,
+    "revision": "08646acdc2989f35e5679b29751873245be362ad",
+    "schema": "selvedge/capability-generations/v1",
+    "stamp": "20261116T023255Z"
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-01-local-reference",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 15,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-02-mutate-while-borrowed",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-03-self-referential-window",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 57,
+      "value": 1.0
+    },
+    {
+      "category": "lifetime-borrow",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "borrow-04-iterator-invalidation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 45,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 25.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-01-lock-order-deadlock",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 158,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-02-lost-update",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 71,
+      "value": 1.0
+    },
+    {
+      "category": "concurrency",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "concurrency-03-send-boundary",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 79,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "Cargo.toml",
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-01-version-requirement",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 68,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-02-edition-2024",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 40,
+      "value": 1.0
+    },
+    {
+      "category": "dependency-compat",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "Cargo.toml"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "deps-03-optional-feature",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 33,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-01-chunk-boundary",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 25,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-02-empty-input",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 25,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-03-overflow-boundary",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 22,
+      "value": 1.0
+    },
+    {
+      "category": "failing-test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "failing-04-nan-ordering",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 43,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-01-signature",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 26,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-02-builder",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 31,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-03-error-conversion",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 68,
+      "value": 1.0
+    },
+    {
+      "category": "api-migration",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "migrate-04-trait-import",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 22,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 3,
+        "files": [
+          "src/lib.rs",
+          "src/query.rs",
+          "src/report.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-01-lifetime-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 96,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/error.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-02-error-propagation",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 86,
+      "value": 1.0
+    },
+    {
+      "category": "repo-scale",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 2,
+        "files": [
+          "src/stats.rs",
+          "src/traits.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "repo-03-generic-bounds",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 91,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-01-associated-type",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 85,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-02-coherence",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 83,
+      "value": 1.0
+    },
+    {
+      "category": "trait-impl",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "traits-03-object-safety",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": null,
+      "tokens_out": 88,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-01-lifetime-chain",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "rust-lifetime-chain",
+      "tokens_out": 105,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-02-math-dependency",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "numeric-dependency",
+      "tokens_out": 153,
+      "value": 1.0
+    },
+    {
+      "category": "trio",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "checker": "cargo_test",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0
+      },
+      "extraction": {
+        "fence_count": 1,
+        "files": [
+          "src/lib.rs"
+        ],
+        "mode": "fenced_paths",
+        "ok": true,
+        "rejected": []
+      },
+      "id": "trio-03-logic-quantifier",
+      "latency_ms": 1,
+      "status": "pass",
+      "surface": "quantifier-chain",
+      "tokens_out": 158,
+      "value": 1.0
+    }
+  ],
+  "preregistration": {
+    "path": "docs/capability-preregistration.json",
+    "problems": [],
+    "sha256": "ba883d657a12a3020b17585f4f1df215d7e5619265a822944ad69bcbdfc2d02d"
+  },
+  "revision": "08646acdc2989f35e5679b29751873245be362ad",
+  "schema": "selvedge/capability-result/v1",
+  "scores": {
+    "by_category": {
+      "api-migration": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 4,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "concurrency": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "dependency-compat": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "failing-test": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 4,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "lifetime-borrow": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 4,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "repo-scale": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "trait-impl": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 3,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "counts": {
+      "pass": 27
+    },
+    "items": 27,
+    "pooled": {
+      "ci_high": 1.0,
+      "ci_low": 1.0,
+      "level": 0.95,
+      "mean": 1.0,
+      "n": 24,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_ci": {
+      "ci_high": 0.9999999999999998,
+      "ci_low": 0.9999999999999998,
+      "level": 0.95,
+      "mean": 1.0,
+      "n": 24,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "primary_composite": 1.0,
+    "trio": {
+      "numeric-dependency": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 1,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "quantifier-chain": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 1,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "rust-lifetime-chain": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "level": 0.95,
+        "mean": 1.0,
+        "n": 1,
+        "resamples": 10000,
+        "seed": 20261115
+      }
+    },
+    "trio_all_surfaces": true
+  },
+  "stage": "check",
+  "stamp": "20261116T023259Z",
+  "suite": {
+    "counts": {
+      "by_category": {
+        "api-migration": 4,
+        "concurrency": 3,
+        "dependency-compat": 3,
+        "failing-test": 4,
+        "lifetime-borrow": 4,
+        "probe": 5,
+        "repo-scale": 3,
+        "trait-impl": 3,
+        "trio": 3
+      },
+      "probes": 5,
+      "suite": 24,
+      "total": 32,
+      "trio": 3
+    },
+    "root": "/work/fixtures/capability",
+    "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc"
+  }
+}

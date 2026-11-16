@@ -1931,3 +1931,109 @@ container was touched and no GPU job was started from this subphase.
 `field_reassign_with_default` in `src/envelope.rs` and `src/synthetic.rs`) once
 the workspace was relinted. The fixes are mechanical and behaviour-preserving;
 they are listed here so the change is not mistaken for part of the runtime work.
+
+## S14 — the capability court and the fresh Rust suite (CPU)
+
+### Plan
+
+P12.8–P12.11 need one instrument that every frontier claim will use, and P12.9
+needs a verifiable domain that is not a public benchmark. This session builds
+both, plus the pre-registration that has to exist before any arm runs. The GPU
+belongs to the detached T2 pilot, so nothing here evaluates a model; the harness
+is tested end to end on reference solutions, declared wrong solutions and
+scripted fake model outputs.
+
+### What was built
+
+- **A fresh executable Rust suite.** Items are authored as failing crates with a
+  harness-owned hidden test, a reference solution and a declared wrong mutation,
+  across borrow/lifetime repairs, failing-test debugging, API migration,
+  dependency/edition/feature compatibility, concurrency defects, trait/impl
+  errors and multi-file repairs. The tracked tree is materialised from an
+  authoring source whose `--check` fails on drift.
+- **An anti-superficial-specialisation trio** (P11.21): one lifetime, one
+  numeric-dependency and one quantifier-chain task, each annotated per hidden
+  test with the shared dependency-closure repair and judged per surface, never
+  pooled.
+- **A bounded checker sandbox.** Wall clock, address space, CPU, file size and
+  open-file limits; a new session and a killed process group; a deterministic
+  environment built from scratch; a measured no-default-route network check; a
+  bounded workdir; per-run cgroup OOM counters and output digests.
+- **Five sandbox probes** that prove a pass, an assertion failure, a compile
+  error, a timeout and an allocation failure are each recorded as an outcome.
+- **The staged court.** `generate` in the model court, `check` in the rust court,
+  category-balanced paired bootstrap, per-surface trio scoring, failure
+  accounting, the ten-field control matrix, capacity scaling, Pareto,
+  no-hidden-teacher, prompt-order invariance, few-shot shingle disjointness,
+  tool and feedback parity.
+- **The pre-registration**, bound to the suite hash before any arm run.
+- **The contamination receipt**, in both required units, fail-closed.
+
+### Evidence
+
+- Checker self-test: `results/capability/selftest-20261116T022833Z.json` — every
+  failing state fails as declared, every reference passes, every declared
+  mutation fails, every probe lands on its expected outcome.
+- Contamination: `results/capability/contamination-20261116T022822Z.json` —
+  disjoint against HumanEval, GSM8K, TruthfulQA, the T2 evaluation windows and a
+  bounded T1/T2 corpus sample.
+- Pre-registration: `docs/capability-preregistration.json`.
+- Instrument documentation: `docs/CAPABILITY-COURT.md`.
+
+### A real finding from the contamination gate
+
+The first contamination run was not clean: one 13-token shingle in a debugging
+fixture also occurred in a held-out GSM8K question — a sequence of decimal
+literals used in an assertion. This was a coincidence rather than copied text,
+but the gate is fail-closed, so the fixture's numbers were changed and the run
+re-passed. No exception list was added. This is what the gate is for; a
+contamination check that cannot fail is decoration.
+
+### Tests
+
+- `oracle/tests/test_capability_suite.py` — suite shape, manifest binding and
+  drift detection, prompt determinism, hidden-test non-leakage, extraction
+  rules and harness-owned path rejection.
+- `oracle/tests/test_capability_stats.py` — the stdlib percentile rule against
+  numpy, paired and category-stratified bootstrap, category balance.
+- `oracle/tests/test_capability_court.py` — fake-adapter end-to-end runs,
+  composite arithmetic, threshold decision rule, empty-answer accounting,
+  control-matrix validation, complementarity, capacity slope, Pareto,
+  no-hidden-teacher, parity checks, prompt-order invariance, few-shot leakage.
+- `oracle/tests/test_capability_sandbox.py` — the child's own view of every
+  limit, deterministic environment, timeout, allocation bound, digest stability,
+  fail-closed behaviour outside a court and with a default route.
+- The suites run in the python court; the real checker runs and the probes run
+  in the rust court, which now carries a standard-library Python beside cargo so
+  one process can drive the checkers and score their outcomes.
+- The staged path was also exercised end to end through the CLI with a scripted
+  adapter that emits the reference solutions
+  (`results/capability/instrument-smoke-20261116T023255Z/`). That receipt proves
+  the pipeline and the pre-registration binding; it is not an arm result, and its
+  adapter kind is `fake`.
+
+### What is not true
+
+- No arm has been evaluated. Every number describes the instrument.
+- The trio is below P11.21's item count and has author-only annotations; it is
+  a transfer probe, not the published anti-specialisation suite.
+- Feedback repair loops are recorded and parity-enforced but not implemented.
+- The corpus contamination check is a bounded deterministic sample; its coverage
+  is in the receipt.
+- Mutation testing is one authored wrong answer per task, not a campaign.
+- The Rust-runtime adapter has no end-to-end generation yet, and the PyTorch
+  adapter reports residency and I/O as null with reasons.
+
+### Pilot (read-only observation)
+
+The detached T2 pilot (`selvedge-oracle-court-20261115T234515Z-b23ea1`) was
+polled read-only: arm H at step 560/1024, loss 1.8106, about 4620 tokens/s,
+10.86 GiB VRAM in use, ample host memory. No container was touched and no GPU
+job was started from this subphase.
+
+### Next
+
+When the pilot finishes: run the pre-registered suite on the T2 checkpoints (the
+exact commands are in `docs/CAPABILITY-COURT.md` §10), then the Rust-runtime
+subset on CPU, then the D/M complementarity comparison through the same
+verifier.

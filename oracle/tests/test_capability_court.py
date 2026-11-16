@@ -275,6 +275,16 @@ def test_a_suite_hash_mismatch_refuses_the_result(tmp_path):
                     runner=lambda task, files: {"status": "pass"})
 
 
+def test_the_t2_adapter_is_declared_without_loading_a_model():
+    adapter = adapters.T2ArmAdapter(
+        "H", "results/artifacts/train/t2/H/step-001024.pt",
+        "results/train/admission-configs/t2/H.json",
+        "results/train/admission/t2/H.json", "/hf-cache")
+    assert adapter.name == "t2-H"
+    assert adapter.kind == "t2-arm"
+    assert adapter.tools is False
+
+
 def test_pre_registration_binds_the_suite_and_the_threshold(tmp_path):
     path = os.path.join(str(tmp_path), "prereg.json")
     payload = court.register(path, SUITE_ROOT)
