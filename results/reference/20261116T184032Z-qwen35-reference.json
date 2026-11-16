@@ -1,0 +1,371 @@
+{
+  "schema": "selvedge/qwen35-reference-parity/v1",
+  "stamp": "20261116T184032Z",
+  "revision": "a36d5a959f20fbc4a3dd0e05c16884684b6d197c",
+  "generated_utc": "2026-11-16T18:40:42Z",
+  "checkpoint": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "checkpoint_config_sha256": "b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204",
+  "reference_implementation": {
+    "path": "oracle/reference/qwen35.py",
+    "sha256": "a68ec0bab5ccec085a72ac250896e3447c8913a9a1b6c4c3650b78a0df4bbf26"
+  },
+  "toolchain": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0",
+    "numpy": "2.5.4",
+    "cuda_runtime": "13.2",
+    "device": "NVIDIA GeForce RTX 4080 SUPER"
+  },
+  "dtype_path": {
+    "vendor_reference": "bfloat16 weights, fp32 norms/softmax/delta-rule",
+    "independent_reference": "bfloat16 weights, fp32 norms/softmax/delta-rule (the same convention, implemented separately)",
+    "dtype_comparison": {
+      "bf16_vs_fp32": {
+        "max_abs": 0.2801342010498047,
+        "mean_abs": 0.025314094498753548,
+        "max_rel": 3343.566162109375,
+        "cosine": 0.9999582767486572,
+        "argmax_equal": true
+      },
+      "bf16_last_position_argmax": 11751,
+      "fp32_last_position_argmax": 11751,
+      "bf16_token": " Paris",
+      "fp32_token": " Paris"
+    }
+  },
+  "config_echo": {
+    "layers": 24,
+    "hidden": 1024,
+    "rotary_dim": 64,
+    "linear_layers": 18,
+    "attention_layers": 6,
+    "conv_kernel": 4,
+    "tie_word_embeddings": true
+  },
+  "prompts": [
+    {
+      "index": 0,
+      "prompt": "The capital of France is",
+      "tokens": 5,
+      "logits_shape": [
+        5,
+        248320
+      ],
+      "parity_vs_transformers": {
+        "max_abs": 0.21875,
+        "mean_abs": 0.02771924063563347,
+        "max_rel": 5882.9365234375,
+        "cosine": 0.9999510049819946,
+        "argmax_equal": true
+      },
+      "reference_is_deterministic": true,
+      "vendor_continuation": " Paris.\nThe capital of France is Paris.\nThe",
+      "vendor_continuation_ids": [
+        11751,
+        13,
+        198,
+        760,
+        6511,
+        314,
+        9338,
+        369,
+        11751,
+        13,
+        198,
+        760
+      ],
+      "reference_continuation": " Paris.\nThe capital of France is",
+      "reference_continuation_ids": [
+        11751,
+        13,
+        198,
+        760,
+        6511,
+        314,
+        9338,
+        369
+      ],
+      "continuation_token_agreement": {
+        "compared": 8,
+        "equal": 8
+      },
+      "artifact": {
+        "path": "results/reference/20261116T184032Z-qwen35/prompt-0.npy",
+        "kind": "last-position logits, float32 npy",
+        "sha256": "7db1d3f8655ece5d9f9e1ae6f81132f7714ee0a6f2038b19868577f9620fcb01",
+        "full_logits_sha256": "3af730640aa35ebbba148621aa8ab2b9ff5b31f9daa41f9d9aab2a8004f7c5ac",
+        "top8_ids": [
+          11751,
+          279,
+          7172,
+          198,
+          25,
+          31586,
+          303,
+          264
+        ],
+        "top8_logits": [
+          14.875,
+          14.5625,
+          14.3125,
+          14.0625,
+          14.0625,
+          13.6875,
+          13.5625,
+          13.4375
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "prompt": "2 + 2 =",
+      "tokens": 5,
+      "logits_shape": [
+        5,
+        248320
+      ],
+      "parity_vs_transformers": {
+        "max_abs": 0.3369140625,
+        "mean_abs": 0.03278917446732521,
+        "max_rel": 33352.14453125,
+        "cosine": 0.9998882412910461,
+        "argmax_equal": true
+      },
+      "reference_is_deterministic": true,
+      "vendor_continuation": " 4\n2 + 2 = 4\n2",
+      "vendor_continuation_ids": [
+        220,
+        19,
+        198,
+        17,
+        478,
+        220,
+        17,
+        283,
+        220,
+        19,
+        198,
+        17
+      ],
+      "reference_continuation": " 4\n2 + 2 =",
+      "reference_continuation_ids": [
+        220,
+        19,
+        198,
+        17,
+        478,
+        220,
+        17,
+        283
+      ],
+      "continuation_token_agreement": {
+        "compared": 8,
+        "equal": 8
+      },
+      "artifact": {
+        "path": "results/reference/20261116T184032Z-qwen35/prompt-1.npy",
+        "kind": "last-position logits, float32 npy",
+        "sha256": "e3590e5cf3000c4243934d87842785c4f2bf32cb3eadbfe1ce16d96c5a0fbbd7",
+        "full_logits_sha256": "60b178bbb9e42e003fc0fd31221e5621d55c3ff13a179b5265faee22d8fdd8c0",
+        "top8_ids": [
+          220,
+          907,
+          318,
+          471,
+          198,
+          1088,
+          31586,
+          1259
+        ],
+        "top8_logits": [
+          18.5,
+          16.625,
+          15.125,
+          14.3125,
+          13.8125,
+          13.5625,
+          13.5,
+          13.375
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "prompt": "The chemical symbol for water is",
+      "tokens": 6,
+      "logits_shape": [
+        6,
+        248320
+      ],
+      "parity_vs_transformers": {
+        "max_abs": 0.1875,
+        "mean_abs": 0.027801785618066788,
+        "max_rel": 19581.87890625,
+        "cosine": 0.999946653842926,
+        "argmax_equal": true
+      },
+      "reference_is_deterministic": true,
+      "vendor_continuation": " H2O.\n\n<think>\n\n</think>\n\nYes, that",
+      "vendor_continuation_ids": [
+        462,
+        17,
+        46,
+        13,
+        271,
+        248068,
+        271,
+        248069,
+        271,
+        9175,
+        11,
+        421
+      ],
+      "reference_continuation": " H2O.\n\n<think>\n\n</think>",
+      "reference_continuation_ids": [
+        462,
+        17,
+        46,
+        13,
+        271,
+        248068,
+        271,
+        248069
+      ],
+      "continuation_token_agreement": {
+        "compared": 8,
+        "equal": 8
+      },
+      "artifact": {
+        "path": "results/reference/20261116T184032Z-qwen35/prompt-2.npy",
+        "kind": "last-position logits, float32 npy",
+        "sha256": "fcdb2640e01cc8d420b51fb94ecaea0207295755c0600cdb177f5dd8d1cb3abb",
+        "full_logits_sha256": "7c7e6269e6a0be9e1a80d8e3c12e18b1d0dd5762d40c3be1fa7d82503ada460d",
+        "top8_ids": [
+          462,
+          271,
+          31586,
+          25,
+          29739,
+          1259,
+          1076,
+          30
+        ],
+        "top8_logits": [
+          18.375,
+          17.75,
+          17.25,
+          17.125,
+          16.5,
+          16.125,
+          15.875,
+          15.8125
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "prompt": "Once upon a time there was a",
+      "tokens": 7,
+      "logits_shape": [
+        7,
+        248320
+      ],
+      "parity_vs_transformers": {
+        "max_abs": 0.7421875,
+        "mean_abs": 0.0702284649014473,
+        "max_rel": 15322.8583984375,
+        "cosine": 0.9997819662094116,
+        "argmax_equal": true
+      },
+      "reference_is_deterministic": true,
+      "vendor_continuation": " young man named Alex who loved to explore the world. One",
+      "vendor_continuation_ids": [
+        3777,
+        855,
+        6725,
+        8254,
+        852,
+        9939,
+        310,
+        12804,
+        279,
+        1814,
+        13,
+        3648
+      ],
+      "reference_continuation": " young man named Alex who loved to explore",
+      "reference_continuation_ids": [
+        3777,
+        855,
+        6725,
+        8254,
+        852,
+        9939,
+        310,
+        12804
+      ],
+      "continuation_token_agreement": {
+        "compared": 8,
+        "equal": 8
+      },
+      "artifact": {
+        "path": "results/reference/20261116T184032Z-qwen35/prompt-3.npy",
+        "kind": "last-position logits, float32 npy",
+        "sha256": "20b1c60a732bea58b0474903731702d921e52de9029e352c3cb8b1d445978a26",
+        "full_logits_sha256": "29e4a594504a05d6a3cee22deb664a2d0a1d1843337f130a11fa25fa8974f975",
+        "top8_ids": [
+          3777,
+          1546,
+          2545,
+          7914,
+          2526,
+          1809,
+          855,
+          3616
+        ],
+        "top8_logits": [
+          15.3125,
+          15.125,
+          14.5625,
+          14.4375,
+          14.1875,
+          13.9375,
+          13.6875,
+          13.5
+        ]
+      }
+    }
+  ],
+  "linear_attention_state_test": {
+    "layer": 0,
+    "layer_type": "linear_attention",
+    "times": 12,
+    "split": 5,
+    "conv_kernel": 4,
+    "carry_max_abs": 0.0,
+    "carry_mean_abs": 0.0,
+    "reset_max_abs": 0.0126953125,
+    "reset_mean_abs": 0.001326866797171533,
+    "tolerance": 0.001,
+    "carry_matches": true,
+    "reset_differs": true,
+    "state_shape": [
+      16,
+      128,
+      128
+    ],
+    "conv_state_shape": [
+      3,
+      6144
+    ]
+  },
+  "artifact_dir": "results/reference/20261116T184032Z-qwen35",
+  "notes": [
+    "The vendor reference is transformers==5.23.0, which ships Qwen3_5ForConditionalGeneration; the checkpoint's MTP head is ignored by that loader (_keys_to_ignore_on_load_unexpected includes ^mtp.*), matching the text-only declared path.",
+    "The independent reference loads model.language_model.* directly from the safetensors files and re-derives every equation in its module docstring.",
+    "Continuation agreement is compared token by token on the shorter of the two lengths; a disagreement in the first few tokens is a real defect, not a sampling artifact, because both runs are greedy.",
+    "max_rel is dominated by logits of magnitude near zero and is reported for completeness only; max_abs, the cosine similarity and argmax equality are the metrics this receipt is judged on.",
+    "The state test runs one real DeltaNet layer (layer 0) three ways: whole sequence, two chunks with state carried, and the second chunk from a fresh state. Carry must reproduce the whole-sequence output; reset must not."
+  ]
+}

@@ -1,0 +1,11 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[0] 'The capital of France is' parity_max_abs=2.188e-01 argmax_equal=True agree=8/8
+[1] '2 + 2 =' parity_max_abs=3.369e-01 argmax_equal=True agree=8/8
+[2] 'The chemical symbol for water is' parity_max_abs=1.875e-01 argmax_equal=True agree=8/8
+[3] 'Once upon a time there was a' parity_max_abs=7.422e-01 argmax_equal=True agree=8/8
+state test: carry_max_abs=0.000e+00 reset_max_abs=1.270e-02 carry_matches=True reset_differs=True
+receipt: results/reference/20261116T184032Z-qwen35-reference.json
+artifacts: results/reference/20261116T184032Z-qwen35
