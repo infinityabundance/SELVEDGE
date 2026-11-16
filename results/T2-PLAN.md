@@ -386,7 +386,8 @@ scripts/court oracle -- python3 oracle/eval/causal_repair.py \
 The 0.6B run needs the failed-item artifact `--items` (a JSON list of
 `{id, input_ids, label}`; contract P11.1.1). **This artifact does not exist at
 this revision**; producing it from the `P12.9` suite is the remaining piece of
-engineering. With it:
+engineering. With it (`--layers all` means the pre-registered 8-layer candidate
+set and the run uses 60 oracle steps per item/layer, per the contract):
 
 ```sh
 scripts/court --gpu oracle -- python3 oracle/eval/causal_repair.py --mode checkpoint \

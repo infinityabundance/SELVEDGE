@@ -962,11 +962,27 @@ def report_latent(args) -> int:
 
     probe = torch.randint(0, base.config.vocab_size, (1, 64),
                           generator=torch.Generator().manual_seed(args.seed)).to(device)
-    ranks = []
-    for index, layer in enumerate(arm.layers):
-        hidden = arm.model.get_input_embeddings()(probe).reshape(-1, spec.d_model)
-        x = hidden[index % hidden.shape[0]] if args.sample_tokens > 1 else hidden[0]
-        ranks.append({"layer": index, **jacobian_rank_proxy(layer, x)})
+    # The published quantity is the *per-expert* local rank. On the real model the
+    # full layer Jacobian is not measured: the dispatch's Python control flow is
+    # not vmappable, and a row-wise 1024x1024 Jacobian is 1024 backward passes.
+    # The pre-registered sample is therefore `--rank-layers` layers x
+    # `--rank-experts` experts per layer, with the layer bound reported
+    # analytically from the spec. `--full-layer-jacobian` measures the whole
+    # layer map when the caller can afford it (the CPU fixture does).
+    with torch.no_grad():
+        embedded = arm.model.get_input_embeddings()(probe).reshape(-1, spec.d_model)
+    ranks, layer_ranks = [], []
+    for index, layer in enumerate(arm.layers[:args.rank_layers]):
+        hidden = embedded[index % embedded.shape[0]]
+        with torch.no_grad():
+            latent = (layer.project(hidden.reshape(1, -1)) if layer.project is not None
+                      else hidden.reshape(1, -1))
+        for expert in range(min(args.rank_experts, spec.experts)):
+            ranks.append({"layer": index, **expert_jacobian_rank(layer, latent[0],
+                                                                expert)})
+        if args.full_layer_jacobian:
+            layer_ranks.append({"layer": index,
+                               **jacobian_rank_proxy(layer, hidden)})
 
     utilities = None
     if args.utilities:
@@ -1029,15 +1045,20 @@ def report_latent(args) -> int:
         "arm": arm.arm, "spec": spec.report(),
         "checkpoint": args.checkpoint,
         "jacobian": {
-            "method": "numerical Jacobian of the layer's local map at one token; "
-                      "SVD rank at a relative tolerance plus participation ratio",
-            "tolerance": 1e-4, "sample": "one hidden state per layer",
-            "per_layer": ranks,
-            "mean_rank": sum(row["rank_at_tolerance"] for row in ranks) / len(ranks),
-            "mean_effective_rank": sum(row["effective_rank"] for row in ranks)
-            / len(ranks),
-            "analytic_bound": spec.jacobian_rank_bound,
+            "method": "numerical per-expert Jacobian (SVD rank at a relative "
+                      "tolerance plus participation ratio) on the pre-registered "
+                      "sample, with the layer bound reported analytically",
+            "tolerance": 1e-4,
+            "sample": {"layers": min(args.rank_layers, spec.layers),
+                       "experts_per_layer": min(args.rank_experts, spec.experts)},
+            "per_expert": ranks,
+            "mean_expert_rank": (sum(row["rank_at_tolerance"] for row in ranks)
+                                 / len(ranks) if ranks else None),
             "expert_bound": spec.expert_rank_bound,
+            "layer_bound": spec.jacobian_rank_bound,
+            "layer_measured": layer_ranks,
+            "note": "a shared projection caps the whole-layer rank at L; the "
+                    "reference form is bounded by min(k*w, d_model)",
         },
         "utility_diversity": utilities,
         "decode": {
@@ -1054,7 +1075,8 @@ def report_latent(args) -> int:
         "note": "quality is scored by oracle/eval/baseline.py --profile t3, not here",
     }
     write_json_atomic(os.path.join(REPO, args.out), receipt)
-    print(json.dumps({"out": args.out, "mean_rank": receipt["jacobian"]["mean_rank"],
+    print(json.dumps({"out": args.out,
+                      "mean_expert_rank": receipt["jacobian"]["mean_expert_rank"],
                       "vram_peak_gib": receipt["vram_peak_gib"],
                       "median_seconds": receipt["decode"]["median_seconds"]},
                      indent=2, sort_keys=True))
@@ -1094,6 +1116,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--zero-point", action="store_true")
     parser.add_argument("--deterministic", action="store_true")
     parser.add_argument("--sample-tokens", type=int, default=1)
+    parser.add_argument("--rank-layers", type=int, default=4)
+    parser.add_argument("--rank-experts", type=int, default=2)
+    parser.add_argument("--full-layer-jacobian", action="store_true",
+                        help="also measure the whole-layer Jacobian (expensive)")
     parser.add_argument("--timing-repeats", type=int, default=10)
     args = parser.parse_args(argv)
 

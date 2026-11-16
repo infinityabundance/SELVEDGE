@@ -65,8 +65,16 @@ SCHEMA_RUN = "selvedge/p11-causal-repair-run/v1"
 KAPPA_REPAIR = 0.10
 ORACLE_CAPTURE_KILL = 0.50
 TRANSFER_CAPTURE_KILL = 0.25
+#: Fixture search: 150 projected Adam steps. The 0.6B run uses 60 (registered
+#: for cost): Adam normalises the step and the ball projection caps the radius.
 ORACLE_STEPS = 150
 ORACLE_LR = 0.5
+CHECKPOINT_ORACLE_STEPS = 60
+#: Pre-registered candidate layers for the 0.6B student: eight layers spanning
+#: depth, including all four T2 memory insertion layers. Restricting the set is
+#: a registered cost decision; the oracle still chooses the earliest success.
+CANDIDATE_LAYERS = (3, 7, 10, 14, 17, 21, 24, 27)
+MAX_POSITIONS = 256
 PREDICTOR_STEPS = 300
 PREDICTOR_LR = 0.05
 LORA_STEPS = 300
@@ -302,7 +310,9 @@ def verifier_search(student, item: RepairItem, layer: int, epsilon: float,
 def oracle_repair(student, items: list[RepairItem], epsilon: float | None = None,
                   layers: list[int] | None = None, variant: str = "surrogate",
                   epsilon_absolute: float | None = None, seed: int = SEED,
-                  verifier: Verifier | None = None) -> dict:
+                  verifier: Verifier | None = None,
+                  steps: int = ORACLE_STEPS,
+                  lr: float = ORACLE_LR) -> dict:
     """Per-item, per-layer bounded search; the bottleneck is the earliest success."""
     layers = list(student.candidate_layers() if layers is None else layers)
     verifier = verifier or Verifier()
@@ -319,7 +329,7 @@ def oracle_repair(student, items: list[RepairItem], epsilon: float | None = None
         for layer in layers:
             if variant == "surrogate":
                 result = surrogate_search(student, item, layer, item_epsilon,
-                                          verifier=verifier)
+                                          steps=steps, lr=lr, verifier=verifier)
             elif variant == "verifier":
                 result = verifier_search(student, item, layer, item_epsilon,
                                          directions, verifier=verifier)
@@ -517,6 +527,16 @@ class DistributedLoRA(nn.Module):
 
     def apply(self, hidden: torch.Tensor, layer: int) -> torch.Tensor:
         return hidden + self.scale * ((hidden @ self.down[layer]) @ self.up[layer].t())
+
+    def hook(self, layer: int):
+        """A forward hook that applies this layer's LoRA to a module's output."""
+        def apply_hook(_module, _args, output):
+            hidden = output[0] if isinstance(output, tuple) else output
+            edited = self.apply(hidden, layer)
+            if isinstance(output, tuple):
+                return (edited,) + tuple(output[1:])
+            return edited
+        return apply_hook
 
 
 def matched_lora_rank(predictor_parameters: int, hidden: int, layers: int) -> int:
@@ -776,18 +796,29 @@ class HFCausalStudent:
     only thing a correction can change is the prediction it is meant to repair.
     """
 
-    def __init__(self, model, hidden: int, layers: int):
+    def __init__(self, model, hidden: int, layers: int,
+                 candidate_layers: tuple[int, ...] | None = None):
         self.model = model
         self.hidden = hidden
         self.layers = layers
+        self.candidates = tuple(candidate_layers or range(layers))
+        self.lora = None
         self._hooks: list = []
 
     def candidate_layers(self) -> list[int]:
-        return list(range(self.layers))
+        return list(self.candidates)
+
+    def set_lora(self, lora) -> None:
+        self.lora = lora
 
     def _run(self, input_ids: torch.Tensor, intervention=None):
+        input_ids = input_ids[:, -MAX_POSITIONS:]
         layer_index, delta = intervention if intervention is not None else (None, None)
         handles = []
+        if self.lora is not None:
+            for index in range(self.layers):
+                handles.append(self.model.model.layers[index].register_forward_hook(
+                    self.lora.hook(index)))
 
         def hook(module, args, output):
             hidden = output[0] if isinstance(output, tuple) else output
@@ -832,6 +863,58 @@ class HFCausalStudent:
         return embedding.detach().mean(dim=1)
 
 
+def train_hf_lora(student, items: list[RepairItem], lora: DistributedLoRA,
+                  steps: int = LORA_STEPS, lr: float = LORA_LR,
+                  seed: int = SEED) -> dict:
+    """Distributed LoRA on the frozen student: same items, tokens and steps."""
+    torch.manual_seed(seed)
+    parameters = [parameter for parameter in lora.parameters()]
+    optimizer = torch.optim.AdamW(parameters, lr=lr)
+    tokens = 0
+    last = None
+    student.set_lora(lora)
+    try:
+        for _step in range(steps):
+            optimizer.zero_grad(set_to_none=True)
+            losses = []
+            for item in items:
+                logits = student.logits(item.input_ids.unsqueeze(0))
+                losses.append(F.cross_entropy(
+                    logits.reshape(1, -1),
+                    torch.tensor([item.label], device=logits.device)))
+                tokens += int(min(item.input_ids.numel(), MAX_POSITIONS))
+            loss = torch.stack(losses).mean()
+            loss.backward()
+            optimizer.step()
+            last = float(loss.detach())
+    finally:
+        student.set_lora(None)
+    return {"steps": steps, "lr": lr, "seed": seed, "tokens": tokens,
+            "final_loss": last, "parameters": lora.parameter_count(),
+            "rank": lora.rank}
+
+
+def evaluate_hf_lora(student, lora: DistributedLoRA, items: list[RepairItem],
+                     verifier: Verifier | None = None) -> dict:
+    verifier = verifier or Verifier()
+    rows = {}
+    for item in items:
+        start = verify(student, item, None, verifier)
+        student.set_lora(lora)
+        try:
+            with torch.no_grad():
+                logits = student.logits(item.input_ids.unsqueeze(0))
+        finally:
+            student.set_lora(None)
+        correct, _score = verifier.evaluate(logits, item.label)
+        rows[item.id] = {"before": start,
+                         "repaired": bool(correct and not start["correct"])}
+    repaired = sum(1 for row in rows.values() if row["repaired"])
+    return {"items": len(items), "repaired": repaired,
+            "repair_rate": repaired / len(items) if items else 0.0,
+            "per_item": rows}
+
+
 def run_checkpoint(args) -> int:
     """The registered 0.6B run: oracle, predictor, equal-budget LoRA, controls."""
     if not torch.cuda.is_available():
@@ -853,24 +936,28 @@ def run_checkpoint(args) -> int:
     base = harness.load_model(harness.model_path(args.hf_root, args.model_size),
                              device)
     base.eval()
+    candidate_layers = (tuple(CANDIDATE_LAYERS) if args.layers == "all"
+                        else tuple(int(value) for value in args.layers.split(",")))
     student = HFCausalStudent(base, base.config.hidden_size,
-                              len(base.model.layers))
+                              len(base.model.layers),
+                              candidate_layers=candidate_layers)
     train, test = split_items(items)
     failed_train = failed_items(student, train)
     failed_test = failed_items(student, test)
-    layer_list = (student.candidate_layers() if args.layers == "all"
-                  else [int(value) for value in args.layers.split(",")])
+    layer_list = student.candidate_layers()
     epsilon = repair_budget(student, failed_train, layer_list[0],
                             absolute=args.epsilon)
     oracle_train = oracle_repair(student, failed_train, epsilon=epsilon,
                                  layers=layer_list, variant=args.oracle_variant,
-                                 seed=args.seed)
+                                 seed=args.seed,
+                                 steps=CHECKPOINT_ORACLE_STEPS)
     deployed_layer = choose_deployed_layer(oracle_train)
     if deployed_layer is None:
         raise SystemExit("the oracle repaired nothing on the training split")
     oracle_test = oracle_repair(student, failed_test, epsilon=epsilon,
                                 layers=layer_list, variant=args.oracle_variant,
-                                seed=args.seed)
+                                seed=args.seed,
+                                steps=CHECKPOINT_ORACLE_STEPS)
     predictor, training = train_predictor(
         student, failed_train, oracle_train, epsilon,
         hidden=student.hidden, vocab=base.config.vocab_size,
@@ -879,6 +966,14 @@ def run_checkpoint(args) -> int:
                                  deployed_layer, epsilon)
     parameters = sum(parameter.numel() for parameter in predictor.parameters())
     rank = matched_lora_rank(parameters, student.hidden, student.layers)
+    none = evaluate_no_adaptation(student, failed_test)
+    lora_equal = DistributedLoRA(student.hidden, student.layers, rank)
+    lora_training = train_hf_lora(student, failed_train, lora_equal, seed=args.seed)
+    lora_report = evaluate_hf_lora(student, lora_equal, failed_test)
+    all_layer = DistributedLoRA(student.hidden, student.layers, ALL_LAYER_RANK)
+    all_layer_training = train_hf_lora(student, failed_train, all_layer,
+                                      seed=args.seed)
+    all_layer_report = evaluate_hf_lora(student, all_layer, failed_test)
     receipt = {
         "schema": SCHEMA_RUN,
         "stamp": stamp_now(),
@@ -902,14 +997,19 @@ def run_checkpoint(args) -> int:
         "parameter_matching": {"predictor": parameters,
                                "distributed_lora_rank": rank},
         "controls": {
-            "none": evaluate_no_adaptation(student, failed_test),
-            "note": "the distributed LoRA and the all-layer bank require injecting "
-                    "the adapter into the HF core; that arm is implemented for the "
-                    "fixture protocol and is not yet wired to HF. This receipt says "
-                    "so rather than omitting the control silently.",
+            "none": none,
+            "distributed_lora_equal": {"training": lora_training, **lora_report},
+            "all_layer_adapters": {"training": all_layer_training,
+                                   **all_layer_report},
+            "parameter_matching": {
+                "predictor": parameters,
+                "distributed_lora_rank": rank,
+                "distributed_lora_parameters": lora_equal.parameter_count(),
+                "all_layer_rank": ALL_LAYER_RANK,
+                "all_layer_parameters": all_layer.parameter_count(),
+            },
         },
-        "capture": capture(learned, oracle_test,
-                           evaluate_no_adaptation(student, failed_test)),
+        "capture": capture(learned, oracle_test, none),
         "note": "the predictor's z_c is the mean of the frozen input embedding; "
                 "labels and verifier outcomes are never inputs",
     }
@@ -932,7 +1032,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--model-size", default="0.6b", choices=["0.6b", "1.7b"])
     parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
     parser.add_argument("--layers", default="all",
-                        help="`all` or a comma-separated candidate list")
+                        help="`all` uses the pre-registered candidate set "
+                             f"{CANDIDATE_LAYERS}; otherwise a comma-separated list")
     parser.add_argument("--epsilon", type=float, default=None,
                         help="absolute budget; omitted uses kappa_repair * median norm")
     parser.add_argument("--oracle-variant", choices=["surrogate", "verifier"],

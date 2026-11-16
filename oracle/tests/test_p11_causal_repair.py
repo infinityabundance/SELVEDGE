@@ -131,6 +131,25 @@ def test_the_transfer_gap_is_reported_on_a_structurally_different_student():
     assert transfer["capture"]["capture"] >= repair.TRANSFER_CAPTURE_KILL
 
 
+def test_the_lora_control_hook_is_zero_at_init_and_applies_the_documented_term():
+    lora = repair.DistributedLoRA(hidden=4, layers=2, rank=2)
+    hidden = torch.randn(2, 3, 4, generator=torch.Generator().manual_seed(21))
+    hook = lora.hook(0)
+    edited, extra = hook(None, None, (hidden, "state"))
+    assert torch.equal(edited, hidden)
+    assert extra == "state"
+    with torch.no_grad():
+        lora.up[0].normal_(std=0.1)
+    edited = hook(None, None, hidden)
+    assert torch.allclose(edited, lora.apply(hidden, 0))
+    assert lora.parameter_count() == 2 * 2 * 4 * 2
+    # a different layer's hook uses that layer's parameters
+    with torch.no_grad():
+        lora.up[1].normal_(std=0.1)
+    assert not torch.equal(lora.hook(0)(None, None, hidden),
+                           lora.hook(1)(None, None, hidden))
+
+
 def test_the_kill_condition_is_mechanical():
     weak = repair.kill_condition(
         {"capture": 0.4, "learned": 4, "oracle": 10, "baseline": 0})

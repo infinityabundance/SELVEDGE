@@ -2221,8 +2221,10 @@ Arms:
 2. **learned** — `C_theta(h_layer, z_c, layer) -> delta_hat`, the predictor below.
 3. **distributed LoRA (equal budget)** — rank
    `r = floor(P / (2 * 28 * 1024))` at every layer, where `P` is the predictor's
-   parameter count; same items, same token count, same optimiser steps. This is
-   the non-causal control.
+   parameter count; same items, same token count, same optimiser steps. Injected
+   with a forward hook that adds `((h A_l) B_l)` to each layer's output (`B`
+   starts at zero, so the arm starts at the frozen student). This is the
+   non-causal control.
 4. **all-layer adapters** — rank `8` at every layer, a declared, unmatched
    reference (more parameters than the predictor).
 5. **no adaptation** — the frozen student.
@@ -2230,8 +2232,13 @@ Arms:
 ## P11.1.2 The intervention and the budget (fixed now)
 
 The intervention adds one hidden-space vector to the **final position** of layer
-`layer`'s output. Candidate layers: **all 28 core layers**, 0-based, at the
-layer output. Budget:
+`layer`'s output, on at most the last `256` tokens of the item. Candidate
+layers for the 0.6B student are pre-registered as the eight layers
+**`{3, 7, 10, 14, 17, 21, 24, 27}`** (0-based, at the layer output), which span
+depth and include all four T2 memory insertion layers. Restricting the candidate
+set is a cost decision taken before measurement: 200 items x 8 layers x 60 steps
+is 96,000 intervention steps, and the oracle still chooses the earliest success
+among the candidates. The CPU fixture uses all blocks. Budget:
 
 ```
 epsilon_l = 0.10 * median_{items} || h_l(item) ||_2
@@ -2243,13 +2250,14 @@ failed run. The per-layer `epsilon_l` values are in the receipt.
 
 ## P11.1.3 Oracle definition
 
-For each failed item and layer: `150` projected Adam steps at `lr = 0.5` on
-`delta` minimising the cross-entropy to the verified label (surrogate variant), or
-a verifier-driven search over a fixed direction set (the identity basis plus 32
-seeded random unit directions) with a 4-point line search, reading only the
-verified outcome and its margin. The **bottleneck layer** is the **earliest**
-layer at which a bounded correction flips the verified outcome: correcting later
-can bypass the cause. The oracle's `repaired` count is the upper bound.
+For each failed item and layer: **`60` projected Adam steps** at `lr = 0.5` on
+`delta` minimising the cross-entropy to the verified label (surrogate variant),
+or a verifier-driven search over a fixed direction set (the identity basis plus
+32 seeded random unit directions) with a 4-point line search, reading only the
+verified outcome and its margin. The CPU fixture uses the tested `150`-step
+setting. The **bottleneck layer** is the **earliest** layer at which a bounded
+correction flips the verified outcome: correcting later can bypass the cause.
+The oracle's `repaired` count is the upper bound.
 
 ## P11.1.4 The learned predictor and its causal inputs
 
@@ -2281,6 +2289,10 @@ reported as `null`, never as one.
   target layer declared by that problem's own registration (not learned from its
   evaluation items). `transfer_capture = (learned - baseline)/(oracle - baseline)`
   on the new problem's test half. **Kill if `transfer_capture < 0.25`.**
+  **Scope stated now:** the 0.6B run has one problem family until a second
+  (`P12.9`) family is registered, so the transfer test is a CPU-fixture result at
+  this revision and the 0.6B claim is the capture comparison only. A second family
+  is required before the transfer condition can kill or confirm the 0.6B arm.
 - **Reported, not thresholded:** the learned-versus-oracle gap in repaired
   successes, the per-layer bottleneck histogram, the ratio of learned to
   distributed-LoRA repairs, VRAM and wall-clock per arm, and the predictor's
@@ -2348,13 +2360,16 @@ the reference's; the slack is reported and is not spent elsewhere.
 1. **Verified task success** (primary): the T2 instrument
    (HumanEval pass@1, GSM8K exact match, TruthfulQA MC1, composite `PC`).
 2. **Teacher KL** (co-primary): pooled compact and full-vocabulary KL, as A9.
-3. **Local Jacobian rank:** the numerical SVD rank of the layer's local
-   input→output Jacobian at one token per layer, at relative tolerance `1e-4`,
-   plus the participation-ratio effective rank, and the per-expert rank. The
-   analytic bound is reported with the measurement: for a shared projection the
-   layer rank is bounded by **`L`** (all active experts read the same rank-`L`
-   code), while the native reference is bounded by `min(k*512, 1024) = 1024`. A
-   measured rank at or below `L` is the expected result and is reported, not
+3. **Local Jacobian rank:** the numerical SVD rank of a **per-expert**
+   input→output Jacobian at a pre-registered sample of layers and experts
+   (`4` layers × `2` experts per arm, relative tolerance `1e-4`), plus the
+   participation-ratio effective rank. The layer's analytic bound is reported
+   with it: for a shared projection the whole-layer rank is bounded by **`L`**
+   (all active experts read the same rank-`L` code), while the native reference
+   is bounded by `min(k*512, 1024) = 1024`. The full layer Jacobian is measured
+   only when it is affordable (`--full-layer-jacobian`, and always in the CPU
+   fixtures); the real model's receipt names the sample it used. A measured
+   per-expert rank at or below `L` is the expected result and is reported, not
    hidden.
 4. **Utility diversity** under the **deployed** `k`-read
    (deployed-budget leave-one-selected-expert-out on a calibration slice):
