@@ -25,6 +25,7 @@ import os
 from dataclasses import dataclass, field
 
 from . import limits as limit_module
+from . import formats as format_module
 
 SCHEMA = "selvedge/capability-task/v1"
 SUITE_SCHEMA = "selvedge/capability-manifest/v1"
@@ -156,6 +157,10 @@ class Task:
             "kind": self.kind,
             "category": self.category,
             "difficulty": self.metadata.get("difficulty"),
+            "format": format_module.task_format(self),
+            "tier": format_module.tier_for(self),
+            "metric": format_module.metric_for(self),
+            "extraction_policy": format_module.extraction_policy(self),
             "capability": self.metadata["capability"],
             "license": self.metadata["license"],
             "tree_sha256": self.tree_sha256,
@@ -241,6 +246,9 @@ def load_task(root: str) -> Task:
     if "difficulty" in metadata and metadata["difficulty"] not in (
             "easy", "medium", "hard"):
         raise SuiteError(f"{where}: difficulty must be easy, medium or hard")
+    if "format" in metadata and metadata["format"] not in format_module.FORMATS:
+        raise SuiteError(f"{where}: format {metadata['format']!r} is not one of "
+                         f"{format_module.FORMATS}")
 
     limits = limit_module.from_mapping(metadata.get("limits"), f"{where}: limits")
     run_limits = None
@@ -276,9 +284,13 @@ def load_task(root: str) -> Task:
             raise SuiteError(
                 f"{where}: reference file {relative!r} is neither in initial/ nor a new src file")
 
-    return Task(root=root, metadata=metadata, limits=limits, run_limits=run_limits,
+    task = Task(root=root, metadata=metadata, limits=limits, run_limits=run_limits,
                 initial_files=initial_files, hidden_files=hidden_files,
                 reference_files=reference_files)
+    format_problems = format_module.validate_declaration(task)
+    if format_problems:
+        raise SuiteError("; ".join(format_problems))
+    return task
 
 
 def load_collection(directory: str) -> list[Task]:
@@ -310,6 +322,8 @@ def load_suite(root: str) -> dict:
 
 def render_prompt(task: Task) -> str:
     """The exact prompt handed to every arm. Deterministic in the fixture."""
+    if format_module.task_format(task) != format_module.FORMAT_FILE:
+        return format_module.render_prompt(task)
     parts = [task.metadata["prompt_intro"].strip(), "", "## Current files", ""]
     for relative in task.initial_files:
         parts.append(f"```text path={relative}")

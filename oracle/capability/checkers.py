@@ -24,10 +24,14 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 import tomllib
 
 from . import sandbox
 from .extract import path_problem
+
+#: The last line cargo prints for each test target.
+HIDDEN_SUMMARY = re.compile(r"test result: \w+\.\s*(?P<passed>\d+) passed;\s*(?P<failed>\d+) failed")
 
 
 class CheckerError(RuntimeError):
@@ -257,6 +261,41 @@ def _find_test_binary(workdir: str) -> str:
     return max(candidates, key=lambda path: os.path.getmtime(path))
 
 
+def run_hidden_tests(task, solution: dict, workroot: str, keep: bool = False) -> dict:
+    """Run only the harness-owned hidden tests, for partial credit (S28).
+
+    The primary checker is unchanged (`cargo test`, every restored test). This
+    second, targeted run exists so the *secondary* metric — the fraction of hidden
+    tests passed — can be counted even when the crate's own tests fail. It is a
+    secondary metric by registration: `court.check` records it under
+    `partial_credit` and never adds it to a composite.
+    """
+    workdir, problems = prepare(task, solution, workroot)
+    if problems:
+        return {"status": sandbox.STATUS_INVALID, "problems": problems, "counts": None}
+    reason = None
+    if sorted(task.hidden_files) != ["tests/check.rs"]:
+        reason = "the hidden tests are not a single tests/check.rs"
+    if reason:
+        if not keep:
+            sandbox.remove_tree(workdir)
+        return {"status": "unavailable", "counts": None, "reason": reason}
+    run = sandbox.run_bounded(
+        ["cargo", "test", "--test", "check", "--offline", "--quiet"],
+        workdir, task.limits)
+    text = run.stdout_tail + "\n" + run.stderr_tail
+    counts = None
+    matches = HIDDEN_SUMMARY.findall(text)
+    if matches:
+        found = HIDDEN_SUMMARY.finditer(text)
+        counts = {"passed": sum(int(match.group("passed")) for match in found),
+                  "failed": sum(int(match.group("failed"))
+                                for match in HIDDEN_SUMMARY.finditer(text))}
+    if not keep:
+        sandbox.remove_tree(workdir)
+    return {"status": run.status, "counts": counts, "evidence": run.as_dict()}
+
+
 def _compile_then_run(task, workdir: str) -> dict:
     if task.run_limits is None:
         raise CheckerError(f"{task.id}: compile_then_run needs run_limits")
@@ -290,8 +329,14 @@ def run_initial(task, workroot: str, keep: bool = False) -> dict:
     if problems:
         raise CheckerError(f"{task.id}: could not prepare the initial state: {problems}")
     if expected["kind"] == "compile_error":
-        run = sandbox.run_bounded(["cargo", "check", "--offline", "--quiet", "--lib"],
-                                  workdir, task.limits)
+        command = ["cargo", "check", "--offline", "--quiet", "--lib"]
+        if expected.get("command") == "all-targets":
+            # Derived patch items carry the missing function only in the inline
+            # visible test, so `--lib` alone would report success. The declared
+            # kind stays `compile_error`; only the command that observes it is
+            # wider.
+            command = ["cargo", "check", "--offline", "--quiet", "--all-targets"]
+        run = sandbox.run_bounded(command, workdir, task.limits)
     elif expected["kind"] == "test_failure":
         run = sandbox.run_bounded(["cargo", "test", "--offline", "--quiet"],
                                   workdir, task.limits)

@@ -33,6 +33,21 @@ def load_json(path: str) -> dict:
         return json.load(handle)
 
 
+def _pairs(values: list, flag: str) -> dict:
+    """Parse repeated NAME=PATH arguments, refusing duplicates and bare names."""
+    parsed: dict[str, str] = {}
+    for value in values:
+        if "=" not in value:
+            raise SystemExit(f"{flag} expects NAME=PATH, got {value!r}")
+        name, path = value.split("=", 1)
+        if not name or not path:
+            raise SystemExit(f"{flag} expects NAME=PATH, got {value!r}")
+        if name in parsed:
+            raise SystemExit(f"{flag} {name!r} was given twice")
+        parsed[name] = path
+    return parsed
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -97,6 +112,9 @@ def main(argv: list[str]) -> int:
                        help="comma-separated suite categories to score")
     check.add_argument("--min-category-items", type=int, default=court.MIN_CATEGORY_ITEMS,
                        help="refuse a category with fewer scored items (default: %(default)s)")
+    check.add_argument("--partial-credit", action="store_true",
+                       help="also run the hidden tests alone and record the fraction "
+                            "passed (secondary metric, never a decision input)")
 
     compare = subparsers.add_parser("compare")
     compare.add_argument("--arm", required=True)
@@ -126,6 +144,56 @@ def main(argv: list[str]) -> int:
     order.add_argument("--a", required=True)
     order.add_argument("--b", required=True)
     order.add_argument("--out", required=True)
+
+    diagnose = subparsers.add_parser(
+        "diagnose",
+        help="failure taxonomy from stored receipts (no model inference)")
+    diagnose.add_argument("--arm", action="append", default=[], metavar="NAME=DIR",
+                          help="an arm's directory holding generations.json and "
+                               "result.json; repeat for every arm")
+    diagnose.add_argument("--out", required=True)
+    diagnose.add_argument("--report", default=None,
+                          help="write the markdown report here")
+    diagnose.add_argument("--check", action="store_true",
+                          help="verify the report matches the receipt")
+    diagnose.add_argument("--recheck-limit", type=int, default=0,
+                          help="compile up to N tolerance-recovered stored answers "
+                               "(CPU, no forwards)")
+    diagnose.add_argument("--workroot", default="/work/target/capability-work")
+
+    derive = subparsers.add_parser(
+        "derive-formats",
+        help="derive body/patch/diagnostic/replacement items from the suite")
+    derive.add_argument("--out", required=True)
+    derive.add_argument("--split", default="calibration",
+                        choices=["calibration", "scored"])
+    derive.add_argument("--per-category", type=int, default=3)
+    derive.add_argument("--force", action="store_true")
+    derive.add_argument("--check", action="store_true")
+
+    verify = subparsers.add_parser(
+        "verify-formats",
+        help="compile the derived suite and prove every declared outcome")
+    verify.add_argument("--root", required=True)
+    verify.add_argument("--out", required=True)
+    verify.add_argument("--workroot", default="/work/target/capability-work")
+    verify.add_argument("--only", default=None,
+                        help="verify only tasks whose id contains this text")
+    verify.add_argument("--keep", action="store_true")
+    verify.add_argument("--prune", action="store_true",
+                        help="drop a candidate or option that the checker shows also "
+                             "passes, and drop an item left with too few choices")
+
+    calibrate = subparsers.add_parser(
+        "calibrate",
+        help="fit item difficulty and emit the calibrated suite version")
+    calibrate.add_argument("--registration", required=True)
+    calibrate.add_argument("--result", action="append", default=[],
+                           metavar="NAME=PATH",
+                           help="one checked result receipt per arm")
+    calibrate.add_argument("--out", required=True)
+    calibrate.add_argument("--suite-version-out", default=None)
+    calibrate.add_argument("--check", action="store_true")
 
     level3 = subparsers.add_parser("level3")
     level3.add_argument("--result", required=True)
@@ -217,7 +285,8 @@ def main(argv: list[str]) -> int:
                              preregistration=args.preregistration,
                              keep=args.keep, workroot=args.workroot,
                              categories=categories,
-                             min_category_items=args.min_category_items)
+                             min_category_items=args.min_category_items,
+                             partial_credit=args.partial_credit)
         scores = result["scores"]
         print(f"capability_court: composite {scores['primary_composite']:.4f} "
               f"[{scores['primary_ci']['ci_low']:.4f}, {scores['primary_ci']['ci_high']:.4f}]")
@@ -273,6 +342,108 @@ def main(argv: list[str]) -> int:
         if args.out:
             court.write_json_atomic(args.out, {"schema": "selvedge/capability-controls/v1",
                                                "rows": rows})
+        return 0
+
+    if args.command == "diagnose":
+        from . import diagnose as diagnose_module
+
+        arm_dirs = _pairs(args.arm, "--arm")
+        if not arm_dirs:
+            raise SystemExit("diagnose needs at least one --arm NAME=DIR")
+        if args.check:
+            receipt = load_json(args.out)
+            ok, message = diagnose_module.check_report(args.report, receipt)
+            print(f"capability_court: {message}")
+            return 0 if ok else 3
+        payload = diagnose_module.analyse(arm_dirs, args.suite,
+                                          recheck_limit=args.recheck_limit,
+                                          workroot=args.workroot)
+        payload.update({"stamp": court.stamp_now(), "created_utc": court.utc_now(),
+                        "revision": court.revision(REPO),
+                        "command": " ".join(sys.argv)})
+        court.write_json_atomic(args.out, payload)
+        if args.report:
+            diagnose_module.write(args.report,
+                                  diagnose_module.render_report(payload))
+        summary = payload["summary"]
+        print(f"capability_court: {summary['items']} arm/item outcomes from stored "
+              f"receipts -> {args.out}")
+        for arm, entry in summary["by_arm"].items():
+            print(f"  {arm:6s} items={entry['items']} passed={entry['passed']} "
+                  f"compiled={entry['compiled']} extracted={entry['strict_extracted']}")
+        return 0
+
+    if args.command == "derive-formats":
+        from . import derive as derive_module
+
+        if args.check:
+            ok, message = derive_module.check_derivation(args.out)
+            print(f"capability_court: {message}")
+            return 0 if ok else 3
+        payload = derive_module.derive(args.suite, args.out, split=args.split,
+                                       calibration_per_category=args.per_category,
+                                       force=args.force)
+        print(f"capability_court: derived {payload['counts']['items']} items from "
+              f"{payload['selection']['sources']} sources into {args.out}")
+        for fmt, count in sorted(payload["counts"]["by_format"].items()):
+            print(f"  {fmt:28s} {count}")
+        if payload["skipped"]:
+            print(f"  skipped {len(payload['skipped'])} derivations; see DERIVATION.json")
+        return 0
+
+    if args.command == "verify-formats":
+        from . import derive as derive_module
+
+        payload = derive_module.verify(args.root, args.workroot, only=args.only,
+                                       keep=args.keep, prune=args.prune)
+        payload.update({"stamp": court.stamp_now(), "created_utc": court.utc_now(),
+                        "revision": court.revision(REPO),
+                        "command": " ".join(sys.argv)})
+        court.write_json_atomic(args.out, payload)
+        print(f"capability_court: {payload['verdict']}; {payload['passed']}/"
+              f"{payload['tasks']} derived tasks verified -> {args.out}")
+        for failure in payload["failures"][:10]:
+            print(f"  {failure}")
+        return 0 if payload["verdict"] == "pass" else 1
+
+    if args.command == "calibrate":
+        from . import calibrate as calibrate_module
+
+        if args.check:
+            ok, message = calibrate_module.recheck_calibration(args.out)
+            print(f"capability_court: {message}")
+            if not ok:
+                return 3
+            if args.suite_version_out:
+                ok, message = calibrate_module.check_suite_version(
+                    args.suite_version_out, load_json(args.out))
+                print(f"capability_court: {message}")
+                if not ok:
+                    return 3
+            return 0
+        result_paths = _pairs(args.result, "--result")
+        if len(result_paths) < 2:
+            raise SystemExit("calibrate needs at least two --result NAME=PATH receipts")
+        results = {arm: load_json(path) for arm, path in result_paths.items()}
+        registration = load_json(args.registration)
+        registration["path"] = args.registration
+        registration["sha256"] = court.sha256_file(args.registration)
+        payload = calibrate_module.calibrate(
+            args.suite, results, registration,
+            calibration_receipt=os.path.abspath(args.out))
+        payload.update({"stamp": court.stamp_now(), "revision": court.revision(REPO),
+                        "command": " ".join(sys.argv)})
+        court.write_json_atomic(args.out, payload)
+        summary = payload["summary"]
+        print(f"capability_court: calibration {summary['accepted']} accepted, "
+              f"{summary['retired']} retired, {summary['diagnostic_items']} "
+              f"diagnostic -> {args.out}")
+        if args.suite_version_out:
+            version = calibrate_module.build_suite_version(
+                payload, court.revision(REPO))
+            calibrate_module._write_json(args.suite_version_out, version)
+            print(f"capability_court: calibrated suite version -> "
+                  f"{args.suite_version_out}")
         return 0
 
     if args.command == "level3":

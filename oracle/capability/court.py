@@ -31,6 +31,7 @@ import subprocess
 import sys
 
 from . import extract, stats, suite as suite_module
+from . import formats as format_module
 
 SCHEMA_GENERATIONS = "selvedge/capability-generations/v1"
 SCHEMA_RESULT = "selvedge/capability-result/v1"
@@ -236,6 +237,23 @@ def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_M
         raise CourtError("adapter returned a different number of generations")
 
     prereg_digest = sha256_file(preregistration) if preregistration else None
+    formats_summary = {
+        "by_format": {},
+        "by_tier": {},
+        "by_metric": {},
+        "extraction_policies": {},
+    }
+    for task in tasks:
+        fmt = format_module.task_format(task)
+        metric = format_module.metric_for(task)
+        tier = format_module.tier_for(task)
+        policy = format_module.extraction_policy(task)
+        formats_summary["by_format"][fmt] = formats_summary["by_format"].get(fmt, 0) + 1
+        formats_summary["by_tier"][tier] = formats_summary["by_tier"].get(tier, 0) + 1
+        formats_summary["by_metric"][metric] = (
+            formats_summary["by_metric"].get(metric, 0) + 1)
+        formats_summary["extraction_policies"][policy] = (
+            formats_summary["extraction_policies"].get(policy, 0) + 1)
     receipt = {
         "schema": SCHEMA_GENERATIONS,
         "stage": "generate",
@@ -249,6 +267,7 @@ def generate(adapter, suite_root: str, out: str, max_new_tokens: int = DEFAULT_M
             "suite_sha256": manifest["suite_sha256"],
             "counts": manifest["counts"],
             "prompt_hashes": suite_prompt_hashes(collections),
+            "formats": formats_summary,
         },
         "decoding": {
             "max_new_tokens": max_new_tokens,
@@ -292,6 +311,87 @@ def sha256_bytes(data: bytes) -> str:
 
 
 # ---------------------------------------------------------------------------
+# failure taxonomy (S28)
+
+#: Checker status -> taxonomy class. The classes are registered in
+#: `docs/CAPABILITY-COURT.md` §12; `diagnose` recomputes them from stored
+#: receipts and refuses a receipt whose recorded class disagrees.
+STATUS_CLASS = {
+    "pass": "pass",
+    "compile_error": "non_compiling",
+    "test_failed": "tests_failed",
+    "timeout": "timeout",
+    "oom": "oom",
+    "nonzero_exit": "nonzero_exit",
+    "error": "checker_error",
+}
+
+
+def failure_class_for(task, parsed, outcome) -> str:
+    """One primary failure class per item, plus flags (see `failure_flags_for`)."""
+    status = outcome.get("status")
+    if status == "pass":
+        return "pass"
+    if status == "invalid_solution":
+        return parsed.screen
+    if status in STATUS_CLASS:
+        return STATUS_CLASS[status]
+    return "other"
+
+
+def failure_flags_for(task, parsed, outcome, status) -> list:
+    flags = []
+    raw = parsed.flags or {}
+    if raw.get("length_capped") or raw.get("unterminated_fence"):
+        flags.append("truncated")
+    if raw.get("degenerate_repetition"):
+        flags.append("degenerate_repetition")
+    if parsed.screen == "empty_answer":
+        flags.append("empty")
+    if parsed.screen == "stub_returned":
+        flags.append("stub")
+    if parsed.screen == "wrong_file":
+        flags.append("wrong_file")
+    if status == "compile_error" and not raw.get("brace_counts_equal", True):
+        flags.append("unbalanced_braces")
+    solution = outcome.get("solution") or {}
+    if format_module.task_format(task) == format_module.FORMAT_FILE and solution:
+        unchanged = all(
+            path in task.initial_files
+            and solution[path].strip() == task.read_initial(path).strip()
+            for path in solution if not path.startswith("tests/"))
+        if unchanged:
+            flags.append("unchanged_initial")
+    return flags
+
+
+def _partial_credit(task, solution: dict, partial_runner) -> dict:
+    """Fraction of the hidden tests passed. Secondary, never the primary."""
+    if not solution:
+        return {"available": False, "reason": "no solution files to check"}
+    if sorted(task.hidden_files) != ["tests/check.rs"]:
+        return {"available": False,
+                "reason": "the hidden tests are not a single tests/check.rs"}
+    run = partial_runner(task, solution)
+    counts = run.get("counts") if isinstance(run, dict) else None
+    if not counts:
+        evidence = (run.get("evidence") or {}) if isinstance(run, dict) else {}
+        counts = evidence.get("counts")
+    if not counts:
+        return {"available": False,
+                "reason": f"the hidden-test run produced no counts ({run.get('status')})"}
+    total = int(counts.get("passed", 0)) + int(counts.get("failed", 0))
+    fraction = (counts.get("passed", 0) / total) if total else 0.0
+    return {"available": True,
+            "passed": int(counts.get("passed", 0)),
+            "failed": int(counts.get("failed", 0)),
+            "total": total,
+            "fraction": fraction,
+            "metric": "fraction_of_hidden_tests_passed",
+            "primary": False}
+
+
+# ---------------------------------------------------------------------------
 # stage 2: checking and scoring
 
 
@@ -299,10 +399,14 @@ def check(generations: dict, suite_root: str, out: str,
           preregistration: str | None = None, runner=None,
           keep: bool = False, workroot: str | None = None,
           categories: list | None = None,
-          min_category_items: int = MIN_CATEGORY_ITEMS) -> dict:
+          min_category_items: int = MIN_CATEGORY_ITEMS,
+          partial_credit: bool = False,
+          partial_runner=None) -> dict:
     from . import checkers
 
     runner = runner or (lambda task, files: checkers.run_check(
+        task, files, workroot or "/work/target/capability-work", keep=keep))
+    partial_runner = partial_runner or (lambda task, files: checkers.run_hidden_tests(
         task, files, workroot or "/work/target/capability-work", keep=keep))
     repo = os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
@@ -355,8 +459,10 @@ def check(generations: dict, suite_root: str, out: str,
 
     rows = []
     per_category: dict[str, list] = {}
+    per_diagnostic: dict[str, list] = {}
     per_surface: dict[str, list] = {}
     counts: dict[str, int] = {}
+    failure_classes: dict[str, int] = {}
     prompt_ok = True
     for task_id in sorted(tasks):
         task = tasks[task_id]
@@ -368,26 +474,53 @@ def check(generations: dict, suite_root: str, out: str,
         if recorded_prompt != expected_prompt:
             prompt_ok = False
         text = outputs[task_id]["output"]["text"]
-        extraction = extract.extract_files(
-            text, task.entry, task.allowed_paths(), task.manifest_policy)
-        if not extraction.ok:
-            outcome = {"status": "invalid_solution", "problems": extraction.rejected}
+        fmt = format_module.task_format(task)
+        metric = format_module.metric_for(task)
+        surface = (task.metadata.get("shared_operation") or {}).get("surface")
+        parsed = format_module.parse_answer(
+            task, text,
+            tokens_out=outputs[task_id]["output"].get("tokens_out"),
+            max_new_tokens=(generations.get("decoding") or {}).get("max_new_tokens"))
+        if not parsed.ok:
+            outcome = {"status": "invalid_solution", "problems": parsed.problems,
+                       "format": fmt, "metric": metric}
         else:
-            outcome = runner(task, extraction.files)
+            outcome = format_module.judge(task, parsed, runner)
         status = outcome.get("status", "error")
         counts[status] = counts.get(status, 0) + 1
         value = 1.0 if status == "pass" else 0.0
-        per_category.setdefault(task.category, []).append(value)
-        surface = (task.metadata.get("shared_operation") or {}).get("surface")
-        if surface:
-            per_surface.setdefault(surface, []).append(value)
+        failure_class = failure_class_for(task, parsed, outcome)
+        failure_classes[failure_class] = failure_classes.get(failure_class, 0) + 1
+        if metric == format_module.METRIC_DIAGNOSTIC:
+            per_diagnostic.setdefault(task.category, []).append(value)
+        else:
+            per_category.setdefault(task.category, []).append(value)
+            if surface:
+                per_surface.setdefault(surface, []).append(value)
+        partial = None
+        if partial_credit and parsed.ok:
+            partial = _partial_credit(task, outcome.get("solution") or {}, partial_runner)
         rows.append({
             "id": task_id,
             "category": task.category,
+            "format": fmt,
+            "tier": format_module.tier_for(task),
+            "metric": metric,
             "surface": surface,
             "status": status,
             "value": value,
-            "extraction": extraction.as_dict(),
+            "failure_class": failure_class,
+            "failure_flags": failure_flags_for(task, parsed, outcome, status),
+            "answer": parsed.as_dict(),
+            "partial_credit": partial,
+            "diagnostic": outcome.get("diagnostic"),
+            "choice": outcome.get("choice"),
+            "extraction": {"files": outcome.get("files", []),
+                           "mode": parsed.mode,
+                           "rejected": list(parsed.problems),
+                           "policy": format_module.extraction_policy(task),
+                           "notes": list(parsed.notes),
+                           "ok": parsed.ok},
             "tokens_out": outputs[task_id]["output"].get("tokens_out"),
             "latency_ms": outputs[task_id]["output"].get("latency_ms"),
             "evidence": {key: value for key, value in outcome.items()
@@ -401,15 +534,26 @@ def check(generations: dict, suite_root: str, out: str,
             },
         })
 
-    suite_categories = sorted({task.category for task in tasks.values()
-                               if task.kind == "suite"})
-    if not suite_categories:
+    all_suite_categories = sorted({task.category for task in tasks.values()
+                                  if task.kind == "suite"})
+    if not all_suite_categories:
         raise CourtError("the run selected no suite category")
+    uncovered = [category for category in all_suite_categories
+                 if category not in per_category and category not in per_diagnostic]
+    if uncovered:
+        raise CourtError(f"the run did not cover categories {uncovered}")
     scored = {category: per_category.get(category, [])
-              for category in suite_categories}
-    empty_categories = [category for category, values in scored.items() if not values]
-    if empty_categories:
-        raise CourtError(f"the run did not cover categories {empty_categories}")
+              for category in all_suite_categories
+              if per_category.get(category)}
+    if not scored:
+        raise CourtError("the run covered no category with an executable item")
+    suite_categories = list(scored)
+    diagnostic_report = {
+        category: dict(stats.bootstrap_mean(values),
+                       items=len(values),
+                       metric=format_module.METRIC_DIAGNOSTIC)
+        for category, values in sorted(per_diagnostic.items())
+    }
 
     category_report = {
         category: dict(
@@ -486,6 +630,21 @@ def check(generations: dict, suite_root: str, out: str,
                                             for value in values]),
             "trio": trio,
             "trio_all_surfaces": trio_all,
+            "verified_diagnostic": {
+                "metric": format_module.METRIC_DIAGNOSTIC,
+                "by_category": diagnostic_report,
+                "items": sum(entry["items"] for entry in diagnostic_report.values()),
+                "mean": (sum(entry["mean"] * entry["items"]
+                             for entry in diagnostic_report.values())
+                         / max(1, sum(entry["items"]
+                                      for entry in diagnostic_report.values()))),
+                "pooled_with_primary": False,
+                "statement": (
+                    "a verified diagnosis is not executable task success; this metric "
+                    "is reported separately and never enters the primary composite"),
+            },
+            "formats": (generations.get("suite") or {}).get("formats"),
+            "failure_classes": dict(sorted(failure_classes.items())),
             "counts": counts,
             "items": sum(counts.values()),
         },

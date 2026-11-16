@@ -32,7 +32,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORACLE = os.path.join(REPO, "oracle")
 sys.path.insert(0, ORACLE)
 
-from capability import checkers, sandbox, suite  # noqa: E402
+from capability import checkers, formats, sandbox, suite  # noqa: E402
 from capability import limits as limit_module  # noqa: E402
 
 SCHEMA = "selvedge/capability-selftest/v1"
@@ -179,9 +179,21 @@ def main(argv: list[str]) -> int:
             failures.append(f"{task.id}: the reference did not build for the build-time "
                             f"measurement ({build['status']})")
 
-        mutated, mutation = checkers.mutate_reference(task)
-        wrong = checkers.run_check(task, mutated, args.workroot, keep=args.keep)
-        mutation_failed = wrong["status"] != sandbox.STATUS_PASS
+        mutated, mutation = None, None
+        try:
+            mutated, mutation = checkers.mutate_reference(task)
+        except checkers.CheckerError as exc:
+            if formats.task_format(task) != formats.FORMAT_DIAGNOSTIC:
+                raise
+            # A diagnostic item's discrimination evidence is the option
+            # consequences verified by `verify-formats`, not a text mutation.
+            mutation = {"skipped": str(exc)}
+        if mutated is None:
+            mutation_failed = True
+            wrong = {"status": "skipped", "evidence": {"workdir_bytes": 0}}
+        else:
+            wrong = checkers.run_check(task, mutated, args.workroot, keep=args.keep)
+            mutation_failed = wrong["status"] != sandbox.STATUS_PASS
         mutation_ok += 1 if mutation_failed else 0
         if not mutation_failed:
             failures.append(f"{task.id}: the declared mutation passed the checker; "

@@ -576,11 +576,22 @@ class HFAdapter(Adapter):
                 )
             elapsed = (time.monotonic_ns() - began) // 1_000_000
             new_tokens = generated[:, encoded["input_ids"].shape[1]:]
-            for offset, text in enumerate(
-                    tokenizer.batch_decode(new_tokens, skip_special_tokens=True)):
+            pad = tokenizer.pad_token_id
+            eos = tokenizer.eos_token_id
+            for row in new_tokens.tolist():
+                length = len(row)
+                while length and pad is not None and row[length - 1] == pad:
+                    length -= 1
+                ended = bool(length and eos is not None and row[length - 1] == eos)
+                if length >= max_new:
+                    finish_reason = "length"
+                elif ended:
+                    finish_reason = "eos"
+                else:
+                    finish_reason = "stop"
                 results.append(Generation(
-                    text=text, finish_reason="stop",
-                    tokens_out=int(new_tokens.shape[1]),
+                    text=tokenizer.decode(row[:length], skip_special_tokens=True),
+                    finish_reason=finish_reason, tokens_out=int(length),
                     latency_ms=elapsed // max(1, len(chunk))))
         return results
 
@@ -621,10 +632,28 @@ def greedy_generate(model, tokenizer, requests: list, device, batch: int) -> lis
             )
         elapsed = (time.monotonic_ns() - began) // 1_000_000
         new_tokens = generated[:, encoded["input_ids"].shape[1]:]
-        for text in tokenizer.batch_decode(new_tokens, skip_special_tokens=True):
+        pad = tokenizer.pad_token_id
+        eos = tokenizer.eos_token_id
+        rows = new_tokens.tolist()
+        for index, row in enumerate(rows):
+            length = len(row)
+            while length and pad is not None and row[length - 1] == pad:
+                length -= 1
+            ended = bool(length and eos is not None and row[length - 1] == eos)
+            # S28: the stored receipts recorded `finish_reason: "stop"` and a
+            # batch-wide token count for every item, so a 3072-token truncation
+            # could not be told from an EOS stop. The length and the reason are
+            # per item now; `length` means the token cap, not a stop string.
+            if length >= max_new:
+                finish_reason = "length"
+            elif ended:
+                finish_reason = "eos"
+            else:
+                finish_reason = "stop"
+            text = tokenizer.decode(row[:length], skip_special_tokens=True)
             results.append(Generation(
-                text=text, finish_reason="stop",
-                tokens_out=int(new_tokens.shape[1]),
+                text=text, finish_reason=finish_reason,
+                tokens_out=int(length),
                 latency_ms=elapsed // max(1, len(chunk))))
     return results
 
