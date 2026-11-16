@@ -1017,16 +1017,30 @@ scored, not items requested.
 <!-- BEGIN GENERATED: report-anchor-scoreboard -->
 | task | metric | n | few-shot | batch | anchor | SE | 2B | SE |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `mmlu_pro` | `exact_match,custom-extract` | 504 | 5 | 8 | 27.58 | 1.98 | pending | pending |
-| `mmlu` | `acc,none` | 14042 | 5 | 2 | 48.22 | 0.41 | pending | pending |
-| `gsm8k` | `exact_match,strict-match` | 1319 | 5 | 8 | 38.82 | 1.34 | pending | pending |
-| `minerva_math500` | `math_verify,none` | 500 | 4 | 8 | 23.40 | 1.90 | pending | pending |
-| `humaneval` | `pass@1,create_test` | 164 | 0 | 8 | 20.73 | 3.18 | pending | pending |
-| `ifeval` | `prompt_level_strict_acc,none` | 541 | 0 | 8 | 26.06 | 1.89 | pending | pending |
-| `arc_challenge` | `acc_norm,none` | 1172 | 25 | 4 | 43.26 | 1.45 | pending | pending |
-| `triviaqa` | `exact_match,remove_whitespace` | 1000 | 5 | 8 | 19.60 | 1.26 | pending | pending |
+| `mmlu_pro` | `exact_match,custom-extract` | 504 | 5 | 8 | 27.58 | 1.98 | 38.29 | 2.14 |
+| `mmlu` | `acc,none` | 14042 | 5 | 2 | 48.22 | 0.41 | 53.95 | 0.41 |
+| `gsm8k` | `exact_match,strict-match` | 1319 | 5 | 8 | 38.82 | 1.34 | 59.67 | 1.35 |
+| `minerva_math500` | `math_verify,none` | 500 | 4 | 8 | 23.40 | 1.90 | 35.20 | 2.14 |
+| `humaneval` | `pass@1,create_test` | 164 | 0 | 8 | 20.73 | 3.18 | 31.71 | 3.64 |
+| `ifeval` | `prompt_level_strict_acc,none` | 541 | 0 | 8 | 26.06 | 1.89 | 34.01 | 2.04 |
+| `arc_challenge` | `acc_norm,none` | 1172 | 25 | 4 | 43.26 | 1.45 | 54.18 | 1.46 |
+| `triviaqa` | `exact_match,remove_whitespace` | 1000 | 5 | 8 | 19.60 | 1.26 | 30.50 | 1.46 |
 
-No gap receipt exists yet: the upper-end run has not been scored, so no gap is claimed.
+| task | family | anchor | 2B | gap (pp) | half gap (pp) | target = anchor + half |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `mmlu_pro` | knowledge | 27.58 | 38.29 | 10.71 | 5.36 | 32.94 |
+| `mmlu` | knowledge | 48.22 | 53.95 | 5.73 | 2.87 | 51.09 |
+| `gsm8k` | math | 38.82 | 59.67 | 20.85 | 10.42 | 49.24 |
+| `minerva_math500` | math | 23.40 | 35.20 | 11.80 | 5.90 | 29.30 |
+| `humaneval` | — | 20.73 | 31.71 | 10.98 | 5.49 | 26.22 |
+| `ifeval` | — | 26.06 | 34.01 | 7.95 | 3.97 | 30.04 |
+| `arc_challenge` | — | 43.26 | 54.18 | 10.92 | 5.46 | 48.72 |
+| `triviaqa` | — | 19.60 | 30.50 | 10.90 | 5.45 | 25.05 |
+
+| family | members | anchor mean | 2B mean | gap (pp) | half gap (pp) | target |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| knowledge | `mmlu_pro`, `mmlu` | 37.90 | 46.12 | 8.22 | 4.11 | 42.01 |
+| math | `gsm8k`, `minerva_math500` | 31.11 | 47.43 | 16.32 | 8.16 | 39.27 |
 <!-- END GENERATED: report-anchor-scoreboard -->
 
 **The three defects this stage hit, and what they changed.** A group-task `limit`
@@ -1040,10 +1054,28 @@ n=8 — the silent-zero guard fired, the logged samples showed a well-formed pro
 and working extraction, and a hundred-item probe scored non-zero, so the zero was
 sampling, not a defect.
 
+**What the families mean for the registered win condition.** The two families are
+the registered ones: knowledge is MMLU-Pro and MMLU, math is GSM8K and MATH-500,
+each an unweighted mean of its two tasks. ARC-Challenge, TriviaQA, HumanEval and
+IFEval are anchored and their per-task gaps are printed, but they are *not*
+family members — the win condition was registered over two tasks per family and
+widening a family after seeing the scores is the move this whole apparatus exists
+to prevent. The knowledge gap is short and the math gap is long, so "half the gap
+on one family" is a far cheaper target on knowledge; that asymmetry is worth
+knowing before a training run rather than after.
+
+**What remains.** The target model itself — nothing in this section is trained, and
+the two checkpoints scored here are the anchor and its reference. The gated and
+non-OSI reference models stay unscored (`google/gemma-3-1b-it` answers 401 to
+anonymous requests; `LiquidAI/LFM2.5-1.2B-Instruct` is under the LFM Open License
+v1.0). The Rust DeltaNet kernels still gate stages 5–6 of WS19, and this scoreboard
+does not exercise them: the harness runs the transformers reference implementation
+of the gated delta rule, which is the exact path and the slow one.
+
 **What this does not establish.** Not quality for the hybrid architecture: the 2B
 reference's text tower is over the ceiling, so the gap here is a capability gap
 and not a compliant-parameter gap. Not tournament-grade precision on the
-subsampled tasks, whose standard errors are printed beside them. And not coverage
-of the reference models that cannot be fetched or licensed (`google/gemma-3-1b-it`
-is gated; `LiquidAI/LFM2.5-1.2B-Instruct` is non-OSI), which are recorded as
-exclusions rather than silently skipped.
+subsampled tasks, whose standard errors are printed beside them. And not a
+significance test — the family means inherit the sampling error of both members,
+and no confidence interval is claimed on the gap beyond the per-task standard
+errors that the harness itself reports.

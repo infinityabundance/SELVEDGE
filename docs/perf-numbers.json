@@ -11351,6 +11351,42 @@
     "pointer": "/endpoint/minimum_absolute_effect",
     "receipt": "results/capability/endpoint-amendment-20261116T193000Z.json"
    }
+  },
+  {
+   "declared_receipt_stamp": "20261116T193052Z",
+   "declared_revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+   "doc": "docs/FRONTIER-TARGET.md",
+   "format": "{value}",
+   "id": "frontier-2b-fetch-cache-free-before",
+   "sentinel": "frontier-2b-fetch-cache-free-before",
+   "source": {
+    "pointer": "/cache_free_bytes_before",
+    "receipt": "results/frontier-models/20261116-s36-fetch-qwen35-2b-base.json"
+   }
+  },
+  {
+   "declared_receipt_stamp": "20261116T193052Z",
+   "declared_revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+   "doc": "docs/FRONTIER-TARGET.md",
+   "format": "{value}",
+   "id": "frontier-2b-fetch-cache-free-after",
+   "sentinel": "frontier-2b-fetch-cache-free-after",
+   "source": {
+    "pointer": "/cache_free_bytes_after",
+    "receipt": "results/frontier-models/20261116-s36-fetch-qwen35-2b-base.json"
+   }
+  },
+  {
+   "declared_receipt_stamp": "20261116T193052Z",
+   "declared_revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+   "doc": "docs/FRONTIER-TARGET.md",
+   "format": "{value}",
+   "id": "frontier-2b-fetch-requested-bytes",
+   "sentinel": "frontier-2b-fetch-requested-bytes",
+   "source": {
+    "pointer": "/requested_bytes",
+    "receipt": "results/frontier-models/20261116-s36-fetch-qwen35-2b-base.json"
+   }
   }
  ],
  "external_regions": [
@@ -11374,7 +11410,8 @@
    "owner": "scripts/s36_scoreboard.py",
    "sentinels": [
     "frontier-anchor-scoreboard",
-    "frontier-anchor-gap"
+    "frontier-anchor-gap",
+    "frontier-anchor-launch"
    ]
   },
   {

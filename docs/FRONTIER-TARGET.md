@@ -709,6 +709,37 @@ magnitude as the checkpoint itself; a `docs/STORAGE.md` bundle adds its index an
 digest overhead. This is why the plan budgets one derived bundle for the anchor,
 not one per stage.
 
+### The 2B fetch decision, measured (S36)
+
+The rule for this session was explicit: fetch the gap reference only if it fits
+with ten gibibytes of headroom left on the cache filesystem. It was fetched, and
+the accounting is a receipt rather than a sentence. Cache free bytes before the
+fetch:
+
+<!-- BEGIN GENERATED: frontier-2b-fetch-cache-free-before -->
+20333662208
+<!-- END GENERATED: frontier-2b-fetch-cache-free-before -->
+
+bytes the fetch asked for (the tree's declared total for the files it downloads):
+
+<!-- BEGIN GENERATED: frontier-2b-fetch-requested-bytes -->
+4567836299
+<!-- END GENERATED: frontier-2b-fetch-requested-bytes -->
+
+cache free bytes after it:
+
+<!-- BEGIN GENERATED: frontier-2b-fetch-cache-free-after -->
+15785103360
+<!-- END GENERATED: frontier-2b-fetch-cache-free-after -->
+
+Receipt: `results/frontier-models/20261116-s36-fetch-qwen35-2b-base.json`, which
+also records that the branch head at fetch time **was** the pinned revision (so
+nothing moved under the pin) and that the shard's computed sha256 equals the
+Hub's LFS oid. The headroom that remained is the difference between the last two
+numbers; it is above ten gibibytes, which is the condition the decision was
+taken under. The fetch ran in the eval court, one model at a time, with its own
+memory limit — no two downloads or scorings ever overlapped.
+
 ### Recommendation
 
 **Superseded 2026-11-16 (S35): the route is online teacher forwards, not a cache.**
@@ -828,14 +859,14 @@ primary metric; `n` is the number of scored items, not the number requested.
 <!-- BEGIN GENERATED: frontier-anchor-scoreboard -->
 | task | metric | n | few-shot | batch | anchor | SE | 2B | SE |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `mmlu_pro` | `exact_match,custom-extract` | 504 | 5 | 8 | 27.58 | 1.98 | pending | pending |
-| `mmlu` | `acc,none` | 14042 | 5 | 2 | 48.22 | 0.41 | pending | pending |
-| `gsm8k` | `exact_match,strict-match` | 1319 | 5 | 8 | 38.82 | 1.34 | pending | pending |
-| `minerva_math500` | `math_verify,none` | 500 | 4 | 8 | 23.40 | 1.90 | pending | pending |
-| `humaneval` | `pass@1,create_test` | 164 | 0 | 8 | 20.73 | 3.18 | pending | pending |
-| `ifeval` | `prompt_level_strict_acc,none` | 541 | 0 | 8 | 26.06 | 1.89 | pending | pending |
-| `arc_challenge` | `acc_norm,none` | 1172 | 25 | 4 | 43.26 | 1.45 | pending | pending |
-| `triviaqa` | `exact_match,remove_whitespace` | 1000 | 5 | 8 | 19.60 | 1.26 | pending | pending |
+| `mmlu_pro` | `exact_match,custom-extract` | 504 | 5 | 8 | 27.58 | 1.98 | 38.29 | 2.14 |
+| `mmlu` | `acc,none` | 14042 | 5 | 2 | 48.22 | 0.41 | 53.95 | 0.41 |
+| `gsm8k` | `exact_match,strict-match` | 1319 | 5 | 8 | 38.82 | 1.34 | 59.67 | 1.35 |
+| `minerva_math500` | `math_verify,none` | 500 | 4 | 8 | 23.40 | 1.90 | 35.20 | 2.14 |
+| `humaneval` | `pass@1,create_test` | 164 | 0 | 8 | 20.73 | 3.18 | 31.71 | 3.64 |
+| `ifeval` | `prompt_level_strict_acc,none` | 541 | 0 | 8 | 26.06 | 1.89 | 34.01 | 2.04 |
+| `arc_challenge` | `acc_norm,none` | 1172 | 25 | 4 | 43.26 | 1.45 | 54.18 | 1.46 |
+| `triviaqa` | `exact_match,remove_whitespace` | 1000 | 5 | 8 | 19.60 | 1.26 | 30.50 | 1.46 |
 <!-- END GENERATED: frontier-anchor-scoreboard -->
 
 Reading notes that are claims about the instrument rather than the models:
@@ -856,7 +887,21 @@ The registered win condition is "close at least half the gap on one family". The
 arithmetic it needs is per task and per family:
 
 <!-- BEGIN GENERATED: frontier-anchor-gap -->
-No gap receipt exists yet: the upper-end run has not been scored, so no gap is claimed.
+| task | family | anchor | 2B | gap (pp) | half gap (pp) | target = anchor + half |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `mmlu_pro` | knowledge | 27.58 | 38.29 | 10.71 | 5.36 | 32.94 |
+| `mmlu` | knowledge | 48.22 | 53.95 | 5.73 | 2.87 | 51.09 |
+| `gsm8k` | math | 38.82 | 59.67 | 20.85 | 10.42 | 49.24 |
+| `minerva_math500` | math | 23.40 | 35.20 | 11.80 | 5.90 | 29.30 |
+| `humaneval` | — | 20.73 | 31.71 | 10.98 | 5.49 | 26.22 |
+| `ifeval` | — | 26.06 | 34.01 | 7.95 | 3.97 | 30.04 |
+| `arc_challenge` | — | 43.26 | 54.18 | 10.92 | 5.46 | 48.72 |
+| `triviaqa` | — | 19.60 | 30.50 | 10.90 | 5.45 | 25.05 |
+
+| family | members | anchor mean | 2B mean | gap (pp) | half gap (pp) | target |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| knowledge | `mmlu_pro`, `mmlu` | 37.90 | 46.12 | 8.22 | 4.11 | 42.01 |
+| math | `gsm8k`, `minerva_math500` | 31.11 | 47.43 | 16.32 | 8.16 | 39.27 |
 <!-- END GENERATED: frontier-anchor-gap -->
 
 Family means are the **unweighted** mean of the member task scores, fixed in the
@@ -864,11 +909,51 @@ pre-registration before any score existed, because weighting by item count would
 let MMLU's full test set decide a family mean that GSM8K is equally supposed to
 describe.
 
+Only the registered member lists define a family. ARC-Challenge, TriviaQA,
+HumanEval and IFEval are anchored tasks and their gaps are printed above, but they
+are deliberately **not** members of either family: the win condition was
+registered over two tasks per family, and quietly widening a family after seeing
+the scores is exactly the kind of move this document exists to prevent. Their
+per-task targets are printed so a later stage can use them if it wants, labelled
+as per-task rather than as a family.
+
+The two families pull in different directions. The knowledge family is a short
+gap and the math family a long one, so "half the gap on one family" is a much
+cheaper target on knowledge than on math — which is worth knowing *before* a
+training run rather than after, and is the main reason this scoreboard exists.
+
+### The launch record
+
+Both models were scored one at a time, each in its own court invocation, each
+with an explicit memory limit sized from a measured peak rather than from a
+default. The numbers below are read from the two run receipts, not typed:
+
+<!-- BEGIN GENERATED: frontier-anchor-launch -->
+| run | model | container limit | container peak (B) | device peak (GiB) | device total (GiB) |
+| --- | --- | --- | ---: | ---: | ---: |
+| anchor | `Qwen/Qwen3.5-0.8B-Base` | 8g | n/a (assembled) | 10.05 | n/a |
+| gap reference | `Qwen/Qwen3.5-2B-Base` | 12g | 7195586560 | 12.15 | 15.61 |
+<!-- END GENERATED: frontier-anchor-launch -->
+
+The anchor's limit is its smoke's measured container peak times 1.5 plus a 1 GiB
+floor margin, which lands under the court default it was given. The gap
+reference's limit is the anchor's measured peak scaled by the ratio of the two
+checkpoints' weight bytes, times 1.5 plus the same margin; its measured peak came
+in under that limit, so the arithmetic held. The device peak is the largest
+`torch.cuda.max_memory_allocated` over that run's tasks, taken from the receipt —
+MMLU's loglikelihood batch sets it, which is why that batch size is the small one.
+Host `MemAvailable` was checked before each launch, and the two runs never
+touched the GPU at the same time.
+
+The 2B reference completed in a single invocation. The anchor's receipt is an
+assembly of two invocations with an `assembly` block and per-entry `invocations`
+provenance, for the reason recorded there.
+
 One arithmetic caveat that belongs next to the table rather than in a footnote:
 the win condition is a statement about *scores on this instrument*, and a family
 mean over two tasks inherits the sampling error of both. The gap is large enough
-on the families below that no plausible standard-error combination reverses its
-sign, but "half the gap" is a scoreboard target, not a significance test.
+on both families that no plausible standard-error combination reverses its sign,
+but "half the gap" is a scoreboard target, not a significance test.
 
 ### Determinism, and what would make a number a defect
 
@@ -882,9 +967,11 @@ Three failure modes are checked rather than assumed:
    harness defect. That diagnosis is what makes the reported number recordable.
 2. **A drifted config.** `gap` refuses receipts whose pre-registration digest
    differs, and the scoreboard generator refuses to mix two runs of one model.
-3. **A stale table.** The three table regions are owned by
-   `scripts/s36_scoreboard.py`, which fails closed when a block does not match the
-   receipts on disk.
+3. **A stale table.** The four generated regions are owned by
+   `scripts/s36_scoreboard.py`, which fails closed when a body does not match the
+   receipts on disk, and are declared as external regions in
+   `docs/perf-numbers.json` so the perf-numbers court refuses a generated region
+   with no owner.
 
 ### What this section does not establish
 

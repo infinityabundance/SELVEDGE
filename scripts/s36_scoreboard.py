@@ -47,6 +47,7 @@ PREREG_REL = "docs/anchor-preregistration-v1.json"
 REGIONS = (
     ("frontier-anchor-scoreboard", "docs/FRONTIER-TARGET.md"),
     ("frontier-anchor-gap", "docs/FRONTIER-TARGET.md"),
+    ("frontier-anchor-launch", "docs/FRONTIER-TARGET.md"),
     ("report-anchor-scoreboard", "results/REPORT.md"),
 )
 
@@ -133,6 +134,34 @@ def render_scoreboard(repo: str, prereg: dict, anchor: dict | None, upper: dict 
     return lines
 
 
+def render_launch(repo: str, prereg: dict, anchor: dict | None, upper: dict | None) -> list[str]:
+    lines = [
+        "| run | model | container limit | container peak (B) | device peak (GiB) | device total (GiB) |",
+        "| --- | --- | --- | ---: | ---: | ---: |",
+    ]
+    for label, receipt in (("anchor", anchor), ("gap reference", upper)):
+        if receipt is None:
+            lines.append(f"| {label} | pending | pending | pending | pending | pending |")
+            continue
+        peaks = [
+            entry.get("peak_memory_allocated_bytes")
+            for entry in receipt["tasks"]
+            if entry.get("peak_memory_allocated_bytes")
+        ]
+        device_peak = max(peaks) / 2**30 if peaks else None
+        total = (receipt.get("device") or {}).get("total_memory_bytes")
+        cgroup = receipt.get("cgroup") or {}
+        cgroup_peak = cgroup.get("memory.peak")
+        limit = (receipt.get("court") or {}).get("memory_limit", "unknown")
+        lines.append(
+            f"| {label} | `{receipt['model']['id']}` | {limit} | "
+            f"{cgroup_peak if cgroup_peak not in (None, '') else 'n/a (assembled)'} | "
+            f"{f'{device_peak:.2f}' if device_peak else 'n/a'} | "
+            f"{f'{total / 2**30:.2f}' if total else 'n/a'} |"
+        )
+    return lines
+
+
 def render_gap(repo: str, prereg: dict, gap: dict | None) -> list[str]:
     if gap is None:
         return ["No gap receipt exists yet: the upper-end run has not been scored, so no gap is claimed."]
@@ -142,7 +171,7 @@ def render_gap(repo: str, prereg: dict, gap: dict | None) -> list[str]:
     ]
     for row in gap["tasks"]:
         lines.append(
-            f"| `{row['task']}` | {row['family']} | {row['anchor_score'] * 100:.2f} | "
+            f"| `{row['task']}` | {row['family'] or '—'} | {row['anchor_score'] * 100:.2f} | "
             f"{row['upper_score'] * 100:.2f} | {row['gap_pp']:.2f} | {row['half_gap_pp']:.2f} | "
             f"{row['anchor_plus_half_gap_pp']:.2f} |"
         )
@@ -169,6 +198,8 @@ def render(region_id: str, repo: str, prereg: dict, anchor: dict | None, upper: 
         return "\n".join(lines)
     if region_id == "frontier-anchor-gap":
         return "\n".join(render_gap(repo, prereg, gap))
+    if region_id == "frontier-anchor-launch":
+        return "\n".join(render_launch(repo, prereg, anchor, upper))
     raise Failure(f"unknown region {region_id!r}")
 
 
@@ -214,7 +245,7 @@ def check(repo: str, args) -> int:
             print(f"scoreboard: STALE {rel}:{region_id} — run --write", file=sys.stderr)
     if failures:
         return 1
-    print("scoreboard: all three regions match their receipts")
+    print(f"scoreboard: all {len(REGIONS)} regions match their receipts")
     return 0
 
 

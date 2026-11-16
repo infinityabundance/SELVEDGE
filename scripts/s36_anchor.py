@@ -1057,6 +1057,12 @@ def cmd_gap(args) -> int:
 
 
     families = prereg["families"]
+    # Family membership comes from the registered `families` block, not from the
+    # per-task descriptive tag: the win condition is defined over those member
+    # lists, and a task can carry a broader label than the family it belongs to.
+    family_of = {
+        member: family["name"] for family in families for member in family.get("members", [])
+    }
     rows = []
     skipped = []
     for task in prereg["tasks"]:
@@ -1067,7 +1073,7 @@ def cmd_gap(args) -> int:
             skipped.append(
                 {
                     "task": name,
-                    "family": task["family"],
+                    "family": family_of.get(name),
                     "anchor_scored": low is not None,
                     "upper_scored": high is not None,
                     "reason": "a gap is only defined for a task both models scored under this config",
@@ -1080,7 +1086,9 @@ def cmd_gap(args) -> int:
         rows.append(
             {
                 "task": name,
-                "family": task["family"],
+                "family": family_of.get(name),
+                "task_label_family": task["family"],
+                "registered_family_membership": family_of.get(name),
                 "metric": low["primary_metric"],
                 "anchor_score": low["score"],
                 "anchor_stderr": low["stderr"],
@@ -1100,10 +1108,10 @@ def cmd_gap(args) -> int:
 
     family_rows = []
     for family in families:
-        members = [row for row in rows if row["family"] == family["name"]]
+        expected = family.get("members") or []
+        members = [row for row in rows if row["task"] in expected]
         if not members:
             continue
-        expected = family.get("members") or []
         low = sum(member["anchor_score"] for member in members) / len(members)
         high = sum(member["upper_score"] for member in members) / len(members)
         family_rows.append(
