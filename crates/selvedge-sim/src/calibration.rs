@@ -572,7 +572,7 @@ pub struct Calibration {
     /// Always [`CALIBRATION_SCHEMA`].
     pub schema: String,
     /// Creation stamp.
-    pub created_utc: String,
+    pub stamp: String,
     /// Revision the inputs were produced at.
     pub revision: String,
     /// Input files, hashed.
@@ -842,7 +842,7 @@ pub fn calibrate(
     let size_law = SizeLaw::fit(points, &io_scan_path.display().to_string())?;
     Ok(Calibration {
         schema: CALIBRATION_SCHEMA.to_owned(),
-        created_utc: stamp.to_owned(),
+        stamp: stamp.to_owned(),
         revision: revision.to_owned(),
         inputs: refs,
         shard_bytes,

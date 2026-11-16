@@ -291,7 +291,7 @@ impl CalibrationRef {
     #[must_use]
     pub fn of(calibration: &Calibration) -> Self {
         Self {
-            stamp: calibration.created_utc.clone(),
+            stamp: calibration.stamp.clone(),
             revision: calibration.revision.clone(),
             shard_bytes: calibration.shard_bytes,
             transfer_p50_ns: calibration.transfer.p50,
@@ -405,7 +405,7 @@ pub struct SimReport {
     /// Always [`SIM_REPORT_SCHEMA`].
     pub schema: String,
     /// Creation stamp.
-    pub created_utc: String,
+    pub stamp: String,
     /// Repository revision.
     pub revision: String,
     /// Trace identifier.
@@ -493,7 +493,7 @@ pub fn report(
 ) -> SimReport {
     SimReport {
         schema: SIM_REPORT_SCHEMA.to_owned(),
-        created_utc: stamp.to_owned(),
+        stamp: stamp.to_owned(),
         revision: revision.to_owned(),
         trace_id: trace.manifest.trace_id.clone(),
         trace_sha256: trace.manifest.records_sha256.to_hex(),

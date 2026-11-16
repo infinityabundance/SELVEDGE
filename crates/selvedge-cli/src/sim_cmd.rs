@@ -394,6 +394,9 @@ pub(crate) struct CompareStoreArgs {
     /// Output comparison JSON.
     #[arg(long)]
     pub(crate) out: PathBuf,
+    /// Environment note recorded verbatim in the receipt.
+    #[arg(long, default_value = "unrecorded")]
+    pub(crate) environment: String,
     /// Stamp.
     #[arg(long, default_value = "19700101T000000Z")]
     pub(crate) stamp: String,
@@ -667,9 +670,11 @@ fn run_trace_export(args: &TraceExportArgs) -> CliResult {
         None
     };
     let mut records = Vec::new();
-    let source = if args.metrics.is_some() || args.receipt.is_some() {
+    let source = if args.metrics.is_some() {
         TraceSource::Measured
     } else {
+        // A fixture is a tracked receipt of decisions, but the trace is a
+        // reconstruction: the per-step timestamps and residency are absent.
         TraceSource::Reconstructed
     };
     if let Some(metrics_path) = &args.metrics {
@@ -765,15 +770,37 @@ fn run_trace_export(args: &TraceExportArgs) -> CliResult {
         receipt_sha256: receipt.as_ref().map(|reference| reference.sha256),
         revision: args.revision.clone(),
         stamp: args.stamp.clone(),
-        notes: vec![
-            "shard ids are the validated bundle's own ids; the trace never restates them"
-                .to_owned(),
-            "a trace records what was selected, never what should have been selected".to_owned(),
-        ],
+        notes: {
+            let mut notes = vec![
+                "shard ids are the validated bundle's own ids; the trace never restates them"
+                    .to_owned(),
+                "a trace records what was selected, never what should have been selected"
+                    .to_owned(),
+            ];
+            if args.fixtures.is_some() {
+                notes.push(
+                    "each record is one independently sampled context from the M2 fixture; \
+                     the fixture carries no request identity, so the record order is sorted by \
+                     (position, layer) and must not be read as a causal token stream"
+                        .to_owned(),
+                );
+                notes.push(
+                    "the M2 selector decisions come from a degraded, untrained-router setting; \
+                     locality conclusions are conditional on a trained router's statistics"
+                        .to_owned(),
+                );
+            }
+            notes
+        },
+    };
+    let trace_id = if args.fixtures.is_some() {
+        format!("{}-m2-{}", manifest.bundle_id, args.selector)
+    } else {
+        format!("{}-whole-bundle", manifest.bundle_id)
     };
     let trace_manifest = TraceManifest {
         schema: TRACE_MANIFEST_SCHEMA.to_owned(),
-        trace_id: format!("{}-{}", manifest.bundle_id, args.selector),
+        trace_id,
         source,
         provenance,
         bundle: TraceBundle {
@@ -824,7 +851,6 @@ fn export_fixture_records(
         expected: BTreeMap<String, Vec<u32>>,
         layer: u32,
         position: u64,
-        sequence_key: String,
     }
     // Group index -> shard ids, per layer, from the bundle's own channel ranges.
     let mut groups: BTreeMap<(u32, u64), Vec<selvedge_core::ShardId>> = BTreeMap::new();
@@ -846,7 +872,12 @@ fn export_fixture_records(
     }
     let bytes = std::fs::read(fixture_path)?;
     let fixtures: Fixtures = serde_json::from_slice(&bytes)?;
-    for (index, record) in fixtures.records.iter().enumerate() {
+    // The fixture carries no request identity: every record is an independent
+    // sampled context. Sort by (position, layer) so nearby contexts stay
+    // adjacent, and label the order explicitly in the provenance.
+    let mut ordered: Vec<(usize, &FixtureRecord)> = fixtures.records.iter().enumerate().collect();
+    ordered.sort_by_key(|(index, record)| (record.position, record.layer, *index));
+    for (index, record) in ordered {
         let decisions = match record.expected.get(selector) {
             Some(decisions) => decisions,
             None => {
@@ -874,7 +905,7 @@ fn export_fixture_records(
         selected.dedup();
         records.push(TraceRecord {
             schema: TRACE_SCHEMA.to_owned(),
-            request_id: record.sequence_key.clone(),
+            request_id: format!("m2-ctx-{index:04}"),
             phase_id: "m2-context".to_owned(),
             token_index: record.position,
             layer: record.layer,
@@ -885,7 +916,6 @@ fn export_fixture_records(
             timestamps: None,
             observed: None,
         });
-        let _ = index;
     }
     Ok(())
 }
@@ -1318,12 +1348,13 @@ fn run_compare_store(args: &CompareStoreArgs) -> CliResult {
         &calibration,
         &args.revision,
         &args.stamp,
+        &args.environment,
     )?;
     std::fs::write(&args.out, serde_json::to_vec_pretty(&comparison)?)?;
     println!("receipt: {}", args.out.display());
     for (label, pass) in [("cold", &comparison.cold), ("warm", &comparison.warm)] {
         println!(
-            "{label}: store p50/p95/p99 {}/{}/{} ns, sim {}/{}/{} ns; p50 {:+.1}% p95 {:+.1}% bytes {:+.1}% ({} )",
+            "{label}: store p50/p95/p99 {}/{}/{} ns, sim {}/{}/{} ns; p50 {:+.1}% p95 {:+.1}% bytes {:+.1}%; shape p95 {:+.1}% p99 {:+.1}% (absolute {} / shape {})",
             pass.store.stall.p50_ns,
             pass.store.stall.p95_ns,
             pass.store.stall.p99_ns,
@@ -1333,9 +1364,13 @@ fn run_compare_store(args: &CompareStoreArgs) -> CliResult {
             pass.p50_discrepancy_pct,
             pass.p95_discrepancy_pct,
             pass.bytes_discrepancy_pct,
-            pass.verdict
+            pass.shape_p95_discrepancy_pct,
+            pass.shape_p99_discrepancy_pct,
+            pass.verdict,
+            pass.shape_verdict
         );
     }
+    println!("environment: {}", comparison.environment);
     if args.json {
         println!("{}", serde_json::to_string_pretty(&comparison)?);
     }

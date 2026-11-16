@@ -84,7 +84,7 @@ pub struct MetricsValidation {
     /// Always [`VALIDATION_SCHEMA`].
     pub schema: String,
     /// Creation stamp.
-    pub created_utc: String,
+    pub stamp: String,
     /// Revision.
     pub revision: String,
     /// Calibration used.
@@ -267,7 +267,7 @@ pub fn validate_metrics(
         .all(|input| input.sha256 != target_ref.sha256);
     Ok(MetricsValidation {
         schema: VALIDATION_SCHEMA.to_owned(),
-        created_utc: stamp.to_owned(),
+        stamp: stamp.to_owned(),
         revision: revision.to_owned(),
         calibration: CalibrationRef::of(calibration),
         target: target_ref,
@@ -399,8 +399,18 @@ pub struct PassComparison {
     pub p99_discrepancy_pct: f64,
     /// Signed device-byte discrepancy, percent.
     pub bytes_discrepancy_pct: f64,
-    /// `pass` or `defect`.
+    /// Store `p95 / p50`; a condition-robust shape statistic.
+    pub store_p95_over_p50: f64,
+    /// Simulated `p95 / p50`.
+    pub sim_p95_over_p50: f64,
+    /// Signed discrepancy of the shape statistic, percent.
+    pub shape_p95_discrepancy_pct: f64,
+    /// Signed discrepancy of `p99 / p50`, percent.
+    pub shape_p99_discrepancy_pct: f64,
+    /// Absolute latency verdict.
     pub verdict: String,
+    /// Shape verdict: robust to a uniform environment slowdown.
+    pub shape_verdict: String,
 }
 
 /// Live comparison receipt.
@@ -410,7 +420,7 @@ pub struct StoreComparison {
     /// Always [`COMPARISON_SCHEMA`].
     pub schema: String,
     /// Creation stamp.
-    pub created_utc: String,
+    pub stamp: String,
     /// Revision.
     pub revision: String,
     /// Bundle path read.
@@ -429,6 +439,8 @@ pub struct StoreComparison {
     pub cold: PassComparison,
     /// Warm pass comparison.
     pub warm: PassComparison,
+    /// Free-text environment note supplied by the caller, recorded verbatim.
+    pub environment: String,
     /// Notes.
     pub notes: Vec<String>,
 }
@@ -450,6 +462,7 @@ pub fn compare_with_store(
     calibration: &Calibration,
     revision: &str,
     stamp: &str,
+    environment: &str,
 ) -> Result<StoreComparison> {
     if config.queue_depth != 1 {
         return Err(SimError::invalid(
@@ -477,7 +490,7 @@ pub fn compare_with_store(
     let warm_comparison = compare_pass(warm, sim_warm);
     Ok(StoreComparison {
         schema: COMPARISON_SCHEMA.to_owned(),
-        created_utc: stamp.to_owned(),
+        stamp: stamp.to_owned(),
         revision: revision.to_owned(),
         bundle: bundle_path.display().to_string(),
         trace_id: trace.manifest.trace_id.clone(),
@@ -487,6 +500,7 @@ pub fn compare_with_store(
         seed: config.seed,
         cold: cold_comparison,
         warm: warm_comparison,
+        environment: environment.to_owned(),
         notes: vec![
             "the store's page-cache drop is an advisory posix_fadvise; the cold pass is \
              reported as advisory-cold, not as proof of a device read"
@@ -497,6 +511,11 @@ pub fn compare_with_store(
             "the simulator is charged the measured insertion, eviction and hit-copy costs \
              on the same path as the store, so the comparison is of scheduling, not of \
              components it does not model"
+                .to_owned(),
+            "the absolute latency verdict compares a simulated host to the measured host: \
+             when the environment is contended, the absolute check fails while the byte \
+             count and the p95/p50 shape stat still pass. Read the environment field before \
+             calling a divergence a simulator defect"
                 .to_owned(),
             "the executed set is the union of the trace's selections in both runs; exact \
              mode semantics are unchanged by construction"
@@ -512,6 +531,12 @@ fn run_store(
     drop_cache: bool,
     label: &str,
 ) -> Result<StorePass> {
+    let max_shard_bytes = trace
+        .shards()
+        .iter()
+        .map(|shard| shard.bytes)
+        .max()
+        .unwrap_or(0);
     let store_config = StoreConfig {
         cache_bytes: config.cache_bytes,
         policy: config.policy,
@@ -521,8 +546,8 @@ fn run_store(
             max_in_flight: 16,
             max_in_flight_bytes: config.max_in_flight_bytes,
         },
-        max_shard_bytes: 64 * 1024 * 1024,
-        max_run_bytes: config.max_run_bytes.max(1),
+        max_shard_bytes,
+        max_run_bytes: config.max_run_bytes.max(max_shard_bytes).max(1),
         coalesce_gap_bytes: 0,
         metrics: None,
     };
@@ -604,10 +629,18 @@ fn compare_pass(store: StorePass, sim: SimPass) -> PassComparison {
     let p95 = discrepancy_pct(store.stall.p95_ns as f64, sim.stall.p95_ns as f64);
     let p99 = discrepancy_pct(store.stall.p99_ns as f64, sim.stall.p99_ns as f64);
     let bytes = discrepancy_pct(store.device_bytes as f64, sim.device_bytes as f64);
+    let store_p95_ratio = ratio(store.stall.p95_ns, store.stall.p50_ns);
+    let sim_p95_ratio = ratio(sim.stall.p95_ns, sim.stall.p50_ns);
+    let store_p99_ratio = ratio(store.stall.p99_ns, store.stall.p50_ns);
+    let sim_p99_ratio = ratio(sim.stall.p99_ns, sim.stall.p50_ns);
+    let shape_p95 = discrepancy_pct(store_p95_ratio, sim_p95_ratio);
+    let shape_p99 = discrepancy_pct(store_p99_ratio, sim_p99_ratio);
     let ok = p50.abs() <= TOLERANCE_P50_PCT
         && p95.abs() <= TOLERANCE_P95_PCT
         && p99.abs() <= TOLERANCE_P99_PCT
         && bytes.abs() <= TOLERANCE_BYTES_PCT;
+    let shape_ok = shape_p95.abs() <= TOLERANCE_P50_PCT
+        && shape_p99.abs() <= TOLERANCE_P95_PCT;
     PassComparison {
         store,
         sim,
@@ -615,7 +648,20 @@ fn compare_pass(store: StorePass, sim: SimPass) -> PassComparison {
         p95_discrepancy_pct: p95,
         p99_discrepancy_pct: p99,
         bytes_discrepancy_pct: bytes,
+        store_p95_over_p50: store_p95_ratio,
+        sim_p95_over_p50: sim_p95_ratio,
+        shape_p95_discrepancy_pct: shape_p95,
+        shape_p99_discrepancy_pct: shape_p99,
         verdict: if ok { "pass" } else { "defect" }.to_owned(),
+        shape_verdict: if shape_ok { "pass" } else { "defect" }.to_owned(),
+    }
+}
+
+fn ratio(numerator: u64, denominator: u64) -> f64 {
+    if denominator == 0 {
+        0.0
+    } else {
+        numerator as f64 / denominator as f64
     }
 }
 
@@ -656,7 +702,7 @@ pub struct ParetoReport {
     /// Always [`PARETO_SCHEMA`].
     pub schema: String,
     /// Creation stamp.
-    pub creation: String,
+    pub stamp: String,
     /// Revision.
     pub revision: String,
     /// Trace.
@@ -709,11 +755,19 @@ pub fn run_pareto(
     };
     let mut rows = Vec::new();
     for policy in policies {
-        for fraction in fractions {
+        for (position, fraction) in fractions.iter().enumerate() {
             if *fraction <= 0.0 || *fraction > 1.0 {
                 return Err(SimError::invalid("fraction", "must be in (0, 1]"));
             }
-            let capacity = (payload as f64 * fraction) as u64;
+            // A no-cache arm has no capacity, so it is reported once.
+            if *policy == PolicyKind::None && position > 0 {
+                continue;
+            }
+            let capacity = if *policy == PolicyKind::None {
+                0
+            } else {
+                (payload as f64 * fraction) as u64
+            };
             let mut config = base.clone();
             config.policy = *policy;
             config.cache_bytes = capacity;
@@ -733,10 +787,18 @@ pub fn run_pareto(
                 simulation.summary.bytes_hit as f64 / simulation.summary.bytes_needed as f64
             };
             rows.push(ParetoRow {
-                arm: format!("{}-{fraction:.3}", policy.name()),
+                arm: if *policy == PolicyKind::None {
+                    "none-cold".to_owned()
+                } else {
+                    format!("{}-{fraction:.3}", policy.name())
+                },
                 policy: policy.name().to_owned(),
                 cache_bytes: capacity,
-                cache_fraction: *fraction,
+                cache_fraction: if *policy == PolicyKind::None {
+                    0.0
+                } else {
+                    *fraction
+                },
                 records,
                 bytes_per_record,
                 bytes_per_shard,
@@ -750,7 +812,7 @@ pub fn run_pareto(
     }
     Ok(ParetoReport {
         schema: PARETO_SCHEMA.to_owned(),
-        creation: stamp.to_owned(),
+        stamp: stamp.to_owned(),
         revision: revision.to_owned(),
         trace_id: trace.manifest.trace_id.clone(),
         trace_sha256: trace.manifest.records_sha256.to_hex(),

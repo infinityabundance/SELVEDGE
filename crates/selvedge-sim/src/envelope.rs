@@ -131,6 +131,13 @@ impl EnvelopeParams {
     }
 }
 
+/// Shard counts for one `(phase, layer)` pair in the build prefix.
+#[derive(Clone, Debug, Default)]
+struct LayerCounts {
+    records: u64,
+    shards: BTreeMap<ShardId, u64>,
+}
+
 /// A built envelope set with its provenance.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -138,7 +145,7 @@ pub struct EnvelopeSet {
     /// Always [`ENVELOPE_SCHEMA`].
     pub schema: String,
     /// Creation stamp.
-    pub created_utc: String,
+    pub stamp: String,
     /// Revision the source trace was built at.
     pub revision: String,
     /// Trace identifier.
@@ -231,13 +238,15 @@ pub fn build(
     let build_records = ((trace.records.len() as f64) * params.build_fraction).floor() as usize;
     let build_records = build_records.clamp(1, trace.records.len() - 1);
     let evaluate_records = trace.records.len() - build_records;
-    // Per phase: shard counts over the build prefix.
+    // Per phase and layer: shard counts over the build prefix. A token-layer
+    // record only ever selects shards from one layer, so coverage has to be
+    // measured per layer or every candidate is diluted to zero.
     let mut order: Vec<String> = Vec::new();
-    let mut counts: BTreeMap<String, BTreeMap<ShardId, u64>> = BTreeMap::new();
+    let mut layers: BTreeMap<String, BTreeMap<u32, LayerCounts>> = BTreeMap::new();
     let mut totals: BTreeMap<String, u64> = BTreeMap::new();
     let mut tasks: BTreeMap<String, String> = BTreeMap::new();
     for record in &trace.records[..build_records] {
-        let entry = counts.entry(record.phase_id.clone()).or_insert_with(|| {
+        let phase_layers = layers.entry(record.phase_id.clone()).or_insert_with(|| {
             order.push(record.phase_id.clone());
             BTreeMap::new()
         });
@@ -247,8 +256,10 @@ pub fn build(
                 .entry(record.phase_id.clone())
                 .or_insert_with(|| task.clone());
         }
+        let entry = phase_layers.entry(record.layer).or_default();
+        entry.records += 1;
         for shard in &record.selected {
-            *entry.entry(*shard).or_insert(0) += 1;
+            *entry.shards.entry(*shard).or_insert(0) += 1;
         }
     }
     let mut envelopes = Vec::new();
@@ -257,22 +268,25 @@ pub fn build(
         if total == 0 {
             continue;
         }
-        let shard_counts = counts.get(phase).cloned().unwrap_or_default();
-        let threshold = (params.min_coverage * total as f64).ceil() as u64;
-        let mut chosen: Vec<(u64, ShardId)> = shard_counts
-            .iter()
-            .filter(|(_, count)| **count >= threshold.max(1))
-            .map(|(shard, count)| (*count, *shard))
-            .collect();
-        chosen.sort_unstable_by(|left, right| right.0.cmp(&left.0).then(left.1.cmp(&right.1)));
-        chosen.truncate(params.max_candidates);
-        // Highest-coverage first: the engine admits candidates until the cache
-        // budget is full, so the order is a priority list.
-        let candidate: Vec<ShardId> = chosen.into_iter().map(|(_, shard)| shard).collect();
-        if candidate.is_empty() {
+        let phase_layers = layers.get(phase).cloned().unwrap_or_default();
+        let mut candidates: Vec<ShardId> = Vec::new();
+        for LayerCounts { records, shards } in phase_layers.values() {
+            let threshold = (params.min_coverage * *records as f64).ceil() as u64;
+            for (shard, count) in shards {
+                if *count >= threshold.max(1) {
+                    candidates.push(*shard);
+                }
+            }
+        }
+        candidates.sort_unstable();
+        candidates.dedup();
+        if candidates.len() > params.max_candidates {
+            candidates.truncate(params.max_candidates);
+        }
+        if candidates.is_empty() {
             continue;
         }
-        let candidate_set: BTreeSet<ShardId> = candidate.iter().copied().collect();
+        let candidate_set: BTreeSet<ShardId> = candidates.iter().copied().collect();
         let covered = trace.records[..build_records]
             .iter()
             .filter(|record| record.phase_id == *phase)
@@ -288,7 +302,7 @@ pub fn build(
         envelopes.push(Envelope {
             phase_id: phase.clone(),
             task: tasks.get(phase).cloned(),
-            candidate,
+            candidate: candidates,
             build_coverage,
             build_records: total,
             build_last_index: (build_records - 1) as u64,
@@ -315,7 +329,7 @@ pub fn build(
     }
     Ok(EnvelopeSet {
         schema: ENVELOPE_SCHEMA.to_owned(),
-        created_utc: stamp.to_owned(),
+        stamp: stamp.to_owned(),
         revision: revision.to_owned(),
         trace_id: trace.manifest.trace_id.clone(),
         trace_sha256: trace.manifest.records_sha256,

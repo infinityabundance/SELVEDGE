@@ -32,7 +32,7 @@ fn stats(value: u64) -> SampleStats {
 fn calibration() -> Calibration {
     Calibration {
         schema: CALIBRATION_SCHEMA.to_owned(),
-        created_utc: "20261116T000000Z".to_owned(),
+        stamp: "20261116T000000Z".to_owned(),
         revision: "test".to_owned(),
         inputs: Vec::new(),
         shard_bytes: SHARD_BYTES,
