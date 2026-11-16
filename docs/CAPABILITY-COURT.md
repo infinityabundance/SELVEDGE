@@ -1635,8 +1635,8 @@ Status: **run once on the five arms, and it emitted no suite version.** The
 statistics receipt is `results/capability/calibration-20261116T164100Z.json`
 (stamp `20261116T162758Z`, revision `bf7d4fe`); the aggregate receipt that the
 numbers below are read from is
-`results/capability/calibration-analysis-20261116T165000Z.json` (stamp
-`20261116T162919Z`, revision `bf7d4fe`). `calibrate --check` recomputes the
+`results/capability/calibration-analysis-20261116T165500Z.json` (stamp
+`20261116T163243Z`, revision `bf7d4fe`). `calibrate --check` recomputes the
 cells, the ladder, the counts **and the refusal** from the item records and
 exits 0; `fixtures/capability-calibrated/VERSION.json` does not exist and the
 check proves it must not. The scored split was not derived, no comparison
@@ -1672,6 +1672,17 @@ so the 12g limit held with headroom on every arm and VRAM was never the binding
 resource. `X` is the host-memory high-water arm; the routed arms hold the
 checkpoint on the host and copy into the device, one of the streamed-load
 corrections S16C made.
+
+Decoding throughput measured from the per-item token counts and latencies in the
+generation receipts (greedy, single stream per batch of four):
+
+<!-- BEGIN GENERATED: cap-cal-throughput -->
+D 298.6 tokens/s over 258,048 tokens; H 164.4 tokens/s over 245,792 tokens; H* 165.6 tokens/s over 258,048 tokens; M 333.8 tokens/s over 258,048 tokens; X 171.4 tokens/s over 258,048 tokens
+<!-- END GENERATED: cap-cal-throughput -->
+
+The dense arms decode faster than the routed ones; the difference is the routing
+overhead, and it is recorded here because decoding throughput is otherwise
+inferred from the training receipts, which measure a different workload.
 
 Per arm, executable passes over the executable items and verified diagnostics
 over the diagnostic items:

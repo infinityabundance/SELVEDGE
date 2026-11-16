@@ -3038,9 +3038,9 @@ P14.8 remains open with that shortfall published, not absorbed.
 
 - `results/capability/calibration-20261116T164100Z.json` — the window, cells,
   ladder, power and the recorded refusal (stamp `20261116T162758Z`).
-- `results/capability/calibration-analysis-20261116T165000Z.json` — the
+- `results/capability/calibration-analysis-20261116T165500Z.json` — the
   per-arm/per-format tables, the answer-shape projection and the resource peaks
-  the limits were sized from (stamp `20261116T162919Z`).
+  the limits were sized from (stamp `20261116T163243Z`).
 - `results/capability/calibration/<arm>/{generations,result}.json` — the five
   arms' generation and check receipts, plus `generate.log`.
 - `results/capability/calibration-smoke/` — the two smoke runs and the failed
