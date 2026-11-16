@@ -216,6 +216,13 @@ dcc83ea841ab6100d6b47a070329e1ba4cf78752
 
 ### What the identity check changed about the plan
 
+Two housekeeping facts, recorded so nobody looks for them later: the anchor has
+**no `generation_config.json`** (its sampling guidance lives in the model card, so
+a harness must pin sampling explicitly rather than inherit it), and none of these
+checkpoints is in `models/model-spec.json` yet. That file pins the **teacher**
+candidates the oracle lock verifies; adding a frontier checkpoint there before
+P19.0 can execute it would create a lock entry nothing in the program can run.
+
 1. The anchor is **not a 752M checkpoint**; it is an 873M multimodal checkpoint
    whose *text tower* is 752,393,024 elements (§4).
 2. `LFM2.5-1.2B` does not exist; the stretch model is `-Instruct`, under a

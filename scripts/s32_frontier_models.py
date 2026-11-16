@@ -753,11 +753,25 @@ def cmd_ceiling(args) -> int:
         )
         total = sum(sum(bucket.values()) for bucket in components.values())
         mtp = sum(components["mtp"].values())
+        layer_types = text_config.get("layer_types") or []
+        attention_layers = [
+            index for index, kind in enumerate(layer_types) if kind == "full_attention"
+        ]
+        linear_layers = [
+            index for index, kind in enumerate(layer_types) if kind == "linear_attention"
+        ]
         models.append(
             {
                 "id": record["id"],
                 "ok": True,
                 "revision": record.get("revision"),
+                "attention_layer_count": len(attention_layers),
+                "linear_attention_layer_count": len(linear_layers),
+                "attention_layer_indices": attention_layers,
+                "other_layer_types": sorted(
+                    {kind for kind in layer_types if kind not in ("full_attention", "linear_attention")}
+                ),
+                "layer_type_total": len(layer_types),
                 "components": components,
                 "text_elements": text,
                 "vision_elements": sum(components["vision"].values()),
@@ -772,6 +786,7 @@ def cmd_ceiling(args) -> int:
                 "tie_verified_at_checkpoint": tie_declared and not lm_head_present,
                 "under_ceiling_full_checkpoint": total < args.ceiling,
                 "under_ceiling_text_path": text < args.ceiling,
+                "headroom_to_ceiling_elements": args.ceiling - text,
             }
         )
     receipt = {
