@@ -2048,3 +2048,149 @@ When the pilot finishes: run the pre-registered suite on the T2 checkpoints (the
 exact commands are in `docs/CAPABILITY-COURT.md` §10), then the Rust-runtime
 subset on CPU, then the D/M complementarity comparison through the same
 verifier.
+
+## S16 — the evaluation instrument was wrong for a hybrid, and H is evaluated
+
+H's training container finished (exit 0, its artifacts intact) but the
+orchestrator that launched it had been killed with its editor unit. The first
+resume harvested the checkpoint and started the evaluation, which died with a
+CUDA out-of-memory inside `harness.window_stats`.
+
+### The failure, read from its own evidence
+
+The court log and receipt are
+`results/courts/logs/oracle-20261116T042635Z-8cc96b.log` and
+`results/courts/oracle-20261116T042635Z-8cc96b.json` (stamp
+`20261116T042635Z`, revision `5ede311`). In that run PyTorch had 13.34 GiB
+allocated when a 298 MiB allocation failed on a 15.61 GiB card. Three things
+were resident at once:
+
+* the 1.7B teacher and the hybrid student (3.20 GiB + 2.27 GiB of weights);
+* two full `positions x 151,936` f32 logits tensors plus their log-softmax and
+  `p_t` temporaries;
+* a 5.9 GB checkpoint loaded straight onto the device and never dropped — a
+  second copy of every parameter, held for the whole run.
+
+The checkpoint copy was the largest single avoidable term, and it is why the
+same instrument survived on D, M and X: only the hybrid's checkpoint is large
+enough to matter.
+
+### The instrument
+
+`oracle/eval/harness.py` now runs each model once for its final hidden states —
+with the vocabulary head stubbed for that pass, so every arm hook still fires
+(the memory arms set their token context from a forward pre-hook; calling the
+body directly would leave it empty) — and applies the head to a bounded number
+of positions at a time, reducing in f32 and freeing each chunk.
+`oracle/eval/baseline.py` loads the checkpoint on the host, drops it after the
+state-dict copy, frees the teacher before generation, and records per-stage
+`max_memory_allocated`/`max_memory_reserved`. `PYTORCH_CUDA_ALLOC_CONF` is now
+forwarded into every court container and recorded in the court receipt.
+
+The registered metric is untouched: same KL(teacher||student) in nats/token,
+same NLL/PPL/top-1, every position scored against the full vocabulary. This is
+a storage change, not a definition change.
+
+### Parity evidence
+
+On the real H checkpoint, over the same held-out windows, the streamed
+instrument and a full-width head produce identical NLL and top-1 and a worst
+per-window KL relative difference below one part in ten million — the bf16
+rounding of the head, nothing more. Receipts:
+`results/eval/s16-parity-chunked.json`, `results/eval/s16-parity-full.json`.
+
+### Named tests
+
+`oracle/tests/test_eval_harness_memory.py`:
+
+* `test_chunked_window_stats_match_the_full_logits_reference`
+* `test_the_metric_is_independent_of_the_chunk_size` (chunk sizes from one
+  position to larger than the window)
+* `test_every_position_is_scored_and_none_is_dropped`
+* `test_a_two_token_window_scores_exactly_one_position`
+* `test_the_captured_hidden_states_are_the_model_forwards`
+* `test_a_full_width_streamed_head_is_bitwise_the_model_logits`
+* `test_chunked_logits_are_within_one_step_of_the_full_forward`
+* `test_no_head_call_exceeds_the_chunk`
+* `test_the_model_forward_still_runs_so_the_arm_hooks_fire`
+* `test_a_model_without_an_output_head_fails_closed`
+* `test_answer_loglikelihood_matches_the_full_logits_reference`
+
+They run on CPU and CUDA in the oracle court (receipt
+`results/courts/oracle-20261116T043850Z-fca7be.json`); the whole oracle suite
+passes in the GPU court (receipt
+`results/courts/oracle-20261116T043904Z-90c37a.json`).
+
+### Orchestrator resume
+
+`scripts/run-t2-pilot.sh` now archives a previous failure instead of erasing it
+(`state-archive-failure`), refuses to compose an arm receipt silently, re-verifies
+the final checkpoint before every evaluation, reuses a completed evaluation
+receipt that names the same checkpoint, and gained `--from-eval` ("train
+nothing; a verified checkpoint is the only way to reach the harness").
+`scripts/t2_launch_record.py` writes each GPU stage's VRAM arithmetic from the
+accounting receipts and the admission config, and finalises it with the court
+receipt, the measured per-stage peaks and the unit's own journal accounting.
+
+The resume path was verified on the stranded H arm. Its log line:
+
+```
+[2026-11-16T04:46:02Z] [H] recovered a verified final checkpoint; skipping training
+```
+
+### H's evaluation
+
+The arm was evaluated on all held-out windows with no deviation: mask order
+`legacy` (the registered placement), the admitted config and admission record
+hashed into the receipt, chunk size recorded, and the previous failure kept in
+the pilot state's `failures` history. Per-domain KL, per-window values and the
+per-item outputs are in `results/eval/t2-H.json`; the summary is
+`results/t2/H/eval.json`.
+
+Mixed-domain mean KL(teacher||student), nats/token:
+
+<!-- BEGIN GENERATED: worklog-s16-h-kl-mixed -->
+0.5110
+<!-- END GENERATED: worklog-s16-h-kl-mixed -->
+
+Held-out windows pooled per domain (general is the largest domain):
+
+<!-- BEGIN GENERATED: worklog-s16-h-windows -->
+80 windows
+<!-- END GENERATED: worklog-s16-h-windows -->
+
+Task metrics, on the registered instruments:
+
+- HumanEval pass@1 (greedy):
+
+  <!-- BEGIN GENERATED: worklog-s16-h-humaneval -->
+0.2073
+  <!-- END GENERATED: worklog-s16-h-humaneval -->
+
+- GSM8K exact match:
+
+  <!-- BEGIN GENERATED: worklog-s16-h-gsm8k -->
+0.0967
+  <!-- END GENERATED: worklog-s16-h-gsm8k -->
+
+- TruthfulQA MC1:
+
+  <!-- BEGIN GENERATED: worklog-s16-h-truthfulqa -->
+0.2766
+  <!-- END GENERATED: worklog-s16-h-truthfulqa -->
+
+Peak VRAM for the whole evaluation:
+
+<!-- BEGIN GENERATED: worklog-s16-h-vram -->
+6.39 GiB
+<!-- END GENERATED: worklog-s16-h-vram -->
+
+**These are one arm's numbers.** No comparison between arms, no ordering and no
+K15-K19 decision is made in this entry; that is S17's job on five evaluated
+arms. `H*` had not run when this entry was written.
+
+### What this entry does not claim
+
+- No T2 verdict, and no cross-arm ordering.
+- Nothing about P8.1/P8.2; neither was run in this session.
+- The capability court was not re-run.

@@ -203,14 +203,65 @@ As of the last poll before this commit (`scripts/poll-t2-pilot.sh`,
 | `D` (dense control) | **completed** — trained the registered budget and evaluated | `results/t2/D/run.json`, `results/t2/D/eval.json`, `results/eval/t2-D.json` |
 | `M` (memory only) | **completed** — trained the registered budget and evaluated | `results/t2/M/run.json`, `results/t2/M/eval.json`, `results/eval/t2-M.json` |
 | `X` (specialists) | **completed** — trained the registered budget and evaluated | `results/t2/X/run.json`, `results/t2/X/eval.json`, `results/eval/t2-X.json` |
-| `H` (naive hybrid) | **training** — step 194/1024 (19.0%), 4,505 tokens/s, 10.86 GiB peak, ETA ≈ 3.4 h at its own rate (poll 2026-11-16T00:36:45Z) | `results/t2/H/run.json` in progress |
+| `H` (naive hybrid) | **completed** — trained the registered budget and evaluated; the evaluation was re-run under the corrected instrument (below) | `results/t2/H/run.json`, `results/t2/H/eval.json`, `results/eval/t2-H.json`, `results/t2/H/launch-eval.json` |
 | `H*` (error-directed hybrid) | **pending** | — |
 
-Three of five arms have both a training receipt and an evaluation summary. The
-two hybrids, which carry the registered K15/K16 comparison, have not finished.
-The pilot is therefore **not separable from "unfinished"** and no ordering
-between arms is stated here, deliberately — an early ordering is exactly the
-reading that T2.8 and the one-seed risk in `results/T2-PLAN.md` §5 forbid.
+Four of five arms have both a training receipt and an evaluation summary. The
+last hybrid has not finished, and the pilot is therefore **not separable from
+"unfinished"**: no ordering between arms is stated here, deliberately — an
+early ordering is exactly the reading that T2.8 and the one-seed risk in
+`results/T2-PLAN.md` §5 forbid. The per-arm numbers that do exist are in
+`results/t2/<arm>/eval.json` and `docs/WORK-LOG.md`; they are not interpreted.
+
+### The evaluation instrument, corrected before the hybrid numbers were read
+
+The first `H` evaluation died with a CUDA out-of-memory. The instrument held the
+1.7B teacher, the hybrid student *and* two full f32
+`positions x 151,936` logits tensors, and it loaded the 5.9 GB checkpoint
+straight onto the device, which kept a second copy of every parameter resident
+for the whole run.
+
+The instrument now computes each model's hidden states once and applies the
+vocabulary head a fixed number of positions at a time (the count is in the eval
+receipt as `instrument.logit_chunk_positions`), reduces in f32 and frees each
+chunk; it loads the checkpoint on the host and drops it after the state-dict
+copy; it frees the teacher before the generation stages; and it records
+per-stage VRAM peaks. The registered metric is unchanged: every position is
+still scored against the whole vocabulary with the same KL, NLL, PPL and top-1
+definitions. On the real `H` checkpoint the streamed instrument and a
+full-width head agree to the last bit on NLL and top-1, and on KL to within the
+bf16 rounding of the head itself.
+
+Peak VRAM for the same `H` smoke subset, streamed versus one full-width head
+chunk:
+
+<!-- BEGIN GENERATED: report-s16-eval-vram-chunked -->
+6.39 GiB
+<!-- END GENERATED: report-s16-eval-vram-chunked -->
+
+streamed, and
+
+<!-- BEGIN GENERATED: report-s16-eval-vram-full -->
+8.16 GiB
+<!-- END GENERATED: report-s16-eval-vram-full -->
+
+with a single full-width chunk (which only fits now that the checkpoint no
+longer sits on the device). The full registered `H` evaluation on all
+held-out windows took
+
+<!-- BEGIN GENERATED: report-s16-h-eval-seconds -->
+667 s
+<!-- END GENERATED: report-s16-h-eval-seconds -->
+
+at a peak of
+
+<!-- BEGIN GENERATED: report-s16-h-eval-vram -->
+6.39 GiB
+<!-- END GENERATED: report-s16-h-eval-vram -->
+
+of the 15.6 GiB usable, against a 24 GiB host limit. The receipt is
+`results/eval/t2-H.json`; the arithmetic and the court receipt are in
+`results/t2/H/launch-eval.json`.
 
 While the pilot occupies the GPU, three successor courts were built and
 CPU-tested without touching it: `P8.2` (bounded-gate composition, including the
@@ -226,12 +277,12 @@ GPU work was performed.
 
 ### What still has to happen before a verdict
 
-1. `H` training and evaluation.
-2. `H*` training (its label phase runs at its warm-up step, then the router is
+1. `H*` training (its label phase runs at its warm-up step, then the router is
    frozen) and evaluation.
-3. `oracle/eval/t2_decision.py` applied to the five summaries, then
+2. `oracle/eval/t2_decision.py` applied to the five summaries, then
    `scripts/finish-t2-pilot.sh` to render `results/T2-PILOT.md` and run the
    courts.
+3. The P2.4 instrument check over the five final checkpoints.
 
 The remaining order is fixed by `scripts/run-t2-pilot.sh`, not by this document.
 
