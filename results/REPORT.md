@@ -348,13 +348,23 @@ hashes, sizes and measurements. Rebuilding is documented in
 storage JSONL is excluded from git; `scripts/storage-summary.py` regenerates the
 tracked variance summaries from the receipts.
 
-## Capability court and the fresh Rust suite (S14, CPU-only)
+## Capability court and the fresh Rust suite (S14–S26, CPU-only)
 
-The instrument every frontier claim will use now exists. `docs/CAPABILITY-COURT.md`
-is the reference; the evidence is
-`results/capability/selftest-20261116T022833Z.json` (every checker outcome) and
-`results/capability/contamination-20261116T022822Z.json` (disjointness), at
-revision `0c4b050`.
+The instrument every frontier claim will use now exists and is larger.
+`docs/CAPABILITY-COURT.md` is the reference. The current evidence, at revision
+`2beba67`, is:
+
+- `results/capability/selftest-20261116T090000Z.json` — every checker outcome
+  over the scored suite and the trio, including the naive-fix and sandbox-probe
+  outcomes (counts in `docs/CAPABILITY-COURT.md` §2);
+- `results/capability/sealed-score-20261116T090100Z.json` — the sealed set's
+  instrument self-check behind its unlock record;
+- `results/capability/contamination-20261116T090400Z.json` — disjointness over
+  every authored item;
+- `results/capability/similarity-20261116T090600Z.json` — the near-duplicate
+  screen, with its counts in the receipt;
+- `results/capability/power-20261116T090300Z.json` — the power arithmetic at the
+  registered n.
 
 Established, on CPU:
 
@@ -372,7 +382,14 @@ Established, on CPU:
 - anti-gaming checks that are tested rather than promised: prompt-order
   invariance, few-shot shingle disjointness, tool and feedback parity, and a
   structural separation between the model process and the checker process;
-- the pre-registration, bound to the suite hash before any arm run.
+- the pre-registration, bound to the suite hash before any arm run (v4 for the
+  144-task suite);
+- a near-duplicate screen over the diagnostic, code and assertion views of every
+  authored item, with thresholds registered before it ran;
+- a frozen 24-task sealed holdback, gated behind an unlock flag plus the
+  registered hash, append-only, with refusal and acceptance proved by CPU tests;
+- one declared **naive** shallow fix per category, proved by the self-test to
+  compile and then fail a hidden behavioural test.
 
 ### Instrument corrections before any arm run (S16C, CPU-only)
 
@@ -423,6 +440,14 @@ receipt field. The trio is below P11.21's item count, feedback loops are not
 implemented, the corpus contamination comparison is a bounded sample, and no
 3B-8B quantised baseline exists locally. Each is recorded as a gap rather than
 papered over.
+
+The P14.4 power receipt adds one more honest limit: the registered composite's
+simulated 80%-power minimum detectable effect is above the registered 10%
+threshold. The threshold is unchanged; a null near it is under-powered and must
+be reported as such. The sealed holdback is frozen and gated but has not been
+used, and it was authored by the same author and process as the scored suite, so
+it controls for tuning against these exact tasks rather than for a shared
+authoring style.
 
 ## Next
 

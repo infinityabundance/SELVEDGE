@@ -25,6 +25,7 @@ import itertools
 import json
 import os
 import re
+import subprocess
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,6 +56,17 @@ def utc_now() -> str:
 
 def stamp_now() -> str:
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def revision() -> str:
+    value = os.environ.get("SELVEDGE_REVISION", "")
+    if value:
+        return value
+    try:
+        return subprocess.run(["git", "-C", REPO, "rev-parse", "HEAD"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
 
 
 def _tokens(text: str) -> list:
@@ -200,10 +212,18 @@ def main(argv: list[str]) -> int:
     payload = {
         "schema": SCHEMA,
         "stamp": stamp_now(),
+        "revision": revision(),
         "created_utc": utc_now(),
         "command": " ".join(sys.argv),
         "items": len(tasks),
         "pairs_compared": pair_count,
+        "counts": {
+            "pairs_compared": pair_count,
+            "rejected_pairs": len(rejected),
+            "reported_pairs": len(reported),
+            "historical_pairs": sum(1 for entry in reported
+                                    if entry.get("scope") == "historical"),
+        },
         "rules": RULES,
         "widths": {
             "code": CODE_WIDTH,
@@ -231,6 +251,13 @@ def main(argv: list[str]) -> int:
         "verdict": payload["verdict"],
         "items": len(tasks),
         "pairs_compared": pair_count,
+        "counts": {
+            "pairs_compared": pair_count,
+            "rejected_pairs": len(rejected),
+            "reported_pairs": len(reported),
+            "historical_pairs": sum(1 for entry in reported
+                                    if entry.get("scope") == "historical"),
+        },
         "rejected": len(rejected),
         "reported": len(reported),
         "maxima": payload["maxima"],

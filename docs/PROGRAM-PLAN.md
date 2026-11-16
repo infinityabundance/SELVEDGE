@@ -3441,11 +3441,17 @@ the *frontier* claim needs the larger one.
 **Acceptance evidence.** the expanded authoring source, its manifest and hash, an
 updated contamination receipt, and a **new** pre-registration that supersedes
 (does not edit) the current one.
-**Depends.** P12.9. **Status.** partial: S21 expanded the suite to the size
-recorded in `docs/CAPABILITY-COURT.md` §2, re-hashed it, re-ran contamination and
-wrote `docs/capability-preregistration-v3.json` as an append-only supersession
-(v2 registered the first pass and was itself superseded after the near-duplicate
-audit). The "hundreds" target and the sealed set (P14.7) remain open. **Effort.**
+**Depends.** P12.9. **Status.** partial, advanced by S26: the suite is now the
+size recorded in `docs/CAPABILITY-COURT.md` §2 (144 scored tasks, 18 per
+category, plus the 9-task trio and 6 probes), with the sealed set (P14.7) frozen
+in the same session. S26 doubled the suite, re-hashed it, re-ran contamination
+over all 177 authored items, added the near-duplicate screen
+(`results/capability/similarity-20261116T090200Z.json`), added the power receipt
+(`results/capability/power-20261116T090300Z.json`) and wrote
+`docs/capability-preregistration-v4.json` as an append-only supersession of v3
+(v2 registered the first pass and was itself superseded after the earlier
+near-duplicate audit). The "hundreds" target is not met (144 items), and item
+difficulty and discrimination are still not estimated by any solver. **Effort.**
 XL. **Tier.** CANDIDATE.
 
 ### P14.5 — Strengthen checker coverage and scale for Rust cases
@@ -3506,7 +3512,17 @@ SELVEDGE's own development loop.
 **Acceptance evidence.** the sealed set's hash recorded in the contract before any
 arm sees it, a custody record, and a rule that a sealed result is published once
 and never re-run for tuning.
-**Depends.** P14.4. **Status.** open. **Effort.** M. **Tier.** CANDIDATE.
+**Depends.** P14.4. **Status.** partial, advanced by S26: 24 sealed tasks (three
+per category) are frozen in `fixtures/capability/SEALED.json` at
+`sealed_sha256 7666768f3abdbd93c268cc6d10250ddefa13a3a58c94268863fdcab79e7984bc`,
+with the item hashes, the freeze date, the no-tuning rule and the one-shot unlock
+procedure. `oracle/capability/sealed.py` refuses to score them without
+`--unlock-sealed` and the registered hash, records the unlock time before
+checking any item, and treats the registration as append-only; the CPU tests
+prove refusal and acceptance. The sealed set has been instrument-checked but no
+arm has been run against it, and it was authored by the same process and author
+as the scored suite, so it controls for tuning against these exact tasks rather
+than for the author's shared taste. **Effort.** M. **Tier.** CANDIDATE.
 
 ## 20. WS15 — Beyond-MoE architectures (research hypotheses)
 

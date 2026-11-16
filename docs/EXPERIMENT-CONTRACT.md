@@ -2569,6 +2569,64 @@ addition changes no threshold, arm, kill condition or historical measurement.
 
 ---
 
+---
+
+# Dated addition — 2026-11-16 (S26, P14.4/P14.7): the doubled suite and the sealed holdback
+
+The P12.9 fresh suite was doubled to the size recorded in
+`docs/CAPABILITY-COURT.md` §2 (with the per-category count and the unchanged
+trio and probes), and a sealed holdback was frozen. This addition changes **no** registered arm,
+threshold, decision rule, bootstrap, seed or historical measurement. It
+supersedes `docs/capability-preregistration-v3.json` without editing it.
+
+- **Registration.** `docs/capability-preregistration-v4.json` binds the scored
+  suite at `suite_sha256 =
+  7347e1e94b7ddcd3d04f1580646b392fc1591a25e71b299a663fc7f837f0a207`. The
+  primary endpoint is unchanged in definition — the equal-weight mean of the
+  eight category means — with the item count and the per-category minimum
+  recorded in the registration. The 10% relative threshold, the paired
+  percentile bootstrap (seed `20261115`, 10,000 resamples, level 0.95), the
+  0.05 absolute secondary regression limit and the trio rule are unchanged.
+- **Power, reported not assumed.** The per-category single-proportion 95% CI
+  half-width and the registered paired composite's simulated 80%-power minimum
+  detectable effect are emitted from
+  `results/capability/power-20261116T090300Z.json` and printed in
+  `docs/CAPABILITY-COURT.md` §7.1. The simulated MDE is above the registered 10%
+  threshold, so **a 10% relative improvement is not resolvable at 80% power at
+  this n.** The threshold is unchanged; a null near the threshold is
+  under-powered and must be reported as such.
+- **Sealed holdback (P14.7).** Three further tasks per category, frozen at
+  `sealed_sha256 =
+  7666768f3abdbd93c268cc6d10250ddefa13a3a58c94268863fdcab79e7984bc`, registered
+  in `fixtures/capability/SEALED.json` with every item hash, the freeze date,
+  the no-tuning rule and the unlock procedure. The harness refuses to score the
+  sealed set unless `--unlock-sealed` and the registered hash are supplied
+  together, writes an unlock record with the UTC time before checking any item,
+  and treats the registration as append-only. The sealed set may not be used for
+  tuning, prompt selection, few-shot examples, checkpoint selection or threshold
+  selection. A sealed result is published once per revision with its unlock
+  record. No arm has been run against it.
+- **Checker strengthening.** One task per category declares a **naive fix** — the
+  plausible shallow answer — and the self-test requires it to compile and then
+  fail a hidden behavioural test. The counts are in
+  `results/capability/selftest-20261116T090000Z.json`, whose every declared
+  naive fix was rejected. The stdout-forgery probe remains, so a solution that
+  prints a passing test summary is recorded as a failure.
+- **Near-duplicate screen.** `scripts/capability_similarity.py` compares the
+  diagnostic, code and assertion views of every authored item with thresholds
+  registered before the run (`results/capability/similarity-20261116T090600Z.json`).
+  No pair involving a new item exceeds a threshold. Two pairs from the
+  already-registered v3 suite are above a threshold and are reported for a future
+  supersession, not rewritten here.
+- **Contamination.** `results/capability/contamination-20261116T090400Z.json`
+  covers the scored suite, the trio and the sealed set against HumanEval, GSM8K,
+  TruthfulQA, the pinned T2 windows and the bounded corpus sample (counts in the
+  receipt), and reports `disjoint`. The first expansion run found one coincidental
+  13-token overlap in a sealed item; the fixture's literals were changed and the
+  run re-passed.
+
+---
+
 # Experiment contract — P13.14: omission-conditioned recovery (dated addition, 2026-11-16, S23)
 
 Status: **pre-registered before any measurement of this court.** Written while

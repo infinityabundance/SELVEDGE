@@ -1,20 +1,28 @@
 # CAPABILITY COURT — the instrument every frontier claim will use
 
-Status: **instrument implemented and CPU-tested; the suite is authored, hashed
-and contamination-checked; no arm has been evaluated on it.** The GPU belongs to
-the running T2 pilot, so this session builds and proves the measurement machinery
-and records the exact commands for the first real run. The evidence is two
-receipts at revision `572f6e4`:
+Status: **instrument implemented and CPU-tested; the scored suite is at the size
+recorded in §2, the trio is unchanged, a sealed holdback is frozen behind a
+custody gate, and no arm has been evaluated on it.** The GPU belongs to the
+running H\* training job, so this session extends and proves the measurement
+machinery and records the exact commands for the first real run. The evidence is
+five receipts at revision `2beba67`:
 
-- `results/capability/selftest-20261116T074000Z.json` — every checker outcome,
+- `results/capability/selftest-20261116T090000Z.json` — every checker outcome,
   the per-task build time and the six sandbox-probe outcomes;
-- `results/capability/contamination-20261116T080000Z.json` — disjointness over the
-  expanded suite.
+- `results/capability/sealed-score-20261116T090100Z.json` — the sealed set's
+  instrument self-check, behind its unlock record;
+- `results/capability/contamination-20261116T090400Z.json` — disjointness over
+  the scored suite and the sealed set;
+- `results/capability/similarity-20261116T090200Z.json` — the near-duplicate
+  screen over all 177 authored items;
+- `results/capability/power-20261116T090300Z.json` — the power arithmetic for
+  the registered composite at n = 144.
 
 The original pre-registration is `docs/capability-preregistration.json` (the
 historical suite, retained unchanged). The first expansion was registered in v2;
-a same-session near-duplicate audit replaced sixteen tasks and the final fixture
-is registered in `docs/capability-preregistration-v3.json`, written before any
+a same-session near-duplicate audit replaced sixteen tasks and the fixture is
+registered in `docs/capability-preregistration-v3.json`. The P14.4 expansion
+supersedes v3 with `docs/capability-preregistration-v4.json`, written before any
 arm run against it and bound to the final suite hash.
 
 This document implements `docs/PROGRAM-PLAN.md` P12.8 (three levels), P12.9
@@ -129,12 +137,12 @@ The failing state and the checker for each category:
 
 | category | failing state | checker |
 | --- | --- | --- |
-| lifetime-borrow | does not compile: `E0515`, `E0502`, `E0597`/`E0505` | `cargo test` after the repair |
+| lifetime-borrow | does not compile: `E0515`, `E0502`, `E0597`/`E0505`, `E0506`, `E0507`, `E0509`, `E0596`, `E0382`, `E0373`, or a runtime double borrow | `cargo test` after the repair |
 | failing-test | compiles; a visible assertion fails | `cargo test` |
 | api-migration | does not compile against a vendored 2.0 dependency | `cargo test` |
-| dependency-compat | version-resolution, edition-2024 or feature-gate error | `cargo test` |
-| concurrency | deadlock (timeout), lost update (assertion), `!Send` (compile error) | `cargo test` |
-| trait-impl | missing associated type, coherence conflict, non-object-safe trait | `cargo test` |
+| dependency-compat | version resolution, edition, feature, workspace or manifest-type error | `cargo test` |
+| concurrency | deadlock (timeout), lost update (assertion), `!Send`/`!Sync` (compile error) | `cargo test` |
+| trait-impl | missing or mismatched item, coherence conflict, non-object-safe trait, dyn associated type | `cargo test` |
 | repo-scale | needs a repair propagated through three or four files | `cargo test` |
 | semantic-repair | compiles and its visible test passes; hidden behavioural tests fail | `cargo test` with hidden tests restored |
 
@@ -162,24 +170,32 @@ Three anti-gaming properties are structural, not procedural:
    by reverting the dependency: `dep/` is restored after the arm writes.
 
 The self-test proves each task discriminates before the suite can be used. At the
-receipt stamp `20261116T062343Z` (revision `572f6e4`):
+receipt stamp `20261116T090000Z` (revision `2beba67`):
 
 - failing states that fail exactly as declared:
 <!-- BEGIN GENERATED: cap-initial-ok -->
-81
+153
 <!-- END GENERATED: cap-initial-ok -->
 - tasks checked (suite plus trio):
 <!-- BEGIN GENERATED: cap-tasks-checked -->
-81
+153
 <!-- END GENERATED: cap-tasks-checked -->
 - reference solutions that pass:
 <!-- BEGIN GENERATED: cap-reference-ok -->
-81
+153
 <!-- END GENERATED: cap-reference-ok -->
 - deliberately wrong mutations that fail:
 <!-- BEGIN GENERATED: cap-mutation-ok -->
-81
+153
 <!-- END GENERATED: cap-mutation-ok -->
+- declared naive fixes that compile and then fail the hidden tests:
+<!-- BEGIN GENERATED: cap-naive-rejected -->
+8
+<!-- END GENERATED: cap-naive-rejected -->
+- naive fixes declared (one per category):
+<!-- BEGIN GENERATED: cap-naive-declared -->
+8
+<!-- END GENERATED: cap-naive-declared -->
 - sandbox probes with the expected outcome:
 <!-- BEGIN GENERATED: cap-probes-ok -->
 6
@@ -188,6 +204,13 @@ receipt stamp `20261116T062343Z` (revision `572f6e4`):
 <!-- BEGIN GENERATED: cap-probe-tasks -->
 6 probes
 <!-- END GENERATED: cap-probe-tasks -->
+
+The **naive fix** is a second discrimination check, distinct from the mutation:
+it is the plausible shallow answer an arm reaches for first (a hard-coded
+literal, an ignored parameter, a value clamped where the contract does not clamp
+it). The self-test requires it to compile *and* fail a hidden behavioural test,
+so "the tests reject a shallow string-level patch" is measured rather than
+claimed. One task per category carries one.
 
 Per-task build time (compile only, `cargo test --no-run`) and full checker time
 are recorded for every item in the receipt (`items[].build.duration_ms` and
@@ -304,6 +327,93 @@ open gap. The trio is usable now as a *pre-registered transfer probe*; it is not
 usable as the published anti-specialisation instrument until the item count and
 the agreement check exist.
 
+### 3.1 The near-duplicate screen (P14.4)
+
+An expansion is only an expansion if its items are not restatements of the
+existing ones. `scripts/capability_similarity.py` compares every pair of
+authored items in three views, with set-Jaccard over token shingles:
+
+- **diagnostic** — the declared failure kind, required evidence and observed
+  diagnostic, with line numbers and literals normalised (2-grams);
+- **code** — the initial and reference Rust sources with comments removed
+  (4-grams);
+- **assertion** — the hidden tests' assertion lines with literals normalised
+  (3-grams).
+
+The thresholds were registered in the script before the screen ran on the
+expansion: reject at code Jaccard ≥ 0.60, or at diagnostic ≥ 0.75 and code ≥ 0.30,
+or at assertion ≥ 0.60 and code ≥ 0.30. The receipt records every rule, the
+maximum observed similarity in each view, and every pair above a rule.
+
+Pairs compared over every authored item (scored suite, trio and sealed set):
+
+<!-- BEGIN GENERATED: cap-similarity-pairs -->
+15576
+<!-- END GENERATED: cap-similarity-pairs -->
+
+Pairs rejected, whose items were replaced before the freeze:
+
+<!-- BEGIN GENERATED: cap-similarity-rejected -->
+0
+<!-- END GENERATED: cap-similarity-rejected -->
+
+Pairs above a threshold but outside the replaceable scope (both items are from
+the already-registered historical suite; replacing them would change a
+registered fixture, so they are reported for a future supersession):
+
+<!-- BEGIN GENERATED: cap-similarity-historical -->
+2
+<!-- END GENERATED: cap-similarity-historical -->
+
+The screen is not decorative. It rejected, and forced the replacement of, ITEMS
+in several earlier drafts of this expansion: two dependency tasks that both
+computed the same multiplicative checksum and asserted the same values, a
+repo-scale task that repeated the api-migration padding task's assertions, a
+sealed atomic-increment task whose diagnostic restated a scored atomic task,
+and two tasks that shared the same integer-mean assertions. Each replacement
+changed the computation, the diagnostic or the assertions, not the threshold.
+The two historical pairs are named in the receipt; they are
+`deps-04`/`deps-05` (shared hidden assertion, code 0.61) and
+`deps-08`/`deps-09` (assertion 0.63), both from the v3-registered suite.
+
+### 3.2 The sealed holdback (P14.7)
+
+`fixtures/capability/sealed/` holds a further three items per category,
+authored by the same process and **frozen** by `fixtures/capability/SEALED.json`.
+The registration records the sealed aggregate, every item hash, the freeze date,
+the rule and the exact one-shot unlock procedure. Items authored for the sealed
+set:
+
+<!-- BEGIN GENERATED: cap-sealed-items -->
+24
+<!-- END GENERATED: cap-sealed-items -->
+
+Sealed aggregate:
+
+<!-- BEGIN GENERATED: cap-sealed-sha -->
+7666768f3abdbd93c268cc6d10250ddefa13a3a58c94268863fdcab79e7984bc
+<!-- END GENERATED: cap-sealed-sha -->
+
+The gate is code, not prose. `oracle/capability/sealed.py::authorize` refuses
+unless `--unlock-sealed` is supplied **and** the supplied SHA-256 equals the
+registered aggregate; an accepted unlock returns a record naming the flag, the
+hash and the UTC time, which `scripts/capability_sealed.py` writes *before* it
+checks any item. `check_registration` recomputes every item hash, the aggregate
+and the counts and fails closed on drift. The registration is append-only.
+`oracle/tests/test_capability_sealed.py` proves refusal without the flag, without
+a hash and with a wrong hash; acceptance with both; the recorded unlock time; and
+tamper and extra-item detection.
+
+During authoring the sealed instrument was self-checked more than once: the first
+two unlocks (records `sealed-unlock-20261116T080133Z.json` and the following
+one) were instrument checks that failed or preceded a fixture repair, and the
+freeze was rewritten before any model was evaluated. No arm has been run against
+the sealed set, and the final self-check
+(`results/capability/sealed-score-20261116T090100Z.json`) passes every item.
+Those superseded unlock records are retained, not deleted: they are part of the
+custody trail. The registration must not be rewritten again without a recorded
+reason.
+
 ## 4. Contamination
 
 Method, in the two units the brief requires:
@@ -314,7 +424,9 @@ Method, in the two units the brief requires:
   item against the pinned held-out windows the KL metric uses.
 
 Items compared per source, from
-`results/capability/contamination-20261116T080000Z.json`:
+`results/capability/contamination-20261116T090400Z.json`. The comparison covers
+the scored suite, the trio and the sealed set; the receipt records the counts
+for each of the three collections and binds both hashes.
 
 - HumanEval items (prompt, solution, test):
 <!-- BEGIN GENERATED: cap-contam-humaneval -->
@@ -345,6 +457,10 @@ Items compared per source, from
 <!-- BEGIN GENERATED: cap-contam-corpus-chars -->
 22736717 characters
 <!-- END GENERATED: cap-contam-corpus-chars -->
+- authored items hashed and shingled (suite, trio and sealed):
+<!-- BEGIN GENERATED: cap-contam-items -->
+177
+<!-- END GENERATED: cap-contam-items -->
 
 Overlapping items across every source:
 
@@ -359,24 +475,22 @@ disjoint
 <!-- END GENERATED: cap-contam-verdict -->
 
 The corpus comparison is a **bounded deterministic sample** — the first
-After the P14.4 expansion the script was re-run against the same sources. It
-walks the fixture tree rather than a list, so every new task was hashed and
-shingled automatically; the receipt binds the expanded suite hash and reports
-the same coverage rule. The verdict stayed `disjoint`.
-
-The corpus comparison is a **bounded deterministic sample** — the first
 documents in sorted file order, capped per source — and the receipt records the
 document and character counts plus the rule. It is not a full-corpus pass, and
 the script fails closed if a corpus source is absent rather than reporting a
 vacuous pass. The four dataset sources and the held-out windows are compared in
-full.
+full. The script walks the fixture tree rather than a list, so every item
+authored for the expansion — including the sealed items — was hashed and
+shingled without a second registration step.
 
-The check is not decorative: the first run found exactly one overlapping
+The check is not decorative. The first run found exactly one overlapping
 13-token shingle — a sequence of three decimal literals that also occurs in a
-held-out GSM8K question — in `failing-04-nan-ordering`. The fixture's numbers
-were changed and the run re-passed. The overlap was a coincidence, not copied
-text, but the rule is fail-closed and the fix is in the fixture, not in an
-exception list.
+held-out GSM8K question — in `failing-04-nan-ordering`. The expansion's first run
+found one more, in `sealed-borrow-01-sort-closure-mutation`: the shingle decoded
+to the integer sequence `1, 2, 3, 3, 3`, which a held-out window also contains.
+Both fixtures had their numbers changed and the runs re-passed. The overlaps were
+coincidences, not copied text, but the rule is fail-closed and every fix is in
+the fixture, never in an exception list.
 
 ## 5. Sandbox and checker evidence
 
@@ -543,9 +657,14 @@ the same paired bootstrap and seed, the registered per-category minimum and the
 three shared surfaces. **Dated correction, same day (S21, QA):** a near-duplicate
 audit replaced sixteen tasks that reused an existing capability; the corrected
 fixture is registered in `docs/capability-preregistration-v3.json` and
-supersedes v2 without editing it. A run against the expanded suite must name v3;
-a run against the historical suite must name v1. The hash below is the v3
-binding:
+supersedes v2 without editing it. **Dated addition, 2026-11-16 (S26, P14.4):**
+the suite was doubled to the size in §2 and registered in
+`docs/capability-preregistration-v4.json`, which supersedes v3 without editing
+it. The threshold, the bootstrap seed and resample count, the decision rule and
+the trio rule are unchanged; only the suite binding, the item count, the
+per-category minimum (18) and the sealed-holdback policy are new. A run against
+the 144-task suite must name v4; a run against the historical suite must name v1.
+The hash below is the v4 binding:
 
 <!-- BEGIN GENERATED: cap-suite-sha -->
 3f7933966680a9663b178817e245027bf61895523e094e8f1ef369f6767585d8
@@ -560,10 +679,9 @@ The registered rules:
   the decision rule rejects it).
 - **Per-category minimum.** A category result is valid only with at least the
   registered number of scored items (see
-  `docs/capability-preregistration-v3.json`). The expanded suite has the
-  per-category count in §2, so one item still moves a category by roughly a
-  tenth; that is still a small instrument, but it is no longer the
-  quarter-to-third movement of the original suite.
+  `docs/capability-preregistration-v4.json`: 18). The suite has that count in
+  every category (§2), so one item moves a category by about 5.6%, not the
+  quarter-to-third movement of the original 4-item categories.
 
   **Correction, 2026-11-16 (S16C).** This rule was written correctly and the code
   did not enforce it: `court.compare()` computed the regression set and then
@@ -599,6 +717,85 @@ The registered rules:
 - **Controls.** The eight registered rows, including the two most often missing
   (a Memory-Grafting-style latent baseline and a matching library without routing
   optimisation).
+
+### 7.1 Power at the registered n (P14.4)
+
+The expansion was made for power, so the power is reported rather than implied.
+The registered estimand is the category-balanced mean of paired item
+differences; `oracle/capability/power.py` implements the arithmetic and
+`results/capability/power-20261116T090300Z.json` is the receipt. The model is
+stated: each item's paired difference is in {gain, loss, none}, the baseline
+success rate is 0.5, and the "with regressions" case reverses 20% of the gains.
+
+Items in the registered composite:
+
+<!-- BEGIN GENERATED: cap-power-n -->
+144
+<!-- END GENERATED: cap-power-n -->
+
+Items per category:
+
+<!-- BEGIN GENERATED: cap-power-per-category -->
+18
+<!-- END GENERATED: cap-power-per-category -->
+
+A *single category's* 95% CI half-width on its own success rate (p = 0.5) is:
+
+<!-- BEGIN GENERATED: cap-power-marginal-ci -->
+0.231
+<!-- END GENERATED: cap-power-marginal-ci -->
+
+The paired composite CI is narrower than that marginal interval because the
+comparison is paired; the two are reported separately and never substituted.
+
+Analytic minimum detectable effect (normal approximation to the paired
+composite, 95% two-sided, 80% power), absolute:
+
+<!-- BEGIN GENERATED: cap-power-mde-abs -->
+0.0517
+<!-- END GENERATED: cap-power-mde-abs -->
+
+as a fraction of the 0.5 baseline:
+
+<!-- BEGIN GENERATED: cap-power-mde-rel -->
+0.1034
+<!-- END GENERATED: cap-power-mde-rel -->
+
+and with 20% of gains reversed:
+
+<!-- BEGIN GENERATED: cap-power-mde-rel-reg -->
+0.1551
+<!-- END GENERATED: cap-power-mde-rel-reg -->
+
+The analytic number is a normal approximation, so it was checked against the
+registered paired category bootstrap by simulation (120 replications, 400
+resamples, 1% effect grid). At the analytic MDE the simulated probability of
+satisfying both the CI and the 10%-relative decision rule is only:
+
+<!-- BEGIN GENERATED: cap-power-decision-power -->
+0.492
+<!-- END GENERATED: cap-power-decision-power -->
+
+so the analytic approximation is optimistic for *this decision rule*, not
+conservative. The simulated 80%-power MDE (registered bootstrap, same model) is:
+
+<!-- BEGIN GENERATED: cap-power-empirical-rel -->
+0.14
+<!-- END GENERATED: cap-power-empirical-rel -->
+
+relative to the baseline, and with 20% of gains reversed:
+
+<!-- BEGIN GENERATED: cap-power-empirical-rel-reg -->
+0.18
+<!-- END GENERATED: cap-power-empirical-rel-reg -->
+
+**What this says.** The instrument's simulated 80%-power MDE (in the block above)
+is *above* the registered 10% threshold, so the registered threshold cannot be
+resolved at 80% power at this n. That is a statement about the instrument's
+power; the registered threshold is unchanged and remains the decision rule. A
+future expansion, a lower-variance endpoint or a larger n is what would change
+it. The simulation is a model of the paired comparison, not measured arm data,
+and it is labelled as such in the receipt.
 
 ## 8. What a win on this suite establishes — and what it does not
 
@@ -646,20 +843,25 @@ A win does **not** establish:
 2. **The trio is under P11.21's item count.** The per-surface and per-operation
    counts in §3 are small, the operation annotation is author-only, and there is
    no inter-annotator agreement.
-3. **The per-category count is still small.** One item still moves a category
-   materially and the stratified interval over the available binary outcomes is
-   wide. The suite is no longer a smoke signal, but it is not a calibrated
-   benchmark; item difficulty and discrimination are not estimated.
-4. **The expanded suite is not sealed.** Every item is visible to the
-   development loop. P14.7's sealed holdback does not exist yet, so an in-sample
-   gain cannot be separated from tuning against these exact tasks.
+3. **The per-category count is still small.** One item moves a category by the
+   fraction implied by the per-category count in §2, and §7.1's simulated MDE is
+   above the registered 10% threshold. The suite is no longer a smoke signal,
+   but it is not a calibrated benchmark; item difficulty and discrimination are
+   not estimated by any solver.
+4. **The sealed set exists but is not independent.** The 24 sealed items were
+   authored by the same process and the same author as the scored suite, so a
+   sealed result controls for *tuning against these exact tasks*, not for the
+   author's shared taste. No arm has been run against it; the custody gate and
+   its tests are in place, and the freeze predates any model evaluation.
 5. **Feedback repair loops are not implemented.** Feedback is recorded and
    parity-enforced; the loop that feeds compiler output back is future work.
 6. **The corpus contamination check is a bounded sample**, not the full 754 MB
    cache. Coverage is in the receipt; a full pass needs a streaming implementation
    with a bounded shingle set.
-7. **Mutation testing is shallow.** One authored wrong answer per task; a
-   mutation campaign or property-based tests would strengthen the verifier.
+7. **Mutation testing is shallow.** One authored wrong answer per task, plus one
+   declared naive fix for one task per category. That is two independent wrong
+   answers for eight tasks and one for the rest; a mutation campaign or
+   property-based tests would strengthen the verifier further.
 8. **No 3B–8B quantised baseline exists locally**, so the product branch is
    planned, not measured.
 9. **The Rust-runtime adapter is untested end to end** — it needs the built
@@ -668,6 +870,18 @@ A win does **not** establish:
 10. **The HF adapter's residency and I/O fields are null with reasons.** The
     PyTorch path does not expose device read counters; that is a limitation of the
     adapter, not of the model.
+11. **Two historical pairs exceed the similarity thresholds.** `deps-04`/`deps-05`
+    and `deps-08`/`deps-09` share assertions and code structure above the
+    registered thresholds. They are in the v3-registered suite; replacing them
+    would change a registered fixture, so the screen reports them for a future
+    supersession rather than silently accepting or silently rewriting them.
+12. **The MDE exceeds the registered threshold at this n.** §7.1 reports a
+    simulated 80%-power MDE above the registered 10% threshold. A null result near the threshold would therefore be
+    under-powered, and must be reported as such rather than as evidence of no
+    effect.
+13. **The power model is a model.** The MDE is computed from a stated paired
+    discordance model and the registered bootstrap, not from measured arms. It
+    predicts what the instrument could resolve; it does not measure an effect.
 
 ## 10. Exact commands for the first real runs
 
@@ -688,7 +902,7 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-admission "results/train/admission/t2/$ARM.json" \
   --t2-training-receipt "results/t2/$ARM/run.json" \
   --t2-mask-order legacy \
-  --preregistration docs/capability-preregistration-v3.json \
+  --preregistration docs/capability-preregistration-v4.json \
   --out "results/capability/runs/t2-$ARM/generations.json"
 
 # the same for D, M, X, and H* with
@@ -724,7 +938,7 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-training-receipt "results/t2/X/run.json" \
   --t2-mask-order legacy \
   --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json \
-  --preregistration docs/capability-preregistration-v3.json \
+  --preregistration docs/capability-preregistration-v4.json \
   --out "results/capability/runs/t2-X/generations.json"
 ```
 
@@ -744,7 +958,7 @@ Step 2, check (CPU, rust court; the court needs `cargo` and the checker sandbox)
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py check \
   --generations "results/capability/runs/t2-$ARM/generations.json" \
-  --preregistration docs/capability-preregistration-v3.json \
+  --preregistration docs/capability-preregistration-v4.json \
   --out "results/capability/runs/t2-$ARM/result.json"
 ```
 
@@ -755,7 +969,7 @@ SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py check \
   --generations "results/capability/runs/t2-$ARM/generations.json" \
   --category lifetime-borrow \
-  --preregistration docs/capability-preregistration-v3.json \
+  --preregistration docs/capability-preregistration-v4.json \
   --out "results/capability/runs/t2-$ARM/result-lifetime.json"
 ```
 
@@ -779,7 +993,7 @@ SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- \
   python3 scripts/capability_court.py generate \
   --adapter-spec results/capability/adapters/rust-exact.json \
   --only borrow-01-local-reference,failing-01-chunk-boundary,trio-01-lifetime-chain \
-  --preregistration docs/capability-preregistration-v3.json \
+  --preregistration docs/capability-preregistration-v4.json \
   --out results/capability/runs/rust-exact-subset/generations.json
 ```
 
@@ -848,11 +1062,11 @@ STAMP=$(date -u +%Y%m%dT%H%M%SZ)
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 scripts/court rust -- sh -c "
   python3 scripts/capability_court.py fake-reference --out /tmp/cap-spec.json &&
   python3 scripts/capability_court.py generate --adapter-spec /tmp/cap-spec.json \
-    --preregistration docs/capability-preregistration-v3.json \
+    --preregistration docs/capability-preregistration-v4.json \
     --out results/capability/instrument-smoke-$STAMP/generations.json &&
   python3 scripts/capability_court.py check \
     --generations results/capability/instrument-smoke-$STAMP/generations.json \
-    --preregistration docs/capability-preregistration-v3.json \
+    --preregistration docs/capability-preregistration-v4.json \
     --out results/capability/instrument-smoke-$STAMP/result.json"
 ```
 

@@ -240,16 +240,23 @@ the inference-only, post-hoc selection family.
 
 ## The capability court is an instrument, not a result
 
-`docs/CAPABILITY-COURT.md` is the reference. As of S14 the suite, the checkers,
-the sandbox, the contamination gate and the pre-registration exist and are
-CPU-tested; no model has been evaluated on them.
+`docs/CAPABILITY-COURT.md` is the reference. As of S26 the scored suite (size in
+that document's §2), the trio, the sealed holdback, the checkers, the sandbox,
+the contamination gate, the near-duplicate screen and the v4 pre-registration
+exist and are CPU-tested; no model has been evaluated on any of them.
 
 - **The suite is authored and still small.** It is not a benchmark and not a
   random sample of programming work. The P14.4 expansion is recorded in
   `docs/CAPABILITY-COURT.md` §2 (generated suite and category counts); one item
-  still moves a category materially, and the confidence intervals are over
-  items, not over the population of software tasks. The easy/medium/hard labels
-  are author-assigned, not calibrated.
+  moves a category by the fraction implied by that count, and the confidence
+  intervals are over items, not over the population of software tasks. The
+  easy/medium/hard labels are author-assigned, not calibrated.
+- **The instrument is under-powered for the registered threshold.** The
+  simulated 80%-power minimum detectable effect reported in
+  `docs/CAPABILITY-COURT.md` §7.1 is above the registered 10% threshold. A null
+  result near the threshold must be reported as under-powered, not as evidence
+  of no effect. The threshold itself is unchanged; the numbers and the model are
+  in §7.1 and the power receipt.
 - **Correctness and likelihood are not merged.** The suite's judge is executable
   success (`cargo test` under the sandbox). A reference-continuation
   likelihood/NLL or KL is a **selector signal only**: it may choose a checkpoint
@@ -261,18 +268,28 @@ CPU-tested; no model has been evaluated on them.
   HumanEval, GSM8K, TruthfulQA, the T2 evaluation windows and a *bounded
   deterministic sample* of the training corpus, and it fails closed on overlap.
 - **The verifier is executable but not complete.** Hidden tests plus one
-  authored wrong mutation per task show that the checker discriminates; they do
-  not prove it rejects every wrong program. The suite now also proves that a
-  forged successful stdout does not pass.
+  authored wrong mutation per task, and one declared naive fix for one task per
+  category, show that the checker discriminates; they do not prove it rejects
+  every wrong program. The suite also proves that a forged successful stdout does
+  not pass.
+- **Near-duplicates are screened, not eliminated.** The similarity screen
+  compares diagnostic, code and assertion views with thresholds registered before
+  the run and rejects no pair involving a new item. Two pairs from the
+  v3-registered historical suite are above a threshold and are reported rather
+  than rewritten, because replacing them would change a registered fixture.
 - **The anti-superficial-specialisation trio is still below P11.21's item
   count.** It now has the operation families and surfaces recorded in
   `docs/CAPABILITY-COURT.md` §3, but the operation annotations are author-only,
   there is no inter-annotator agreement, and with so few tasks per surface an
   operation-family effect cannot be separated from a surface effect. Per-surface
   results are reported separately and never pooled.
-- **The expanded suite is not sealed.** Every item is visible to the development
-  loop; P14.7's held-back set does not exist yet, so an in-sample gain cannot be
-  separated from tuning against these exact tasks.
+- **The sealed set controls for tuning, not for the author's taste.** The
+  sealed items are gated behind an unlock flag and the registered hash, and no
+  arm has run against them. They were authored by the same author and process as
+  the scored suite, so a sealed result can separate an in-sample gain from tuning
+  against these exact tasks, but not from a shared authoring style. The set has
+  also been instrument-checked more than once during authoring; every unlock
+  record is retained, and the freeze predates any model evaluation.
 - **Compiler/test feedback loops are not implemented.** Feedback is recorded and
   parity-enforced, so no arm can currently receive a hidden tool subsidy, but
   the repair loop itself is future work.

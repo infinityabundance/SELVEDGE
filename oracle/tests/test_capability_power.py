@@ -61,6 +61,15 @@ def test_the_simulation_power_is_near_the_requested_power():
                                   replications=60, resamples=200)
     assert 0.6 <= result["ci_power"] <= 1.0
     assert result["mean_observed_difference"] > 0
+    assert result["baseline"] == 0.5
+
+
+def test_the_empirical_mde_is_found_on_the_grid():
+    result = power.empirical_mde(n_per_category=18, categories=8, step=0.02,
+                                 max_relative=0.20, replications=40, resamples=150)
+    assert result["absolute"] is not None
+    assert 0.0 < result["absolute"] < 0.20 * 0.5
+    assert result["curve"][-1]["decision_power"] >= 0.8
 
 
 def test_a_zero_effect_is_refused():

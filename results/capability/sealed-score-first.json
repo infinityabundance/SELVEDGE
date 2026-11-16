@@ -1,0 +1,513 @@
+{
+  "checker": {
+    "failures": [
+      "sealed-borrow-01-sort-closure-mutation: the failing state did not fail as declared",
+      "sealed-concurrency-01-bounded-channel-join: the reference did not pass (timeout)",
+      "sealed-failing-01-luhn-parity: the failing state did not fail as declared",
+      "sealed-failing-01-luhn-parity: the declared mutation passed the checker"
+    ],
+    "initial_as_expected": 22,
+    "mutation_failed": 23,
+    "reference_passed": 23,
+    "tasks_checked": 24
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "values.sort();",
+        "kind": "declared",
+        "replace": "values.sort_by(|a, b| b.cmp(a));",
+        "status": "test_failed"
+      },
+      "passed": false,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-borrow-01-sort-closure-mutation",
+      "tree_sha256": "53c6ed101417a765dafb9f21e19ef8cb2348627d4e0b44d2abc82bf83e5dfe11"
+    },
+    {
+      "category": "lifetime-borrow",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "values.swap(0, last);",
+        "kind": "declared",
+        "replace": "values.swap(1, last);",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-borrow-02-swap-two-elements",
+      "tree_sha256": "c370bbce1b3c34372ece4bb06cdcb26f3f883aaaa505bd2e9e6b8a83b77ffd83"
+    },
+    {
+      "category": "lifetime-borrow",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "segments.first()",
+        "kind": "declared",
+        "replace": "segments.last()",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-borrow-03-temporary-split-iterator",
+      "tree_sha256": "449637ec5f4b8caf3f03628653aef08408d82c919dc677b01a865dbb25d5c38a"
+    },
+    {
+      "category": "concurrency",
+      "initial": {
+        "expected_kind": "timeout",
+        "status": "timeout"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "for value in 0..count {",
+        "kind": "declared",
+        "replace": "for value in 0..count.min(1) {",
+        "status": "timeout"
+      },
+      "passed": false,
+      "reference": {
+        "status": "timeout"
+      },
+      "task": "sealed-concurrency-01-bounded-channel-join",
+      "tree_sha256": "408408b8a1a96445c7a894d6567836ec43a68cea05ba61930ca0782a04916017"
+    },
+    {
+      "category": "concurrency",
+      "initial": {
+        "expected_kind": "test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "counter.swap(0, Ordering::SeqCst)",
+        "kind": "declared",
+        "replace": "counter.load(Ordering::SeqCst)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-concurrency-02-atomic-take-pair",
+      "tree_sha256": "92525109a8689aad027811a3dc4bc911aaa2b7cf397ccb5c67328cc6b542bf40"
+    },
+    {
+      "category": "concurrency",
+      "initial": {
+        "expected_kind": "test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "Some(value + 1)",
+        "kind": "declared",
+        "replace": "Some(value + 2)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-concurrency-03-fetch-update-noop",
+      "tree_sha256": "dd54424e2c6f461d0965e348851ad4f79347a51dd6fdc8f96e08c13dac19215b"
+    },
+    {
+      "category": "dependency-compat",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "Cargo.toml",
+        "find": "\n[workspace]\n",
+        "kind": "declared",
+        "replace": "\n",
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-deps-01-missing-workspace-key",
+      "tree_sha256": "3557cecb2c7788b6ba099f468c956403904b3cd26da771d5c41c2c82ab91948c"
+    },
+    {
+      "category": "dependency-compat",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "Cargo.toml",
+        "find": "resolver = \"2\"",
+        "kind": "declared",
+        "replace": "resolver = 2",
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-deps-02-resolver-type",
+      "tree_sha256": "70e4e5f8633179199f8ca35e62981a9f9a240ac1e910bba8d1ba26fab5efa763"
+    },
+    {
+      "category": "dependency-compat",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "fetch_add(1, Ordering::SeqCst) + 1",
+        "kind": "declared",
+        "replace": "fetch_add(1, Ordering::SeqCst)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-deps-03-static-mut-edition",
+      "tree_sha256": "57b674c75f728da8304aed912f537b9d34521598785ec2a5a5bebe97fb259aa5"
+    },
+    {
+      "category": "failing-test",
+      "initial": {
+        "expected_kind": "test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "digits.iter().rev().enumerate()",
+        "kind": "declared",
+        "replace": "digits.iter().enumerate()",
+        "status": "pass"
+      },
+      "passed": false,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-failing-01-luhn-parity",
+      "tree_sha256": "89a5551e7e901c20dbcd8f796a0d5367fdbccc0bf39811eadbda60d789e9db3a"
+    },
+    {
+      "category": "failing-test",
+      "initial": {
+        "expected_kind": "test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "value % 36",
+        "kind": "declared",
+        "replace": "value % 35",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-failing-02-base36-table",
+      "tree_sha256": "3715053156dc0bb8b84f936e6bd0f2cf9705bfae70c67e5f057d013f8eb1517f"
+    },
+    {
+      "category": "failing-test",
+      "initial": {
+        "expected_kind": "test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "matrix.first().map(|row| row.len())",
+        "kind": "declared",
+        "replace": "matrix.first().map(|row| row.len() - 1)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-failing-03-rectangle-transpose",
+      "tree_sha256": "dd87e2915e39058a13d77f9eac2903cb64edd22e32ead579e6a21c018bb754ae"
+    },
+    {
+      "category": "api-migration",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "Some(value)",
+        "kind": "declared",
+        "replace": "None",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-migrate-01-option-argument",
+      "tree_sha256": "d31ec3dd6470e9833da9e262e6199333605412f545594fd26911be7413df162f"
+    },
+    {
+      "category": "api-migration",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "entries.len()",
+        "kind": "declared",
+        "replace": "entries.len() + 1",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-migrate-02-iterator-return",
+      "tree_sha256": "5f0a5d3b5180349c0dbd46667b9288902679b0e8e8e6f1b2ae95fab55f7edae4"
+    },
+    {
+      "category": "api-migration",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "Ok(value * 2)",
+        "kind": "declared",
+        "replace": "Ok(value + 2)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-migrate-03-error-not-std-error",
+      "tree_sha256": "f44e966ed3bfac8020f33762a5fb9f7c57703e698cbe0e9a53deeb53a58e1118"
+    },
+    {
+      "category": "repo-scale",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/model.rs",
+        "find": "self.value",
+        "kind": "declared",
+        "replace": "self.value + 1",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-repo-01-private-method",
+      "tree_sha256": "ab6e6833c82f98d47b37e3f116e851abe5279e999b65dc741ac57587d8cec56e"
+    },
+    {
+      "category": "repo-scale",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "pub use right::Item as RightItem;",
+        "kind": "declared",
+        "replace": "pub use right::Item as RightItem;\npub use left::Item as RightItem;",
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-repo-02-duplicate-reexport",
+      "tree_sha256": "ab592bdd27fdcf7d1b81e0df52615e55f4123f5509cbf09b6d92f12a5d7acb4d"
+    },
+    {
+      "category": "repo-scale",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/build.rs",
+        "find": "\"default\"",
+        "kind": "declared",
+        "replace": "\"other\"",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-repo-03-missing-field",
+      "tree_sha256": "8e8774d524ed96942bf77736169fd05937996b52cfcd1df9a6dcf1bf5face0c6"
+    },
+    {
+      "category": "semantic-repair",
+      "initial": {
+        "expected_kind": "hidden_test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "sum.div_euclid(values.len() as i64)",
+        "kind": "declared",
+        "replace": "sum / values.len() as i64",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-semantic-01-floor-division",
+      "tree_sha256": "7e6d69a977bfaf7f03adb6900c1cc34d72a0b7964252fd165ea72d2eb650d0fc"
+    },
+    {
+      "category": "semantic-repair",
+      "initial": {
+        "expected_kind": "hidden_test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "text.trim()",
+        "kind": "declared",
+        "replace": "text.trim_end()",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-semantic-02-trim-both-ends",
+      "tree_sha256": "eb531403b53704148da42831b1c160da68d73b7d87e7cc0abdc1b0cf26b4af0a"
+    },
+    {
+      "category": "semantic-repair",
+      "initial": {
+        "expected_kind": "hidden_test_failure",
+        "status": "test_failed"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "(part * 100 + total / 2) / total",
+        "kind": "declared",
+        "replace": "part * 100 / total",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-semantic-03-percent-rounding",
+      "tree_sha256": "117aa34ec41800a0d72fa70999c8aaec4e91ce0d445fc22bba82b0d457b8b1d0"
+    },
+    {
+      "category": "trait-impl",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "Self { entries: Vec::new() }",
+        "kind": "declared",
+        "replace": "Self { entries: vec![String::new()] }",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-traits-01-unconstrained-impl-parameter",
+      "tree_sha256": "bb2c7251ac46c03762c5704f4c7f84d9f7412bb7de0d73fddb89eaa45d7cdf70"
+    },
+    {
+      "category": "trait-impl",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "element.value()",
+        "kind": "declared",
+        "replace": "element.value() + 1",
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-traits-02-missing-associated-item",
+      "tree_sha256": "c85b743c61bc4fd884ccfbcdf4e346eedfd66394405bd10b68ed684704162f59"
+    },
+    {
+      "category": "trait-impl",
+      "initial": {
+        "expected_kind": "compile_error",
+        "status": "compile_error"
+      },
+      "mutation": {
+        "file": "src/lib.rs",
+        "find": "store.get(0)",
+        "kind": "declared",
+        "replace": "store.get(1)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "status": "pass"
+      },
+      "task": "sealed-traits-03-dyn-associated-type",
+      "tree_sha256": "85118fbe08f6d34d71d3105bfe1170bf2139983f750deec2a0023ac7f8e3a506"
+    }
+  ],
+  "note": "This is an instrument self-check of the sealed set, not a model evaluation. A model result is published once per revision and carries this unlock record.",
+  "revision": "e59ed76d40b766cbcd411dc6697870bfa332bfcf",
+  "schema": "selvedge/capability-sealed-score/v1",
+  "sealed_sha256": "88207aadf3dad311d76ba7fa89b40767f05cf0f47f8424016e4205225297d791",
+  "stamp": "20261116T080255Z",
+  "suite_root": "fixtures/capability",
+  "unlock": {
+    "flag": "--unlock-sealed",
+    "frozen_utc": "2026-11-16T08:01:29Z",
+    "one_shot": true,
+    "policy": "The sealed set is frozen at the registered UTC time and sealed hash. It may not be used for tuning, prompt selection, few-shot examples, checkpoint selection, threshold selection, or any iterative development. It is opened once, for a declared external comparison, with the unlock flag and the registered hash, and its result is published once per revision. Re-running it after seeing a result is a new revision and must be reported as such.",
+    "schema": "selvedge/capability-sealed-unlock/v1",
+    "sealed_sha256": "88207aadf3dad311d76ba7fa89b40767f05cf0f47f8424016e4205225297d791",
+    "unlocked": true,
+    "unlocked_utc": "2026-11-16T08:01:33Z"
+  },
+  "verdict": "fail"
+}
