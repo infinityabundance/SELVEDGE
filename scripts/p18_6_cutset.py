@@ -634,10 +634,32 @@ def s4(records):
 
     primary = analyse(EPSILON_PRIMARY)
     sensitivity = [analyse(epsilon) for epsilon in EPSILON_SENSITIVITY]
+    per_context = []
+    for record in records:
+        flags, _destructive = minimal_flags(record, EPSILON_PRIMARY)
+        per_context.append(
+            {
+                "window": record["window"],
+                "doc_id": record["doc_id"],
+                "half": "discovery" if record["doc_id"] in DISCOVERY_DOCS else "replication",
+                "layer": record["layer"],
+                "g": record["g"],
+                "j": record["j"],
+                "L_S": record["a"],
+                "L_Sg": record["b"],
+                "L_Sj": record["c"],
+                "L_Sgj": record["d"],
+                "E": record["E"],
+                "minimal_O": flags["O"],
+                "minimal_O_g": flags["O_g"],
+                "minimal_O_j": flags["O_j"],
+            }
+        )
     return {
         "primary": primary,
         "sensitivity": sensitivity,
         "levels": level_summary(),
+        "per_context": sorted(per_context, key=lambda row: (row["layer"], row["g"], row["j"], row["window"])),
         "definition": "O is measured-minimal destructive iff L(O) > epsilon and every measured immediate subset is <= epsilon",
     }
 
@@ -1150,6 +1172,10 @@ def render_markdown(receipt):
     lines.append("")
     lines.append("A configuration can only be *measured*-minimal: only 2 of the 11 immediate")
     lines.append("subsets of an omission set `O` were measured. No untested subset is assumed safe.")
+    lines.append("")
+    lines.append("The full 160-row per-subset safety table (window, half, layer, `g`, `j`, the four")
+    lines.append("measured losses, `E`, and the three minimal flags) is in the JSON receipt under")
+    lines.append("`s4_minimal_destructive.per_context`.")
     lines.append("")
     lines.append("## 7. Coverage: covering array versus random sampling (S5)")
     lines.append("")
