@@ -528,6 +528,36 @@ def s4(records):
         "replication": REPLICATION_DOCS,
     }
 
+    def level_summary():
+        per_layer = {}
+        all_values = []
+        for layer in sorted({record["layer"] for record in records}):
+            subset = [record for record in records if record["layer"] == layer]
+            values = [value for record in subset for value in (record["a"], record["b"], record["c"], record["d"])]
+            all_values.extend(values)
+            per_layer[str(layer)] = {
+                "L_S": distribution([record["a"] for record in subset]),
+                "L_Sg": distribution([record["b"] for record in subset]),
+                "L_Sj": distribution([record["c"] for record in subset]),
+                "L_Sgj": distribution([record["d"] for record in subset]),
+                "min": min(values),
+                "median": quantile(values, 0.5),
+                "max": max(values),
+                "fraction_le_0.25": mean(1.0 if value <= 0.25 else 0.0 for value in values),
+                "fraction_le_1.00": mean(1.0 if value <= 1.00 else 0.0 for value in values),
+            }
+        return {
+            "per_layer": per_layer,
+            "n_values": len(all_values),
+            "min": min(all_values),
+            "median": quantile(all_values, 0.5),
+            "max": max(all_values),
+            "count_le": {
+                str(epsilon): sum(1 for value in all_values if value <= epsilon)
+                for epsilon in EPSILON_SENSITIVITY
+            },
+        }
+
     def analyse(epsilon):
         configs = {}
         contexts_with_minimal = 0
@@ -607,6 +637,7 @@ def s4(records):
     return {
         "primary": primary,
         "sensitivity": sensitivity,
+        "levels": level_summary(),
         "definition": "O is measured-minimal destructive iff L(O) > epsilon and every measured immediate subset is <= epsilon",
     }
 
@@ -840,6 +871,7 @@ def instrument_gap():
             "H* has only single-expert full-bank LOO labels; no pair or triple omission, and no deployed-budget reference set",
             "no interaction measurement on the held-out general corpus, the code slice or the math slice",
             "no systematic census of the group-pair space: 20 of 3,360 possible (layer, group-pair) cells were measured",
+            "the stored interaction instrument's baseline KL is about 10 nats because every non-probed layer keeps the static top-5 magnitude mask, so it cannot test a 0.25-nat minimality criterion at all",
             "no task-conditioned interaction and no learned-bank cut-set test",
         ],
         "minimal_gpu_experiment": {
@@ -906,6 +938,7 @@ def decisions(s1_result, s2_result, s4_result, s5_result):
             "value": d3,
             "replicated_configurations": s4_result["primary"]["replicated_configurations"],
             "rule": "at least one measured-minimal configuration replicates in >=3/4 discovery and >=3/4 replication windows at epsilon=0.25",
+            "interpretation": "structurally degenerate on this instrument: every measured KL exceeds 1.0 nats, so no measured immediate subset can be safe at epsilon=0.25; the zero count is not evidence about trained models",
         },
         "D4_covering_beats_random": {
             "value": d4,
@@ -1070,6 +1103,37 @@ def render_markdown(receipt):
     for entry in s4r["sensitivity"]:
         rows.append([f(entry["epsilon"], 2), entry["contexts_with_any_measured_minimal"], entry["distinct_configurations"], entry["replicated_configurations"], entry["destructive_direction_replicated_configurations"]])
     lines.extend(table(["ε", "contexts with any minimal", "distinct configs", "replicated configs", "replicated destructive direction"], rows))
+    lines.append("")
+    levels = s4r["levels"]
+    lines.append("Measured loss levels (descriptive; not a decision input):")
+    lines.append("")
+    rows = []
+    for layer, entry in levels["per_layer"].items():
+        rows.append([
+            layer,
+            f(entry["L_S"]["median"]),
+            f(entry["L_Sg"]["median"]),
+            f(entry["L_Sj"]["median"]),
+            f(entry["L_Sgj"]["median"]),
+            f(entry["min"]),
+            f(entry["max"]),
+            f(entry["fraction_le_0.25"]),
+        ])
+    lines.extend(table(["layer", "median L(S)", "median L(S+g)", "median L(S+j)", "median L(S+g+j)", "min", "max", "frac ≤ 0.25"], rows))
+    lines.append("")
+    lines.append(
+        f"**The ε test is structurally degenerate on this instrument.** Across all "
+        f"{levels['n_values']} measured KL values (160 contexts x 4 masks), the minimum is "
+        f"{f(levels['min'])} nats, the median is {f(levels['median'])} and the maximum is "
+        f"{f(levels['max'])}; the count at or below ε is "
+        + ", ".join(f"{key}: {value}" for key, value in levels["count_le"].items())
+        + ". The instrument's baseline is two orders of magnitude above the 0.25-nat usable"
+        " bound because every non-probed layer keeps the static top-5 magnitude mask. No"
+        " measured immediate subset can therefore be safe at any registered ε, and the zero"
+        " minimal count is a property of the instrument's baseline, not evidence that minimal"
+        " destructive sets are rare in a trained model. The 'destructive direction' count is"
+        " likewise uninformative: every measured set is destructive."
+    )
     lines.append("")
     lines.append("A configuration can only be *measured*-minimal: only 2 of the 11 immediate")
     lines.append("subsets of an omission set `O` were measured. No untested subset is assumed safe.")
@@ -1253,14 +1317,17 @@ def main() -> int:
     out_md.parent.mkdir(parents=True, exist_ok=True)
     receipt_name = str(out_json.relative_to(ROOT)) if out_json.is_relative_to(ROOT) else str(out_json)
 
+    levels = s4_result["levels"]
     if decision["p186_kill_fires"]:
         verdict = (
-            "**Negative on the registered kill criterion.** No measured-minimal destructive "
-            "omission set replicates across the discovery and replication halves at epsilon = 0.25. "
-            "Whatever non-additivity the stored instrument contains, it does not produce a "
-            "replicating minimal destructive set, and nothing is fed to P16.12. This says nothing "
-            "about trained banks; it says the stored dense-teacher interaction instrument cannot "
-            "supply a cut set."
+            "**Negative on the registered kill criterion, and the test is structurally "
+            "degenerate on this instrument.** No measured-minimal destructive omission set "
+            "replicates at epsilon = 0.25. The reason is that every one of the "
+            f"{levels['n_values']} measured KL values exceeds 1.0 nats (minimum "
+            f"{levels['min']:.3f}, median {levels['median']:.3f}), so no measured immediate "
+            "subset can be safe at the usable-tier bound. The zero count is a property of "
+            "the instrument's baseline, not evidence that minimal destructive sets are absent "
+            "from trained models. Nothing is fed to P16.12."
         )
     else:
         verdict = (
@@ -1268,14 +1335,22 @@ def main() -> int:
             "This is a candidate cut-set structure on the stored dense-teacher instrument, not a "
             "capability cut set and not a property of any trained bank."
         )
-    if decision["D1_interaction_non_negligible"]["value"] and decision["D2_interaction_replicates"]["value"]:
+    d1_value = decision["D1_interaction_non_negligible"]["value"]
+    d2_value = decision["D2_interaction_replicates"]["value"]
+    if d1_value and d2_value:
         verdict += (
             " The pairwise interaction also passes D1 and D2, so the stored data do show a "
             "replicating non-additive structure on this instrument."
         )
+    elif d1_value and not d2_value:
+        verdict += (
+            " The interaction is non-negligible (D1 passes) but its sign is not stable across "
+            "the discovery/replication split (D2 fails), so the stored data do not establish a "
+            "replicating pair-level interaction even on this instrument."
+        )
     else:
         verdict += (
-            " The interaction does not pass both D1 and D2, so the stored data do not establish a "
+            " The interaction does not pass D1 or D2, so the stored data do not establish a "
             "replicating non-additive structure even on this instrument."
         )
 
