@@ -1,0 +1,2346 @@
+{
+  "checker": {
+    "failures": [],
+    "initial_as_expected": 27,
+    "mutation_failed": 27,
+    "probes_as_expected": 5,
+    "probes_checked": 5,
+    "reference_passed": 27,
+    "tasks_checked": 27
+  },
+  "command": "scripts/capability_selftest.py --out results/capability/selftest-20261116T022833Z.json",
+  "created_utc": "2026-11-16T02:29:13Z",
+  "derived": {
+    "checker_address_space_gib": 3.0,
+    "checker_cpu_seconds": 60,
+    "checker_timeout_seconds": 45.0,
+    "court_memory_gib": 12.0,
+    "max_check_ms": 164,
+    "max_workdir_mib": 15.003016471862793,
+    "probe_tasks": 5,
+    "run_only_address_space_mib": 512.0,
+    "run_only_timeout_seconds": 10.0,
+    "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc",
+    "suite_tasks": 24,
+    "tasks_checked": 27,
+    "trio_tasks": 3,
+    "workdir_budget_mib": 2048.0
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 54685696,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "1221b17788bf4473fe31551181c6df98e9619ae122a134ccaf60a112a8f2a0d6",
+          "stderr_tail": "error[E0515]: cannot return reference to local variable `text`\n --> src/lib.rs:6:5\n  |\n6 |     &text\n  |     ^^^^^ returns a reference to data owned by the current function\n\nFor more information about this error, try `rustc --explain E0515`.\nerror: could not compile `borrow_01_local_reference` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 62600
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0515"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 167026688,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14475021
+        },
+        "file": "src/lib.rs",
+        "find": ":ready",
+        "kind": "declared",
+        "replace": ":READY",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 144941056,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14474453
+      },
+      "task": "borrow-01-local-reference",
+      "tree_sha256": "e2e94338252c4c2e6797e02e5d4ff6583b7626777e1b67d5253d88370b106710"
+    },
+    {
+      "category": "lifetime-borrow",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 167026688,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "d63d15b2d790d6f9a06813035a0da6175fd0c62195f31fccdb268ee67d6277fe",
+          "stderr_tail": "error[E0502]: cannot borrow `*values` as mutable because it is also borrowed as immutable\n --> src/lib.rs:5:5\n  |\n4 |     let last = values.last().unwrap_or(&0);\n  |                ------ immutable borrow occurs here\n5 |     values.push(value);\n  |     ^^^^^^^^^^^^^^^^^^ mutable borrow occurs here\n6 |     *last\n  |     ----- immutable borrow later used here\n\nFor more information about this error, try `rustc --explain E0502`.\nerror: could not compile `borrow_02_mutate_while_borrowed` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 64351
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0502"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 167026688,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14466770
+        },
+        "file": "src/lib.rs",
+        "find": "unwrap_or(0)",
+        "kind": "declared",
+        "replace": "unwrap_or(1)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 167026688,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14466459
+      },
+      "task": "borrow-02-mutate-while-borrowed",
+      "tree_sha256": "79cf88b53a341b21951f7da6d3e9dfbc242e17b7ef4eb7d04a68b752e5c101bb"
+    },
+    {
+      "category": "lifetime-borrow",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 167026688,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "5ca9ddcb0f99ed3dc511b86e27079b37054bdf8f73f5305848bcfa94dd13a978",
+          "stderr_tail": "elf {\n   |                ---- binding `text` declared here\n10 |         let first = text.split_whitespace().next().unwrap_or(\"\");\n   |                     ---- borrow of `text` occurs here\n11 |         Self { text, first }\n   |                ^^^^  ----- this usage requires that `text` is borrowed for `'static`\n   |                |\n   |                move out of `text` occurs here\n\nSome errors have detailed explanations: E0505, E0597.\nFor more information about an error, try `rustc --explain E0505`.\nerror: could not compile `borrow_03_self_referential_window` (lib) due to 2 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 70265
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0597"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14556851
+        },
+        "file": "src/lib.rs",
+        "find": "unwrap_or(\"\")",
+        "kind": "declared",
+        "replace": "unwrap_or(\"x\")",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 167370752,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14556359
+      },
+      "task": "borrow-03-self-referential-window",
+      "tree_sha256": "e96f4a8476c5ad7f16da64bf0993c272112e217f22f366519937e9093f6268c1"
+    },
+    {
+      "category": "lifetime-borrow",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "10b7d64db15215c1d061382337022821459ab95db45fe93b283b00d1d64642c9",
+          "stderr_tail": "p` as mutable because it is also borrowed as immutable\n --> src/lib.rs:9:13\n  |\n7 |     for (key, _value) in map.iter() {\n  |                          ----------\n  |                          |\n  |                          immutable borrow occurs here\n  |                          immutable borrow later used here\n8 |         if key.len() > max_len {\n9 |             map.remove(key);\n  |             ^^^^^^^^^^^^^^^ mutable borrow occurs here\n\nFor more information about this error, try `rustc --explain E0502`.\nerror: could not compile `borrow_04_iterator_invalidation` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 65936
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0502"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 164,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15731803
+        },
+        "file": "src/lib.rs",
+        "find": "key.len() > max_len",
+        "kind": "declared",
+        "replace": "key.len() >= max_len",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 182325248,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 15731514
+      },
+      "task": "borrow-04-iterator-invalidation",
+      "tree_sha256": "0a3780c31a9a3954414485304e8369afa8fc13afe72fcef439e5a6cba18ead89"
+    },
+    {
+      "category": "concurrency",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 25001,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 25001,
+          "exit_code": -9,
+          "phase": null,
+          "problems": null,
+          "signal": 9,
+          "status": "timeout",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_tail": "",
+          "wall_seconds": 25.0,
+          "workdir_bytes": 15279000
+        },
+        "expected_kind": "timeout",
+        "must_contain": [
+          "running 3 tests"
+        ],
+        "status": "timeout"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 40,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 25.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 25.0,
+          "workdir_bytes": 15280935
+        },
+        "file": "src/lib.rs",
+        "find": "*guard_a -= amount;",
+        "kind": "declared",
+        "replace": "*guard_a += amount;",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 182325248,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 25.0,
+        "workdir_bytes": 15280225
+      },
+      "task": "concurrency-01-lock-order-deadlock",
+      "tree_sha256": "cf7351d439e8054ffe72dd31b315a77bb8ed7096d544a8a6e3ed1fdf7b0ba6b7"
+    },
+    {
+      "category": "concurrency",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15233705
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "assertion `left == right` failed"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15230957
+        },
+        "file": "src/lib.rs",
+        "find": "counter.fetch_add(1, Ordering::SeqCst)",
+        "kind": "declared",
+        "replace": "counter.fetch_add(2, Ordering::SeqCst)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 182325248,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 15230432
+      },
+      "task": "concurrency-02-lost-update",
+      "tree_sha256": "1ea908bde4941f9af714a5736356ccab96b34cf36dc61173a3f9b518b88ff4b0"
+    },
+    {
+      "category": "concurrency",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "34a15e6caeb9a79cca79687ed82b70926b79e76113b9ef8e8d0a2c01e14b1d0d",
+          "stderr_tail": "nt between threads safely\n   |\n   = help: within `{closure@src/lib.rs:15:32: 15:39}`, the trait `Send` is not implemented for `Rc<Vec<i64>>`\nnote: required because it's used within this closure\n  --> src/lib.rs:15:32\n   |\n15 |             std::thread::spawn(move || {\n   |                                ^^^^^^^\nnote: required by a bound in `spawn`\n  --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/thread/functions.rs:125:0\n\nFor more information about this error, try `rustc --explain E0277`.\nerror: could not compile `concurrency_03_send_boundary` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 69961
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 164,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15432849
+        },
+        "file": "src/lib.rs",
+        "find": "part[start..end].iter().copied().sum::<i64>()",
+        "kind": "declared",
+        "replace": "part[start..end].iter().copied().take(1).sum::<i64>()",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 182325248,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 15416108
+      },
+      "task": "concurrency-03-send-boundary",
+      "tree_sha256": "bdde004d940a344a374512ed2e64b87143e7a01b2e2f32126e77d11e071fed17"
+    },
+    {
+      "category": "dependency-compat",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 32,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 182325248,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 32,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "ca2915c806291de743844be1c0545cc0edb7e422ed5badc40a3900b6a0956b51",
+          "stderr_tail": "error: failed to select a version for the requirement `scaling = \"^1.2\"`\ncandidate versions found which didn't match: 2.0.0\nlocation searched: /work/target/capability-work/deps-01-version-requirement/dep\nrequired by package `deps_01_version_requirement v0.1.0 (/work/target/capability-work/deps-01-version-requirement)`\nnote: offline mode (via `--offline`) can sometimes cause surprising resolution failures\nhelp: if this error is too confusing you may wish to retry without `--offline`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 1664
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "failed to select a version"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14416230
+        },
+        "file": "src/lib.rs",
+        "find": "percent as f64 / 100.0",
+        "kind": "declared",
+        "replace": "percent as f64",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 198336512,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14415923
+      },
+      "task": "deps-01-version-requirement",
+      "tree_sha256": "7c808f53f2dab41eed5af3b24e913331d97d96022ff17c0cd9b8a68e9e6799f0"
+    },
+    {
+      "category": "dependency-compat",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "7042272425f7126ec7383d3f599d9ab1599308c8c80acc6103b0f5ae4503959b",
+          "stderr_tail": ": for more information, see <https://doc.rust-lang.org/reference/patterns.html#binding-modes>\nnote: matching on a reference type with a non-reference pattern implicitly borrows the contents\n --> src/lib.rs:6:9\n  |\n6 |         Some(ref inner) => format!(\"some {inner}\"),\n  |         ^^^^^^^^^^^^^^^ this non-reference pattern matches on a reference type `&_`\nhelp: remove the unnecessary binding modifier\n  |\n6 -         Some(ref inner) => format!(\"some {inner}\"),\n6 +         Some(inner) => format!(\"some {inner}\"),\n  |\n\nerror: could not compile `deps_02_edition_2024` (lib) due to 3 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 67823
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "gen"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "cf17863fb572b71dc36fefd670dfe1231ee501f5312b5f8ff06fd73cd6013685",
+          "stderr_tail": "ven\n --> src/lib.rs:5:37\n  |\n5 |         Some(inner) => format!(\"some{}\"),\n  |                                     ^^\n\nwarning: unused variable: `inner`\n --> src/lib.rs:5:14\n  |\n5 |         Some(inner) => format!(\"some{}\"),\n  |              ^^^^^ help: if this is intentional, prefix it with an underscore: `_inner`\n  |\n  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nerror: could not compile `deps_02_edition_2024` (lib) due to 1 previous error; 1 warning emitted\nerror: could not compile `deps_02_edition_2024` (lib test) due to 1 previous error; 1 warning emitted\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 67061
+        },
+        "file": "src/lib.rs",
+        "find": "some {inner}",
+        "kind": "declared",
+        "replace": "some{}",
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14479697
+      },
+      "task": "deps-02-edition-2024",
+      "tree_sha256": "99dd71292d55bd444b90febedfbec964d1e87d3fcfa083e2485345a1d2720e76"
+    },
+    {
+      "category": "dependency-compat",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "20482c092c12e2ff94c8be58644faf59b2ad9807771b1458b2f89210d1d03eef",
+          "stderr_tail": "> String {\n  |        ^^^^^^^^^^^^^^\n\nerror[E0425]: cannot find function `backend` in crate `textkit`\n  --> src/lib.rs:8:14\n   |\n 8 |     textkit::backend()\n   |              ^^^^^^^ not found in `textkit`\n   |\nnote: found an item that was configured out\n  --> dep/src/lib.rs:13:8\n   |\n12 | #[cfg(feature = \"fast\")]\n   |       ---------------- the item is gated behind the `fast` feature\n13 | pub fn backend() -> &'static str {\n   |        ^^^^^^^\n\nFor more information about this error, try `rustc --explain E0425`.\nerror: could not compile `deps_03_optional_feature` (lib) due to 2 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 71864
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0425"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "c3b0996f6932d2ff383cc8fc45aa499114d550e4209366f12c3f4d1bdc5b6ece",
+          "stderr_tail": "ate `textkit`\n  --> src/lib.rs:8:14\n   |\n 8 |     textkit::backend()\n   |              ^^^^^^^ not found in `textkit`\n   |\nnote: found an item that was configured out\n  --> dep/src/lib.rs:13:8\n   |\n12 | #[cfg(feature = \"fast\")]\n   |       ---------------- the item is gated behind the `fast` feature\n13 | pub fn backend() -> &'static str {\n   |        ^^^^^^^\n\nFor more information about this error, try `rustc --explain E0425`.\nerror: could not compile `deps_03_optional_feature` (lib) due to 2 previous errors\nerror: could not compile `deps_03_optional_feature` (lib test) due to 2 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 84496
+        },
+        "file": "Cargo.toml",
+        "find": "features = [\"fast\"]",
+        "kind": "declared",
+        "replace": "features = []",
+        "status": "compile_error"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14848152
+      },
+      "task": "deps-03-optional-feature",
+      "tree_sha256": "7aea6880573f6b08ecc6a844fca16254b6bcb480b0e4fda8cd37638858f0811d"
+    },
+    {
+      "category": "failing-test",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+          "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14428862
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14396396
+        },
+        "file": "src/lib.rs",
+        "find": "len.div_ceil(size)",
+        "kind": "declared",
+        "replace": "len / size",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14399127
+      },
+      "task": "failing-01-chunk-boundary",
+      "tree_sha256": "1b9294435c89e809bc0c94c048badee5f2ad9396d3c1347ea30a7157f14e4fe5"
+    },
+    {
+      "category": "failing-test",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+          "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14464756
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "index out of bounds"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14467193
+        },
+        "file": "src/lib.rs",
+        "find": ".unwrap_or(0)",
+        "kind": "declared",
+        "replace": ".unwrap_or(1)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14466773
+      },
+      "task": "failing-02-empty-input",
+      "tree_sha256": "84d0459ada4f92f41a3aaa6d828d22b1347b0bc9e0635a68c478312dedaf62a7"
+    },
+    {
+      "category": "failing-test",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+          "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14448290
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "attempt to add with overflow"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14425561
+        },
+        "file": "src/lib.rs",
+        "find": "saturating_add",
+        "kind": "declared",
+        "replace": "wrapping_add",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14425054
+      },
+      "task": "failing-03-overflow-boundary",
+      "tree_sha256": "ecf60042205d8efa5c2aab19b4f49793d3a3942cc392924a7feed0eecc528f01"
+    },
+    {
+      "category": "failing-test",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+          "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15111845
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14918866
+        },
+        "file": "src/lib.rs",
+        "find": "(true, false) => std::cmp::Ordering::Greater",
+        "kind": "declared",
+        "replace": "(true, false) => std::cmp::Ordering::Less",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14918540
+      },
+      "task": "failing-04-nan-ordering",
+      "tree_sha256": "85bbc6d08f8f0e594db60dfc9d8923c4b3bf01bb6165552e73d11af2981869f4"
+    },
+    {
+      "category": "api-migration",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "df773e285a244807f956e946a92e7bca555027dee8c1d53dd941efdee2561bc0",
+          "stderr_tail": "error[E0599]: no method named `map_err` found for enum `Option<T>` in the current scope\n --> src/lib.rs:6:43\n  |\n6 |     let measurement = units::parse(input).map_err(|error| error.to_string())?;\n  |                                           ^^^^^^^\n  |\nhelp: there is a method `map_or` with a similar name, but with different arguments\n --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs:1222:4\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `migrate_01_signature` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 73749
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0599"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14703993
+        },
+        "file": "src/lib.rs",
+        "find": "invalid measurement",
+        "kind": "declared",
+        "replace": "invalid",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14703401
+      },
+      "task": "migrate-01-signature",
+      "tree_sha256": "eb4af59a9ab758030e92141244f0980c8697d9765f02b8a59fc3a683ec9c38bb"
+    },
+    {
+      "category": "api-migration",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 203718656,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "dd7ea44bf7c1d5c0bfb2c31ab00c6f1e31219d7948427b82aaeded69ea819fef",
+          "stderr_tail": "error[E0599]: no associated function or constant named `new` found for struct `Client` in the current scope\n --> src/lib.rs:5:34\n  |\n5 |     let client = client::Client::new(host, port);\n  |                                  ^^^ associated function or constant not found in `Client`\n  |\nhelp: there is a method `ne` with a similar name, but with different arguments\n --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/cmp.rs:263:4\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `migrate_02_builder` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 73235
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0599"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14547572
+        },
+        "file": "src/lib.rs",
+        "find": "empty host",
+        "kind": "declared",
+        "replace": "bad host",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 203718656,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14547267
+      },
+      "task": "migrate-02-builder",
+      "tree_sha256": "ab2742a8c5179e5ded71577cdfb69e3d128333b1712e7a6b94f90f68feb40d78"
+    },
+    {
+      "category": "api-migration",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "5ea55ef8f8de5080da95f6fbc4363acbc7be65fa5d26c5b492bfd0c95b480e6e",
+          "stderr_tail": " trait `From<tokens::Error>` is not implemented for `AppError`\n   |                  |\n   |                  this can't be annotated with `?` because it has type `Result<_, tokens::Error>`\n   |\nnote: `AppError` needs to implement `From<tokens::Error>`\n  --> src/lib.rs:5:1\n   |\n 5 | pub enum AppError {\n   | ^^^^^^^^^^^^^^^^^\n   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait\n\nFor more information about this error, try `rustc --explain E0277`.\nerror: could not compile `migrate_03_error_conversion` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 75933
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "37186d085968450ed40f3ff1789f135a46e56c9032f76c0e10186823225de190",
+          "stderr_tail": "warning: unused variable: `field`\n  --> src/lib.rs:14:38\n   |\n14 |             tokens::Error::Malformed(field) => AppError::Invalid { field: 0 },\n   |                                      ^^^^^ help: if this is intentional, prefix it with an underscore: `_field`\n   |\n   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nerror: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14683266
+        },
+        "file": "src/lib.rs",
+        "find": "AppError::Invalid { field }",
+        "kind": "declared",
+        "replace": "AppError::Invalid { field: 0 }",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14678376
+      },
+      "task": "migrate-03-error-conversion",
+      "tree_sha256": "694258ed23251da9415b6a46b4ab30a2c9df8343bf3d9260716dd4d20ce09395"
+    },
+    {
+      "category": "api-migration",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "5dac9384db26f83668fcc8165f47825efdd47d3b66aa63c4b45a7bc067b014f1",
+          "stderr_tail": "7\n  |\n5 |     documents::doc(title).render()\n  |                           ^^^^^^ method not found in `Doc`\n  |\n ::: dep/src/lib.rs:8:8\n  |\n8 |     fn render(&self) -> String;\n  |        ------ the method is available for `Doc` here\n  |\n  = help: items from traits can only be used if the trait is in scope\nhelp: trait `Render` which provides `render` is implemented but not in scope; perhaps you want to import it\n  |\n4 + use documents::Render;\n  |\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `migrate_04_trait_import` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 68993
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0599"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14778197
+        },
+        "file": "src/lib.rs",
+        "find": ".render()",
+        "kind": "declared",
+        "replace": ".render().replace('h', \"H\")",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14500272
+      },
+      "task": "migrate-04-trait-import",
+      "tree_sha256": "309267f203e714ce98d11ee85ad79e8c5e886d8ab0f2e3879edcd5e04ea38a99"
+    },
+    {
+      "category": "repo-scale",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "462457e408ea3a0fa62d49f32a45234b8dbb34a0a411fded11d4b445ed2e7c35",
+          "stderr_tail": "          -------            -----     ^ expected named lifetime parameter\n   |\n   = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `items` or `fallback`\nhelp: consider introducing a named lifetime parameter\n   |\n10 | pub fn cheapest_name<'a>(items: &'a [Item], fallback: &'a Item) -> &'a str {\n   |                     ++++         ++                    ++           ++\n\nFor more information about this error, try `rustc --explain E0106`.\nerror: could not compile `repo_01_lifetime_propagation` (lib) due to 2 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 75737
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0106"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14664136
+        },
+        "file": "src/query.rs",
+        "find": "min_by_key(|item| item.price)",
+        "kind": "declared",
+        "replace": "max_by_key(|item| item.price)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14663891
+      },
+      "task": "repo-01-lifetime-propagation",
+      "tree_sha256": "ebed946fbb4e962f2bc7ee5552e9946f9c5059f7c3e078f421d5a711a50c1d92"
+    },
+    {
+      "category": "repo-scale",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "0c343b2d301f2442b5b2c99100612f52cd99220a8ce7ba54471900250cdf0239",
+          "stderr_tail": "-----------------^ the trait `From<std::io::Error>` is not implemented for `AppError`\n   |     |\n   |     this can't be annotated with `?` because it has type `Result<_, std::io::Error>`\n   |\nnote: `AppError` needs to implement `From<std::io::Error>`\n  --> src/error.rs:4:1\n   |\n 4 | pub enum AppError {\n   | ^^^^^^^^^^^^^^^^^\n   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait\n\nFor more information about this error, try `rustc --explain E0277`.\nerror: could not compile `repo_02_error_propagation` (lib) due to 2 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 77450
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "94805c30928c58b0eb7dd07db94e1b42f5c2810a278d283a046365eaacce20bc",
+          "stderr_tail": "warning: unused variable: `error`\n  --> src/error.rs:25:13\n   |\n25 |     fn from(error: ParseError) -> Self {\n   |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`\n   |\n   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nerror: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15046397
+        },
+        "file": "src/error.rs",
+        "find": "AppError::Parse(error.field)",
+        "kind": "declared",
+        "replace": "AppError::Parse(0)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 15041875
+      },
+      "task": "repo-02-error-propagation",
+      "tree_sha256": "97de679630ff9247478a12df69efd59efb826710a5d81b7a2412c0cb02584c08"
+    },
+    {
+      "category": "repo-scale",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "8b0fca8c2d95dcd380c21dcc51e42338eefcb6a35d77630f8c848661db59c52b",
+          "stderr_tail": "uced by this call\n   |\nhelp: the following other types implement trait `AsI64`\n  --> src/traits.rs:7:1\n   |\n 7 | impl AsI64 for i32 {\n   | ^^^^^^^^^^^^^^^^^^ `i32`\n...\n13 | impl AsI64 for i64 {\n   | ^^^^^^^^^^^^^^^^^^ `i64`\nnote: required by a bound in `math::sum`\n  --> src/math.rs:5:15\n   |\n 5 | pub fn sum<T: AsI64>(items: &[T]) -> i64 {\n   |               ^^^^^ required by this bound in `sum`\n\nSome errors have detailed explanations: E0277, E0599.\nFor more information about an error, try `rustc --explain E0277`.\nerror: could not compile `repo_03_generic_bounds` (lib) due to 2 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 72009
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0277"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14504132
+        },
+        "file": "src/stats.rs",
+        "find": ".div_euclid(",
+        "kind": "declared",
+        "replace": " / (",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14504133
+      },
+      "task": "repo-03-generic-bounds",
+      "tree_sha256": "3a002d58af2db7a16e9661375682f6d306c8521bac168d82318998c774f77fae"
+    },
+    {
+      "category": "trait-impl",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "4a9ce84d68f3886e7b2e37b18723bc586fa06d5bcc65f38e319a537181d9e815",
+          "stderr_tail": "error[E0046]: not all trait items implemented, missing: `Id`\n  --> src/lib.rs:16:1\n   |\n 6 |     type Id;\n   |     ------- `Id` from trait\n...\n16 | impl Repo for MemoryRepo {\n   | ^^^^^^^^^^^^^^^^^^^^^^^^ missing `Id` in implementation\n\nFor more information about this error, try `rustc --explain E0046`.\nerror: could not compile `traits_01_associated_type` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 63946
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0046"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15217719
+        },
+        "file": "src/lib.rs",
+        "find": "repo.get(0).unwrap_or(0)",
+        "kind": "declared",
+        "replace": "repo.get(1).unwrap_or(0)",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 15217346
+      },
+      "task": "traits-01-associated-type",
+      "tree_sha256": "d4f3cd3402ca0639cad8b68cb60212740212a775949681cdeda35f90ba124ff9"
+    },
+    {
+      "category": "trait-impl",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "408231cdcc541c69a24a509b8cc6d5d1f673addf28ebc1fc5a57bfd10220ee0f",
+          "stderr_tail": "error[E0119]: conflicting implementations of trait `Summary` for type `Report`\n  --> src/lib.rs:24:1\n   |\n18 | impl Summary for Report {\n   | ----------------------- first implementation here\n...\n24 | impl<T: Display> Summary for T {\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ conflicting implementation for `Report`\n\nFor more information about this error, try `rustc --explain E0119`.\nerror: could not compile `traits_02_coherence` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 64136
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0119"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14501713
+        },
+        "file": "src/lib.rs",
+        "find": "\"text: {self}\"",
+        "kind": "declared",
+        "replace": "\"text:{self}\"",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14501234
+      },
+      "task": "traits-02-coherence",
+      "tree_sha256": "c2abea0bf8c8771c381e85c379919dbb333de307b390425f18088467af3a29aa"
+    },
+    {
+      "category": "trait-impl",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "6105316afbc64334a40d679c70085627fd0593c513545bfd2415f16ddd99f536",
+          "stderr_tail": "i64>;\n 7 |     fn put<T: Into<i64>>(&mut self, key: &str, value: T);\n   |        ^^^ ...because method `put` has generic type parameters\n   = help: consider moving `put` to another trait\n   = help: only type `MemoryStore` implements `Store` within this crate; consider using it directly instead.\n   = note: `Store` may be implemented in other crates; if you want to support your users passing their own types here, you can't refer to a specific type\n\nFor more information about this error, try `rustc --explain E0038`.\nerror: could not compile `traits_03_object_safety` (lib) due to 1 previous error\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 76019
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0038"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "suite",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 15317397
+        },
+        "file": "src/lib.rs",
+        "find": "store.len()",
+        "kind": "declared",
+        "replace": "store.len() + 1",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 15316350
+      },
+      "task": "traits-03-object-safety",
+      "tree_sha256": "a23579e911b761edaf4c9efbfb4b64ed045b3041eb6ba0df806147e470886649"
+    },
+    {
+      "category": "trio",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 64,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 64,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "compile_error",
+          "stderr_sha256": "73e2bc33d489a8a6169d9e1a9d058779a8466f199b2bf25534a2136b61446b07",
+          "stderr_tail": " |             ^ expected named lifetime parameter\n   |\n   = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `table`, one of `aliases`'s 2 lifetimes, or `key`\nhelp: consider introducing a named lifetime parameter\n   |\n26 ~ pub fn chain<'a>(\n27 ~     table: &'a Table,\n28 ~     aliases: &'a [(&'static str, &'static str)],\n29 ~     key: &'a str,\n30 ~ ) -> Option<&'a str> {\n   |\n\nFor more information about this error, try `rustc --explain E0106`.\nerror: could not compile `trio_01_lifetime_chain` (lib) due to 3 previous errors\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 84292
+        },
+        "expected_kind": "compile_error",
+        "must_contain": [
+          "E0106"
+        ],
+        "status": "compile_error"
+      },
+      "kind": "trio",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14475160
+        },
+        "file": "src/lib.rs",
+        "find": "*name == key",
+        "kind": "declared",
+        "replace": "*name != key",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14471227
+      },
+      "task": "trio-01-lifetime-chain",
+      "tree_sha256": "54e001f079141e352c51b2eb3b20f0608a3f7effbe19ee199941b7cda5ea0a2b"
+    },
+    {
+      "category": "trio",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14616515
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "trio",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14584828
+        },
+        "file": "src/lib.rs",
+        "find": "if known.contains(&node) || done.contains(&node) {",
+        "kind": "declared",
+        "replace": "if done.contains(&node) {",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14584027
+      },
+      "task": "trio-02-math-dependency",
+      "tree_sha256": "2865cc789c73d570bb780efdb171a56fd0ef381f3ed7a59eb9130a3f5d1d3b3c"
+    },
+    {
+      "category": "trio",
+      "checker_kind": "cargo_test",
+      "initial": {
+        "duration_ms": 114,
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 114,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14575942
+        },
+        "expected_kind": "test_failure",
+        "must_contain": [
+          "test result: FAILED"
+        ],
+        "status": "test_failed"
+      },
+      "kind": "trio",
+      "limits": {
+        "address_space_bytes": 3221225472,
+        "cpu_seconds": 60,
+        "file_bytes": 67108864,
+        "open_files": 256,
+        "output_bytes": 262144,
+        "wall_seconds": 45.0
+      },
+      "mutation": {
+        "evidence": {
+          "address_space_bytes": 3221225472,
+          "cgroup_memory_peak_bytes": 207482880,
+          "cgroup_oom_delta": 0,
+          "cgroup_oom_kill_delta": 0,
+          "duration_ms": 164,
+          "exit_code": 101,
+          "phase": null,
+          "problems": null,
+          "signal": null,
+          "status": "test_failed",
+          "stderr_sha256": "7b5e410bb5deeccc111dd185eab14628a8d9bdc2d8638d20d0a9f948c226d7ee",
+          "stderr_tail": "error: test failed, to rerun pass `--test check`\n",
+          "wall_seconds": 45.0,
+          "workdir_bytes": 14923531
+        },
+        "file": "src/lib.rs",
+        "find": "if premise.object == to {",
+        "kind": "declared",
+        "replace": "if premise.object == to && path.is_empty() {",
+        "status": "test_failed"
+      },
+      "passed": true,
+      "reference": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 164,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14920991
+      },
+      "task": "trio-03-logic-quantifier",
+      "tree_sha256": "7208ecb3b2a9bb7126f5d2f1566c20286203b0cd2a802a083ca30cb959bdd605"
+    },
+    {
+      "category": "probe",
+      "checker_kind": "cargo_test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 64,
+        "exit_code": 101,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "compile_error",
+        "stderr_sha256": "075e0014d8e0e2478c3afd53fd9882b201eaf47983bd937c8a70673213dccd03",
+        "stderr_tail": "error[E0308]: mismatched types\n --> src/lib.rs:2:22\n  |\n2 |     let value: u32 = \"not a number\";\n  |                ---   ^^^^^^^^^^^^^^ expected `u32`, found `&str`\n  |                |\n  |                expected due to this\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `probe_compile_error` (lib) due to 1 previous error\nerror: could not compile `probe_compile_error` (lib test) due to 1 previous error\n",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 65760
+      },
+      "kind": "probe",
+      "passed": true,
+      "probe_expectation": "compile_error",
+      "status": "compile_error",
+      "task": "probe-compile-error",
+      "tree_sha256": "225ba4ba1a3b67f86c43095e7ab35663d218578da919705b804f77b1537ca917"
+    },
+    {
+      "category": "probe",
+      "checker_kind": "compile_then_run",
+      "evidence": {
+        "address_space_bytes": 536870912,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 64,
+        "exit_code": -6,
+        "phase": "run",
+        "problems": null,
+        "signal": 6,
+        "status": "oom",
+        "stderr_sha256": "38ce85a4310d11a4f97bdcfb5281b9271e9e15c01e292a84ede717a1dcaadda7",
+        "stderr_tail": "memory allocation of 8388608 bytes failed\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+        "wall_seconds": 10.0,
+        "workdir_bytes": 14405279
+      },
+      "kind": "probe",
+      "passed": true,
+      "probe_expectation": "oom",
+      "status": "oom",
+      "task": "probe-oom",
+      "tree_sha256": "803ef84b46d7bd9dd17a996b273dcd0100530793ac9e3e11db60528c036c7abb"
+    },
+    {
+      "category": "probe",
+      "checker_kind": "cargo_test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 114,
+        "exit_code": 0,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "pass",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14384395
+      },
+      "kind": "probe",
+      "passed": true,
+      "probe_expectation": "pass",
+      "status": "pass",
+      "task": "probe-pass",
+      "tree_sha256": "72ab7caf06c51dd412c8b68d90aa4d27a87e2fd1a7a3fc42dcb07d47027420b0"
+    },
+    {
+      "category": "probe",
+      "checker_kind": "compile_then_run",
+      "evidence": {
+        "address_space_bytes": 536870912,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 5001,
+        "exit_code": -9,
+        "phase": "run",
+        "problems": null,
+        "signal": 9,
+        "status": "timeout",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": "",
+        "wall_seconds": 5.0,
+        "workdir_bytes": 14384258
+      },
+      "kind": "probe",
+      "passed": true,
+      "probe_expectation": "timeout",
+      "status": "timeout",
+      "task": "probe-timeout",
+      "tree_sha256": "7a78bf6ef1b77613d807221bedaabe0bdb23e29e3200852de4dad7b1b96844fd"
+    },
+    {
+      "category": "probe",
+      "checker_kind": "cargo_test",
+      "evidence": {
+        "address_space_bytes": 3221225472,
+        "cgroup_memory_peak_bytes": 207482880,
+        "cgroup_oom_delta": 0,
+        "cgroup_oom_kill_delta": 0,
+        "duration_ms": 64,
+        "exit_code": 101,
+        "phase": null,
+        "problems": null,
+        "signal": null,
+        "status": "test_failed",
+        "stderr_sha256": "527ab4a1ce3ec8548b58e5e4b997f69edf6e374e4d9d953af4ee1ef66241ed77",
+        "stderr_tail": "error: test failed, to rerun pass `--lib`\n",
+        "wall_seconds": 45.0,
+        "workdir_bytes": 14384885
+      },
+      "kind": "probe",
+      "passed": true,
+      "probe_expectation": "fail",
+      "status": "test_failed",
+      "task": "probe-wrong",
+      "tree_sha256": "211bc410487d0d1f8a5a13623d216c5709126ea33aeb627ef4b907a531c22c6f"
+    }
+  ],
+  "revision": "0c4b050cca61d9e4be90d02765c0269291ba027f",
+  "sandbox": {
+    "court_image_id": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+    "court_memory_bytes": 12884901888,
+    "default_task_limits": {
+      "address_space_bytes": 3221225472,
+      "cpu_seconds": 60,
+      "file_bytes": 67108864,
+      "open_files": 256,
+      "output_bytes": 262144,
+      "wall_seconds": 45.0
+    },
+    "max_check_ms": 164,
+    "max_workdir_bytes": 15731803,
+    "network_isolation": "no-default-route",
+    "run_only_limits": {
+      "address_space_bytes": 536870912,
+      "cpu_seconds": 20,
+      "file_bytes": 16777216,
+      "open_files": 64,
+      "output_bytes": 262144,
+      "wall_seconds": 10.0
+    },
+    "toolchain_min_address_space_bytes": 3221225472,
+    "workdir_budget_bytes": 2147483648
+  },
+  "schema": "selvedge/capability-selftest/v1",
+  "stamp": "20261116T022913Z",
+  "suite": {
+    "counts": {
+      "by_category": {
+        "api-migration": 4,
+        "concurrency": 3,
+        "dependency-compat": 3,
+        "failing-test": 4,
+        "lifetime-borrow": 4,
+        "probe": 5,
+        "repo-scale": 3,
+        "trait-impl": 3,
+        "trio": 3
+      },
+      "probes": 5,
+      "suite": 24,
+      "total": 32,
+      "trio": 3
+    },
+    "manifest_matches": true,
+    "manifest_message": "manifest matches the tree",
+    "root": "fixtures/capability",
+    "suite_sha256": "092303e36da8ed3096990bc3df05aea8d6f49ee3426d26a57726c3c08a868ccc"
+  },
+  "verdict": "pass"
+}
