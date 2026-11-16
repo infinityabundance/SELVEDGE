@@ -2624,6 +2624,9 @@ not run before the §20.0 gate opens.
   label sidecar file instead of the artifact hash the sidecar declares); the
   failure is retained and the fix is a separate commit. Every subsequent run
   reproduces the same decisions.
+- A second full run at the reporting revision produced an identical statistical
+  payload (all fields except the clock stamp, receipt path and revision); its
+  court receipt is `results/courts/python-20261116T073321Z-1f3230.json`.
 - `commit_identity` and `perf_numbers` are run through the court; the receipts
   are under `results/courts/`.
 
