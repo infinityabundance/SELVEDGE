@@ -1917,6 +1917,13 @@ and no-unsafe rules, seven required operations, and build weight. `tokenizers`
   numbers are measured, the explanation (per-call scoped-thread spawn) is a
   hypothesis, and a persistent worker pool is not implemented.
 
+### Pilot (read-only observation)
+
+The detached T2 pilot (`selvedge-oracle-court-20261115T234515Z-b23ea1`) was polled
+read-only at 2026-11-16T02:02:17Z: arm H at step 540/1024, loss 1.8003, about
+4700 tokens/s, 10.86 GiB VRAM in use, and host memory with ample headroom. No
+container was touched and no GPU job was started from this subphase.
+
 ### Pre-existing clippy lints fixed
 
 `cargo clippy --workspace --all-targets -- -D warnings` failed on
