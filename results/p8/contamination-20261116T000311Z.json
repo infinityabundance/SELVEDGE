@@ -1,0 +1,137 @@
+{
+  "checks": {
+    "text": {
+      "gsm8k": {
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_items": 1319,
+        "source_shingles": 133215
+      },
+      "humaneval": {
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_items": 164,
+        "source_shingles": 23456
+      },
+      "truthfulqa": {
+        "offenders": {},
+        "offending_items": 0,
+        "shared_shingles": 0,
+        "source_items": 817,
+        "source_shingles": 33946
+      }
+    },
+    "tokens": {
+      "offenders": {},
+      "offending_items": 0,
+      "shared_shingles": 0,
+      "source_shingles": 45276,
+      "source_tokens": 47468,
+      "source_windows": 160
+    }
+  },
+  "command": "oracle/eval/fresh_contamination.py --out results/p8/contamination-20261116T000311Z.json",
+  "created_utc": "2026-11-16T00:03:17Z",
+  "item_tokens": {
+    "code-balanced-brackets": 123,
+    "code-chunks": 145,
+    "code-dedupe-stable": 107,
+    "code-parse-ints": 109,
+    "code-ring-buffer": 218,
+    "code-word-count": 102,
+    "fact-anchor-once": 72,
+    "fact-async-runtime": 34,
+    "fact-cargo-check": 69,
+    "fact-f64-bits": 30,
+    "fact-option-reference-size": 27,
+    "math-fraction-of": 17,
+    "math-gcd": 24,
+    "math-power-two": 22,
+    "math-product-plus": 22,
+    "math-sum-1-to-100": 27,
+    "rust-borrowed-value-does-not-live-long-enough": 74,
+    "rust-debug-build-overflow": 68,
+    "rust-immutable-borrow-then-push": 77,
+    "rust-move-out-of-index": 70,
+    "rust-mutex-guard-across-await": 103,
+    "rust-non-exhaustive-match": 63,
+    "rust-rc-across-threads": 78,
+    "rust-return-reference-to-local": 73,
+    "rust-trait-object-without-dyn": 76,
+    "rust-two-mutable-borrows-same-field": 100
+  },
+  "method": {
+    "comparison": "set intersection per item against the union of the source",
+    "text": "8-word shingles over lower-cased, whitespace-collapsed text",
+    "tokens": "13-token shingles over the registered Qwen3-0.6B tokenizer"
+  },
+  "revision": "8baa139c42ef3538e777ff0220f3ceb424014ab9",
+  "schema": "selvedge/p8-contamination/v1",
+  "sources": {
+    "dataset_files": {
+      "gsm8k": {
+        "path": "results/artifacts/datasets/gsm8k-test/test-00000-of-00001.parquet",
+        "sha256": "ee7b8da9e381df27b9e3f7758a159ab2bdaa4dbaa910546cbbc47e0cb44e4f59"
+      },
+      "humaneval": {
+        "path": "results/artifacts/datasets/humaneval-test/test-00000-of-00001.parquet",
+        "sha256": "2f2871a15fbc95b6c683043359f4ed8e144c5a1c4f24f25f66bc51f598dfcfb6"
+      },
+      "truthfulqa": {
+        "path": "results/artifacts/datasets/truthfulqa-mc-validation/validation-00000-of-00001.parquet",
+        "sha256": "23f08e230ca4ed66babf3a72419af7cbde1f3d734dd396ac4cf6d088bd162afd"
+      }
+    },
+    "split_seed": 20261114,
+    "split_sha256": "902cc178dc3e6f5921c4b134d9a081adebde120433a917b3cf76125cf1853366"
+  },
+  "stamp": "20261116T000317Z",
+  "tasks": {
+    "by_domain": {
+      "code": 6,
+      "factual": 5,
+      "math": 5,
+      "rust": 10
+    },
+    "by_kind": {
+      "choice": 3,
+      "code": 6,
+      "diagnostic": 10,
+      "numeric": 7
+    },
+    "ids": [
+      "rust-return-reference-to-local",
+      "rust-immutable-borrow-then-push",
+      "rust-two-mutable-borrows-same-field",
+      "rust-borrowed-value-does-not-live-long-enough",
+      "rust-move-out-of-index",
+      "rust-non-exhaustive-match",
+      "rust-rc-across-threads",
+      "rust-mutex-guard-across-await",
+      "rust-trait-object-without-dyn",
+      "rust-debug-build-overflow",
+      "code-dedupe-stable",
+      "code-chunks",
+      "code-word-count",
+      "code-parse-ints",
+      "code-ring-buffer",
+      "code-balanced-brackets",
+      "math-product-plus",
+      "math-gcd",
+      "math-fraction-of",
+      "math-sum-1-to-100",
+      "math-power-two",
+      "fact-anchor-once",
+      "fact-cargo-check",
+      "fact-async-runtime",
+      "fact-option-reference-size",
+      "fact-f64-bits"
+    ],
+    "items": 26,
+    "schema": "selvedge/p8-fresh-tasks/v1",
+    "sha256": "dae8ea9506b3c9c56bd6f11a6ee14312e618c76714300566b4f6b6fb1cfad496"
+  },
+  "verdict": "disjoint"
+}

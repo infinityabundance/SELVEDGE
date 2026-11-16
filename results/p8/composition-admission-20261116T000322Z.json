@@ -1,0 +1,63 @@
+{
+  "config": {
+    "path": "/work/results/train/admission-configs/p8/composition.json",
+    "sha256": "e5d39a46727a7c4e2edc953a70a82916c08f44fb3dce275b3867a718b98c4c21"
+  },
+  "created_utc": "2026-11-16T00:03:27Z",
+  "mirror_agrees": true,
+  "record": {
+    "active_unique_params": 774371384,
+    "admitted": true,
+    "arm": "P8-COMPOSE",
+    "budget": {
+      "active_unique_limit": 1000000000,
+      "mode": "compliance"
+    },
+    "config_sha256": "e5d39a46727a7c4e2edc953a70a82916c08f44fb3dce275b3867a718b98c4c21",
+    "execution_elements_read": 1370363904,
+    "execution_flops": {
+      "controller_flops": 0,
+      "matmul_flops": 2740723712,
+      "other_flops": 19466240
+    },
+    "execution_unique_params": 774313984,
+    "mode": "compliance",
+    "notes": [
+      "P8.2 bounded-gate composition: frozen core + the dense adapter (T2 D) + the hashed memory path (T2 M) + one per-layer 1024->2 gate",
+      "gate elements 57400 = layers * (2 * hidden + 2), declared as a selector because it decides coefficients rather than carrying capacity",
+      "total_accessible unions 310 shared core identities (596049920 elements) instead of double-counting them"
+    ],
+    "refusal": null,
+    "revision": null,
+    "schema": "selvedge/admission-record/v1",
+    "selector_elements_read": 57400,
+    "selector_flops": {
+      "controller_flops": 2048,
+      "matmul_flops": 4096,
+      "other_flops": 0
+    },
+    "selector_unique_params": 57400,
+    "stamp": null,
+    "total_accessible": 1042804792,
+    "total_flops": {
+      "controller_flops": 2048,
+      "matmul_flops": 2740727808,
+      "other_flops": 19466240
+    },
+    "verdict": {
+      "active_unique_params": 774371384,
+      "kind": "within",
+      "limit": 1000000000
+    }
+  },
+  "record_path": "/work/results/train/admission/p8/composition.json",
+  "revision": "8baa139c42ef3538e777ff0220f3ceb424014ab9",
+  "schema": "selvedge/p8-composition-admission/v1",
+  "stamp": "20261116T000327Z",
+  "union": {
+    "active_unique_params": 774371384,
+    "execution_unique_params": 774313984,
+    "selector_unique_params": 57400,
+    "within_budget": true
+  }
+}

@@ -1,0 +1,71 @@
+..........FF.                                                            [100%]
+=================================== FAILURES ===================================
+________________ test_the_perturbation_never_exceeds_the_budget ________________
+
+    def test_the_perturbation_never_exceeds_the_budget():
+        hidden, tokens = 8, 6
+        module = composition.BoundedGateComposition(hidden, budget=0.01)
+        with torch.no_grad():
+            module.gate.weight.normal_(std=3.0)
+            module.gate.bias.fill_(2.0)
+        base = torch.zeros(tokens, hidden)
+        residual_d, residual_m = _residuals(tokens, hidden, 11)
+        feature = torch.randn(tokens, hidden, generator=torch.Generator().manual_seed(13))
+        output, info = module(base, residual_d, residual_m, feature)
+        report = composition.check_budget(info)
+        assert report["violations"] == 0
+        assert report["max_perturbation_norm"] <= 0.01 + 1e-6
+>       assert torch.allclose(output.flatten(start_dim=-2).norm(dim=-1),
+                              info["perturbation_norm"].reshape(-1), atol=1e-6)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7f1cec5572e0>(tensor(0.0245, grad_fn=<LinalgVectorNormBackward0>), tensor([0.0100, 0.0100, 0.0100, 0.0100, 0.0100, 0.0100]), atol=1e-06)
+E        +    where <built-in method allclose of type object at 0x7f1cec5572e0> = torch.allclose
+E        +    and   tensor(0.0245, grad_fn=<LinalgVectorNormBackward0>) = norm(dim=-1)
+E        +      where norm = tensor([ 0.0008,  0.0015, -0.0021,  0.0074, -0.0023, -0.0022, -0.0050,  0.0018,\n         0.0011, -0.0019,  0.0080, -0.....0036,\n        -0.0022,  0.0027,  0.0031, -0.0015, -0.0002,  0.0052, -0.0055, -0.0043],\n       grad_fn=<ViewBackward0>).norm
+E        +        where tensor([ 0.0008,  0.0015, -0.0021,  0.0074, -0.0023, -0.0022, -0.0050,  0.0018,\n         0.0011, -0.0019,  0.0080, -0.....0036,\n        -0.0022,  0.0027,  0.0031, -0.0015, -0.0002,  0.0052, -0.0055, -0.0043],\n       grad_fn=<ViewBackward0>) = <built-in method flatten of Tensor object at 0x7f1c8c69c5f0>(start_dim=-2)
+E        +          where <built-in method flatten of Tensor object at 0x7f1c8c69c5f0> = tensor([[ 0.0008,  0.0015, -0.0021,  0.0074, -0.0023, -0.0022, -0.0050,  0.0018],\n        [ 0.0011, -0.0019,  0.0080, ...036],\n        [-0.0022,  0.0027,  0.0031, -0.0015, -0.0002,  0.0052, -0.0055, -0.0043]],\n       grad_fn=<AddBackward0>).flatten
+E        +    and   tensor([0.0100, 0.0100, 0.0100, 0.0100, 0.0100, 0.0100]) = <built-in method reshape of Tensor object at 0x7f1c9465ef80>(-1)
+E        +      where <built-in method reshape of Tensor object at 0x7f1c9465ef80> = tensor([0.0100, 0.0100, 0.0100, 0.0100, 0.0100, 0.0100]).reshape
+
+oracle/tests/test_p8_complementarity.py:246: AssertionError
+_______________ test_interference_is_accounted_for_term_by_term ________________
+
+    def test_interference_is_accounted_for_term_by_term():
+        hidden, tokens = 8, 4
+        module = composition.BoundedGateComposition(hidden, budget=50.0)
+        base = torch.randn(tokens, hidden, generator=torch.Generator().manual_seed(17))
+        residual_d, residual_m = _residuals(tokens, hidden, 19)
+        feature = torch.zeros(tokens, hidden)
+    
+        # b = 0 exactly: nothing of M is added and the composed output is S + a r_D.
+        with torch.no_grad():
+            module.gate.weight.zero_()
+            module.gate.bias.copy_(torch.tensor([1.0, 0.0]))
+        composed, info = module(base, residual_d, residual_m, feature)
+        report = composition.interference_report(base, residual_d, residual_m,
+                                                 composed, info)
+        assert report["accounted"] is True
+        assert report["added_effect_of_m"]["max"] == pytest.approx(0.0, abs=1e-6)
+        assert report["deviation_from_d_alone"]["max"] == pytest.approx(0.0, abs=1e-5)
+        assert report["within_budget"] is True
+    
+        # b = 1, a = 0: the added effect of M is exactly M's own residual.
+        with torch.no_grad():
+            module.gate.bias.copy_(torch.tensor([0.0, 1.0]))
+        composed, info = module(base, residual_d, residual_m, feature)
+        report = composition.interference_report(base, residual_d, residual_m,
+                                                 composed, info)
+        assert report["accounted"] is True
+>       assert report["added_effect_of_m"]["max"] == pytest.approx(
+            float(residual_m.flatten(start_dim=-2).norm(dim=-1).max()), rel=1e-5)
+E       assert 4.0093994140625 == 5.67701530456543 ± 5.7e-05
+E         
+E         comparison failed
+E         Obtained: 4.0093994140625
+E         Expected: 5.67701530456543 ± 5.7e-05
+
+oracle/tests/test_p8_complementarity.py:276: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p8_complementarity.py::test_the_perturbation_never_exceeds_the_budget
+FAILED oracle/tests/test_p8_complementarity.py::test_interference_is_accounted_for_term_by_term
+2 failed, 11 passed in 3.87s

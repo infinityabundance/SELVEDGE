@@ -1,0 +1,45 @@
+{
+  "schema": "selvedge/admission-record/v1",
+  "arm": "P8-COMPOSE",
+  "admitted": true,
+  "config_sha256": "e5d39a46727a7c4e2edc953a70a82916c08f44fb3dce275b3867a718b98c4c21",
+  "budget": {
+    "active_unique_limit": 1000000000,
+    "mode": "compliance"
+  },
+  "total_accessible": 1042804792,
+  "mode": "compliance",
+  "active_unique_params": 774371384,
+  "selector_unique_params": 57400,
+  "execution_unique_params": 774313984,
+  "selector_elements_read": 57400,
+  "execution_elements_read": 1370363904,
+  "selector_flops": {
+    "matmul_flops": 4096,
+    "other_flops": 0,
+    "controller_flops": 2048
+  },
+  "execution_flops": {
+    "matmul_flops": 2740723712,
+    "other_flops": 19466240,
+    "controller_flops": 0
+  },
+  "total_flops": {
+    "matmul_flops": 2740727808,
+    "other_flops": 19466240,
+    "controller_flops": 2048
+  },
+  "verdict": {
+    "kind": "within",
+    "active_unique_params": 774371384,
+    "limit": 1000000000
+  },
+  "refusal": null,
+  "notes": [
+    "P8.2 bounded-gate composition: frozen core + the dense adapter (T2 D) + the hashed memory path (T2 M) + one per-layer 1024->2 gate",
+    "gate elements 57400 = layers * (2 * hidden + 2), declared as a selector because it decides coefficients rather than carrying capacity",
+    "total_accessible unions 310 shared core identities (596049920 elements) instead of double-counting them"
+  ],
+  "stamp": null,
+  "revision": null
+}

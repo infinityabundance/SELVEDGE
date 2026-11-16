@@ -1,0 +1,283 @@
+{
+  "capabilities": "synthetic: D = 1 + 2*[domain in {math, factual}], M = 1 + 2*[domain in {code, rust}] (lower is better)",
+  "contamination_receipt": "results/p8/contamination-20261116T000311Z.json",
+  "created_utc": "2026-11-16T00:03:39Z",
+  "evaluation": {
+    "capability_mean": {
+      "D": 1.7692307692307692,
+      "M": 2.230769230769231
+    },
+    "router_training": {
+      "features": 10,
+      "items": 13,
+      "loss_first": 0.6931472420692444,
+      "loss_last": 0.002126402920112014,
+      "lr": 0.05,
+      "seed": 1001,
+      "steps": 300
+    },
+    "selectors": {
+      "always-D": {
+        "accuracy": 0.6153846153846154,
+        "comparisons": {
+          "minus-D": {
+            "high": 0.0,
+            "low": 0.0,
+            "mean": 0.0,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "minus-M": {
+            "high": 0.46153846153846156,
+            "low": -1.3846153846153846,
+            "mean": -0.46153846153846156,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          }
+        },
+        "cost": {
+          "deployable": true,
+          "elements_read_per_decision": 0,
+          "learned_parameters": 0,
+          "needs_outcome": false
+        },
+        "mean_loss": 1.7692307692307692,
+        "oracle_gap": 0.7692307692307693,
+        "per_domain": {
+          "code": 1.0,
+          "factual": 3.0,
+          "math": 3.0,
+          "rust": 1.0
+        },
+        "picks": {
+          "D": 13,
+          "M": 0
+        }
+      },
+      "always-M": {
+        "accuracy": 0.38461538461538464,
+        "comparisons": {
+          "minus-D": {
+            "high": 1.3846153846153846,
+            "low": -0.46153846153846156,
+            "mean": 0.46153846153846156,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "minus-M": {
+            "high": 0.0,
+            "low": 0.0,
+            "mean": 0.0,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          }
+        },
+        "cost": {
+          "deployable": true,
+          "elements_read_per_decision": 0,
+          "learned_parameters": 0,
+          "needs_outcome": false
+        },
+        "mean_loss": 2.230769230769231,
+        "oracle_gap": 1.2307692307692308,
+        "per_domain": {
+          "code": 3.0,
+          "factual": 1.0,
+          "math": 1.0,
+          "rust": 3.0
+        },
+        "picks": {
+          "D": 0,
+          "M": 13
+        }
+      },
+      "fixed-rule": {
+        "accuracy": 0.8461538461538461,
+        "comparisons": {
+          "minus-D": {
+            "high": 0.15384615384615385,
+            "low": -1.0769230769230769,
+            "mean": -0.46153846153846156,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "minus-M": {
+            "high": -0.15384615384615385,
+            "low": -1.5384615384615385,
+            "mean": -0.9230769230769231,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          }
+        },
+        "cost": {
+          "deployable": true,
+          "elements_read_per_decision": 0,
+          "learned_parameters": 0,
+          "needs_outcome": false
+        },
+        "mean_loss": 1.3076923076923077,
+        "oracle_gap": 0.3076923076923077,
+        "per_domain": {
+          "code": 1.6666666666666667,
+          "factual": 2.0,
+          "math": 1.0,
+          "rust": 1.0
+        },
+        "picks": {
+          "D": 8,
+          "M": 5
+        }
+      },
+      "oracle": {
+        "accuracy": 1.0,
+        "comparisons": {
+          "minus-D": {
+            "high": -0.3076923076923077,
+            "low": -1.2307692307692308,
+            "mean": -0.7692307692307693,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "minus-M": {
+            "high": -0.7692307692307693,
+            "low": -1.6923076923076923,
+            "mean": -1.2307692307692308,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          }
+        },
+        "cost": {
+          "deployable": false,
+          "elements_read_per_decision": 0,
+          "learned_parameters": 0,
+          "needs_outcome": true
+        },
+        "mean_loss": 1.0,
+        "oracle_gap": 0.0,
+        "per_domain": {
+          "code": 1.0,
+          "factual": 1.0,
+          "math": 1.0,
+          "rust": 1.0
+        },
+        "picks": {
+          "D": 8,
+          "M": 5
+        }
+      },
+      "trained-router": {
+        "accuracy": 1.0,
+        "comparisons": {
+          "minus-D": {
+            "high": -0.3076923076923077,
+            "low": -1.2307692307692308,
+            "mean": -0.7692307692307693,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          },
+          "minus-M": {
+            "high": -0.7692307692307693,
+            "low": -1.6923076923076923,
+            "mean": -1.2307692307692308,
+            "n": 13,
+            "resamples": 10000,
+            "seed": 20261115
+          }
+        },
+        "cost": {
+          "deployable": true,
+          "elements_read_per_decision": 11,
+          "learned_parameters": 11,
+          "needs_outcome": false
+        },
+        "mean_loss": 1.0,
+        "oracle_gap": 0.0,
+        "per_domain": {
+          "code": 1.0,
+          "factual": 1.0,
+          "math": 1.0,
+          "rust": 1.0
+        },
+        "picks": {
+          "D": 8,
+          "M": 5
+        }
+      }
+    },
+    "split": {
+      "rule": "alternating over the id-sorted set",
+      "scored_on": "the test half only",
+      "test": 13,
+      "train": 13
+    },
+    "tasks": 13
+  },
+  "method": {
+    "metric": "mean per-item loss of the selected capability (lower is better)",
+    "paired_bootstrap": {
+      "kind": "percentile",
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "router": "logistic head on standardised prefix features, trained on the alternating training half against the measured outcome",
+    "rule": "fixed-rule picks the first capability when max(code marker, rust keyword) score >= 0.5"
+  },
+  "mode": "self-test",
+  "revision": "8baa139c42ef3538e777ff0220f3ceb424014ab9",
+  "schema": "selvedge/p8-selectors/v1",
+  "stamp": "20261116T000339Z",
+  "task_set": {
+    "by_domain": {
+      "code": 6,
+      "factual": 5,
+      "math": 5,
+      "rust": 10
+    },
+    "by_kind": {
+      "choice": 3,
+      "code": 6,
+      "diagnostic": 10,
+      "numeric": 7
+    },
+    "ids": [
+      "rust-return-reference-to-local",
+      "rust-immutable-borrow-then-push",
+      "rust-two-mutable-borrows-same-field",
+      "rust-borrowed-value-does-not-live-long-enough",
+      "rust-move-out-of-index",
+      "rust-non-exhaustive-match",
+      "rust-rc-across-threads",
+      "rust-mutex-guard-across-await",
+      "rust-trait-object-without-dyn",
+      "rust-debug-build-overflow",
+      "code-dedupe-stable",
+      "code-chunks",
+      "code-word-count",
+      "code-parse-ints",
+      "code-ring-buffer",
+      "code-balanced-brackets",
+      "math-product-plus",
+      "math-gcd",
+      "math-fraction-of",
+      "math-sum-1-to-100",
+      "math-power-two",
+      "fact-anchor-once",
+      "fact-cargo-check",
+      "fact-async-runtime",
+      "fact-option-reference-size",
+      "fact-f64-bits"
+    ],
+    "items": 26,
+    "schema": "selvedge/p8-fresh-tasks/v1",
+    "sha256": "dae8ea9506b3c9c56bd6f11a6ee14312e618c76714300566b4f6b6fb1cfad496"
+  }
+}
