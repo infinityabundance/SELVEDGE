@@ -1,0 +1,13 @@
+[package]
+name = "sealed_migrate_01_option_argument"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+store = { path = "dep" }

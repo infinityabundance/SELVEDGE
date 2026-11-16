@@ -1,0 +1,28 @@
+{
+  "capability": "Name an associated type that the generic helper requires.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-traits-02-missing-associated-item",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0220"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "element.value()",
+    "replace": "element.value() + 1"
+  },
+  "observed_failure": "error[E0220]: associated type `Number` not found for `E`\n --> src/lib.rs:10:40\n  |\n10 | pub fn clone_value<E: Element>(element: &E) -> E::Number {\n  |                                        ^^^^^^^^^ help: there is an associated type with a similar name: `Value`",
+  "prompt_intro": "This crate does not compile. `clone_value` asks for `E::Number`, but the trait declares `Value`. Use the declared associated type. Do not change the trait.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

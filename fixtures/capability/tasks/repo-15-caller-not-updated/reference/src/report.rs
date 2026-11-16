@@ -1,5 +1,5 @@
 //! A report line.
 
-pub fn line(text: &str) -> String {
-    crate::format::label(text, 6)
+pub fn line(part: u32) -> String {
+    crate::format::ratio(part, 10)
 }

@@ -1,0 +1,31 @@
+{
+  "capability": "Iterate an owned iterator instead of indexing a borrowed slice.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-migrate-02-iterator-return",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0608"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "entries.len()",
+    "replace": "entries.len() + 1"
+  },
+  "observed_failure": "error[E0608]: cannot index into a value of type `impl Iterator<Item = String>`\n --> src/lib.rs:6:28\n  |\n6 |     let first = catalog.items()[0].clone();\n  |                            ^^^^^ cannot be indexed",
+  "prompt_intro": "This crate does not build against the vendored `catalog` 2.0.0. Version 2 returns an owning iterator instead of a borrowed slice, so the caller cannot index it. Return the number of entries and the first entry, if any. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,5 +1,5 @@
-//! A codec label.
+//! A codec checksum.
 
-pub fn codec_label() -> &'static str {
-    codec_impl::label()
+pub fn codec_total(text: &str) -> u32 {
+    codec_impl::total(text)
 }

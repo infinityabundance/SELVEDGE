@@ -1,0 +1,28 @@
+{
+  "capability": "Update a struct initializer after the model gained a field.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-repo-03-missing-field",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0063"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/build.rs",
+    "find": "\"default\"",
+    "replace": "\"other\""
+  },
+  "observed_failure": "error[E0063]: missing field `label` in initializer of `Config`\n --> src/build.rs:4:24\n  |\n4 |     Config { retries: 3 }\n  |            ^^^^^^ missing `label`",
+  "prompt_intro": "This crate does not compile. `model::Config` gained a `label` field, and `build::make` still constructs it with only `retries`. Supply the label `\"default\"` and keep the retry count at three.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

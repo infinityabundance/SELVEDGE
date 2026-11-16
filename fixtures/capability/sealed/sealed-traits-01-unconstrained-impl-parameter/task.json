@@ -1,0 +1,28 @@
+{
+  "capability": "Remove a type parameter that the impl does not constrain.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-traits-01-unconstrained-impl-parameter",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0207"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Self { entries: Vec::new() }",
+    "replace": "Self { entries: vec![String::new()] }"
+  },
+  "observed_failure": "error[E0207]: the type parameter `T` is not constrained by the impl trait, self type, or predicates\n --> src/lib.rs:5:6\n  |\n5 | impl<T> Registry {\n  |      ^ unconstrained type parameter",
+  "prompt_intro": "This crate does not compile. The inherent impl for `Registry` declares a type parameter that appears nowhere in the self type or the methods, so the compiler cannot infer it. Remove the parameter and keep the constructor.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

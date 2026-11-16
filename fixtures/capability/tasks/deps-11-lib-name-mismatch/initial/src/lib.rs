@@ -1,6 +1,6 @@
-//! A codec label. This does not build: the import name is not the
+//! A codec checksum. This does not build: the import name is not the
 //! library target name.
 
-pub fn codec_label() -> &'static str {
-    codec::label()
+pub fn codec_total(text: &str) -> u32 {
+    codec::total(text)
 }

@@ -1,0 +1,28 @@
+{
+  "capability": "Average integers with a floor division for negative sums.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-semantic-01-floor-division",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "sum.div_euclid(values.len() as i64)",
+    "replace": "sum / values.len() as i64"
+  },
+  "observed_failure": "the crate builds and tests pass; mean_floor(&[-3, -2]) is -2 where the contract requires -3",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract floors a negative average: `mean_floor(&[-3, -2])` is -3, because -5/2 is -2.5 floored. An empty slice averages to 0. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

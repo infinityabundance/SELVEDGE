@@ -1,5 +1,5 @@
-//! A codec label.
+//! A codec fold.
 
-pub fn codec_label() -> &'static str {
-    codec::label()
+pub fn codec_fold(text: &str) -> u32 {
+    codec::fold(text)
 }

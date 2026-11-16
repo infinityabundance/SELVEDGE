@@ -1,0 +1,28 @@
+{
+  "capability": "Correct the TOML type of a workspace resolver field.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-deps-02-resolver-type",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "invalid type: integer"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "resolver = \"2\"",
+    "replace": "resolver = 2"
+  },
+  "observed_failure": "error: invalid type: integer `2`, expected a string\n --> Cargo.toml:7:12\n  |\n7 | resolver = 2\n  |            ^",
+  "prompt_intro": "This crate does not build. Its workspace declares `resolver = 2` as an integer; Cargo requires a string. Correct the type. Keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

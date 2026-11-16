@@ -1,0 +1,32 @@
+{
+  "capability": "Drain a bounded channel while its producer is still running.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-concurrency-01-bounded-channel-join",
+  "initial_failure": {
+    "kind": "timeout",
+    "must_contain": [
+      "running 1 test"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "limits": {
+    "cpu_seconds": 40,
+    "wall_seconds": 25.0
+  },
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "for value in 0..count {",
+    "replace": "for value in 0..count.min(1) {"
+  },
+  "observed_failure": "running 1 test\ntest tests::visible_three_messages ... ",
+  "prompt_intro": "The crate builds, but `collect_after_join` never returns: the channel holds one message, the producer sends several, and the producer is joined before the receiver is drained. Drain while the producer runs. Return the messages in order.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

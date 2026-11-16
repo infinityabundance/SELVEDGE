@@ -1,0 +1,28 @@
+{
+  "capability": "Double every second digit from the right in a Luhn checksum.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-failing-01-luhn-parity",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "if offset % 2 == 1 {",
+    "replace": "if offset % 2 == 0 {"
+  },
+  "observed_failure": "thread 'tests::visible_known_valid_number' panicked at src/lib.rs:34:9:\nassertion failed: luhn_valid(\"49927398716\")",
+  "prompt_intro": "The visible test fails. `luhn_valid` doubles every second digit counting from the wrong end. Digit `d` is doubled to `2 * d`; if the result is above nine, subtract nine. The sum must be divisible by ten. Non-digit characters make the input invalid, and fewer than two digits is invalid.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

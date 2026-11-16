@@ -1,0 +1,28 @@
+{
+  "capability": "Disambiguate two modules that export the same name.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-repo-02-duplicate-reexport",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0252"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "pub use right::Item as RightItem;",
+    "replace": "pub use right::Item as RightItem;\npub use left::Item as RightItem;"
+  },
+  "observed_failure": "error[E0252]: the name `Item` is defined multiple times\n --> src/lib.rs:6:9\n  |\n5 | pub use left::Item;\n  |         --------- previous import of the type `Item` here\n6 | pub use right::Item;\n  |         ^^^^^^^^^^^ `Item` reimported here",
+  "prompt_intro": "This crate does not compile. Both `left` and `right` export an `Item`, and the crate root re-exports both under the same name. Re-export the second one under a different name, and keep both behaviours.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

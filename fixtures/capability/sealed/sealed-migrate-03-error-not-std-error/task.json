@@ -1,0 +1,31 @@
+{
+  "capability": "Convert an error type that version 2 stopped deriving std::error::Error.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "sealed-migrate-03-error-not-std-error",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Ok(value * 2)",
+    "replace": "Ok(value + 2)"
+  },
+  "observed_failure": "error[E0277]: `parse::Error` doesn't implement `std::error::Error`\n --> src/lib.rs:5:37\n  |\n5 |     let value = parse::parse(text)?;\n  |                                     ^ the trait `std::error::Error` is not implemented for `parse::Error`",
+  "prompt_intro": "This crate does not build against the vendored `parse` 2.0.0. Version 2 keeps its error type but no longer implements `std::error::Error`, so it cannot be converted into `Box<dyn Error>` with `?`. Convert the error to its rendered message instead. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

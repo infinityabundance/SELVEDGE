@@ -39,6 +39,7 @@ sys.path.insert(0, os.path.join(ORACLE, "eval"))
 sys.path.insert(0, ORACLE)
 
 import fresh_contamination as fc  # noqa: E402
+from capability import sealed as sealed_module  # noqa: E402
 from capability import suite  # noqa: E402
 
 SCHEMA = "selvedge/capability-contamination/v1"
@@ -191,7 +192,10 @@ def main(argv: list[str]) -> int:
         return 4
     manifest = suite.build_manifest(args.suite)
     collections = suite.load_suite(args.suite)
-    tasks = collections["suite"] + collections["trio"]
+    sealed_items = []
+    if os.path.isdir(sealed_module.sealed_root(args.suite)):
+        sealed_items = sealed_module.load_items(args.suite)
+    tasks = collections["suite"] + collections["trio"] + sealed_items
 
     item_words = {task.id: word_shingles(item_text(task), TEXT_WIDTH)
                   for task in tasks}
@@ -290,6 +294,11 @@ def main(argv: list[str]) -> int:
             "suite_sha256": manifest["suite_sha256"],
             "counts": manifest["counts"],
             "items_checked": len(tasks),
+            "suite_items_checked": len(collections["suite"]) + len(collections["trio"]),
+            "sealed_items_checked": len(sealed_items),
+            "sealed_sha256": (
+                sealed_module.aggregate(sealed_module.item_hashes(sealed_items))
+                if sealed_items else None),
             "item_tree_sha256": {task.id: task.tree_sha256 for task in tasks},
         },
         "method": {
@@ -324,6 +333,10 @@ def main(argv: list[str]) -> int:
             "t2_windows": text_checks["t2_eval_windows"]["source_windows"],
             "t2_tokens": token_report["source_tokens"],
             "suite_sha256": manifest["suite_sha256"],
+            "sealed_sha256": (
+                sealed_module.aggregate(sealed_module.item_hashes(sealed_items))
+                if sealed_items else None),
+            "sealed_items_checked": len(sealed_items),
         },
         "verdict": verdict,
     }

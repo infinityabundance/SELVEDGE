@@ -18,13 +18,13 @@
   "manifest_policy": "locked",
   "mutation": {
     "file": "src/report.rs",
-    "find": "label(text, 6)",
-    "replace": "label(text, 5)"
+    "find": "ratio(part, 10)",
+    "replace": "ratio(part, 20)"
   },
   "naive": {
     "file": "src/report.rs",
-    "find": "crate::format::label(text, 6)",
-    "replace": "crate::format::label(text, text.len())"
+    "find": "crate::format::ratio(part, 10)",
+    "replace": "crate::format::ratio(part, part)"
   },
   "observed_failure": "error[E0061]: this function takes 2 arguments but 1 argument was supplied\n --> src/report.rs:4:5\n  |\n4 |     crate::format::label(text)\n  |     ^^^^^^^^^^^^^^^^^^^^ ---- argument #1 of type `&str` is supplied\n  |\n  = note: expected parameter `&str`, `usize`",
   "prompt_intro": "This crate does not compile. `format::label` now takes a width, but `report::line` still calls it with one argument. Pass the registered width of 6. Text shorter than the width is padded on the right; longer text is not truncated.",

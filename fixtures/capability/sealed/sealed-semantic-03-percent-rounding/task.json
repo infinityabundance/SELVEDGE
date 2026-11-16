@@ -1,0 +1,28 @@
+{
+  "capability": "Round a percentage to the nearest integer, ties upward.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-semantic-03-percent-rounding",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "(part * 100 + total / 2) / total",
+    "replace": "part * 100 / total"
+  },
+  "observed_failure": "the crate builds and tests pass; percent(2, 3) is 66 where the contract requires 67",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract rounds to the nearest integer with ties going up: `percent(2, 3)` is 67, not 66. A total of zero is 0. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

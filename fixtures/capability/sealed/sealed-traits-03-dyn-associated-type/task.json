@@ -1,0 +1,28 @@
+{
+  "capability": "Specify an associated type when using a trait object.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-traits-03-dyn-associated-type",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0191"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "store.get(0)",
+    "replace": "store.get(1)"
+  },
+  "observed_failure": "error[E0191]: the value of the associated type `Output` (from trait `Store`) must be specified\n --> src/lib.rs:9:30\n  |\n9 | pub fn describe(store: &dyn Store) -> u8 {\n  |                              ^^^^^ help: specify the associated type: `Store<Output = Type>`",
+  "prompt_intro": "This crate does not compile. `describe` takes `&dyn Store`, but `Store` has an associated type, so the object type must name it. Specify `Output = u8` and keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

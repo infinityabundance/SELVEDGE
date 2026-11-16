@@ -1,0 +1,28 @@
+{
+  "capability": "Drain a counter atomically instead of reading and storing it.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "sealed-concurrency-02-atomic-take-pair",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "counter.swap(0, Ordering::SeqCst)",
+    "replace": "counter.load(Ordering::SeqCst)"
+  },
+  "observed_failure": "thread 'tests::visible_pair' panicked at src/lib.rs:30:9:\nassertion `left == right` failed\n  left: 10\n right: 5",
+  "prompt_intro": "The visible test fails. Two threads call `take_pair` at the same time; each reads the counter and then stores zero, so both report the same value and the total is counted twice. Drain the counter atomically. The two results must sum to the value that was in the counter, and the counter must end at zero.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

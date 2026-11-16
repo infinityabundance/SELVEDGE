@@ -1,0 +1,28 @@
+{
+  "capability": "Bind the collection a long-lived iterator borrows.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-borrow-03-temporary-split-iterator",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0716"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "segments.first()",
+    "replace": "segments.last()"
+  },
+  "observed_failure": "error[E0716]: temporary value dropped while borrowed\n --> src/lib.rs:4:26\n  |\n4 |     let mut segments = text.split(',').collect::<Vec<_>>().iter();\n  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ creates a temporary value which is freed while still in use\n5 |     segments.next()\n  |     -------- borrow later used here",
+  "prompt_intro": "This crate does not compile. `first_segment_length` stores an iterator borrowed from a temporary vector, and the temporary is dropped at the end of the statement. Bind the collection before iterating. Return the length of the first comma-separated segment.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

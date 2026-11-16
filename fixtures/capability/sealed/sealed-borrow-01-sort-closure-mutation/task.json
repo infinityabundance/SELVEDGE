@@ -1,0 +1,28 @@
+{
+  "capability": "Sort without mutating the collection inside the comparator.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-borrow-01-sort-closure-mutation",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0500"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "values.sort();",
+    "replace": "values.sort_by(|a, b| b.cmp(a));"
+  },
+  "observed_failure": "error[E0500]: closure requires unique access to `*values` but it is already borrowed\n --> src/lib.rs:5:20\n  |\n4 |     values.sort_by(|left, right| {\n  |     ------ ------- first borrow later used by call\n5 |         values.push(*left);\n  |         ------ second borrow occurs due to use of `*values` in closure",
+  "prompt_intro": "This crate does not compile. The comparator passed to `sort_by` pushes into the vector being sorted, so the sort holds a mutable borrow while the closure asks for another. Sort the vector and return the number of adjacent duplicates (values equal to their predecessor).",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

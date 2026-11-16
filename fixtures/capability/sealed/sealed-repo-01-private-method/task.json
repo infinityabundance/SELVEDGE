@@ -1,0 +1,28 @@
+{
+  "capability": "Widen the visibility of a method a sibling module calls.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-repo-01-private-method",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0624"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/model.rs",
+    "find": "self.value",
+    "replace": "self.value + 1"
+  },
+  "observed_failure": "error[E0624]: method `secret` is private\n --> src/report.rs:4:48\n  |\n4 | pub fn describe(config: &Config) -> u8 { config.secret() }\n  |                                                ^^^^^^^^ private method",
+  "prompt_intro": "This crate does not compile. `model::Config` keeps `secret` private, and `report` calls it from another module. Make the method visible to the crate. Keep the value and the rendering.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

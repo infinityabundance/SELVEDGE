@@ -1,0 +1,28 @@
+{
+  "capability": "Swap two elements without holding two mutable references.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-borrow-02-swap-two-elements",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0499"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "values.swap(0, last);",
+    "replace": "values.swap(1, last);"
+  },
+  "observed_failure": "error[E0499]: cannot borrow `*values` as mutable more than once at a time\n --> src/lib.rs:6:16\n  |\n5 |     let first = &mut values[0];\n  |                      -------- first mutable borrow occurs here\n6 |     let last = &mut values[values.len() - 1];\n  |                 ^^^^^^ second mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. `swap_ends` takes a mutable reference to the first element and a second mutable reference to the last element at the same time. Swap them without overlapping borrows. An empty or single-element slice is unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

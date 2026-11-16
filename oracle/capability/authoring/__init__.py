@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from . import (batch3, concurrency, concurrency2, dependency, dependency2, expanded,
                failing, failing2, lifetime, lifetime2, migration, migration2,
-               probes, repo_scale, repo_scale2, semantic, traits, traits2, trio,
-               trio2)
+               probes, repo_scale, repo_scale2, sealed, semantic, traits, traits2,
+               trio, trio2)
 
 #: The first expansion pass produced sixteen near-duplicates of existing
 #: capabilities. `authoring/expanded.py` replaces them with a different
@@ -64,6 +64,7 @@ _BASE_TASKS = (
 )
 SUITE_TASKS = tuple(task for task in _BASE_TASKS if task["id"] not in _SUPERSEDED)
 SUITE_TASKS = SUITE_TASKS + tuple(expanded.TASKS)
+SEALED_TASKS = sealed.SEALED_TASKS
 TRIO_TASKS = trio.TASKS + trio2.TASKS
 PROBE_TASKS = probes.TASKS
 

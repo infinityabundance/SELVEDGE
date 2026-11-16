@@ -1,0 +1,28 @@
+{
+  "capability": "Replace an edition-2024-rejected mutable static with an atomic.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-deps-03-static-mut-edition",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "creating a shared reference to mutable static"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "fetch_add(1, Ordering::SeqCst) + 1",
+    "replace": "fetch_add(1, Ordering::SeqCst)"
+  },
+  "observed_failure": "error: creating a shared reference to mutable static\n --> src/lib.rs:5:26\n  |\n5 |     let reference = unsafe { &COUNTER };\n  |                          ^^^^^^^^ shared reference to mutable static",
+  "prompt_intro": "This crate does not build under edition 2024: taking a shared reference to a `static mut` is an error. Replace the mutable static with an atomic counter and keep `bump()` returning the new value, starting at one. You may edit `src/lib.rs` or `Cargo.toml`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

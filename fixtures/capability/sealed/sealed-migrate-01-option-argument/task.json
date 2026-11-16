@@ -1,0 +1,31 @@
+{
+  "capability": "Wrap a value in the Option that version 2 requires.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-migrate-01-option-argument",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Some(value)",
+    "replace": "None"
+  },
+  "observed_failure": "error[E0308]: mismatched types\n --> src/lib.rs:6:16\n  |\n6 |     store.set(key, value);\n  |           --- ^^^^^ expected `Option<i64>`, found `i64`",
+  "prompt_intro": "This crate does not build against the vendored `store` 2.0.0. Version 2 made the stored value an `Option<i64>`, so `Some(value)` is required and a key can be cleared with `None`. Wrap the value. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

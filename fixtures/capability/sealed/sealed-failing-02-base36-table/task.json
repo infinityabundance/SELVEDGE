@@ -1,0 +1,28 @@
+{
+  "capability": "Encode an integer in base 36 with a complete digit table.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "sealed-failing-02-base36-table",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "index out of bounds"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value % 36",
+    "replace": "value % 35"
+  },
+  "observed_failure": "thread 'tests::visible_thirty_five' panicked at src/lib.rs:19:9:\nindex out of bounds: the len is 35 but the index is 35",
+  "prompt_intro": "The visible test fails. `to_base36` encodes a non-negative integer in lowercase base 36, but its digit table is one character short. Zero encodes as `0`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

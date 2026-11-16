@@ -28,7 +28,7 @@ def collections():
 
 def test_the_suite_has_the_registered_shape():
     loaded = collections()
-    assert len(loaded["suite"]) == 72
+    assert len(loaded["suite"]) == 144
     assert len(loaded["trio"]) == 9
     assert len(loaded["probes"]) == 6
     categories = {task.category for task in loaded["suite"]}
@@ -57,8 +57,8 @@ def test_the_manifest_matches_the_tree():
     ok, message = suite.check_manifest(SUITE_ROOT)
     assert ok, message
     manifest = suite.build_manifest(SUITE_ROOT)
-    assert manifest["counts"]["total"] == 87
-    assert manifest["counts"]["suite"] == 72
+    assert manifest["counts"]["total"] == 159
+    assert manifest["counts"]["suite"] == 144
     assert manifest["counts"]["trio"] == 9
     assert manifest["counts"]["probes"] == 6
     assert len(manifest["suite_sha256"]) == 64
@@ -107,7 +107,7 @@ def test_per_category_counts_are_even_enough_to_balance():
     for name in ("lifetime-borrow", "failing-test", "api-migration",
                  "dependency-compat", "concurrency", "trait-impl", "repo-scale",
                  "semantic-repair"):
-        assert counts[name] == 9, name
+        assert counts[name] == 18, name
     assert counts["trio"] == 9
     assert counts["probe"] == 6
 

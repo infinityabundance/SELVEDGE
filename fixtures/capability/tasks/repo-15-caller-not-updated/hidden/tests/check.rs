@@ -1,17 +1,16 @@
 use repo_15_caller_not_updated::line;
 
 #[test]
-fn short_text_is_padded_to_six() {
-    assert_eq!(line("ab"), "ab    ");
-    assert_eq!(line("ab").len(), 6);
+fn half_of_ten_is_fifty_percent() {
+    assert_eq!(line(5), "50.0%");
 }
 
 #[test]
-fn long_text_is_not_truncated() {
-    assert_eq!(line("abcdefg"), "abcdefg");
+fn zero_is_zero_percent() {
+    assert_eq!(line(0), "0.0%");
 }
 
 #[test]
-fn empty_text_becomes_six_spaces() {
-    assert_eq!(line(""), "      ");
+fn the_whole_is_one_hundred_percent() {
+    assert_eq!(line(10), "100.0%");
 }

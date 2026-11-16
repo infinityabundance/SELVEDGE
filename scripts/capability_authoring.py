@@ -37,6 +37,7 @@ COLLECTIONS = (
     ("tasks", authoring.SUITE_TASKS),
     ("trio", authoring.TRIO_TASKS),
     ("probes", authoring.PROBE_TASKS),
+    ("sealed", authoring.SEALED_TASKS),
 )
 
 #: Keys a declaration may carry. Anything else is a typo that would be silently
@@ -193,7 +194,7 @@ def check(root: str) -> list[str]:
             if path not in expected:
                 problems.append(f"unexpected file {os.path.relpath(path, REPO)}")
     if os.path.isdir(root):
-        for collection in ("tasks", "trio", "probes"):
+        for collection in ("tasks", "trio", "probes", "sealed"):
             collection_root = os.path.join(root, collection)
             if not os.path.isdir(collection_root):
                 problems.append(f"missing collection {collection}/")

@@ -1,0 +1,28 @@
+{
+  "capability": "Share a counter between scoped threads with an atomic instead of &mut.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-concurrency-03-two-closures-unique-access",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0499"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "counter.fetch_add(1, Ordering::SeqCst);",
+    "replace": "counter.fetch_add(2, Ordering::SeqCst);"
+  },
+  "observed_failure": "error[E0499]: cannot borrow `*counter` as mutable more than once at a time\n --> src/lib.rs:4:21\n  |\n3 |     std::thread::scope(|scope| {\n  |                        ------- first mutable borrow occurs here\n4 |         scope.spawn(|| { *counter += 1; });\n  |                     ^^ second mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. Both scoped closures try to hold the same mutable reference to the counter, which Rust forbids. Take an `AtomicU32` instead, add one per closure, and return the final value.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

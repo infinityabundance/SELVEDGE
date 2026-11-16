@@ -1,0 +1,13 @@
+[package]
+name = "sealed_migrate_03_error_not_std_error"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+parse = { path = "dep" }

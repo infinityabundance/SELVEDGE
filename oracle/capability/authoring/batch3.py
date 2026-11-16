@@ -2432,21 +2432,31 @@ DEPENDENCY = [
         "files": {
             "Cargo.toml": _plain("deps_10_edition_unsafe_attribute", "2024"),
             "src/lib.rs": code("""
-                //! An exported entry point. This does not build under edition 2024.
+                //! An exported checksum. This does not build under edition 2024.
 
                 #[no_mangle]
-                pub extern "C" fn answer() -> i32 {
-                    42
+                pub extern "C" fn checksum(bytes: &[u8]) -> u8 {
+                    bytes.iter().fold(0u8, |total, byte| total.wrapping_add(*byte))
                 }
             """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_10_edition_unsafe_attribute::answer;
+                use deps_10_edition_unsafe_attribute::checksum;
 
                 #[test]
-                fn the_exported_function_answers() {
-                    assert_eq!(answer(), 42);
+                fn sums_the_bytes() {
+                    assert_eq!(checksum(b"ab"), 195u8);
+                }
+
+                #[test]
+                fn empty_input_is_zero() {
+                    assert_eq!(checksum(b""), 0u8);
+                }
+
+                #[test]
+                fn the_sum_wraps() {
+                    assert_eq!(checksum(&[255, 1]), 0u8);
                 }
             """),
         },
@@ -2490,26 +2500,36 @@ DEPENDENCY = [
                 //! Codec, version 2. The library target is `codec_impl` while the
                 //! package is `codec`.
 
-                pub fn label() -> &'static str {
-                    "codec 2.0.0"
+                pub fn total(text: &str) -> u32 {
+                    text.bytes().map(|byte| byte as u32).sum()
                 }
             """),
             "src/lib.rs": code("""
-                //! A codec label. This does not build: the import name is not the
+                //! A codec checksum. This does not build: the import name is not the
                 //! library target name.
 
-                pub fn codec_label() -> &'static str {
-                    codec::label()
+                pub fn codec_total(text: &str) -> u32 {
+                    codec::total(text)
                 }
             """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_11_lib_name_mismatch::codec_label;
+                use deps_11_lib_name_mismatch::codec_total;
 
                 #[test]
-                fn the_vendored_library_is_reached() {
-                    assert_eq!(codec_label(), "codec 2.0.0");
+                fn empty_input_is_zero() {
+                    assert_eq!(codec_total(""), 0);
+                }
+
+                #[test]
+                fn a_single_byte_is_its_value() {
+                    assert_eq!(codec_total("a"), 97);
+                }
+
+                #[test]
+                fn bytes_are_summed() {
+                    assert_eq!(codec_total("abc"), 294);
                 }
             """),
         },
@@ -2520,15 +2540,15 @@ DEPENDENCY = [
                 "deps_11_lib_name_mismatch",
                 extra='\n[dependencies]\ncodec_impl = { path = "dep", package = "codec" }\n'),
             "src/lib.rs": code("""
-                //! A codec label.
+                //! A codec checksum.
 
-                pub fn codec_label() -> &'static str {
-                    codec_impl::label()
+                pub fn codec_total(text: &str) -> u32 {
+                    codec_impl::total(text)
                 }
             """),
         },
-        "mutation": {"file": "src/lib.rs", "find": "codec_impl::label()",
-                     "replace": "codec::label()"},
+        "mutation": {"file": "src/lib.rs", "find": "codec_impl::total(text)",
+                     "replace": "codec_impl::total(\"\")"},
         "initial_failure": {"kind": "compile_error", "must_contain": ["E0433"]},
     },
     {
@@ -2611,15 +2631,34 @@ DEPENDENCY = [
                 "\n"
                 "[lib]\n"
                 'path = "src/other.rs"\n'),
-            "src/lib.rs": _ANSWER,
+            "src/lib.rs": code("""
+                //! Percentage clamping.
+
+                pub fn clamp_percent(part: u32, total: u32) -> u32 {
+                    if total == 0 {
+                        return 0;
+                    }
+                    part.min(total) * 100 / total
+                }
+            """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_13_wrong_lib_path::answer;
+                use deps_13_wrong_lib_path::clamp_percent;
 
                 #[test]
-                fn the_library_is_found() {
-                    assert_eq!(answer(), 42);
+                fn half_is_fifty() {
+                    assert_eq!(clamp_percent(1, 2), 50);
+                }
+
+                #[test]
+                fn an_overshoot_is_clamped() {
+                    assert_eq!(clamp_percent(3, 2), 100);
+                }
+
+                #[test]
+                fn a_zero_total_is_zero() {
+                    assert_eq!(clamp_percent(0, 0), 0);
                 }
             """),
         },
@@ -2657,15 +2696,36 @@ DEPENDENCY = [
                 "\n"
                 "[lib]\n"
                 'path = "src/lib.rs"\n'),
-            "src/lib.rs": _ANSWER,
+            "src/lib.rs": code("""
+                //! Boolean flag parsing.
+
+                pub fn parse_flag(text: &str) -> Option<bool> {
+                    match text.trim().to_ascii_lowercase().as_str() {
+                        "yes" | "on" | "1" => Some(true),
+                        "no" | "off" | "0" => Some(false),
+                        _ => None,
+                    }
+                }
+            """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_14_workspace_inheritance::answer;
+                use deps_14_workspace_inheritance::parse_flag;
 
                 #[test]
-                fn the_package_has_a_version() {
-                    assert_eq!(answer(), 42);
+                fn affirmative_forms_are_true() {
+                    assert_eq!(parse_flag(" yes "), Some(true));
+                    assert_eq!(parse_flag("ON"), Some(true));
+                }
+
+                #[test]
+                fn negative_forms_are_false() {
+                    assert_eq!(parse_flag("0"), Some(false));
+                }
+
+                #[test]
+                fn unknown_text_is_none() {
+                    assert_eq!(parse_flag("maybe"), None);
                 }
             """),
         },
@@ -2700,15 +2760,34 @@ DEPENDENCY = [
                 "\n"
                 "[lib]\n"
                 'path = "src/lib.rs"\n'),
-            "src/lib.rs": _ANSWER,
+            "src/lib.rs": code("""
+                //! Initials.
+
+                pub fn initials(text: &str) -> String {
+                    text.split_whitespace()
+                        .filter_map(|word| word.chars().next())
+                        .flat_map(|first| first.to_uppercase())
+                        .collect()
+                }
+            """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_15_missing_package_name::answer;
+                use deps_15_missing_package_name::initials;
 
                 #[test]
-                fn the_package_is_named() {
-                    assert_eq!(answer(), 42);
+                fn every_word_contributes_a_capital() {
+                    assert_eq!(initials("alpha beta"), "AB");
+                }
+
+                #[test]
+                fn surrounding_space_is_ignored() {
+                    assert_eq!(initials(" single "), "S");
+                }
+
+                #[test]
+                fn empty_input_is_empty() {
+                    assert_eq!(initials(""), "");
                 }
             """),
         },
@@ -2743,25 +2822,36 @@ DEPENDENCY = [
             "vendor/src/lib.rs": code("""
                 //! Codec, version 2.
 
-                pub fn label() -> &'static str {
-                    "codec 2.0.0"
+                pub fn fold(text: &str) -> u32 {
+                    text.bytes()
+                        .fold(0u32, |total, byte| total.wrapping_mul(31).wrapping_add(byte as u32))
                 }
             """),
             "src/lib.rs": code("""
-                //! A codec label. This does not build: the dependency path is wrong.
+                //! A codec fold. This does not build: the dependency path is wrong.
 
-                pub fn codec_label() -> &'static str {
-                    codec::label()
+                pub fn codec_fold(text: &str) -> u32 {
+                    codec::fold(text)
                 }
             """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_16_missing_dependency_dir::codec_label;
+                use deps_16_missing_dependency_dir::codec_fold;
 
                 #[test]
-                fn the_vendored_dependency_is_found() {
-                    assert_eq!(codec_label(), "codec 2.0.0");
+                fn empty_input_is_zero() {
+                    assert_eq!(codec_fold(""), 0);
+                }
+
+                #[test]
+                fn two_bytes_are_combined() {
+                    assert_eq!(codec_fold("ab"), 3105);
+                }
+
+                #[test]
+                fn three_bytes_are_combined() {
+                    assert_eq!(codec_fold("abc"), 96354);
                 }
             """),
         },
@@ -2772,17 +2862,17 @@ DEPENDENCY = [
                 "deps_16_missing_dependency_dir",
                 extra='\n[dependencies]\ncodec = { path = "vendor" }\n'),
             "src/lib.rs": code("""
-                //! A codec label.
+                //! A codec fold.
 
-                pub fn codec_label() -> &'static str {
-                    codec::label()
+                pub fn codec_fold(text: &str) -> u32 {
+                    codec::fold(text)
                 }
             """),
         },
         "mutation": {"file": "Cargo.toml", "find": 'path = "vendor"',
                      "replace": 'path = "dep"'},
-        "naive": {"file": "src/lib.rs", "find": "codec::label()",
-                  "replace": "\"codec\""},
+        "naive": {"file": "src/lib.rs", "find": "codec::fold(text)",
+                  "replace": "text.len() as u32"},
         "initial_failure": {"kind": "compile_error",
                             "must_contain": ["failed to load manifest for dependency"]},
     },
@@ -2810,15 +2900,35 @@ DEPENDENCY = [
                 "\n"
                 "[lib]\n"
                 'path = "src/lib.rs"\n'),
-            "src/lib.rs": _ANSWER,
+            "src/lib.rs": code("""
+                //! Upper median.
+
+                pub fn median(values: &mut [i64]) -> Option<i64> {
+                    if values.is_empty() {
+                        return None;
+                    }
+                    values.sort_unstable();
+                    Some(values[values.len() / 2])
+                }
+            """),
         },
         "hidden": {
             "tests/check.rs": code("""
-                use deps_17_invalid_package_name::answer;
+                use deps_17_invalid_package_name::median;
 
                 #[test]
-                fn the_package_name_is_a_crate_identifier() {
-                    assert_eq!(answer(), 42);
+                fn an_odd_length_takes_the_middle() {
+                    assert_eq!(median(&mut [3, 1, 2]), Some(2));
+                }
+
+                #[test]
+                fn an_even_length_takes_the_upper_middle() {
+                    assert_eq!(median(&mut [4, 1, 3, 2]), Some(3));
+                }
+
+                #[test]
+                fn an_empty_slice_is_none() {
+                    assert_eq!(median(&mut []), None);
                 }
             """),
         },
@@ -2861,8 +2971,8 @@ DEPENDENCY = [
             "src/lib.rs": code("""
                 //! A codec label. This does not build: `default-features` is a string.
 
-                pub fn codec_label() -> &'static str {
-                    codec::label()
+                pub fn codec_label() -> String {
+                    format!("[{}]", codec::label())
                 }
             """),
         },
@@ -2871,8 +2981,18 @@ DEPENDENCY = [
                 use deps_18_default_features_type::codec_label;
 
                 #[test]
-                fn the_dependency_is_built_without_default_features() {
-                    assert_eq!(codec_label(), "codec 2.0.0");
+                fn the_label_is_wrapped() {
+                    assert_eq!(codec_label(), "[codec 2.0.0]");
+                }
+
+                #[test]
+                fn the_label_has_the_registered_length() {
+                    assert_eq!(codec_label().len(), 13);
+                }
+
+                #[test]
+                fn the_label_starts_with_the_opening_bracket() {
+                    assert!(codec_label().starts_with('['));
                 }
             """),
         },
@@ -4995,22 +5115,21 @@ REPO = [
                 pub use report::line;
             """),
             "src/format.rs": code("""
-                //! Label formatting.
+                //! Ratio formatting.
 
-                pub fn label(text: &str, width: usize) -> String {
-                    let mut out = text.to_string();
-                    while out.len() < width {
-                        out.push(' ');
+                pub fn ratio(part: u32, total: u32) -> String {
+                    if total == 0 {
+                        return "0.0%".to_string();
                     }
-                    out
+                    format!("{:.1}%", part as f64 * 100.0 / total as f64)
                 }
             """),
             "src/report.rs": code("""
                 //! A report line. This does not compile: the caller was not updated
-                //! after the formatter gained a width parameter.
+                //! after the formatter gained its second argument.
 
-                pub fn line(text: &str) -> String {
-                    crate::format::label(text)
+                pub fn line(part: u32) -> String {
+                    crate::format::ratio(part)
                 }
             """),
         },
@@ -5019,19 +5138,18 @@ REPO = [
                 use repo_15_caller_not_updated::line;
 
                 #[test]
-                fn short_text_is_padded_to_six() {
-                    assert_eq!(line("ab"), "ab    ");
-                    assert_eq!(line("ab").len(), 6);
+                fn half_of_ten_is_fifty_percent() {
+                    assert_eq!(line(5), "50.0%");
                 }
 
                 #[test]
-                fn long_text_is_not_truncated() {
-                    assert_eq!(line("abcdefg"), "abcdefg");
+                fn zero_is_zero_percent() {
+                    assert_eq!(line(0), "0.0%");
                 }
 
                 #[test]
-                fn empty_text_becomes_six_spaces() {
-                    assert_eq!(line(""), "      ");
+                fn the_whole_is_one_hundred_percent() {
+                    assert_eq!(line(10), "100.0%");
                 }
             """),
         },
@@ -5039,15 +5157,15 @@ REPO = [
             "src/report.rs": code("""
                 //! A report line.
 
-                pub fn line(text: &str) -> String {
-                    crate::format::label(text, 6)
+                pub fn line(part: u32) -> String {
+                    crate::format::ratio(part, 10)
                 }
             """),
         },
-        "mutation": {"file": "src/report.rs", "find": "label(text, 6)",
-                     "replace": "label(text, 5)"},
-        "naive": {"file": "src/report.rs", "find": "crate::format::label(text, 6)",
-                  "replace": "crate::format::label(text, text.len())"},
+        "mutation": {"file": "src/report.rs", "find": "ratio(part, 10)",
+                     "replace": "ratio(part, 20)"},
+        "naive": {"file": "src/report.rs", "find": "crate::format::ratio(part, 10)",
+                  "replace": "crate::format::ratio(part, part)"},
         "initial_failure": {"kind": "compile_error", "must_contain": ["E0061"]},
     },
     {

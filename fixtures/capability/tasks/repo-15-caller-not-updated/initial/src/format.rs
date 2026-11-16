@@ -1,9 +1,8 @@
-//! Label formatting.
+//! Ratio formatting.
 
-pub fn label(text: &str, width: usize) -> String {
-    let mut out = text.to_string();
-    while out.len() < width {
-        out.push(' ');
+pub fn ratio(part: u32, total: u32) -> String {
+    if total == 0 {
+        return "0.0%".to_string();
     }
-    out
+    format!("{:.1}%", part as f64 * 100.0 / total as f64)
 }

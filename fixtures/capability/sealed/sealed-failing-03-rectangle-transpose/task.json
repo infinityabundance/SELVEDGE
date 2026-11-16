@@ -1,0 +1,28 @@
+{
+  "capability": "Transpose a rectangular matrix, not only a square one.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "sealed-failing-03-rectangle-transpose",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "matrix.first().map(|row| row.len())",
+    "replace": "matrix.first().map(|row| row.len() - 1)"
+  },
+  "observed_failure": "thread 'tests::visible_rectangular' panicked at src/lib.rs:17:9:\nassertion `left == right` failed\n  left: [[1, 4], [2, 5], [3, 6]]\n right: [[1, 3, 5], [2, 4, 6]]",
+  "prompt_intro": "The visible test fails. `transpose` assumes the matrix is square and indexes the source by the output's row and column, so a 2x3 matrix is transposed into the wrong shape. Transpose any rows x columns matrix; an empty matrix stays empty.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}
