@@ -1,0 +1,71 @@
+..................F.                                                     [100%]
+=================================== FAILURES ===================================
+_ test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not _
+
+    def test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not():
+        # The sparse path runs the selected groups at unit weight, so the omitted
+        # contribution is *exactly* the sum of the unselected groups' functions:
+        # a known target that depends on (h, S) and nothing else. That is the
+        # synthetic form of the decisive experiment.
+        bank = _bank(hidden=6, experts=4, k=2, seed=5)
+        bank.fixed_weights = torch.ones(bank.experts)
+    
+        # (a) the set-independent alignment baseline, fitted closed-form on the
+        #     same calibration distribution.
+        generator = torch.Generator().manual_seed(21)
+        calibration = torch.randn(4096, bank.hidden, generator=generator)
+        with torch.no_grad():
+            alignment_target = bank.dense(calibration) - bank(calibration)
+        alignment = recovery.LayerAlignment(bank.hidden, 4)
+        alignment.fit(calibration, alignment_target, ridge=1e-6, mode="l2")
+        alignment_error = _evaluate(alignment, bank, "alignment")
+    
+        # (b) the conditioned compensator.
+>       compensator, curve = _train_compensator(bank, mode="conditioned", steps=1500)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p13_recovery.py:423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = _Bank(
+  (router): Linear(in_features=6, out_features=4, bias=False)
+)
+mode = 'conditioned', steps = 1500, seed = 3, set_mode = 'omitted'
+
+    def _train_compensator(bank: _Bank, mode: str, steps: int = 600, seed: int = 3,
+                           set_mode: str = "omitted") -> tuple[torch.nn.Module, dict]:
+        """Learn the omitted groups' contribution for one synthetic bank."""
+        config = recovery.RecoveryConfig(rank=8, set_dim=8, set_mode=set_mode)
+        compensator = recovery.OmissionCompensator(bank.hidden, bank.experts, config,
+                                                   seed=seed)
+        optimizer = torch.optim.Adam(compensator.parameters(), lr=5e-3)
+        generator = torch.Generator().manual_seed(seed + 1)
+        losses = []
+        for _step in range(steps):
+            features = torch.randn(256, bank.hidden, generator=generator)
+            with torch.no_grad():
+                selected = bank.router(features).topk(bank.k, dim=-1).indices
+                weights = torch.softmax(bank.router(features), dim=-1).gather(1, selected)
+                sparse = bank(features)
+                dense = bank.dense(features)
+                if mode == "shuffled":
+                    conditioned = recovery.shuffle_sets(selected, bank.experts,
+                                                        seed=seed)
+                else:
+                    conditioned = selected
+            if mode == "alignment":
+                continue
+            prediction = compensator(features, conditioned)
+            loss = (prediction - (dense - sparse)).pow(2).mean()
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            optimizer.step()
+>           losses.append(float(loss))
+                          ^^^^^^^^^^^
+E           UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+E           Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+
+oracle/tests/test_p13_recovery.py:382: UserWarning
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+1 failed, 19 passed in 5.21s

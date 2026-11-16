@@ -1,0 +1,78 @@
+{
+  "alignment_per_layer": 17408,
+  "alignment_rank": 8,
+  "alignment_total": 487424,
+  "arms": {
+    "dense-teacher-reference": {
+      "note": "all m groups at unit weight; not deployable, it is the reference the other arms are scored against",
+      "realized_active": 772440064,
+      "recovery_elements": 0,
+      "within_ceiling": true
+    },
+    "sparse+alignment": {
+      "realized_active": 772927488,
+      "recovery_elements": 487424,
+      "within_ceiling": true
+    },
+    "sparse+alignment+compensator": {
+      "realized_active": 773418720,
+      "recovery_elements": 978656,
+      "within_ceiling": true
+    },
+    "sparse+compensator": {
+      "realized_active": 772931296,
+      "recovery_elements": 491232,
+      "within_ceiling": true
+    },
+    "sparse-only": {
+      "realized_active": 772440064,
+      "recovery_elements": 0,
+      "within_ceiling": true
+    }
+  },
+  "arms_in_order": [
+    "sparse-only",
+    "sparse+alignment",
+    "sparse+compensator",
+    "sparse+alignment+compensator",
+    "dense-teacher-reference"
+  ],
+  "ceiling": 1000000000,
+  "compensator_per_layer": 17544,
+  "compensator_total": 491232,
+  "config": {
+    "activation": "silu",
+    "rank": 8,
+    "set_dim": 8,
+    "set_mode": "omitted"
+  },
+  "experts": 8,
+  "hidden": 1024,
+  "instrument": {
+    "metrics": [
+      "kl",
+      "top1",
+      "per-domain ppl",
+      "humaneval pass@1",
+      "gsm8k exact match",
+      "truthfulqa mc1"
+    ],
+    "source": "oracle/eval/harness.py, the same primitives baseline.py (T2.9) calls; the registered instrument is not modified",
+    "statistics": {
+      "kind": "percentile paired bootstrap over items/documents",
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "k": 4,
+  "layers": 28,
+  "matched_rule": "alignment rank is floored so its element count is at most the compensator's, so every comparison is at or below the compensator's bytes",
+  "omission_definition": "the sparse layer runs the router's top-k groups at their softmax weight; the omitted groups are the complement. The dense reference runs all m at unit weight, which is the reference T2.5's utility labels use.",
+  "omission_rate": 0.5,
+  "training": {
+    "calibration_windows": 32,
+    "lr": 0.0005,
+    "objective": "distillation (T1.4) through the frozen sparse model, compensator only",
+    "steps": 512
+  }
+}

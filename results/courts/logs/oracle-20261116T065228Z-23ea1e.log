@@ -1,0 +1,434 @@
+....FFFF.F...FFFFFFF......                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_usage_stats_uniform_logits_are_full_entropy _______________
+
+    def test_usage_stats_uniform_logits_are_full_entropy():
+        logits = torch.zeros(600, 8)
+        stats = diagnostics.usage_stats(logits)
+>       assert stats["normalised_entropy"] == pytest.approx(1.0, abs=1e-9)
+E       assert 0.6666666666666667 == 1.0 ± 1.0e-09
+E         
+E         comparison failed
+E         Obtained: 0.6666666666666667
+E         Expected: 1.0 ± 1.0e-09
+
+oracle/tests/test_h_diagnostics.py:95: AssertionError
+______ test_usage_stats_constant_choice_is_one_set_and_four_dead_experts _______
+
+    def test_usage_stats_constant_choice_is_one_set_and_four_dead_experts():
+        logits = torch.zeros(500, 8)
+        logits[:, :4] = 5.0
+        logits[:, 4:] = -5.0
+        stats = diagnostics.usage_stats(logits)
+        assert stats["distinct_topk_sets"] == 1
+        assert stats["modal_set_share"] == pytest.approx(1.0, abs=1e-12)
+>       assert stats["modal_set"] == [0, 1, 2, 3]
+E       assert [538] == [0, 1, 2, 3]
+E         
+E         At index 0 diff: 538 != 0
+E         Right contains 3 more items, first extra item: 1
+E         Use -v to get more diff
+
+oracle/tests/test_h_diagnostics.py:109: AssertionError
+_________ test_usage_stats_records_the_expert_counts_of_a_known_router _________
+
+    def test_usage_stats_records_the_expert_counts_of_a_known_router():
+        logits = torch.zeros(8, 8)
+        for expert in range(8):
+            logits[expert * 4:(expert + 1) * 4, expert] = 10.0
+        stats = diagnostics.usage_stats(logits)
+        # Four positions per expert, each contributing k = 4 selections; only the
+        # single dominant expert is selected, so the count of expert `e` is `4 * 4`
+        # for the eight groups of four positions.
+>       assert stats["counts"] == [16] * 8
+E       assert [4, 4, 0, 0, 4, 8, ...] == [16, 16, 16, 16, 16, 16, ...]
+E         
+E         At index 0 diff: 4 != 16
+E         Use -v to get more diff
+
+oracle/tests/test_h_diagnostics.py:122: AssertionError
+______________ test_row_usage_counts_distinct_rows_and_collisions ______________
+
+    def test_row_usage_counts_distinct_rows_and_collisions():
+        indices = torch.zeros(10, 2, dtype=torch.int64)
+        indices[5:, 0] = 7
+        indices[:, 1] = torch.arange(10)
+        result = diagnostics.row_usage(indices, rows=1024)
+        assert result["reads"] == 20
+>       assert result["distinct_rows_read"] == 11  # row 0..9 from head two, plus 7
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 10 == 11
+
+oracle/tests/test_h_diagnostics.py:136: AssertionError
+_______________ test_displacement_stats_identifies_updated_rows ________________
+
+    def test_displacement_stats_identifies_updated_rows():
+        init = torch.ones(8, 4, dtype=torch.bfloat16)
+        table = init.clone()
+        table[2] = 2.0
+        table[6] = -3.0
+        stats = diagnostics.displacement_stats(table, init)
+        assert stats["rows"] == 8
+        assert stats["rows_bitwise_unchanged"] == 6
+        assert stats["total_displacement"] > 0
+>       assert stats["top_1pct_displacement_share"] == pytest.approx(1.0)
+E       assert 0.800000011920929 == 1.0 ± 1.0e-06
+E         
+E         comparison failed
+E         Obtained: 0.800000011920929
+E         Expected: 1.0 ± 1.0e-06
+
+oracle/tests/test_h_diagnostics.py:159: AssertionError
+________________ test_popularity_codes_bucket_by_row_frequency _________________
+
+    def test_popularity_codes_bucket_by_row_frequency():
+        indices = torch.zeros(10, 2, dtype=torch.int64)
+        indices[:5, 0] = 1
+        indices[5:, 0] = 2
+        codes = diagnostics.popularity_codes(indices, levels=2)
+>       assert set(codes.tolist()) == {0, 1}
+E       assert {1} == {0, 1}
+E         
+E         Extra items in the right set:
+E         0
+E         Use -v to get more diff
+
+oracle/tests/test_h_diagnostics.py:197: AssertionError
+___________ test_outcome_cells_reproduce_counts_and_cell_accuracies ____________
+
+    def test_outcome_cells_reproduce_counts_and_cell_accuracies():
+        # One task of four items: both, left-only, right-only, neither.
+        first = {"humaneval": [1, 1, 0, 0], "gsm8k": [1, 1, 0, 0],
+                 "truthfulqa": [1, 1, 0, 0]}
+        second = {"humaneval": [1, 0, 1, 0], "gsm8k": [1, 0, 1, 0],
+                  "truthfulqa": [1, 0, 1, 0]}
+        reference = {"humaneval": [1, 1, 0, 0], "gsm8k": [1, 1, 0, 0],
+                     "truthfulqa": [1, 1, 0, 0]}
+        arms = _items(first, second, reference)
+        cells = diagnostics.outcome_cells(arms, "left", "right", "reference")
+        table = cells["per_task"]["humaneval"]
+        assert table["both"]["n"] == 1
+        assert table["left_only"]["n"] == 1
+        assert table["right_only"]["n"] == 1
+        assert table["neither"]["n"] == 1
+        assert table["both"]["reference_accuracy"] == pytest.approx(1.0)
+>       assert table["left_only"]["reference_accuracy"] == pytest.approx(0.0)
+E       assert 1.0 == 0.0 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 1.0
+E         Expected: 0.0 ± 1.0e-12
+
+oracle/tests/test_h_diagnostics.py:236: AssertionError
+______________ test_outcome_cells_composite_weights_tasks_equally ______________
+
+    def test_outcome_cells_composite_weights_tasks_equally():
+        # `humaneval` is solved everywhere, `gsm8k` nowhere: the composite must be
+        # the task mean, 0.5, not the item mean.
+        first = {"humaneval": [1, 1, 1, 1, 1, 1], "gsm8k": [1, 1, 1, 1, 1, 1],
+                 "truthfulqa": [1, 1, 1, 1, 1, 1]}
+        second = {"humaneval": [1, 1, 1, 1, 1, 1], "gsm8k": [0, 0, 0, 0, 0, 0],
+                  "truthfulqa": [1, 1, 1, 1, 1, 1]}
+        reference = {"humaneval": [1] * 6, "gsm8k": [0] * 6, "truthfulqa": [1] * 6}
+        arms = _items(first, second, reference)
+        cells = diagnostics.outcome_cells(arms, "left", "right", "reference")
+>       assert cells["pooled"]["union"]["reference_composite"] == pytest.approx(2.0 / 3.0)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'reference_composite'
+
+oracle/tests/test_h_diagnostics.py:257: KeyError
+__________ test_path_magnitudes_are_zero_when_the_projection_is_zero ___________
+
+    def test_path_magnitudes_are_zero_when_the_projection_is_zero():
+        features = torch.ones(16, 4)
+        indices = torch.zeros(16, 2, dtype=torch.int64)
+        state = _memory_state(gate_scale=0.0, projection_scale=0.0)
+>       result = diagnostics.path_magnitudes(features, None, state, indices)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_h_diagnostics.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+features = tensor([[1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1..., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.]])
+bank_state = None
+memory_state = {'table': tensor([[ 0.,  1.],
+        [ 2.,  3.],
+        [ 4.,  5.],
+        [ 6.,  7.],
+        [ 8.,  9.],
+        ... 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]), 'gate': tensor([0., 0., 0., 0.])}
+indices = tensor([[0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ...0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0]])
+positions = None
+
+    def path_magnitudes(features: torch.Tensor, bank_state: dict | None,
+                        memory_state: dict, indices: torch.Tensor,
+                        positions: int | None = None) -> dict:
+        """RMS output of the memory path and the bank on *stored* states.
+    
+        This evaluates the saved modules on the saved hidden states. It is not a
+        model forward: no new activations are produced and no token passes through
+        the network. The bank magnitude is the deployed mixture value (softmax
+        weight on the selected experts) without capacity overflow, which is noted
+        in the receipt because overflow drops pairs in the deployed path.
+        """
+        if positions is not None and features.shape[0] > positions:
+            step = features.shape[0] // positions
+            features = features[::step][:positions]
+            indices = indices[::step][:positions]
+        hidden = features.detach().to(torch.float32)
+        values = memory_state["table"][indices].to(torch.float32)
+>       mixed = values.reshape(hidden.shape[0], -1) @ memory_state["proj"].T
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: mm: mat1 and mat2 shapes cannot be multiplied (16x4 and 16x4)
+
+oracle/eval/h_diagnostics.py:382: RuntimeError
+________________ test_path_magnitudes_scale_with_the_projection ________________
+
+    def test_path_magnitudes_scale_with_the_projection():
+        features = torch.ones(16, 4)
+        indices = torch.zeros(16, 2, dtype=torch.int64)
+>       small = diagnostics.path_magnitudes(features, None,
+                                            _memory_state(projection_scale=0.1), indices)
+
+oracle/tests/test_h_diagnostics.py:284: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+features = tensor([[1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1..., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.]])
+bank_state = None
+memory_state = {'table': tensor([[ 0.,  1.],
+        [ 2.,  3.],
+        [ 4.,  5.],
+        [ 6.,  7.],
+        [ 8.,  9.],
+        ..., 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]]), 'gate': tensor([1., 1., 1., 1.])}
+indices = tensor([[0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ...0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0]])
+positions = None
+
+    def path_magnitudes(features: torch.Tensor, bank_state: dict | None,
+                        memory_state: dict, indices: torch.Tensor,
+                        positions: int | None = None) -> dict:
+        """RMS output of the memory path and the bank on *stored* states.
+    
+        This evaluates the saved modules on the saved hidden states. It is not a
+        model forward: no new activations are produced and no token passes through
+        the network. The bank magnitude is the deployed mixture value (softmax
+        weight on the selected experts) without capacity overflow, which is noted
+        in the receipt because overflow drops pairs in the deployed path.
+        """
+        if positions is not None and features.shape[0] > positions:
+            step = features.shape[0] // positions
+            features = features[::step][:positions]
+            indices = indices[::step][:positions]
+        hidden = features.detach().to(torch.float32)
+        values = memory_state["table"][indices].to(torch.float32)
+>       mixed = values.reshape(hidden.shape[0], -1) @ memory_state["proj"].T
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: mm: mat1 and mat2 shapes cannot be multiplied (16x4 and 16x4)
+
+oracle/eval/h_diagnostics.py:382: RuntimeError
+________ test_path_magnitudes_gate_opens_with_a_positive_read_direction ________
+
+    def test_path_magnitudes_gate_opens_with_a_positive_read_direction():
+        features = torch.ones(16, 4)
+        indices = torch.zeros(16, 2, dtype=torch.int64)
+        state = _memory_state(gate_scale=0.0)
+        state["gate"] = torch.full((4,), 3.0)
+>       result = diagnostics.path_magnitudes(features, None, state, indices)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_h_diagnostics.py:298: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+features = tensor([[1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1..., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.]])
+bank_state = None
+memory_state = {'table': tensor([[ 0.,  1.],
+        [ 2.,  3.],
+        [ 4.,  5.],
+        [ 6.,  7.],
+        [ 8.,  9.],
+        ... 0., 0.],
+        [0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]), 'gate': tensor([3., 3., 3., 3.])}
+indices = tensor([[0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ...0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0]])
+positions = None
+
+    def path_magnitudes(features: torch.Tensor, bank_state: dict | None,
+                        memory_state: dict, indices: torch.Tensor,
+                        positions: int | None = None) -> dict:
+        """RMS output of the memory path and the bank on *stored* states.
+    
+        This evaluates the saved modules on the saved hidden states. It is not a
+        model forward: no new activations are produced and no token passes through
+        the network. The bank magnitude is the deployed mixture value (softmax
+        weight on the selected experts) without capacity overflow, which is noted
+        in the receipt because overflow drops pairs in the deployed path.
+        """
+        if positions is not None and features.shape[0] > positions:
+            step = features.shape[0] // positions
+            features = features[::step][:positions]
+            indices = indices[::step][:positions]
+        hidden = features.detach().to(torch.float32)
+        values = memory_state["table"][indices].to(torch.float32)
+>       mixed = values.reshape(hidden.shape[0], -1) @ memory_state["proj"].T
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: mm: mat1 and mat2 shapes cannot be multiplied (16x4 and 16x4)
+
+oracle/eval/h_diagnostics.py:382: RuntimeError
+____________ test_path_magnitudes_memory_share_tracks_the_two_paths ____________
+
+    def test_path_magnitudes_memory_share_tracks_the_two_paths():
+        features = torch.randn(64, 4, generator=torch.Generator().manual_seed(2))
+        indices = torch.zeros(64, 2, dtype=torch.int64)
+        state = _memory_state()
+        bank = {"router": torch.zeros(8, 4), "gate": torch.zeros(8, 2, 4),
+                "up": torch.zeros(8, 2, 4), "down": torch.zeros(8, 4, 2)}
+>       result = diagnostics.path_magnitudes(features, bank, state, indices)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_h_diagnostics.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+features = tensor([[-1.0408,  0.9166, -1.3042, -1.1097],
+        [-1.2188,  1.1676, -1.0574, -0.1188],
+        [-0.9078,  0.3452,...1.4788,  1.2907,  0.3124],
+        [ 0.7299,  1.4220,  0.3375,  0.0438],
+        [-1.6105,  0.2979,  1.1537, -1.5604]])
+bank_state = {'router': tensor([[0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+   ...
+         [0., 0.],
+         [0., 0.]],
+
+        [[0., 0.],
+         [0., 0.],
+         [0., 0.],
+         [0., 0.]]])}
+memory_state = {'table': tensor([[ 0.,  1.],
+        [ 2.,  3.],
+        [ 4.,  5.],
+        [ 6.,  7.],
+        [ 8.,  9.],
+        ... 0., 0.],
+        [0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]), 'gate': tensor([1., 1., 1., 1.])}
+indices = tensor([[0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ...0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0]])
+positions = None
+
+    def path_magnitudes(features: torch.Tensor, bank_state: dict | None,
+                        memory_state: dict, indices: torch.Tensor,
+                        positions: int | None = None) -> dict:
+        """RMS output of the memory path and the bank on *stored* states.
+    
+        This evaluates the saved modules on the saved hidden states. It is not a
+        model forward: no new activations are produced and no token passes through
+        the network. The bank magnitude is the deployed mixture value (softmax
+        weight on the selected experts) without capacity overflow, which is noted
+        in the receipt because overflow drops pairs in the deployed path.
+        """
+        if positions is not None and features.shape[0] > positions:
+            step = features.shape[0] // positions
+            features = features[::step][:positions]
+            indices = indices[::step][:positions]
+        hidden = features.detach().to(torch.float32)
+        values = memory_state["table"][indices].to(torch.float32)
+>       mixed = values.reshape(hidden.shape[0], -1) @ memory_state["proj"].T
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: mm: mat1 and mat2 shapes cannot be multiplied (64x4 and 16x4)
+
+oracle/eval/h_diagnostics.py:382: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_h_diagnostics.py::test_usage_stats_uniform_logits_are_full_entropy
+FAILED oracle/tests/test_h_diagnostics.py::test_usage_stats_constant_choice_is_one_set_and_four_dead_experts
+FAILED oracle/tests/test_h_diagnostics.py::test_usage_stats_records_the_expert_counts_of_a_known_router
+FAILED oracle/tests/test_h_diagnostics.py::test_row_usage_counts_distinct_rows_and_collisions
+FAILED oracle/tests/test_h_diagnostics.py::test_displacement_stats_identifies_updated_rows
+FAILED oracle/tests/test_h_diagnostics.py::test_popularity_codes_bucket_by_row_frequency
+FAILED oracle/tests/test_h_diagnostics.py::test_outcome_cells_reproduce_counts_and_cell_accuracies
+FAILED oracle/tests/test_h_diagnostics.py::test_outcome_cells_composite_weights_tasks_equally
+FAILED oracle/tests/test_h_diagnostics.py::test_path_magnitudes_are_zero_when_the_projection_is_zero
+FAILED oracle/tests/test_h_diagnostics.py::test_path_magnitudes_scale_with_the_projection
+FAILED oracle/tests/test_h_diagnostics.py::test_path_magnitudes_gate_opens_with_a_positive_read_direction
+FAILED oracle/tests/test_h_diagnostics.py::test_path_magnitudes_memory_share_tracks_the_two_paths
+12 failed, 14 passed in 1.79s

@@ -1,0 +1,24 @@
+....F...........                                                         [100%]
+=================================== FAILURES ===================================
+______________ test_the_prompt_does_not_contain_the_hidden_tests _______________
+
+    def test_the_prompt_does_not_contain_the_hidden_tests():
+        import re
+    
+        for task in collections()["suite"] + collections()["trio"]:
+            prompt = suite.render_prompt(task)
+            assert task.initial_files[0] in prompt
+            for relative in task.hidden_files:
+                hidden = task.read_hidden(relative)
+                for name in re.findall(r"fn\s+([a-z0-9_]+)\s*\(", hidden):
+>                   assert not re.search(rf"fn\s+{re.escape(name)}\s*\(", prompt), \
+                        (task.id, name)
+E                   AssertionError: ('failing-06-integer-precision', 'keeps_the_remainder')
+E                   assert not <re.Match object; span=(725, 748), match='fn keeps_the_remainder('>
+E                    +  where <re.Match object; span=(725, 748), match='fn keeps_the_remainder('> = <function search at 0x7fc4add8f9c0>('fn\\s+keeps_the_remainder\\s*\\(', 'The visible unit test fails. `percent_of(cents, percent)` must return `cents * percent / 100`, truncated to whole cen...nder `tests/` and restores its own tests.\nThe crate must build and its tests must pass with `cargo test --offline`.\n')
+E                    +    where <function search at 0x7fc4add8f9c0> = <module 're' from '/usr/local/lib/python3.12/re/__init__.py'>.search
+
+oracle/tests/test_capability_suite.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_suite.py::test_the_prompt_does_not_contain_the_hidden_tests
+1 failed, 15 passed in 0.24s

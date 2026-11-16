@@ -1,0 +1,522 @@
+...FF.........FF..FF                                                     [100%]
+=================================== FAILURES ===================================
+_ test_alignment_rank_is_floored_so_the_baseline_never_exceeds_the_compensator _
+
+    def test_alignment_rank_is_floored_so_the_baseline_never_exceeds_the_compensator():
+        for compensator_elements in (100, 4096, 32_896, 100_000):
+            rank = recovery.matched_alignment_rank(compensator_elements, 1024)
+>           assert 2 * 1024 * rank <= compensator_elements
+E           assert ((2 * 1024) * 1) <= 100
+
+oracle/tests/test_p13_recovery.py:134: AssertionError
+____________ test_arm_ledger_adds_the_correction_to_the_base_count _____________
+
+    def test_arm_ledger_adds_the_correction_to_the_base_count():
+        arm = recovery.RecoveryArm(name="sparse+compensator")
+        arm.compensators.append(recovery.OmissionCompensator(
+            1024, 8, recovery.RecoveryConfig(rank=8, set_dim=8), seed=1))
+        arm.alignments.append(recovery.LayerAlignment(1024, 4))
+        row = arm.ledger(base_active=774_543_360, bank_k=4, bank_experts=8)
+>       assert row["compensator_elements"] == arm.compensators[0].active_elements()
+E       assert 0 == 17544
+E        +  where 17544 = active_elements()
+E        +    where active_elements = OmissionCompensator(\n  (embedding): Embedding(8, 8)\n  (down): Linear(in_features=1032, out_features=8, bias=True)\n  (up): Linear(in_features=8, out_features=1024, bias=True)\n).active_elements
+
+oracle/tests/test_p13_recovery.py:144: AssertionError
+_______________ test_alignment_l2_recovers_a_rank_two_linear_map _______________
+
+    def test_alignment_l2_recovers_a_rank_two_linear_map():
+        generator = torch.Generator().manual_seed(13)
+        features = torch.randn(2000, 8, generator=generator)
+        basis = torch.randn(8, 2, generator=generator)
+        targets = features @ basis @ torch.randn(2, 8, generator=generator)
+        alignment = recovery.LayerAlignment(8, 6)
+        report = alignment.fit(features, targets, ridge=1e-8, mode="l2")
+        assert report["truncated_error_rms"] < 0.05 * report["target_rms"]
+        with torch.no_grad():
+            corrected = alignment(features)
+>       assert torch.allclose(corrected, targets, atol=0.05 * float(targets.std()))
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7f1d329572e0>(tensor([[ -1.1857,   0.3557,  -2.8449,  ...,   1.7489,   4.0883,   1.5721],\n        [  6.2181,  -4.3553,   9.1412,  .....4431,  ...,  -3.0537,  -5.6541,  -2.1380],\n        [ -3.7201,   2.0614,  -6.7320,  ...,   3.3584,  11.4425,   4.4873]]), tensor([[  2.2440,  -0.8167,   3.3431,  ...,  12.4004,  -2.6768,  16.5945],\n        [ -0.7926,   1.7556,  -0.1747,  .....6502,  ...,  -3.5273,   0.8527,   1.4081],\n        [  0.4656,  -1.8950,  -0.4897,  ...,  -3.1582,   0.7916,   3.1461]]), atol=(0.05 * 7.459895133972168))
+E        +    where <built-in method allclose of type object at 0x7f1d329572e0> = torch.allclose
+E        +    and   7.459895133972168 = float(tensor(7.4599))
+E        +      where tensor(7.4599) = <built-in method std of Tensor object at 0x7f1cd2cc8640>()
+E        +        where <built-in method std of Tensor object at 0x7f1cd2cc8640> = tensor([[  2.2440,  -0.8167,   3.3431,  ...,  12.4004,  -2.6768,  16.5945],\n        [ -0.7926,   1.7556,  -0.1747,  .....6502,  ...,  -3.5273,   0.8527,   1.4081],\n        [  0.4656,  -1.8950,  -0.4897,  ...,  -3.1582,   0.7916,   3.1461]]).std
+
+oracle/tests/test_p13_recovery.py:292: AssertionError
+______________ test_alignment_truncation_costs_what_the_tail_says ______________
+
+    def test_alignment_truncation_costs_what_the_tail_says():
+        generator = torch.Generator().manual_seed(17)
+        features = torch.randn(1500, 8, generator=generator)
+        targets = features @ torch.diag(torch.tensor([4.0, 3.0, 2.0, 1.0, 0.5, 0.25,
+                                                      0.1, 0.05]))
+        full = recovery.LayerAlignment(8, 8)
+        truncated = recovery.LayerAlignment(8, 2)
+        full_report = full.fit(features, targets, ridge=1e-10, mode="l2")
+        truncated_report = truncated.fit(features, targets, ridge=1e-10, mode="l2")
+        assert truncated_report["rank"] == 2
+        assert truncated_report["truncated_error_rms"] > full_report["truncated_error_rms"]
+>       assert truncated_report["truncated_error_rms"] > 0.5 * truncated_report["target_rms"]
+E       assert 0.8133629512266579 > (0.5 * 1.9014606945762507)
+
+oracle/tests/test_p13_recovery.py:306: AssertionError
+_ test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not _
+
+    def test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not():
+        bank = _bank(hidden=4, experts=4, k=2, seed=5)
+    
+        # (a) the set-independent alignment baseline, fitted closed-form.
+        generator = torch.Generator().manual_seed(21)
+        calibration = torch.randn(4096, bank.hidden, generator=generator)
+        with torch.no_grad():
+>           alignment_target = bank.dense(calibration) - bank(calibration)
+                               ^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p13_recovery.py:392: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_p13_recovery.py:72: in dense
+    out = out + torch.einsum("nh,nhd->nd", flat, self.maps[expert]) \
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ('nh,nhd->nd', tensor([[-2.3858e-01, -1.0934e+00,  1.5585e-01,  1.7499e-01],
+        [-9.5256e-01, -5.4422e-01,  1.198....1343, -0.0654, -0.7187],
+        [ 0.1954, -0.0095, -0.6763, -0.3654],
+        [ 0.4940, -0.2097, -0.2924, -0.3912]]))
+
+    def einsum(*args: Any) -> Tensor:
+        r"""einsum(equation, *operands) -> Tensor
+    
+        Sums the product of the elements of the input :attr:`operands` along dimensions specified using a notation
+        based on the Einstein summation convention.
+    
+        Einsum allows computing many common multi-dimensional linear algebraic array operations by representing them
+        in a short-hand format based on the Einstein summation convention, given by :attr:`equation`. The details of
+        this format are described below, but the general idea is to label every dimension of the input :attr:`operands`
+        with some subscript and define which subscripts are part of the output. The output is then computed by summing
+        the product of the elements of the :attr:`operands` along the dimensions whose subscripts are not part of the
+        output. For example, matrix multiplication can be computed using einsum as `torch.einsum("ij,jk->ik", A, B)`.
+        Here, j is the summation subscript and i and k the output subscripts (see section below for more details on why).
+    
+        Equation:
+    
+            The :attr:`equation` string specifies the subscripts (letters in `[a-zA-Z]`) for each dimension of
+            the input :attr:`operands` in the same order as the dimensions, separating subscripts for each operand by a
+            comma (','), e.g. `'ij,jk'` specify subscripts for two 2D operands. The dimensions labeled with the same subscript
+            must be broadcastable, that is, their size must either match or be `1`. The exception is if a subscript is
+            repeated for the same input operand, in which case the dimensions labeled with this subscript for this operand
+            must match in size and the operand will be replaced by its diagonal along these dimensions. The subscripts that
+            appear exactly once in the :attr:`equation` will be part of the output, sorted in increasing alphabetical order.
+            The output is computed by multiplying the input :attr:`operands` element-wise, with their dimensions aligned based
+            on the subscripts, and then summing out the dimensions whose subscripts are not part of the output.
+    
+            Optionally, the output subscripts can be explicitly defined by adding an arrow ('->') at the end of the equation
+            followed by the subscripts for the output. For instance, the following equation computes the transpose of a
+            matrix multiplication: 'ij,jk->ki'. The output subscripts must appear at least once for some input operand and
+            at most once for the output.
+    
+            Ellipsis ('...') can be used in place of subscripts to broadcast the dimensions covered by the ellipsis.
+            Each input operand may contain at most one ellipsis which will cover the dimensions not covered by subscripts,
+            e.g. for an input operand with 5 dimensions, the ellipsis in the equation `'ab...c'` cover the third and fourth
+            dimensions. The ellipsis does not need to cover the same number of dimensions across the :attr:`operands` but the
+            'shape' of the ellipsis (the size of the dimensions covered by them) must broadcast together. If the output is not
+            explicitly defined with the arrow ('->') notation, the ellipsis will come first in the output (left-most dimensions),
+            before the subscript labels that appear exactly once for the input operands. e.g. the following equation implements
+            batch matrix multiplication `'...ij,...jk'`.
+    
+            A few final notes: the equation may contain whitespaces between the different elements (subscripts, ellipsis,
+            arrow and comma) but something like `'. . .'` is not valid. An empty string `''` is valid for scalar operands.
+    
+        .. note::
+    
+            ``torch.einsum`` handles ellipsis ('...') differently from NumPy in that it allows dimensions
+            covered by the ellipsis to be summed over, that is, ellipsis are not required to be part of the output.
+    
+        .. note::
+    
+            Please install opt-einsum (https://optimized-einsum.readthedocs.io/en/stable/) in order to enroll into a more
+            performant einsum. You can install when installing torch like so: `pip install torch[opt-einsum]` or by itself
+            with `pip install opt-einsum`.
+    
+            If opt-einsum is available, this function will automatically speed up computation and/or consume less memory
+            by optimizing contraction order through our opt_einsum backend :mod:`torch.backends.opt_einsum` (The _ vs - is
+            confusing, I know). This optimization occurs when there are at least three inputs, since the order does not matter
+            otherwise. Note that finding `the` optimal path is an NP-hard problem, thus, opt-einsum relies on different
+            heuristics to achieve near-optimal results. If opt-einsum is not available, the default order is to contract
+            from left to right.
+    
+            To bypass this default behavior, add the following to disable opt_einsum and skip path calculation:
+            ``torch.backends.opt_einsum.enabled = False``
+    
+            To specify which strategy you'd like for opt_einsum to compute the contraction path, add the following line:
+            ``torch.backends.opt_einsum.strategy = 'auto'``. The default strategy is 'auto', and we also support 'greedy' and
+            'optimal'. Disclaimer that the runtime of 'optimal' is factorial in the number of inputs! See more details in
+            the opt_einsum documentation (https://optimized-einsum.readthedocs.io/en/stable/path_finding.html).
+    
+        .. note::
+    
+            As of PyTorch 1.10 :func:`torch.einsum` also supports the sublist format (see examples below). In this format,
+            subscripts for each operand are specified by sublists, list of integers in the range [0, 52). These sublists
+            follow their operands, and an extra sublist can appear at the end of the input to specify the output's
+            subscripts., e.g. `torch.einsum(op1, sublist1, op2, sublist2, ..., [subslist_out])`. Python's `Ellipsis` object
+            may be provided in a sublist to enable broadcasting as described in the Equation section above.
+    
+        Args:
+            equation (str): The subscripts for the Einstein summation.
+            operands (List[Tensor]): The tensors to compute the Einstein summation of.
+    
+        Examples::
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # trace
+            >>> torch.einsum('ii', torch.randn(4, 4))
+            tensor(-1.2104)
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # diagonal
+            >>> torch.einsum('ii->i', torch.randn(4, 4))
+            tensor([-0.1034,  0.7952, -0.2433,  0.4545])
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # outer product
+            >>> x = torch.randn(5)
+            >>> y = torch.randn(4)
+            >>> torch.einsum('i,j->ij', x, y)
+            tensor([[ 0.1156, -0.2897, -0.3918,  0.4963],
+                    [-0.3744,  0.9381,  1.2685, -1.6070],
+                    [ 0.7208, -1.8058, -2.4419,  3.0936],
+                    [ 0.1713, -0.4291, -0.5802,  0.7350],
+                    [ 0.5704, -1.4290, -1.9323,  2.4480]])
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # batch matrix multiplication
+            >>> As = torch.randn(3, 2, 5)
+            >>> Bs = torch.randn(3, 5, 4)
+            >>> torch.einsum('bij,bjk->bik', As, Bs)
+            tensor([[[-1.0564, -1.5904,  3.2023,  3.1271],
+                    [-1.6706, -0.8097, -0.8025, -2.1183]],
+    
+                    [[ 4.2239,  0.3107, -0.5756, -0.2354],
+                    [-1.4558, -0.3460,  1.5087, -0.8530]],
+    
+                    [[ 2.8153,  1.8787, -4.3839, -1.2112],
+                    [ 0.3728, -2.1131,  0.0921,  0.8305]]])
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # with sublist format and ellipsis
+            >>> torch.einsum(As, [..., 0, 1], Bs, [..., 1, 2], [..., 0, 2])
+            tensor([[[-1.0564, -1.5904,  3.2023,  3.1271],
+                    [-1.6706, -0.8097, -0.8025, -2.1183]],
+    
+                    [[ 4.2239,  0.3107, -0.5756, -0.2354],
+                    [-1.4558, -0.3460,  1.5087, -0.8530]],
+    
+                    [[ 2.8153,  1.8787, -4.3839, -1.2112],
+                    [ 0.3728, -2.1131,  0.0921,  0.8305]]])
+    
+            >>> # batch permute
+            >>> A = torch.randn(2, 3, 4, 5)
+            >>> torch.einsum('...ij->...ji', A).shape
+            torch.Size([2, 3, 5, 4])
+    
+            >>> # equivalent to torch.nn.functional.bilinear
+            >>> A = torch.randn(3, 5, 4)
+            >>> l = torch.randn(2, 5)
+            >>> r = torch.randn(2, 4)
+            >>> torch.einsum('bn,anm,bm->ba', l, A, r)
+            tensor([[-0.3430, -5.2405,  0.4494],
+                    [ 0.3311,  5.5201, -3.0356]])
+        """
+        import torch.backends.opt_einsum as opt_einsum
+    
+        # This wrapper exists to support variadic args.
+        if len(args) < 2:
+            raise ValueError(
+                "einsum(): must specify the equation string and at least one operand, "
+                "or at least one operand and its subscripts list"
+            )
+    
+        equation = None
+        operands = None
+    
+        if isinstance(args[0], torch.Tensor):
+            # Convert the subscript list format which is an interleaving of operand and its subscripts
+            # list with an optional output subscripts list at the end (see documentation for more details on this)
+            # to the equation string format by creating the equation string from the subscripts list and grouping the
+            # input operands into a tensorlist (List[Tensor]).
+            def parse_subscript(n: int) -> str:
+                if n == Ellipsis:
+                    return "..."
+                if n >= 0 and n < 26:
+                    return chr(ord("A") + n)
+                if n >= 26 and n < 52:
+                    return chr(ord("a") + n - 26)
+                raise ValueError(
+                    "einsum(): subscript in subscript list is not within the valid range [0, 52)"
+                )
+    
+            # Parse subscripts for input operands
+            equation = ",".join("".join(parse_subscript(s) for s in l) for l in args[1::2])
+    
+            # Parse optional output subscripts (provided when the number of arguments is odd)
+            if len(args) % 2 == 1:
+                equation += "->" + "".join(parse_subscript(s) for s in args[-1])
+                operands = args[:-1:2]
+            else:
+                operands = args[::2]
+        else:
+            equation = args[0]
+            operands = args[1:]
+    
+        if has_torch_function(operands):
+            return handle_torch_function(einsum, operands, equation, *operands)
+    
+        if len(operands) == 1 and isinstance(operands[0], (list, tuple)):
+            # the old interface of passing the operands as one list argument
+            _operands = operands[0]
+            # recurse in case operands contains value that has torch function
+            # in the original implementation this line is omitted
+            return einsum(equation, *_operands)
+    
+        if len(operands) <= 2 or not opt_einsum.enabled:
+            # the path for contracting 0 or 1 time(s) is already optimized
+            # or the user has disabled using opt_einsum
+>           return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: einsum(): the number of subscripts in the equation (3) does not match the number of dimensions (2) for operand 1 and no ellipsis was given
+
+/usr/local/lib/python3.12/site-packages/torch/functional.py:372: RuntimeError
+__________ test_selected_and_omitted_conditioning_are_both_learnable ___________
+
+    def test_selected_and_omitted_conditioning_are_both_learnable():
+        bank = _bank(hidden=4, experts=4, k=2, seed=7)
+>       omitted, _ = _train_compensator(bank, mode="conditioned", seed=4,
+                                        set_mode="omitted")
+
+oracle/tests/test_p13_recovery.py:417: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_p13_recovery.py:350: in _train_compensator
+    dense = bank.dense(features)
+            ^^^^^^^^^^^^^^^^^^^^
+oracle/tests/test_p13_recovery.py:72: in dense
+    out = out + torch.einsum("nh,nhd->nd", flat, self.maps[expert]) \
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ('nh,nhd->nd', tensor([[ 1.8423,  0.5189, -1.7119, -1.7014],
+        [ 2.0194, -0.2686, -0.1307, -1.4374],
+        [ 0....1426, -0.3205, -0.4468],
+        [ 0.4633, -0.2678, -0.5799, -0.2301],
+        [ 0.3543,  0.5064,  0.1152,  0.5451]]))
+
+    def einsum(*args: Any) -> Tensor:
+        r"""einsum(equation, *operands) -> Tensor
+    
+        Sums the product of the elements of the input :attr:`operands` along dimensions specified using a notation
+        based on the Einstein summation convention.
+    
+        Einsum allows computing many common multi-dimensional linear algebraic array operations by representing them
+        in a short-hand format based on the Einstein summation convention, given by :attr:`equation`. The details of
+        this format are described below, but the general idea is to label every dimension of the input :attr:`operands`
+        with some subscript and define which subscripts are part of the output. The output is then computed by summing
+        the product of the elements of the :attr:`operands` along the dimensions whose subscripts are not part of the
+        output. For example, matrix multiplication can be computed using einsum as `torch.einsum("ij,jk->ik", A, B)`.
+        Here, j is the summation subscript and i and k the output subscripts (see section below for more details on why).
+    
+        Equation:
+    
+            The :attr:`equation` string specifies the subscripts (letters in `[a-zA-Z]`) for each dimension of
+            the input :attr:`operands` in the same order as the dimensions, separating subscripts for each operand by a
+            comma (','), e.g. `'ij,jk'` specify subscripts for two 2D operands. The dimensions labeled with the same subscript
+            must be broadcastable, that is, their size must either match or be `1`. The exception is if a subscript is
+            repeated for the same input operand, in which case the dimensions labeled with this subscript for this operand
+            must match in size and the operand will be replaced by its diagonal along these dimensions. The subscripts that
+            appear exactly once in the :attr:`equation` will be part of the output, sorted in increasing alphabetical order.
+            The output is computed by multiplying the input :attr:`operands` element-wise, with their dimensions aligned based
+            on the subscripts, and then summing out the dimensions whose subscripts are not part of the output.
+    
+            Optionally, the output subscripts can be explicitly defined by adding an arrow ('->') at the end of the equation
+            followed by the subscripts for the output. For instance, the following equation computes the transpose of a
+            matrix multiplication: 'ij,jk->ki'. The output subscripts must appear at least once for some input operand and
+            at most once for the output.
+    
+            Ellipsis ('...') can be used in place of subscripts to broadcast the dimensions covered by the ellipsis.
+            Each input operand may contain at most one ellipsis which will cover the dimensions not covered by subscripts,
+            e.g. for an input operand with 5 dimensions, the ellipsis in the equation `'ab...c'` cover the third and fourth
+            dimensions. The ellipsis does not need to cover the same number of dimensions across the :attr:`operands` but the
+            'shape' of the ellipsis (the size of the dimensions covered by them) must broadcast together. If the output is not
+            explicitly defined with the arrow ('->') notation, the ellipsis will come first in the output (left-most dimensions),
+            before the subscript labels that appear exactly once for the input operands. e.g. the following equation implements
+            batch matrix multiplication `'...ij,...jk'`.
+    
+            A few final notes: the equation may contain whitespaces between the different elements (subscripts, ellipsis,
+            arrow and comma) but something like `'. . .'` is not valid. An empty string `''` is valid for scalar operands.
+    
+        .. note::
+    
+            ``torch.einsum`` handles ellipsis ('...') differently from NumPy in that it allows dimensions
+            covered by the ellipsis to be summed over, that is, ellipsis are not required to be part of the output.
+    
+        .. note::
+    
+            Please install opt-einsum (https://optimized-einsum.readthedocs.io/en/stable/) in order to enroll into a more
+            performant einsum. You can install when installing torch like so: `pip install torch[opt-einsum]` or by itself
+            with `pip install opt-einsum`.
+    
+            If opt-einsum is available, this function will automatically speed up computation and/or consume less memory
+            by optimizing contraction order through our opt_einsum backend :mod:`torch.backends.opt_einsum` (The _ vs - is
+            confusing, I know). This optimization occurs when there are at least three inputs, since the order does not matter
+            otherwise. Note that finding `the` optimal path is an NP-hard problem, thus, opt-einsum relies on different
+            heuristics to achieve near-optimal results. If opt-einsum is not available, the default order is to contract
+            from left to right.
+    
+            To bypass this default behavior, add the following to disable opt_einsum and skip path calculation:
+            ``torch.backends.opt_einsum.enabled = False``
+    
+            To specify which strategy you'd like for opt_einsum to compute the contraction path, add the following line:
+            ``torch.backends.opt_einsum.strategy = 'auto'``. The default strategy is 'auto', and we also support 'greedy' and
+            'optimal'. Disclaimer that the runtime of 'optimal' is factorial in the number of inputs! See more details in
+            the opt_einsum documentation (https://optimized-einsum.readthedocs.io/en/stable/path_finding.html).
+    
+        .. note::
+    
+            As of PyTorch 1.10 :func:`torch.einsum` also supports the sublist format (see examples below). In this format,
+            subscripts for each operand are specified by sublists, list of integers in the range [0, 52). These sublists
+            follow their operands, and an extra sublist can appear at the end of the input to specify the output's
+            subscripts., e.g. `torch.einsum(op1, sublist1, op2, sublist2, ..., [subslist_out])`. Python's `Ellipsis` object
+            may be provided in a sublist to enable broadcasting as described in the Equation section above.
+    
+        Args:
+            equation (str): The subscripts for the Einstein summation.
+            operands (List[Tensor]): The tensors to compute the Einstein summation of.
+    
+        Examples::
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # trace
+            >>> torch.einsum('ii', torch.randn(4, 4))
+            tensor(-1.2104)
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # diagonal
+            >>> torch.einsum('ii->i', torch.randn(4, 4))
+            tensor([-0.1034,  0.7952, -0.2433,  0.4545])
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # outer product
+            >>> x = torch.randn(5)
+            >>> y = torch.randn(4)
+            >>> torch.einsum('i,j->ij', x, y)
+            tensor([[ 0.1156, -0.2897, -0.3918,  0.4963],
+                    [-0.3744,  0.9381,  1.2685, -1.6070],
+                    [ 0.7208, -1.8058, -2.4419,  3.0936],
+                    [ 0.1713, -0.4291, -0.5802,  0.7350],
+                    [ 0.5704, -1.4290, -1.9323,  2.4480]])
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # batch matrix multiplication
+            >>> As = torch.randn(3, 2, 5)
+            >>> Bs = torch.randn(3, 5, 4)
+            >>> torch.einsum('bij,bjk->bik', As, Bs)
+            tensor([[[-1.0564, -1.5904,  3.2023,  3.1271],
+                    [-1.6706, -0.8097, -0.8025, -2.1183]],
+    
+                    [[ 4.2239,  0.3107, -0.5756, -0.2354],
+                    [-1.4558, -0.3460,  1.5087, -0.8530]],
+    
+                    [[ 2.8153,  1.8787, -4.3839, -1.2112],
+                    [ 0.3728, -2.1131,  0.0921,  0.8305]]])
+    
+            >>> # xdoctest: +IGNORE_WANT("non-deterministic")
+            >>> # with sublist format and ellipsis
+            >>> torch.einsum(As, [..., 0, 1], Bs, [..., 1, 2], [..., 0, 2])
+            tensor([[[-1.0564, -1.5904,  3.2023,  3.1271],
+                    [-1.6706, -0.8097, -0.8025, -2.1183]],
+    
+                    [[ 4.2239,  0.3107, -0.5756, -0.2354],
+                    [-1.4558, -0.3460,  1.5087, -0.8530]],
+    
+                    [[ 2.8153,  1.8787, -4.3839, -1.2112],
+                    [ 0.3728, -2.1131,  0.0921,  0.8305]]])
+    
+            >>> # batch permute
+            >>> A = torch.randn(2, 3, 4, 5)
+            >>> torch.einsum('...ij->...ji', A).shape
+            torch.Size([2, 3, 5, 4])
+    
+            >>> # equivalent to torch.nn.functional.bilinear
+            >>> A = torch.randn(3, 5, 4)
+            >>> l = torch.randn(2, 5)
+            >>> r = torch.randn(2, 4)
+            >>> torch.einsum('bn,anm,bm->ba', l, A, r)
+            tensor([[-0.3430, -5.2405,  0.4494],
+                    [ 0.3311,  5.5201, -3.0356]])
+        """
+        import torch.backends.opt_einsum as opt_einsum
+    
+        # This wrapper exists to support variadic args.
+        if len(args) < 2:
+            raise ValueError(
+                "einsum(): must specify the equation string and at least one operand, "
+                "or at least one operand and its subscripts list"
+            )
+    
+        equation = None
+        operands = None
+    
+        if isinstance(args[0], torch.Tensor):
+            # Convert the subscript list format which is an interleaving of operand and its subscripts
+            # list with an optional output subscripts list at the end (see documentation for more details on this)
+            # to the equation string format by creating the equation string from the subscripts list and grouping the
+            # input operands into a tensorlist (List[Tensor]).
+            def parse_subscript(n: int) -> str:
+                if n == Ellipsis:
+                    return "..."
+                if n >= 0 and n < 26:
+                    return chr(ord("A") + n)
+                if n >= 26 and n < 52:
+                    return chr(ord("a") + n - 26)
+                raise ValueError(
+                    "einsum(): subscript in subscript list is not within the valid range [0, 52)"
+                )
+    
+            # Parse subscripts for input operands
+            equation = ",".join("".join(parse_subscript(s) for s in l) for l in args[1::2])
+    
+            # Parse optional output subscripts (provided when the number of arguments is odd)
+            if len(args) % 2 == 1:
+                equation += "->" + "".join(parse_subscript(s) for s in args[-1])
+                operands = args[:-1:2]
+            else:
+                operands = args[::2]
+        else:
+            equation = args[0]
+            operands = args[1:]
+    
+        if has_torch_function(operands):
+            return handle_torch_function(einsum, operands, equation, *operands)
+    
+        if len(operands) == 1 and isinstance(operands[0], (list, tuple)):
+            # the old interface of passing the operands as one list argument
+            _operands = operands[0]
+            # recurse in case operands contains value that has torch function
+            # in the original implementation this line is omitted
+            return einsum(equation, *_operands)
+    
+        if len(operands) <= 2 or not opt_einsum.enabled:
+            # the path for contracting 0 or 1 time(s) is already optimized
+            # or the user has disabled using opt_einsum
+>           return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: einsum(): the number of subscripts in the equation (3) does not match the number of dimensions (2) for operand 1 and no ellipsis was given
+
+/usr/local/lib/python3.12/site-packages/torch/functional.py:372: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_rank_is_floored_so_the_baseline_never_exceeds_the_compensator
+FAILED oracle/tests/test_p13_recovery.py::test_arm_ledger_adds_the_correction_to_the_base_count
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_l2_recovers_a_rank_two_linear_map
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_truncation_costs_what_the_tail_says
+FAILED oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+FAILED oracle/tests/test_p13_recovery.py::test_selected_and_omitted_conditioning_are_both_learnable
+6 failed, 14 passed in 3.73s

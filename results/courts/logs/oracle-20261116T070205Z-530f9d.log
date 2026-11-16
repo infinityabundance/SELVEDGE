@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/oracle/eval/recovery_court.py", line 520, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/recovery_court.py", line 512, in main
+    return smoke(args)
+           ^^^^^^^^^^^
+  File "/work/oracle/eval/recovery_court.py", line 316, in smoke
+    installations = recovery.install_recovery(arm_model, arm)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/train/recovery.py", line 466, in install_recovery
+    raise RuntimeError(
+RuntimeError: installed 4 of 2 wrappers; a bank is not reachable from the model's module tree

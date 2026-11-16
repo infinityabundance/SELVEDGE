@@ -1,0 +1,75 @@
+..................FF                                                     [100%]
+=================================== FAILURES ===================================
+_ test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not _
+
+    def test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not():
+        # The sparse path runs the selected groups at unit weight, so the omitted
+        # contribution is *exactly* the sum of the unselected groups' functions:
+        # a known target that depends on (h, S) and nothing else. That is the
+        # synthetic form of the decisive experiment.
+        bank = _bank(hidden=6, experts=4, k=2, seed=5)
+        bank.fixed_weights = torch.ones(bank.experts)
+    
+        # (a) the set-independent alignment baseline, fitted closed-form on the
+        #     same calibration distribution.
+        generator = torch.Generator().manual_seed(21)
+        calibration = torch.randn(4096, bank.hidden, generator=generator)
+        with torch.no_grad():
+            alignment_target = bank.dense(calibration) - bank(calibration)
+        alignment = recovery.LayerAlignment(bank.hidden, 4)
+        alignment.fit(calibration, alignment_target, ridge=1e-6, mode="l2")
+        alignment_error = _evaluate(alignment, bank, "alignment")
+    
+        # (b) the conditioned compensator.
+        compensator, curve = _train_compensator(bank, mode="conditioned", steps=1500)
+        conditioned_error = _evaluate(compensator, bank, "conditioned")
+    
+        # (c) the shuffled-condition falsifying control: same rate, wrong identity.
+        shuffled, _ = _train_compensator(bank, mode="shuffled", steps=1500)
+        shuffled_error = _evaluate(shuffled, bank, "shuffled")
+    
+        assert curve["final_loss"] < curve["first_loss"]
+        # The set-independent map can only learn the average omitted contribution,
+        # so the conditioned compensator must be several times more accurate.
+>       assert conditioned_error < 0.25 * alignment_error, (
+            conditioned_error, alignment_error)
+E       AssertionError: (0.5653389096260071, 1.1305922269821167)
+E       assert 0.5653389096260071 < (0.25 * 1.1305922269821167)
+
+oracle/tests/test_p13_recovery.py:423: AssertionError
+__________ test_selected_and_omitted_conditioning_are_both_learnable ___________
+
+    def test_selected_and_omitted_conditioning_are_both_learnable():
+        bank = _bank(hidden=6, experts=4, k=2, seed=7)
+        bank.fixed_weights = torch.ones(bank.experts)
+        omitted, _ = _train_compensator(bank, mode="conditioned", steps=1500, seed=4,
+                                        set_mode="omitted")
+        selected, _ = _train_compensator(bank, mode="conditioned", steps=1500, seed=4,
+                                         set_mode="selected")
+        # Both encodings carry the same information about the omitted set when
+        # k = m/2, so both must learn it well below the target scale.
+        generator = torch.Generator().manual_seed(101)
+        features = torch.randn(512, bank.hidden, generator=generator)
+        with torch.no_grad():
+            chosen = bank.router(features).topk(bank.k, dim=-1).indices
+            target = bank.dense(features) - bank(features)
+            scale = target.pow(2).mean().sqrt()
+            first = (omitted(features, chosen) - target).pow(2).mean().sqrt()
+            second = (selected(features, chosen) - target).pow(2).mean().sqrt()
+>       assert float(first) < 0.25 * float(scale)
+E       assert 0.6780211925506592 < (0.25 * 1.7279434204101562)
+E        +  where 0.6780211925506592 = float(tensor(0.6780))
+E        +  and   1.7279434204101562 = float(tensor(1.7279))
+
+oracle/tests/test_p13_recovery.py:447: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+  /work/oracle/tests/test_p13_recovery.py:372: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    losses.append(float(loss))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+FAILED oracle/tests/test_p13_recovery.py::test_selected_and_omitted_conditioning_are_both_learnable
+2 failed, 18 passed, 1 warning in 7.56s

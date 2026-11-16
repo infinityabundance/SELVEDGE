@@ -1,0 +1,92 @@
+.........................FF.....FF..                                     [100%]
+=================================== FAILURES ===================================
+__________ test_pipeline_runs_every_stage_in_order_and_records_limits __________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_runs_every_stage0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_runs_every_stage0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}
+
+    def test_pipeline_runs_every_stage_in_order_and_records_limits(environment):
+        root = environment["root"]
+>       assert run(root, environment, "--resume") == 0
+E       AssertionError: assert 70 == 0
+E        +  where 70 = run('/tmp/pytest-of-unknown/pytest-0/test_pipeline_runs_every_stage0', {'root': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_runs_every_stage0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_runs_every_stage0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}, '--resume')
+
+oracle/tests/test_post_hstar.py:75: AssertionError
+----------------------------- Captured stderr call -----------------------------
+[2026-11-16T06:37:24Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=direct resume=True
+[2026-11-16T06:37:24Z] [preflight] start
+[2026-11-16T06:37:24Z] [preflight] ok
+[2026-11-16T06:37:24Z] [verify] start
+[2026-11-16T06:37:24Z] [verify] ok
+[2026-11-16T06:37:24Z] [eval] start
+[2026-11-16T06:37:24Z] FAILED in stage eval: unexpected PermissionError: [Errno 13] Permission denied: '/tmp/pytest-of-unknown/pytest-0/test_pipeline_runs_every_stage0/fake-court'
+[2026-11-16T06:37:24Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+____ test_pipeline_resumes_after_a_mid_stage_failure_without_repeating_work ____
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_resumes_after_a_0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_resumes_after_a_0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}
+
+    def test_pipeline_resumes_after_a_mid_stage_failure_without_repeating_work(
+            environment):
+        root = environment["root"]
+        os.makedirs(os.path.join(root, ".fake-court"), exist_ok=True)
+        with open(os.path.join(root, ".fake-court/fail-once"), "w",
+                  encoding="utf-8") as handle:
+            handle.write("eval:H*")
+>       assert run(root, environment, "--resume") == 9
+E       AssertionError: assert 70 == 9
+E        +  where 70 = run('/tmp/pytest-of-unknown/pytest-0/test_pipeline_resumes_after_a_0', {'root': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_resumes_after_a_0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_pipeline_resumes_after_a_0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}, '--resume')
+
+oracle/tests/test_post_hstar.py:119: AssertionError
+----------------------------- Captured stderr call -----------------------------
+[2026-11-16T06:37:24Z] post-H* pipeline starting: stages=preflight,verify,eval,instrument,capability,sensitivity,verdict,compare runner=direct resume=True
+[2026-11-16T06:37:24Z] [preflight] start
+[2026-11-16T06:37:24Z] [preflight] ok
+[2026-11-16T06:37:24Z] [verify] start
+[2026-11-16T06:37:24Z] [verify] ok
+[2026-11-16T06:37:24Z] [eval] start
+[2026-11-16T06:37:24Z] FAILED in stage eval: unexpected PermissionError: [Errno 13] Permission denied: '/tmp/pytest-of-unknown/pytest-0/test_pipeline_resumes_after_a_0/fake-court'
+[2026-11-16T06:37:24Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+_________ test_verdict_stage_stops_when_a_required_receipt_is_missing __________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_verdict_stage_stops_when_0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_verdict_stage_stops_when_0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}
+
+    def test_verdict_stage_stops_when_a_required_receipt_is_missing(environment):
+        root = environment["root"]
+        os.unlink(os.path.join(root, "results/eval/t2-D.json"))
+        # The H* evaluation normally precedes the verdict; run it first so the only
+        # defect is the missing D receipt.
+>       assert run(root, environment, "--resume", "--stage", "eval") == 0
+E       AssertionError: assert 70 == 0
+E        +  where 70 = run('/tmp/pytest-of-unknown/pytest-0/test_verdict_stage_stops_when_0', {'root': '/tmp/pytest-of-unknown/pytest-0/test_verdict_stage_stops_when_0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_verdict_stage_stops_when_0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}, '--resume', '--stage', 'eval')
+
+oracle/tests/test_post_hstar.py:213: AssertionError
+----------------------------- Captured stderr call -----------------------------
+[2026-11-16T06:37:24Z] post-H* pipeline starting: stages=eval runner=direct resume=True
+[2026-11-16T06:37:24Z] [eval] start
+[2026-11-16T06:37:24Z] FAILED in stage eval: unexpected PermissionError: [Errno 13] Permission denied: '/tmp/pytest-of-unknown/pytest-0/test_verdict_stage_stops_when_0/fake-court'
+[2026-11-16T06:37:24Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+______________ test_capability_stage_stops_when_a_generate_fails _______________
+
+environment = {'root': '/tmp/pytest-of-unknown/pytest-0/test_capability_stage_stops_wh0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_capability_stage_stops_wh0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}
+
+    def test_capability_stage_stops_when_a_generate_fails(environment):
+        root = environment["root"]
+        os.makedirs(os.path.join(root, ".fake-court"), exist_ok=True)
+        with open(os.path.join(root, ".fake-court/fail-once"), "w",
+                  encoding="utf-8") as handle:
+            handle.write("generate:X")
+>       assert run(root, environment, "--resume", "--stage", "capability") == 9
+E       AssertionError: assert 70 == 9
+E        +  where 70 = run('/tmp/pytest-of-unknown/pytest-0/test_capability_stage_stops_wh0', {'root': '/tmp/pytest-of-unknown/pytest-0/test_capability_stage_stops_wh0', 'court': '/tmp/pytest-of-unknown/pytest-0/...dment': '/tmp/pytest-of-unknown/pytest-0/test_capability_stage_stops_wh0/results/t2/PROVENANCE-AMENDMENT-X-and-H.json'}, '--resume', '--stage', 'capability')
+
+oracle/tests/test_post_hstar.py:227: AssertionError
+----------------------------- Captured stderr call -----------------------------
+[2026-11-16T06:37:24Z] post-H* pipeline starting: stages=capability runner=direct resume=True
+[2026-11-16T06:37:24Z] [capability] start
+[2026-11-16T06:37:24Z] FAILED in stage capability: unexpected PermissionError: [Errno 13] Permission denied: '/tmp/pytest-of-unknown/pytest-0/test_capability_stage_stops_wh0/fake-court'
+[2026-11-16T06:37:24Z] state: results/t2/post-hstar-state.json — nothing after this stage was run
+=========================== short test summary info ============================
+FAILED oracle/tests/test_post_hstar.py::test_pipeline_runs_every_stage_in_order_and_records_limits
+FAILED oracle/tests/test_post_hstar.py::test_pipeline_resumes_after_a_mid_stage_failure_without_repeating_work
+FAILED oracle/tests/test_post_hstar.py::test_verdict_stage_stops_when_a_required_receipt_is_missing
+FAILED oracle/tests/test_post_hstar.py::test_capability_stage_stops_when_a_generate_fails
+4 failed, 32 passed in 3.70s

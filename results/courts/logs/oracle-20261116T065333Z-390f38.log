@@ -1,0 +1,46 @@
+.....F..........F...........                                             [100%]
+=================================== FAILURES ===================================
+___________ test_usage_stats_tied_logits_break_to_the_first_experts ____________
+
+    def test_usage_stats_tied_logits_break_to_the_first_experts():
+        # Under `topk` all-zero logits are tied, so every position gets one set; the
+        # estimator must report the set it actually sees, whatever `topk`'s order.
+        stats = diagnostics.usage_stats(torch.zeros(600, 8))
+        assert stats["distinct_topk_sets"] == 1
+>       assert sorted(stats["modal_set"]) == [0, 1, 2, 3]
+E       assert [4, 5, 6, 7] == [0, 1, 2, 3]
+E         
+E         At index 0 diff: 4 != 0
+E         Use -v to get more diff
+
+oracle/tests/test_h_diagnostics.py:111: AssertionError
+___________ test_outcome_cells_reproduce_counts_and_cell_accuracies ____________
+
+    def test_outcome_cells_reproduce_counts_and_cell_accuracies():
+        # One task of four items: both, left-only, right-only, neither.
+        first = {"humaneval": [1, 1, 0, 0], "gsm8k": [1, 1, 0, 0],
+                 "truthfulqa": [1, 1, 0, 0]}
+        second = {"humaneval": [1, 0, 1, 0], "gsm8k": [1, 0, 1, 0],
+                  "truthfulqa": [1, 0, 1, 0]}
+        reference = {"humaneval": [1, 1, 0, 0], "gsm8k": [1, 1, 0, 0],
+                     "truthfulqa": [1, 1, 0, 0]}
+        arms = _items(first, second, reference)
+        cells = diagnostics.outcome_cells(arms, "left", "right", "reference")
+        table = cells["per_task"]["humaneval"]
+        assert table["both"]["n"] == 1
+        assert table["left_only"]["n"] == 1
+        assert table["right_only"]["n"] == 1
+        assert table["neither"]["n"] == 1
+        assert table["both"]["reference_accuracy"] == pytest.approx(1.0)
+>       assert table["left_only"]["reference_accuracy"] == pytest.approx(0.0)
+E       assert 1.0 == 0.0 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 1.0
+E         Expected: 0.0 ± 1.0e-12
+
+oracle/tests/test_h_diagnostics.py:260: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_h_diagnostics.py::test_usage_stats_tied_logits_break_to_the_first_experts
+FAILED oracle/tests/test_h_diagnostics.py::test_outcome_cells_reproduce_counts_and_cell_accuracies
+2 failed, 26 passed in 1.95s

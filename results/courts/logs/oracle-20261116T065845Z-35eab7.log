@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/scripts/scratch-recovery-tune.py", line 105, in <module>
+    run(rank, steps, 5e-3)
+  File "/work/scripts/scratch-recovery-tune.py", line 53, in run
+    target = dense_apply(maps, offsets, f) - sparse_apply(maps, offsets, f, sel, w)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/scratch-recovery-tune.py", line 29, in sparse_apply
+    out = out + (torch.einsum("nh,hd->nd", features, maps[e])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/functional.py", line 372, in einsum
+    return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: einsum(): the number of subscripts in the equation (2) does not match the number of dimensions (3) for operand 1 and no ellipsis was given

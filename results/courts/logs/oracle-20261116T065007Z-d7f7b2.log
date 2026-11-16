@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/oracle/eval/h_diagnostics.py", line 1499, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/h_diagnostics.py", line 1478, in main
+    receipt = analyse(args)
+              ^^^^^^^^^^^^^
+  File "/work/oracle/eval/h_diagnostics.py", line 895, in analyse
+    usage_rows[key] = usage_stats(logits)
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/eval/h_diagnostics.py", line 282, in usage_stats
+    "modal_set": [int(item) for item in _unique[int(counts_per_set.argmax())].tolist()],
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'int' object is not iterable

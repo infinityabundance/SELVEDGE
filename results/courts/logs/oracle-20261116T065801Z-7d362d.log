@@ -1,0 +1,437 @@
+..............FFF.F.                                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_alignment_l2_recovers_a_rank_two_linear_map _______________
+
+    def test_alignment_l2_recovers_a_rank_two_linear_map():
+        generator = torch.Generator().manual_seed(13)
+        features = torch.randn(2000, 8, generator=generator)
+        basis = torch.randn(8, 2, generator=generator)
+        targets = features @ basis @ torch.randn(2, 8, generator=generator) + 0.7
+        alignment = recovery.LayerAlignment(8, 6)
+>       report = alignment.fit(features, targets, ridge=1e-8, mode="l2")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p13_recovery.py:290: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = LayerAlignment()
+features = tensor([[ 0.4372,  0.3701,  1.5816,  ..., -1.3495, -0.7089, -0.2434],
+        [-0.0389,  1.0810,  0.9088,  ...,  0.171...3460, -0.7605,  ...,  1.4267,  0.2270, -0.0870],
+        [-0.7585, -1.3476, -0.0944,  ...,  0.1906, -0.1922, -1.1360]])
+targets = tensor([[  2.9440,  -0.1167,   4.0431,  ...,  13.1004,  -1.9768,  17.2945],
+        [ -0.0926,   2.4556,   0.5253,  .....0498,  ...,  -2.8273,   1.5527,   2.1081],
+        [  1.1656,  -1.1950,   0.2103,  ...,  -2.4582,   1.4916,   3.8461]])
+ridge = 1e-08, mode = 'l2'
+
+    @torch.no_grad()
+    def fit(self, features: torch.Tensor, targets: torch.Tensor,
+            ridge: float = 1e-3, mode: str = "l2") -> dict:
+        """Fit and truncate to `self.rank` in one closed-form step.
+    
+        `features` is `[N, hidden]` (the layer's input), `targets` is
+        `[N, hidden]` (dense minus sparse output on the same inputs).
+    
+        * `mode="l2"` — ridge least squares, the GPTQ-style layer-wise output
+          reconstruction.
+        * `mode="ot"` — the Gaussian moment-matching map, which reproduces the
+          target's mean and covariance exactly (up to the ridge) and is reported
+          as the stronger distributional variant.
+        """
+        x = features.detach().to(torch.float64)
+        y = targets.detach().to(torch.float64)
+        if x.shape != y.shape:
+            raise ValueError("alignment needs features and targets of one shape")
+        count = x.shape[0]
+        if count == 0:
+            raise ValueError("alignment needs at least one calibration position")
+        if mode == "l2":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            gram = xc.T @ xc / count
+            gram = gram + ridge * torch.eye(gram.shape[0], dtype=gram.dtype) \
+                * float(gram.diagonal().mean().clamp_min(1e-12))
+            full = torch.linalg.solve(gram, xc.T @ yc / count)
+            offset = y_mean - x_mean @ full
+            # Rank truncation of the affine map, offset folded into the mean.
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = (xc @ (full - left @ right.T) - yc)
+        elif mode == "ot":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            cov_x = xc.T @ xc / count
+            cov_y = yc.T @ yc / count
+            eye = torch.eye(cov_x.shape[0], dtype=cov_x.dtype)
+            scale = float(cov_x.diagonal().mean().clamp_min(1e-12))
+            cov_x = cov_x + ridge * scale * eye
+            cov_y = cov_y + ridge * scale * eye
+            root_x = torch.linalg.cholesky(cov_x)
+            root_y = torch.linalg.cholesky(cov_y)
+            middle = root_x @ cov_y @ root_x.T
+            values, vectors = torch.linalg.eigh(middle)
+            values = values.clamp_min(1e-18)
+            middle_root = vectors @ torch.diag(values.sqrt()) @ vectors.T
+            inverse_root_x = torch.linalg.solve_triangular(
+                root_x, eye, upper=False)
+            full = torch.linalg.solve_triangular(
+                root_x.transpose(0, 1), inverse_root_x.T @ middle_root.T,
+                upper=True).T
+            offset = y_mean - x_mean @ full
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = xc @ (full - left @ right.T) - yc
+        else:
+            raise ValueError(f"unknown alignment mode {mode!r}")
+    
+        with torch.no_grad():
+            self.left.copy_(left.to(torch.float32))
+            self.right.copy_(right.to(torch.float32))
+>           self.bias.copy_(offset.to(torch.float32))
+E           RuntimeError: output with shape [8] doesn't match the broadcast shape [1, 8]
+
+oracle/train/recovery.py:322: RuntimeError
+______________ test_alignment_truncation_costs_what_the_tail_says ______________
+
+    def test_alignment_truncation_costs_what_the_tail_says():
+        generator = torch.Generator().manual_seed(17)
+        features = torch.randn(1500, 8, generator=generator)
+        singular = torch.tensor([4.0, 3.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.05])
+        targets = features @ torch.diag(singular)
+        full = recovery.LayerAlignment(8, 8)
+        truncated = recovery.LayerAlignment(8, 2)
+>       full_report = full.fit(features, targets, ridge=1e-10, mode="l2")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p13_recovery.py:304: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = LayerAlignment()
+features = tensor([[-1.0462,  1.2305,  1.8662,  ...,  0.4481, -0.5986,  0.2515],
+        [ 0.2113,  0.1331,  0.2522,  ...,  1.180...6586,  1.9597,  ..., -0.1679, -0.1274, -1.0981],
+        [-0.4017, -1.1349, -0.0261,  ...,  0.6087, -0.9005,  0.3450]])
+targets = tensor([[-4.1848e+00,  3.6916e+00,  3.7324e+00,  ...,  1.1203e-01,
+         -5.9859e-02,  1.2573e-02],
+        [ 8.453..., -5.4904e-02],
+        [-1.6070e+00, -3.4047e+00, -5.2139e-02,  ...,  1.5217e-01,
+         -9.0052e-02,  1.7251e-02]])
+ridge = 1e-10, mode = 'l2'
+
+    @torch.no_grad()
+    def fit(self, features: torch.Tensor, targets: torch.Tensor,
+            ridge: float = 1e-3, mode: str = "l2") -> dict:
+        """Fit and truncate to `self.rank` in one closed-form step.
+    
+        `features` is `[N, hidden]` (the layer's input), `targets` is
+        `[N, hidden]` (dense minus sparse output on the same inputs).
+    
+        * `mode="l2"` — ridge least squares, the GPTQ-style layer-wise output
+          reconstruction.
+        * `mode="ot"` — the Gaussian moment-matching map, which reproduces the
+          target's mean and covariance exactly (up to the ridge) and is reported
+          as the stronger distributional variant.
+        """
+        x = features.detach().to(torch.float64)
+        y = targets.detach().to(torch.float64)
+        if x.shape != y.shape:
+            raise ValueError("alignment needs features and targets of one shape")
+        count = x.shape[0]
+        if count == 0:
+            raise ValueError("alignment needs at least one calibration position")
+        if mode == "l2":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            gram = xc.T @ xc / count
+            gram = gram + ridge * torch.eye(gram.shape[0], dtype=gram.dtype) \
+                * float(gram.diagonal().mean().clamp_min(1e-12))
+            full = torch.linalg.solve(gram, xc.T @ yc / count)
+            offset = y_mean - x_mean @ full
+            # Rank truncation of the affine map, offset folded into the mean.
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = (xc @ (full - left @ right.T) - yc)
+        elif mode == "ot":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            cov_x = xc.T @ xc / count
+            cov_y = yc.T @ yc / count
+            eye = torch.eye(cov_x.shape[0], dtype=cov_x.dtype)
+            scale = float(cov_x.diagonal().mean().clamp_min(1e-12))
+            cov_x = cov_x + ridge * scale * eye
+            cov_y = cov_y + ridge * scale * eye
+            root_x = torch.linalg.cholesky(cov_x)
+            root_y = torch.linalg.cholesky(cov_y)
+            middle = root_x @ cov_y @ root_x.T
+            values, vectors = torch.linalg.eigh(middle)
+            values = values.clamp_min(1e-18)
+            middle_root = vectors @ torch.diag(values.sqrt()) @ vectors.T
+            inverse_root_x = torch.linalg.solve_triangular(
+                root_x, eye, upper=False)
+            full = torch.linalg.solve_triangular(
+                root_x.transpose(0, 1), inverse_root_x.T @ middle_root.T,
+                upper=True).T
+            offset = y_mean - x_mean @ full
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = xc @ (full - left @ right.T) - yc
+        else:
+            raise ValueError(f"unknown alignment mode {mode!r}")
+    
+        with torch.no_grad():
+            self.left.copy_(left.to(torch.float32))
+            self.right.copy_(right.to(torch.float32))
+>           self.bias.copy_(offset.to(torch.float32))
+E           RuntimeError: output with shape [8] doesn't match the broadcast shape [1, 8]
+
+oracle/train/recovery.py:322: RuntimeError
+______________ test_alignment_ot_mode_matches_the_target_moments _______________
+
+    def test_alignment_ot_mode_matches_the_target_moments():
+        generator = torch.Generator().manual_seed(19)
+        features = torch.randn(4000, 6, generator=generator) * 2.0
+        targets = torch.randn(4000, 6, generator=generator) @ torch.diag(
+            torch.tensor([3.0, 1.0, 1.0, 0.5, 0.5, 0.2]))
+        alignment = recovery.LayerAlignment(6, 6)
+>       alignment.fit(features, targets, ridge=1e-6, mode="ot")
+
+oracle/tests/test_p13_recovery.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = LayerAlignment()
+features = tensor([[ 3.1015,  1.2976,  0.0546, -0.8158,  1.3769,  0.8538],
+        [-1.8898,  0.3146, -4.2508, -0.3162,  4.1176, ... 0.7847,  0.4965, -2.4956, -0.1775, -1.2279, -2.8247],
+        [-4.0448,  0.0556, -0.0878, -2.8609,  1.5785,  0.9448]])
+targets = tensor([[-2.1667, -2.4586,  1.2419, -0.2237, -0.4627, -0.0278],
+        [ 2.7825, -1.6979, -0.3450,  0.6693,  0.6872, ... 3.1532, -0.8540, -0.0543,  0.3474,  0.4577, -0.0150],
+        [-0.3365,  0.6680,  0.4346, -0.4780,  0.3517, -0.1890]])
+ridge = 1e-06, mode = 'ot'
+
+    @torch.no_grad()
+    def fit(self, features: torch.Tensor, targets: torch.Tensor,
+            ridge: float = 1e-3, mode: str = "l2") -> dict:
+        """Fit and truncate to `self.rank` in one closed-form step.
+    
+        `features` is `[N, hidden]` (the layer's input), `targets` is
+        `[N, hidden]` (dense minus sparse output on the same inputs).
+    
+        * `mode="l2"` — ridge least squares, the GPTQ-style layer-wise output
+          reconstruction.
+        * `mode="ot"` — the Gaussian moment-matching map, which reproduces the
+          target's mean and covariance exactly (up to the ridge) and is reported
+          as the stronger distributional variant.
+        """
+        x = features.detach().to(torch.float64)
+        y = targets.detach().to(torch.float64)
+        if x.shape != y.shape:
+            raise ValueError("alignment needs features and targets of one shape")
+        count = x.shape[0]
+        if count == 0:
+            raise ValueError("alignment needs at least one calibration position")
+        if mode == "l2":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            gram = xc.T @ xc / count
+            gram = gram + ridge * torch.eye(gram.shape[0], dtype=gram.dtype) \
+                * float(gram.diagonal().mean().clamp_min(1e-12))
+            full = torch.linalg.solve(gram, xc.T @ yc / count)
+            offset = y_mean - x_mean @ full
+            # Rank truncation of the affine map, offset folded into the mean.
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = (xc @ (full - left @ right.T) - yc)
+        elif mode == "ot":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            cov_x = xc.T @ xc / count
+            cov_y = yc.T @ yc / count
+            eye = torch.eye(cov_x.shape[0], dtype=cov_x.dtype)
+            scale = float(cov_x.diagonal().mean().clamp_min(1e-12))
+            cov_x = cov_x + ridge * scale * eye
+            cov_y = cov_y + ridge * scale * eye
+            root_x = torch.linalg.cholesky(cov_x)
+            root_y = torch.linalg.cholesky(cov_y)
+            middle = root_x @ cov_y @ root_x.T
+            values, vectors = torch.linalg.eigh(middle)
+            values = values.clamp_min(1e-18)
+            middle_root = vectors @ torch.diag(values.sqrt()) @ vectors.T
+            inverse_root_x = torch.linalg.solve_triangular(
+                root_x, eye, upper=False)
+            full = torch.linalg.solve_triangular(
+                root_x.transpose(0, 1), inverse_root_x.T @ middle_root.T,
+                upper=True).T
+            offset = y_mean - x_mean @ full
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = xc @ (full - left @ right.T) - yc
+        else:
+            raise ValueError(f"unknown alignment mode {mode!r}")
+    
+        with torch.no_grad():
+            self.left.copy_(left.to(torch.float32))
+            self.right.copy_(right.to(torch.float32))
+>           self.bias.copy_(offset.to(torch.float32))
+E           RuntimeError: output with shape [6] doesn't match the broadcast shape [1, 6]
+
+oracle/train/recovery.py:322: RuntimeError
+_ test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not _
+
+    def test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not():
+        bank = _bank(hidden=4, experts=4, k=2, seed=5)
+    
+        # (a) the set-independent alignment baseline, fitted closed-form.
+        generator = torch.Generator().manual_seed(21)
+        calibration = torch.randn(4096, bank.hidden, generator=generator)
+        with torch.no_grad():
+            alignment_target = bank.dense(calibration) - bank(calibration)
+        alignment = recovery.LayerAlignment(bank.hidden, 4)
+>       alignment.fit(calibration, alignment_target, ridge=1e-6, mode="l2")
+
+oracle/tests/test_p13_recovery.py:399: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = LayerAlignment()
+features = tensor([[-2.3858e-01, -1.0934e+00,  1.5585e-01,  1.7499e-01],
+        [-9.5256e-01, -5.4422e-01,  1.1985e+00,  9.6036e...   [ 7.6137e-01, -6.8054e-01,  7.4465e-01, -3.6180e-01],
+        [ 2.1551e+00,  6.2484e-02, -5.4025e-01, -1.0802e-01]])
+targets = tensor([[-3.2116,  0.0719,  1.1476,  2.2170],
+        [-3.9015,  1.4586,  2.8592,  0.7897],
+        [-3.8637, -0.5419,...2.1413,  0.0119, -5.0460],
+        [-0.6843,  1.3659,  0.5095, -0.4920],
+        [ 4.9131,  0.9462, -0.0204, -1.8446]])
+ridge = 1e-06, mode = 'l2'
+
+    @torch.no_grad()
+    def fit(self, features: torch.Tensor, targets: torch.Tensor,
+            ridge: float = 1e-3, mode: str = "l2") -> dict:
+        """Fit and truncate to `self.rank` in one closed-form step.
+    
+        `features` is `[N, hidden]` (the layer's input), `targets` is
+        `[N, hidden]` (dense minus sparse output on the same inputs).
+    
+        * `mode="l2"` — ridge least squares, the GPTQ-style layer-wise output
+          reconstruction.
+        * `mode="ot"` — the Gaussian moment-matching map, which reproduces the
+          target's mean and covariance exactly (up to the ridge) and is reported
+          as the stronger distributional variant.
+        """
+        x = features.detach().to(torch.float64)
+        y = targets.detach().to(torch.float64)
+        if x.shape != y.shape:
+            raise ValueError("alignment needs features and targets of one shape")
+        count = x.shape[0]
+        if count == 0:
+            raise ValueError("alignment needs at least one calibration position")
+        if mode == "l2":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            gram = xc.T @ xc / count
+            gram = gram + ridge * torch.eye(gram.shape[0], dtype=gram.dtype) \
+                * float(gram.diagonal().mean().clamp_min(1e-12))
+            full = torch.linalg.solve(gram, xc.T @ yc / count)
+            offset = y_mean - x_mean @ full
+            # Rank truncation of the affine map, offset folded into the mean.
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = (xc @ (full - left @ right.T) - yc)
+        elif mode == "ot":
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
+            xc = x - x_mean
+            yc = y - y_mean
+            cov_x = xc.T @ xc / count
+            cov_y = yc.T @ yc / count
+            eye = torch.eye(cov_x.shape[0], dtype=cov_x.dtype)
+            scale = float(cov_x.diagonal().mean().clamp_min(1e-12))
+            cov_x = cov_x + ridge * scale * eye
+            cov_y = cov_y + ridge * scale * eye
+            root_x = torch.linalg.cholesky(cov_x)
+            root_y = torch.linalg.cholesky(cov_y)
+            middle = root_x @ cov_y @ root_x.T
+            values, vectors = torch.linalg.eigh(middle)
+            values = values.clamp_min(1e-18)
+            middle_root = vectors @ torch.diag(values.sqrt()) @ vectors.T
+            inverse_root_x = torch.linalg.solve_triangular(
+                root_x, eye, upper=False)
+            full = torch.linalg.solve_triangular(
+                root_x.transpose(0, 1), inverse_root_x.T @ middle_root.T,
+                upper=True).T
+            offset = y_mean - x_mean @ full
+            u, s, vh = torch.linalg.svd(full)
+            rank = min(self.rank, s.numel())
+            left = u[:, :rank] * s[:rank].unsqueeze(0)
+            right = vh[:rank].T
+            residual = xc @ full - yc
+            tail = xc @ (full - left @ right.T) - yc
+        else:
+            raise ValueError(f"unknown alignment mode {mode!r}")
+    
+        with torch.no_grad():
+            self.left.copy_(left.to(torch.float32))
+            self.right.copy_(right.to(torch.float32))
+>           self.bias.copy_(offset.to(torch.float32))
+E           RuntimeError: output with shape [4] doesn't match the broadcast shape [1, 4]
+
+oracle/train/recovery.py:322: RuntimeError
+=============================== warnings summary ===============================
+oracle/tests/test_p13_recovery.py::test_selected_and_omitted_conditioning_are_both_learnable
+  /work/oracle/tests/test_p13_recovery.py:368: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    losses.append(float(loss))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_l2_recovers_a_rank_two_linear_map
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_truncation_costs_what_the_tail_says
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_ot_mode_matches_the_target_moments
+FAILED oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+4 failed, 16 passed, 1 warning in 4.13s

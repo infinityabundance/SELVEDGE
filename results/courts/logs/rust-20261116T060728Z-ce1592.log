@@ -1,0 +1,18 @@
+compile_error
+
+error[E0597]: `values` does not live long enough
+ --> src/lib.rs:5:5
+  |
+4 |     let values: Vec<i32> = (0..limit).collect();
+  |         ------ binding `values` declared here
+5 |     values.iter().copied().filter(|value| *value % 2 == 0)
+  |     ^^^^^^------------------------------------------------
+  |     |
+  |     borrowed value does not live long enough
+  |     opaque type requires that `values` is borrowed for `'static`
+6 | }
+  | - `values` dropped here while still borrowed
+
+For more information about this error, try `rustc --explain E0597`.
+error: could not compile `borrow_08_iterator_outlives_local` (lib) due to 1 previous error
+

@@ -1,0 +1,93 @@
+..............FF..F.                                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_alignment_l2_recovers_a_rank_two_linear_map _______________
+
+    def test_alignment_l2_recovers_a_rank_two_linear_map():
+        generator = torch.Generator().manual_seed(13)
+        features = torch.randn(2000, 8, generator=generator)
+        basis = torch.randn(8, 2, generator=generator)
+        targets = features @ basis @ torch.randn(2, 8, generator=generator) + 0.7
+        alignment = recovery.LayerAlignment(8, 6)
+        report = alignment.fit(features, targets, ridge=1e-8, mode="l2")
+        assert report["truncated_error_rms"] < 0.05 * report["target_rms"]
+        with torch.no_grad():
+            corrected = alignment(features)
+>       assert torch.allclose(corrected, targets, atol=0.05 * float(targets.std()))
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7f25e6b572e0>(tensor([[ -0.4857,   1.0557,  -2.1449,  ...,   2.4489,   4.7883,   2.2721],\n        [  6.9181,  -3.6553,   9.8412,  .....1431,  ...,  -2.3537,  -4.9541,  -1.4380],\n        [ -3.0201,   2.7614,  -6.0320,  ...,   4.0584,  12.1425,   5.1873]]), tensor([[  2.9440,  -0.1167,   4.0431,  ...,  13.1004,  -1.9768,  17.2945],\n        [ -0.0926,   2.4556,   0.5253,  .....0498,  ...,  -2.8273,   1.5527,   2.1081],\n        [  1.1656,  -1.1950,   0.2103,  ...,  -2.4582,   1.4916,   3.8461]]), atol=(0.05 * 7.459895133972168))
+E        +    where <built-in method allclose of type object at 0x7f25e6b572e0> = torch.allclose
+E        +    and   7.459895133972168 = float(tensor(7.4599))
+E        +      where tensor(7.4599) = <built-in method std of Tensor object at 0x7f2586eaa030>()
+E        +        where <built-in method std of Tensor object at 0x7f2586eaa030> = tensor([[  2.9440,  -0.1167,   4.0431,  ...,  13.1004,  -1.9768,  17.2945],\n        [ -0.0926,   2.4556,   0.5253,  .....0498,  ...,  -2.8273,   1.5527,   2.1081],\n        [  1.1656,  -1.1950,   0.2103,  ...,  -2.4582,   1.4916,   3.8461]]).std
+
+oracle/tests/test_p13_recovery.py:294: AssertionError
+______________ test_alignment_truncation_costs_what_the_tail_says ______________
+
+    def test_alignment_truncation_costs_what_the_tail_says():
+        generator = torch.Generator().manual_seed(17)
+        features = torch.randn(1500, 8, generator=generator)
+        singular = torch.tensor([4.0, 3.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.05])
+        targets = features @ torch.diag(singular)
+        full = recovery.LayerAlignment(8, 8)
+        truncated = recovery.LayerAlignment(8, 2)
+        full_report = full.fit(features, targets, ridge=1e-10, mode="l2")
+        truncated_report = truncated.fit(features, targets, ridge=1e-10, mode="l2")
+        assert truncated_report["rank"] == 2
+        assert truncated_report["truncated_error_rms"] > full_report["truncated_error_rms"]
+        # The truncated map loses exactly the tail energy the SVD says it must.
+        expected_tail = float((singular[2:] ** 2).mean().sqrt())
+>       assert truncated_report["truncated_error_rms"] == pytest.approx(
+            expected_tail, rel=0.1)
+E       assert 0.8133629512266579 == 0.9420722126960754 ± 0.0942072
+E         
+E         comparison failed
+E         Obtained: 0.8133629512266579
+E         Expected: 0.9420722126960754 ± 0.0942072
+
+oracle/tests/test_p13_recovery.py:310: AssertionError
+_ test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not _
+
+    def test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not():
+        bank = _bank(hidden=4, experts=4, k=2, seed=5)
+    
+        # (a) the set-independent alignment baseline, fitted closed-form.
+        generator = torch.Generator().manual_seed(21)
+        calibration = torch.randn(4096, bank.hidden, generator=generator)
+        with torch.no_grad():
+            alignment_target = bank.dense(calibration) - bank(calibration)
+        alignment = recovery.LayerAlignment(bank.hidden, 4)
+        alignment.fit(calibration, alignment_target, ridge=1e-6, mode="l2")
+        alignment_error = _evaluate(alignment, bank, "alignment")
+    
+        # (b) the conditioned compensator.
+        compensator, curve = _train_compensator(bank, mode="conditioned")
+        conditioned_error = _evaluate(compensator, bank, "conditioned")
+    
+        # (c) the shuffled-condition falsifying control: same rate, wrong identity.
+        shuffled, _ = _train_compensator(bank, mode="shuffled")
+        shuffled_error = _evaluate(shuffled, bank, "shuffled")
+    
+        assert curve["final_loss"] < curve["first_loss"]
+        # The set-independent map can only learn the average omitted contribution,
+        # so it must be several times worse than the conditioned one.
+        assert conditioned_error < 0.5 * alignment_error, (
+            conditioned_error, alignment_error)
+        # And the control that knows the rate but not the identity must fail too.
+>       assert conditioned_error < 0.5 * shuffled_error, (
+            conditioned_error, shuffled_error)
+E       AssertionError: (0.3999870717525482, 0.5147478580474854)
+E       assert 0.3999870717525482 < (0.5 * 0.5147478580474854)
+
+oracle/tests/test_p13_recovery.py:416: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+  /work/oracle/tests/test_p13_recovery.py:368: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    losses.append(float(loss))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_l2_recovers_a_rank_two_linear_map
+FAILED oracle/tests/test_p13_recovery.py::test_alignment_truncation_costs_what_the_tail_says
+FAILED oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+3 failed, 17 passed, 1 warning in 5.01s

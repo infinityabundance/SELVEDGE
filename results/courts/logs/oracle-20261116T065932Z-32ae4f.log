@@ -1,0 +1,95 @@
+..................FF                                                     [100%]
+=================================== FAILURES ===================================
+_ test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not _
+
+    def test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not():
+        # The sparse path runs the selected groups at unit weight, so the omitted
+        # contribution is *exactly* the sum of the unselected groups' functions:
+        # a known target that depends on (h, S) and nothing else. That is the
+        # synthetic form of the decisive experiment.
+        bank = _bank(hidden=6, experts=4, k=2, seed=5)
+        bank.fixed_weights = torch.ones(bank.experts)
+    
+        # (a) the set-independent alignment baseline, fitted closed-form on the
+        #     same calibration distribution.
+        generator = torch.Generator().manual_seed(21)
+        calibration = torch.randn(4096, bank.hidden, generator=generator)
+        with torch.no_grad():
+>           alignment_target = bank.dense(calibration) - bank(calibration)
+                                                         ^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p13_recovery.py:406: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = _Bank(
+  (router): Linear(in_features=6, out_features=4, bias=False)
+)
+hidden_states = tensor([[-2.3858e-01, -1.0934e+00,  1.5585e-01,  1.7499e-01, -9.5256e-01,
+         -5.4422e-01],
+        [ 1.1985e+00,...         1.0125e+00],
+        [ 1.4286e+00, -1.2361e+00, -2.0278e-01,  1.2885e-01,  3.3908e-01,
+         -4.9533e-01]])
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        flat = hidden_states.reshape(-1, hidden_states.shape[-1])
+        selected = self.router(flat).topk(self.k, dim=-1).indices
+        out = torch.zeros_like(flat)
+        if self.fixed_weights is None:
+            weights = torch.softmax(self.router(flat), dim=-1).gather(1, selected)
+        else:
+>           weights = self.fixed_weights.reshape(1, -1).gather(1, selected)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Size does not match at dimension 0 expected index [4096, 2] to be no larger than self [1, 4] apart from dimension 1
+
+oracle/tests/test_p13_recovery.py:59: RuntimeError
+__________ test_selected_and_omitted_conditioning_are_both_learnable ___________
+
+    def test_selected_and_omitted_conditioning_are_both_learnable():
+        bank = _bank(hidden=6, experts=4, k=2, seed=7)
+        bank.fixed_weights = torch.ones(bank.experts)
+>       omitted, _ = _train_compensator(bank, mode="conditioned", steps=1500, seed=4,
+                                        set_mode="omitted")
+
+oracle/tests/test_p13_recovery.py:432: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_p13_recovery.py:357: in _train_compensator
+    sparse = bank(features)
+             ^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = _Bank(
+  (router): Linear(in_features=6, out_features=4, bias=False)
+)
+hidden_states = tensor([[ 1.8423,  0.5189, -1.7119, -1.7014,  2.0194, -0.2686],
+        [-0.1307, -1.4374,  0.3908, -0.0190, -1.3527, ... 0.2194,  0.0913, -1.5269,  0.8980,  0.7538, -0.4480],
+        [ 0.3403, -1.2611,  0.0142,  0.5401,  0.0664,  0.3440]])
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        flat = hidden_states.reshape(-1, hidden_states.shape[-1])
+        selected = self.router(flat).topk(self.k, dim=-1).indices
+        out = torch.zeros_like(flat)
+        if self.fixed_weights is None:
+            weights = torch.softmax(self.router(flat), dim=-1).gather(1, selected)
+        else:
+>           weights = self.fixed_weights.reshape(1, -1).gather(1, selected)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: Size does not match at dimension 0 expected index [256, 2] to be no larger than self [1, 4] apart from dimension 1
+
+oracle/tests/test_p13_recovery.py:59: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p13_recovery.py::test_conditioned_compensator_learns_the_omitted_function_and_the_controls_do_not
+FAILED oracle/tests/test_p13_recovery.py::test_selected_and_omitted_conditioning_are_both_learnable
+2 failed, 18 passed in 3.60s

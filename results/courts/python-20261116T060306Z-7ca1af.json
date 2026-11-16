@@ -1,0 +1,136 @@
+{
+  "argv": [
+    "python3",
+    "-c",
+    "import sys,re; sys.path.insert(0,\"oracle\"); from capability import suite\nloaded=suite.load_suite(\"fixtures/capability\")\nfor kind in (\"suite\",\"trio\"):\n for task in loaded[kind]:\n  prompt=suite.render_prompt(task)\n  for rel in task.hidden_files:\n   for name in re.findall(r\"fn\\\\s+([a-z0-9_]+)\\\\s*\\\\(\", task.read_hidden(rel)):\n    if re.search(r\"fn\\\\s+\"+re.escape(name)+r\"\\\\s*\\\\(\", prompt): print(task.id, name)"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 1,
+  "container_id": "d9548575eacff5000c8fd774a97ccc3a262e30af7e4848972c45eaf5e8df4bda",
+  "container_name": "selvedge-python-court-20261116T060306Z-7ca1af",
+  "court": "python",
+  "duration_ms": 994,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "memory_swap_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "nano_cpus": {
+        "actual": 2000000000,
+        "expected": 2000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 1,
+  "finished_utc": "2026-11-16T06:03:07Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:d97269011cc9afa012af6c647f48b94171bcf586b19de7fcb7c4270c3e341f2b",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:d97269011cc9afa012af6c647f48b94171bcf586b19de7fcb7c4270c3e341f2b",
+  "image_ref": "selvedge/python-court:20261114-3.12-slim-f03542f9bbe7",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "2",
+    "init": true,
+    "memory": "4g",
+    "memory_bytes": 4294967296,
+    "memory_swap": "4g",
+    "memory_swap_bytes": 4294967296,
+    "nano_cpus": 2000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/python-20261116T060306Z-7ca1af.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "b2f861fb03c104e8a348684c1b223f9bb30b3136",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T060306Z",
+  "started_utc": "2026-11-16T06:03:06Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

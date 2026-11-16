@@ -1,0 +1,42 @@
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+TypeError: 'int' object is not subscriptable
+False
+# Deferred measurements — run only in a GPU window, and only when the H* run has
+# released the device. Each writes a receipt; none may be reported without one.
+
+# (a) H's and X's own calibration states, so their usage and gates are measured
+#     the same way H*'s are. --labels-out also re-measures utilities; pass the
+#     same calibration range so the slices are comparable.
+scripts/court --gpu oracle -- python3 oracle/train/loop.py \
+    --profile t2 --arm H --seed 1001 \
+    --checkpoint results/artifacts/train/t2/H/step-001024.pt \
+    --config results/train/admission-configs/t2/H.json \
+    --admission results/train/admission/t2/H.json \
+    --warmup-steps 64 --steps 65 --calibration-windows 32 \
+    --labels-out results/artifacts/train/t2/H/calibration-states.pt
+
+scripts/court --gpu oracle -- python3 oracle/train/loop.py \
+    --profile t2 --arm X --seed 1001 \
+    --checkpoint results/artifacts/train/t2/X/step-001024.pt \
+    --config results/train/admission-configs/t2/X.json \
+    --admission results/train/admission/t2/X.json \
+    --warmup-steps 64 --steps 65 --calibration-windows 32 \
+    --labels-out results/artifacts/train/t2/X/calibration-states.pt
+
+# (b) The deployed-budget utility labels (P12.17 part 1), five passes per layer.
+scripts/court --gpu oracle -- python3 oracle/train/loop.py \
+    --profile t2 --arm Hstar --seed 1001 \
+    --checkpoint results/artifacts/train/t2/Hstar/step-001024.pt \
+    --config results/train/admission-configs/t2/Hstar.json \
+    --admission results/train/admission/t2/Hstar.json \
+    --calibration-windows 32 \
+    --labels-out results/artifacts/train/t2/Hstar/deployed-labels.pt
+
+# (c) Per-item routing attribution: the item ids the diagnostic flags are in the
+#     receipt's outcome cells. Capture with the evaluation prompts as input and
+#     join on item id.
+scripts/court --gpu oracle -- python3 oracle/eval/capture_activations.py \
+    --arm H --checkpoint results/artifacts/train/t2/H/step-001024.pt \
+    --out results/artifacts/train/t2/H/eval-activations.pt
+

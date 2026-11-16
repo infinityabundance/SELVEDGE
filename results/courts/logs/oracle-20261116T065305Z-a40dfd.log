@@ -1,0 +1,101 @@
+.....FF.F.......FF..........                                             [100%]
+=================================== FAILURES ===================================
+___________ test_usage_stats_tied_logits_break_to_the_first_experts ____________
+
+    def test_usage_stats_tied_logits_break_to_the_first_experts():
+        # Under `topk`, ties break to the lowest index: zero logits give the same
+        # top-4 for every position, which the estimator must report as it is.
+        stats = diagnostics.usage_stats(torch.zeros(600, 8))
+        assert stats["distinct_topk_sets"] == 1
+>       assert stats["modal_set"] == [0, 1, 2, 3]
+E       assert [6, 5, 4, 7] == [0, 1, 2, 3]
+E         
+E         At index 0 diff: 6 != 0
+E         Use -v to get more diff
+
+oracle/tests/test_h_diagnostics.py:111: AssertionError
+______ test_usage_stats_constant_choice_is_one_set_and_four_dead_experts _______
+
+    def test_usage_stats_constant_choice_is_one_set_and_four_dead_experts():
+        logits = torch.zeros(500, 8)
+        logits[:, :4] = 5.0
+        logits[:, 4:] = -5.0
+        stats = diagnostics.usage_stats(logits)
+        assert stats["distinct_topk_sets"] == 1
+        assert stats["modal_set_share"] == pytest.approx(1.0, abs=1e-12)
+>       assert stats["modal_set"] == [0, 1, 2, 3]
+E       assert [1, 0, 3, 2] == [0, 1, 2, 3]
+E         
+E         At index 0 diff: 1 != 0
+E         Use -v to get more diff
+
+oracle/tests/test_h_diagnostics.py:123: AssertionError
+______________ test_row_usage_counts_distinct_rows_and_collisions ______________
+
+    def test_row_usage_counts_distinct_rows_and_collisions():
+        indices = torch.zeros(10, 2, dtype=torch.int64)
+        indices[5:, 0] = 7
+        indices[:, 1] = torch.arange(10)
+        result = diagnostics.row_usage(indices, rows=1024)
+        assert result["reads"] == 20
+        assert result["distinct_rows_read"] == 10  # rows 0..9; the extra 7s collide
+        assert result["collision_reads"] == 10
+        assert result["coverage_of_table"] == pytest.approx(10 / 1024)
+>       assert result["two_head_same_row_share"] == pytest.approx(0.0)
+E       assert 0.2 == 0.0 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 0.2
+E         Expected: 0.0 ± 1.0e-12
+
+oracle/tests/test_h_diagnostics.py:150: AssertionError
+___________ test_outcome_cells_reproduce_counts_and_cell_accuracies ____________
+
+    def test_outcome_cells_reproduce_counts_and_cell_accuracies():
+        # One task of four items: both, left-only, right-only, neither.
+        first = {"humaneval": [1, 1, 0, 0], "gsm8k": [1, 1, 0, 0],
+                 "truthfulqa": [1, 1, 0, 0]}
+        second = {"humaneval": [1, 0, 1, 0], "gsm8k": [1, 0, 1, 0],
+                  "truthfulqa": [1, 0, 1, 0]}
+        reference = {"humaneval": [1, 1, 0, 0], "gsm8k": [1, 1, 0, 0],
+                     "truthfulqa": [1, 1, 0, 0]}
+        arms = _items(first, second, reference)
+        cells = diagnostics.outcome_cells(arms, "left", "right", "reference")
+        table = cells["per_task"]["humaneval"]
+        assert table["both"]["n"] == 1
+        assert table["left_only"]["n"] == 1
+        assert table["right_only"]["n"] == 1
+        assert table["neither"]["n"] == 1
+        assert table["both"]["reference_accuracy"] == pytest.approx(1.0)
+>       assert table["left_only"]["reference_accuracy"] == pytest.approx(0.0)
+E       assert 1.0 == 0.0 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 1.0
+E         Expected: 0.0 ± 1.0e-12
+
+oracle/tests/test_h_diagnostics.py:260: AssertionError
+______________ test_outcome_cells_composite_weights_tasks_equally ______________
+
+    def test_outcome_cells_composite_weights_tasks_equally():
+        # `humaneval` is solved everywhere, `gsm8k` nowhere: the composite must be
+        # the task mean, 0.5, not the item mean.
+        first = {"humaneval": [1, 1, 1, 1, 1, 1], "gsm8k": [1, 1, 1, 1, 1, 1],
+                 "truthfulqa": [1, 1, 1, 1, 1, 1]}
+        second = {"humaneval": [1, 1, 1, 1, 1, 1], "gsm8k": [0, 0, 0, 0, 0, 0],
+                  "truthfulqa": [1, 1, 1, 1, 1, 1]}
+        reference = {"humaneval": [1] * 6, "gsm8k": [0] * 6, "truthfulqa": [1] * 6}
+        arms = _items(first, second, reference)
+        cells = diagnostics.outcome_cells(arms, "left", "right", "reference")
+>       assert cells["pooled"]["union"]["reference_composite"] == pytest.approx(2.0 / 3.0)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'reference_composite'
+
+oracle/tests/test_h_diagnostics.py:281: KeyError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_h_diagnostics.py::test_usage_stats_tied_logits_break_to_the_first_experts
+FAILED oracle/tests/test_h_diagnostics.py::test_usage_stats_constant_choice_is_one_set_and_four_dead_experts
+FAILED oracle/tests/test_h_diagnostics.py::test_row_usage_counts_distinct_rows_and_collisions
+FAILED oracle/tests/test_h_diagnostics.py::test_outcome_cells_reproduce_counts_and_cell_accuracies
+FAILED oracle/tests/test_h_diagnostics.py::test_outcome_cells_composite_weights_tasks_equally
+5 failed, 23 passed in 1.76s

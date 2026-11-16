@@ -1,0 +1,33 @@
+parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--labels", default="results/artifacts/train/t2/Hstar/utility-labels.pt")
+    parser.add_argument("--stream", default="results/artifacts/train/train.bin")
+    parser.add_argument("--checkpoint-hstar",
+                        default="results/artifacts/train/t2/Hstar/step-000200.pt")
+    parser.add_argument("--checkpoint-hstar-later",
+                        default="results/artifacts/train/t2/Hstar/step-000300.pt",
+                        help="a later H* checkpoint, to check the router is frozen")
+    parser.add_argument("--checkpoint-H",
+                        default="results/artifacts/train/t2/H/step-001024.pt")
+    parser.add_argument("--checkpoint-X",
+                        default="results/artifacts/train/t2/X/step-001024.pt")
+    parser.add_argument("--checkpoint-M",
+                        default="results/artifacts/train/t2/M/step-001024.pt")
+    parser.add_argument("--receipts", default="results/eval")
+    parser.add_argument("--calibration-tokens", type=int, default=32768)
+    parser.add_argument("--probe-positions", type=int, default=2048)
+    parser.add_argument("--coverage-scan-tokens", type=int, default=8388608,
+                        help="bounded prefix of the stream for the row-coverage scan")
+    parser.add_argument("--layers", type=int, default=28)
+    parser.add_argument("--out", default=None)
+    parser.add_argument("--markdown", default=None)
+    parser.add_argument("--deferred-commands", action="store_true")
+    args = parser.parse_args(argv)
+
+    if args.deferred_commands:
+        print(deferred_commands())
+        return 0
+
+    receipt = analyse(args)
+    out = args.out or f"results/t2/H-DIAGNOSTICS-{receipt['stamp']}.json"
+    write_json_atomic(out, receipt)
+    

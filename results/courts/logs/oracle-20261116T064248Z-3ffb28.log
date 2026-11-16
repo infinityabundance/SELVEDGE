@@ -1,0 +1,36 @@
+torch 2.15.0+cu132
+labels mmap: True keys: ['features', 'manifest', 'reference_loss', 'utilities']
+feature layers: 28 first shape (32768, 1024) dtype torch.float32
+utility layers: 28 shape (32768, 8)
+manifest keys: ['arm', 'bank_state_sha256', 'calibration_range', 'calibration_tokens', 'created_utc', 'experts_per_layer', 'feature_source', 'features_precede_outcome', 'labels', 'labels_never_enter_forward', 'labels_require_grad', 'layers', 'loo_passes', 'loo_passes_per_layer', 'micro_positions', 'reference_set', 'schema', 'utility_definition']
+manifest arm: H* calib: [0, 32768] micro: 256
+ref loss shapes: {0: (32768,), 1: (32768,), 2: (32768,)}
+ckpt top keys: ['step', 'model', 'optimizer', 'arm', 'seed', 'tokens']
+  model.layers.0.mlp.extra.gate (8, 512, 1024) torch.float32
+  model.layers.0.mlp.extra.up (8, 512, 1024) torch.float32
+  model.layers.0.mlp.extra.down (8, 1024, 512) torch.float32
+  model.layers.0.mlp.extra.router.weight (8, 1024) torch.float32
+  model.layers.1.mlp.extra.gate (8, 512, 1024) torch.float32
+  model.layers.1.mlp.extra.up (8, 512, 1024) torch.float32
+  model.layers.1.mlp.extra.down (8, 1024, 512) torch.float32
+  model.layers.1.mlp.extra.router.weight (8, 1024) torch.float32
+  model.layers.2.mlp.extra.gate (8, 512, 1024) torch.float32
+  model.layers.2.mlp.extra.up (8, 512, 1024) torch.float32
+  model.layers.2.mlp.extra.down (8, 1024, 512) torch.float32
+  model.layers.2.mlp.extra.router.weight (8, 1024) torch.float32
+n router keys: 28
+ mem model.layers.3.mlp.extra.extras.1.table (262144, 256) torch.bfloat16
+ mem model.layers.3.mlp.extra.extras.1.proj.weight (1024, 512) torch.float32
+ mem model.layers.3.mlp.extra.extras.1.gate.weight (1, 1024) torch.float32
+ mem model.layers.10.mlp.extra.extras.1.table (262144, 256) torch.bfloat16
+ mem model.layers.10.mlp.extra.extras.1.proj.weight (1024, 512) torch.float32
+ mem model.layers.10.mlp.extra.extras.1.gate.weight (1, 1024) torch.float32
+ mem model.layers.17.mlp.extra.extras.1.table (262144, 256) torch.bfloat16
+ mem model.layers.17.mlp.extra.extras.1.proj.weight (1024, 512) torch.float32
+ mem model.layers.17.mlp.extra.extras.1.gate.weight (1, 1024) torch.float32
+ mem model.layers.24.mlp.extra.extras.1.table (262144, 256) torch.bfloat16
+ mem model.layers.24.mlp.extra.extras.1.proj.weight (1024, 512) torch.float32
+ mem model.layers.24.mlp.extra.extras.1.gate.weight (1, 1024) torch.float32
+down sample: ['model.layers.0.mlp.extra.down', 'model.layers.1.mlp.extra.down', 'model.layers.2.mlp.extra.down'] [((8, 1024, 512), torch.float32), ((8, 1024, 512), torch.float32), ((8, 1024, 512), torch.float32)]
+init probe ok (8, 1024) 0.020070454105734825
+budget 8
