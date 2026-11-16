@@ -3543,7 +3543,7 @@ exception is a defect.
 **Gate status at the time of writing (2026-11-16, S24, read-only poll).** Closed.
 `H*` is training in the detached court
 `selvedge-oracle-court-20261116T050158Z-739076`: the live log's last progress line
-read `train: step 500/1024 loss=1.4207 tok/s=4767 vram=10.81GiB`, and
+read `train: step 550/1024 loss=1.4405 tok/s=5149 vram=10.81GiB`, and
 `results/t2/pilot-state.json` records the arm as `running` with `D`, `M`, `X` and
 `H` evaluated. No capability measurement exists: `results/T2-PARTIAL.md` is an
 exploratory X-vs-H record and states that it may not be cited as the registered
@@ -3551,7 +3551,7 @@ verdict. S24 changed **documents only** — this plan, the prior-art ledger, its
 fetch tool and its audit — and moved no P-status in WS13, WS14 or T2.
 
 **Distance to a frontier claim (one line).** One unrun registered verdict (`H*`
-is at step 500 of 1024 and the five-arm reader has not run) plus one executed
+is at step 550 of 1024 and the five-arm reader has not run) plus one executed
 capability run on the fresh suite stand between the program and its first
 frontier-shaped claim; **no item in WS15–WS18 shortens that distance**, which is
 why the gate holds.
