@@ -238,10 +238,11 @@ are stable (interval above 1). The weighting and its caveats are in the
 receipt's `weights` object.
 
 On the synthetic alternating trace (448 shards, two phases, chunk unions) the
-co-access-blocked layout is the fastest and replicated hot fragments are within
-noise of it at a small storage amplification; sequential is the slowest. The gain
-is deliberately reported as small, because a record's selected groups are mostly
-already adjacent. On the reconstructed M2 trace all four layouts are within a few
+co-access-blocked layout has the lowest p95, replicated hot fragments are within
+a fraction of a percent of it at a small storage amplification, and
+frequency-sorted is the slowest — sorting by global frequency destroys the
+adjacency the original order already had. The gain is deliberately reported as
+small, because a record's selected groups are mostly already adjacent. On the reconstructed M2 trace all four layouts are within a few
 percent and the surrogate objective is zero, because that sample's selected
 shards are not physically adjacent; the honest reading is that placement has
 nothing to gain on that trace's structure. Replication is never free: the extra
