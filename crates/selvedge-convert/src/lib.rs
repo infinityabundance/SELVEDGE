@@ -22,6 +22,7 @@
 #![deny(missing_docs)]
 
 pub mod accounting;
+pub mod accounting_qwen35;
 pub mod convert;
 pub mod court_a;
 pub mod error;
@@ -36,6 +37,11 @@ pub mod verify;
 pub use accounting::{
     AccountingOptions, BudgetReport, CategoryTotals, DEFAULT_ACTIVE_CEILING, DEFAULT_GROUP_COUNT,
     ModelAccountingReport, ModelIdentity, TensorAccount, TieReport, account_model, category_totals,
+};
+pub use accounting_qwen35::{
+    ActivePath, ActivePathReport, CertificationReport, QWEN35_MANDATE_CEILING, QWEN35_SCHEMA,
+    Qwen35AccountingReport, Qwen35Options, TieAssertion, Tower, TowerTensor, account_model_qwen35,
+    detect_model_type,
 };
 pub use convert::{
     ConversionOptions, ConversionPlan, ConversionReport, LayerPlan, PlannedShard, ShardReport,
