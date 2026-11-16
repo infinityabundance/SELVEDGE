@@ -93,6 +93,7 @@ def answer_shape(arms: list[str], generations: dict, tasks: dict,
     by_arm = {}
     totals = {"recoverable": 0, "unambiguous": 0, "ambiguous": 0, "none": 0,
               "correct": 0, "items": 0}
+    reference_letters: dict = {}
     for arm in arms:
         outputs = {item["id"]: item["output"]["text"]
                    for item in generations[arm]["items"]}
@@ -112,6 +113,10 @@ def answer_shape(arms: list[str], generations: dict, tasks: dict,
                         reference = letters[index]
                 elif (option.get("consequence") or {}).get("kind") == "reference":
                     reference = letters[index]
+            if reference is None:
+                raise SystemExit(f"{task.id}: no reference option")
+            if arm == arms[0]:
+                reference_letters[reference] = reference_letters.get(reference, 0) + 1
             found = sorted({letter for letter in standalone_letters(outputs[task.id])
                             if letter in letters})
             counts["items"] += 1
@@ -143,9 +148,46 @@ def answer_shape(arms: list[str], generations: dict, tasks: dict,
                    "registered parser, and never used to score an item"),
         "by_arm": by_arm,
         "totals": totals,
+        "reference_letters": dict(sorted(reference_letters.items())),
         "arms_with_a_constant_letter": constant_arms,
         "constant_letter_count": len(constant_arms),
     }
+
+
+def resource_summary(generations: dict, smoke: dict | None) -> dict:
+    """Measured peaks from the generation receipts, in GiB.
+
+    The numbers a container limit is sized from have to be readable in the same
+    place as the run they sized, so the report cites this block instead of a
+    converted copy of the raw bytes.
+    """
+    def one(receipt: dict) -> dict:
+        resources = receipt.get("resources") or {}
+        vram = resources.get("vram") or {}
+        return {
+            "process_maxrss_gib": round(
+                resources.get("process_maxrss_bytes", 0) / (1024 ** 3), 3),
+            "cgroup_memory_peak_gib": round(
+                resources.get("cgroup_memory_peak_bytes", 0) / (1024 ** 3), 3),
+            "vram_max_memory_allocated_gib": vram.get("max_memory_allocated_gib"),
+            "vram_max_memory_reserved_gib": vram.get("max_memory_reserved_gib"),
+            "items": len(receipt.get("items") or []),
+        }
+
+    by_arm = {arm: one(receipt) for arm, receipt in sorted(generations.items())}
+    summary = {"by_arm": by_arm,
+               "max_process_maxrss_gib": max(
+                   (entry["process_maxrss_gib"] for entry in by_arm.values()),
+                   default=0.0),
+               "max_cgroup_memory_peak_gib": max(
+                   (entry["cgroup_memory_peak_gib"] for entry in by_arm.values()),
+                   default=0.0),
+               "max_vram_allocated_gib": max(
+                   (entry["vram_max_memory_allocated_gib"] or 0.0
+                    for entry in by_arm.values()), default=0.0)}
+    if smoke:
+        summary["smoke"] = one(smoke)
+    return summary
 
 
 def main(argv: list[str]) -> int:
@@ -153,6 +195,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--calibration", required=True)
     parser.add_argument("--result", action="append", default=[])
     parser.add_argument("--generations", action="append", default=[])
+    parser.add_argument("--smoke", default=None,
+                        help="one-arm smoke generations receipt, if there was one")
     parser.add_argument("--suite", default=os.path.join(REPO, "fixtures", "capability-calibrated"))
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
@@ -289,8 +333,78 @@ def main(argv: list[str]) -> int:
             "diagnostic": answer_shape(arms, generations, tasks,
                                        formats.FORMAT_DIAGNOSTIC),
         },
+        "resources": resource_summary(
+            generations, load(args.smoke) if args.smoke else None),
         "suite_version": calibration.get("suite_version"),
     }
+    shapes = payload["answer_shape"]
+    power_block = payload["power"]
+    payload["rendered"] = {
+        **{f"arm_{arm}": (f"{entry['executable_passes']} of "
+                           f"{entry['executable_items']} executable passes; "
+                           f"{entry['diagnostic_passes']} of "
+                           f"{entry['diagnostic_items']} verified diagnostics")
+           for arm, entry in per_arm.items()},
+        **{f"format_{fmt}": (f"{entry['executable_passes']} of "
+                              f"{entry['executable_items']} verified executable passes"
+                              if entry["executable_items"]
+                              else f"{entry['diagnostic_passes']} of "
+                                   f"{entry['diagnostic_items']} verified diagnostics")
+           for fmt, entry in per_format.items()},
+        "patch_answer_shape": (
+            f"{shapes['patch']['totals']['recoverable']} of "
+            f"{shapes['patch']['totals']['items']} answers hold a standalone "
+            f"letter, {shapes['patch']['totals']['ambiguous']} of them ambiguous, "
+            f"and {shapes['patch']['totals']['correct']} name the reference"),
+        "diagnostic_answer_shape": (
+            f"{shapes['diagnostic']['totals']['recoverable']} of "
+            f"{shapes['diagnostic']['totals']['items']} answers hold a standalone "
+            f"letter, {shapes['diagnostic']['totals']['ambiguous']} of them "
+            f"ambiguous, and {shapes['diagnostic']['totals']['correct']} name "
+            "the reference"),
+        "patch_reference_letters": ", ".join(
+            f"{letter} {count}" for letter, count in
+            shapes['patch']['reference_letters'].items()),
+        "diagnostic_reference_letters": ", ".join(
+            f"{letter} {count}" for letter, count in
+            shapes['diagnostic']['reference_letters'].items()),
+        "patch_constant_arms": str(shapes['patch']['constant_letter_count']),
+        "diagnostic_constant_arms": str(
+            shapes['diagnostic']['constant_letter_count']),
+        "window": (f"{window['accepted']} accepted, {window['retired']} retired "
+                   f"({window['retired_zero_pass']} zero pass, "
+                   f"{window['retired_non_discriminating']} does not discriminate), "
+                   f"{window['saturated']} saturated, "
+                   f"{window['partial_credit_spread_available']} with a partial-credit "
+                   "spread"),
+        "cells": (f"{payload['cells']['scored']} scored, "
+                  f"{payload['cells']['reformatted']} reformatted of "
+                  f"{payload['cells']['total']}"),
+        "ladder": ("monotone" if calibration["ladder"]["monotone"] else
+                   "not monotone: " + ", ".join(calibration["ladder"]["violations"])),
+        "baseline": f"{power_block['measured_baseline_pass_rate']:.6f}",
+        "planning_variance": f"{power_block['planning_variance']:.6f}",
+        "conservative_variance": f"{power_block['conservative_variance']:.6f}",
+        "required_n_planning": f"{power_block['required_n_planning']:,}",
+        "required_n_conservative": f"{power_block['required_n_conservative']:,}",
+        "available_items": str(max(
+            (power_block.get("items_per_category_available") or {0: 0}).values())),
+        "mde_planning": (f"{mde['planning']['absolute_effect']:.4f} absolute, "
+                         f"{mde['planning']['relative_to_measured_baseline']:.2f}x baseline"),
+        "mde_conservative": (
+            f"{mde['conservative']['absolute_effect']:.4f} absolute, "
+            f"{mde['conservative']['relative_to_measured_baseline']:.2f}x baseline"),
+    }
+    smoke_entry = payload["resources"].get("smoke") or {}
+    payload["rendered"]["smoke_peak"] = (
+        f"{smoke_entry.get('process_maxrss_gib', 0.0):.3f} GiB process peak, "
+        f"{smoke_entry.get('cgroup_memory_peak_gib', 0.0):.3f} GiB cgroup peak, "
+        f"{smoke_entry.get('vram_max_memory_allocated_gib') or 0.0:.3f} GiB VRAM "
+        "allocated")
+    payload["rendered"]["arm_peak"] = (
+        f"{payload['resources']['max_process_maxrss_gib']:.3f} GiB process peak, "
+        f"{payload['resources']['max_cgroup_memory_peak_gib']:.3f} GiB cgroup peak, "
+        f"{payload['resources']['max_vram_allocated_gib']:.3f} GiB VRAM allocated")
     os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as handle:
         json.dump(payload, handle, indent=2, sort_keys=True)

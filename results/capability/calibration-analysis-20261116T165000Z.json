@@ -1,0 +1,716 @@
+{
+  "answer_shape": {
+    "diagnostic": {
+      "arms_with_a_constant_letter": [
+        "D",
+        "H",
+        "M",
+        "X"
+      ],
+      "by_arm": {
+        "D": {
+          "ambiguous": 0,
+          "chosen_letters": {
+            "B": 9
+          },
+          "constant": true,
+          "constant_letter": "B",
+          "correct": 2,
+          "items": 14,
+          "none": 5,
+          "recoverable": 9,
+          "unambiguous": 9
+        },
+        "H": {
+          "ambiguous": 0,
+          "chosen_letters": {
+            "B": 11
+          },
+          "constant": true,
+          "constant_letter": "B",
+          "correct": 2,
+          "items": 14,
+          "none": 3,
+          "recoverable": 11,
+          "unambiguous": 11
+        },
+        "H*": {
+          "ambiguous": 0,
+          "chosen_letters": {},
+          "constant": false,
+          "constant_letter": null,
+          "correct": 0,
+          "items": 14,
+          "none": 14,
+          "recoverable": 0,
+          "unambiguous": 0
+        },
+        "M": {
+          "ambiguous": 0,
+          "chosen_letters": {
+            "B": 12
+          },
+          "constant": true,
+          "constant_letter": "B",
+          "correct": 2,
+          "items": 14,
+          "none": 2,
+          "recoverable": 12,
+          "unambiguous": 12
+        },
+        "X": {
+          "ambiguous": 0,
+          "chosen_letters": {
+            "B": 4
+          },
+          "constant": true,
+          "constant_letter": "B",
+          "correct": 1,
+          "items": 14,
+          "none": 10,
+          "recoverable": 4,
+          "unambiguous": 4
+        }
+      },
+      "constant_letter_count": 4,
+      "format": "diagnostic-identification",
+      "method": "standalone candidate letter in the stored generation (a line or a one-letter fence); projection, not the registered parser, and never used to score an item",
+      "reference_letters": {
+        "A": 1,
+        "B": 2,
+        "C": 1,
+        "D": 10
+      },
+      "totals": {
+        "ambiguous": 0,
+        "correct": 7,
+        "items": 70,
+        "none": 34,
+        "recoverable": 36,
+        "unambiguous": 36
+      }
+    },
+    "patch": {
+      "arms_with_a_constant_letter": [
+        "D",
+        "H",
+        "H*",
+        "M",
+        "X"
+      ],
+      "by_arm": {
+        "D": {
+          "ambiguous": 1,
+          "chosen_letters": {
+            "C": 22
+          },
+          "constant": true,
+          "constant_letter": "C",
+          "correct": 8,
+          "items": 23,
+          "none": 0,
+          "recoverable": 23,
+          "unambiguous": 22
+        },
+        "H": {
+          "ambiguous": 3,
+          "chosen_letters": {
+            "C": 20
+          },
+          "constant": true,
+          "constant_letter": "C",
+          "correct": 7,
+          "items": 23,
+          "none": 0,
+          "recoverable": 23,
+          "unambiguous": 20
+        },
+        "H*": {
+          "ambiguous": 2,
+          "chosen_letters": {
+            "C": 15
+          },
+          "constant": true,
+          "constant_letter": "C",
+          "correct": 4,
+          "items": 23,
+          "none": 6,
+          "recoverable": 17,
+          "unambiguous": 15
+        },
+        "M": {
+          "ambiguous": 0,
+          "chosen_letters": {
+            "C": 23
+          },
+          "constant": true,
+          "constant_letter": "C",
+          "correct": 8,
+          "items": 23,
+          "none": 0,
+          "recoverable": 23,
+          "unambiguous": 23
+        },
+        "X": {
+          "ambiguous": 2,
+          "chosen_letters": {
+            "C": 15
+          },
+          "constant": true,
+          "constant_letter": "C",
+          "correct": 3,
+          "items": 23,
+          "none": 6,
+          "recoverable": 17,
+          "unambiguous": 15
+        }
+      },
+      "constant_letter_count": 5,
+      "format": "patch-selection",
+      "method": "standalone candidate letter in the stored generation (a line or a one-letter fence); projection, not the registered parser, and never used to score an item",
+      "reference_letters": {
+        "A": 5,
+        "B": 10,
+        "C": 8
+      },
+      "totals": {
+        "ambiguous": 8,
+        "correct": 30,
+        "items": 115,
+        "none": 12,
+        "recoverable": 103,
+        "unambiguous": 95
+      }
+    }
+  },
+  "arms": [
+    "D",
+    "H",
+    "H*",
+    "M",
+    "X"
+  ],
+  "cells": {
+    "reformatted": 24,
+    "scored": 0,
+    "total": 24
+  },
+  "command": "scripts/capability_calibration_analysis.py --calibration results/capability/calibration-20261116T164100Z.json --result D=results/capability/calibration/D/result.json --result M=results/capability/calibration/M/result.json --result X=results/capability/calibration/X/result.json --result H=results/capability/calibration/H/result.json --result H*=results/capability/calibration/Hstar/result.json --generations D=results/capability/calibration/D/generations.json --generations M=results/capability/calibration/M/generations.json --generations X=results/capability/calibration/X/generations.json --generations H=results/capability/calibration/H/generations.json --generations H*=results/capability/calibration/Hstar/generations.json --smoke results/capability/calibration-smoke/generations-Hstar.json --out results/capability/calibration-analysis-20261116T165000Z.json",
+  "created_utc": "2026-11-16T16:29:19Z",
+  "inputs": {
+    "calibration": {
+      "path": "results/capability/calibration-20261116T164100Z.json",
+      "sha256": "254adb817cde78d0adf18c52c486e9bebbf0e1f4937c258b262a0f7611309852",
+      "stamp": "20261116T162758Z"
+    },
+    "generations": {
+      "D": {
+        "path": "results/capability/calibration/D/generations.json",
+        "sha256": "f28ba82197f672e5f687b322996db7286c4da9bd6ad6073c07cdca6d8f8557d6"
+      },
+      "H": {
+        "path": "results/capability/calibration/H/generations.json",
+        "sha256": "936e8a4ebf70a9a0fcb82de4c3d518b69e297faab2599a2fb46db5c26eb375c8"
+      },
+      "H*": {
+        "path": "results/capability/calibration/Hstar/generations.json",
+        "sha256": "e8ada0336926f10450f8617b4e5ca7cc75cf03319036dbf04e231f43a2c90eb3"
+      },
+      "M": {
+        "path": "results/capability/calibration/M/generations.json",
+        "sha256": "3813b088d787655a9878fd8b94b854f71cf0b9fe98aec719db43009f20cacbcb"
+      },
+      "X": {
+        "path": "results/capability/calibration/X/generations.json",
+        "sha256": "48cb024ed116c54a37d9417630b745d49e74220dc1f2d441dc86a0bbc7160806"
+      }
+    },
+    "results": {
+      "D": {
+        "path": "results/capability/calibration/D/result.json",
+        "sha256": "b9faba01d2a106e332b4364028921fb131383de2274cf0e16a0ecb59b0883369"
+      },
+      "H": {
+        "path": "results/capability/calibration/H/result.json",
+        "sha256": "a1f0bd166a950f9fa2981cd018a9249c3f6dd64c00320dc147503e156271bbab"
+      },
+      "H*": {
+        "path": "results/capability/calibration/Hstar/result.json",
+        "sha256": "30a8c9e2f191993cdf371b2f43cc385ac9f83fa8043cc3b52763ff8072774042"
+      },
+      "M": {
+        "path": "results/capability/calibration/M/result.json",
+        "sha256": "013410ba8b4a2b0561117ebe2f9b66f688ddf86d1687c3744b9cc7d6f7837d27"
+      },
+      "X": {
+        "path": "results/capability/calibration/X/result.json",
+        "sha256": "e2eeb9f8ccd37d47953328cc4662964553456717066a89f40feb425da42cf739"
+      }
+    }
+  },
+  "item_window": {
+    "accepted": 1,
+    "partial_credit_spread_available": 0,
+    "retired": 69,
+    "retired_non_discriminating": 1,
+    "retired_zero_pass": 68,
+    "saturated": 0
+  },
+  "ladder": {
+    "expected_order": [
+      "body-completion",
+      "patch-selection",
+      "file-replacement"
+    ],
+    "measure": "1 - mean pass rate per cell",
+    "monotone": false,
+    "rows": [
+      {
+        "category": "api-migration",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      },
+      {
+        "category": "concurrency",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      },
+      {
+        "category": "dependency-compat",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 0.8666666666666667
+        },
+        "monotone": false
+      },
+      {
+        "category": "failing-test",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      },
+      {
+        "category": "lifetime-borrow",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      },
+      {
+        "category": "repo-scale",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      },
+      {
+        "category": "semantic-repair",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      },
+      {
+        "category": "trait-impl",
+        "difficulty": {
+          "body-completion": 1.0,
+          "file-replacement": 1.0,
+          "patch-selection": 1.0
+        },
+        "monotone": true
+      }
+    ],
+    "statement": "the ladder is a hypothesis; a violation is reported and the tier labels are not re-used as a difficulty claim",
+    "violations": [
+      "dependency-compat"
+    ]
+  },
+  "per_arm": {
+    "D": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 0,
+      "diagnostic_passing_ids": [],
+      "executable_items": 70,
+      "executable_passes": 0,
+      "items": 84,
+      "statuses": {
+        "compile_error": 40,
+        "invalid_solution": 34,
+        "test_failed": 10
+      }
+    },
+    "H": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 0,
+      "diagnostic_passing_ids": [],
+      "executable_items": 70,
+      "executable_passes": 0,
+      "items": 84,
+      "statuses": {
+        "compile_error": 39,
+        "invalid_solution": 44,
+        "test_failed": 1
+      }
+    },
+    "H*": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 1,
+      "diagnostic_passing_ids": [
+        "traits-02-coherence--diag"
+      ],
+      "executable_items": 70,
+      "executable_passes": 1,
+      "items": 84,
+      "statuses": {
+        "compile_error": 38,
+        "invalid_solution": 29,
+        "pass": 2,
+        "test_failed": 15
+      }
+    },
+    "M": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 0,
+      "diagnostic_passing_ids": [],
+      "executable_items": 70,
+      "executable_passes": 0,
+      "items": 84,
+      "statuses": {
+        "compile_error": 28,
+        "invalid_solution": 56
+      }
+    },
+    "X": {
+      "diagnostic_items": 14,
+      "diagnostic_passes": 2,
+      "diagnostic_passing_ids": [
+        "repo-09-result-propagation--diag",
+        "traits-02-coherence--diag"
+      ],
+      "executable_items": 70,
+      "executable_passes": 1,
+      "items": 84,
+      "statuses": {
+        "compile_error": 45,
+        "invalid_solution": 32,
+        "pass": 3,
+        "test_failed": 4
+      }
+    }
+  },
+  "per_format": {
+    "body-completion": {
+      "by_arm": {
+        "D": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "H": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "H*": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "M": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "X": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        }
+      },
+      "diagnostic_items": 0,
+      "diagnostic_passes": 0,
+      "executable_items": 115,
+      "executable_passes": 0,
+      "items": 115
+    },
+    "diagnostic-identification": {
+      "by_arm": {
+        "D": {
+          "diagnostic_items": 14,
+          "diagnostic_passes": 0,
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14
+        },
+        "H": {
+          "diagnostic_items": 14,
+          "diagnostic_passes": 0,
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14
+        },
+        "H*": {
+          "diagnostic_items": 14,
+          "diagnostic_passes": 1,
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14
+        },
+        "M": {
+          "diagnostic_items": 14,
+          "diagnostic_passes": 0,
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14
+        },
+        "X": {
+          "diagnostic_items": 14,
+          "diagnostic_passes": 2,
+          "executable_items": 0,
+          "executable_passes": 0,
+          "items": 14
+        }
+      },
+      "diagnostic_items": 70,
+      "diagnostic_passes": 3,
+      "executable_items": 0,
+      "executable_passes": 0,
+      "items": 70
+    },
+    "file-replacement": {
+      "by_arm": {
+        "D": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 24,
+          "executable_passes": 0,
+          "items": 24
+        },
+        "H": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 24,
+          "executable_passes": 0,
+          "items": 24
+        },
+        "H*": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 24,
+          "executable_passes": 0,
+          "items": 24
+        },
+        "M": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 24,
+          "executable_passes": 0,
+          "items": 24
+        },
+        "X": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 24,
+          "executable_passes": 0,
+          "items": 24
+        }
+      },
+      "diagnostic_items": 0,
+      "diagnostic_passes": 0,
+      "executable_items": 120,
+      "executable_passes": 0,
+      "items": 120
+    },
+    "patch-selection": {
+      "by_arm": {
+        "D": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "H": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "H*": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 1,
+          "items": 23
+        },
+        "M": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 0,
+          "items": 23
+        },
+        "X": {
+          "diagnostic_items": 0,
+          "diagnostic_passes": 0,
+          "executable_items": 23,
+          "executable_passes": 1,
+          "items": 23
+        }
+      },
+      "diagnostic_items": 0,
+      "diagnostic_passes": 0,
+      "executable_items": 115,
+      "executable_passes": 2,
+      "items": 115
+    }
+  },
+  "power": {
+    "conservative_variance": 0.02857142857142857,
+    "items_per_category_available": {
+      "dependency-compat": 1
+    },
+    "measured_baseline_pass_rate": 0.005714285714285714,
+    "minimum_detectable_effect": {
+      "conservative": {
+        "absolute_effect": 0.16742674020884782,
+        "available_items_per_category": 1,
+        "categories": 8,
+        "formula": "z_total * sqrt(Var(d) / (categories * n_available)); the inverse of the registered required-n formula",
+        "relative_to_measured_baseline": 29.299679536548368,
+        "variance": 0.02857142857142857
+      },
+      "planning": {
+        "absolute_effect": 0.11753990873165197,
+        "available_items_per_category": 1,
+        "categories": 8,
+        "formula": "z_total * sqrt(Var(d) / (categories * n_available)); the inverse of the registered required-n formula",
+        "relative_to_measured_baseline": 20.569484028039096,
+        "variance": 0.014081632653061225
+      }
+    },
+    "planning_variance": 0.014081632653061225,
+    "required_n_conservative": 686777,
+    "required_n_planning": 338483,
+    "shortfall": {
+      "dependency-compat": 686776
+    }
+  },
+  "rendered": {
+    "arm_D": "0 of 70 executable passes; 0 of 14 verified diagnostics",
+    "arm_H": "0 of 70 executable passes; 0 of 14 verified diagnostics",
+    "arm_H*": "1 of 70 executable passes; 1 of 14 verified diagnostics",
+    "arm_M": "0 of 70 executable passes; 0 of 14 verified diagnostics",
+    "arm_X": "1 of 70 executable passes; 2 of 14 verified diagnostics",
+    "arm_peak": "7.358 GiB process peak, 8.616 GiB cgroup peak, 4.668 GiB VRAM allocated",
+    "available_items": "1",
+    "baseline": "0.005714",
+    "cells": "0 scored, 24 reformatted of 24",
+    "conservative_variance": "0.028571",
+    "diagnostic_answer_shape": "36 of 70 answers hold a standalone letter, 0 of them ambiguous, and 7 name the reference",
+    "diagnostic_constant_arms": "4",
+    "diagnostic_reference_letters": "A 1, B 2, C 1, D 10",
+    "format_body-completion": "0 of 115 verified executable passes",
+    "format_diagnostic-identification": "3 of 70 verified diagnostics",
+    "format_file-replacement": "0 of 120 verified executable passes",
+    "format_patch-selection": "2 of 115 verified executable passes",
+    "ladder": "not monotone: dependency-compat",
+    "mde_conservative": "0.1674 absolute, 29.30x baseline",
+    "mde_planning": "0.1175 absolute, 20.57x baseline",
+    "patch_answer_shape": "103 of 115 answers hold a standalone letter, 8 of them ambiguous, and 30 name the reference",
+    "patch_constant_arms": "5",
+    "patch_reference_letters": "A 5, B 10, C 8",
+    "planning_variance": "0.014082",
+    "required_n_conservative": "686,777",
+    "required_n_planning": "338,483",
+    "smoke_peak": "7.132 GiB process peak, 6.796 GiB cgroup peak, 4.054 GiB VRAM allocated",
+    "window": "1 accepted, 69 retired (68 zero pass, 1 does not discriminate), 0 saturated, 0 with a partial-credit spread"
+  },
+  "resources": {
+    "by_arm": {
+      "D": {
+        "cgroup_memory_peak_gib": 3.388,
+        "items": 84,
+        "process_maxrss_gib": 3.728,
+        "vram_max_memory_allocated_gib": 3.503,
+        "vram_max_memory_reserved_gib": 4.246
+      },
+      "H": {
+        "cgroup_memory_peak_gib": 7.02,
+        "items": 84,
+        "process_maxrss_gib": 7.356,
+        "vram_max_memory_allocated_gib": 4.668,
+        "vram_max_memory_reserved_gib": 5.422
+      },
+      "H*": {
+        "cgroup_memory_peak_gib": 7.022,
+        "items": 84,
+        "process_maxrss_gib": 7.358,
+        "vram_max_memory_allocated_gib": 4.668,
+        "vram_max_memory_reserved_gib": 5.422
+      },
+      "M": {
+        "cgroup_memory_peak_gib": 4.508,
+        "items": 84,
+        "process_maxrss_gib": 3.327,
+        "vram_max_memory_allocated_gib": 3.355,
+        "vram_max_memory_reserved_gib": 3.816
+      },
+      "X": {
+        "cgroup_memory_peak_gib": 8.616,
+        "items": 84,
+        "process_maxrss_gib": 5.792,
+        "vram_max_memory_allocated_gib": 4.16,
+        "vram_max_memory_reserved_gib": 4.914
+      }
+    },
+    "max_cgroup_memory_peak_gib": 8.616,
+    "max_process_maxrss_gib": 7.358,
+    "max_vram_allocated_gib": 4.668,
+    "smoke": {
+      "cgroup_memory_peak_gib": 6.796,
+      "items": 3,
+      "process_maxrss_gib": 7.132,
+      "vram_max_memory_allocated_gib": 4.054,
+      "vram_max_memory_reserved_gib": 4.186
+    }
+  },
+  "revision": "bf7d4fec4d042769c4b2bb3238ab573240c7613b",
+  "schema": "selvedge/capability-calibration-analysis/v1",
+  "stamp": "20261116T162919Z",
+  "suite_version": {
+    "emitted": false,
+    "path": "fixtures/capability-calibrated/VERSION.json",
+    "reason": "cannot emit a calibrated suite version: categories ['api-migration', 'concurrency', 'dependency-compat', 'failing-test', 'lifetime-borrow', 'repo-scale', 'semantic-repair', 'trait-impl'] have a reformatted cell; redesign that format before scoring",
+    "revision": "bf7d4fec4d042769c4b2bb3238ab573240c7613b"
+  }
+}

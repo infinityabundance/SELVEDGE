@@ -1,0 +1,161 @@
+{
+  "argv": [
+    "python3",
+    "scripts/capability_calibration_analysis.py",
+    "--calibration",
+    "results/capability/calibration-20261116T164100Z.json",
+    "--result",
+    "D=results/capability/calibration/D/result.json",
+    "--result",
+    "M=results/capability/calibration/M/result.json",
+    "--result",
+    "X=results/capability/calibration/X/result.json",
+    "--result",
+    "H=results/capability/calibration/H/result.json",
+    "--result",
+    "H*=results/capability/calibration/Hstar/result.json",
+    "--generations",
+    "D=results/capability/calibration/D/generations.json",
+    "--generations",
+    "M=results/capability/calibration/M/generations.json",
+    "--generations",
+    "X=results/capability/calibration/X/generations.json",
+    "--generations",
+    "H=results/capability/calibration/H/generations.json",
+    "--generations",
+    "H*=results/capability/calibration/Hstar/generations.json",
+    "--smoke",
+    "results/capability/calibration-smoke/generations-Hstar.json",
+    "--out",
+    "results/capability/calibration-analysis-20261116T165000Z.json"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "59c8e89f150c3613a886c04480e0f60137568c1c758bbb0cf2d77e21fbda1651",
+  "container_name": "selvedge-python-court-20261116T162918Z-718533",
+  "court": "python",
+  "duration_ms": 856,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "memory_swap_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "nano_cpus": {
+        "actual": 4000000000,
+        "expected": 4000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 512,
+        "expected": 512
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 1073741824,
+        "expected": 1073741824
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T16:29:19Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:d97269011cc9afa012af6c647f48b94171bcf586b19de7fcb7c4270c3e341f2b",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:d97269011cc9afa012af6c647f48b94171bcf586b19de7fcb7c4270c3e341f2b",
+  "image_ref": "selvedge/python-court:20261114-3.12-slim-f03542f9bbe7",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "4",
+    "init": true,
+    "memory": "4g",
+    "memory_bytes": 4294967296,
+    "memory_swap": "4g",
+    "memory_swap_bytes": 4294967296,
+    "nano_cpus": 4000000000,
+    "nofile": 65536,
+    "pids": 512,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 1073741824,
+    "tmpfs_size": "1g"
+  },
+  "log_path": "results/courts/logs/python-20261116T162918Z-718533.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "bf7d4fec4d042769c4b2bb3238ab573240c7613b",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T162918Z",
+  "started_utc": "2026-11-16T16:29:18Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}
