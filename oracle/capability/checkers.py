@@ -199,17 +199,39 @@ def run_check(task, solution: dict, workroot: str, keep: bool = False) -> dict:
     }
 
 
+def _crate_name(workdir: str) -> str:
+    manifest = os.path.join(workdir, "Cargo.toml")
+    with open(manifest, "rb") as handle:
+        data = tomllib.load(handle)
+    name = (data.get("package") or {}).get("name")
+    if not name:
+        raise CheckerError(f"{manifest}: no [package] name")
+    return name
+
+
 def _find_test_binary(workdir: str) -> str:
+    """The crate's unit-test binary, not an integration-test artifact.
+
+    `cargo test --no-run` produces one executable per test target: the lib unit
+    tests (`<crate>-<hash>`) and each file in `tests/` (`check-<hash>`). The
+    harness restores an empty `tests/check.rs` for the probes, so picking the
+    newest executable could pick the empty integration test and record a pass
+    without running the probe's own test. Select by the crate name instead.
+    """
+    crate = _crate_name(workdir).replace("-", "_")
     pattern = os.path.join(workdir, "target", "debug", "deps", "*")
     candidates = []
     for path in glob.glob(pattern):
+        name = os.path.basename(path)
+        if not name.startswith(crate + "-"):
+            continue
         if not os.path.isfile(path) or not os.access(path, os.X_OK):
             continue
         if path.endswith((".d", ".rlib", ".rmeta", ".so")):
             continue
         candidates.append(path)
     if not candidates:
-        raise CheckerError(f"no test binary found under {pattern}")
+        raise CheckerError(f"no unit-test binary for crate {crate!r} under {pattern}")
     return max(candidates, key=lambda path: os.path.getmtime(path))
 
 
