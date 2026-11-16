@@ -35,6 +35,8 @@ pub mod error;
 pub mod kernels;
 pub mod model;
 pub mod modes;
+pub mod prefetch;
+pub mod residency;
 pub mod run;
 pub mod tokenizer;
 pub mod weights;
@@ -44,12 +46,14 @@ pub use bundle::{
     BundlePlan, GroupPlan, GroupReader, GroupTensors, NativeDeclaration, ShardFragment,
 };
 pub use config::{
-    ExecutionMode, ModelDescriptor, PromptSource, Qwen3Config, RunConfig, SelectorSpec,
-    StreamConfig, Tolerance,
+    ExecutionMode, ModelDescriptor, PrefillMode, PromptSource, Qwen3Config, RunConfig,
+    SelectorSpec, StreamConfig, Tolerance,
 };
 pub use error::{Result, RuntimeError};
 pub use model::{KvCache, Model, TokenTrace};
 pub use modes::{ExactState, GroupChoice, ModeState};
+pub use prefetch::{PrefetchAccounting, PrefetchOutcome, StallAccounting};
+pub use residency::{DecodeDtype, DecodeKey, DecodeResidency, ResidencyCounters, ResidencyStats};
 pub use run::{LogitsComparison, RunOutcome, Runner, TokenStep, logits_digest};
 pub use tokenizer::GreedyTokenizer;
 pub use weights::Backbone;

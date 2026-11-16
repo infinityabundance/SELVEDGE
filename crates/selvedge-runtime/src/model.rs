@@ -53,6 +53,20 @@ impl TokenTrace {
         Ok(())
     }
 
+    /// Record a dense matrix-multiply of `batch x rows x cols`.
+    ///
+    /// # Errors
+    ///
+    /// Rejects overflow.
+    pub fn add_matmul(&mut self, batch: u64, rows: u64, cols: u64) -> Result<()> {
+        let estimate = selvedge_core::FlopEstimate::matmul(batch, rows, cols)?;
+        self.matmul_flops = self
+            .matmul_flops
+            .checked_add(estimate.matmul_flops)
+            .ok_or_else(|| RuntimeError::model("matmul FLOPs overflow"))?;
+        Ok(())
+    }
+
     /// Record an elementwise/reduction estimate.
     ///
     /// # Errors
@@ -96,6 +110,28 @@ pub trait MlpExecutor {
         layer: usize,
         x: &[f32],
         out: &mut [f32],
+        trace: &mut TokenTrace,
+    ) -> Result<()>;
+}
+
+/// The batched seam the model uses for batched prefill.
+///
+/// `xs` and `outs` are `batch x H` row-major. Row `b` is the pre-MLP state of the
+/// batch's `b`-th token, and row `b` of `outs` must be exactly what
+/// [`MlpExecutor::mlp`] would have written for that row's vector. That equality
+/// is the contract the batched prefill is proven against.
+pub trait BatchMlpExecutor {
+    /// Execute layer `layer`'s MLP contribution for every row of the batch.
+    ///
+    /// # Errors
+    ///
+    /// Any mode, store, budget or accounting failure.
+    fn mlp_batch(
+        &mut self,
+        layer: usize,
+        xs: &[f32],
+        outs: &mut [f32],
+        batch: usize,
         trace: &mut TokenTrace,
     ) -> Result<()>;
 }
@@ -188,6 +224,28 @@ impl KvCache {
     pub fn bytes(&self) -> u64 {
         let per_layer = (self.capacity * self.kv_dim * 4) as u64;
         per_layer * 2 * self.keys.len() as u64
+    }
+
+    /// A digest over the cache's populated `key`/`value` state.
+    ///
+    /// It covers `len` and every populated f32 in layer/position/element order,
+    /// so two prefill strategies that leave the same state produce the same
+    /// digest. Used as the KV-layout equivalence witness for the batched prefill.
+    #[must_use]
+    pub fn state_digest(&self) -> selvedge_core::Sha256Digest {
+        let mut builder = selvedge_core::Sha256Builder::new();
+        builder.update(&(self.len as u64).to_le_bytes());
+        builder.update(&(self.kv_dim as u64).to_le_bytes());
+        for layer in 0..self.keys.len() {
+            let populated = self.len * self.kv_dim;
+            for value in &self.keys[layer][..populated] {
+                builder.update(&value.to_le_bytes());
+            }
+            for value in &self.values[layer][..populated] {
+                builder.update(&value.to_le_bytes());
+            }
+        }
+        builder.finish()
     }
 }
 
@@ -530,6 +588,272 @@ impl Model {
         trace.add_matvec(vocab as u64, hidden as u64)?;
         Ok(())
     }
+
+    /// Run a batch of consecutive tokens through the model, returning logits for
+    /// every position in the batch.
+    ///
+    /// `start` must equal `cache.len()`, and the batch must fit the cache. The
+    /// tokens are appended to the cache in order, exactly as the token-at-a-time
+    /// path would append them, so a decode step that follows a batched prefill
+    /// sees the same KV state it would have seen after a scalar prefill.
+    ///
+    /// # Bit-identity with the scalar path
+    ///
+    /// Every dense projection goes through [`kernels::matmul_into`], which
+    /// computes each output element with the same [`kernels::dot_fixed`]
+    /// reduction over `k` that [`kernels::matvec_into`] uses. Norms, RoPE,
+    /// softmax and the attention value accumulation run per row with the row's
+    /// own position, exactly as in [`Self::forward_token`]. The batched result is
+    /// therefore bitwise identical to running the scalar path once per token;
+    /// `tests/p14_parity.rs` asserts it and `docs/RUNTIME.md` states the
+    /// reduction order it relies on.
+    ///
+    /// # Errors
+    ///
+    /// Rejects an empty or misplaced batch, a token outside the vocabulary, any
+    /// kernel shape failure, and any MLP execution failure.
+    pub fn forward_batch(
+        &mut self,
+        cache: &mut KvCache,
+        mlp: &mut dyn BatchMlpExecutor,
+        tokens: &[u32],
+        start: usize,
+        trace: &mut TokenTrace,
+    ) -> Result<Vec<Vec<f32>>> {
+        let batch = tokens.len();
+        if batch == 0 {
+            return Err(RuntimeError::model("an empty prefill batch"));
+        }
+        if start != cache.len() {
+            return Err(RuntimeError::model(format!(
+                "batch start {start} does not match the cache length {}",
+                cache.len()
+            )));
+        }
+        if start + batch > cache.capacity() {
+            return Err(RuntimeError::model(format!(
+                "a batch of {batch} at {start} exceeds the cache capacity {}",
+                cache.capacity()
+            )));
+        }
+        let vocab = self.vocab()?;
+        let hidden = self.hidden;
+        let head_dim = self.head_dim;
+        let q_dim = self.q_dim;
+        let kv_dim = self.kv_dim;
+        let heads = self.heads;
+        let kv_heads = self.kv_heads;
+        let group = self.group;
+        let scale = self.scale;
+        let eps = self.eps;
+        let threads = self.threads;
+
+        let hidden_len = batch
+            .checked_mul(hidden)
+            .ok_or_else(|| RuntimeError::memory("batch hidden size overflows"))?;
+        let q_len = batch
+            .checked_mul(q_dim)
+            .ok_or_else(|| RuntimeError::memory("batch q size overflows"))?;
+        let kv_len = batch
+            .checked_mul(kv_dim)
+            .ok_or_else(|| RuntimeError::memory("batch kv size overflows"))?;
+        let vocab_len = batch
+            .checked_mul(vocab)
+            .ok_or_else(|| RuntimeError::memory("batch logits size overflows"))?;
+        let mut x = allocate(hidden_len, "batch hidden state")?;
+        let mut residual = allocate(hidden_len, "batch residual")?;
+        let mut q = allocate(q_len, "batch queries")?;
+        let mut k = allocate(kv_len, "batch keys")?;
+        let mut v = allocate(kv_len, "batch values")?;
+        let mut attn = allocate(q_len, "batch attention")?;
+        let mut mlp_out = allocate(hidden_len, "batch mlp output")?;
+        let mut logits = allocate(vocab_len, "batch logits")?;
+        let mut head_scores: Vec<f32> = Vec::new();
+
+        for (index, token) in tokens.iter().enumerate() {
+            let token_index = usize::try_from(*token)
+                .map_err(|_| RuntimeError::model("token id does not fit in usize"))?;
+            if token_index >= vocab {
+                return Err(RuntimeError::model(format!(
+                    "token id {token_index} is outside the vocabulary of {vocab}"
+                )));
+            }
+            let base = token_index * hidden;
+            x[index * hidden..(index + 1) * hidden]
+                .copy_from_slice(&self.backbone.embed[base..base + hidden]);
+        }
+
+        for layer in 0..self.backbone.layers.len() {
+            trace.layers = trace.layers.saturating_add(1);
+            let weights = &self.backbone.layers[layer];
+            let batch_u64 = batch as u64;
+
+            // --- attention block -------------------------------------------------
+            residual.copy_from_slice(&x);
+            for index in 0..batch {
+                kernels::rms_norm(
+                    &mut x[index * hidden..(index + 1) * hidden],
+                    &weights.input_ln,
+                    eps,
+                )?;
+            }
+            trace.add_other((2 * hidden * batch) as u64)?;
+
+            kernels::matmul_into(&weights.q, q_dim, hidden, batch, &x, &mut q, threads)?;
+            kernels::matmul_into(&weights.k, kv_dim, hidden, batch, &x, &mut k, threads)?;
+            kernels::matmul_into(&weights.v, kv_dim, hidden, batch, &x, &mut v, threads)?;
+            trace.add_matmul(batch_u64, q_dim as u64, hidden as u64)?;
+            trace.add_matmul(batch_u64, kv_dim as u64, hidden as u64)?;
+            trace.add_matmul(batch_u64, kv_dim as u64, hidden as u64)?;
+
+            // Per-head q/k norm and RoPE with the token's own absolute position.
+            for index in 0..batch {
+                let position = start + index;
+                for head in 0..heads {
+                    let begin = index * q_dim + head * head_dim;
+                    kernels::rms_norm(&mut q[begin..begin + head_dim], &weights.q_norm, eps)?;
+                    kernels::rope_in_place(
+                        &mut q[begin..begin + head_dim],
+                        &self.rope_inv_freq,
+                        position,
+                    )?;
+                }
+                for head in 0..kv_heads {
+                    let begin = index * kv_dim + head * head_dim;
+                    kernels::rms_norm(&mut k[begin..begin + head_dim], &weights.k_norm, eps)?;
+                    kernels::rope_in_place(
+                        &mut k[begin..begin + head_dim],
+                        &self.rope_inv_freq,
+                        position,
+                    )?;
+                }
+            }
+            trace.add_other((8 * (q_dim + kv_dim) * batch) as u64)?;
+
+            // Append to the cache, one absolute position per row, in order.
+            for index in 0..batch {
+                let position = start + index;
+                let slot = position * kv_dim;
+                cache.keys[layer][slot..slot + kv_dim]
+                    .copy_from_slice(&k[index * kv_dim..(index + 1) * kv_dim]);
+                cache.values[layer][slot..slot + kv_dim]
+                    .copy_from_slice(&v[index * kv_dim..(index + 1) * kv_dim]);
+            }
+
+            // Attention, per row and per head, keys in ascending position order.
+            for index in 0..batch {
+                let position = start + index;
+                let positions = position + 1;
+                head_scores.clear();
+                head_scores
+                    .try_reserve_exact(positions)
+                    .map_err(|_| RuntimeError::memory("cannot reserve attention scores"))?;
+                head_scores.resize(positions, 0.0);
+                for head in 0..heads {
+                    let kv_head = head / group;
+                    let query =
+                        &q[index * q_dim + head * head_dim..index * q_dim + (head + 1) * head_dim];
+                    for (offset, score) in head_scores.iter_mut().enumerate() {
+                        let key_start = offset * kv_dim + kv_head * head_dim;
+                        let key = &cache.keys[layer][key_start..key_start + head_dim];
+                        *score = kernels::dot(query, key)? * scale;
+                    }
+                    kernels::softmax(&mut head_scores)?;
+                    let begin = index * q_dim + head * head_dim;
+                    for slot in attn[begin..begin + head_dim].iter_mut() {
+                        *slot = 0.0;
+                    }
+                    for (offset, weight) in head_scores.iter().enumerate() {
+                        let value_start = offset * kv_dim + kv_head * head_dim;
+                        let value = &cache.values[layer][value_start..value_start + head_dim];
+                        for (item, element) in
+                            attn[begin..begin + head_dim].iter_mut().zip(value.iter())
+                        {
+                            *item += weight * element;
+                        }
+                    }
+                }
+                let positions_u64 = positions as u64;
+                trace.add_other(5 * heads as u64 * positions_u64)?;
+                trace.add_other(2 * kv_dim as u64 * positions_u64)?;
+            }
+
+            kernels::matmul_into(
+                &weights.o,
+                hidden,
+                q_dim,
+                batch,
+                &attn,
+                &mut mlp_out,
+                threads,
+            )?;
+            trace.add_matmul(batch_u64, hidden as u64, q_dim as u64)?;
+            for (slot, value) in x.iter_mut().zip(mlp_out.iter()) {
+                *slot = *value;
+            }
+            for (slot, value) in x.iter_mut().zip(residual.iter()) {
+                *slot += *value;
+            }
+
+            // --- MLP block -------------------------------------------------------
+            residual.copy_from_slice(&x);
+            for index in 0..batch {
+                kernels::rms_norm(
+                    &mut x[index * hidden..(index + 1) * hidden],
+                    &weights.post_ln,
+                    eps,
+                )?;
+            }
+            trace.add_other((2 * hidden * batch) as u64)?;
+            mlp.mlp_batch(layer, &x, &mut mlp_out, batch, trace)?;
+            for (slot, value) in x.iter_mut().zip(mlp_out.iter()) {
+                *slot = *value;
+            }
+            for (slot, value) in x.iter_mut().zip(residual.iter()) {
+                *slot += *value;
+            }
+        }
+
+        cache.len = start + batch;
+
+        // Final norm per row, then the tied output projection for the whole batch:
+        // the 600 MB embedding matrix is streamed once instead of once per token.
+        for index in 0..batch {
+            kernels::rms_norm(
+                &mut x[index * hidden..(index + 1) * hidden],
+                &self.backbone.final_norm,
+                eps,
+            )?;
+        }
+        trace.add_other((2 * hidden * batch) as u64)?;
+        kernels::matmul_into(
+            &self.backbone.embed,
+            vocab,
+            hidden,
+            batch,
+            &x,
+            &mut logits,
+            threads,
+        )?;
+        trace.add_matmul(batch as u64, vocab as u64, hidden as u64)?;
+        let mut out = Vec::new();
+        out.try_reserve_exact(batch)
+            .map_err(|_| RuntimeError::memory("cannot reserve batch logits rows"))?;
+        for index in 0..batch {
+            out.push(logits[index * vocab..(index + 1) * vocab].to_vec());
+        }
+        Ok(out)
+    }
+}
+
+/// A zeroed, exactly sized scratch buffer, refusing instead of aborting.
+fn allocate(len: usize, what: &'static str) -> Result<Vec<f32>> {
+    let mut buffer = Vec::new();
+    buffer
+        .try_reserve_exact(len)
+        .map_err(|_| RuntimeError::memory(format!("cannot reserve {len} f32 for the {what}")))?;
+    buffer.resize(len, 0.0);
+    Ok(buffer)
 }
 
 /// Greedy choice over logits, with the documented tie-break.

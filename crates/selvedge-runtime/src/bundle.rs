@@ -14,13 +14,17 @@
 //! executed in exact mode by construction.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
-use selvedge_core::{ChannelSet, DType, NativeComputationSet, ShardId, StorageOrder, TensorRole};
+use selvedge_core::{
+    ChannelSet, DType, NativeComputationSet, Sha256Digest, ShardId, StorageOrder, TensorRole,
+};
 use selvedge_format::{Manifest, ShardRecord};
 use selvedge_store::{ExecutionScope, ReadReport, ShardStore};
 
 use crate::config::{Qwen3Config, StreamConfig};
 use crate::error::{Result, RuntimeError};
+use crate::residency::{DecodeDtype, DecodeKey, DecodeResidency, ResidencyStats};
 
 /// The transform identifier a complete f32 SwiGLU partition carries.
 pub const COMPLETE_COMPATIBILITY_ID: &str = "swiglu-f32-complete-v1";
@@ -459,18 +463,35 @@ enum Role {
 /// `gate` and `up` are `[|G|, H]` row-major. `down` is the bundle's physical
 /// `[H, |G|]` block, which is exactly the layout a `hidden x width` matrix-vector
 /// product needs, so no transpose is ever materialised.
-#[derive(Clone, Debug, Default)]
+///
+/// Each matrix is an `Arc<[f32]>` because the values may be served from the
+/// decoded residency ([`crate::residency`]) as well as freshly decoded. A hit
+/// hands out an `Arc` clone, so the group's execution buffers never copy weight
+/// values. The bits are identical either way.
+#[derive(Clone, Debug)]
 pub struct GroupTensors {
     /// Gate rows.
-    pub gate: Vec<f32>,
+    pub gate: Arc<[f32]>,
     /// Up rows.
-    pub up: Vec<f32>,
+    pub up: Arc<[f32]>,
     /// Down block, physical `[H, |G|]`.
-    pub down: Vec<f32>,
+    pub down: Arc<[f32]>,
     /// `|G|`.
     pub width: usize,
     /// `H`.
     pub hidden: usize,
+}
+
+impl Default for GroupTensors {
+    fn default() -> Self {
+        Self {
+            gate: Arc::from(Vec::<f32>::new()),
+            up: Arc::from(Vec::<f32>::new()),
+            down: Arc::from(Vec::<f32>::new()),
+            width: 0,
+            hidden: 0,
+        }
+    }
 }
 
 impl GroupTensors {
@@ -486,43 +507,60 @@ impl GroupTensors {
 
 /// Streams group shards out of a [`ShardStore`] inside a fixed scope.
 ///
-/// The reader owns one reusable byte buffer and three reusable f32 buffers, so
-/// per-group memory is bounded by the largest shard in the plan. Every read goes
-/// through [`ShardStore::read_required`], whose counters are the measured
-/// evidence for the accounting.
+/// The reader owns one reusable byte buffer and a decoded residency, so per-group
+/// byte memory is bounded by the largest shard in the plan and decoded memory by
+/// the residency's own budget. Every required read goes through
+/// [`ShardStore::read_required`], whose counters are the measured evidence for
+/// the accounting; a decoded-residency hit performs no store read at all, which
+/// the per-token decode counters record explicitly.
 #[derive(Debug)]
 pub struct GroupReader {
     scope: ExecutionScope,
+    version: Sha256Digest,
     buffer: Vec<u8>,
     tensors: GroupTensors,
+    residency: DecodeResidency,
     executed: BTreeSet<ShardId>,
     read_calls: u64,
     bytes_used: u64,
     bytes_device: u64,
     hits: u64,
+    token_decodes: u64,
+    token_decode_hits: u64,
     injected_delay_ns: u64,
     last_sources: [bool; 3],
     source_slot: usize,
 }
 
 impl GroupReader {
-    /// Build a reader for one scope.
+    /// Build a reader for one scope and one bundle version.
+    ///
+    /// `version` is the validated manifest digest; it is part of every decoded
+    /// residency key, so a decoded entry can never be served across bundles.
     ///
     /// # Errors
     ///
     /// Rejects a stream configuration the store refuses, and a scope larger than
     /// `usize`.
-    pub fn new(scope: ExecutionScope, stream: &StreamConfig) -> Result<Self> {
+    pub fn new(
+        scope: ExecutionScope,
+        stream: &StreamConfig,
+        version: Sha256Digest,
+    ) -> Result<Self> {
         let buffer = Vec::new();
         Ok(Self {
             scope,
+            version,
             buffer,
             tensors: GroupTensors::default(),
+            residency: DecodeResidency::new(stream.decode_cache_bytes),
             executed: BTreeSet::new(),
             read_calls: 0,
             bytes_used: 0,
             bytes_device: 0,
             hits: 0,
+            token_decodes: 0,
+            token_decode_hits: 0,
             injected_delay_ns: stream.injected_read_delay_ns,
             last_sources: [false; 3],
             source_slot: 0,
@@ -583,13 +621,41 @@ impl GroupReader {
         self.hits
     }
 
-    /// Reset the per-token counters, keeping the scope and buffers.
+    /// Decode passes performed for this token.
+    #[must_use]
+    pub const fn token_decodes(&self) -> u64 {
+        self.token_decodes
+    }
+
+    /// Group shards served from the decoded residency for this token (no store
+    /// read and no decode).
+    #[must_use]
+    pub const fn token_decode_hits(&self) -> u64 {
+        self.token_decode_hits
+    }
+
+    /// The decoded residency's cumulative snapshot.
+    #[must_use]
+    pub fn residency_stats(&self) -> ResidencyStats {
+        self.residency.stats()
+    }
+
+    /// Injected per-read delay this reader models.
+    #[must_use]
+    pub const fn injected_delay_ns(&self) -> u64 {
+        self.injected_delay_ns
+    }
+
+    /// Reset the per-token counters, keeping the scope, the buffers and the
+    /// decoded residency. Keeping the residency across tokens is the point.
     pub fn reset_token(&mut self) {
         self.executed.clear();
         self.read_calls = 0;
         self.bytes_used = 0;
         self.bytes_device = 0;
         self.hits = 0;
+        self.token_decodes = 0;
+        self.token_decode_hits = 0;
     }
 
     /// Read one shard into the internal buffer and return its report.
@@ -661,6 +727,11 @@ impl GroupReader {
 
     /// Read one group and decode it into execution layout.
     ///
+    /// Each of the three shards is served either from the decoded residency (no
+    /// store read, no decode, no copy: an `Arc` clone) or from the store followed
+    /// by exactly one decode that is admitted to the residency. The values are
+    /// bit-identical in both cases: the same decoder, the same order.
+    ///
     /// # Errors
     ///
     /// Propagates read failures and rejects a shard whose byte length disagrees
@@ -677,16 +748,16 @@ impl GroupReader {
         let gate = group.gate;
         let up = group.up;
         let down = group.down;
-        self.read_executed_shard(store, &gate)?;
-        decode_f32_in_place(&self.buffer, &mut self.tensors.gate)?;
-        self.read_executed_shard(store, &up)?;
-        decode_f32_in_place(&self.buffer, &mut self.tensors.up)?;
-        self.read_executed_shard(store, &down)?;
-        decode_f32_in_place(&self.buffer, &mut self.tensors.down)?;
+        self.tensors.gate = self.load_shard(store, &gate)?;
+        self.tensors.up = self.load_shard(store, &up)?;
+        self.tensors.down = self.load_shard(store, &down)?;
 
-        if self.tensors.gate.len() != width * hidden_usize
-            || self.tensors.up.len() != width * hidden_usize
-            || self.tensors.down.len() != width * hidden_usize
+        let expected = width
+            .checked_mul(hidden_usize)
+            .ok_or_else(|| RuntimeError::memory("group element count overflows"))?;
+        if self.tensors.gate.len() != expected
+            || self.tensors.up.len() != expected
+            || self.tensors.down.len() != expected
         {
             return Err(RuntimeError::memory(format!(
                 "group {} decoded buffers do not match |G|={width} and H={hidden}",
@@ -696,6 +767,36 @@ impl GroupReader {
         Ok(())
     }
 
+    /// Serve one shard as execution-ready f32 values.
+    ///
+    /// The residency key is `(manifest digest, dtype, shard id)`. A hit costs no
+    /// I/O and no arithmetic; a miss reads and decodes once and admits the result
+    /// if the budget allows.
+    fn load_shard(&mut self, store: &ShardStore, fragment: &ShardFragment) -> Result<Arc<[f32]>> {
+        let key = DecodeKey::new(self.version, DecodeDtype::F32, fragment.id);
+        if let Some(values) = self.residency.get(&key) {
+            self.token_decode_hits = self.token_decode_hits.saturating_add(1);
+            self.executed.insert(fragment.id);
+            // A residency hit read no bytes from the backing tier. The tier is
+            // host RAM, which is what `false` means in `last_group_sources`.
+            self.note_source(false);
+            return Ok(values);
+        }
+        self.read_executed_shard(store, fragment)?;
+        let expected = usize::try_from(fragment.elements)
+            .map_err(|_| RuntimeError::memory("shard element count does not fit usize"))?;
+        let values: Arc<[f32]> = Arc::from(decode_f32(&self.buffer, expected)?);
+        self.token_decodes = self.token_decodes.saturating_add(1);
+        Ok(self.residency.insert(key, values))
+    }
+
+    fn note_source(&mut self, device: bool) {
+        if self.source_slot < self.last_sources.len() {
+            self.last_sources[self.source_slot] = device;
+            self.source_slot += 1;
+        }
+    }
+
     /// Decoded buffers of the last group read.
     #[must_use]
     pub fn tensors(&self) -> &GroupTensors {
@@ -703,8 +804,12 @@ impl GroupReader {
     }
 }
 
-/// Decode little-endian f32 bytes into `target`, appending nothing.
-fn decode_f32_in_place(bytes: &[u8], target: &mut Vec<f32>) -> Result<()> {
+/// Decode little-endian f32 bytes into a fresh vector of exactly `expected`
+/// values.
+///
+/// This is the only conversion in the runtime, so a decoded-residency hit and a
+/// residency miss produce the same bits by construction.
+fn decode_f32(bytes: &[u8], expected: usize) -> Result<Vec<f32>> {
     if !bytes.len().is_multiple_of(4) {
         return Err(RuntimeError::model(format!(
             "shard byte length {} is not a multiple of four",
@@ -712,14 +817,19 @@ fn decode_f32_in_place(bytes: &[u8], target: &mut Vec<f32>) -> Result<()> {
         )));
     }
     let count = bytes.len() / 4;
-    target.clear();
+    if count != expected {
+        return Err(RuntimeError::model(format!(
+            "shard holds {count} f32 values, the plan declares {expected}"
+        )));
+    }
+    let mut target = Vec::new();
     target
         .try_reserve_exact(count)
         .map_err(|_| RuntimeError::memory(format!("cannot reserve {count} f32")))?;
     for chunk in bytes.as_chunks::<4>().0 {
         target.push(f32::from_le_bytes(*chunk));
     }
-    Ok(())
+    Ok(target)
 }
 
 /// Total FLOPs of executing `groups` for one token.

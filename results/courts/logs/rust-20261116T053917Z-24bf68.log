@@ -1,0 +1,87 @@
+    Checking libc v0.2.191
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking getrandom v0.3.4
+    Checking rand_core v0.9.5
+    Checking ahash v0.8.12
+    Checking rand_chacha v0.9.0
+    Checking rand v0.9.5
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+    Checking tokenizers v0.23.2
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+    Checking selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Checking selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+error[E0609]: no field `evictions` on type `ResidencyStats`
+   --> crates/selvedge-runtime/src/run.rs:769:30
+    |
+769 |             evictions: stats.evictions,
+    |                              ^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+769 |             evictions: stats.counters.evictions,
+    |                              +++++++++
+
+error[E0509]: cannot move out of type `AsyncFetcher<'_>`, which implements the `Drop` trait
+   --> crates/selvedge-runtime/src/prefetch.rs:431:21
+    |
+431 |             stalls: self.stalls,
+    |                     ^^^^^^^^^^^
+    |                     |
+    |                     cannot move out of here
+    |                     move occurs because `self.stalls` has type `Vec<u64>`, which does not implement the `Copy` trait
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+431 |             stalls: self.stalls.clone(),
+    |                                ++++++++
+
+error[E0509]: cannot move out of type `AsyncFetcher<'_>`, which implements the `Drop` trait
+   --> crates/selvedge-runtime/src/prefetch.rs:432:22
+    |
+432 |             sources: self.sources,
+    |                      ^^^^^^^^^^^^
+    |                      |
+    |                      cannot move out of here
+    |                      move occurs because `self.sources` has type `BTreeMap<ShardId, bool>`, which does not implement the `Copy` trait
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+432 |             sources: self.sources.clone(),
+    |                                  ++++++++
+
+error[E0382]: borrow of moved value: `rx_job`
+   --> crates/selvedge-runtime/src/prefetch.rs:468:26
+    |
+451 |     rx_job: Receiver<Job>,
+    |     ------ move occurs because `rx_job` has type `std::sync::mpsc::Receiver<Job>`, which does not implement the `Copy` trait
+...
+463 |     for job in rx_job {
+    |                ------ `rx_job` moved due to this implicit call to `.into_iter()`
+...
+468 |             for _rest in rx_job.try_iter() {
+    |                          ^^^^^^ value borrowed here after move
+    |
+note: `into_iter` takes ownership of the receiver `self`, which moves `rx_job`
+   --> /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/traits/collect.rs:312:17
+help: consider iterating over a slice of the `std::sync::mpsc::Receiver<Job>`'s content to avoid moving into the `for` loop
+    |
+463 |     for job in &rx_job {
+    |                +
+
+warning: variable does not need to be mutable
+    --> crates/selvedge-runtime/src/run.rs:1705:13
+     |
+1705 |         let mut planned_flops = self.state.admitted_flops;
+     |             ----^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0382, E0509, E0609.
+For more information about an error, try `rustc --explain E0382`.
+warning: `selvedge-runtime` (lib) generated 1 warning
+error: could not compile `selvedge-runtime` (lib) due to 4 previous errors; 1 warning emitted

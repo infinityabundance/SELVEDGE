@@ -164,6 +164,100 @@ pub fn matvec_into(
     Ok(())
 }
 
+/// `out[b][r] = dot(w[r*cols .. r*cols+cols], x[b*cols .. b*cols+cols])`.
+///
+/// This is the batched form of [`matvec_into`], used by the batched prefill. It
+/// is **bit-identical** to running that function once per batch row, because
+/// every output element is still produced by [`dot_fixed`] over the same `k` in
+/// the same order; only the loop nest around it changes (each weight row is
+/// streamed once and applied to all rows of the batch). Parallelism is still over
+/// weight rows only, so the bits cannot depend on the thread count or on the
+/// batch size.
+///
+/// # Errors
+///
+/// Rejects a weight matrix, input batch or output batch of the wrong length.
+pub fn matmul_into(
+    weights: &[f32],
+    rows: usize,
+    cols: usize,
+    batch: usize,
+    x: &[f32],
+    out: &mut [f32],
+    threads: usize,
+) -> Result<()> {
+    let inputs = batch
+        .checked_mul(cols)
+        .ok_or_else(|| RuntimeError::model("matmul input size overflows"))?;
+    let outputs = batch
+        .checked_mul(rows)
+        .ok_or_else(|| RuntimeError::model("matmul output size overflows"))?;
+    let weight_len = rows
+        .checked_mul(cols)
+        .ok_or_else(|| RuntimeError::model("matmul weight size overflows"))?;
+    check_len("matmul input", x.len(), inputs)?;
+    check_len("matmul output", out.len(), outputs)?;
+    check_len("matmul weights", weights.len(), weight_len)?;
+    if batch == 0 || rows == 0 {
+        return Ok(());
+    }
+    // Each row block owns a private scratch buffer, and the block partition
+    // depends on (rows, threads) alone, so the bits cannot depend on scheduling.
+    let block = rows_per_thread(rows, threads);
+    let compute = |buffer: &mut [f32], start: usize, count: usize| {
+        for offset in 0..count {
+            let row = start + offset;
+            let weight_row = &weights[row * cols..(row + 1) * cols];
+            for index in 0..batch {
+                let value = if cols < DOT_LANES {
+                    let mut sum = 0.0_f32;
+                    let base = index * cols;
+                    for col in 0..cols {
+                        sum += weight_row[col] * x[base + col];
+                    }
+                    sum
+                } else {
+                    dot_fixed(weight_row, &x[index * cols..(index + 1) * cols])
+                };
+                buffer[index * count + offset] = value;
+            }
+        }
+    };
+    if threads <= 1 || rows <= block {
+        let mut buffer = vec![0.0_f32; rows * batch];
+        compute(&mut buffer, 0, rows);
+        for index in 0..batch {
+            out[index * rows..(index + 1) * rows]
+                .copy_from_slice(&buffer[index * rows..(index + 1) * rows]);
+        }
+        return Ok(());
+    }
+    let blocks: Vec<(usize, usize)> = (0..rows)
+        .step_by(block)
+        .map(|start| (start, block.min(rows - start)))
+        .collect();
+    let mut buffers: Vec<Vec<f32>> = blocks
+        .iter()
+        .map(|(_, count)| vec![0.0_f32; count * batch])
+        .collect();
+    std::thread::scope(|scope| {
+        for ((start, count), buffer) in blocks.iter().zip(buffers.iter_mut()) {
+            let compute_ref = &compute;
+            let (start, count) = (*start, *count);
+            let buffer: &mut [f32] = buffer;
+            scope.spawn(move || compute_ref(buffer, start, count));
+        }
+    });
+    for ((start, count), buffer) in blocks.iter().zip(buffers.iter()) {
+        for index in 0..batch {
+            let from = index * count;
+            let to = index * rows + start;
+            out[to..to + count].copy_from_slice(&buffer[from..from + count]);
+        }
+    }
+    Ok(())
+}
+
 /// `out[r] += dot(w[r*cols .. r*cols+cols], x)` for every row.
 ///
 /// Used by the grouped FFN, where each group contributes its own partial sum to
@@ -196,6 +290,55 @@ pub fn matvec_accumulate(
             *slot += sum;
         } else {
             *slot += dot_fixed(&weights[start..start + cols], x);
+        }
+    }
+    Ok(())
+}
+
+/// `out[b][r] += dot(w[r*cols .. r*cols+cols], x[b*cols .. b*cols+cols])`.
+///
+/// The batched form of [`matvec_accumulate`], used by the batched prefill's
+/// grouped down projection. Each row's contribution is still one fixed-order dot
+/// added to the accumulator in the caller's group order, so the result is
+/// bit-identical to the scalar path.
+///
+/// # Errors
+///
+/// Rejects a weight matrix, input batch or output batch of the wrong length.
+pub fn matmul_accumulate(
+    weights: &[f32],
+    rows: usize,
+    cols: usize,
+    batch: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
+    let inputs = batch
+        .checked_mul(cols)
+        .ok_or_else(|| RuntimeError::model("matmul input size overflows"))?;
+    let outputs = batch
+        .checked_mul(rows)
+        .ok_or_else(|| RuntimeError::model("matmul output size overflows"))?;
+    let weight_len = rows
+        .checked_mul(cols)
+        .ok_or_else(|| RuntimeError::model("matmul weight size overflows"))?;
+    check_len("matmul input", x.len(), inputs)?;
+    check_len("matmul output", out.len(), outputs)?;
+    check_len("matmul weights", weights.len(), weight_len)?;
+    for row in 0..rows {
+        let weight_row = &weights[row * cols..(row + 1) * cols];
+        for index in 0..batch {
+            let value = if cols < DOT_LANES {
+                let mut sum = 0.0_f32;
+                let base = index * cols;
+                for col in 0..cols {
+                    sum += weight_row[col] * x[base + col];
+                }
+                sum
+            } else {
+                dot_fixed(weight_row, &x[index * cols..(index + 1) * cols])
+            };
+            out[index * rows + row] += value;
         }
     }
     Ok(())

@@ -52,6 +52,99 @@ impl Phase {
     }
 }
 
+/// Decoded-residency counters for one token.
+///
+/// Separate from `read_calls`/`cache_hits`, which are the **storage** cache's
+/// counters. `decodes` counts conversion passes this token needed; `hits` counts
+/// shards served straight from execution residency with neither a store read nor
+/// a decode.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct DecodeRow {
+    /// Conversion passes performed for this token.
+    pub decodes: u64,
+    /// Shards served from the decoded residency.
+    pub hits: u64,
+    /// Shards looked up in the residency.
+    pub lookups: u64,
+    /// Residency byte budget.
+    pub capacity_bytes: u64,
+    /// Bytes resident at the end of the token.
+    pub resident_bytes: u64,
+    /// Largest residency observed over the run so far.
+    pub peak_bytes: u64,
+    /// Entries evicted over the run so far.
+    pub evictions: u64,
+}
+
+impl DecodeRow {
+    /// Fraction of this token's lookups served from residency.
+    #[must_use]
+    pub fn hit_rate(&self) -> f64 {
+        if self.lookups == 0 {
+            return 0.0;
+        }
+        self.hits as f64 / self.lookups as f64
+    }
+}
+
+/// Asynchronous-prefetch accounting for one token.
+///
+/// `exposed_stall_ns` is time compute spent blocked on a shard it needed;
+/// `hidden_ns` is fetch time that elapsed behind compute. `fetch_busy_ns +
+/// residual_wait_ns == hidden_ns + exposed_stall_ns` holds for every token (see
+/// verify: [`crate::prefetch::StallAccounting::conserves`]).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct PrefetchRow {
+    /// Layers that ran an asynchronous fetcher.
+    pub layers: u64,
+    /// Shards fetched.
+    pub shards_fetched: u64,
+    /// Bytes delivered by the fetcher.
+    pub fetched_bytes: u64,
+    /// Bytes of those that came from the backing tier.
+    pub device_bytes: u64,
+    /// Fetched bytes compute consumed.
+    pub used_bytes: u64,
+    /// Fetched bytes compute never consumed.
+    pub wasted_bytes: u64,
+    /// Largest staging buffer used.
+    pub staging_high_water_bytes: u64,
+    /// Nanoseconds the fetch timeline was busy.
+    pub fetch_busy_ns: u64,
+    /// Nanoseconds compute spent waiting for a named shard.
+    pub exposed_stall_ns: u64,
+    /// Fetch time that elapsed behind compute.
+    pub hidden_ns: u64,
+    /// Waited time during which the fetcher was not busy.
+    pub residual_wait_ns: u64,
+    /// Waits that blocked.
+    pub waits: u64,
+    /// Dependencies already satisfied when asked for.
+    pub ready_without_wait: u64,
+    /// Median per-wait stall in nanoseconds.
+    pub stall_p50_ns: u64,
+    /// 95th percentile per-wait stall in nanoseconds.
+    pub stall_p95_ns: u64,
+    /// Slowest single wait.
+    pub stall_max_ns: u64,
+}
+
+/// Batch metadata for a token executed inside a batched prefill.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct BatchRow {
+    /// Positions in this batch.
+    pub size: u64,
+    /// This token's index inside the batch.
+    pub index: u64,
+    /// Absolute position of the batch's first token.
+    pub first_position: u64,
+    /// Whether this row carries the batch's physical counters (`read_calls`,
+    /// `cache_hits`, `bytes_device`) and its wall time. Exactly one row of a
+    /// batch does, so totals over rows stay equal to the physical totals and no
+    /// elapsed time is counted twice.
+    pub physical_counters: bool,
+}
+
 /// One per-token accounting row.
 #[derive(Clone, Debug, Serialize)]
 pub struct AccountingRow {
@@ -81,6 +174,15 @@ pub struct AccountingRow {
     pub bytes_device: u64,
     /// Groups the selector asked for and the budget gate removed.
     pub groups_trimmed: u64,
+    /// Decoded-residency counters for this token.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decode: Option<DecodeRow>,
+    /// Asynchronous-prefetch counters for this token, when one ran.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prefetch: Option<PrefetchRow>,
+    /// Batch metadata, when this token ran inside a batched prefill.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub batch: Option<BatchRow>,
     /// The gate's verdict, produced before execution.
     pub budget: BudgetVerdict,
     /// The mandate's accounting record.
@@ -215,14 +317,24 @@ pub struct StreamSummary {
     pub policy: String,
     /// Cache capacity in bytes.
     pub cache_bytes: u64,
-    /// Whether prefetch was on.
+    /// Whether the synchronous prefetch was on.
     pub prefetch: bool,
+    /// Whether the asynchronous prefetch was on.
+    pub async_prefetch: bool,
+    /// Bounded depth of the asynchronous fetcher.
+    pub prefetch_depth: u64,
     /// Fetch order.
     pub read_order: String,
     /// Injected per-read delay.
     pub injected_read_delay_ns: u64,
     /// Verification mode.
     pub verification: String,
+    /// Decoded-residency byte budget (0 means disabled).
+    pub decode_cache_bytes: u64,
+    /// How the prompt was executed (`scalar` or `batched`).
+    pub prefill: String,
+    /// Largest batch the batched prefill forms.
+    pub prefill_batch: u64,
 }
 
 /// Totals over the whole run.
@@ -248,6 +360,16 @@ pub struct AccountingTotals {
     pub cache_hits: u64,
     /// Read calls.
     pub read_calls: u64,
+    /// Decode passes performed over the run.
+    pub decodes: u64,
+    /// Shards served from the decoded residency over the run.
+    pub decode_hits: u64,
+    /// Exposed async-prefetch stall over the run.
+    pub exposed_stall_ns: u64,
+    /// Fetch time hidden behind compute over the run.
+    pub hidden_ns: u64,
+    /// Prefetch bytes fetched but not consumed over the run.
+    pub wasted_prefetch_bytes: u64,
 }
 
 impl AccountingTotals {
@@ -267,6 +389,19 @@ impl AccountingTotals {
         self.bytes_device = self.bytes_device.saturating_add(row.bytes_device);
         self.cache_hits = self.cache_hits.saturating_add(row.cache_hits);
         self.read_calls = self.read_calls.saturating_add(row.read_calls);
+        if let Some(decode) = &row.decode {
+            self.decodes = self.decodes.saturating_add(decode.decodes);
+            self.decode_hits = self.decode_hits.saturating_add(decode.hits);
+        }
+        if let Some(prefetch) = &row.prefetch {
+            self.exposed_stall_ns = self
+                .exposed_stall_ns
+                .saturating_add(prefetch.exposed_stall_ns);
+            self.hidden_ns = self.hidden_ns.saturating_add(prefetch.hidden_ns);
+            self.wasted_prefetch_bytes = self
+                .wasted_prefetch_bytes
+                .saturating_add(prefetch.wasted_bytes);
+        }
     }
 }
 
@@ -320,6 +455,8 @@ pub struct RunSummary {
     pub total_accessible_elements: u64,
     /// Prefill latency.
     pub prefill: Latency,
+    /// Prompt tokens per second over the prefill phase.
+    pub prefill_tokens_per_second: f64,
     /// Decode latency.
     pub decode: Latency,
     /// Generated tokens per second over the decode phase.

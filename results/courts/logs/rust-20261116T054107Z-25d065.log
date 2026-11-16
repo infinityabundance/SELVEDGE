@@ -1,0 +1,18 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+error[E0618]: expected function, found `residency::DecodeKey`
+   --> crates/selvedge-runtime/src/residency.rs:380:32
+    |
+333 |     fn key(index: u8) -> DecodeKey {
+    |     ------------------------------ this function of the same name is available here, but it's shadowed by the local binding
+...
+368 |         let key = key(1);
+    |             --- `key` has type `residency::DecodeKey`
+...
+380 |         assert!(residency.get(&key(7)).is_none());
+    |                                ^^^---
+    |                                |
+    |                                call expression requires function
+
+For more information about this error, try `rustc --explain E0618`.
+error: could not compile `selvedge-runtime` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

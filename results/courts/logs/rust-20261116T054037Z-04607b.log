@@ -1,0 +1,240 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/p14_parity.rs (target/debug/deps/p14_parity-658ff2a65931f11b)
+
+running 10 tests
+test batched_prefill_refuses_approximate_mode ... ok
+test prefetch_row_conservation_identity ... ok
+
+thread 'batched_prefill_matches_the_scalar_oracle' (61) panicked at crates/selvedge-runtime/src/kernels.rs:230:51:
+copy_from_slice: source slice length (128) does not match destination slice length (32)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::slice::copy_from_slice_impl::len_mismatch_fail::do_panic::runtime
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panic.rs:172:21
+   3: core::slice::copy_from_slice_impl::len_mismatch_fail::do_panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs:2458:9
+   4: core::slice::copy_from_slice_impl::len_mismatch_fail
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panic.rs:177:9
+   5: core::slice::copy_from_slice_impl::<f32>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs:5583:9
+   6: <[f32]>::copy_from_slice
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs:4331:18
+   7: selvedge_runtime::kernels::matmul_into
+             at ./src/kernels.rs:230:51
+   8: <selvedge_runtime::model::Model>::forward_batch
+             at ./src/model.rs:702:13
+   9: <selvedge_runtime::run::Runner>::forward_batch
+             at ./src/run.rs:603:18
+  10: p14_parity::observe
+             at ./tests/p14_parity.rs:97:22
+  11: p14_parity::batched_prefill_matches_the_scalar_oracle
+             at ./tests/p14_parity.rs:383:24
+  12: p14_parity::batched_prefill_matches_the_scalar_oracle::{closure#0}
+             at ./tests/p14_parity.rs:371:47
+  13: <p14_parity::batched_prefill_matches_the_scalar_oracle::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+  14: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'greedy_sequence_matches_after_batched_prefill' (65) panicked at crates/selvedge-runtime/src/kernels.rs:230:51:
+copy_from_slice: source slice length (64) does not match destination slice length (32)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::slice::copy_from_slice_impl::len_mismatch_fail::do_panic::runtime
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panic.rs:172:21
+   3: core::slice::copy_from_slice_impl::len_mismatch_fail::do_panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs:2458:9
+   4: core::slice::copy_from_slice_impl::len_mismatch_fail
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panic.rs:177:9
+   5: core::slice::copy_from_slice_impl::<f32>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs:5583:9
+   6: <[f32]>::copy_from_slice
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs:4331:18
+   7: selvedge_runtime::kernels::matmul_into
+             at ./src/kernels.rs:230:51
+   8: <selvedge_runtime::model::Model>::forward_batch
+             at ./src/model.rs:702:13
+   9: <selvedge_runtime::run::Runner>::forward_batch
+             at ./src/run.rs:603:18
+  10: <selvedge_runtime::run::Runner>::run
+             at ./src/run.rs:991:38
+  11: p14_parity::greedy_sequence_matches_after_batched_prefill::{closure#0}
+             at ./tests/p14_parity.rs:426:30
+  12: p14_parity::greedy_sequence_matches_after_batched_prefill
+             at ./tests/p14_parity.rs:436:23
+  13: p14_parity::greedy_sequence_matches_after_batched_prefill::{closure#0}
+             at ./tests/p14_parity.rs:415:51
+  14: <p14_parity::greedy_sequence_matches_after_batched_prefill::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+  15: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'kv_state_is_identical_after_prefill' (66) panicked at crates/selvedge-runtime/src/kernels.rs:230:51:
+copy_from_slice: source slice length (128) does not match destination slice length (32)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::slice::copy_from_slice_impl::len_mismatch_fail::do_panic::runtime
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panic.rs:172:21
+   3: core::slice::copy_from_slice_impl::len_mismatch_fail::do_panic
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs:2458:9
+   4: core::slice::copy_from_slice_impl::len_mismatch_fail
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panic.rs:177:9
+   5: core::slice::copy_from_slice_impl::<f32>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs:5583:9
+   6: <[f32]>::copy_from_slice
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs:4331:18
+   7: selvedge_runtime::kernels::matmul_into
+             at ./src/kernels.rs:230:51
+   8: <selvedge_runtime::model::Model>::forward_batch
+             at ./src/model.rs:702:13
+   9: <selvedge_runtime::run::Runner>::forward_batch
+             at ./src/run.rs:603:18
+  10: p14_parity::observe
+             at ./tests/p14_parity.rs:97:22
+  11: p14_parity::kv_state_is_identical_after_prefill
+             at ./tests/p14_parity.rs:405:23
+  12: p14_parity::kv_state_is_identical_after_prefill::{closure#0}
+             at ./tests/p14_parity.rs:394:41
+  13: <p14_parity::kv_state_is_identical_after_prefill::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+test batched_prefill_matches_the_scalar_oracle ... FAILED
+  14: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+test greedy_sequence_matches_after_batched_prefill ... FAILED
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'prefetch_accounting_conserves' (67) panicked at crates/selvedge-runtime/tests/p14_parity.rs:363:5:
+assertion `left == right` failed: every token should carry prefetch accounting
+  left: 0
+ right: 6
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:434:23
+   3: core::panicking::assert_failed::<usize, usize>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: p14_parity::prefetch_accounting_conserves
+             at ./tests/p14_parity.rs:363:5
+   5: p14_parity::prefetch_accounting_conserves::{closure#0}
+             at ./tests/p14_parity.rs:320:35
+   6: <p14_parity::prefetch_accounting_conserves::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'decode_counts_drop_as_the_residency_warms' (63) panicked at crates/selvedge-runtime/tests/p14_parity.rs:214:39:
+first token
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::panic_display::<&str>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:259:5
+   3: core::option::expect_failed
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs:2260:5
+   4: <core::option::Option<u64>>::expect
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs:969:21
+   5: p14_parity::decode_counts_drop_as_the_residency_warms
+             at ./tests/p14_parity.rs:214:39
+   6: p14_parity::decode_counts_drop_as_the_residency_warms::{closure#0}
+             at ./tests/p14_parity.rs:193:47
+test kv_state_is_identical_after_prefill ... FAILED
+test prefetch_accounting_conserves ... FAILED
+test decode_counts_drop_as_the_residency_warms ... FAILED
+   7: <p14_parity::decode_counts_drop_as_the_residency_warms::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   8: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'decoded_residency_is_bit_identical' (64) panicked at crates/selvedge-runtime/tests/p14_parity.rs:178:5:
+assertion `left == right` failed: the warm token decoded again: []
+  left: None
+ right: Some(0)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:434:23
+   3: core::panicking::assert_failed::<core::option::Option<u64>, core::option::Option<u64>>
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:394:5
+   4: p14_parity::decoded_residency_is_bit_identical
+             at ./tests/p14_parity.rs:178:5
+   5: p14_parity::decoded_residency_is_bit_identical::{closure#0}
+             at ./tests/p14_parity.rs:151:40
+   6: <p14_parity::decoded_residency_is_bit_identical::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test decoded_residency_is_bit_identical ... FAILED
+
+thread 'residency_eviction_stays_inside_its_budget_and_keeps_the_answer' (69) panicked at crates/selvedge-runtime/tests/p14_parity.rs:259:5:
+a one-group residency never evicted
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: p14_parity::residency_eviction_stays_inside_its_budget_and_keeps_the_answer
+             at ./tests/p14_parity.rs:259:5
+   3: p14_parity::residency_eviction_stays_inside_its_budget_and_keeps_the_answer::{closure#0}
+             at ./tests/p14_parity.rs:239:69
+   4: <p14_parity::residency_eviction_stays_inside_its_budget_and_keeps_the_answer::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test residency_eviction_stays_inside_its_budget_and_keeps_the_answer ... FAILED
+
+thread 'async_prefetch_is_bit_identical_with_an_injected_delay' (60) panicked at crates/selvedge-runtime/tests/p14_parity.rs:309:5:
+the injected delay never reached the fetch timeline: 0 ns
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/panicking.rs:80:14
+   2: p14_parity::async_prefetch_is_bit_identical_with_an_injected_delay
+             at ./tests/p14_parity.rs:309:5
+   3: p14_parity::async_prefetch_is_bit_identical_with_an_injected_delay::{closure#0}
+             at ./tests/p14_parity.rs:276:60
+   4: <p14_parity::async_prefetch_is_bit_identical_with_an_injected_delay::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+   5: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test async_prefetch_is_bit_identical_with_an_injected_delay ... FAILED
+
+failures:
+
+failures:
+    async_prefetch_is_bit_identical_with_an_injected_delay
+    batched_prefill_matches_the_scalar_oracle
+    decode_counts_drop_as_the_residency_warms
+    decoded_residency_is_bit_identical
+    greedy_sequence_matches_after_batched_prefill
+    kv_state_is_identical_after_prefill
+    prefetch_accounting_conserves
+    residency_eviction_stays_inside_its_budget_and_keeps_the_answer
+
+test result: FAILED. 2 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p selvedge-runtime --test p14_parity`

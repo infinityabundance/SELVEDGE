@@ -35,6 +35,24 @@ pub(crate) enum ModeArg {
     Approximate,
 }
 
+/// Prefill strategy selector.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub(crate) enum PrefillArg {
+    /// Token at a time through the same path as decode. The reference oracle.
+    Scalar,
+    /// Prompt tokens as a batch through the same weights (exact mode only).
+    Batched,
+}
+
+impl PrefillArg {
+    const fn mode(self) -> selvedge_runtime::PrefillMode {
+        match self {
+            Self::Scalar => selvedge_runtime::PrefillMode::Scalar,
+            Self::Batched => selvedge_runtime::PrefillMode::Batched,
+        }
+    }
+}
+
 /// Cache policy selector.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub(crate) enum PolicyArg {
@@ -121,12 +139,30 @@ pub(crate) struct RunArgs {
     /// Cache capacity in bytes.
     #[arg(long, default_value_t = 0)]
     pub(crate) cache_bytes: u64,
+    /// Byte budget for the **decoded** f32 weight residency, which is separate
+    /// from `--cache-bytes` (verified bundle bytes). 0 disables it and
+    /// reproduces the pre-P14.1 path, where every read was decoded again.
+    #[arg(long, default_value_t = 1_500_000_000)]
+    pub(crate) decode_cache_bytes: u64,
     /// Cache policy.
     #[arg(long, value_enum, default_value = "none")]
     pub(crate) policy: PolicyArg,
-    /// Prefetch the selected shards before reading them for execution.
+    /// Prefetch the selected shards before reading them for execution
+    /// (synchronous: it cannot overlap compute).
     #[arg(long)]
     pub(crate) prefetch: bool,
+    /// Prefetch on a separate fetch timeline, overlapping the kernels.
+    #[arg(long)]
+    pub(crate) async_prefetch: bool,
+    /// Outstanding shard jobs the asynchronous fetcher may queue.
+    #[arg(long, default_value_t = 8)]
+    pub(crate) prefetch_depth: usize,
+    /// How the prompt is executed.
+    #[arg(long, value_enum, default_value = "scalar")]
+    pub(crate) prefill: PrefillArg,
+    /// Largest prompt batch the batched prefill forms.
+    #[arg(long, default_value_t = 64)]
+    pub(crate) prefill_batch: usize,
     /// Fetch order for prefetched shards.
     #[arg(long, value_enum, default_value = "plan")]
     pub(crate) read_order: OrderArg,
@@ -200,11 +236,16 @@ pub(crate) fn run(args: &RunArgs) -> CliResult {
         policy: args.policy.policy(),
         cache_bytes: args.cache_bytes,
         prefetch: args.prefetch,
+        async_prefetch: args.async_prefetch,
+        prefetch_depth: args.prefetch_depth,
         read_order: args.read_order.order(),
         injected_read_delay_ns: args.inject_delay_ns,
+        decode_cache_bytes: args.decode_cache_bytes,
         verification: VerificationMode::Always,
         ..StreamConfig::default()
     };
+    config.prefill = args.prefill.mode();
+    config.prefill_batch = args.prefill_batch;
     config.budget = Budget::new(
         args.budget,
         if args.teacher {

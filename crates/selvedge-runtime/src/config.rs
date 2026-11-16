@@ -303,7 +303,23 @@ pub struct StreamConfig {
     /// Cache capacity in bytes (must be zero for [`PolicyKind::None`]).
     pub cache_bytes: u64,
     /// Whether to prefetch the next token's shard set before decoding it.
+    ///
+    /// This is the **synchronous** prefetch: it reads the layer's shards through
+    /// the store before the compute loop and cannot overlap the two. It is kept
+    /// because it is the baseline the asynchronous path is compared against.
     pub prefetch: bool,
+    /// Whether to prefetch asynchronously, on a separate fetch timeline.
+    ///
+    /// The fetch thread reads through the store while the compute thread runs
+    /// kernels; compute waits only for the specific shard it is about to use.
+    /// Mutually exclusive with [`Self::prefetch`].
+    pub async_prefetch: bool,
+    /// Bounded depth of the asynchronous fetcher's job queue.
+    ///
+    /// This is the staging bound: the fetcher never has more than this many
+    /// outstanding shard jobs, so its memory is bounded by
+    /// `depth * max_shard_bytes` in the worst case and by one buffer in practice.
+    pub prefetch_depth: usize,
     /// Order in which the fetched set is visited.
     pub read_order: ReadOrder,
     /// Extra delay injected after every backing-tier read, in nanoseconds.
@@ -315,6 +331,12 @@ pub struct StreamConfig {
     pub max_shard_bytes: u64,
     /// Verification mode for shard reads.
     pub verification: VerificationMode,
+    /// Byte budget for the **decoded** residency (execution-ready f32 weights).
+    ///
+    /// This is a different budget from [`Self::cache_bytes`], which bounds
+    /// verified bundle bytes. Zero disables the residency and reproduces the
+    /// pre-P14.1 path exactly, where every read was decoded again.
+    pub decode_cache_bytes: u64,
 }
 
 impl Default for StreamConfig {
@@ -323,10 +345,13 @@ impl Default for StreamConfig {
             policy: PolicyKind::None,
             cache_bytes: 0,
             prefetch: false,
+            async_prefetch: false,
+            prefetch_depth: 4,
             read_order: ReadOrder::Plan,
             injected_read_delay_ns: 0,
             max_shard_bytes: 64 * 1024 * 1024,
             verification: VerificationMode::Always,
+            decode_cache_bytes: 0,
         }
     }
 }
@@ -479,6 +504,30 @@ impl Tolerance {
     }
 }
 
+/// How the prompt is executed.
+///
+/// Both modes run the same weights with the same reduction order. The scalar
+/// mode remains the reference oracle: it is what Court E proves and what the
+/// batched path is compared against, bit for bit.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PrefillMode {
+    /// One token at a time through the same path as decode. The oracle.
+    Scalar,
+    /// Prompt tokens as a batch through the same weights.
+    Batched,
+}
+
+impl PrefillMode {
+    /// Stable label for receipts.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Scalar => "scalar",
+            Self::Batched => "batched",
+        }
+    }
+}
+
 /// A complete run request.
 #[derive(Clone, Debug)]
 pub struct RunConfig {
@@ -502,6 +551,10 @@ pub struct RunConfig {
     pub prompt: PromptSource,
     /// Maximum number of generated tokens.
     pub max_new_tokens: usize,
+    /// How the prompt is executed.
+    pub prefill: PrefillMode,
+    /// Largest prompt batch a batched prefill will form.
+    pub prefill_batch: usize,
     /// Stop-token set for greedy decoding.
     pub stop_tokens: Vec<u32>,
     /// Optional reference logits dump to compare against.
@@ -536,6 +589,8 @@ impl RunConfig {
             account: None,
             prompt,
             max_new_tokens: 8,
+            prefill: PrefillMode::Scalar,
+            prefill_batch: 64,
             stop_tokens: Vec::new(),
             compare_logits: None,
             tolerance: Tolerance::default(),
@@ -569,6 +624,37 @@ impl RunConfig {
             return Err(RuntimeError::config(
                 "stream.prefetch",
                 "prefetch needs a cache policy; with 'none' it would read every shard twice",
+            ));
+        }
+        if self.stream.prefetch && self.stream.async_prefetch {
+            return Err(RuntimeError::config(
+                "stream.async_prefetch",
+                "the synchronous and asynchronous prefetchers are exclusive; pick one",
+            ));
+        }
+        if self.stream.async_prefetch && self.stream.policy == PolicyKind::None {
+            return Err(RuntimeError::config(
+                "stream.async_prefetch",
+                "asynchronous prefetch needs a cache policy to stage into",
+            ));
+        }
+        if self.stream.async_prefetch && self.stream.prefetch_depth == 0 {
+            return Err(RuntimeError::config(
+                "stream.prefetch_depth",
+                "must be at least one outstanding job",
+            ));
+        }
+        if self.prefill_batch == 0 {
+            return Err(RuntimeError::config(
+                "prefill_batch",
+                "must be at least one position",
+            ));
+        }
+        if self.prefill == PrefillMode::Batched && !self.mode.is_exact() {
+            return Err(RuntimeError::config(
+                "prefill",
+                "batched prefill is only defined for exact mode: the selector's decision is \
+                 per token, and this runtime will not average it over a batch",
             ));
         }
         self.stream.store_config()?;

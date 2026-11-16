@@ -1,0 +1,69 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.10s
+     Running unittests src/lib.rs (target/debug/deps/selvedge_runtime-c51017fe6b8963c9)
+
+running 18 tests
+test account::tests::disabled_writer_counts_nothing ... ok
+test account::tests::latency_percentiles_are_index_based ... ok
+test bundle::tests::channel_keys_are_unambiguous ... ok
+test config::tests::pinned_architecture_validates_and_splits_heads ... ok
+test config::tests::unsupported_architecture_is_rejected_not_approximated ... ok
+test kernels::tests::dot_matches_naive_in_ascending_order_for_short_vectors ... ok
+test kernels::tests::rms_norm_scales_by_root_mean_square ... ok
+test kernels::tests::rope_rotates_a_pair_by_the_position_angle ... ok
+test kernels::tests::softmax_sums_to_one_and_argmax_breaks_ties_low ... ok
+test modes::tests::projection_is_deterministic_and_seed_dependent ... ok
+test residency::tests::an_entry_larger_than_the_budget_is_bypassed_not_admitted ... ok
+test residency::tests::a_hit_never_decodes_again_and_returns_the_same_bits ... ok
+test residency::tests::eviction_is_lru_with_a_stable_tie_break_and_respects_the_budget ... ok
+test modes::tests::splitmix_is_not_constant ... ok
+test residency::tests::zero_budget_reproduces_the_undecoded_path ... ok
+test run::tests::logits_digest_notices_one_bit ... ok
+test run::tests::stop_tokens_are_read_from_the_generation_config ... ok
+test kernels::tests::matvec_is_independent_of_thread_count ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/court_e.rs (target/debug/deps/court_e-fa1c504ce5f285b5)
+
+running 5 tests
+test court_e_budget_gate_refuses_an_over_budget_exact_run ... ok
+test court_e_within_budget_fallback_trims_approximate_groups ... ok
+test court_e_selector_reads_only_the_current_state ... ok
+test court_e_approximate_mode_is_stable_but_not_exact ... ok
+test court_e_exact_mode_is_bitwise_identical_across_streaming_variants ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+     Running tests/p14_parity.rs (target/debug/deps/p14_parity-658ff2a65931f11b)
+
+running 10 tests
+test batched_prefill_refuses_approximate_mode ... ok
+test prefetch_row_conservation_identity ... ok
+test kv_state_is_identical_after_prefill ... ok
+test batched_prefill_matches_the_scalar_oracle ... ok
+test decode_counts_drop_as_the_residency_warms ... ok
+test decoded_residency_is_bit_identical ... ok
+test residency_eviction_stays_inside_its_budget_and_keeps_the_answer ... ok
+test greedy_sequence_matches_after_batched_prefill ... ok
+test prefetch_accounting_conserves ... ok
+test async_prefetch_is_bit_identical_with_an_injected_delay ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/tiny_parity.rs (target/debug/deps/tiny_parity-ab0986307ab5b9df)
+
+running 4 tests
+test exact_mode_classifies_as_proven_and_approximate_does_not ... ok
+test accounting_row_is_valid_jsonl_and_reports_every_required_field ... ok
+test rust_forward_matches_the_numpy_reference_on_the_tiny_fixture ... ok
+test tokenizer_round_trips_the_pinned_vocabulary ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+   Doc-tests selvedge_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

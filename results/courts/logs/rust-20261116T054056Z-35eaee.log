@@ -1,0 +1,21 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.97s
+     Running tests/p14_parity.rs (target/debug/deps/p14_parity-658ff2a65931f11b)
+
+running 10 tests
+test batched_prefill_refuses_approximate_mode ... ok
+test prefetch_row_conservation_identity ... ok
+p14 decodes: off=144 on=24 per-token-off=24 (hits on warm tokens: [0, 24, 24, 24, 24, 24])
+test kv_state_is_identical_after_prefill ... ok
+test decode_counts_drop_as_the_residency_warms ... ok
+test batched_prefill_matches_the_scalar_oracle ... ok
+test decoded_residency_is_bit_identical ... ok
+p14 residency evictions=140 budget=8192
+test residency_eviction_stays_inside_its_budget_and_keeps_the_answer ... ok
+test greedy_sequence_matches_after_batched_prefill ... ok
+test prefetch_accounting_conserves ... ok
+p14 prefetch: off_elapsed_ns=[2308824, 1521382, 1268200, 1302022, 1238555, 1021479] sync_elapsed_ns=[2588106, 1195554, 990951, 1042378, 897947, 906223] async_elapsed_ns=[50861378, 933474, 976885, 1014745, 929296, 910401] fetch_busy_ns=48985678
+test async_prefetch_is_bit_identical_with_an_injected_delay ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

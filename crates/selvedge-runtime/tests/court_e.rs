@@ -116,6 +116,43 @@ fn variants() -> Vec<Variant> {
             stream: cached(1 << 20, PolicyKind::Lru),
             threads: 4,
         },
+        // P14.1: execution residency. The same arithmetic, served from decoded
+        // f32 weights instead of freshly decoded bytes.
+        Variant {
+            name: "decoded-residency",
+            stream: StreamConfig {
+                policy: PolicyKind::Lru,
+                cache_bytes: 1 << 20,
+                decode_cache_bytes: 1 << 22,
+                ..StreamConfig::default()
+            },
+            threads: 2,
+        },
+        // P14.2: asynchronous prefetch at two queue depths, the second with a
+        // modelled slow device. Parity must survive a fetch timeline of its own.
+        Variant {
+            name: "async-prefetch-depth-8",
+            stream: StreamConfig {
+                policy: PolicyKind::Lru,
+                cache_bytes: 1 << 20,
+                async_prefetch: true,
+                prefetch_depth: 8,
+                ..StreamConfig::default()
+            },
+            threads: 2,
+        },
+        Variant {
+            name: "async-prefetch-depth-1-delay",
+            stream: StreamConfig {
+                policy: PolicyKind::Lru,
+                cache_bytes: 1 << 20,
+                async_prefetch: true,
+                prefetch_depth: 1,
+                injected_read_delay_ns: DELAY_NS,
+                ..StreamConfig::default()
+            },
+            threads: 2,
+        },
     ]
 }
 

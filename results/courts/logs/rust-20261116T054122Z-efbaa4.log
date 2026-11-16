@@ -1,0 +1,28 @@
+   Compiling selvedge-runtime v0.1.0 (/work/crates/selvedge-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+     Running tests/court_e.rs (target/debug/deps/court_e-fa1c504ce5f285b5)
+
+running 5 tests
+test court_e_budget_gate_refuses_an_over_budget_exact_run ... ok
+test court_e_selector_reads_only_the_current_state ... ok
+test court_e_within_budget_fallback_trims_approximate_groups ... ok
+test court_e_approximate_mode_is_stable_but_not_exact ... ok
+court-e async-prefetch-depth-1-delay: device_bytes=49152 elapsed_ns=56514659
+court-e async-prefetch-depth-8: device_bytes=49152 elapsed_ns=5932043
+court-e cache-large-least-stale: device_bytes=49152 elapsed_ns=5726879
+court-e cache-large-lfu: device_bytes=49152 elapsed_ns=5872804
+court-e cache-large-lru: device_bytes=49152 elapsed_ns=5574976
+court-e cache-large-pinned: device_bytes=49152 elapsed_ns=5805398
+court-e cache-none: device_bytes=294912 elapsed_ns=11632994
+court-e cache-small-lru: device_bytes=294912 elapsed_ns=10265579
+court-e decoded-residency: device_bytes=49152 elapsed_ns=5520776
+court-e prefetch-delay-small-cache: device_bytes=294912 elapsed_ns=307950075
+court-e prefetch-physical: device_bytes=49152 elapsed_ns=6667164
+court-e prefetch-plan: device_bytes=49152 elapsed_ns=6342740
+court-e prefetch-reverse: device_bytes=49152 elapsed_ns=6452826
+court-e threads-1: device_bytes=49152 elapsed_ns=3408548
+court-e threads-4: device_bytes=49152 elapsed_ns=7950883
+test court_e_exact_mode_is_bitwise_identical_across_streaming_variants ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+

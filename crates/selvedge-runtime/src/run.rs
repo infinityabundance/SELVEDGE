@@ -33,15 +33,18 @@ use selvedge_core::{
 use selvedge_store::{ExecutionScope, ReadOrder, ShardStore, StoreStats};
 
 use crate::account::{
-    ACCOUNTING_SCHEMA, AccountingRow, AccountingTotals, AccountingWriter, Latency, Phase,
-    RUN_SCHEMA, RunSummary, StreamSummary, require_tokens,
+    ACCOUNTING_SCHEMA, AccountingRow, AccountingTotals, AccountingWriter, BatchRow, DecodeRow,
+    Latency, Phase, PrefetchRow, RUN_SCHEMA, RunSummary, StreamSummary, require_tokens,
 };
 use crate::bundle::{BundlePlan, GroupPlan, GroupReader, GroupTensors, ShardFragment};
-use crate::config::{ExecutionMode, ModelDescriptor, PromptSource, Qwen3Config, RunConfig};
+use crate::config::{
+    ExecutionMode, ModelDescriptor, PrefillMode, PromptSource, Qwen3Config, RunConfig,
+};
 use crate::error::{Result, RuntimeError};
 use crate::kernels;
-use crate::model::{KvCache, MlpExecutor, Model, TokenTrace, greedy_token};
+use crate::model::{BatchMlpExecutor, KvCache, MlpExecutor, Model, TokenTrace, greedy_token};
 use crate::modes::{GroupChoice, ModeState, READ_AUDIT};
+use crate::prefetch::{AsyncFetcher, PrefetchAccounting};
 use crate::tokenizer::GreedyTokenizer;
 use crate::weights::Backbone;
 
@@ -124,14 +127,63 @@ struct TokenOutcomeInput {
     trace: TokenTrace,
     logits: Vec<f32>,
     controller_flops: u64,
+    prefetch: Option<PrefetchRow>,
+    batch: Option<BatchRow>,
 }
 
 /// Counters the MLP executor owns for the duration of one forward pass.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 struct ExecutorState {
     controller_flops: u64,
     admitted_flops: u64,
     fallback_applied: bool,
+    /// Aggregated asynchronous-prefetch accounting for this token.
+    prefetch: Option<PrefetchRow>,
+    /// Per-wait stall samples, for the token's p50/p95.
+    stall_samples: Vec<u64>,
+}
+
+impl ExecutorState {
+    fn observe_prefetch(&mut self, accounting: &PrefetchAccounting, stalls: &[u64]) {
+        let row = self.prefetch.get_or_insert_with(PrefetchRow::default);
+        row.layers = row.layers.saturating_add(1);
+        row.shards_fetched = row
+            .shards_fetched
+            .saturating_add(accounting.shards_completed);
+        row.fetched_bytes = row.fetched_bytes.saturating_add(accounting.fetched_bytes);
+        row.device_bytes = row.device_bytes.saturating_add(accounting.device_bytes);
+        row.used_bytes = row.used_bytes.saturating_add(accounting.used_bytes);
+        row.wasted_bytes = row.wasted_bytes.saturating_add(accounting.wasted_bytes);
+        row.staging_high_water_bytes = row
+            .staging_high_water_bytes
+            .max(accounting.staging_high_water_bytes);
+        row.fetch_busy_ns = row
+            .fetch_busy_ns
+            .saturating_add(accounting.stall.fetch_busy_ns);
+        row.exposed_stall_ns = row
+            .exposed_stall_ns
+            .saturating_add(accounting.stall.exposed_stall_ns);
+        row.hidden_ns = row.hidden_ns.saturating_add(accounting.stall.hidden_ns);
+        row.residual_wait_ns = row
+            .residual_wait_ns
+            .saturating_add(accounting.stall.residual_wait_ns);
+        row.waits = row.waits.saturating_add(accounting.stall.waits);
+        row.ready_without_wait = row
+            .ready_without_wait
+            .saturating_add(accounting.stall.ready_without_wait);
+        self.stall_samples.extend_from_slice(stalls);
+    }
+
+    /// Finish the prefetch row by computing its stall percentiles.
+    fn finalize_prefetch(&mut self) -> Option<PrefetchRow> {
+        let mut row = self.prefetch?;
+        let mut samples = core::mem::take(&mut self.stall_samples);
+        let latency = Latency::from_samples(&mut samples);
+        row.stall_p50_ns = latency.p50_ns;
+        row.stall_p95_ns = latency.p95_ns;
+        row.stall_max_ns = latency.max_ns;
+        Some(row)
+    }
 }
 
 /// The runner.
@@ -158,6 +210,7 @@ pub struct Runner {
     totals: AccountingTotals,
     prefill_ns: Vec<u64>,
     decode_ns: Vec<u64>,
+    prefill_batches: Vec<(usize, u64)>,
     logits_digests: Vec<String>,
     exactness: Option<SemanticExactness>,
     verdict: Option<selvedge_core::ArmVerdict>,
@@ -267,7 +320,7 @@ impl Runner {
 
         let mode = ModeState::new(&plan, config.mode)?;
         let scope = plan.native_scope()?;
-        let reader = GroupReader::new(scope, &config.stream)?;
+        let reader = GroupReader::new(scope, &config.stream, store.manifest_sha256())?;
         let model = Model::new(backbone, config.threads)?;
 
         let capacity = prompt_ids
@@ -324,6 +377,7 @@ impl Runner {
             totals: AccountingTotals::default(),
             prefill_ns: Vec::new(),
             decode_ns: Vec::new(),
+            prefill_batches: Vec::new(),
             logits_digests: Vec::new(),
             exactness: None,
             verdict: None,
@@ -352,6 +406,16 @@ impl Runner {
     #[must_use]
     pub fn store(&self) -> &ShardStore {
         &self.store
+    }
+
+    /// Flush the accounting JSONL. A caller that drives `forward` directly
+    /// rather than `run` needs this before reading the rows back.
+    ///
+    /// # Errors
+    ///
+    /// Propagates I/O failures.
+    pub fn flush_accounting(&mut self) -> Result<()> {
+        self.writer.flush()
     }
 
     /// The mode state.
@@ -421,6 +485,7 @@ impl Runner {
             controller_flops: 0,
             admitted_flops: planned,
             fallback_applied: self.fallback_applied,
+            ..ExecutorState::default()
         };
         if self.mode.is_exact() {
             // Exact mode's scope is the whole native set, fixed for the run.
@@ -440,6 +505,9 @@ impl Runner {
                 threads: self.config.threads,
                 fallback: self.config.fallback,
                 prefetch: self.config.stream.prefetch,
+                async_prefetch: self.config.stream.async_prefetch,
+                prefetch_depth: self.config.stream.prefetch_depth,
+                max_shard_bytes: self.config.stream.max_shard_bytes,
                 read_order: self.config.stream.read_order,
                 state: &mut state,
             };
@@ -463,7 +531,254 @@ impl Runner {
             trace,
             logits,
             controller_flops: state.controller_flops,
+            prefetch: state.finalize_prefetch(),
+            batch: None,
         })
+    }
+
+    /// Run a batched prefill over `tokens`, starting at absolute position
+    /// `start`.
+    ///
+    /// One accounting row is emitted per prompt token, so a reader can still
+    /// audit any token. The batch's **physical** counters (`read_calls`,
+    /// `cache_hits`, `bytes_device`) and its wall time appear on the batch's
+    /// first row exactly once — `batch.physical_counters` says which — so the
+    /// totals over rows are the physical totals and no elapsed time is counted
+    /// twice. The token's own ledger, FLOP estimate and exactness classification
+    /// are recorded on every row.
+    ///
+    /// # Errors
+    ///
+    /// Rejects an empty or misplaced batch, an over-budget path, a failed
+    /// witness, and any store or kernel failure.
+    pub fn forward_batch(
+        &mut self,
+        tokens: &[u32],
+        start: usize,
+        phase: Phase,
+    ) -> Result<Vec<TokenStep>> {
+        if !self.mode.is_exact() {
+            return Err(RuntimeError::config(
+                "prefill",
+                "batched prefill is exact-mode only; approximate mode keeps the scalar path \
+                 because its selection is per token",
+            ));
+        }
+        if tokens.is_empty() {
+            return Err(RuntimeError::model("an empty prefill batch"));
+        }
+        let started = Instant::now();
+        self.token_uses.clear();
+        self.token_ledger = ParameterLedger::begin(self.config.budget, self.total_accessible)?;
+        self.reader.reset_token();
+
+        let mut path_uses = self.model.backbone.embedding_uses(tokens[0])?;
+        path_uses.extend(self.backbone_uses.iter().cloned());
+        let planned = self.planned_flops()?;
+        self.admit(&path_uses, 0, planned)?;
+        for use_value in &path_uses {
+            self.token_uses.push(use_value.clone());
+            self.token_ledger.record_use(use_value.clone())?;
+        }
+
+        let mut trace = TokenTrace::default();
+        let mut state = ExecutorState {
+            controller_flops: 0,
+            admitted_flops: planned,
+            fallback_applied: self.fallback_applied,
+            ..ExecutorState::default()
+        };
+        self.reader.replace_scope(self.plan.native_scope()?);
+        let logits = {
+            let mut mlp = LayerMlp {
+                plan: &self.plan,
+                store: &self.store,
+                mode: &mut self.mode,
+                reader: &mut self.reader,
+                ledger: &mut self.token_ledger,
+                token_uses: &mut self.token_uses,
+                gate_buf: &mut self.mlp_gate,
+                up_buf: &mut self.mlp_up,
+                offsets: &self.offsets,
+                threads: self.config.threads,
+                fallback: self.config.fallback,
+                prefetch: self.config.stream.prefetch,
+                async_prefetch: self.config.stream.async_prefetch,
+                prefetch_depth: self.config.stream.prefetch_depth,
+                max_shard_bytes: self.config.stream.max_shard_bytes,
+                read_order: self.config.stream.read_order,
+                state: &mut state,
+            };
+            self.model
+                .forward_batch(&mut self.cache, &mut mlp, tokens, start, &mut trace)?
+        };
+        self.fallback_applied = state.fallback_applied;
+        let elapsed_ns = u64::try_from(started.elapsed().as_nanos()).unwrap_or(u64::MAX);
+        self.finish_batch(tokens, start, phase, elapsed_ns, trace, logits, &mut state)
+    }
+
+    /// Account a batched prefill: one shared ledger snapshot, one row per token.
+    #[allow(clippy::too_many_arguments)]
+    fn finish_batch(
+        &mut self,
+        tokens: &[u32],
+        start: usize,
+        phase: Phase,
+        elapsed_ns: u64,
+        trace: TokenTrace,
+        logits: Vec<Vec<f32>>,
+        state: &mut ExecutorState,
+    ) -> Result<Vec<TokenStep>> {
+        if logits.len() != tokens.len() {
+            return Err(RuntimeError::model(format!(
+                "the batched forward produced {} logits rows for {} tokens",
+                logits.len(),
+                tokens.len()
+            )));
+        }
+        let batch = tokens.len();
+        let executed: BTreeSet<selvedge_core::ShardId> = self.reader.executed().clone();
+        let exactness = self.mode.classify_token(&self.plan, &executed)?;
+        if !exactness.is_proven() {
+            return Err(RuntimeError::exactness(
+                "a batched prefill produced a token whose executed set is not the declared native \
+                 set",
+            ));
+        }
+        let mut estimate = trace.estimate()?;
+        estimate.controller_flops = state.controller_flops;
+        let batch_u64 = u64::try_from(batch).unwrap_or(u64::MAX);
+        let per_token = selvedge_core::FlopEstimate {
+            matmul_flops: estimate.matmul_flops / batch_u64.max(1),
+            other_flops: estimate.other_flops / batch_u64.max(1),
+            controller_flops: estimate.controller_flops,
+        };
+        self.token_ledger.record_flops(&per_token)?;
+        for identity in &self.backbone_resident {
+            self.token_ledger.record_resident(identity.clone());
+        }
+        let resident_bytes = self.store.cache_stats().used_bytes;
+        if resident_bytes > 0 {
+            let elements = resident_bytes / 4;
+            let tensor = ParamTensorId::new(CACHE_IDENTITY_KEY)?;
+            self.token_ledger
+                .record_resident(ParamIdentity::new(tensor, 0..elements)?);
+        }
+        let accounting = self.token_ledger.snapshot()?;
+        if !accounting.within_budget {
+            return Err(RuntimeError::budget(format!(
+                "the batched prefill at position {start} executed {} active unique elements \
+                 above the ceiling {}; refusing to emit it",
+                accounting.active_unique_params, accounting.budget_limit
+            )));
+        }
+        let mut post_plan = DecisionPlan::new(selvedge_core::SelectionDecision::new(
+            executed.iter().copied().collect(),
+            selvedge_core::SelectionProvenance::approximate("runtime:post-hoc", Vec::new())?,
+        )?);
+        for use_value in &self.token_uses {
+            post_plan.push_use(use_value.clone())?;
+        }
+        let budget_verdict = self
+            .token_ledger
+            .check_decision(&post_plan)
+            .map_err(|error| RuntimeError::budget(error.to_string()))?;
+        let plan_unique = match &budget_verdict {
+            BudgetVerdict::Within {
+                active_unique_params,
+                ..
+            }
+            | BudgetVerdict::NoncompliantTeacher {
+                active_unique_params,
+                ..
+            } => *active_unique_params,
+        };
+        if plan_unique != accounting.active_unique_params {
+            return Err(RuntimeError::budget(format!(
+                "plan union {plan_unique} disagrees with the ledger union {}",
+                accounting.active_unique_params
+            )));
+        }
+        let decode = self.decode_row();
+        let prefetch = state.finalize_prefetch();
+        let readers_read_calls = self.reader.read_calls();
+        let readers_cache_hits = self.reader.cache_hits();
+        let readers_bytes_device = self.reader.bytes_device();
+        let mut steps = Vec::new();
+        steps
+            .try_reserve_exact(batch)
+            .map_err(|_| RuntimeError::memory("cannot reserve batch token steps"))?;
+        for (index, row_logits) in logits.into_iter().enumerate() {
+            let position = start + index;
+            let digest = logits_digest(&row_logits);
+            let physical = index == 0;
+            let row = AccountingRow {
+                schema: ACCOUNTING_SCHEMA,
+                phase,
+                position: position as u64,
+                token_id: tokens[index],
+                elapsed_ns: if physical { elapsed_ns } else { 0 },
+                mode: self.mode.label(),
+                bundle_id: self.plan.bundle_id.clone(),
+                layers_executed: trace.layers,
+                group_shards_executed: executed.len() as u64,
+                read_calls: if physical { readers_read_calls } else { 0 },
+                cache_hits: if physical { readers_cache_hits } else { 0 },
+                bytes_device: if physical { readers_bytes_device } else { 0 },
+                groups_trimmed: self.mode.trimmed_groups(),
+                decode: Some(decode),
+                prefetch,
+                batch: Some(BatchRow {
+                    size: batch_u64,
+                    index: u64::try_from(index).unwrap_or(u64::MAX),
+                    first_position: start as u64,
+                    physical_counters: physical,
+                }),
+                budget: budget_verdict.clone(),
+                accounting: accounting.clone(),
+            };
+            self.totals.observe(&row);
+            self.writer.write(&row)?;
+            self.logits_digests.push(digest.to_hex());
+            steps.push(TokenStep {
+                logits: row_logits,
+                accounting: accounting.clone(),
+                trace,
+                elapsed_ns: if physical { elapsed_ns } else { 0 },
+                digest,
+                group_shards: executed.len() as u64,
+                exactness: exactness.clone(),
+            });
+        }
+        let record = format!("{}:{}..{}", phase.label(), start, start + batch);
+        if let Some(verdict) = self
+            .mode
+            .verdict(&record, &accounting, state.controller_flops)?
+        {
+            self.verdict = Some(verdict);
+        }
+        self.exactness = Some(exactness);
+        // The prefill latency sample is one **batch**, not `batch` tokens: a
+        // batched prefill's honest unit of latency is the batch it executed.
+        self.prefill_ns.push(elapsed_ns);
+        self.prefill_batches.push((batch, elapsed_ns));
+        Ok(steps)
+    }
+
+    /// Decoded-residency counters for the token just executed.
+    fn decode_row(&self) -> DecodeRow {
+        let stats = self.reader.residency_stats();
+        let hits = self.reader.token_decode_hits();
+        let decodes = self.reader.token_decodes();
+        DecodeRow {
+            decodes,
+            hits,
+            lookups: hits.saturating_add(decodes),
+            capacity_bytes: stats.capacity_bytes,
+            resident_bytes: stats.used_bytes,
+            peak_bytes: stats.peak_bytes,
+            evictions: stats.counters.evictions,
+        }
     }
 
     fn finish_token(&mut self, input: TokenOutcomeInput) -> Result<TokenStep> {
@@ -475,6 +790,8 @@ impl Runner {
             trace,
             logits,
             controller_flops,
+            prefetch,
+            batch,
         } = input;
         let executed: BTreeSet<selvedge_core::ShardId> = self.reader.executed().clone();
         let exactness = self.mode.classify_token(&self.plan, &executed)?;
@@ -558,6 +875,9 @@ impl Runner {
             cache_hits: self.reader.cache_hits(),
             bytes_device: self.reader.bytes_device(),
             groups_trimmed: self.mode.trimmed_groups(),
+            decode: Some(self.decode_row()),
+            prefetch,
+            batch,
             budget: budget_verdict,
             accounting: accounting.clone(),
         };
@@ -664,11 +984,30 @@ impl Runner {
         let retain = self.config.compare_logits.is_some() || self.config.dump_logits.is_some();
         let mut prefill_logits = Vec::new();
         let mut last = Vec::new();
-        for (position, token) in prompt.iter().enumerate() {
-            let step = self.forward(*token, position, Phase::Prefill)?;
-            last = step.logits;
-            if retain {
-                prefill_logits.push(last.clone());
+        match self.config.prefill {
+            PrefillMode::Scalar => {
+                for (position, token) in prompt.iter().enumerate() {
+                    let step = self.forward(*token, position, Phase::Prefill)?;
+                    last = step.logits;
+                    if retain {
+                        prefill_logits.push(last.clone());
+                    }
+                }
+            }
+            PrefillMode::Batched => {
+                let batch_size = self.config.prefill_batch.max(1);
+                let mut start = 0;
+                while start < prompt.len() {
+                    let end = (start + batch_size).min(prompt.len());
+                    let steps = self.forward_batch(&prompt[start..end], start, Phase::Prefill)?;
+                    for step in steps {
+                        last = step.logits;
+                        if retain {
+                            prefill_logits.push(last.clone());
+                        }
+                    }
+                    start = end;
+                }
             }
         }
 
@@ -731,6 +1070,16 @@ impl Runner {
         } else {
             1.0e9 / decode.mean_ns as f64
         };
+        let prefill_total_ns: u64 = self
+            .prefill_ns
+            .iter()
+            .copied()
+            .fold(0_u64, u64::saturating_add);
+        let prefill_tokens_per_second = if prefill_total_ns == 0 {
+            0.0
+        } else {
+            (prompt.len() as f64) * 1.0e9 / prefill_total_ns as f64
+        };
         let text = match &self.tokenizer {
             Some(tokenizer) if !generated.is_empty() => tokenizer.decode(generated)?,
             _ => String::new(),
@@ -769,6 +1118,15 @@ impl Runner {
             },
             "kv_cache_bytes": self.cache.bytes(),
             "lm_head_verified_tied": self.model.backbone.lm_head_verified_tied,
+            "decode_residency": self.reader.residency_stats(),
+            "prefetch_totals": {
+                "exposed_stall_ns": self.totals.exposed_stall_ns,
+                "hidden_ns": self.totals.hidden_ns,
+                "wasted_bytes": self.totals.wasted_prefetch_bytes,
+            },
+            "prefill_batches": self.prefill_batches.iter().map(|(size, ns)| {
+                serde_json::json!({"size": size, "elapsed_ns": ns})
+            }).collect::<Vec<_>>(),
         });
         let ok = comparison
             .as_ref()
@@ -802,6 +1160,7 @@ impl Runner {
             backbone_elements: self.model.backbone_elements(),
             total_accessible_elements: self.total_accessible,
             prefill,
+            prefill_tokens_per_second,
             decode,
             decode_tokens_per_second,
             totals: self.totals.clone(),
@@ -809,9 +1168,15 @@ impl Runner {
                 policy: self.config.stream.policy_name().to_owned(),
                 cache_bytes: self.config.stream.cache_bytes,
                 prefetch: self.config.stream.prefetch,
+                async_prefetch: self.config.stream.async_prefetch,
+                prefetch_depth: u64::try_from(self.config.stream.prefetch_depth)
+                    .unwrap_or(u64::MAX),
                 read_order: self.config.stream.order_name().to_owned(),
                 injected_read_delay_ns: self.config.stream.injected_read_delay_ns,
                 verification: self.config.stream.verification.name().to_owned(),
+                decode_cache_bytes: self.config.stream.decode_cache_bytes,
+                prefill: self.config.prefill.label().to_owned(),
+                prefill_batch: u64::try_from(self.config.prefill_batch).unwrap_or(u64::MAX),
             },
             budget_limit: self.config.budget.active_unique_limit,
             compliance: match self.config.budget.mode {
@@ -940,6 +1305,9 @@ struct LayerMlp<'a> {
     threads: usize,
     fallback: bool,
     prefetch: bool,
+    async_prefetch: bool,
+    prefetch_depth: usize,
+    max_shard_bytes: u64,
     read_order: ReadOrder,
     state: &'a mut ExecutorState,
 }
@@ -1070,22 +1438,7 @@ impl MlpExecutor for LayerMlp<'_> {
 
         let mut prefetched_ids: BTreeSet<selvedge_core::ShardId> = BTreeSet::new();
         if self.prefetch {
-            let mut fragments: Vec<ShardFragment> = Vec::with_capacity(selected.len() * 3);
-            for group in &selected {
-                fragments.push(group.gate);
-                fragments.push(group.up);
-                fragments.push(group.down);
-            }
-            match self.read_order {
-                ReadOrder::Plan => {}
-                ReadOrder::Reverse => fragments.reverse(),
-                ReadOrder::Physical => fragments.sort_by_key(|fragment| {
-                    (
-                        self.offsets.get(&fragment.id).copied().unwrap_or(0),
-                        fragment.id,
-                    )
-                }),
-            }
+            let fragments = self.ordered_fragments(&selected);
             // A prefetched shard is accounted once, here, from the tier its
             // bytes actually came from. The execution read that follows is a
             // cache hit and adds no second use.
@@ -1103,8 +1456,33 @@ impl MlpExecutor for LayerMlp<'_> {
             }
         }
 
+        if self.async_prefetch {
+            let accounting = async_layer_pass(
+                self.store,
+                self.reader,
+                &selected,
+                hidden,
+                x,
+                out,
+                self.gate_buf,
+                self.up_buf,
+                self.threads,
+                self.prefetch_depth,
+                self.max_shard_bytes,
+                self.reader.injected_delay_ns(),
+                self.token_uses,
+                self.ledger,
+                trace,
+            )?;
+            let (accounting, stalls) = accounting;
+            self.state.observe_prefetch(&accounting, &stalls);
+            return Ok(());
+        }
+
         out.fill(0.0);
+        let record_all = prefetched_ids.is_empty();
         for group in &selected {
+            self.read_group_accounted(group, record_all, &mut prefetched_ids)?;
             let width = usize::try_from(group.width())
                 .map_err(|_| RuntimeError::memory("group width does not fit usize"))?;
             let hidden_usize = usize::try_from(hidden)
@@ -1116,25 +1494,6 @@ impl MlpExecutor for LayerMlp<'_> {
             if self.up_buf.len() != width {
                 self.up_buf.clear();
                 self.up_buf.resize(width, 0.0);
-            }
-            self.reader.read_group(self.store, group, hidden)?;
-            let sources = self.reader.last_group_sources();
-            for (fragment, device) in [
-                (group.gate, sources[0]),
-                (group.up, sources[1]),
-                (group.down, sources[2]),
-            ] {
-                if prefetched_ids.contains(&fragment.id) {
-                    continue;
-                }
-                let tier = if device {
-                    StorageTier::Nvme
-                } else {
-                    StorageTier::HostRam
-                };
-                let use_value = fragment_use(&fragment, tier)?;
-                self.token_uses.push(use_value.clone());
-                self.ledger.record_use(use_value)?;
             }
             let tensors: &GroupTensors = self.reader.tensors();
             kernels::matvec_into(
@@ -1159,6 +1518,306 @@ impl MlpExecutor for LayerMlp<'_> {
             trace.add_matvec(width as u64, hidden)?;
             trace.add_matvec(hidden, width as u64)?;
             trace.add_other((3 * width) as u64)?;
+        }
+        Ok(())
+    }
+}
+
+impl LayerMlp<'_> {
+    /// The selected set as an ordered fragment list, for either prefetcher.
+    fn ordered_fragments(&self, selected: &[&GroupPlan]) -> Vec<ShardFragment> {
+        let mut fragments: Vec<ShardFragment> = Vec::with_capacity(selected.len() * 3);
+        for group in selected {
+            fragments.push(group.gate);
+            fragments.push(group.up);
+            fragments.push(group.down);
+        }
+        match self.read_order {
+            ReadOrder::Plan => {}
+            ReadOrder::Reverse => fragments.reverse(),
+            ReadOrder::Physical => fragments.sort_by_key(|fragment| {
+                (
+                    self.offsets.get(&fragment.id).copied().unwrap_or(0),
+                    fragment.id,
+                )
+            }),
+        }
+        fragments
+    }
+
+    /// Read one group for execution and record its tier uses exactly once.
+    fn read_group_accounted(
+        &mut self,
+        group: &GroupPlan,
+        record_all: bool,
+        prefetched_ids: &mut BTreeSet<selvedge_core::ShardId>,
+    ) -> Result<()> {
+        self.reader
+            .read_group(self.store, group, self.plan.hidden)?;
+        let sources = self.reader.last_group_sources();
+        for (fragment, device) in [
+            (group.gate, sources[0]),
+            (group.up, sources[1]),
+            (group.down, sources[2]),
+        ] {
+            if !record_all && prefetched_ids.contains(&fragment.id) {
+                continue;
+            }
+            record_fragment_use(&fragment, device, self.token_uses, self.ledger)?;
+            prefetched_ids.insert(fragment.id);
+        }
+        Ok(())
+    }
+}
+
+/// Record one shard's use in the ledger and the token's use list.
+fn record_fragment_use(
+    fragment: &ShardFragment,
+    device: bool,
+    token_uses: &mut Vec<ParamUse>,
+    ledger: &mut ParameterLedger,
+) -> Result<()> {
+    let tier = if device {
+        StorageTier::Nvme
+    } else {
+        StorageTier::HostRam
+    };
+    let use_value = fragment_use(fragment, tier)?;
+    token_uses.push(use_value.clone());
+    ledger.record_use(use_value)?;
+    Ok(())
+}
+
+/// One layer's groups with a separate fetch timeline.
+///
+/// Compute waits for each shard only when it is about to consume it, decodes it
+/// once (or takes it from the decoded residency), and runs the three kernels
+/// while the fetch thread reads the shards further down the list. The selected
+/// set is exactly `selected` — the prefetcher cannot add to it.
+#[allow(clippy::too_many_arguments)]
+fn async_layer_pass(
+    store: &ShardStore,
+    reader: &mut GroupReader,
+    selected: &[&GroupPlan],
+    hidden: u64,
+    x: &[f32],
+    out: &mut [f32],
+    gate_buf: &mut Vec<f32>,
+    up_buf: &mut Vec<f32>,
+    threads: usize,
+    depth: usize,
+    max_shard_bytes: u64,
+    injected_delay_ns: u64,
+    token_uses: &mut Vec<ParamUse>,
+    ledger: &mut ParameterLedger,
+    trace: &mut TokenTrace,
+) -> Result<(PrefetchAccounting, Vec<u64>)> {
+    let fragments: Vec<ShardFragment> = {
+        let mut list = Vec::with_capacity(selected.len() * 3);
+        for group in selected {
+            list.push(group.gate);
+            list.push(group.up);
+            list.push(group.down);
+        }
+        list
+    };
+    let execution_scope = reader.scope().clone();
+    let hidden_usize = usize::try_from(hidden)
+        .map_err(|_| RuntimeError::memory("hidden width does not fit usize"))?;
+    let mut accounting = PrefetchAccounting::default();
+    let mut stalls: Vec<u64> = Vec::new();
+    std::thread::scope(|threads_scope| -> Result<()> {
+        let mut fetch = AsyncFetcher::start(
+            threads_scope,
+            store,
+            execution_scope,
+            &fragments,
+            depth,
+            max_shard_bytes,
+            injected_delay_ns,
+        )?;
+        out.fill(0.0);
+        for group in selected {
+            // The readiness dependency, named per shard: compute blocks on the
+            // exact three shards it is about to read, nothing else.
+            for fragment in [&group.gate, &group.up, &group.down] {
+                fetch.wait_ready(&fragment.id)?;
+            }
+            let width = usize::try_from(group.width())
+                .map_err(|_| RuntimeError::memory("group width does not fit usize"))?;
+            if gate_buf.len() != width {
+                gate_buf.clear();
+                gate_buf.resize(width, 0.0);
+            }
+            if up_buf.len() != width {
+                up_buf.clear();
+                up_buf.resize(width, 0.0);
+            }
+            reader.read_group(store, group, hidden)?;
+            for fragment in [&group.gate, &group.up, &group.down] {
+                let device = fetch.consumed_device(&fragment.id).ok_or_else(|| {
+                    RuntimeError::model(format!(
+                        "the fetcher reported shard {} ready but not consumed",
+                        fragment.id.short()
+                    ))
+                })?;
+                record_fragment_use(fragment, device, token_uses, ledger)?;
+            }
+            let tensors: &GroupTensors = reader.tensors();
+            kernels::matvec_into(&tensors.gate, width, hidden_usize, x, gate_buf, threads)?;
+            kernels::matvec_into(&tensors.up, width, hidden_usize, x, up_buf, threads)?;
+            kernels::swiglu_act(gate_buf, up_buf)?;
+            kernels::matvec_accumulate(&tensors.down, hidden_usize, width, gate_buf, out)?;
+            trace.add_matvec(width as u64, hidden)?;
+            trace.add_matvec(width as u64, hidden)?;
+            trace.add_matvec(hidden, width as u64)?;
+            trace.add_other((3 * width) as u64)?;
+        }
+        let outcome = fetch.finish()?;
+        accounting = outcome.accounting;
+        stalls = outcome.stalls;
+        Ok(())
+    })?;
+    Ok((accounting, stalls))
+}
+
+impl BatchMlpExecutor for LayerMlp<'_> {
+    fn mlp_batch(
+        &mut self,
+        layer: usize,
+        xs: &[f32],
+        outs: &mut [f32],
+        batch: usize,
+        trace: &mut TokenTrace,
+    ) -> Result<()> {
+        let hidden = self.plan.hidden;
+        let hidden_usize = usize::try_from(hidden)
+            .map_err(|_| RuntimeError::memory("hidden width does not fit usize"))?;
+        let groups: &[GroupPlan] = self.plan.groups_for(layer)?;
+        if !self.mode.is_exact() {
+            return Err(RuntimeError::config(
+                "prefill",
+                "batched prefill is exact-mode only",
+            ));
+        }
+        let selected: Vec<&GroupPlan> = groups.iter().collect();
+        let expected = batch
+            .checked_mul(hidden_usize)
+            .ok_or_else(|| RuntimeError::memory("batch hidden size overflows"))?;
+        if xs.len() != expected || outs.len() != expected {
+            return Err(RuntimeError::model(format!(
+                "batched MLP buffers hold {} and {}, expected {expected}",
+                xs.len(),
+                outs.len()
+            )));
+        }
+
+        // Admission. Every row of the batch executes the same shard set, so the
+        // path is admitted once from the same uses a scalar token would record;
+        // the ledger union (the budget ceiling's subject) is unchanged by batching.
+        let planned_flops = self.state.admitted_flops;
+        let mut reserve_uses: Vec<ParamUse> = Vec::new();
+        for later in layer + 1..self.plan.layers.len() {
+            let later_groups = self.plan.groups_for(later)?;
+            if let Some(smallest) = later_groups
+                .iter()
+                .min_by_key(|group| (group.elements(), group.index))
+            {
+                for fragment in [&smallest.gate, &smallest.up, &smallest.down] {
+                    reserve_uses.push(fragment_use(fragment, StorageTier::HostRam)?);
+                }
+            }
+        }
+        let mut path_uses: Vec<ParamUse> = self.token_uses.clone();
+        for group in &selected {
+            for fragment in [&group.gate, &group.up, &group.down] {
+                path_uses.push(fragment_use(fragment, StorageTier::HostRam)?);
+            }
+        }
+        path_uses.extend(reserve_uses);
+        let group_planned: u64 = selected.iter().map(|group| group.flops()).sum();
+        let candidate_flops = planned_flops.saturating_add(group_planned);
+        self.try_admit(&path_uses, self.state.controller_flops, candidate_flops)
+            .map_err(|error| {
+                RuntimeError::budget(format!(
+                    "budget gate refused layer {layer} before batched execution: {error}"
+                ))
+            })?;
+        self.state.admitted_flops = candidate_flops;
+
+        outs.fill(0.0);
+        let batch_u64 = u64::try_from(batch).unwrap_or(u64::MAX);
+        let mut batch_gate: Vec<f32> = Vec::new();
+        let mut batch_up: Vec<f32> = Vec::new();
+        for group in &selected {
+            let width = usize::try_from(group.width())
+                .map_err(|_| RuntimeError::memory("group width does not fit usize"))?;
+            let buffer_len = width
+                .checked_mul(batch)
+                .ok_or_else(|| RuntimeError::memory("batch group buffer overflows"))?;
+            if batch_gate.len() != buffer_len {
+                batch_gate.clear();
+                batch_gate
+                    .try_reserve_exact(buffer_len)
+                    .map_err(|_| RuntimeError::memory("cannot reserve the batch gate buffer"))?;
+                batch_gate.resize(buffer_len, 0.0);
+            }
+            if batch_up.len() != buffer_len {
+                batch_up.clear();
+                batch_up
+                    .try_reserve_exact(buffer_len)
+                    .map_err(|_| RuntimeError::memory("cannot reserve the batch up buffer"))?;
+                batch_up.resize(buffer_len, 0.0);
+            }
+            // One group read serves every row of the batch: this is the whole
+            // point of the batched path.
+            self.reader.read_group(self.store, group, hidden)?;
+            let sources = self.reader.last_group_sources();
+            for (fragment, device) in [
+                (group.gate, sources[0]),
+                (group.up, sources[1]),
+                (group.down, sources[2]),
+            ] {
+                record_fragment_use(&fragment, device, self.token_uses, self.ledger)?;
+            }
+            let tensors: &GroupTensors = self.reader.tensors();
+            kernels::matmul_into(
+                &tensors.gate,
+                width,
+                hidden_usize,
+                batch,
+                xs,
+                &mut batch_gate,
+                self.threads,
+            )?;
+            kernels::matmul_into(
+                &tensors.up,
+                width,
+                hidden_usize,
+                batch,
+                xs,
+                &mut batch_up,
+                self.threads,
+            )?;
+            for row in 0..batch {
+                let begin = row * width;
+                kernels::swiglu_act(
+                    &mut batch_gate[begin..begin + width],
+                    &batch_up[begin..begin + width],
+                )?;
+            }
+            kernels::matmul_accumulate(
+                &tensors.down,
+                hidden_usize,
+                width,
+                batch,
+                &batch_gate,
+                outs,
+            )?;
+            trace.add_matmul(batch_u64, width as u64, hidden)?;
+            trace.add_matmul(batch_u64, width as u64, hidden)?;
+            trace.add_matmul(batch_u64, hidden, width as u64)?;
+            trace.add_other(3 * width as u64 * batch_u64)?;
         }
         Ok(())
     }
