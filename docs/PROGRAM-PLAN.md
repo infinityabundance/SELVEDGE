@@ -151,6 +151,18 @@ Tier index — S24 items: WS15–WS18 (§20–§23) have **60** items — `ACTIV
 | **CANDIDATE** | P15.1–P15.8 · P16.1–P16.25, P16.27–P16.31, P16.33–P16.35 · P17.1–P17.4 · P18.1–P18.5, P18.7–P18.12 | 56 |
 | **HYPOTHESIS** | P15.9 (integration) · P16.26 (Braess) · P16.32 (biological control) | 3 |
 
+Tier index — S32 items: WS19 (§24) has **7** items — P19.0–P19.6, all
+`CANDIDATE`. Nothing in WS19 is `ACTIVE`: its prerequisite (P19.0) is new code
+that has not been scheduled, and the tier rule forbids promoting an item whose
+acceptance evidence is not being produced in this phase. WS20 (§25) registers
+**no** new experiments — it is a stop/keep register over existing P-numbers.
+
+| tier | items | count |
+| --- | --- | ---: |
+| **ACTIVE** | — | 0 |
+| **CANDIDATE** | P19.0 (blocking prerequisite: the toolchain must accept the anchor) · P19.1 anchor scoreboard · P19.2 grafted token-addressed memory · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass memory (the one narrow novelty) · P19.5 NVMe serving · P19.6 spend headroom and claim | 7 |
+| **HYPOTHESIS** | — | 0 |
+
 **Assignments that need a reason.**
 
 - **P18.6 is the only `ACTIVE` item in the four workstreams.** It consumes
@@ -4899,3 +4911,258 @@ may start before the gate in §20.0 opens, and the matrix is written now so that
 when it opens the program cannot substitute a plausible new experiment for the
 registered one. **Distance to a frontier claim: one unrun registered verdict plus
 one executed capability run; no WS15–WS18 item shortens it.**
+
+## 24. WS19 — The frontier program (six stages, registered 2026-11-16)
+
+**Rule.** This section registers a program, not a result. Every stage has a
+what/why/deps/acceptance/win/kill/effort/tier, exactly like WS13–WS18, and no
+stage may begin before the stage it depends on has produced its acceptance
+receipt. The numbers this program is judged by are **generated** in
+`docs/FRONTIER-TARGET.md` from the verification receipts; this section names them
+by reference and never re-types them.
+
+**Target.** `Qwen/Qwen3.5-0.8B` at its pinned revision, **text path only**. The
+identity, revision, licence, per-tensor accounting, architecture facts (hybrid
+Gated DeltaNet + periodic attention, tied embeddings, MTP head, vision tower) and
+the disk arithmetic are recorded and receipted in `docs/FRONTIER-TARGET.md`. Two
+of that document's findings bind this section: the "752M" figure is the **text
+tower**, not the checkpoint, and the checkpoint is **multimodal**, so a text-only
+runtime must be declared and audited as such.
+
+### P19.0 (prerequisite, blocking) — the toolchain must accept the anchor
+
+**What.** Extend `selvedge inspect-model`, `selvedge-convert` and
+`selvedge-runtime` to the Qwen3.5 **text path**: nested `text_config`, the
+`model.language_model.*` tensor namespace, the Gated DeltaNet layer (short
+convolution state, gated delta-rule state update, `A_log`/`dt_bias`), gated
+softmax attention with partial RoPE and mRoPE sections, the fused attention output
+gate, and a **fail-closed refusal** for the vision tower and the MTP head with an
+explicit `--language-model-only` selection.
+**Why.** The repository's auditor refuses the checkpoint today (`inspect-model`
+supports `model_type == "qwen3"` and top-level `hidden_size`; the runtime has
+softmax attention, RoPE, RMSNorm and SwiGLU only). Without this stage, "audited
+unique active" is a phrase with no instrument behind it, and no stage below can
+execute the anchor at all.
+**Depends.** nothing (this is the gate).
+**Acceptance evidence.** (i) `inspect-model` prints a per-component accounting for
+the real checkpoint that equals the header-derived component counts in
+`docs/FRONTIER-TARGET.md` §2, with the tie recorded as *verified by absence of
+`lm_head.weight`*; (ii) a fail-closed test showing the vision tower and the MTP
+head are refused unless explicitly selected; (iii) Court E bitwise parity for the
+text path against an independent NumPy forward at the repository's existing
+tolerance, plus a linear-attention state test (state carry across tokens, and
+reset).
+**Win condition.** The auditor runs on the anchor and its component counts agree
+with the header accounting to the element.
+**Kill criterion.** If the delta-rule state cannot be reproduced within the
+existing parity tolerance, the anchor is not executable by this program and the
+whole of WS19 is re-scoped or abandoned — recorded as a negative, not worked
+around.
+**Effort.** XL. **Tier.** CANDIDATE (it becomes `ACTIVE` when the parity court is
+scheduled).
+
+### P19.1 — Stage 1: the anchor scoreboard
+
+**What.** One pinned harness, one sealed evaluation, two checkpoints: the anchor
+(0.8B) and the gap reference (2B), both **text path only**. Report per capability
+family, with the gap defined as reference-minus-anchor and its interval.
+**Why.** "Close half the gap" is meaningless without a measured gap, and a
+capability family has to be chosen before any mechanism is tuned against it.
+**Depends.** P19.0.
+**Acceptance evidence.** a receipt per checkpoint per family, the harness revision
+pinned, the sampling configuration recorded, and the gap with its interval. No
+selective reporting: every family the harness scores is reported.
+**Win condition.** a positive, non-degenerate gap on at least one family, with the
+family named in advance of any mechanism work.
+**Kill criterion.** If no family shows a gap larger than its interval, the
+program's premise ("there is a gap worth closing") is false and WS19 stops at
+stage 1.
+**Effort.** M. **Tier.** CANDIDATE.
+
+### P19.2 — Stage 2: grafted token-addressed memory
+
+**What.** An n-gram/­suffix-addressed lookup memory grafted onto the frozen anchor
+text path, admitted by the ledger criteria of P11.3 (verified novelty, measured
+admission), with the table's rows inside the per-token union.
+**Why.** It is the cheapest capacity that does not consume FFN width, and the
+anchor leaves headroom under the ceiling (`docs/FRONTIER-TARGET.md` §6).
+**Depends.** P19.0, P19.1. Prior art is explicit and must be the comparison set:
+Engram, Memory Grafting, SCONE (the same work as "Scaling Embedding Layers"),
+Lngram and NGM — including the **training-free** NGM, which sets the low bar.
+**Acceptance evidence.** audited ≤ 1e9 unique active on every token, bytes per
+token, scoreboard delta against the stage-1 anchor, and the table's own parameters
+counted; a parameter-matched dense-adapter control at equal union.
+**Win condition.** any family gain with the ceiling still satisfied, at a measured
+byte cost.
+**Kill criterion.** If the best admission policy does not beat both the
+parameter-matched dense adapter and the training-free NGM baseline at equal
+unique-active, memory work at this size stops and the result is reported.
+**Effort.** L. **Tier.** CANDIDATE.
+
+### P19.3 — Stage 3: retrofitted loop (a reproduction, not a novelty)
+
+**What.** A weight-tied recurrent block over the middle layers, with an
+identity-preserving one-loop path and a re-entry bridge, one loop count fixed for
+the claim, and a compute-matched control.
+**Why.** Rows 172, 179 and 185 of `docs/PRIOR-ART-AND-NOVELTY.md` publish this
+mechanism and its accounting discipline. The stage exists to have a **local,
+audited** loop on our anchor, not to claim looping.
+**Depends.** P19.0, P19.1.
+**Acceptance evidence.** the compute-matched control (per-token FLOPs,
+non-embedding parameters and KV-cache bytes matched), the loop-1 non-inferiority
+test, and the scoreboard delta.
+**Win condition.** loop-1 non-inferior and a positive delta at matched compute —
+i.e. the published result reproduces here.
+**Kill criterion.** If loop-1 is not non-inferior, or the delta at matched compute
+is not positive, stop: nothing downstream (P19.4) can be interpreted on a loop
+that does not work, and the negative is recorded.
+**Effort.** XL. **Tier.** CANDIDATE.
+
+### P19.4 — Stage 4: per-pass memory (the one narrow novelty)
+
+**What.** The stage-2 table, read **inside every recurrent pass**, with the read
+counted per token, against the factorial that the literature says is required:
+(a) loop × per-pass memory, (b) loop × read-once-per-token memory, (c) no loop ×
+read-once, (d) no loop × per-pass (degenerate control).
+**Why.** `docs/PRIOR-ART-AND-NOVELTY.md` §17 finding 3 states the residual gap
+precisely and finding 2 states the nearest published factorial (row 183). This is
+the only stage whose result could support a novelty sentence, and it is a
+falsification test first.
+**Depends.** P19.2, P19.3.
+**Acceptance evidence.** the four arms from one harness, one seed at this stage,
+audited union and bytes per token per arm, and the paired comparison (a) vs (b) at
+equal unique-active.
+**Win condition.** (a) beats (b) by more than the interval, with the ceiling
+satisfied. Nothing weaker counts.
+**Kill criterion.** If (a) does not beat (b), the novelty claim is withdrawn
+permanently, the negative is published, and the program continues only on the
+reproduction track (stage 5 may still be measured; the claim in stage 6 may not).
+**Effort.** XL. **Tier.** CANDIDATE.
+
+### P19.5 — Stage 5: NVMe serving of the memory
+
+**What.** Serve the table from NVMe through the existing store and simulator path:
+positional reads, checksum verification, a prefetch policy validated against
+replay, and a measured latency distribution at the claim's context length.
+**Why.** A memory that only fits in RAM is not the claim; bytes per token and
+p95 latency are what make the operating point honest, and the repository already
+owns the instrument (`docs/STORAGE.md`, `docs/SIMULATOR.md`).
+**Depends.** P19.2, §19 (WS14) runtime measurements.
+**Acceptance evidence.** measured p50/p95 latency and bytes per token from the
+real runtime on this machine, plus the simulator's held-out replay validation in
+the same receipt. Simulated numbers labelled simulated, measured labelled
+measured, never mixed in one table.
+**Win condition.** the served configuration completes the stage-1 harness inside a
+stated wall-clock budget with the audit still satisfied.
+**Kill criterion.** If serving the memory is slower than running the 2B reference
+on the same hardware, the serving claim is withdrawn and the result is reported as
+a negative.
+**Effort.** L. **Tier.** CANDIDATE.
+
+### P19.6 — Stage 6: spend headroom and the claim
+
+**What.** The claim run: three seeds, the winner of stages 2–5 (or the best
+reproduction if stage 4's kill fired), the stage-1 harness, and one headline
+sentence per capability family.
+**Why.** A frontier claim needs replication and a ceiling audit on the same
+artifacts; three seeds at this stage only, because three seeds per stage would
+spend the disk and GPU budget on noise.
+**Depends.** P19.1–P19.5 (or their recorded negatives).
+**Acceptance evidence.** three seeds; audited ≤ 1e9 unique active **on every
+token**; the scoreboard with the gap closure; bytes per token; and the teacher-cache
+receipt that funded it.
+**Win condition.** see "Win condition, as registered" below.
+**Kill criterion.** If any of P19.2–P19.5's win conditions failed, the three-seed
+spend does not happen; the negatives are the result. No stage may be re-run with a
+post-hoc-chosen family.
+**Effort.** XL. **Tier.** CANDIDATE.
+
+### Win condition, as registered
+
+1. **Audited** ≤ 1e9 unique active on **every** token, by the P19.0 auditor, not
+   by an element sum.
+2. **Beat the target base model** on **one pinned harness** (the stage-1 harness,
+   frozen before any mechanism was tuned).
+3. **Close at least half** of the measured 0.8B→2B gap on **one capability
+   family**, with the family named at stage 1.
+4. **Stretch:** pass the 1.2B model (`LiquidAI/LFM2.5-1.2B-Instruct`, the verified
+   id — the bare `LFM2.5-1.2B` does not exist) on the same harness.
+5. **Three seeds at the claim stage only.**
+
+### Honest risks, registered
+
+1. **The anchor's hybrid needs kernels the runtime does not have.** Gated DeltaNet
+   (convolution state, delta-rule update), partial/mRoPE and the fused output gate
+   are absent from `crates/selvedge-runtime/src/kernels.rs`. P19.0 is the whole
+   risk and it is not priced in any stage below it.
+2. **Per-pass memory may not beat shared-key memory.** Row 183 reports that
+   *repeated memory rereading* alone crosses the grokking barrier, and row 179
+   reports that sharing a KV cache across passes *improves* quality. If the effect
+   is the rereading rather than the key, stage 4's arm (a) will tie arm (b) and the
+   novelty claim dies. That is the expected failure mode, not a surprise.
+3. **n-gram memory may help less at depth.** The anchor's text path is 24 layers
+   with attention on only six of them; the lookup-memory works report gains in
+   settings that are not this shape. A null at stage 2 is informative and must be
+   reported as such.
+4. **The ceiling arithmetic must be re-verified per token.** MTP and the vision
+   tower change the executed set, not just the total; §6 of
+   `docs/FRONTIER-TARGET.md` prints both variants, and only the ledger can decide
+   which one a given run actually executed.
+5. **Two of the stage mechanisms are published, with numbers.** Looping (185) and
+   retrofitting (172) are reproductions. Any sentence in a future report that
+   presents them as SELVEDGE mechanisms is a defect against §17 finding 1.
+6. **Licences differ across the ladder.** The anchor is Apache-2.0; the 1.2B
+   stretch model is under the LFM Open License v1.0; `gemma-3-1b-it` is gated under
+   Google's terms and is a reference only. Weight redistribution needs legal
+   review before it happens.
+7. **The teacher-cache budget changed, and it changed for a measured reason.** The
+   proposal budgeted "190 GB" of teacher top-k logits. The disk measurement in
+   `docs/FRONTIER-TARGET.md` §7 shows that figure does not fit with the program's
+   own headroom rule, and that the largest configuration which does fit is smaller
+   by a factor of roughly two and a half. **Registered budget: the recommendation
+   printed in §7** — 0.25B tokens at k = 32 as the primary, with 0.1B tokens at
+   k = 64 as the fidelity arm; both byte counts are generated there and must be
+   re-derived (not re-typed) before each stage. Before that budget is spent, the
+   three cheaper published routes must be run: SPEC-Distill's offline trajectory
+   pool, SDPO's self-teacher, and a parameter-matched dense distillation control.
+8. **The claim's instrument is the auditor, and the auditor is new code.** Until
+   P19.0's fail-closed tests exist, every "audited" number in this program is a
+   header sum wearing an auditor's name.
+
+**Distance to the claim, stated honestly.** Six stages, one of which (P19.0) is
+XL and blocking, one of which (P19.4) is expected to fail, and a claim that
+requires a measured gap that does not yet exist. No stage has been started.
+
+## 25. WS20 — The stop list, and what survives it
+
+**Rule.** A stop list is a registration too: it prevents the next session from
+re-deriving the same negative under a new name. Every item here is stopped for a
+stated reason with a row number, not for lack of interest.
+
+### 25.1 Stopped
+
+| item | why it stops here | evidence |
+| --- | --- | --- |
+| **Per-token shard selection** (the current T2/selection line) | it produced its verdict; the frontier program does not re-open it. Its instrument stays, its experiment does not run again | `results/T2-VERDICT.md`, `results/REPORT.md` |
+| **Utility-trained routers** | the published diagnostic says the trained router is *uninformative exactly on the fragile tokens* that decide hard reasoning; training another one optimises the easy majority | `docs/PRIOR-ART-AND-NOVELTY.md` row 186 |
+| **Specialist-bank scaling** | at matched active parameters, expert size tracks active parameters only, and shared/heterogeneous/load-balancing choices have small effects; the systematic study says the bank is not where the win is | rows 187, 193 |
+| **New mechanism pre-registrations** | nothing new is registered until P19.4 reports. Registering more mechanisms now is the breadth-without-attribution failure P12.16 names | §0.2, P12.16 |
+| **The Rust repair court at this model size** | its decisive experiment needs an executor for the anchor that does not exist yet (P19.0), and its effect was measured at 0.6B; at the anchor it would duplicate the stage-1 harness spend for little marginal information. It re-opens only if P19.1 finds no gap on any family — because then the repair question is the remaining one | P18.4, P19.0 |
+
+### 25.2 Kept
+
+| item | why it survives |
+| --- | --- |
+| **Ledger admission (P11.3)** | every grafted row must pass a verified-novelty admission test; this is what keeps stage 2 from becoming a frequency table |
+| **The store (`docs/STORAGE.md`)** | stage 5 needs positional reads, checksums and a measured residency path; the instrument exists and is calibrated |
+| **The simulator (`docs/SIMULATOR.md`)** | the only honest way to test a prefetch policy before serving it; its replay validation is the guard against a simulated number becoming a claim |
+| **The runtime (`docs/RUNTIME.md`)** | P19.0 extends it; the bitwise parity court is the reason its numbers are quotable |
+| **Receipts** | identity (`scripts/check-commit-identity.sh`), generated numbers (`scripts/perf_numbers.py`), and the court receipts under `results/courts/`. A claim without a receipt is not a claim in this program |
+| **The two-column rule (P14.6)** | verified correctness and reference-continuation likelihood stay separate in every stage-6 table |
+| **The anti-pattern guard (P18.12)** | no cache-policy win as a neural win, no neural win as a system win; stage 5 makes this rule load-bearing for the first time |
+
+### 25.3 What WS20 does not do
+
+It does not delete the stopped items' receipts, and it does not renumber anything.
+An item stopped here keeps its P-number and its history; if it re-opens, it
+re-opens under its own number with a new registration.

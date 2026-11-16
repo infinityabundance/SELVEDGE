@@ -3281,3 +3281,140 @@ so.
 - No claim about the arms' ability to write code: the selection formats measure
   ranking, not generation.
 - No change to the T2 verdict, the v1 window, v4, or any historical receipt.
+
+## 2026-11-16 — S32: the frontier target verified, the literature re-read, the program registered
+
+### What ran
+
+Verification only: no training, no model execution beyond the one refused
+accounting call, and no change to any registered T2 or verdict receipt.
+
+1. **Model identity, over the network, in the oracle court** (`--net`,
+   `SELVEDGE_MEM=4g`): `scripts/s32_frontier_models.py probe` resolved twelve
+   candidate ids through the Hub API, pinned each to the returned commit SHA,
+   listed every file at that SHA with its byte count and LFS oid, fetched and
+   hashed every small file (config, tokenizer, generation config, LICENSE, README,
+   preprocessor), and accounted **every tensor from the safetensors header by
+   HTTP range read** — no checkpoint was downloaded to count it. Receipts:
+   `results/frontier-models/20261116-probe-p{1,2}.json`.
+2. **One checkpoint fetched and hash-verified**
+   (`20261116-fetch-qwen35-08b.json`): the single safetensors shard's SHA-256
+   equals the Hub's LFS oid, and the config/tokenizer/vocab files were verified
+   the same way.
+3. **Accounting and ceiling arithmetic** (`20261116-ceiling.json`): per-model
+   text/vision/MTP split, FFN vs always-active, layer-type counts, and the
+   headroom to the 1e9 ceiling.
+4. **Disk arithmetic** (`20261116-disk.json`): filesystem free bytes, the
+   teacher-cache formula at every requested token/k pair, the largest fitting
+   configuration, and the checkpoint byte counts.
+5. **`selvedge inspect-model` on the real checkpoint**, in the rust court. It
+   failed closed: the auditor supports `model_type == "qwen3"` and a top-level
+   `hidden_size`; Qwen3.5 nests its language config under `text_config`.
+   Receipt `results/courts/rust-20261116T181516Z-5237e7.json`.
+6. **Literature, four fetch rounds** (`--net`, `SELVEDGE_MEM=2g`):
+   21 of the first round's 30 Semantic Scholar queries returned 429, so the
+   documented arXiv fallbacks were used in rounds 26–28. Receipts:
+   `results/prior-art/prior-art-fetch-20261116-round2{5,6,7,8}-ws19-*.jsonl`.
+
+### What it decided
+
+- **The anchor exists and is a hybrid, not a dense transformer.**
+  `Qwen/Qwen3.5-0.8B` at
+  `2fc06364715b967f1860aea9cf38778875588b17`, Apache-2.0. Its configuration and
+  its tensor names agree with the vendor page on every checkable fact: 24 text
+  layers, Gated DeltaNet on eighteen of them, gated attention on the other six at
+  the stated interval, hidden 1024, vocab 248320, tied embeddings (no
+  `lm_head.weight` exists), and one MTP layer. The vendor's "sparse
+  Mixture-of-Experts" sentence is **contradicted** by the 0.8B checkpoint: every
+  layer is a dense SwiGLU MLP.
+- **The "~752M" claim is right about the text tower and wrong about the model.**
+  Text tower 752,393,024 elements; the checkpoint is 873,438,784 because it also
+  carries a vision tower (100,592,896) and an MTP head (20,452,864). The vendor
+  page prints neither — it says "0.8B". Both numbers are generated in
+  `docs/FRONTIER-TARGET.md` §4.
+- **One named model does not exist.** `LiquidAI/LFM2.5-1.2B` returns HTTP 401 with
+  the Hub's "Invalid username or password"; the search recorded in the receipt
+  lists the closest verified alternatives, and the program's stretch model is
+  `LiquidAI/LFM2.5-1.2B-Instruct` (verified, **LFM Open License v1.0**, not
+  Apache).
+- **`google/gemma-3-1b-it` cannot be audited without accepting Google's terms**
+  (gated, weight range read returns 401). It stays a reference.
+- **The teacher-cache budget the plan proposed does not fit this machine.** The
+  proposal's 190 GB of top-k logits exceeds the free space the disk receipt
+  records, by a factor of roughly two and a half. The largest configuration that
+  fits with the program's own headroom is 0.25B tokens at k = 32; 0.1B tokens at
+  k = 64 is the fidelity arm. Both byte counts are generated in
+  `docs/FRONTIER-TARGET.md` §7.
+- **The loop mechanism is published, with a number.** SMELT loops the middle half
+  of layers twice under matched per-token FLOPs, parameters and KV cache, up to
+  54B, and reports 6.8–18.0% training-FLOP savings on the compute-optimal
+  frontier; Retrofitted Recurrence installs recurrence into Qwen2.5-0.5B-Instruct
+  at two budgets with loop-1 non-inferiority. The registered program treats its
+  loop stage as a reproduction.
+- **The per-pass-memory novelty survives only in a narrow form.** The closest
+  published factorial (2606.20737) crosses loop recurrence with shared-memory
+  access and reports that *repeated memory rereading alone* crosses the grokking
+  barrier; the shared-memory-across-loops work (2610.02383) shares a KV cache;
+  RecurTrace (2609.03379) attends over loop time. None of them reads a
+  **token-addressed learned lookup table inside each pass**. That, and only that,
+  is the residual claim.
+- **Three names in the plan are homonyms or absent.** `MoLE (ICML 2025)` is not in
+  the ICML 2025 PMLR index under either plausible title; `MeSH` and `MeSA` return
+  only unrelated homonyms; `LongCat-Flash-Lite` is not a paper.
+
+### What was registered
+
+- `docs/PROGRAM-PLAN.md` §24 (WS19: six stages plus a blocking prerequisite, each
+  with what/why/deps/acceptance/win/kill/effort/tier), §25 (WS20: the stop and
+  keep lists), and the S32 tier-index row in §0.1.
+- The win condition as stated in §24: audited ≤ 1e9 unique active on every token,
+  beat the base model on one pinned harness, close at least half of the measured
+  0.8B→2B gap on one family, stretch past the 1.2B model, three seeds at the claim
+  stage only.
+- Risks, explicitly: the anchor's hybrid needs kernels the runtime does not have;
+  per-pass memory may tie shared-key memory; n-gram memory may help less at this
+  depth; the ceiling must be re-derived per token; and two of the stage
+  mechanisms are reproductions.
+- `docs/FRONTIER-TARGET.md` (new): the verified identity table, the architecture
+  facts, the auditor's refusal, the ceiling arithmetic and the disk arithmetic,
+  with every number generated from a receipt.
+
+### Verification performed (receipts, not prose)
+
+- `scripts/court commit_identity` — the branch's commits carry the operator's
+  identity, not an agent's.
+- `scripts/court perf_numbers` — all 64 new generated regions resolve from the
+  four receipts, with their declared stamps and revisions.
+- The Hub's own `safetensors.total` equals the header-derived total for every
+  model whose weights were readable (the probe records `matches_hub_total`).
+- The one downloaded shard's SHA-256 equals the Hub's LFS oid.
+
+### Failures and fixes
+
+**F1 — the probe's first classifier left a tensor unclassified.** The first pass
+could not place `model.embedding_norm.weight` (LFM2.5), so the receipt reported a
+non-zero `unknown` bucket instead of guessing. The rule was extended and the probe
+re-run; `20261116-probe-p1.json` is kept and `p2` supersedes it. **F2 — the first
+ceiling pass mis-bucketed LFM2's FFN**, because its tensors are named
+`feed_forward.*` rather than `mlp.*`; the effect was that the whole 1.2B model was
+counted as always-active. Fixed and re-run; the receipt records the corrected
+split. **F3 — the first generated-region layout failed the generator twice**:
+inline sentinels in a Markdown table cell and in a bullet are not recognised as
+regions, which the generator reported by name. The document was restructured so
+every region owns its line; the failure is recorded here because it is the kind of
+"looks generated" document that would otherwise pass review while printing
+nothing. **F4 — the manifest's declared revisions were stale for the re-run
+receipts**, which the generator also caught (`declared revision ... does not match
+receipt revision`); they are now read from each receipt rather than assumed
+constant.
+
+### What this entry does not claim
+
+- No capability number of any kind. No harness was run on any of these models.
+- No verified vendor benchmark number. The checkpoints' vendor tables are the
+  vendors' claims and are not in any receipt here.
+- No audited unique-active count. `inspect-model` refuses Qwen3.5, so every count
+  here is an exact element sum by component, not the auditor's union.
+- No novelty for the loop stage, and no completed novelty argument for per-pass
+  memory — only a narrowed residual claim and a falsification design.
+- No legal opinion on the LFM Open License.

@@ -774,3 +774,111 @@ transfer to a neural system, and P16.32 is `HYPOTHESIS` for that reason.
     Scholar rate limit and two Wikipedia 429s are recorded in the receipts; the
     affected rows were re-asked elsewhere or left `PARTIAL`/`UNSUPPORTED` with the
     queries named. No row in §14 rests on a response the script did not record.
+
+## 16. Verification table — WS19 frontier-program works (fifth pass, 2026-11-16)
+
+The proposed frontier program (`docs/PROGRAM-PLAN.md` §24) names 27 works. This
+pass fetched them in four rounds, all recorded:
+`results/prior-art/prior-art-fetch-20261116-round25-ws19.jsonl` (first pass),
+`...-round26-ws19-arxiv.jsonl` (documented arXiv fallbacks),
+`...-round27-ws19-names.jsonl` (name-shape probes) and
+`...-round28-ws19-venues.jsonl` (venue probes).
+
+Round 25 asked Semantic Scholar first; **21 of its 30 queries returned HTTP 429**
+and are recorded as 429, not as absence. Rounds 26–28 re-asked each name against
+arXiv's Atom API, which is the procedure §9 already prescribes.
+
+**Counts for this pass.** 22 new rows below, plus 5 carried from earlier passes
+(`Engram` row 4 `PARTIAL`, `Memory Grafting` row 59 `VERIFIED`, `MoSE` row 115,
+`MoRE` row 116, `GMoE` row 117, both `VERIFIED`).
+
+- `VERIFIED`: 17 new (rows 171, 172, 173, 177, 178, 179, 180, 183, 185, 186, 187,
+  188, 189, 190, 191, 192, 193) — **three of these are verified in mechanism but
+  not in venue**: 172 (NeurIPS 2025), 173 (NeurIPS 2025), 191 (ICLR 2026). The
+  arXiv/ACL records do not state those venues.
+- `PARTIAL`: 2 new (176, 184).
+- `UNSUPPORTED`: 3 new (175, 181, 182).
+- Merged identity: the plan lists `SCONE` and "Scaling Embedding Layers in
+  Language Models" as two works; they are **one** (row 173).
+
+| # | name in the plan | record | status | recorded evidence | what it actually reports, and the residual |
+| ---: | --- | --- | --- | --- | --- |
+| 171 | **Ouro / Scaling Latent Reasoning via Looped Language Models** | arXiv **2510.25741v6** ("Scaling Latent Reasoning via Looped Language Models") | **VERIFIED** | abstract: "We present and open-source **Ouro**, named after the recursive Ouroboros, a family of pre-trained **Looped Language Models (LoopLM)**" with "(i) iterative computation in latent space, (ii) an **entropy-regularized objective for learned depth allocation**, and (iii) scaling to **7.7T tokens**"; "Ouro **1.4B** and **2.6B** models". The family is independently named in row 179's neighbour (`Cross-Loop Query Handoff`, arXiv 2610.34639: "Ouro-1.4B and Ouro-2.6B") | a pretrained looped LM family with learned depth allocation. It adds **no token-addressed memory**; its loops reuse the model's own weights, and the analyses of it study loop-to-loop attention handoff and KV-cache error |
+| 172 | **Retrofitted Recurrence (NeurIPS 2025)** | arXiv **2608.11233v1**, "Retrofitting Recurrent Depth into a Pretrained Language Model: Installation, Extrapolation, Transfer, and Retention at Two Parameter Budgets" | **VERIFIED** in mechanism, **PARTIAL** in venue | abstract: "Qwen2.5-0.5B-Instruct is split into a **Prelude**, a **weight-tied Recurrent Block**, and a **Coda**, with an **identity-preserving one-loop path** and a **re-entry bridge** on later loops. At loop 1 the retrofit remains **non-inferior to its base on a preregistered ARC battery**"; "installs at two budgets: **6M trained parameters over frozen base weights and 180M**". The fetched record does not state NeurIPS 2025 | the retrofit recipe and, critically, its **honest baseline**: a retrofit must first be *non-inferior at one loop*. P19.3 below is a reproduction of this recipe at our anchor, not an invention |
+| 173 | **SCONE (NeurIPS 2025)** — and, separately in the plan, "**Scaling Embedding Layers in Language Models**" | arXiv **2502.01637v3**, "Scaling Embedding Layers in Language Models" | **VERIFIED** in mechanism, **PARTIAL** in venue; **one work, not two** | abstract: "We propose **SCONE** (**S**calable, **C**ontextualized, **O**ffloaded, **N**-gram **E**mbedding) ... retains the original vocabulary while introducing **embeddings for a set of frequent n-grams** ... learned with a separate model during training. After training, embeddings are **precomputed and stored in off-accelerator memory**; during inference, querying them has minimal impact on latency". NeurIPS 2025 is not stated in the fetched record and the Semantic Scholar venue query returned 429 | the exact mechanism the "grafted memory" stage proposes: n-gram-addressed embeddings stored off-device and read per token. The plan must cite **one** row for both names |
+| 175 | **MoLE (ICML 2025)** | two distinct works, neither with the stated venue | **UNSUPPORTED** as named | arXiv `ti:"MoLE"` returns homonyms (moles the animal, *MOLE: Detecting Insider Threats in AI Agents*). The plausible mechanisms are separate papers: **Mixture of LoRA Experts** and **MoLE: Mixture of Latent Experts for Complementary Visual Reasoning**. An HTML grep of the **ICML 2025 PMLR v267 index** for either title matched **nothing**; the Semantic Scholar venue query returned 429 | there is no located "MoLE (ICML 2025)". If the plan means LoRA-expert mixtures, cite those by title; if it means layer-wise expert selection, say which paper |
+| 176 | **N-gram Embedding / LongCat-Flash-Lite** | n-gram-embedding lineage verified; LongCat-Flash-Lite **not located as a paper** | **PARTIAL** | `ti:"N-gram Embedding"` returns *Low-Bit N-Gram Embeddings for Language Models*, *Modelling Intertextuality with N-gram Embeddings*, *Character n-gram Embeddings to Improve RNN Language Models*, plus SCONE (row 173). `all:"LongCat"` returns *LongCat-Flash Technical Report*, *LongCat-Next*, *LongCat-Video*, *LongCat-DeepResearch*; `all:"Flash-Lite"` returns no LongCat work | the n-gram-embedding claim is supported by several works; the **"LongCat-Flash-Lite" attribution is unsupported**. LongCat technical reports exist but none is retrieved as an n-gram-memory study |
+| 177 | **Lngram** | arXiv **2605.24869v1**, "Lngram: N-gram Conditional Memory in Latent Space" (a v2, "Latent N-Gram Memory with Interpretable Discrete ...", also returned) | **VERIFIED** | abstract: "**Engram partially decouples retrieval from the backbone**, but its token-based keys remain tied to text tokenization and hash compression. We propose **Lngram**, a latent-space conditional memory module that **learns discrete symbols directly from hidden states** and performs N-gram lookup over these symbols. This design removes the dependence on tokenizer IDs" | a **token-addressed-in-latent-space** lookup memory, single pass. It is the closest *memory* prior art to our proposal and a direct competitor at the grafted-memory stage |
+| 178 | **NGM** | arXiv **2605.16893v2**, "NGM: A Plug-and-Play Training-Free Memory Module for LLMs" | **VERIFIED** | abstract: "we propose **N-gram Memory (NGM)**, a **training-free, plug-and-play** module that **repurposes a backbone model's pretrained token embedding space as memory**. NGM consists of a **Causal N-Gram Encoder** and a **Cosine-Gated Memory**" | a training-free n-gram memory that needs no new parameters. It sets a hard baseline for P19.2: a trained table must beat this at equal union |
+| 179 | **The Surprising Effectiveness of Shared Memory in Looped Transformers** | arXiv **2610.02383v1** | **VERIFIED** | abstract: "Each recursion ... writes its own key-value cache, so memory still grows with compute ... We pretrain looped language models to **share memory: only the first recursion writes a cache, and later recursions read it** while keeping a short window of their own. Surprisingly ... sharing memory **does not cost quality and instead improves it**. At **150M-1B parameters**, our Looped Prediction Transformer ..." | shared **KV cache** across passes — not a token-addressed lookup table. It is the nearest *structural* neighbour to "read one memory across passes" |
+| 180 | **RecurTrace** | arXiv **2609.03379v3**, "RecurTrace: Adaptive Latent Reasoning with Loop-Time Memory" | **VERIFIED** | abstract: "Each iteration sees only the previous output and cannot directly access earlier computations ... **Loop Memory Attention**" lets the loop read its own **trajectory**; a **fixed loop count wastes depth** on easy inputs | memory over **loop time** (the trajectory), not over tokens. It is the second-nearest neighbour and the direct competitor for "per-pass memory" if the key is pass-indexed |
+| 181 | **MeSH** | name search returns homonyms only | **UNSUPPORTED** | `ti:"MeSH"` returns mesh-geometry papers; `all:"MeSH" AND all:"expert"` returns *MME: Mixture of Mesh Experts*, *MESH: Memory-Efficient Sinkhorn Optimization for Mixture-of-...*, meshing algorithms. No shared-expert mechanism with that name | must not be cited. If the intended mechanism is shared experts, rows 115–117 and 193 cover the verified literature |
+| 182 | **MeSA** | name search returns homonyms only | **UNSUPPORTED** | `ti:"MeSA"` returns stellar-evolution MESA models; `all:"MeSA" AND all:"mixture"` returns *MESA: Improving MoE Safety Alignment via Decentralized Expert ...*, *MESA: Effective Matching Redundancy Reduction ...* | must not be cited |
+| 183 | **Repeated Shared Access Enables Grokking** | arXiv **2606.20737v2**, "Repeated Shared Access Enables Grokking, but Edit Propagation Depends on an Addressable Memory" | **VERIFIED** | abstract: "a **2x2 grid that crosses loop recurrence with shared-memory access**: a dense transformer (Dense), a looped transformer (Loop), a dense backbone with shared memory (Dense+Mem), and a looped backbone with shared memory (**loop-memory coupling, LMC**). The two factors dissociate. For learning, **both routes to repeated shared access — looped recomputation and repeated memory rereading — cross the out-of-distribution (OOD) grokking barrier that Dense fails** ... Edit propagation depends on an addressable memory" | the **closest published factorial** to our P19.4 design, and the strongest threat to its novelty. Its "shared memory" is a shared **state/read** route; the paper does not test a **token-addressed learned lookup table read inside each pass**. Its second finding (edit propagation needs an *addressable* memory) is evidence *for* the direction, not prior art |
+| 184 | **On-Policy Distillation (Thinking Machines)** | page `https://thinkingmachines.ai/blog/on-policy-distillation/` | **PARTIAL** | fetched: title "*On-Policy Distillation - Thinking Machines Lab*", meta description "*On-policy, dense supervision is a useful tool for distillation*". The page serves **no abstract and no body text** to this fetcher | the recipe's existence is verified as a titled page; **no number reported in it may be quoted** from this ledger. If the plan needs its quantitative claims, someone must read the page and record the numbers with the access date |
+| 185 | **SMELT** | arXiv **2609.01343v3**, "SMELT: Scaling Laws for Compute-Matched MoE Looped Transformers" | **VERIFIED** | abstract: "most evaluations compare at fixed model size, **conflating architectural advantage with extra FLOPs** ... while closely **matching per-token FLOPs, total non-embedding parameters, and KV cache** ... **SMELT** (Sparse MoE Transformer, middle layers **Loop Twice**), which loops the **middle half** of layers twice ... scales across four sizes up to **54B** ... a separate Chinchilla-style scaling law for each architecture. SMELT's loss drops faster with compute, **saving 6.8–18.0% of training FLOPs on the compute-optimal frontier** ... largest on **Code** ... the second visit **reduces the attention sink**" | the compute-matched loop win is **already published, with a number and a scaling law**. P19.3 is a reproduction of SMELT's accounting discipline on our anchor; the *claim* stage must compare against it, and cannot present looped recurrence as new |
+| 186 | **When Are Experts Misrouted? (counterfactual routing)** | arXiv **2605.07260v1** | **VERIFIED** | abstract: "compare each **standard route against sampled equal-compute alternatives** for the same token and score each by **the next-token probability it assigns to the realized token in a verified reasoning trajectory** ... the standard router is **well-aligned with route utility on confident tokens but uninformative on the fragile tokens** that drive hard reasoning" | the diagnostic exists. The plan's WS20 stop list removes utility-trained routers; this paper is why the *diagnostic* is kept and the *router* is not |
+| 187 | **Path-Constrained MoE** | arXiv **2603.18297v2** | **VERIFIED** | abstract: views MoE "through the lens of **expert paths** — the sequence of expert selections a token makes across all layers"; despite N^L possible paths, "tokens in practice **cluster into a small fraction of paths**"; "the vast majority of paths remain unexplored" | constraining paths across layers. Registered as stopped work in WS20: its own framing is a statistical-efficiency argument, not a capability claim |
+| 188 | **ReMoE** | arXiv **2412.14711v2** | **VERIFIED** | abstract: "**ReLU** as the router instead", "fully differentiable", drop-in replacement for TopK+Softmax, with methods to regulate sparsity and balance load | a routing mechanism. Not needed at the anchor's scale (dense), registered as stopped |
+| 189 | **Self-Distillation Policy Optimization (SDPO)** | PMLR **v306 hubotter26a**, "Reinforcement Learning via Self-Distillation" | **VERIFIED** | abstract: "**Self-Distillation Policy Optimization (SDPO)**, which converts tokenized feedback into a **dense learning signal without any external teacher or explicit reward model**. SDPO treats **the current model conditioned on feedback as a self-teacher** and distills its feedback-informed next-token predictions back into the policy ... Across scientific reasoning, tool use, and competitive programming on **LiveCodeBench v6**" | a self-teacher recipe that needs **no teacher logits**. It is the cheapest baseline for the claim stage and must be run before any teacher-cache spend is called justified |
+| 190 | **SPEC-Distill (EMNLP main 814)** | ACL Anthology **2026.emnlp-main.814**, "SPEC-Distill: Towards Efficient Speculative Distillation for Reinforcement Learning with Verifiable Rewards" | **VERIFIED** (the year probe is recorded: **2025**.emnlp-main.814 is a different paper, "Do Slides Help? ...") | abstract: "On-policy distillation (OPD) ... asks a larger teacher to score every student trajectory token by token, but this **inserts large-teacher forward passes into every RL step** ... **SPEC-Distill** ... runs it **once offline to build a reusable pool of expert trajectories**. During RL, the student treats these trajectories as **speculative drafts**, accepts a prefix under a lenience-controlled criterion, completes the response under its own policy, and is updated only by verifiable rewards with standard GRPO" | a **published alternative that deletes most teacher forward passes**. It is the direct competitor to a large teacher-logit cache and must be in the comparison set, not in a footnote |
+| 191 | **T1 tool-integrated verification (ICLR 2026)** | arXiv **2504.04718v2**, "T1: Tool-integrated Verification for Test-time Compute Scaling in Small Language Models" | **VERIFIED** in mechanism, **PARTIAL** in venue | abstract: small LMs "struggle with verification tasks requiring **memorization**, such as numerical calculations and fact-checking" even with distillation from larger verifiers; T1 is the proposed remedy | the mechanism exists. The ICLR 2026 venue is **not** in the fetched record; do not print the venue as verified |
+| 192 | **MoE-to-dense distillation** | arXiv **2605.28207v3**, "Pruning and Distilling Mixture-of-Experts into Dense Language Models" | **VERIFIED** | abstract: "**350 configurations**" on **Qwen3-30B-A3B**, "7 scoring, 5 grouping, and 2 magnitude scaling methods"; "the choice of **scoring method** is the most impactful"; "at matched parameter count, MoE-to-dense **outperforms dense-to-dense pruning by +6.3 pp** in average downstream accuracy after ..." (also DeepSeek-V2-Lite, GPT-OSS-20B) | the distillation route that competes with our "graft onto a dense anchor" route. It is a **baseline**, not a method to re-derive |
+| 193 | **Slicing and Dicing** | arXiv **2605.11689v1**, "Slicing and Dicing: Configuring Optimal Mixtures of Experts" | **VERIFIED** | abstract: "**over 2,000 pretraining runs** spanning models up to **6.6B total parameters**"; "performance consistently improves with total MoE parameters **even at extreme active expert parameter ratios like 128**"; "the optimal **expert size is nearly invariant** to total parameter count and **depends only on active parameter count**"; "shared experts, heterogeneous experts and load-balancing settings have **small effects**" | the systematic configuration study. Its "small effects" finding is one more reason WS20 stops specialist-bank scaling |
+
+## 17. Consequential findings from the fifth pass
+
+1. **The loop win is published, with a number.** SMELT (row 185) already loops a
+   shared block under matched per-token FLOPs, parameters and KV cache, at four
+   sizes up to 54B, and reports **6.8–18.0% training-FLOP savings on the
+   compute-optimal frontier**. Retrofitted Recurrence (row 172) already installs
+   recurrence into a pretrained model at two budgets and reports **non-inferiority
+   at one loop**. P19.3 is therefore a **reproduction of published recipes on our
+   anchor**, and the frontier claim may not include "looped recurrence" as a
+   novel mechanism. What remains claimable is the *combination* in finding 6.
+2. **The closest published factorial to the proposed novelty is row 183, and it
+   is close.** 2606.20737 crosses *loop recurrence* with *shared-memory access* in
+   a 2×2 and reports that **both looped recomputation and repeated memory
+   rereading** cross an OOD grokking barrier. Any plan text that says "nobody has
+   combined looping with memory" is **stronger than the record**.
+3. **The precise residual gap, stated narrowly.** In the fetched records, the
+   works that use a **token-addressed learned lookup table** (Engram row 4,
+   Memory Grafting row 59, SCONE row 173, Lngram row 177, NGM row 178) read it in
+   a **single forward pass**, and the works that **reuse one memory across
+   recurrent passes** (row 179: shared KV cache; row 180: loop-time attention;
+   row 183: shared-memory rereading) do **not** use a token-addressed lookup
+   table. The residual claim is therefore exactly: *a token-addressed conditional
+   memory table read inside every recurrent pass of a weight-tied loop, with the
+   read counted in the per-token unique-active union.* It is narrow, it is
+   falsifiable in a 2×2, and it is **not** "loop plus memory" in general. §8's
+   caveat still applies: this is a statement about published mechanism
+   descriptions that were fetched, not proof of absence.
+4. **Two "new" names in the plan are one work, and three are not works.**
+   `SCONE` is the method inside "Scaling Embedding Layers in Language Models"
+   (row 173) — one citation, two entries in the plan. `MoLE (ICML 2025)` (row
+   175), `MeSH` and `MeSA` (rows 181–182) resolve only to homonyms, and the ICML
+   2025 index does not contain a MoLE of either plausible kind. They must be
+   removed from any argument that depends on them.
+5. **LongCat-Flash-Lite is not a paper.** The LongCat technical reports exist;
+   none was fetched as an n-gram-memory study (row 176). The n-gram-embedding
+   claim survives on SCONE and Lngram, not on LongCat.
+6. **Three works already delete the teacher compute the plan budgets for.**
+   SPEC-Distill (row 190) moves the teacher **offline into a trajectory pool**;
+   SDPO (row 189) removes the external teacher entirely by self-distilling on
+   feedback; MoE-to-dense (row 192) distils a *different* architecture into a
+   dense one at matched parameters with a measured **+6.3 pp**. Before any
+   teacher-logit cache is funded, these three are the comparison set — and they
+   are cheaper than the cache.
+7. **The plan's own stop list is now evidence-backed.** Rows 186–188 and 193
+   support stopping utility-trained routers (186: the router is uninformative
+   exactly on the tokens that matter), path-constrained routing (187) and
+   specialist-bank scaling (193: shared experts and heterogeneous sizing have
+   small effects; expert size tracks *active* parameters only).
+8. **The On-Policy Distillation page yields no numbers.** Row 184 is `PARTIAL`:
+   the page was fetched and its title and description recorded, but no abstract or
+   body was served, so **no number from it may be cited**. Anyone who needs its
+   numbers must record them in a new receipt with the access date.
+9. **A 429 is still not a verdict.** 21 of round 25's 30 Semantic Scholar queries
+   were rate-limited; every affected name was re-asked through arXiv (rounds
+   26–28) and the queries are in the receipts. The three `UNSUPPORTED` rows are
+   supported by *name-shape* probes returning homonyms, not by a rate limit.

@@ -1,26 +1,37 @@
 # SELVEDGE results — honest current state
 
-Status: **M2 complete; M3 part 1 (storage) measured; M3 part 2 (trace simulator)
-implemented and validated on held-out arms; the T2 trained branch is
-running.** The pre-registered M1 frontier and the M2 per-token
-selector/oracle experiment have been measured. M1 rejected static whole-group
-omission. M2 rejects the inference-only, post-hoc per-token selection branch:
-even a causally unavailable per-token oracle at the compliant budget is far
-outside the registered usable tier, and no causally available selector beats
-activation magnitude at matched realized active parameters. The reports are
-`results/M1-FRONTIER.md` and `results/M2-SELECTORS.md`; the registered contract
-is `docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendments A3 and A4).
+Status: **T2 is decided (`error_direction_not_supported`); the capability court's
+calibration pass is published; the next phase is registered, not started.** The
+pre-registered M1 frontier and the M2 per-token selector/oracle experiment are
+measured. M1 rejected static whole-group omission. M2 rejects the inference-only,
+post-hoc per-token selection branch: even a causally unavailable per-token oracle
+at the compliant budget is far outside the registered usable tier, and no causally
+available selector beats activation magnitude at matched realized active
+parameters. The reports are `results/M1-FRONTIER.md` and
+`results/M2-SELECTORS.md`; the registered contract is
+`docs/EXPERIMENT-CONTRACT.md` (M1 and M2 sections, amendments A3 and A4).
 The correction of record for physical accounting is `docs/M2-CORRECTION.md`.
-The first *trained* branch — the T2 five-arm capacity matrix — is running; see
-"T2, in progress" below. Its result is not claimed here. The P12.1 audit of the
-routed-overflow mask found a real defect in the dispatcher that produced every
-routed arm; it is corrected behind a default-off flag so the registered
-comparison is unchanged, and it is reported separately in
-`docs/P12.1-DISPATCH-AUDIT.md`.
+
+The trained branch has since reported: the five-arm capacity matrix (T2) is
+**negative** on its registered outcome — error-directed routing is not supported at
+this scale, no bank scaling follows, and the verdict is `results/T2-VERDICT.md`
+with its receipt `results/t2-verdict.json`. The capability phase that followed
+found and published a response collapse in its own instrument, registered
+instrument v2, and ran the D/X likelihood-selection pilot; the calibration
+shortfall is published rather than absorbed (S29–S30, `docs/WORK-LOG.md`). No
+capability comparison between arms is claimed, and the five-arm comparison could
+not be decided at the available item count.
+
+The next phase — a frontier program on a hybrid 0.8B anchor — is **registered and
+unstarted**: `docs/PROGRAM-PLAN.md` §24 (WS19) and §25 (WS20), with the verified
+model identity, architecture facts, auditor refusal and disk arithmetic in
+`docs/FRONTIER-TARGET.md`. Its first stage is blocked on a toolchain extension
+(P19.0) that does not exist yet.
 
 This file states what is established, with the receipt that establishes it, and
-what is not. It is not a benchmark report: no latency, throughput or quality
-number has been measured, and none is claimed.
+what is not. It is not a benchmark report for the frontier phase: no latency,
+throughput or quality number has been measured for that program, and none is
+claimed.
 
 ## Established
 
@@ -720,3 +731,45 @@ What is not claimed: no GPU kernel, no GPU number, no quality result for the
 approximate path, and no claim that the manifest's declaration is honest — the
 witness proves equality with the declaration, and the declaration is a documented
 trust input.
+
+
+## M5 preview — the frontier target verified, and what the verification changed (S32)
+
+The next phase is registered, not started. `docs/PROGRAM-PLAN.md` §24 (WS19) is a
+six-stage frontier program on `Qwen/Qwen3.5-0.8B`, and §25 (WS20) is the explicit
+stop list that keeps the current lines from re-opening under new names.
+`docs/FRONTIER-TARGET.md` is the evidence: identity, revision, licence and
+per-tensor accounting for every candidate id, the architecture facts checked
+against the vendor page, the configuration and the actual tensor headers, and the
+disk arithmetic.
+
+Three findings changed the plan as proposed, and each is a receipt, not an
+opinion:
+
+1. **The anchor is not the model the plan described.** The "752M" figure is the
+   **text tower** of an 873M multimodal checkpoint (vision encoder plus an MTP
+   head account for the rest). The checkpoint is a hybrid: eighteen Gated DeltaNet
+   layers and six gated-attention layers, with tied embeddings and mRoPE. The
+   repository's auditor **refuses** it (`inspect-model` supports `qwen3` only), so
+   the instrument the claim depends on does not exist yet. That is registered as a
+   blocking prerequisite (P19.0), not as a footnote.
+2. **One named model does not exist**, and one licence is not what a plan would
+   assume: the bare `LFM2.5-1.2B` is absent (its verified siblings are named in the
+   receipt), the stretch model is `-Instruct` under the LFM Open License v1.0, and
+   `gemma-3-1b-it` is gated and unauditable without accepting Google's terms.
+3. **The teacher-cache budget was infeasible on this machine.** The proposal's
+   190 GB of top-k logits cannot be stored with the program's own headroom rule.
+   The budget is re-registered at the largest configuration that fits (0.25B tokens
+   at k = 32, with 0.1B at k = 64 as the fidelity arm), and the three cheaper
+   published teacher routes — SPEC-Distill's offline trajectory pool, SDPO's
+   self-teacher and a parameter-matched dense distillation — must be run first.
+
+The literature pass also narrowed the claim: the loop mechanism is published with
+a number (SMELT, compute-matched, up to 54B), and the nearest loop-plus-memory
+factorial is published too. The residual novelty is one sentence — a
+*token-addressed* lookup memory read *inside every recurrent pass* — and it is
+designed as a four-arm falsification, not as a result.
+
+What this section does not claim: no capability number, no harness run, no
+audited unique-active count, and no novelty. No training was started. The T2
+verdict and every registered receipt are unchanged.
