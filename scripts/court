@@ -10,6 +10,7 @@
 #   scripts/court python -m pytest tests
 #   scripts/court --net oracle -- python3 scripts/oracle/fetch_models.py
 #   scripts/court --gpu oracle -- python3 oracle/probe_oracle.py --json
+#   scripts/court --gpu eval -- python3 scripts/s34_anchor.py run --config ...
 #   scripts/court io -- fio --name=seq --filename=/work/target/io.bin ...
 #   scripts/court commit_identity
 #   scripts/court perf_numbers
@@ -107,6 +108,16 @@ case "$court" in
       exec "$court_runner" io "${flags[@]}" -- "$@"
     fi
     exec "$court_runner" io "${flags[@]}" -- "$@"
+    ;;
+  eval)
+    if (($# == 0)); then
+      exec "$court_runner" eval "${flags[@]}"
+    fi
+    if [[ "$1" == "--" ]]; then
+      shift
+      exec "$court_runner" eval "${flags[@]}" -- "$@"
+    fi
+    exec "$court_runner" eval "${flags[@]}" -- python3 "$@"
     ;;
   commit_identity)
     exec "$court_runner" commit_identity "${flags[@]}" -- "$@"

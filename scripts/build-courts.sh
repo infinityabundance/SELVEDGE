@@ -5,6 +5,7 @@
 #   scripts/build-courts.sh rust                 # build one, update only its lock entry
 #   scripts/build-courts.sh python
 #   scripts/build-courts.sh oracle               # torch/transformers teacher image
+#   scripts/build-courts.sh eval                 # lm-evaluation-harness evaluation image
 #
 # The oracle image is not part of the default build set: it is several
 # gigabytes and only the real-model path needs it.
@@ -49,8 +50,8 @@ if ((${#targets[@]} == 0)); then
 fi
 for target in "${targets[@]}"; do
   case "$target" in
-    rust | python | oracle) ;;
-    *) die "unknown target '$target' (expected rust|python|oracle)" 64 ;;
+    rust | python | oracle | eval) ;;
+    *) die "unknown target '$target' (expected rust|python|oracle|eval)" 64 ;;
   esac
 done
 
@@ -74,23 +75,62 @@ build_one() {
       # Digest-pinned by default: a tag alone is not a reproducible base.
       base_ref="${SELVEDGE_ORACLE_BASE:-python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b}"
       ;;
+    eval)
+      dockerfile="docker/Dockerfile.eval"
+      # Built on top of the oracle court image, which is pinned by image id in
+      # docker/IMAGES.lock. base_ref/base_digest are resolved below, after the
+      # lock has been read; there is no registry pull for this target.
+      base_ref=""
+      ;;
   esac
   if [[ "$key" == "oracle" ]]; then
     base_tag="3.12-slim-cu132"
+  elif [[ "$key" == "eval" ]]; then
+    base_tag="3.12-slim-eval"
   else
     base_tag="${base_ref##*:}"
   fi
 
-  printf 'build-courts: pulling base %s\n' "$base_ref" >&2
-  docker pull --quiet "$base_ref" >/dev/null || die "cannot pull base image $base_ref"
-  base_digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$base_ref" 2>/dev/null || true)
-  [[ -n "$base_digest" ]] || die "base image $base_ref has no registry digest"
+  if [[ "$key" == "eval" ]]; then
+    # The eval court must sit on the EXACT vendor stack the reference-parity
+    # receipts were produced with. That means: take the oracle image id recorded
+    # in the lock, verify the local image still hashes to it, and use it. A
+    # local image has no registry digest, so the lock's id is the pin.
+    local oracle_fields
+    oracle_fields=$(python3 - "$lock_file" <<'PY'
+import json, sys
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    lock = json.load(handle)
+entry = (lock.get("images") or {}).get("oracle") or {}
+print(entry.get("ref", ""))
+print(entry.get("id", ""))
+PY
+    ) || die "cannot read the oracle entry from $lock_file"
+    base_ref=$(printf '%s\n' "$oracle_fields" | sed -n 1p)
+    local oracle_recorded_id
+    oracle_recorded_id=$(printf '%s\n' "$oracle_fields" | sed -n 2p)
+    [[ -n "$base_ref" && -n "$oracle_recorded_id" ]] ||
+      die "the lock has no oracle image; run scripts/build-courts.sh oracle first"
+    if ! docker image inspect "$base_ref" >/dev/null 2>&1; then
+      die "oracle image '$base_ref' is not present; run scripts/build-courts.sh oracle first"
+    fi
+    base_digest=$(docker image inspect --format '{{.Id}}' "$base_ref")
+    [[ "$base_digest" == "$oracle_recorded_id" ]] ||
+      die "oracle image id $base_digest does not match the locked id $oracle_recorded_id"
+  else
+    printf 'build-courts: pulling base %s\n' "$base_ref" >&2
+    docker pull --quiet "$base_ref" >/dev/null || die "cannot pull base image $base_ref"
+    base_digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$base_ref" 2>/dev/null || true)
+    [[ -n "$base_digest" ]] || die "base image $base_ref has no registry digest"
+  fi
 
   inputs_hash=$(
     {
       cat "$repo_root/$dockerfile"
       if [[ "$key" == "oracle" ]]; then
         [[ -f "$repo_root/docker/requirements-oracle.txt" ]] && cat "$repo_root/docker/requirements-oracle.txt"
+      elif [[ "$key" == "eval" ]]; then
+        [[ -f "$repo_root/docker/requirements-eval.txt" ]] && cat "$repo_root/docker/requirements-eval.txt"
       else
         [[ -f "$repo_root/docker/requirements-court.txt" ]] && cat "$repo_root/docker/requirements-court.txt"
       fi
@@ -102,6 +142,7 @@ build_one() {
   local build_arg="RUST_BASE"
   [[ "$key" == "python" ]] && build_arg="PYTHON_BASE"
   [[ "$key" == "oracle" ]] && build_arg="ORACLE_BASE"
+  [[ "$key" == "eval" ]] && build_arg="EVAL_BASE"
   printf 'build-courts: building %s\n' "$tag" >&2
   docker build \
     --memory "$BUILD_MEM" \

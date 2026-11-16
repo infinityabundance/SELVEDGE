@@ -1,0 +1,62 @@
+# SELVEDGE evaluation court.
+#
+# One job: run an INDEPENDENT harness — EleutherAI lm-evaluation-harness — over a
+# frontier checkpoint with the same vendor stack the oracle court pins. The
+# harness is pinned by commit, not by tag, and the commit is recorded in the run
+# receipt together with the sha256 of every task yaml the run touched.
+#
+# Why a separate image instead of adding lm_eval to the oracle court: the oracle
+# court is the teacher-instrumentation boundary and its requirements are pinned
+# to a short list. Evaluation is a different instrument with a much wider
+# dependency set (datasets, scikit-learn, sympy, nltk). Two instruments, two
+# images, two locks; neither can silently widen the other.
+#
+# The base is the ORACLE COURT IMAGE, pinned by image id in docker/IMAGES.lock
+# and verified by scripts/build-courts.sh before this file is built. Building on
+# it rather than on python:3.12-slim is deliberate: the vendor stack
+# (torch/transformers/tokenizers) must be byte-identical to the one the
+# reference-parity receipts were produced with, and re-installing 6 GiB of CUDA
+# wheels a second time would only create an opportunity for them to drift.
+ARG EVAL_BASE
+FROM ${EVAL_BASE}
+
+# The harness commit. Change it only together with the pinned run config, and
+# rebuild: docker/IMAGES.lock then names a new image id.
+ARG LM_EVAL_COMMIT=d6de81643928d653435c431bae19945d41d32520
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+COPY docker/requirements-eval.txt /tmp/requirements-eval.txt
+
+RUN pip install --no-cache-dir --no-compile -r /tmp/requirements-eval.txt \
+    && rm -f /tmp/requirements-eval.txt
+
+# The harness source is kept in the image at a stable path so a run can hash the
+# task yaml files it actually used and print the exact commit. Installed with
+# --no-deps: every dependency is pinned above, so pip cannot rewrite the stack.
+RUN git clone --quiet https://github.com/EleutherAI/lm-evaluation-harness /opt/lm-evaluation-harness \
+    && git -C /opt/lm-evaluation-harness checkout --quiet "${LM_EVAL_COMMIT}" \
+    && pip install --no-cache-dir --no-compile --no-deps /opt/lm-evaluation-harness \
+    && test "$(git -C /opt/lm-evaluation-harness rev-parse HEAD)" = "${LM_EVAL_COMMIT}"
+
+# Fail the build if the pinned stack does not import together. The versions are
+# printed into the build log; the runtime probe writes them into a receipt.
+RUN python3 -c "import subprocess; print('lm_eval commit', subprocess.check_output(['git','-C','/opt/lm-evaluation-harness','rev-parse','HEAD'], text=True).strip())" \
+    && python3 - <<'PY'
+import lm_eval, torch, transformers, datasets, numpy, accelerate, math_verify
+print("lm_eval", getattr(lm_eval, "__version__", "unknown"))
+print("torch", torch.__version__, "cuda_runtime", torch.version.cuda)
+print("transformers", transformers.__version__)
+print("datasets", datasets.__version__)
+print("numpy", numpy.__version__)
+print("accelerate", accelerate.__version__)
+print("math_verify", getattr(math_verify, "__version__", "unknown"))
+PY
+
+ENV HF_HUB_DISABLE_TELEMETRY=1 \
+    HF_HUB_DISABLE_PROGRESS_BARS=1 \
+    TOKENIZERS_PARALLELISM=false \
+    PYTHONDONTWRITEBYTECODE=1 \
+    LM_EVAL_HARNESS_ROOT=/opt/lm-evaluation-harness
+
+WORKDIR /work

@@ -1,0 +1,138 @@
+{
+  "argv": [
+    "sh",
+    "-lc",
+    "cd /opt/lm-evaluation-harness && for f in lm_eval/tasks/mmlu_pro/_mmlu_pro.yaml lm_eval/tasks/mmlu_pro/_default_template_yaml lm_eval/tasks/gsm8k/gsm8k.yaml lm_eval/tasks/minerva_math/minerva_math500.yaml lm_eval/tasks/humaneval/humaneval.yaml lm_eval/tasks/ifeval/ifeval.yaml lm_eval/tasks/arc/arc_challenge.yaml lm_eval/tasks/triviaqa/default.yaml; do echo \"########## $f\"; cat \"$f\"; done"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "f2ea709c04479a47cb287a69451bf1219959bfb6788c1395e3b7589df63d08b9",
+  "container_name": "selvedge-eval-court-20261116T190059Z-ae2b88",
+  "court": "eval",
+  "duration_ms": 2884,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "memory_swap_bytes": {
+        "actual": 4294967296,
+        "expected": 4294967296
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T19:01:02Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "4g",
+    "memory_bytes": 4294967296,
+    "memory_swap": "4g",
+    "memory_swap_bytes": 4294967296,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/eval-20261116T190059Z-ae2b88.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache",
+    "/home/one/.cache/selvedge/hf/datasets:/datasets-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "441cbfa98955a6f432437dd3d9ce182708c8bec1",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T190059Z",
+  "started_utc": "2026-11-16T19:00:59Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

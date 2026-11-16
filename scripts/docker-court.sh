@@ -4,7 +4,7 @@
 # Usage:
 #   scripts/docker-court.sh <court> [flags] [-- argv...]
 #
-#   courts: rust | python | oracle | io | commit_identity | perf_numbers | wait
+#   courts: rust | python | oracle | eval | io | commit_identity | perf_numbers | wait
 #   flags:  --net            enable network (default: --network none)
 #           --gpu            pass the NVIDIA GPU (fails closed if unavailable)
 #           --host-root-ro   expose the host root read-only at /hostroot
@@ -60,7 +60,7 @@ usage() {
   cat <<'EOF'
 usage: scripts/docker-court.sh <court> [flags] [-- argv...]
 
-  courts : rust | python | oracle | io | commit_identity | perf_numbers | wait
+  courts : rust | python | oracle | eval | io | commit_identity | perf_numbers | wait
            (or start with -- for a generic Python-court passthrough)
   flags  : --net            enable network (default: --network none)
            --gpu            pass the NVIDIA GPU (fails closed if unavailable)
@@ -136,7 +136,7 @@ else
 fi
 
 case "$court" in
-  rust | python | oracle | io | commit_identity | perf_numbers | wait) ;;
+  rust | python | oracle | eval | io | commit_identity | perf_numbers | wait) ;;
   *) die "unknown court '$court' (expected rust|python|oracle|io|commit_identity|perf_numbers|wait, or -- <argv>)" 64 ;;
 
 esac
@@ -348,6 +348,7 @@ lock_file="$repo_root/docker/IMAGES.lock"
 case "$court" in
   rust) image_key="rust" ;;
   oracle) image_key="oracle" ;;
+  eval) image_key="eval" ;;
   *) image_key="python" ;;
 esac
 
@@ -504,14 +505,23 @@ host_gid=$(id -g)
 declare -a mounts=("$repo_root:/work" "$cargo_cache:/cargo" "$repo_root/target:/work/target")
 declare -a extra_mounts=()
 declare -a recorded_mounts=()
-if [[ "$court" == "python" || "$court" == "io" || "$court" == "perf_numbers" ]]; then
+if [[ "$court" == "python" || "$court" == "io" || "$court" == "perf_numbers" || "$court" == "eval" ]]; then
   mounts+=("$pycache:/pycache")
 fi
-if [[ "$court" == "oracle" ]]; then
+if [[ "$court" == "oracle" || "$court" == "eval" ]]; then
   # Persistent model cache, read-write. Recorded so a receipt always names the
   # exact host path a teacher is read from.
   mounts+=("$hf_cache:/hf-cache")
   recorded_mounts+=("$hf_cache:/hf-cache")
+fi
+if [[ "$court" == "eval" ]]; then
+  # Harness task data (datasets library cache). Bounded by the eval workflow:
+  # only the anchored task list is fetched, and the run refuses to start if the
+  # cache filesystem is below SELVEDGE_DATASETS_MIN_FREE (default 3 GiB).
+  datasets_cache="${SELVEDGE_DATASETS_CACHE:-$hf_cache/datasets}"
+  mkdir -p "$datasets_cache" || die "cannot create $datasets_cache" 73
+  mounts+=("$datasets_cache:/datasets-cache")
+  recorded_mounts+=("$datasets_cache:/datasets-cache")
 fi
 if [[ "$court" == "rust" ]]; then
   # Rust accounting/conversion read real checkpoints from the same cache but
@@ -583,6 +593,9 @@ if ((net)); then
   common+=(-e "HF_HUB_OFFLINE=0" -e "TRANSFORMERS_OFFLINE=0")
 else
   common+=(-e "HF_HUB_OFFLINE=1" -e "TRANSFORMERS_OFFLINE=1")
+fi
+if [[ "$court" == "eval" ]]; then
+  common+=(-e "HF_DATASETS_CACHE=/datasets-cache")
 fi
 
 for mount in "${mounts[@]}"; do
