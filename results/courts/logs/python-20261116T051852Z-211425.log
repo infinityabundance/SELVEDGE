@@ -1,0 +1,31 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win ___
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_compare_is_conjunctive_a_0')
+
+    def test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win(tmp_path):
+        """The verdict must require BOTH conditions.
+    
+        The arm wins 12.5% relative on the composite (above the 10% threshold, with a
+        CI above zero) by fixing a whole category, but it pays for that by failing one
+        of four `trait-impl` items: a 0.25 absolute regression, five times the
+        registered 0.05 limit. The old code computed this regression and then ignored
+        it, so the arm was reported as a win.
+        """
+        tasks = suite.load_suite(SUITE_ROOT)["suite"]
+        whole_category = {task.id for task in tasks if task.category == "lifetime-borrow"}
+        one_item = next(task.id for task in tasks
+                        if task.category == "trait-impl")
+        _arm_generations, arm = run(fail={one_item}, tmp_path=tmp_path, name="tradeoff")
+        _base_generations, baseline = run(fail=whole_category, tmp_path=tmp_path,
+                                          name="narrow")
+        comparison = court.compare(arm, baseline)
+        primary = comparison["primary"]
+>       assert primary["improvement_met"] is True
+E       assert False is True
+
+oracle/tests/test_capability_court.py:182: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win
+1 failed, 40 deselected in 0.52s

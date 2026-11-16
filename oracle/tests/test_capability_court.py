@@ -161,6 +161,111 @@ def test_compare_enforces_feedback_parity(tmp_path):
         court.compare(arm, tampered)
 
 
+def test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win(tmp_path):
+    """The verdict must require BOTH conditions.
+
+    The arm wins 12.5% relative on the composite (above the 10% threshold, with a
+    CI above zero) by fixing a whole category, but it pays for that by failing one
+    of four `trait-impl` items: a 0.25 absolute regression, five times the
+    registered 0.05 limit. The old code computed this regression and then ignored
+    it, so the arm was reported as a win.
+    """
+    tasks = suite.load_suite(SUITE_ROOT)["suite"]
+    whole_category = {task.id for task in tasks if task.category == "lifetime-borrow"}
+    one_concurrency = next(task.id for task in tasks
+                           if task.category == "concurrency")
+    one_item = next(task.id for task in tasks
+                    if task.category == "trait-impl")
+    _arm_generations, arm = run(fail={one_item}, tmp_path=tmp_path, name="tradeoff")
+    _base_generations, baseline = run(fail=whole_category | {one_concurrency},
+                                      tmp_path=tmp_path, name="narrow")
+    comparison = court.compare(arm, baseline)
+    primary = comparison["primary"]
+    assert primary["improvement_met"] is True
+    assert primary["difference"]["relative_difference"] > court.PRIMARY_THRESHOLD
+    assert primary["difference"]["ci_low"] > 0
+    assert "trait-impl" in primary["category_regressions_beyond_margin"]
+    assert primary["category_regressions_beyond_margin"]["trait-impl"] < (
+        -court.SECONDARY_MAX_CATEGORY_REGRESSION)
+    assert primary["threshold_met"] is False
+    assert "regress beyond" in comparison["verdict"]
+
+
+def test_a_registered_comparison_uses_the_registered_threshold(tmp_path):
+    path = os.path.join(str(tmp_path), "prereg.json")
+    court.register(path, SUITE_ROOT)
+    tasks = suite.load_suite(SUITE_ROOT)["suite"]
+    lifetime = {task.id for task in tasks if task.category == "lifetime-borrow"}
+    _gen, arm = run(tmp_path=tmp_path, name="reg-arm", preregistration=path)
+    _gen, baseline = run(fail=lifetime, tmp_path=tmp_path, name="reg-base",
+                         preregistration=path)
+    assert arm["preregistration"]["sha256"] == court.sha256_file(path)
+    assert arm["preregistration"]["primary_relative_threshold"] == 0.10
+    comparison = court.compare(arm, baseline)
+    assert comparison["primary"]["threshold_relative"] == 0.10
+    assert comparison["primary"]["threshold_source"] == "pre-registration receipt"
+    assert comparison["primary"]["threshold_met"] is True
+
+
+def test_compare_refuses_a_threshold_supplied_after_the_results(tmp_path):
+    path = os.path.join(str(tmp_path), "prereg.json")
+    court.register(path, SUITE_ROOT)
+    _gen, arm = run(tmp_path=tmp_path, name="thr-arm", preregistration=path)
+    _gen, baseline = run(tmp_path=tmp_path, name="thr-base", preregistration=path)
+    with pytest.raises(court.CourtError, match="may not be re-thresholded"):
+        court.compare(arm, baseline, threshold=0.01)
+    # The registered value itself is accepted; it changes nothing.
+    assert court.compare(arm, baseline, threshold=0.10)["primary"][
+        "threshold_relative"] == 0.10
+
+
+def test_compare_refuses_a_tampered_registered_threshold(tmp_path):
+    path = os.path.join(str(tmp_path), "prereg.json")
+    court.register(path, SUITE_ROOT)
+    _gen, arm = run(tmp_path=tmp_path, name="tamper-arm", preregistration=path)
+    _gen, baseline = run(tmp_path=tmp_path, name="tamper-base", preregistration=path)
+    tampered = json.loads(json.dumps(arm))
+    baseline_tampered = json.loads(json.dumps(baseline))
+    for receipt in (tampered, baseline_tampered):
+        receipt["preregistration"]["primary_relative_threshold"] = 0.01
+    with pytest.raises(court.CourtError, match="tampered|superseded"):
+        court.compare(tampered, baseline_tampered)
+
+
+def test_compare_refuses_to_mix_a_registered_and_an_unregistered_result(tmp_path):
+    path = os.path.join(str(tmp_path), "prereg.json")
+    court.register(path, SUITE_ROOT)
+    _gen, arm = run(tmp_path=tmp_path, name="mixed-arm", preregistration=path)
+    _gen, baseline = run(tmp_path=tmp_path, name="mixed-base")
+    with pytest.raises(court.CourtError, match="one side of the comparison is registered"):
+        court.compare(arm, baseline)
+
+
+def test_a_registered_check_requires_a_recorded_digest(tmp_path):
+    path = os.path.join(str(tmp_path), "prereg.json")
+    court.register(path, SUITE_ROOT)
+    generations, _result = run(tmp_path=tmp_path, name="unbound")
+    assert generations["preregistration"]["sha256"] is None
+    with pytest.raises(court.CourtError, match="records no pre-registration digest"):
+        court.check(generations, SUITE_ROOT,
+                    os.path.join(str(tmp_path), "unbound-result.json"),
+                    preregistration=path,
+                    runner=lambda task, files: {"status": "pass"})
+
+
+def test_a_registered_check_refuses_a_contract_that_changed_after_generation(tmp_path):
+    path = os.path.join(str(tmp_path), "prereg.json")
+    payload = court.register(path, SUITE_ROOT)
+    generations, _result = run(tmp_path=tmp_path, name="drift", preregistration=path)
+    payload["registered_utc"] = "2026-11-16T00:00:00Z"
+    court.write_json_atomic(path, payload)
+    with pytest.raises(court.CourtError, match="changed after generation"):
+        court.check(generations, SUITE_ROOT,
+                    os.path.join(str(tmp_path), "drift-result.json"),
+                    preregistration=path,
+                    runner=lambda task, files: {"status": "pass"})
+
+
 def test_prompt_order_invariance_catches_an_order_sensitive_arm(tmp_path):
     _gen_a, result_a = run(tmp_path=tmp_path, name="rev", order="sorted")
     _gen_b, result_b = run(tmp_path=tmp_path, name="rev", order="rotate:5",
@@ -342,3 +447,144 @@ def test_check_refuses_a_run_against_a_stale_preregistration(tmp_path):
                     preregistration=path,
                     runner=lambda task, files: {"status": "pass"})
     assert task_suite["suite_sha256"]
+
+
+# ---------------------------------------------------------------------------
+# T2 checkpoint loading: no unchecked `strict=False`
+
+
+class _Param:
+    def __init__(self, *shape):
+        self.shape = shape
+
+
+class _FakeModel:
+    def __init__(self, params):
+        self._params = params
+
+    def named_parameters(self):
+        return list(self._params.items())
+
+
+class _FakeArm:
+    """The two attributes `_verify_checkpoint` reads, in the real shapes."""
+
+    def __init__(self, params):
+        self.trainable_names = list(params)
+        self.model = _FakeModel(params)
+
+
+def _checkpoint_fixture(tmp_path, arm="H", params=None, extra=None, receipt=None,
+                        mask_order="legacy", step=100):
+    """A real checkpoint file, config, admission record and training receipt."""
+    params = params or {"model.layers.0.bank.w": (4, 4),
+                        "model.layers.0.router.w": (8, 4)}
+    checkpoint = tmp_path / "step-000100.pt"
+    checkpoint.write_bytes(b"weights-of-arm-" + arm.encode())
+    config = tmp_path / "config.json"
+    config.write_text("{\"total_accessible\": 1}", encoding="utf-8")
+    admission_path = tmp_path / "admission.json"
+    admission = {"schema": "selvedge/admission-record/v1", "arm": arm,
+                 "admitted": True, "active_unique_params": 774543360,
+                 "config_sha256": adapters.sha256_file(str(config))}
+    admission_path.write_text(json.dumps(admission), encoding="utf-8")
+    receipt_path = tmp_path / "run.json"
+    payload = {
+        "arm": arm,
+        "config": {"path": str(config), "sha256": adapters.sha256_file(str(config))},
+        "admission": {"path": str(admission_path),
+                      "active_unique_params": 774543360},
+        "checkpoint": {"name": "step-000100.pt", "path": str(checkpoint),
+                       "sha256": adapters.sha256_file(str(checkpoint))},
+    }
+    if mask_order is not None:
+        payload["dispatch_mask_order"] = mask_order
+    payload.update(receipt or {})
+    receipt_path.write_text(json.dumps(payload), encoding="utf-8")
+    adapter = adapters.T2ArmAdapter(
+        arm, str(checkpoint), str(config), str(admission_path), "/hf-cache",
+        training_receipt=str(receipt_path), mask_order="legacy")
+    adapter._admission = admission
+    state = {"step": step, "arm": arm,
+             "model": {name: _Param(*shape)
+                       for name, shape in (extra if extra is not None else params).items()}}
+    arm_model = _FakeArm({name: _Param(*shape) for name, shape in params.items()})
+    return adapter, state, arm_model
+
+
+def test_a_matching_checkpoint_verifies_against_its_receipt(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path)
+    adapter._verify_checkpoint(state, arm)
+    verification = adapter._verify_receipt(state)
+    assert verification["checked"] is True
+    assert verification["step"] == 100
+    assert verification["mask_order"] == "legacy"
+
+
+def test_a_checkpoint_from_another_arm_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, arm="H")
+    state["arm"] = "X"
+    with pytest.raises(adapters.AdapterError, match="checkpoint arm is 'X'"):
+        adapter._verify_checkpoint(state, arm)
+
+
+def test_a_checkpoint_with_an_unexpected_tensor_is_refused(tmp_path):
+    params = {"model.layers.0.bank.w": (4, 4)}
+    extra = {"model.layers.0.bank.w": (4, 4), "model.layers.0.smuggled.w": (2, 2)}
+    adapter, state, arm = _checkpoint_fixture(tmp_path, params=params, extra=extra)
+    with pytest.raises(adapters.AdapterError, match="not parameters of this arm"):
+        adapter._verify_checkpoint(state, arm)
+
+
+def test_a_checkpoint_missing_a_trainable_tensor_is_refused(tmp_path):
+    params = {"model.layers.0.bank.w": (4, 4), "model.layers.0.router.w": (8, 4)}
+    extra = {"model.layers.0.bank.w": (4, 4)}
+    adapter, state, arm = _checkpoint_fixture(tmp_path, params=params, extra=extra)
+    with pytest.raises(adapters.AdapterError, match="trainable tensors are missing"):
+        adapter._verify_checkpoint(state, arm)
+
+
+def test_a_checkpoint_with_the_wrong_shape_is_refused(tmp_path):
+    params = {"model.layers.0.bank.w": (4, 4)}
+    extra = {"model.layers.0.bank.w": (2, 4)}
+    adapter, state, arm = _checkpoint_fixture(tmp_path, params=params, extra=extra)
+    with pytest.raises(adapters.AdapterError, match="expects"):
+        adapter._verify_checkpoint(state, arm)
+
+
+def test_a_checkpoint_at_the_wrong_step_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, step=99)
+    with pytest.raises(adapters.AdapterError, match="receipt names step 100"):
+        adapter._verify_receipt(state)
+
+
+def test_a_checkpoint_with_a_different_config_digest_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(
+        tmp_path, receipt={"config": {"sha256": "0" * 64}})
+    with pytest.raises(adapters.AdapterError, match="config digest"):
+        adapter._verify_receipt(state)
+
+
+def test_a_routed_arm_without_a_recorded_mask_placement_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order=None)
+    with pytest.raises(adapters.AdapterError, match="no dispatch mask placement"):
+        adapter._verify_receipt(state)
+
+
+def test_a_dense_arm_does_not_need_a_mask_placement(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, arm="D", mask_order=None)
+    assert adapter._verify_receipt(state)["checked"] is True
+
+
+def test_a_mismatched_mask_placement_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(tmp_path, mask_order="pair")
+    with pytest.raises(adapters.AdapterError, match="mask_order='pair'"):
+        adapter._verify_receipt(state)
+
+
+def test_a_checkpoint_digest_that_does_not_match_the_receipt_is_refused(tmp_path):
+    adapter, state, arm = _checkpoint_fixture(
+        tmp_path, receipt={"checkpoint": {"name": "step-000100.pt",
+                                          "sha256": "0" * 64}})
+    with pytest.raises(adapters.AdapterError, match="digest does not match"):
+        adapter._verify_receipt(state)

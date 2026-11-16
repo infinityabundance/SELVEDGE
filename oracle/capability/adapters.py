@@ -23,6 +23,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -106,17 +107,36 @@ class Adapter:
 class T2ArmAdapter(Adapter):
     """One trained T2 arm: the frozen 0.6B base plus its checkpointed modules.
 
-    The arm is rebuilt with the same `build_arm` and seed the training loop used,
-    then the checkpoint's `model` state dict is loaded, so the arm being scored
-    is the arm that was trained. Active unique parameters come from the Rust
-    admission record (the ledger), never from an assertion in this file.
+    The arm is rebuilt with the same `build_arm`, seed and dispatch mask order the
+    training loop used, then the checkpoint's `model` state dict is loaded, so the
+    arm being scored is the arm that was trained. Active unique parameters come
+    from the Rust admission record (the ledger), never from an assertion in this
+    file.
+
+    **Loading policy (S16C).** The checkpoint is not loaded with an unchecked
+    `strict=False`. The allowlist is exact and derived, not hand-written:
+
+    * expected *present* keys — exactly the arm's `trainable_names`, the
+      parameters `build_arm` created as trainable by construction (for `H*` this
+      still includes the router, which is frozen only on the gradient path);
+    * expected *missing* keys — exactly the frozen base parameters, which are
+      loaded from the pinned HF revision and are not part of the checkpoint;
+    * expected unexpected keys — none.
+
+    Any deviation refuses the load. When a training receipt is supplied it is
+    also checked against the built arm: arm letter, config digest, admission
+    identity, checkpoint name and digest, checkpoint step, and (for routed arms)
+    the recorded dispatch mask placement from the P12.1 audit.
     """
 
     kind = "t2-arm"
+    ROUTED_ARMS = ("X", "H", "H*")
 
     def __init__(self, arm: str, checkpoint: str, config: str, admission: str,
                  hf_root: str, device: str | None = None, batch: int = 4,
-                 accounting: str | None = None, seed: int = 1001):
+                 accounting: str | None = None, seed: int = 1001,
+                 training_receipt: str | None = None,
+                 mask_order: str = "legacy"):
         self.arm = arm
         self.checkpoint = checkpoint
         self.config = config
@@ -126,10 +146,13 @@ class T2ArmAdapter(Adapter):
         self.batch = batch
         self.accounting_path = accounting
         self.seed = seed
+        self.training_receipt = training_receipt
+        self.mask_order = mask_order
         self.name = f"t2-{arm}"
         self.tools = False
         self._loaded = None
         self._admission = None
+        self._verification = None
 
     def _load(self):
         if self._loaded is not None:
@@ -152,18 +175,123 @@ class T2ArmAdapter(Adapter):
             trust_remote_code=False, attn_implementation="sdpa")
         base.to(device)
         base.eval()
-        arm_model = build_arm(base, self.arm, config, admission, self.seed, profile="t2")
+        arm_model = build_arm(base, self.arm, config, admission, self.seed,
+                              profile="t2", mask_order=self.mask_order)
         arm_model.model.to(device)
-        state = torch.load(self.checkpoint, map_location=device, weights_only=False)
+        # Load on the host and copy into the device model. The checkpoint holds
+        # ~2.5 GiB of fp32 trainable tensors; `map_location=device` would hold a
+        # second device copy for the whole evaluation, the same defect the
+        # streamed evaluation instrument fixed for the T2 arms.
+        state = torch.load(self.checkpoint, map_location="cpu", weights_only=False)
+        self._verify_checkpoint(state, arm_model)
+        self._verification = self._verify_receipt(state)
         arm_model.model.load_state_dict(state["model"], strict=False)
         arm_model.model.eval()
         tokenizer = harness.load_tokenizer(self.hf_root)
         self._loaded = (torch, tokenizer, arm_model.model, device, state)
         return self._loaded
 
+    def _verify_checkpoint(self, state: dict, arm_model) -> None:
+        """Refuse a checkpoint that is not this arm's, with the reason named."""
+        problems = []
+        recorded = state.get("model")
+        if not isinstance(recorded, dict):
+            raise AdapterError(f"{self.checkpoint}: no 'model' state dict")
+        if state.get("arm") != self.arm:
+            problems.append(f"checkpoint arm is {state.get('arm')!r}, "
+                            f"the adapter was built for {self.arm!r}")
+        expected = set(arm_model.trainable_names)
+        if not expected:
+            raise AdapterError(
+                f"arm {self.arm!r} declares no trainable parameters; a checkpoint "
+                "cannot be verified against an empty allowlist")
+        loaded = set(recorded)
+        missing = sorted(expected - loaded)
+        unexpected = sorted(loaded - expected)
+        if missing:
+            problems.append(f"{len(missing)} trainable tensors are missing from the "
+                            f"checkpoint (first: {missing[:5]})")
+        if unexpected:
+            problems.append(f"{len(unexpected)} tensors are not parameters of this arm "
+                            f"(first: {unexpected[:5]})")
+        shapes = {name: tuple(parameter.shape) for name, parameter
+                  in arm_model.model.named_parameters() if name in expected}
+        for name in sorted(expected & loaded):
+            shape = tuple(recorded[name].shape)
+            if shape != shapes.get(name):
+                problems.append(f"{name} has shape {shape}, the arm expects "
+                                f"{shapes.get(name)}")
+                break
+        if problems:
+            raise AdapterError(
+                f"{self.checkpoint} is not the checkpoint of arm {self.arm!r}: "
+                + "; ".join(problems)
+                + ". The allowlist is exact: the only keys a checkpoint may omit are "
+                  "the frozen base parameters, and it may carry no others")
+
+    def _verify_receipt(self, state: dict) -> dict:
+        """Cross-check the checkpoint against the run that produced it."""
+        if not self.training_receipt:
+            return {"checked": False,
+                    "reason": "no training receipt was supplied to the adapter"}
+        if not os.path.isfile(self.training_receipt):
+            raise AdapterError(f"training receipt {self.training_receipt} does not exist")
+        with open(self.training_receipt, "r", encoding="utf-8") as handle:
+            receipt = json.load(handle)
+        admission = self._admission or {}
+        problems = []
+        if receipt.get("arm") != self.arm:
+            problems.append(f"the receipt is for arm {receipt.get('arm')!r}")
+        if not admission.get("admitted"):
+            problems.append("the admission record does not admit this arm")
+        if admission.get("arm") != self.arm:
+            problems.append(f"the admission record is for arm {admission.get('arm')!r}")
+        config_sha = (receipt.get("config") or {}).get("sha256")
+        if config_sha != sha256_file(self.config):
+            problems.append("the receipt's config digest does not match the config file")
+        admission_path = (receipt.get("admission") or {}).get("path")
+        if not admission_path or (os.path.normpath(admission_path)
+                                  != os.path.normpath(self.admission)):
+            problems.append(
+                f"the receipt names admission record {admission_path!r}, not "
+                f"{self.admission!r}")
+        receipt_active = (receipt.get("admission") or {}).get("active_unique_params")
+        if receipt_active != admission.get("active_unique_params"):
+            problems.append("the receipt's admitted active-parameter count differs from "
+                            "the admission record's")
+        checkpoint = receipt.get("checkpoint") or {}
+        if checkpoint.get("sha256") != sha256_file(self.checkpoint):
+            problems.append("the checkpoint digest does not match the training receipt")
+        if os.path.basename(str(checkpoint.get("path") or "")) != os.path.basename(
+                self.checkpoint):
+            problems.append("the checkpoint filename does not match the training receipt")
+        step = _step_from_checkpoint_name(checkpoint.get("name") or checkpoint.get("path"))
+        if step is None:
+            problems.append("the training receipt names no step-NNNNNN checkpoint")
+        elif state.get("step") != step:
+            problems.append(f"the checkpoint is at step {state.get('step')!r}, the "
+                            f"receipt names step {step}")
+        if self.arm in self.ROUTED_ARMS:
+            recorded_mask = receipt.get("dispatch_mask_order")
+            if recorded_mask is None:
+                problems.append(
+                    "the training receipt records no dispatch mask placement (P12.1), "
+                    "so a routed checkpoint's dispatch semantics are unverified")
+            elif recorded_mask != self.mask_order:
+                problems.append(f"the arm was trained with mask_order={recorded_mask!r}, "
+                                f"the adapter is building {self.mask_order!r}")
+        if problems:
+            raise AdapterError(
+                f"the checkpoint does not match its training receipt "
+                f"{self.training_receipt}: " + "; ".join(problems))
+        return {"checked": True, "receipt": self.training_receipt,
+                "receipt_sha256": sha256_file(self.training_receipt),
+                "step": state.get("step"), "mask_order": self.mask_order}
+
     def metadata(self) -> dict:
         _torch, _tokenizer, _model, _device, state = self._load()
         admission = self._admission or {}
+        verification = self._verification or {"checked": False}
         declared = {}
         if self.accounting_path:
             with open(self.accounting_path, "r", encoding="utf-8") as handle:
@@ -206,6 +334,8 @@ class T2ArmAdapter(Adapter):
                 "admission": self.admission,
                 "admission_stamp": admission.get("stamp"),
                 "admission_revision": admission.get("revision"),
+                "dispatch_mask_order": self.mask_order,
+                "checkpoint_verification": verification,
                 "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
             },
         }
@@ -549,6 +679,14 @@ def checkpoint_digest(path: str) -> str | None:
     return digest.hexdigest() if count else None
 
 
+def _step_from_checkpoint_name(name) -> int | None:
+    """The step encoded in a `step-001024.pt` filename, or None."""
+    if not name:
+        return None
+    match = re.search(r"step-(\d+)", os.path.basename(str(name)))
+    return int(match.group(1)) if match else None
+
+
 def adapter_from_spec(spec: dict) -> Adapter:
     """Build an adapter from a JSON spec (the CLI's `--adapter-spec`)."""
     kind = spec.get("kind")
@@ -577,5 +715,7 @@ def adapter_from_spec(spec: dict) -> Adapter:
                             spec["admission"], spec.get("hf_root", "/hf-cache"),
                             device=spec.get("device"),
                             batch=int(spec.get("batch", 4)),
-                            accounting=spec.get("accounting"))
+                            accounting=spec.get("accounting"),
+                            training_receipt=spec.get("training_receipt"),
+                            mask_order=spec.get("mask_order", "legacy"))
     raise AdapterError(f"unknown adapter kind {kind!r}")

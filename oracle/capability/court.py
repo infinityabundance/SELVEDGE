@@ -303,14 +303,23 @@ def check(generations: dict, suite_root: str, out: str,
     prereg_problems = []
     if preregistration:
         prereg = load_preregistration(preregistration)
+        # Verify the contract itself first (it binds this suite hash and the
+        # registered threshold), then require that the run was actually made
+        # against it. A registered run with no recorded digest is unchecked, so
+        # it is refused rather than silently accepted.
         prereg_problems = verify_preregistration(prereg, manifest)
-        recorded = (generations.get("preregistration") or {}).get("sha256")
-        if recorded and recorded != sha256_file(preregistration):
-            raise CourtError("the pre-registration changed after generation")
         if prereg_problems:
             raise CourtError(
                 "the pre-registration does not match this suite or its thresholds: "
                 + "; ".join(prereg_problems))
+        recorded = (generations.get("preregistration") or {}).get("sha256")
+        if not recorded:
+            raise CourtError(
+                "this run is being checked against a pre-registration, but the "
+                "generations receipt records no pre-registration digest; a registered "
+                "run must be generated with --preregistration")
+        if recorded != sha256_file(preregistration):
+            raise CourtError("the pre-registration changed after generation")
 
     outputs = {item["id"]: item for item in generations.get("items", [])}
     missing = sorted(set(tasks) - set(outputs))
@@ -408,6 +417,8 @@ def check(generations: dict, suite_root: str, out: str,
         "preregistration": {
             "path": preregistration,
             "sha256": sha256_file(preregistration) if preregistration else None,
+            "primary_relative_threshold": (
+                prereg["primary"]["relative_threshold"] if prereg else None),
             "problems": prereg_problems,
         },
         "anti_gaming": {
@@ -561,10 +572,78 @@ def _values_by_category(result: dict) -> dict:
             for category, items in sorted(values.items())}
 
 
-def compare(arm: dict, baseline: dict, threshold: float = PRIMARY_THRESHOLD) -> dict:
-    """Level 1 comparison: paired, category-stratified, with a decision rule."""
+def registered_threshold(arm: dict, baseline: dict,
+                         preregistration: dict | None = None,
+                         requested: float | None = None) -> float:
+    """The threshold a comparison is allowed to use, and its provenance.
+
+    A registered result carries the digest of the pre-registration it was made
+    against. When either side is registered, the comparison is a registered one:
+    the threshold comes from the receipt, it must be the contract's threshold,
+    and an externally supplied value that differs is refused rather than honed
+    into a verdict. `threshold_met` is therefore never computed against a number
+    chosen after the results were read.
+    """
+    arm_prereg = arm.get("preregistration") or {}
+    base_prereg = baseline.get("preregistration") or {}
+    digests = {side.get("sha256") for side in (arm_prereg, base_prereg)}
+    if not any(digests):
+        if preregistration is not None:
+            raise CourtError(
+                "a pre-registration was supplied for comparison, but neither result "
+                "was generated against one; the comparison would not be registered")
+        return PRIMARY_THRESHOLD if requested is None else requested
+    if len(digests) != 1 or None in digests:
+        raise CourtError(
+            "one side of the comparison is registered and the other is not; a "
+            "verdict may not mix a registered run with an unregistered one")
+    thresholds = {side.get("primary_relative_threshold")
+                  for side in (arm_prereg, base_prereg)}
+    if len(thresholds) != 1:
+        raise CourtError("the two registered results record different thresholds")
+    registered = thresholds.pop()
+    if registered is None:
+        raise CourtError(
+            "the registered results do not record the threshold they were scored "
+            "against; re-run check() to emit it")
+    if registered != PRIMARY_THRESHOLD:
+        raise CourtError(
+            f"the results record a threshold of {registered!r}, which is not the "
+            f"pre-registered {PRIMARY_THRESHOLD!r}; the receipt was tampered with or "
+            "made against a superseded contract")
+    if preregistration is not None:
+        problems = []
+        if preregistration.get("primary", {}).get("relative_threshold") != registered:
+            problems.append("its threshold is not the one the results were scored against")
+        if preregistration.get("suite_sha256") != arm["suite"]["suite_sha256"]:
+            problems.append("it binds a different suite")
+        if problems:
+            raise CourtError("the supplied pre-registration does not govern this "
+                             "comparison: " + "; ".join(problems))
+    if requested is not None and requested != registered:
+        raise CourtError(
+            f"an externally supplied threshold of {requested!r} was given, but these "
+            f"results are registered against {registered!r}; a registered comparison "
+            "may not be re-thresholded")
+    return registered
+
+
+def compare(arm: dict, baseline: dict, threshold: float | None = None,
+            preregistration: dict | None = None) -> dict:
+    """Level 1 comparison: paired, category-stratified, with a decision rule.
+
+    The verdict is **conjunctive**: the arm must clear the primary threshold with
+    a paired CI above zero *and* must not regress any category by more than the
+    registered margin. Both conditions were computed before; only the first used
+    to decide, so an aggregate winner that bought its gain by wrecking one
+    category was reported as a win. That is the defect this signature fixes.
+
+    `threshold=None` means "use the registered threshold" when the results are
+    registered; a caller-supplied value must equal it.
+    """
     if arm["suite"]["suite_sha256"] != baseline["suite"]["suite_sha256"]:
         raise CourtError("the two results were measured on different suites")
+    threshold = registered_threshold(arm, baseline, preregistration, threshold)
     arm_adapter = arm["generations"]["adapter"]
     base_adapter = baseline["generations"]["adapter"]
     if bool(arm_adapter.get("tools")) != bool(base_adapter.get("tools")):
@@ -592,11 +671,12 @@ def compare(arm: dict, baseline: dict, threshold: float = PRIMARY_THRESHOLD) -> 
 
     diff = stats.paired_category_bootstrap(paired_arm, paired_base)
     relative = diff["relative_difference"]
-    passed = (relative is not None and relative >= threshold
-              and diff["ci_low"] > 0)
+    improvement = (relative is not None and relative >= threshold
+                   and diff["ci_low"] > 0)
     regressions = {category: value for category, value in
                    diff["per_category_difference"].items()
                    if value < -SECONDARY_MAX_CATEGORY_REGRESSION}
+    passed = improvement and not regressions
     arm_trio = arm["scores"].get("trio", {})
     base_trio = baseline["scores"].get("trio", {})
     return {
@@ -608,9 +688,16 @@ def compare(arm: dict, baseline: dict, threshold: float = PRIMARY_THRESHOLD) -> 
         "level_statement": LEVELS[1],
         "primary": {
             "threshold_relative": threshold,
+            "threshold_source": ("pre-registration receipt"
+                                 if (arm.get("preregistration") or {}).get("sha256")
+                                 else "caller-supplied (unregistered comparison)"),
             "difference": diff,
-            "threshold_met": passed,
+            "improvement_met": improvement,
+            "regression_limit": SECONDARY_MAX_CATEGORY_REGRESSION,
             "category_regressions_beyond_margin": regressions,
+            "threshold_met": passed,
+            "rule": "conjunctive: primary improvement AND no category regression "
+                    "beyond the margin",
         },
         "trio": {
             "arm": arm_trio,
@@ -618,10 +705,16 @@ def compare(arm: dict, baseline: dict, threshold: float = PRIMARY_THRESHOLD) -> 
             "arm_all_surfaces": arm["scores"].get("trio_all_surfaces"),
             "baseline_all_surfaces": baseline["scores"].get("trio_all_surfaces"),
         },
-        "verdict": ("arm improves the primary composite by at least "
-                    f"{int(threshold * 100)}% relative with a CI above zero"
-                    if passed else
-                    "no pre-registered primary improvement; no win is claimed"),
+        "verdict": (
+            f"arm improves the primary composite by at least {int(threshold * 100)}% "
+            "relative with a CI above zero and regresses no category beyond the margin"
+            if passed else
+            ("no pre-registered primary improvement; no win is claimed"
+             if not improvement else
+             "the primary improvement is met but categories regress beyond the "
+             "registered margin, so no win is claimed: "
+             + ", ".join(f"{category} {value:+.3f}"
+                         for category, value in sorted(regressions.items())))),
     }
 
 

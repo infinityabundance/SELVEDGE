@@ -1,0 +1,286 @@
+........F..F..................FFFFF......                                [100%]
+=================================== FAILURES ===================================
+___ test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win ___
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_compare_is_conjunctive_a_0')
+
+    def test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win(tmp_path):
+        """The verdict must require BOTH conditions.
+    
+        The arm wins 12.5% relative on the composite (above the 10% threshold, with a
+        CI above zero) by fixing a whole category, but it pays for that by failing one
+        of four `trait-impl` items: a 0.25 absolute regression, five times the
+        registered 0.05 limit. The old code computed this regression and then ignored
+        it, so the arm was reported as a win.
+        """
+        tasks = suite.load_suite(SUITE_ROOT)["suite"]
+        whole_category = {task.id for task in tasks if task.category == "lifetime-borrow"}
+        one_item = next(task.id for task in tasks
+                        if task.category == "trait-impl")
+        _arm_generations, arm = run(fail={one_item}, tmp_path=tmp_path, name="tradeoff")
+        _base_generations, baseline = run(fail=whole_category, tmp_path=tmp_path,
+                                          name="narrow")
+        comparison = court.compare(arm, baseline)
+        primary = comparison["primary"]
+>       assert primary["improvement_met"] is True
+E       assert False is True
+
+oracle/tests/test_capability_court.py:182: AssertionError
+_____________ test_compare_refuses_a_tampered_registered_threshold _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_compare_refuses_a_tampere0')
+
+    def test_compare_refuses_a_tampered_registered_threshold(tmp_path):
+        path = os.path.join(str(tmp_path), "prereg.json")
+        court.register(path, SUITE_ROOT)
+        _gen, arm = run(tmp_path=tmp_path, name="tamper-arm", preregistration=path)
+        _gen, baseline = run(tmp_path=tmp_path, name="tamper-base", preregistration=path)
+        tampered = json.loads(json.dumps(arm))
+        tampered["preregistration"]["primary_relative_threshold"] = 0.01
+>       with pytest.raises(court.CourtError, match="tampered|superseded"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'tampered|superseded'
+E         Actual message: 'the two registered results record different thresholds'
+
+oracle/tests/test_capability_court.py:227: AssertionError
+___________ test_a_matching_checkpoint_verifies_against_its_receipt ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_matching_checkpoint_ver0')
+
+    def test_a_matching_checkpoint_verifies_against_its_receipt(tmp_path):
+        adapter, state, arm = _checkpoint_fixture(tmp_path)
+>       adapter._verify_checkpoint(state, arm)
+
+oracle/tests/test_capability_court.py:512: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7fa4eb906b40>
+state = {'step': 100, 'arm': 'H', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7fa4eb904680>, 'model.layers.0.router.w': <test_capability_court._Param object at 0x7fa4eb9044a0>}}
+arm_model = <test_capability_court._FakeArm object at 0x7fa4eb904440>
+
+    def _verify_checkpoint(self, state: dict, arm_model) -> None:
+        """Refuse a checkpoint that is not this arm's, with the reason named."""
+        problems = []
+        recorded = state.get("model")
+        if not isinstance(recorded, dict):
+            raise AdapterError(f"{self.checkpoint}: no 'model' state dict")
+        if state.get("arm") != self.arm:
+            problems.append(f"checkpoint arm is {state.get('arm')!r}, "
+                            f"the adapter was built for {self.arm!r}")
+        expected = set(arm_model.trainable_names)
+        if not expected:
+            raise AdapterError(
+                f"arm {self.arm!r} declares no trainable parameters; a checkpoint "
+                "cannot be verified against an empty allowlist")
+        loaded = set(recorded)
+        missing = sorted(expected - loaded)
+        unexpected = sorted(loaded - expected)
+        if missing:
+            problems.append(f"{len(missing)} trainable tensors are missing from the "
+                            f"checkpoint (first: {missing[:5]})")
+        if unexpected:
+            problems.append(f"{len(unexpected)} tensors are not parameters of this arm "
+                            f"(first: {unexpected[:5]})")
+>       shapes = {name: tuple(parameter.shape) for name, parameter
+                              ^^^^^^^^^^^^^^^
+                  in arm_model.model.named_parameters() if name in expected}
+E       AttributeError: 'tuple' object has no attribute 'shape'
+
+oracle/capability/adapters.py:217: AttributeError
+________________ test_a_checkpoint_from_another_arm_is_refused _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_checkpoint_from_another0')
+
+    def test_a_checkpoint_from_another_arm_is_refused(tmp_path):
+        adapter, state, arm = _checkpoint_fixture(tmp_path, arm="H")
+        state["arm"] = "X"
+        with pytest.raises(adapters.AdapterError, match="checkpoint arm is 'X'"):
+>           adapter._verify_checkpoint(state, arm)
+
+oracle/tests/test_capability_court.py:523: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7fa4eb8d7ec0>
+state = {'step': 100, 'arm': 'X', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7fa4eb8d5460>, 'model.layers.0.router.w': <test_capability_court._Param object at 0x7fa4eb8d68a0>}}
+arm_model = <test_capability_court._FakeArm object at 0x7fa4eb8d55e0>
+
+    def _verify_checkpoint(self, state: dict, arm_model) -> None:
+        """Refuse a checkpoint that is not this arm's, with the reason named."""
+        problems = []
+        recorded = state.get("model")
+        if not isinstance(recorded, dict):
+            raise AdapterError(f"{self.checkpoint}: no 'model' state dict")
+        if state.get("arm") != self.arm:
+            problems.append(f"checkpoint arm is {state.get('arm')!r}, "
+                            f"the adapter was built for {self.arm!r}")
+        expected = set(arm_model.trainable_names)
+        if not expected:
+            raise AdapterError(
+                f"arm {self.arm!r} declares no trainable parameters; a checkpoint "
+                "cannot be verified against an empty allowlist")
+        loaded = set(recorded)
+        missing = sorted(expected - loaded)
+        unexpected = sorted(loaded - expected)
+        if missing:
+            problems.append(f"{len(missing)} trainable tensors are missing from the "
+                            f"checkpoint (first: {missing[:5]})")
+        if unexpected:
+            problems.append(f"{len(unexpected)} tensors are not parameters of this arm "
+                            f"(first: {unexpected[:5]})")
+>       shapes = {name: tuple(parameter.shape) for name, parameter
+                              ^^^^^^^^^^^^^^^
+                  in arm_model.model.named_parameters() if name in expected}
+E       AttributeError: 'tuple' object has no attribute 'shape'
+
+oracle/capability/adapters.py:217: AttributeError
+____________ test_a_checkpoint_with_an_unexpected_tensor_is_refused ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_checkpoint_with_an_unex0')
+
+    def test_a_checkpoint_with_an_unexpected_tensor_is_refused(tmp_path):
+        params = {"model.layers.0.bank.w": (4, 4)}
+        extra = {"model.layers.0.bank.w": (4, 4), "model.layers.0.smuggled.w": (2, 2)}
+        adapter, state, arm = _checkpoint_fixture(tmp_path, params=params, extra=extra)
+        with pytest.raises(adapters.AdapterError, match="not parameters of this arm"):
+>           adapter._verify_checkpoint(state, arm)
+
+oracle/tests/test_capability_court.py:531: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7fa4eb8d76b0>
+state = {'step': 100, 'arm': 'H', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7fa4eb8d5640>, 'model.layers.0.smuggled.w': <test_capability_court._Param object at 0x7fa4eb8d7bc0>}}
+arm_model = <test_capability_court._FakeArm object at 0x7fa4eb8d69c0>
+
+    def _verify_checkpoint(self, state: dict, arm_model) -> None:
+        """Refuse a checkpoint that is not this arm's, with the reason named."""
+        problems = []
+        recorded = state.get("model")
+        if not isinstance(recorded, dict):
+            raise AdapterError(f"{self.checkpoint}: no 'model' state dict")
+        if state.get("arm") != self.arm:
+            problems.append(f"checkpoint arm is {state.get('arm')!r}, "
+                            f"the adapter was built for {self.arm!r}")
+        expected = set(arm_model.trainable_names)
+        if not expected:
+            raise AdapterError(
+                f"arm {self.arm!r} declares no trainable parameters; a checkpoint "
+                "cannot be verified against an empty allowlist")
+        loaded = set(recorded)
+        missing = sorted(expected - loaded)
+        unexpected = sorted(loaded - expected)
+        if missing:
+            problems.append(f"{len(missing)} trainable tensors are missing from the "
+                            f"checkpoint (first: {missing[:5]})")
+        if unexpected:
+            problems.append(f"{len(unexpected)} tensors are not parameters of this arm "
+                            f"(first: {unexpected[:5]})")
+>       shapes = {name: tuple(parameter.shape) for name, parameter
+                              ^^^^^^^^^^^^^^^
+                  in arm_model.model.named_parameters() if name in expected}
+E       AttributeError: 'tuple' object has no attribute 'shape'
+
+oracle/capability/adapters.py:217: AttributeError
+___________ test_a_checkpoint_missing_a_trainable_tensor_is_refused ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_checkpoint_missing_a_tr0')
+
+    def test_a_checkpoint_missing_a_trainable_tensor_is_refused(tmp_path):
+        params = {"model.layers.0.bank.w": (4, 4), "model.layers.0.router.w": (8, 4)}
+        extra = {"model.layers.0.bank.w": (4, 4)}
+        adapter, state, arm = _checkpoint_fixture(tmp_path, params=params, extra=extra)
+        with pytest.raises(adapters.AdapterError, match="trainable tensors are missing"):
+>           adapter._verify_checkpoint(state, arm)
+
+oracle/tests/test_capability_court.py:539: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7fa4eb904d70>
+state = {'step': 100, 'arm': 'H', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7fa4eb905c40>}}
+arm_model = <test_capability_court._FakeArm object at 0x7fa4eb904470>
+
+    def _verify_checkpoint(self, state: dict, arm_model) -> None:
+        """Refuse a checkpoint that is not this arm's, with the reason named."""
+        problems = []
+        recorded = state.get("model")
+        if not isinstance(recorded, dict):
+            raise AdapterError(f"{self.checkpoint}: no 'model' state dict")
+        if state.get("arm") != self.arm:
+            problems.append(f"checkpoint arm is {state.get('arm')!r}, "
+                            f"the adapter was built for {self.arm!r}")
+        expected = set(arm_model.trainable_names)
+        if not expected:
+            raise AdapterError(
+                f"arm {self.arm!r} declares no trainable parameters; a checkpoint "
+                "cannot be verified against an empty allowlist")
+        loaded = set(recorded)
+        missing = sorted(expected - loaded)
+        unexpected = sorted(loaded - expected)
+        if missing:
+            problems.append(f"{len(missing)} trainable tensors are missing from the "
+                            f"checkpoint (first: {missing[:5]})")
+        if unexpected:
+            problems.append(f"{len(unexpected)} tensors are not parameters of this arm "
+                            f"(first: {unexpected[:5]})")
+>       shapes = {name: tuple(parameter.shape) for name, parameter
+                              ^^^^^^^^^^^^^^^
+                  in arm_model.model.named_parameters() if name in expected}
+E       AttributeError: 'tuple' object has no attribute 'shape'
+
+oracle/capability/adapters.py:217: AttributeError
+______________ test_a_checkpoint_with_the_wrong_shape_is_refused _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_checkpoint_with_the_wro0')
+
+    def test_a_checkpoint_with_the_wrong_shape_is_refused(tmp_path):
+        params = {"model.layers.0.bank.w": (4, 4)}
+        extra = {"model.layers.0.bank.w": (2, 4)}
+        adapter, state, arm = _checkpoint_fixture(tmp_path, params=params, extra=extra)
+        with pytest.raises(adapters.AdapterError, match="expects"):
+>           adapter._verify_checkpoint(state, arm)
+
+oracle/tests/test_capability_court.py:547: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <capability.adapters.T2ArmAdapter object at 0x7fa4eb8d4e00>
+state = {'step': 100, 'arm': 'H', 'model': {'model.layers.0.bank.w': <test_capability_court._Param object at 0x7fa4eb8d6990>}}
+arm_model = <test_capability_court._FakeArm object at 0x7fa4eb8d6e10>
+
+    def _verify_checkpoint(self, state: dict, arm_model) -> None:
+        """Refuse a checkpoint that is not this arm's, with the reason named."""
+        problems = []
+        recorded = state.get("model")
+        if not isinstance(recorded, dict):
+            raise AdapterError(f"{self.checkpoint}: no 'model' state dict")
+        if state.get("arm") != self.arm:
+            problems.append(f"checkpoint arm is {state.get('arm')!r}, "
+                            f"the adapter was built for {self.arm!r}")
+        expected = set(arm_model.trainable_names)
+        if not expected:
+            raise AdapterError(
+                f"arm {self.arm!r} declares no trainable parameters; a checkpoint "
+                "cannot be verified against an empty allowlist")
+        loaded = set(recorded)
+        missing = sorted(expected - loaded)
+        unexpected = sorted(loaded - expected)
+        if missing:
+            problems.append(f"{len(missing)} trainable tensors are missing from the "
+                            f"checkpoint (first: {missing[:5]})")
+        if unexpected:
+            problems.append(f"{len(unexpected)} tensors are not parameters of this arm "
+                            f"(first: {unexpected[:5]})")
+>       shapes = {name: tuple(parameter.shape) for name, parameter
+                              ^^^^^^^^^^^^^^^
+                  in arm_model.model.named_parameters() if name in expected}
+E       AttributeError: 'tuple' object has no attribute 'shape'
+
+oracle/capability/adapters.py:217: AttributeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_capability_court.py::test_compare_is_conjunctive_a_category_regression_kills_an_aggregate_win
+FAILED oracle/tests/test_capability_court.py::test_compare_refuses_a_tampered_registered_threshold
+FAILED oracle/tests/test_capability_court.py::test_a_matching_checkpoint_verifies_against_its_receipt
+FAILED oracle/tests/test_capability_court.py::test_a_checkpoint_from_another_arm_is_refused
+FAILED oracle/tests/test_capability_court.py::test_a_checkpoint_with_an_unexpected_tensor_is_refused
+FAILED oracle/tests/test_capability_court.py::test_a_checkpoint_missing_a_trainable_tensor_is_refused
+FAILED oracle/tests/test_capability_court.py::test_a_checkpoint_with_the_wrong_shape_is_refused
+7 failed, 34 passed in 7.41s

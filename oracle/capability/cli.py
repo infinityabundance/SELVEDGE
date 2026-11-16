@@ -85,7 +85,11 @@ def main(argv: list[str]) -> int:
     compare.add_argument("--arm", required=True)
     compare.add_argument("--baseline", required=True)
     compare.add_argument("--out", required=True)
-    compare.add_argument("--threshold", type=float, default=court.PRIMARY_THRESHOLD)
+    compare.add_argument("--threshold", type=float, default=None,
+                         help="only for unregistered instrument runs; a registered "
+                              "comparison uses the pre-registered threshold and "
+                              "refuses a different one")
+    compare.add_argument("--preregistration", default=None)
 
     complement = subparsers.add_parser("complementarity")
     complement.add_argument("--arm-a", required=True)
@@ -198,8 +202,9 @@ def main(argv: list[str]) -> int:
         return 0
 
     if args.command == "compare":
+        prereg = load_json(args.preregistration) if args.preregistration else None
         comparison = court.compare(load_json(args.arm), load_json(args.baseline),
-                                   threshold=args.threshold)
+                                   threshold=args.threshold, preregistration=prereg)
         court.write_json_atomic(args.out, comparison)
         primary = comparison["primary"]
         print(f"capability_court: {comparison['verdict']}")
