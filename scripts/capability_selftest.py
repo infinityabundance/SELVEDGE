@@ -261,6 +261,25 @@ def main(argv: list[str]) -> int:
                 (item.get("reference", {}).get("duration_ms") or 0) for item in items),
         },
         "items": items,
+        "derived": {
+            "suite_tasks": counts["suite"],
+            "trio_tasks": counts["trio"],
+            "probe_tasks": counts["probes"],
+            "tasks_checked": len(items) - len(loaded["probes"]),
+            "checker_timeout_seconds": limit_module.DEFAULT_TIMEOUT_SECONDS,
+            "checker_cpu_seconds": limit_module.DEFAULT_CPU_SECONDS,
+            "checker_address_space_gib": (
+                limit_module.DEFAULT_ADDRESS_SPACE_BYTES / (1024 ** 3)),
+            "run_only_timeout_seconds": limit_module.RUN_ONLY_LIMITS.wall_seconds,
+            "run_only_address_space_mib": (
+                limit_module.RUN_ONLY_LIMITS.address_space_bytes / (1024 ** 2)),
+            "max_check_ms": max(
+                (item.get("reference", {}).get("duration_ms") or 0) for item in items),
+            "max_workdir_mib": max_workdir / (1024 ** 2),
+            "court_memory_gib": int(court_mem) / (1024 ** 3),
+            "workdir_budget_mib": workroot_budget / (1024 ** 2),
+            "suite_sha256": suite.build_manifest(args.suite)["suite_sha256"],
+        },
         "verdict": verdict,
     }
     write_json_atomic(args.out, receipt)

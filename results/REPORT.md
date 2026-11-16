@@ -292,6 +292,38 @@ hashes, sizes and measurements. Rebuilding is documented in
 storage JSONL is excluded from git; `scripts/storage-summary.py` regenerates the
 tracked variance summaries from the receipts.
 
+## Capability court and the fresh Rust suite (S14, CPU-only)
+
+The instrument every frontier claim will use now exists. `docs/CAPABILITY-COURT.md`
+is the reference; the evidence is
+`results/capability/selftest-20261116T022833Z.json` (every checker outcome) and
+`results/capability/contamination-20261116T022822Z.json` (disjointness), at
+revision `0c4b050`.
+
+Established, on CPU:
+
+- a fresh executable Rust suite with hidden checkers, reference solutions and
+  declared wrong mutations, materialised from an authoring source that fails
+  closed on drift, licensed MIT OR Apache-2.0;
+- an anti-superficial-specialisation trio (lifetime chain, numeric dependency,
+  quantifier chain) annotated with one shared operation and judged per surface;
+- a bounded checker sandbox that records pass, assertion failure, compile error,
+  timeout and allocation failure as distinct outcomes, with the limits, digests,
+  cgroup OOM counters and workdir size in the receipt;
+- a staged generate/check harness with paired category-stratified confidence
+  intervals, per-category reporting, failure accounting, the ten-field control
+  matrix, capacity scaling, Pareto and no-hidden-teacher checks;
+- anti-gaming checks that are tested rather than promised: prompt-order
+  invariance, few-shot shingle disjointness, tool and feedback parity, and a
+  structural separation between the model process and the checker process;
+- the pre-registration, bound to the suite hash before any arm run.
+
+Not established: any capability result. No model has been evaluated on the
+suite. The trio is below P11.21's item count, feedback loops are not
+implemented, the corpus contamination comparison is a bounded sample, and no
+3B-8B quantised baseline exists locally. Each is recorded as a gap rather than
+papered over.
+
 ## Next
 
 Move to the trained/upcycled branch with a fresh pre-registration: a dense

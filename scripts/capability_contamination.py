@@ -312,6 +312,19 @@ def main(argv: list[str]) -> int:
             "tokens": token_report,
         },
         "item_tokens": item_tokens,
+        "derived": {
+            "offending_items": total_offenders,
+            "corpus_documents_sampled": sum(
+                entry.get("documents_sampled", 0) for entry in corpus_checks.values()),
+            "corpus_characters_sampled": sum(
+                entry.get("characters_sampled", 0) for entry in corpus_checks.values()),
+            "humaneval_items": text_checks["humaneval"]["source_items"],
+            "gsm8k_items": text_checks["gsm8k"]["source_items"],
+            "truthfulqa_items": text_checks["truthfulqa"]["source_items"],
+            "t2_windows": text_checks["t2_eval_windows"]["source_windows"],
+            "t2_tokens": token_report["source_tokens"],
+            "suite_sha256": manifest["suite_sha256"],
+        },
         "verdict": verdict,
     }
     fc.write_json_atomic(os.path.join(REPO, args.out), receipt)
