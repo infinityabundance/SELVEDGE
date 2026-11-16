@@ -1,0 +1,72 @@
+{
+  "schema": "selvedge/qwen35-budget-union/v1",
+  "stamp": "20261116T184127Z",
+  "revision": "2a6be6198f7f21f359daee74972da94f837e581a",
+  "generated_utc": "2026-11-16T18:41:27Z",
+  "source_receipt": {
+    "path": "results/accounting/20261116T183609Z-qwen35-08b-text-only.json",
+    "stamp": "20261116T183609Z",
+    "revision": "5aea4ec191dd2f1110a80bb71b1f29fdfe0b543b",
+    "checkpoint_digest": "112580451bc3179cfa4af8d446c442ed377747f2083e9702bdaef601492e3a01"
+  },
+  "design": {
+    "ceiling": 1000000000,
+    "lora_rank": 16,
+    "lora_layers": 8,
+    "passes": 4,
+    "memory_projections_and_gates_per_memory": 4,
+    "memory_rows_per_token": 256,
+    "memory_bank_rows": 65536,
+    "ffn_dense_active": true
+  },
+  "terms": {
+    "text_backbone_elements": 488151872,
+    "text_ffn_elements": 264241152,
+    "depth_lora_one_adapter_set_elements": 1769472,
+    "depth_lora_distinct_per_pass_elements": 7077888,
+    "memory_projections_gates_one_set_elements": 4194304,
+    "memory_projections_gates_distinct_per_pass_elements": 16777216,
+    "memory_rows_read_elements": 1048576,
+    "memory_bank_total_elements_not_counted": 67108864,
+    "vision_tower_elements_if_active": 100592896,
+    "mtp_head_elements_if_active": 20452864
+  },
+  "union": {
+    "text_plus_plan_shared_adapters": {
+      "active_union_elements": 759405376,
+      "headroom_elements": 240594624,
+      "within_ceiling": true
+    },
+    "text_plus_plan_distinct_per_pass": {
+      "active_union_elements": 777296704,
+      "headroom_elements": 222703296,
+      "within_ceiling": true
+    },
+    "text_plus_plan_shared_adapters_plus_vision": {
+      "active_union_elements": 859998272,
+      "headroom_elements": 140001728,
+      "within_ceiling": true
+    },
+    "text_plus_plan_shared_adapters_plus_mtp": {
+      "active_union_elements": 779858240,
+      "headroom_elements": 220141760,
+      "within_ceiling": true
+    },
+    "text_plus_plan_shared_adapters_plus_vision_plus_mtp": {
+      "active_union_elements": 880451136,
+      "headroom_elements": 119548864,
+      "within_ceiling": true
+    },
+    "text_plus_plan_distinct_per_pass_plus_vision_plus_mtp": {
+      "active_union_elements": 898342464,
+      "headroom_elements": 101657536,
+      "within_ceiling": true
+    }
+  },
+  "notes": [
+    "Every term is a distinct-element count, not an execution count.",
+    "The FFN is counted dense-active; a sharded execution can only lower the union, so the headroom printed here is a floor.",
+    "The memory bank is not counted; only the rows a token reads are.",
+    "The vision and MTP variants answer 'what if the declared path changed', not 'what does this path execute'."
+  ]
+}
