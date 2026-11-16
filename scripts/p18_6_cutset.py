@@ -1080,6 +1080,15 @@ def render_markdown(receipt):
     lines.append(f"Paired bootstrap over the four replication windows for MAE(unary) - MAE(cell): "
                  f"{f(diff['mean'])}, 95% CI [{f(diff['ci_low'])}, {f(diff['ci_high'])}].")
     lines.append("")
+    ranked = sorted(out["cells"], key=lambda row: abs(row["discovery_mean_E"]), reverse=True)
+    rows = [
+        [f"{row['layer']}", row["g"], row["j"], f(row["discovery_mean_E"]), f(row["replication_mean_E"]), f(row["same_sign"])]
+        for row in ranked[:6]
+    ]
+    lines.append("Six largest discovery interactions, with their replication mean:")
+    lines.append("")
+    lines.extend(table(["layer", "g", "j", "discovery mean E", "replication mean E", "same sign"], rows))
+    lines.append("")
     lines.append("## 5. Monotonicity and submodularity violations (S3)")
     lines.append("")
     lines.append(f"Super-additive (`E > 0`): {s3r['super_additive_E_positive']} contexts. "
