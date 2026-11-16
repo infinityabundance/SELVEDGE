@@ -121,6 +121,281 @@ P14.4–P14.7 `CANDIDATE`.
   constraints: they bind how the current experiments are registered, measured and
   reported, which is what makes them active rather than background.
 
+
+### The three tiers, item by item
+
+The row above is the summary; this is the same assignment spelled out, so no item
+can hide inside a range. **ACTIVE** opens with the decisive path — P12.1 (finish
+T2 and preserve its verdict), P12.1a (the corrected-dispatch sensitivity run),
+P12.2 (the `H*`-target diagnostics), P12.17 (the successor target, which is the
+one next decisive test) — and then the criteria, instruments and constraints that
+bind it. **CANDIDATE** is the defined mechanism space: every item carries a cheap
+experiment, a falsifying control and a kill criterion, and none is scheduled.
+**HYPOTHESIS** is retained with no implementation commitment at all.
+
+#### ACTIVE — 29 items
+
+**§1 — WS1 — Strategy and novelty boundaries**
+
+| id | item |
+| --- | --- |
+| P1.1 | Compete on the joint design, not on sparse routing alone |
+| P1.2 | Separate "1B active with a dormant expert bank" from the actual question |
+| P1.3 | Maintain the novelty boundary ledger |
+| P1.4 | Rank the three directions and defer the third |
+
+**§2 — WS2 — Correct the registered architecture accounting**
+
+| id | item |
+| --- | --- |
+| P2.1 | Record the Arm B sizing defect: routing is a compute saver, not capacity extraction |
+| P2.3 | Correct Arm A adapter counting and re-verify the active union with the Rust ledger |
+| P2.4 | Verify the teacher-target approximation against a full-distribution teacher, and add a hard-label control |
+
+**§3 — WS3 — Error-directed capacity architecture (first experimental matrix)**
+
+| id | item |
+| --- | --- |
+| P3.4 | First matrix: five arms, one backbone, one data order, one compute budget |
+
+**§6 — WS6 — Success criteria and honest evaluation**
+
+| id | item |
+| --- | --- |
+| P6.1 | Neural-capacity advantage |
+| P6.2 | Physical-execution advantage |
+| P6.3 | Every comparison reports quality, bytes/token and wall-clock |
+| P6.4 | Keep the Rust core/Atlas/converter/format/store; add a trainable one-pass model with an independently measured active union |
+| P6.5 | Pre-register before each run; keep negative results; no post-hoc thresholds |
+
+**§10 — WS7 — Design doctrine derived from the selvedge metaphor**
+
+| id | item |
+| --- | --- |
+| P7.1 | Weave selectivity in from the start; no post-hoc repair of a dense weave |
+| P7.3 | The boundary may have a different structure from the body |
+| P7.5 | Self-finished execution: the plan travels with its own evidence |
+| P7.7 | The formal objective, with the three quantities kept apart |
+
+**§15 — WS12 — Staged program and frontier claim**
+
+| id | item |
+| --- | --- |
+| P12.1 | Finish T2 and preserve its verdict; audit the routed-overflow validity mask |
+| P12.1a | The corrected-dispatch sensitivity run (successor to P12.1, registered separately) |
+| P12.2 | Diagnose H*'s target: leave-one-out, per-expert normalisation, deployed-budget utility |
+| P12.9 | Fresh Rust task suite |
+| P12.10 | The control matrix |
+| P12.11 | Frontier thresholds, fixed before any frontier run |
+| P12.15 | Two pre-scaling technical problems, tracked as blockers |
+| P12.16 | Anti-pattern guard: no new implementation program before the first three steps report |
+| P12.17 | The successor utility target: interaction-aware, deployed-budget, absolute utility retained |
+
+**§19 — WS14 — Runtime and evaluation corrections that must land before capability runs**
+
+| id | item |
+| --- | --- |
+| P14.1 | Decoded-weight residency: stop re-decoding on every read |
+| P14.2 | Prefetch is synchronous: separate fetch and compute timelines |
+| P14.3 | Token-at-a-time prefill: keep the scalar oracle, add a batched path |
+
+
+#### CANDIDATE — 102 items
+
+**§2 — WS2 — Correct the registered architecture accounting**
+
+| id | item |
+| --- | --- |
+| P2.2 | Capacity-scaling ladder with a genuinely oversized bank |
+
+**§3 — WS3 — Error-directed capacity architecture (first experimental matrix)**
+
+| id | item |
+| --- | --- |
+| P3.1 | Memory path with deterministic hashed addressing |
+| P3.2 | Expert path: conditional residual specialists that do not duplicate memory or backbone |
+| P3.3 | Error-directed training: utility target and pre-execution prediction |
+| P3.5 | Training-recipe phases A–D |
+| P3.6 | Cold-start handling: warm-up/diversity initialisation, measured specialisation |
+| P3.7 | Predictability without forcing reuse: a separate prefetch predictor |
+
+**§4 — WS4 — Physical bottleneck and placement**
+
+| id | item |
+| --- | --- |
+| P4.1 | Record the bytes-per-token budget as a design constraint |
+| P4.2 | Three-tier progression: VRAM → host RAM → selective NVMe |
+| P4.3 | Three-way per-group decision: full precision / compressed approximation / omit |
+| P4.4 | Weight-traffic equivalence reporting |
+| P4.5 | Do not use sparse fragmentation when a resident contiguous approximation plus sparse correction is cheaper |
+
+**§5 — WS5 — Inverted and combined mechanisms**
+
+| id | item |
+| --- | --- |
+| P5.1 | Resident dense low-rank approximation + sparse exact delta |
+| P5.2 | Chunk-tiered tiering (chunk union decides fetch) |
+| P5.3 | Rotated shared-base delta experts |
+| P5.4 | Adaptive dense correction triggered by delta mass |
+| P5.5 | WINA / quantisation-error tiering |
+| P5.6 | Native gate as router under the union budget, with low-parameter gating |
+| P5.7 | Sequence-level budget allocation with per-output-token union accounting |
+| P5.8 | Sequence-level masked-expert bank plus adaptive depth |
+| P5.9 | Cheap interaction signals |
+| P5.10 | Oracle-in-the-loop training |
+
+**§10 — WS7 — Design doctrine derived from the selvedge metaphor**
+
+| id | item |
+| --- | --- |
+| P7.2 | Continuity across the boundary: reusable task working sets, never forced router stickiness |
+| P7.4 | The boundary must not distort what it protects |
+| P7.6 | Composable capability protocol, with composability measured |
+
+**§11 — WS8 — Complementarity and two-timescale organization**
+
+| id | item |
+| --- | --- |
+| P8.1 | Task-level D/M selection on fresh held-out tasks |
+| P8.2 | Compositional residuals with a bounded learned gate |
+| P8.3 | Two-timescale selector: task-level working set, token-level inside it |
+| P8.4 | Sublinear cold bytes per task and p95 latency as accessible capacity grows |
+| P8.5 | Task-coherent specialization versus vocabulary specialization |
+
+**§12 — WS9 — Deficit-directed capability construction**
+
+| id | item |
+| --- | --- |
+| P9.1 | Counterfactual capability compiler |
+| P9.2 | Three representations compete under one error-driven objective |
+| P9.3 | Combination utility and an interaction-aware controller |
+| P9.4 | Student-deficit-conditioned addressing |
+| P9.5 | Teacher-derived memory is immutable and versioned at inference |
+| P9.6 | Verifier-compiled procedural capabilities |
+| P9.7 | Memory-selected recurrent reasoning |
+
+**§13 — WS10 — Eighteen candidate mechanisms, each with its own cheap decisive experiment**
+
+| id | item |
+| --- | --- |
+| P10.1 | Hypernetwork-generated experts |
+| P10.2 | LatentMoE geometry: near-square experts at fixed active cost |
+| P10.3 | Writable fast-weight memory split into stable / episodic / working |
+| P10.4 | Supervised latent reasoning |
+| P10.5 | Multi-view routing and expert modulation |
+| P10.6 | Intrinsic-dimension-guided capacity allocation across layers |
+| P10.7 | Query-selective test-time updates on multi-stage tasks |
+| P10.8 | Verifier-compiled symbolic solvers for recurring reasoning classes |
+| P10.9 | Mixture-of-Recursions adaptive depth with shared weights |
+| P10.10 | Student-aligned reasoning distillation |
+| P10.11 | One-token internal correctness probes |
+| P10.12 | Conflict-directed repair |
+| P10.13 | Task-conditioned layer-wise expert budgets under one global budget |
+| P10.15 | Information-density-aware expert compression |
+| P10.17 | Fast-weight product key memory as a writable episodic store |
+| P10.18 | Optimizer court: FOAM vs Muon vs tuned AdamW |
+
+**§14 — WS11 — Twenty-one original mechanism proposals**
+
+| id | item |
+| --- | --- |
+| P11.1 | Causal Bottleneck Repair |
+| P11.2 | Capability Operator Algebra |
+| P11.3 | Functional Innovation Storage |
+| P11.4 | Counterfactual State Transplants |
+| P11.5 | Representation Impedance Matching |
+| P11.6 | Error-Syndrome Addressing |
+| P11.7 | Residual Safety Escrow |
+| P11.8 | Capability Birth and Fusion |
+| P11.9 | Counterexample-Constrained Routing |
+| P11.10 | Inter-Layer Shortcut Capsules |
+| P11.11 | Temporal Capability Leasing |
+| P11.12 | Failure-Directed Latent Repair |
+| P11.13 | Predictive Capability Checkpoints |
+| P11.14 | Reasoning State Compression |
+| P11.15 | Precision-Selective Intelligence |
+| P11.16 | Adversarial Capability Crystallization |
+| P11.17 | Causal Computation Auctions |
+| P11.18 | Adaptive Verification Depth |
+| P11.19 | Neural State Transactionality |
+| P11.20 | Capability Conservation Training |
+| P11.21 | Anti-superficial-specialization suite |
+
+**§15 — WS12 — Staged program and frontier claim**
+
+| id | item |
+| --- | --- |
+| P12.3 | T3: latent-geometry court (P10.2) |
+| P12.4 | T4: generated-weight versus stored-weight court (P10.1) |
+| P12.5 | T5: fast-weight adaptation court (P10.3 / P10.7) |
+| P12.6 | T6: latent-reasoning court (P10.4 / P11.14) |
+
+**§18 — WS13 — Published mechanisms and sixteen inventions, run as competing alternatives**
+
+| id | item |
+| --- | --- |
+| P13.1 | Adaptive expert widths: nested slimmable experts under one budget |
+| P13.2 | Cross-layer expert reuse: shared pools over 2 / 4 / 7 layers |
+| P13.3 | Global experts plus a recurrent routing state |
+| P13.4 | Typed latent reasoning with a learned allocation budget |
+| P13.6 | Capability Seed Compilation |
+| P13.7 | Constraint-Debt Reasoning |
+| P13.8 | Metamorphic Quotient Routing |
+| P13.9 | Semantic Refinement Ladders |
+| P13.10 | Verified Constraint Distillation |
+| P13.11 | Certified Read Elision |
+| P13.12 | Interaction Compilation |
+| P13.13 | Conditional Representation Expansion |
+| P13.14 | Omission-Conditioned Recovery |
+| P13.15 | Counterexample-Preserving Compression |
+| P13.16 | Latent Branch-and-Reconcile |
+| P13.17 | Resident-Side-Information Coding |
+| P13.18 | Phase-Transition Capability Switching |
+| P13.19 | Executable Capability Contracts |
+| P13.20 | Training for Future Locality |
+| P13.21 | Verifier-Calibrated Internal Stopping |
+
+**§19 — WS14 — Runtime and evaluation corrections that must land before capability runs**
+
+| id | item |
+| --- | --- |
+| P14.4 | Expand the evaluation suite beyond 24 tasks |
+| P14.5 | Execute Rust cases through `rustc`/tests, not only through a checker |
+| P14.6 | Keep correctness separate from reference-continuation likelihood |
+| P14.7 | A sealed evaluation set for external comparison |
+
+
+#### HYPOTHESIS — 9 items
+
+**§5 — WS5 — Inverted and combined mechanisms**
+
+| id | item |
+| --- | --- |
+| P5.11 | Recurrent latent computation as a separate later axis |
+
+**§13 — WS10 — Eighteen candidate mechanisms, each with its own cheap decisive experiment**
+
+| id | item |
+| --- | --- |
+| P10.14 | Shortcut-connected specialist execution |
+| P10.16 | Learned reasoning-length control |
+
+**§15 — WS12 — Staged program and frontier claim**
+
+| id | item |
+| --- | --- |
+| P12.7 | T7: the joint court, then capacity scaling |
+| P12.8 | Capability court, three levels |
+| P12.12 | Three distinguishable achievement claims |
+| P12.13 | Transfer test: equivalent capability libraries on a small and a larger backbone |
+| P12.14 | Wildcards: mHC/xHC multi-stream residual capacity, low-rank logits basis |
+
+**§18 — WS13 — Published mechanisms and sixteen inventions, run as competing alternatives**
+
+| id | item |
+| --- | --- |
+| P13.5 | Integration controller (only after the individual winners report) |
+
 ## 0.2 P-correction — the ordering inversion, recorded and fixed
 
 **The inversion.** The §16 queue as written on 2026-11-15 ended with
