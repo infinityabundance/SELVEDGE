@@ -275,6 +275,68 @@ class TrainedRouter:
 
 
 # ---------------------------------------------------------------------------
+# the language-model instrument
+
+
+def completion_loss(model, tokenizer, item: dict, device, max_tokens: int = 8192) -> float:
+    """Mean NLL per reference token under `model`, given the item's prompt.
+
+    This is the capability score the selectors are evaluated on: lower is better.
+    It reads the prompt and the **reference continuation only** — never the
+    model's own generation — so two capabilities are compared on the same text
+    and the paired comparison is exact.
+
+    `model` follows the pinned interface: `model(input_ids=..., use_cache=False)`
+    returning `.logits` of shape `[1, T, vocab]`.
+    """
+    prompt_ids = tokenizer(item["prompt"], return_tensors="pt",
+                           add_special_tokens=True).input_ids
+    reference_ids = tokenizer(item["reference"], return_tensors="pt",
+                              add_special_tokens=False).input_ids
+    if reference_ids.numel() == 0:
+        raise ValueError(f"{item['id']}: the reference continuation is empty")
+    ids = torch.cat([prompt_ids, reference_ids], dim=1)
+    if ids.shape[1] > max_tokens:
+        raise ValueError(f"{item['id']}: prompt plus reference exceeds {max_tokens} "
+                         "tokens")
+    ids = ids.to(device)
+    with torch.inference_mode():
+        logits = model(input_ids=ids, use_cache=False).logits.float()
+    start = prompt_ids.shape[1]
+    target = ids[:, start:]
+    log_probs = torch.nn.functional.log_softmax(logits[:, start - 1:-1, :], dim=-1)
+    values = -log_probs.gather(-1, target.unsqueeze(-1)).squeeze(-1)
+    return float(values.mean())
+
+
+def score_capabilities(models: dict, tokenizer, tasks: list[dict], device) -> dict:
+    """`{capability: [completion loss per item]}` over the same items and text."""
+    losses = {}
+    for name, model in models.items():
+        losses[name] = [completion_loss(model, tokenizer, item, device)
+                        for item in tasks]
+    return losses
+
+
+def load_arm(model_size: str, checkpoint: str, config_path: str, admission_path: str,
+             hf_root: str, device, seed: int = 1001):
+    """Build one T2 arm from its checkpoint; the caller passes the result to
+    `score_capabilities`. GPU-only in practice: the frozen core does not fit the
+    CPU court's memory limit."""
+    import harness
+    from modeling import build_arm, load_admission
+
+    base = harness.load_model(harness.model_path(hf_root, model_size), device)
+    config, admission = load_admission(config_path, admission_path)
+    arm_model = build_arm(base, config["arm"], config, admission, seed, profile="t2")
+    arm_model.model.to(device)
+    state = torch.load(checkpoint, map_location=device, weights_only=False)
+    arm_model.model.load_state_dict(state["model"], strict=False)
+    arm_model.model.eval()
+    return arm_model.model
+
+
+# ---------------------------------------------------------------------------
 # evaluation
 
 
@@ -415,24 +477,63 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--out", required=True)
     parser.add_argument("--contamination", default=None,
                         help="the contamination receipt that clears this set")
+    parser.add_argument("--model-size", default="0.6b", choices=["0.6b", "1.7b"])
+    parser.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
+    for _arm in ("d", "m"):
+        parser.add_argument(f"--arm-{_arm}", default=None)
+        parser.add_argument(f"--config-{_arm}", default=None)
+        parser.add_argument(f"--admission-{_arm}", default=None)
     args = parser.parse_args(argv)
 
     if args.mode == "checkpoint":
-        raise SystemExit(
-            "checkpoint mode needs the GPU court and the trained T2 D and M "
-            "checkpoints; the launch command is in docs/P8-HARNESS.md. Use "
-            "--mode self-test for the CPU harness check.")
+        if not torch.cuda.is_available():
+            raise SystemExit("checkpoint mode requires the GPU court (--gpu); the "
+                             "frozen 0.6B core does not fit the CPU court's memory "
+                             "limit. Use --mode self-test for the CPU harness check.")
+        import harness
 
-    tasks = list(fresh_tasks.TASKS)
-    evaluation = run(tasks, synthetic_capabilities(tasks))
+        device = torch.device("cuda")
+        tokenizer = harness.load_tokenizer(args.hf_root)
+        tasks = list(fresh_tasks.TASKS)
+        models, provenance = {}, {}
+        for name in ("D", "M"):
+            checkpoint = getattr(args, f"arm_{name.lower()}")
+            config_path = getattr(args, f"config_{name.lower()}")
+            admission_path = getattr(args, f"admission_{name.lower()}")
+            if not (checkpoint and config_path and admission_path):
+                raise SystemExit(f"--arm-{name.lower()} needs --config-{name.lower()} "
+                                 f"and --admission-{name.lower()}")
+            models[name] = load_arm(args.model_size, checkpoint, config_path,
+                                    admission_path, args.hf_root, device)
+            provenance[name] = {"checkpoint": checkpoint, "config": config_path,
+                                "admission": admission_path}
+        measured = score_capabilities(models, tokenizer, tasks, device)
+        positions = {item["id"]: index for index, item in enumerate(tasks)}
+
+        def lookup(name):
+            return lambda item: measured[name][positions[item["id"]]]
+
+        evaluation = run(tasks, {"D": lookup("D"), "M": lookup("M")})
+        receipt_extra = {"capability_source": provenance,
+                         "per_item_loss": {name: [round(value, 6) for value in values]
+                                           for name, values in measured.items()}}
+    else:
+        tasks = list(fresh_tasks.TASKS)
+        evaluation = run(tasks, synthetic_capabilities(tasks))
+        receipt_extra = {}
+
     receipt = {
         "schema": SCHEMA,
         "stamp": stamp_now(),
         "revision": os.environ.get("SELVEDGE_REVISION", "unknown"),
         "created_utc": utc_now(),
         "mode": args.mode,
-        "capabilities": "synthetic: D = 1 + 2*[domain in {math, factual}], "
-                        "M = 1 + 2*[domain in {code, rust}] (lower is better)",
+        "capabilities": (
+            "synthetic: D = 1 + 2*[domain in {math, factual}], "
+            "M = 1 + 2*[domain in {code, rust}] (lower is better)"
+            if args.mode == "self-test" else
+            "per-item mean NLL of the item's reference continuation under the "
+            "trained T2 D and M checkpoints (lower is better)"),
         "task_set": fresh_tasks.manifest(),
         "contamination_receipt": args.contamination,
         "method": {
@@ -445,6 +546,7 @@ def main(argv: list[str]) -> int:
                       "the alternating training half against the measured outcome",
         },
         "evaluation": evaluation,
+        **receipt_extra,
     }
     write_json_atomic(os.path.join(REPO, args.out), receipt)
     print(json.dumps({

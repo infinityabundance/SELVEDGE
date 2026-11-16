@@ -43,6 +43,7 @@ TASKS: tuple[dict, ...] = (
     # ------------------------------------------------------------------ rust
     {
         "id": "rust-return-reference-to-local",
+        "reference": 'E0515: cannot return a reference to the local variable text, because the String is dropped when the function returns.',
         "domain": "rust", "kind": "diagnostic", "skill": "lifetimes",
         "prompt": (
             "This function does not compile:\n\n"
@@ -57,6 +58,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-immutable-borrow-then-push",
+        "reference": 'E0502: the immutable borrow first conflicts with the mutable borrow that push takes of the same vector.',
         "domain": "rust", "kind": "diagnostic", "skill": "borrowck",
         "prompt": (
             "This fails to compile:\n\n"
@@ -71,6 +73,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-two-mutable-borrows-same-field",
+        "reference": 'E0499: a second mutable borrow of the same field, because distinct fields are disjoint borrows.',
         "domain": "rust", "kind": "diagnostic", "skill": "borrowck",
         "prompt": (
             "Given `let mut point = Point { x: 1, y: 2 };`, this fails:\n\n"
@@ -84,6 +87,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-borrowed-value-does-not-live-long-enough",
+        "reference": 'E0597: the borrow of x does not live long enough, because x is dropped at the end of the inner block.',
         "domain": "rust", "kind": "diagnostic", "skill": "lifetimes",
         "prompt": (
             "This fails to compile:\n\n"
@@ -100,6 +104,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-move-out-of-index",
+        "reference": 'E0507: cannot move out of an index, because indexing yields a place that a move would leave invalid.',
         "domain": "rust", "kind": "diagnostic", "skill": "ownership",
         "prompt": (
             "This fails to compile:\n\n"
@@ -112,6 +117,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-non-exhaustive-match",
+        "reference": 'E0004: the match is not exhaustive; add a None pattern arm.',
         "domain": "rust", "kind": "diagnostic", "skill": "patterns",
         "prompt": (
             "This fails to compile for `x: Option<i32>`:\n\n"
@@ -125,6 +131,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-rc-across-threads",
+        "reference": 'E0277: Rc does not implement Send, so the closure cannot be sent to another thread.',
         "domain": "rust", "kind": "diagnostic", "skill": "threads",
         "prompt": (
             "This fails to compile:\n\n"
@@ -137,6 +144,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-mutex-guard-across-await",
+        "reference": 'E0277: the future is not Send because the mutex guard is held across the await; drop the guard before awaiting.',
         "domain": "rust", "kind": "diagnostic", "skill": "async",
         "prompt": (
             "This fails when the future is spawned on a multi-threaded executor:\n\n"
@@ -152,6 +160,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-trait-object-without-dyn",
+        "reference": 'E0782: trait objects must include the dyn keyword.',
         "domain": "rust", "kind": "diagnostic", "skill": "traits",
         "prompt": (
             "Rust 2021 edition. This fails:\n\n"
@@ -164,6 +173,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "rust-debug-build-overflow",
+        "reference": 'In a debug build the addition panics with an overflow error; in a release build it wraps around to zero.',
         "domain": "rust", "kind": "diagnostic", "skill": "arithmetic",
         "prompt": (
             "In a debug build, this runs:\n\n"
@@ -177,6 +187,7 @@ TASKS: tuple[dict, ...] = (
     # ------------------------------------------------------------------ code
     {
         "id": "code-dedupe-stable",
+        "reference": '    seen = set()\n    out = []\n    for value in values:\n        if value not in seen:\n            seen.add(value)\n            out.append(value)\n    return out\n',
         "domain": "code", "kind": "code", "skill": "sequences",
         "prompt": (
             "def dedupe(values):\n"
@@ -190,6 +201,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "code-chunks",
+        "reference": "    if size < 1:\n        raise ValueError('size must be >= 1')\n    return [values[i:i + size] for i in range(0, len(values), size)]\n",
         "domain": "code", "kind": "code", "skill": "sequences",
         "prompt": (
             "def chunks(values, size):\n"
@@ -208,6 +220,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "code-word-count",
+        "reference": '    import re\n    counts = {}\n    for word in re.findall(r"[a-z\']+", text.lower()):\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n',
         "domain": "code", "kind": "code", "skill": "text",
         "prompt": (
             "def word_count(text):\n"
@@ -220,6 +233,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "code-parse-ints",
+        "reference": "    out = []\n    for field in text.replace(',', ' ').split():\n        try:\n            out.append(int(field))\n        except ValueError:\n            continue\n    return out\n",
         "domain": "code", "kind": "code", "skill": "parsing",
         "prompt": (
             "def parse_ints(text):\n"
@@ -233,6 +247,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "code-ring-buffer",
+        "reference": "    def __init__(self, capacity):\n        if capacity < 1:\n            raise ValueError('capacity must be >= 1')\n        self.capacity = capacity\n        self._values = []\n    def push(self, value):\n        self._values.append(value)\n        if len(self._values) > self.capacity:\n            self._values.pop(0)\n    def values(self):\n        return list(self._values)\n",
         "domain": "code", "kind": "code", "skill": "state",
         "prompt": (
             "class Ring:\n"
@@ -256,6 +271,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "code-balanced-brackets",
+        "reference": "    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for character in text:\n        if character in '([{':\n            stack.append(character)\n        elif character in pairs:\n            if not stack or stack.pop() != pairs[character]:\n                return False\n    return not stack\n",
         "domain": "code", "kind": "code", "skill": "parsing",
         "prompt": (
             "def balanced(text):\n"
@@ -271,30 +287,35 @@ TASKS: tuple[dict, ...] = (
     # ------------------------------------------------------------------ math
     {
         "id": "math-product-plus",
+        "reference": '402',
         "domain": "math", "kind": "numeric", "skill": "arithmetic",
         "prompt": "Compute 17 * 23 + 11. Answer with the number only.",
         "gold": "402",
     },
     {
         "id": "math-gcd",
+        "reference": '12',
         "domain": "math", "kind": "numeric", "skill": "number theory",
         "prompt": "What is the greatest common divisor of 84 and 132? Answer with the number only.",
         "gold": "12",
     },
     {
         "id": "math-fraction-of",
+        "reference": '72',
         "domain": "math", "kind": "numeric", "skill": "arithmetic",
         "prompt": "What is three quarters of 96? Answer with the number only.",
         "gold": "72",
     },
     {
         "id": "math-sum-1-to-100",
+        "reference": '5050',
         "domain": "math", "kind": "numeric", "skill": "series",
         "prompt": "What is the sum of the integers from 1 to 100 inclusive? Answer with the number only.",
         "gold": "5050",
     },
     {
         "id": "math-power-two",
+        "reference": '1024',
         "domain": "math", "kind": "numeric", "skill": "arithmetic",
         "prompt": "What is 2 raised to the power 10? Answer with the number only.",
         "gold": "1024",
@@ -302,6 +323,7 @@ TASKS: tuple[dict, ...] = (
     # --------------------------------------------------------------- factual
     {
         "id": "fact-anchor-once",
+        "reference": 'B',
         "domain": "factual", "kind": "choice", "skill": "rust ownership",
         "prompt": (
             "Which statement about Rust ownership is correct?\n"
@@ -315,6 +337,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "fact-cargo-check",
+        "reference": 'B',
         "domain": "factual", "kind": "choice", "skill": "tooling",
         "prompt": (
             "What does `cargo check` do that `cargo build` does not have to do?\n"
@@ -328,6 +351,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "fact-async-runtime",
+        "reference": 'B',
         "domain": "factual", "kind": "choice", "skill": "async",
         "prompt": (
             "Which of these is an asynchronous runtime crate for Rust?\n"
@@ -340,6 +364,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "fact-option-reference-size",
+        "reference": '8',
         "domain": "factual", "kind": "numeric", "skill": "representation",
         "prompt": (
             "On a 64-bit target, how many bytes does `Option<&u8>` occupy? "
@@ -348,6 +373,7 @@ TASKS: tuple[dict, ...] = (
     },
     {
         "id": "fact-f64-bits",
+        "reference": '52',
         "domain": "factual", "kind": "numeric", "skill": "representation",
         "prompt": (
             "How many explicit fraction (mantissa) bits does the IEEE-754 binary64 "
@@ -377,8 +403,13 @@ def sha256_text(text: str) -> str:
 
 
 def item_text(item: dict) -> str:
-    """The item's model-independent text: prompt plus any embedded tests."""
-    return item["prompt"] + "\n" + item.get("tests", "")
+    """The item's model-independent text: prompt, embedded tests and reference.
+
+    The reference continuation is included on purpose: it is the text the
+    language-model instrument scores, so it must be covered by the contamination
+    check too.
+    """
+    return item["prompt"] + "\n" + item.get("tests", "") + "\n" + item.get("reference", "")
 
 
 def word_shingles(text: str, width: int = 8) -> set[str]:

@@ -209,6 +209,76 @@ def test_a_summary_feature_widens_the_feature_vector():
 
 
 # ---------------------------------------------------------------------------
+# the language-model instrument
+
+
+class _StubTokenizer:
+    def __init__(self, table):
+        self.table = table
+
+    def __call__(self, text, return_tensors=None, add_special_tokens=True):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(input_ids=torch.tensor([self.table[text]]))
+
+
+class _StubModel:
+    def __init__(self, logits):
+        self._logits = logits
+
+    def __call__(self, input_ids=None, use_cache=False):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(logits=self._logits)
+
+
+def test_completion_loss_scores_only_the_reference_tokens():
+    item = {"id": "stub", "prompt": "P", "reference": "R"}
+    tokenizer = _StubTokenizer({"P": [0, 1], "R": [2, 3]})
+    vocab = 4
+    logits = torch.zeros(1, 4, vocab)   # uniform: every target costs log(4)
+    loss = complementarity.completion_loss(_StubModel(logits), tokenizer, item,
+                                          torch.device("cpu"))
+    assert loss == pytest.approx(float(torch.log(torch.tensor(4.0))), rel=1e-6)
+
+    # a model that favours the actual reference tokens costs almost nothing
+    peaked = torch.full((1, 4, vocab), -20.0)
+    for position, token in ((1, 2), (2, 3)):
+        peaked[0, position, token] = 20.0
+    cheap = complementarity.completion_loss(_StubModel(peaked), tokenizer, item,
+                                           torch.device("cpu"))
+    assert cheap < 1e-4
+    # and the prompt position is not scored: changing it changes nothing
+    altered = peaked.clone()
+    altered[0, 0, :] = torch.tensor([5.0, -5.0, 0.0, 0.0])
+    assert complementarity.completion_loss(_StubModel(altered), tokenizer, item,
+                                           torch.device("cpu")) == pytest.approx(cheap)
+
+
+def test_measured_capability_losses_flow_through_the_same_selector_path():
+    tasks = [{"id": "a", "domain": "code", "prompt": "P", "reference": "R"},
+             {"id": "b", "domain": "math", "prompt": "P", "reference": "R"}]
+    tokenizer = _StubTokenizer({"P": [0, 1], "R": [2, 3]})
+    uniform = _StubModel(torch.zeros(1, 4, 4))
+    peaked = torch.full((1, 4, 4), -20.0)
+    for position, token in ((1, 2), (2, 3)):
+        peaked[0, position, token] = 20.0
+    measured = complementarity.score_capabilities(
+        {"D": uniform, "M": _StubModel(peaked)}, tokenizer, tasks, torch.device("cpu"))
+    assert len(measured["D"]) == len(tasks) == len(measured["M"])
+    positions = {item["id"]: index for index, item in enumerate(tasks)}
+
+    def lookup(name):
+        return lambda item: measured[name][positions[item["id"]]]
+
+    evaluation = complementarity.run(tasks, {"D": lookup("D"), "M": lookup("M")})
+    assert evaluation["selectors"]["oracle"]["mean_loss"] == pytest.approx(
+        sum(measured["M"]) / len(tasks), rel=1e-6)
+    assert evaluation["selectors"]["always-D"]["mean_loss"] == pytest.approx(
+        sum(measured["D"]) / len(tasks), rel=1e-6)
+
+
+# ---------------------------------------------------------------------------
 # the bounded-gate composition
 
 
