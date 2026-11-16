@@ -1,0 +1,78 @@
+    Checking selvedge-core v0.1.0 (/work/crates/selvedge-core)
+    Checking selvedge-format v0.1.0 (/work/crates/selvedge-format)
+    Checking selvedge-atlas v0.1.0 (/work/crates/selvedge-atlas)
+    Checking selvedge-convert v0.1.0 (/work/crates/selvedge-convert)
+    Checking selvedge-store v0.1.0 (/work/crates/selvedge-store)
+    Checking selvedge-sim v0.1.0 (/work/crates/selvedge-sim)
+    Checking selvedge-fixtures v0.1.0 (/work/crates/selvedge-fixtures)
+warning: this function has too many arguments (8/7)
+   --> crates/selvedge-sim/src/compare.rs:137:1
+    |
+137 | / pub fn validate_metrics(
+138 | |     calibration: &Calibration,
+139 | |     target: &Path,
+140 | |     arm: &str,
+...   |
+145 | |     stamp: &str,
+146 | | ) -> Result<MetricsValidation> {
+    | |______________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#too_many_arguments
+    = note: `-W clippy::too-many-arguments` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::too_many_arguments)]`
+
+warning: used `expect()` on an `Option` value
+   --> crates/selvedge-sim/src/placement.rs:526:32
+    |
+526 |             .unwrap_or_else(|| unplaced.iter().next().expect("unplaced is non-empty"));
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if this value is `None`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#expect_used
+    = note: requested on the command line with `-W clippy::expect-used`
+
+warning: `selvedge-sim` (lib) generated 2 warnings
+    Checking selvedge-cli v0.1.0 (/work/crates/selvedge-cli)
+warning: writing `&PathBuf` instead of `&Path` involves a new object where a slice will do
+   --> crates/selvedge-cli/src/sim_cmd.rs:516:22
+    |
+516 | fn load_trace(trace: &PathBuf, manifest: Option<&PathBuf>) -> Result<Trace, SimError> {
+    |                      ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#ptr_arg
+    = note: `-W clippy::ptr-arg` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::ptr_arg)]`
+help: change this to
+    |
+516 - fn load_trace(trace: &PathBuf, manifest: Option<&PathBuf>) -> Result<Trace, SimError> {
+516 + fn load_trace(trace: &Path, manifest: Option<&PathBuf>) -> Result<Trace, SimError> {
+    |
+
+warning: writing `&PathBuf` instead of `&Path` involves a new object where a slice will do
+   --> crates/selvedge-cli/src/sim_cmd.rs:523:27
+    |
+523 | fn load_calibration(path: &PathBuf) -> Result<Calibration, SimError> {
+    |                           ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#ptr_arg
+help: change this to
+    |
+523 - fn load_calibration(path: &PathBuf) -> Result<Calibration, SimError> {
+523 + fn load_calibration(path: &Path) -> Result<Calibration, SimError> {
+    |
+
+warning: writing `&PathBuf` instead of `&Path` involves a new object where a slice will do
+   --> crates/selvedge-cli/src/sim_cmd.rs:527:25
+    |
+527 | fn load_envelopes(path: &PathBuf) -> Result<EnvelopeSet, SimError> {
+    |                         ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#ptr_arg
+help: change this to
+    |
+527 - fn load_envelopes(path: &PathBuf) -> Result<EnvelopeSet, SimError> {
+527 + fn load_envelopes(path: &Path) -> Result<EnvelopeSet, SimError> {
+    |
+
+warning: `selvedge-cli` (bin "selvedge") generated 3 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.54s

@@ -12,7 +12,12 @@
 //! - `selvedge court c|d`: executable Court C (budget accounting) and Court D
 //!   (storage integrity/crash) scenarios;
 //! - `selvedge store bench <bundle>`: exact-mode storage measurement;
-//! - `selvedge io-scan <file>`: physical I/O characterisation.
+//! - `selvedge io-scan <file>`: physical I/O characterisation;
+//! - `selvedge trace export|inspect|generate`: versioned execution traces;
+//! - `selvedge simulate`: trace-driven execution and deadline simulation;
+//! - `selvedge envelope build|apply`: execution envelopes and their utility;
+//! - `selvedge sim calibrate|validate|compare-store|pareto|placement`: the
+//!   calibration, validation and comparison receipts.
 
 #![forbid(unsafe_code)]
 
@@ -28,6 +33,7 @@ mod court;
 mod doctor;
 mod inspect;
 mod inspect_model_cmd;
+mod sim_cmd;
 mod store_cmd;
 mod validate_cmd;
 
@@ -70,6 +76,14 @@ enum Commands {
     Store(store_cmd::StoreArgs),
     /// Measure physical I/O on an existing file.
     IoScan(store_cmd::IoScanArgs),
+    /// Versioned execution-trace commands.
+    Trace(sim_cmd::TraceArgs),
+    /// Simulate a trace against a calibrated cost model.
+    Simulate(sim_cmd::SimulateArgs),
+    /// Execution-envelope commands.
+    Envelope(sim_cmd::EnvelopeArgs),
+    /// Calibration, validation, Pareto and placement receipts.
+    Sim(sim_cmd::SimArgs),
 }
 
 #[derive(Debug, Args)]
@@ -101,6 +115,10 @@ fn main() -> ExitCode {
         Commands::Atlas(args) => atlas_cmd::run(&args),
         Commands::Store(args) => store_cmd::run_store(&args),
         Commands::IoScan(args) => store_cmd::run_io_scan(&args),
+        Commands::Trace(args) => sim_cmd::run_trace(&args),
+        Commands::Simulate(args) => sim_cmd::run_simulate(&args),
+        Commands::Envelope(args) => sim_cmd::run_envelope(&args),
+        Commands::Sim(args) => sim_cmd::run_sim(&args),
     };
     match result {
         Ok(code) => code,

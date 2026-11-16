@@ -7,6 +7,7 @@ members = [
     "crates/selvedge-cli",
     "crates/selvedge-atlas",
     "crates/selvedge-store",
+    "crates/selvedge-sim",
 ]
 resolver = "3"
 
@@ -25,8 +26,12 @@ selvedge-convert = { path = "crates/selvedge-convert" }
 selvedge-fixtures = { path = "crates/selvedge-fixtures" }
 selvedge-atlas = { path = "crates/selvedge-atlas" }
 selvedge-store = { path = "crates/selvedge-store" }
+selvedge-sim = { path = "crates/selvedge-sim" }
 serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.140"
+# `float_roundtrip` makes float parsing exactly round-trip. Receipts carry f64
+# statistics, and a 1-ULP parse difference would make an honest receipt fail an
+# exact comparison.
+serde_json = { version = "1.0.140", features = ["float_roundtrip"] }
 thiserror = "2.0.12"
 sha2 = "0.10.9"
 # Safe POSIX advisory calls (`posix_fadvise`, `statvfs`). The crate contains no

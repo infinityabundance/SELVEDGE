@@ -493,6 +493,7 @@ dependencies = [
  "selvedge-core",
  "selvedge-fixtures",
  "selvedge-format",
+ "selvedge-sim",
  "selvedge-store",
  "serde",
  "serde_json",
@@ -537,6 +538,20 @@ version = "0.1.0"
 dependencies = [
  "proptest",
  "selvedge-core",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "selvedge-sim"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "selvedge-core",
+ "selvedge-fixtures",
+ "selvedge-format",
+ "selvedge-store",
  "serde",
  "serde_json",
  "thiserror",
