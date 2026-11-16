@@ -112,9 +112,14 @@ decision receipt — never written by hand.
    reference-continuation likelihood; and an external comparison needs a sealed
    set.
 
-What is deliberately *not* claimed anywhere: a Pareto win over any external
-system, a capability number, a speed or latency number, or a trained-model
-advantage. See `docs/LIMITATIONS.md`.
+What is deliberately *not* claimed anywhere: a **competitive** performance claim
+(a Pareto win over any external system), a **GPU** performance claim, a
+capability number, or a trained-model advantage. This is not a claim that nothing
+was measured: the CPU runtime has **measured latency, throughput and
+byte-traffic receipts** (`results/runtime/court-e-*`, summarised in
+`docs/PERF-NUMBERS.md` and `docs/RUNTIME.md`). Those are measurements of *this*
+implementation on *this* host, and they are reported as such — not as a
+comparison against any external system. See `docs/LIMITATIONS.md`.
 
 ## Rules this repository enforces mechanically
 

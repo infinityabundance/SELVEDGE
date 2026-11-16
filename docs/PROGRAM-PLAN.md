@@ -63,6 +63,37 @@ for WS1–WS6; section 16 supersedes it only for the new items.
 
 ---
 
+## 0.0 Critical paths (2026-11-16, S20)
+
+The program has **two independent critical paths**. They share instruments but not
+blockers, and conflating them has repeatedly made the physical-execution work
+look like a gate on the capability work (it is not).
+
+**(a) Neural capability path — the decisive path now.**
+1. Finish **H\*** (running) and record its verdict.
+2. Certify the historical **X** and **H** checkpoints by provenance amendment
+   (`results/t2/PROVENANCE-AMENDMENT-X-and-H.json`), or leave them unscoreable
+   with the reason recorded.
+3. Run the fresh Rust suite through the ordinary `cargo test` suite and the
+   3-item trio that the capability court already invokes.
+This path needs the **PyTorch adapter**, not the Rust runtime.
+
+**(b) Physical execution path — real but not on the capability critical path.**
+1. Runtime optimisation (P14.1–P14.3: decoded residency, async prefetch,
+   batched prefill).
+2. Integration of trained modules into the runtime.
+3. Real transfer and latency measurement on the executed path.
+
+**Dependency rule.** **P14.1–P14.3 do not gate the T2 capability run.** The T2
+capability court executes through the PyTorch adapter; WS14 changes what the
+*Rust runtime* measures (bytes/token, cold-byte p95, latency), not whether a
+capability verdict can be produced. Any text hat implies otherwise is corrected
+where it appears. The two paths converge only when a *runtime* claim is made. The
+capability path may report before any WS14 item lands, and must say which
+runtime revision it measured on.
+
+---
+
 ## 0.1 Tier structure and status legend (2026-11-16)
 
 A tier states **how much the program is committed to an item and how much
@@ -97,8 +128,8 @@ Rules:
 
 Tier index — new items: WS13 (§18) has **21** items — P13.1–P13.4 and
 P13.6–P13.21 `CANDIDATE` (20), P13.5 `HYPOTHESIS` (1). WS14 (§19) has **7**
-items — P14.1–P14.3 `ACTIVE` (they gate the first capability run) and
-P14.4–P14.7 `CANDIDATE`.
+items — P14.1–P14.3 `ACTIVE` as runtime-optimisation work (they **do not** gate
+the T2 capability run; see §0.0) and P14.4–P14.7 `CANDIDATE`.
 
 **Assignments that need a reason, not just a row.**
 
@@ -191,7 +222,7 @@ experiment, a falsifying control and a kill criterion, and none is scheduled.
 | P12.16 | Anti-pattern guard: no new implementation program before the first three steps report |
 | P12.17 | The successor utility target: interaction-aware, deployed-budget, absolute utility retained |
 
-**§19 — WS14 — Runtime and evaluation corrections that must land before capability runs**
+**§19 — WS14 — Runtime and evaluation corrections (physical-execution path; does not gate the T2 capability run — see §0.0)**
 
 | id | item |
 | --- | --- |
@@ -355,7 +386,7 @@ experiment, a falsifying control and a kill criterion, and none is scheduled.
 | P13.20 | Training for Future Locality |
 | P13.21 | Verifier-Calibrated Internal Stopping |
 
-**§19 — WS14 — Runtime and evaluation corrections that must land before capability runs**
+**§19 — WS14 — Runtime and evaluation corrections (physical-execution path; does not gate the T2 capability run — see §0.0)**
 
 | id | item |
 | --- | --- |
@@ -2795,16 +2826,34 @@ bytes moved and cold bytes are four different numbers and are never merged
 (P7.7). Bits spent on depth embeddings, routers, compensators and compilers are
 counted in the *active* ledger, not the accessible one.
 
-**Evidence status (from `docs/PRIOR-ART-AND-NOVELTY.md` §12).** Of the four
-published mechanisms, one is verified at abstract level (MoRE), two are
-identity-only because the landing pages serve no abstract (GMoE, TYLER), and one
-could not be located at all (MoSE). Of the sixteen inventions, nine have a
-verified nearest neighbour, one partial, and six have none located. **No item in
-this workstream may be described as a reproduction of MoSE**, and P13.3/P13.4
-may cite GMoE and TYLER for framing only.
+**Evidence status (corrected 2026-11-16, S20; from `docs/PRIOR-ART-AND-NOVELTY.md`
+§12).** All four published mechanisms are verified at abstract level: MoSE
+(PMLR 306), MoRE (arXiv 2609.18176), GMoE (ACL 2026 long 2065) and TYLER (EMNLP
+2026 main 2004). The round-18 finding that MoSE could not be located and that
+GMoE/TYLER were title-only was a **retrieval false negative** (arXiv-only search;
+landing pages that had not yet served an abstract) and is superseded. P13.1,
+P13.3 and P13.4 are therefore **published baselines to reproduce and extend**,
+each with its own measured SELVEDGE delta and falsifying control — they are not
+proposed SELVEDGE mechanisms. Of the sixteen inventions, nine have a verified
+nearest neighbour, one partial, and six have none located; those remain the
+novelty surface.
+
+**Tier enforcement gate (dated statement, 2026-11-16).** MoSE/GMoE/TYLER
+reproductions and the sixteen inventions (P13.6–P13.21) **do not start** until
+(1) H\* has reported its result and (2) the first defensible capability
+measurement exists (a registered T2 verdict, not an exploratory partial). This is
+a hard gate: no workstream may begin a P13 reproduction or invention ahead of it.
+Any exception must be registered in advance in `docs/WORK-LOG.md` with a written
+justification (what is unblocked, why it cannot wait, what it could contaminate)
+and the operator's approval; an unregistered exception is a defect.
 
 ### P13.1 — Adaptive expert widths: nested slimmable experts under one budget
 
+**Status: published baseline to reproduce and extend** (MoSE, Tastan et al., ICML
+2026, PMLR 306:119816–119836; `https://proceedings.mlr.press/v306/tastan26a.html`).
+MoSE already states "nested, slimmable" experts "executed at variable widths"
+under a fixed budget; SELVEDGE re-runs that baseline on its byte-accounted store
+and adds the shard-aligned, per-expert allocation and its falsifying control.
 **What.** Each expert is a nested stack at **25 / 50 / 75 / 100%** of its width,
 trained so every prefix is usable. Width tiers must be **aligned to shard
 boundaries** (the current store reads whole shards; a tier that is not
@@ -2863,9 +2912,14 @@ pools and against independent per-layer experts.
 **Why.** Global experts amortise a capability that every layer needs; a recurrent
 router lets a layer's choice depend on the path taken to reach it, which a
 per-token independent router cannot express.
-**Evidence boundary.** GMoE is verified **by title only** ("Global Mixture of
-Experts with Logit Propagation"); the *recurrent routing state* is **PROPOSED**,
-not a reproduction. This item must say so in its own receipt.
+**Evidence boundary (corrected 2026-11-16, S20).** This is a **reproduction and
+extension of published GMoE** (ACL 2026 long 2065; `https://aclanthology.org/2026.acl-long.2065/`),
+whose abstract states a "GRU-based recurrent component shared across layers"
+with layer-specific heads that "propagate routing logits across layers", plus
+"Global Experts shared across all layers" and a "Local Expert per layer". The
+recurrent routing state is therefore **published, not PROPOSED**. The SELVEDGE
+delta to measure is the byte-accounted cost and the state-reset ablation, not
+the existence of the mechanism.
 **Decisive experiment.** Three arms at matched active parameters: global+local
 with a recurrent router, global+local with a stateless router, and an independent
 bank. Measure **useful computation** (the drop when the global experts are
@@ -2890,9 +2944,14 @@ much of the budget it gets.
 explicit chain-of-thought spends output tokens. A typed operator set with a
 budget is the smallest architecture that can spend *internal* compute differently
 per problem.
-**Evidence boundary.** TYLER is verified by title only ("… When to Think, What to
-Compute, and How Much to Allocate"); that the operator set is exactly these three
-and that the budget is *learned* is **PROPOSED**.
+**Evidence boundary (corrected 2026-11-16, S20).** This is a **reproduction and
+extension of published TYLER** (EMNLP 2026 main 2004; `https://aclanthology.org/2026.emnlp-main.2004/`),
+whose abstract states that Tyler "learns a policy" that at each step chooses to
+emit a token or "invoke a typed latent operator", with operators supporting
+"global planning, local state updates, or reusable procedural abstraction". The
+typed operator set and the learned allocation policy are therefore **published,
+not PROPOSED**. The SELVEDGE delta is the matched-latency comparison and the
+budget-variance measurement.
 **Decisive experiment.** Typed operators vs explicit chain-of-thought vs ordinary
 recurrence, matched on **latency, learned-parameter usage and task success**, on
 the fresh suite.
@@ -3232,11 +3291,12 @@ with the verifier-cost row. **Status.** open. **Effort.** M. **Tier.** CANDIDATE
 
 ---
 
-## 19. WS14 — Runtime and evaluation corrections that must land before capability runs
+## 19. WS14 — Runtime and evaluation corrections (physical-execution path)
 
 These seven items are not new mechanisms. They are the corrections that decide
-whether a capability run measures the model or the instrument. Each is
-CPU-testable today.
+whether a **runtime** claim measures the model or the instrument. Each is
+CPU-testable today. **P14.1–P14.3 do not gate the T2 capability run** — that court
+executes through the PyTorch adapter (§0.0). They gate runtime and latency claims.
 
 ### P14.1 — Decoded-weight residency: stop re-decoding on every read
 
@@ -3310,22 +3370,26 @@ updated contamination receipt, and a **new** pre-registration that supersedes
 (does not edit) the current one.
 **Depends.** P12.9. **Status.** open. **Effort.** XL. **Tier.** CANDIDATE.
 
-### P14.5 — Execute Rust cases through `rustc`/tests, not only through a checker
+### P14.5 — Strengthen checker coverage and scale for Rust cases
 
-**What.** Every suite item whose verifier is a Rust test must be **executed** —
-compiled and run by `rustc`/`cargo test` in the bounded sandbox — with the
-compiler's exit status and the test result recorded as the correctness signal.
-**Why.** Part of the current instrument scores reference-continuation likelihood
-(or a checker's structural comparison) rather than executing the submitted code.
-Those are different measurements, and only execution supports a correctness
-claim. The sandbox already records compile error, assertion failure, timeout and
-allocation failure as distinct outcomes (`docs/CAPABILITY-COURT.md`); this item
-makes execution the rule for every Rust case, not the exception.
-**Acceptance evidence.** a receipt showing, per item, the executed command, the
-exit status, and the outcome class; plus the count of items still scored without
-execution, with a reason for each.
-**Depends.** P12.9. **Status.** partial (the sandbox executes; coverage is not
-complete). **Effort.** L. **Tier.** CANDIDATE (gates each new suite expansion).
+**What.** Rust cases are **already executed** through `cargo`/`rustc`: the
+capability court runs its ordinary `cargo test` suite and the 3-item trio through
+`cargo test`, and the compiler exit status and test result are the correctness
+signal. The remaining gap is **not** a missing executable path. It is (a)
+**coverage** — some items are still scored by reference-continuation likelihood
+or a checker's structural comparison instead of an executed test — and (b)
+**scale** — the executed set and the per-item isolation must grow with the suite.
+**Why.** Reporting "Rust cases are not executed" would be false. The honest
+deficit is that execution is the rule for the items that have it and not yet for
+all of them, and that the sandbox must keep compile error, assertion failure,
+timeout and allocation failure distinct (`docs/CAPABILITY-COURT.md`) as the set
+grows. Stronger checkers (property/round-trip tests where a single expected-output
+test is too weak) are the other half of the gap.
+**Acceptance evidence.** a receipt showing, per tested item, the executed
+command, exit status and outcome class; plus the count of items still scored
+without execution, with a reason for each, and the growth of the executed set.
+**Depends.** P12.9. **Status.** partial (execution exists; coverage and scale do
+not). **Effort.** L. **Tier.** CANDIDATE (gates each new suite expansion).
 
 ### P14.6 — Keep correctness separate from reference-continuation likelihood
 
