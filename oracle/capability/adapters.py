@@ -117,6 +117,16 @@ class Adapter:
     def generate(self, requests: list) -> list:
         raise NotImplementedError
 
+    def score(self, prompt: str, texts: list) -> list:
+        """Exact continuation log-probabilities for `texts` after `prompt`.
+
+        The likelihood-selection stage needs this and nothing else from the arm:
+        no generation, no sampling and no feedback. An arm that cannot score
+        refuses rather than falling back to generation.
+        """
+        raise AdapterError(f"{self.name} cannot score continuations; the "
+                           "likelihood-selection stage needs an exact scorer")
+
 
 class T2ArmAdapter(Adapter):
     """One trained T2 arm: the frozen 0.6B base plus its checkpointed modules.
@@ -430,6 +440,12 @@ class T2ArmAdapter(Adapter):
     def generate(self, requests: list) -> list:
         _torch, tokenizer, model, device, _state = self._load()
         return greedy_generate(model, tokenizer, requests, device, self.batch)
+
+    def score(self, prompt: str, texts: list) -> list:
+        from . import scoring
+
+        _torch, tokenizer, model, device, _state = self._load()
+        return scoring.score_with_model(model, tokenizer, prompt, texts, device)
 
 
 class FakeAdapter(Adapter):

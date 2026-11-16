@@ -21,7 +21,7 @@ import json
 import os
 import sys
 
-from . import adapters, court, formats, suite
+from . import adapters, court, formats, scoring, suite
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_SUITE = os.path.join(REPO, "fixtures", "capability")
@@ -46,6 +46,23 @@ def _pairs(values: list, flag: str) -> dict:
             raise SystemExit(f"{flag} {name!r} was given twice")
         parsed[name] = path
     return parsed
+
+
+def _t2_adapter(args):
+    """The one place a T2 arm adapter is built from the command line."""
+    missing = [name for name, value in (
+        ("--t2-checkpoint", args.t2_checkpoint),
+        ("--t2-config", args.t2_config),
+        ("--t2-admission", args.t2_admission)) if not value]
+    if missing:
+        raise SystemExit(f"--t2-arm needs {', '.join(missing)}")
+    return adapters.T2ArmAdapter(
+        args.t2_arm, args.t2_checkpoint, args.t2_config, args.t2_admission,
+        args.hf_root, device=args.device, batch=args.batch,
+        accounting=args.t2_accounting,
+        training_receipt=args.t2_training_receipt,
+        mask_order=args.t2_mask_order,
+        provenance_amendment=args.provenance_amendment)
 
 
 def main(argv: list[str]) -> int:
@@ -110,6 +127,29 @@ def main(argv: list[str]) -> int:
     generate.add_argument("--few-shot", default=None,
                           help="JSON array of few-shot example strings")
 
+    select = subparsers.add_parser(
+        "select",
+        help="likelihood selection: score every candidate's content and choose, "
+             "with no free-form generation (instrument v2)")
+    select.add_argument("--t2-arm", required=True)
+    select.add_argument("--t2-checkpoint", required=True)
+    select.add_argument("--t2-config", required=True)
+    select.add_argument("--t2-admission", required=True)
+    select.add_argument("--t2-accounting", default=None)
+    select.add_argument("--t2-training-receipt", default=None)
+    select.add_argument("--t2-mask-order", default="legacy")
+    select.add_argument("--provenance-amendment", default=None)
+    select.add_argument("--hf-root", default=os.environ.get("HF_HOME", "/hf-cache"))
+    select.add_argument("--device", default=None)
+    select.add_argument("--batch", type=int, default=4)
+    select.add_argument("--modes", default=",".join(scoring.RANKING_MODES))
+    select.add_argument("--only", default=None,
+                        help="comma-separated task ids (a subset run)")
+    select.add_argument("--category", default=None,
+                        help="comma-separated suite categories")
+    select.add_argument("--preregistration", default=None)
+    select.add_argument("--out", required=True)
+
     check = subparsers.add_parser("check")
     check.add_argument("--generations", required=True)
     check.add_argument("--out", required=True)
@@ -118,6 +158,10 @@ def main(argv: list[str]) -> int:
     check.add_argument("--keep", action="store_true")
     check.add_argument("--category", default=None,
                        help="comma-separated suite categories to score")
+    check.add_argument("--format", default=None,
+                       help="comma-separated formats to score (a run that asked only "
+                            "those formats); an unasked item is neither scored nor "
+                            "counted as a failure")
     check.add_argument("--min-category-items", type=int, default=court.MIN_CATEGORY_ITEMS,
                        help="refuse a category with fewer scored items (default: %(default)s)")
     check.add_argument("--partial-credit", action="store_true",
@@ -303,22 +347,9 @@ def main(argv: list[str]) -> int:
 
     if args.command == "generate":
         if args.t2_arm:
-            missing = [name for name, value in (
-                ("--t2-checkpoint", args.t2_checkpoint),
-                ("--t2-config", args.t2_config),
-                ("--t2-admission", args.t2_admission)) if not value]
-            if missing:
-                raise SystemExit(f"--t2-arm needs {', '.join(missing)}")
-            adapter = adapters.T2ArmAdapter(
-                args.t2_arm, args.t2_checkpoint, args.t2_config, args.t2_admission,
-                args.hf_root, device=args.device, batch=args.batch,
-                accounting=args.t2_accounting,
-                training_receipt=args.t2_training_receipt,
-                mask_order=args.t2_mask_order,
-                provenance_amendment=args.provenance_amendment)
+            adapter = _t2_adapter(args)
         elif args.adapter_spec:
-            spec = load_json(args.adapter_spec)
-            adapter = adapters.adapter_from_spec(spec)
+            adapter = adapters.adapter_from_spec(load_json(args.adapter_spec))
         else:
             raise SystemExit("give --adapter-spec or --t2-arm")
         few_shot = None
@@ -337,15 +368,34 @@ def main(argv: list[str]) -> int:
         print(f"capability_court: generated {len(receipt['items'])} items -> {args.out}")
         return 0
 
+    if args.command == "select":
+        adapter = _t2_adapter(args)
+        only = args.only.split(",") if args.only else None
+        categories = args.category.split(",") if args.category else None
+        modes = tuple(mode.strip() for mode in args.modes.split(",") if mode.strip())
+        unknown = [mode for mode in modes if mode not in scoring.RANKING_MODES]
+        if unknown:
+            raise SystemExit(f"unknown ranking modes: {unknown}")
+        receipt = court.select(
+            adapter, args.suite, args.out, modes=modes, only=only,
+            categories=categories, preregistration=args.preregistration, repo=REPO)
+        primary = sum(1 for item in receipt["items"]
+                      if item["output"]["extra"]["selection"]["primary"]["choice"])
+        print(f"capability_court: selected a candidate for {primary} of "
+              f"{len(receipt['items'])} items -> {args.out}")
+        return 0
+
     if args.command == "check":
         generations = load_json(args.generations)
         categories = args.category.split(",") if args.category else None
+        formats_filter = args.format.split(",") if args.format else None
         result = court.check(generations, args.suite, args.out,
                              preregistration=args.preregistration,
                              keep=args.keep, workroot=args.workroot,
                              categories=categories,
                              min_category_items=args.min_category_items,
-                             partial_credit=args.partial_credit)
+                             partial_credit=args.partial_credit,
+                             formats_filter=formats_filter)
         scores = result["scores"]
         print(f"capability_court: composite {scores['primary_composite']:.4f} "
               f"[{scores['primary_ci']['ci_low']:.4f}, {scores['primary_ci']['ci_high']:.4f}]")

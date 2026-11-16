@@ -1,0 +1,103 @@
+{
+  "schema": "selvedge/capability-calibration-preregistration/v2",
+  "registered_utc": "2026-11-16T16:45:00Z",
+  "status": "appended after the S29 calibration refusal and before any S30 selection run; v1, the T2 verdict and their receipts are unchanged",
+  "supersedes": null,
+  "appends_to": "docs/capability-calibration-preregistration-v1.json",
+  "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6",
+  "suite_root": "fixtures/capability-calibrated",
+  "why": "The S29 calibration pass refused to emit a suite version because every arm's answer was constant. The S30 forensics (results/capability/forensics-20261116T170100Z.json) and sanity ladder (results/capability/ladder/D-20261116T170500Z.json) measured the cause: the completion arm repeats the example letter that the answer-format instruction shows ('C' for patch-selection, 'B' for diagnostic-identification), and with no example letter it applies a fixed position prior. Its choice does not follow the candidate content under permutation. A format that requires free-form generation therefore cannot discriminate on these arms, by construction. This registration replaces generation in the selection formats with a likelihood ranking and registers the entropy screen that excludes a format whose answers are still constant.",
+  "instrument": {
+    "name": "likelihood-selection",
+    "version": "v2",
+    "score": "the model's own log-probability of a candidate's content as a continuation of the selection prompt; no sampling, no greedy decoding and no free-form generation",
+    "primary_ranking_mode": "content-mean",
+    "ranking_modes": ["content-mean", "content-sum", "letter-mean", "letter-sum"],
+    "score_fields": ["sum", "mean"],
+    "sum_statement": "the exact sum of the candidate's token log-probabilities",
+    "mean_statement": "the exact sum divided by the candidate's token count (length-normalised); the registered primary, because a sum rewards a long candidate structurally",
+    "diagnostic_ranking_modes": ["letter-mean", "letter-sum"],
+    "diagnostic_mode_statement": "the letter modes score ' A'/' B'/' C' given the prompt; they are recorded as an unscored diagnostic of position bias and never decide an item",
+    "prompt_variant": "selection-v1",
+    "example_letter_in_prompt": false,
+    "formats": ["patch-selection", "diagnostic-identification"],
+    "not_formats": {
+      "body-completion": "still a free-form format; it is screened, and excluded for an arm whose answers are constant, rather than scored",
+      "file-replacement": "still a free-form format; same rule"
+    }
+  },
+  "primary": {
+    "metric": "verified_task_success",
+    "endpoint": "the candidate the ranking chose passes the executable checker (for a diagnostic item, its option's registered consequence compiles and resolves the failure, reported on verified_diagnostic)",
+    "margin_is_diagnostic": true,
+    "margin_statement": "the ranking margin (best minus runner-up log-probability) is recorded per item and never substituted for the executable outcome; a correctly ranked item can still fail to compile",
+    "decision_rule": "unchanged from v4 and v1: 10% relative improvement, paired 95% CI lower bound above zero, no category regressing by more than 0.05 absolute"
+  },
+  "secondary": {
+    "metric": "fraction_of_hidden_tests_passed",
+    "role": "descriptive only, recorded per item, never a decision input"
+  },
+  "diagnostic": {
+    "metric": "verified_diagnostic",
+    "role": "reported separately with its own item count; never pooled with executable success",
+    "rule": "an option is verified by applying that option's registered consequence and compiling it"
+  },
+  "anti_gaming": {
+    "scorer_sees_only_the_prompt_and_candidates": true,
+    "labels_not_scored": "the candidate's positional label is not part of the scored content",
+    "reference_flags_not_scored": "the reference flag is read for the audit and never passed to the scorer",
+    "checker_not_visible": "selection runs in the oracle court with no cargo and no checker; the check stage runs after, in the rust court",
+    "position_is_not_an_input": "the ranking is over content scores, so the display position cannot favour a candidate; the per-item reference position is recorded and its histogram summarised (position_audit) to show the reference is not always shown in the same place",
+    "no_feedback": true,
+    "no_tools": true,
+    "no_few_shot": true,
+    "no_truncation": "a scored sequence longer than 4096 tokens refuses rather than scoring a prefix"
+  },
+  "entropy_screen": {
+    "min_answer_entropy_bits": 0.1,
+    "max_modal_answer_share": 0.9,
+    "rule": "for every format, the arm's answers across items are counted by their comparable key (the chosen letter for a selection format, the whitespace-normalised text for a free-form format). Below the entropy minimum or above the modal-share maximum, the format is marked non-discriminating and excluded for that arm; it is not scored",
+    "why": "a constant answer has entropy zero and cannot separate items or arms; excluding it prevents the base rate of the constant from being reported as accuracy"
+  },
+  "pilot": {
+    "arms": ["D", "X"],
+    "rationale": "the two cheapest arms; the pilot measures the instrument, not a capability comparison",
+    "items": "every patch-selection and diagnostic-identification item of the calibration split (37)",
+    "must_establish": [
+      "per-format accuracy for each arm from the executable checker",
+      "the across-arm spread per format, and whether any format is non-zero and non-saturated",
+      "the entropy screen's verdict per format and arm, with an excluded format excluded rather than scored",
+      "the measured baseline and paired variance, and the required n for 80% power at a 10% relative effect, or an explicit statement that this n is unreachable"
+    ],
+    "must_not": [
+      "open the sealed holdback",
+      "change the T2 verdict or the v1 calibration window",
+      "report the five-arm comparison: the instrument is not yet calibrated and not yet powered"
+    ]
+  },
+  "power": {
+    "formula": "n_per_category = (z_{1-alpha/2} + z_power)^2 * Var(d) / (categories * (baseline * relative_effect)^2)",
+    "target_power": 0.8,
+    "level": 0.95,
+    "relative_effect": 0.1,
+    "baseline": "the measured mean per-item pass rate over the likelihood-selected selection items, not an assumed 0.5",
+    "variance": "the variance of per-item paired differences over the arm pairs the pilot actually ran",
+    "cannot_be_finalised_now": "no likelihood-selection run has happened, so neither the baseline nor Var(d) exists; the pilot reports both and the required n, or names it as unreachable"
+  },
+  "does_not_change": {
+    "v1_calibration_window": "the S28 window, its thresholds and results/capability/calibration-20261116T164100Z.json are unchanged",
+    "v4_capability_preregistration": "unchanged",
+    "t2_verdict": "The registered T2 verdict (error_direction_not_supported), its thresholds, its KL/PC endpoint and its receipts are unchanged.",
+    "primary_relative_threshold": 0.1,
+    "category_regression_limit": 0.05,
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 20261115
+  },
+  "evidence": {
+    "forensics": "results/capability/forensics-20261116T170100Z.json",
+    "sanity_ladder": "results/capability/ladder/D-20261116T170500Z.json",
+    "derivation_verification": "results/capability/derivation-verify-calibration.json",
+    "cpu_tests": "oracle/tests/test_capability_scoring.py and oracle/tests/test_capability_forensics.py",
+    "code": ["oracle/capability/scoring.py", "oracle/capability/forensics.py", "oracle/capability/ladder.py", "oracle/capability/court.py"]
+  }
+}

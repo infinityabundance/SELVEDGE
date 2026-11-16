@@ -29,9 +29,11 @@ import math
 import os
 import subprocess
 import sys
+import time
 
 from . import extract, stats, suite as suite_module
 from . import formats as format_module
+from . import scoring as scoring_module
 
 SCHEMA_GENERATIONS = "selvedge/capability-generations/v1"
 SCHEMA_RESULT = "selvedge/capability-result/v1"
@@ -184,8 +186,21 @@ def write_json_atomic(path: str, payload: dict) -> None:
 # prompts, decoding and few-shot hygiene
 
 
-def task_prompt(task) -> str:
-    return suite_module.render_prompt(task)
+def task_prompt(task, variant: str | None = None) -> str:
+    """The prompt this task's variant renders to.
+
+    `None` is the registered v1 generation prompt. The likelihood-selection
+    instrument renders its own variant, and the receipt names it so the check
+    stage recomputes the hash of what the arm actually saw rather than of a prompt
+    it did not.
+    """
+    if not variant:
+        return suite_module.render_prompt(task)
+    from . import scoring
+
+    if variant == scoring.PROMPT_VARIANT:
+        return scoring.selection_prompt(task)
+    raise CourtError(f"unknown prompt variant {variant!r}")
 
 
 def suite_prompt_hashes(collections: dict) -> dict:
@@ -194,7 +209,6 @@ def suite_prompt_hashes(collections: dict) -> dict:
         for task in collections[kind]:
             hashes[task.id] = suite_module.prompt_sha256(task)
     return hashes
-
 
 def _word_shingles(text: str, width: int = 8) -> set:
     words = " ".join(text.lower().split()).split()
@@ -357,6 +371,166 @@ def adapters_request(item_id: str, prompt: str, max_new_tokens: int, stops, seed
                    stops=tuple(stops), seed=seed)
 
 
+# ---------------------------------------------------------------------------
+# stage 1b: likelihood selection (S30)
+
+
+def select(adapter, suite_root: str, out: str,
+           modes=scoring_module.RANKING_MODES,
+           only: list | None = None, categories: list | None = None,
+           preregistration: str | None = None, repo: str | None = None,
+           score_fn=None) -> dict:
+    """Score every candidate's content and choose, with no generation.
+
+    The receipt is a generations receipt (same schema, same prompt hash contract)
+    so the registered `check` stage compiles the chosen candidate unchanged. What
+    differs is recorded, not hidden: the stage, the prompt variant, the ranking
+    modes, the per-candidate log-probabilities and the margins.
+    """
+    repo = repo or os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))))
+    collections = suite_module.load_suite(suite_root)
+    manifest = suite_module.build_manifest(suite_root)
+    tasks = [task for task in collections["suite"]
+             if format_module.task_format(task) in (format_module.FORMAT_PATCH,
+                                                    format_module.FORMAT_DIAGNOSTIC)]
+    if categories:
+        wanted_categories = set(categories)
+        tasks = [task for task in tasks if task.category in wanted_categories]
+        missing_categories = wanted_categories - {task.category for task in tasks}
+        if missing_categories:
+            raise CourtError(f"unknown categories: {sorted(missing_categories)}")
+    if only:
+        wanted = set(only)
+        tasks = [task for task in tasks if task.id in wanted]
+        missing = wanted - {task.id for task in tasks}
+        if missing:
+            raise CourtError(f"unknown or non-selection task ids: {sorted(missing)}")
+    if not tasks:
+        raise CourtError("the run selected no selection item")
+    tasks.sort(key=lambda task: task.id)
+
+    scorer = score_fn or adapter.score
+    adapter_metadata = adapter.metadata()
+
+    records = []
+    for task in tasks:
+        prompt = scoring_module.selection_prompt(task)
+        began = time.monotonic_ns()
+        record = scoring_module.select_item(task, prompt, scorer, modes=modes)
+        record["prompt"] = prompt
+        record["category"] = task.category
+        record["tier"] = format_module.tier_for(task)
+        record["latency_ms"] = (time.monotonic_ns() - began) // 1_000_000
+        records.append(record)
+
+    position = scoring_module.position_audit(records)
+    registration_block = None
+    if preregistration:
+        registration = load_preregistration(preregistration)
+        problems = scoring_module.verify_registration(
+            registration, manifest["suite_sha256"],
+            sorted({record["format"] for record in records}))
+        if problems:
+            raise CourtError(
+                "the registration does not match this stage: " + "; ".join(problems))
+        registration_block = {"path": preregistration,
+                              "sha256": sha256_file(preregistration),
+                              "schema": registration.get("schema")}
+
+    items = []
+    for record in records:
+        primary = record["rankings"][scoring_module.PRIMARY_MODE]
+        items.append({
+            "id": record["id"],
+            "category": record["category"],
+            "format": record["format"],
+            "prompt_sha256": record["prompt_sha256"],
+            "output": {
+                "text": primary["choice"],
+                "finish_reason": "selection",
+                "tokens_out": 0,
+                "latency_ms": record["latency_ms"],
+                "extra": {"selection": {
+                    "prompt_variant": scoring_module.PROMPT_VARIANT,
+                    "primary_mode": scoring_module.PRIMARY_MODE,
+                    "labels": record["labels"],
+                    "reference": record["reference"],
+                    "reference_position": record["reference_position"],
+                    "candidates": record["candidates"],
+                    "rankings": record["rankings"],
+                    "primary": primary,
+                }},
+            },
+        })
+
+    formats_summary = {"by_format": {}, "by_tier": {}, "by_metric": {},
+                       "extraction_policies": {}}
+    for task in tasks:
+        fmt = format_module.task_format(task)
+        formats_summary["by_format"][fmt] = formats_summary["by_format"].get(fmt, 0) + 1
+        tier = format_module.tier_for(task)
+        formats_summary["by_tier"][tier] = formats_summary["by_tier"].get(tier, 0) + 1
+        metric = format_module.metric_for(task)
+        formats_summary["by_metric"][metric] = (
+            formats_summary["by_metric"].get(metric, 0) + 1)
+        policy = format_module.extraction_policy(task)
+        formats_summary["extraction_policies"][policy] = (
+            formats_summary["extraction_policies"].get(policy, 0) + 1)
+
+    receipt = {
+        "schema": SCHEMA_GENERATIONS,
+        "stage": "select",
+        "stamp": stamp_now(),
+        "revision": revision(repo),
+        "created_utc": utc_now(),
+        "command": " ".join(sys.argv),
+        "adapter": adapter_metadata,
+        "suite": {
+            "root": os.path.abspath(suite_root),
+            "suite_sha256": manifest["suite_sha256"],
+            "counts": manifest["counts"],
+            "prompt_hashes": {record["id"]: record["prompt_sha256"]
+                              for record in records},
+            "formats": formats_summary,
+        },
+        "decoding": {
+            "mode": "likelihood-selection",
+            "prompt_variant": scoring_module.PROMPT_VARIANT,
+            "primary_mode": scoring_module.PRIMARY_MODE,
+            "ranking_modes": list(modes),
+            "max_new_tokens": 0,
+            "stops": [],
+            "seed": DEFAULT_SEED,
+            "order": "sorted",
+            "category_filter": sorted(categories) if categories else None,
+            "greedy": None,
+            "sampling": "none",
+            "feedback": "none",
+            "few_shot_texts": [],
+        },
+        "instrument": {
+            "name": "likelihood-selection",
+            "version": "v2",
+            "primary_metric": format_module.METRIC_EXECUTABLE,
+            "diagnostic_metric": format_module.METRIC_DIAGNOSTIC,
+            "margin_is_diagnostic": True,
+            "candidate_labels_given_to_the_scorer": False,
+            "reference_flags_given_to_the_scorer": False,
+            "score_fields": ["sum", "mean"],
+            "position_audit": position,
+        },
+        "preregistration": registration_block or {
+            "path": None, "sha256": None,
+            "note": "this selection run is not registered against a v2 contract"},
+        "resources": resource_usage(),
+        "few_shot": None,
+        "items": items,
+    }
+    write_json_atomic(out, receipt)
+    return receipt
+
+
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -452,7 +626,8 @@ def check(generations: dict, suite_root: str, out: str,
           categories: list | None = None,
           min_category_items: int = MIN_CATEGORY_ITEMS,
           partial_credit: bool = False,
-          partial_runner=None) -> dict:
+          partial_runner=None,
+          formats_filter: list | None = None) -> dict:
     from . import checkers
 
     runner = runner or (lambda task, files: checkers.run_check(
@@ -463,6 +638,18 @@ def check(generations: dict, suite_root: str, out: str,
         os.path.abspath(__file__))))
     collections = suite_module.load_suite(suite_root)
     tasks = {task.id: task for kind in ("suite", "trio") for task in collections[kind]}
+    if formats_filter:
+        ## A run that asked only some formats (the likelihood-selection pilot asks
+        ## the selection formats only) must be scored on exactly those items. An
+        ## unasked item is not a failure, and it is not silently filled with one.
+        wanted_formats = set(formats_filter)
+        unknown_formats = wanted_formats - set(format_module.FORMATS)
+        if unknown_formats:
+            raise CourtError(f"unknown formats: {sorted(unknown_formats)}")
+        tasks = {task_id: task for task_id, task in tasks.items()
+                 if format_module.task_format(task) in wanted_formats}
+        if not tasks:
+            raise CourtError("the format filter selected no items")
     if categories:
         wanted_categories = set(categories)
         tasks = {task_id: task for task_id, task in tasks.items()
@@ -504,9 +691,10 @@ def check(generations: dict, suite_root: str, out: str,
     if missing:
         raise CourtError(f"generations receipt is missing items: {missing[:5]}")
     # The prompt the arm saw includes any few-shot prefix recorded at generation,
-    # so the hash check must rebuild it rather than compare against the bare task
-    # prompt.
+    # and the likelihood-selection instrument's own prompt variant, so the hash
+    # check rebuilds exactly that rather than the bare registered task prompt.
     few_shot_texts = list((generations.get("decoding") or {}).get("few_shot_texts") or [])
+    prompt_variant = (generations.get("decoding") or {}).get("prompt_variant")
 
     rows = []
     per_category: dict[str, list] = {}
@@ -518,7 +706,7 @@ def check(generations: dict, suite_root: str, out: str,
     for task_id in sorted(tasks):
         task = tasks[task_id]
         recorded_prompt = outputs[task_id]["prompt_sha256"]
-        prompt_text = task_prompt(task)
+        prompt_text = task_prompt(task, prompt_variant)
         if few_shot_texts:
             prompt_text = "\n\n".join(few_shot_texts + [prompt_text])
         expected_prompt = sha256_bytes(prompt_text.encode("utf-8"))
@@ -574,6 +762,8 @@ def check(generations: dict, suite_root: str, out: str,
                            "ok": parsed.ok},
             "tokens_out": outputs[task_id]["output"].get("tokens_out"),
             "latency_ms": outputs[task_id]["output"].get("latency_ms"),
+            "selection": (outputs[task_id]["output"].get("extra") or {}).get(
+                "selection"),
             "evidence": {key: value for key, value in outcome.items()
                          if key in ("problems", "checker")} | {
                 "stderr_sha256": (outcome.get("evidence") or {}).get("stderr_sha256"),
@@ -642,16 +832,19 @@ def check(generations: dict, suite_root: str, out: str,
             "suite_sha256": manifest["suite_sha256"],
             "counts": manifest["counts"],
             "category_filter": sorted(categories) if categories else None,
+            "format_filter": sorted(formats_filter) if formats_filter else None,
             "category_minimum_items": min_category_items,
         },
         "generations": {
             "schema": generations.get("schema"),
+            "stage": generations.get("stage"),
             "stamp": generations.get("stamp"),
             "revision": generations.get("revision"),
             "adapter": generations.get("adapter"),
             "decoding": generations.get("decoding"),
             "few_shot": generations.get("few_shot"),
         },
+        "instrument": generations.get("instrument"),
         "preregistration": {
             "path": preregistration,
             "sha256": sha256_file(preregistration) if preregistration else None,

@@ -1,0 +1,720 @@
+{
+  "adapter": {
+    "accounting": {
+      "active_unique_params": 772210688,
+      "gpu_residency_bytes": null,
+      "host_residency_bytes": null,
+      "measured_io": null,
+      "offline_teacher_construction_cost": null,
+      "optimizer_flops": null,
+      "task_success": null,
+      "total_accessible_capacity": 772210688,
+      "training_tokens": null
+    },
+    "kind": "t2-arm",
+    "name": "t2-D",
+    "null_reasons": {
+      "gpu_residency_bytes": "measured after the first generation",
+      "host_residency_bytes": "not instrumented for the training-model path",
+      "measured_io": "the PyTorch path does not expose device read counters",
+      "offline_teacher_construction_cost": "no teacher at inference",
+      "optimizer_flops": "not recorded in the arm's admission record",
+      "task_success": "filled by the check stage",
+      "training_tokens": "not recorded in the arm's admission record"
+    },
+    "provenance": {
+      "admission": "results/train/admission/t2/D.json",
+      "admission_revision": null,
+      "admission_stamp": null,
+      "arm": "D",
+      "checkpoint": "results/artifacts/train/t2/D/step-001024.pt",
+      "checkpoint_sha256": "20059ad65ea891125802dc8b6818ab27d6465b22b6532c6f4e7e8783cc06f6f2",
+      "checkpoint_step": 1024,
+      "checkpoint_verification": {
+        "checked": true,
+        "mask_order": "legacy",
+        "provenance_amendment": null,
+        "receipt": "results/t2/D/run.json",
+        "receipt_sha256": "0d29e6ef6fe632875d55ff86ff8198c9beb5a9b149edde129ce731d015348fcf",
+        "step": 1024
+      },
+      "config": "results/train/admission-configs/t2/D.json",
+      "dispatch_mask_order": "legacy",
+      "provenance_amendment": null,
+      "source_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+    },
+    "tools": false
+  },
+  "command": "scripts/capability_court.py --suite fixtures/capability-calibrated select --t2-arm D --t2-checkpoint results/artifacts/train/t2/D/step-001024.pt --t2-config results/train/admission-configs/t2/D.json --t2-admission results/train/admission/t2/D.json --t2-training-receipt results/t2/D/run.json --t2-mask-order legacy --only borrow-03-self-referential-window--patch,borrow-03-self-referential-window--diag --out results/capability/selection-smoke/D-20261116T171000Z.json",
+  "created_utc": "2026-11-16T16:46:21Z",
+  "decoding": {
+    "category_filter": null,
+    "feedback": "none",
+    "few_shot_texts": [],
+    "greedy": null,
+    "max_new_tokens": 0,
+    "mode": "likelihood-selection",
+    "order": "sorted",
+    "primary_mode": "content-mean",
+    "prompt_variant": "selection-v1",
+    "ranking_modes": [
+      "content-mean",
+      "content-sum",
+      "letter-mean",
+      "letter-sum"
+    ],
+    "sampling": "none",
+    "seed": 20261115,
+    "stops": []
+  },
+  "few_shot": null,
+  "instrument": {
+    "candidate_labels_given_to_the_scorer": false,
+    "diagnostic_metric": "verified_diagnostic",
+    "margin_is_diagnostic": true,
+    "name": "likelihood-selection",
+    "position_audit": {
+      "by_format": {
+        "diagnostic-identification": {
+          "constant_position": true,
+          "distinct_positions": 1,
+          "items": 1,
+          "max_share": 1.0,
+          "positions": {
+            "1": 1
+          }
+        },
+        "patch-selection": {
+          "constant_position": true,
+          "distinct_positions": 1,
+          "items": 1,
+          "max_share": 1.0,
+          "positions": {
+            "1": 1
+          }
+        }
+      },
+      "position_free_by_construction": "the scored continuation is the candidate's content; the label, the position and the reference flag are never inputs to the ranking"
+    },
+    "primary_metric": "verified_task_success",
+    "reference_flags_given_to_the_scorer": false,
+    "score_fields": [
+      "sum",
+      "mean"
+    ],
+    "version": "v2"
+  },
+  "items": [
+    {
+      "category": "lifetime-borrow",
+      "format": "diagnostic-identification",
+      "id": "borrow-03-self-referential-window--diag",
+      "output": {
+        "extra": {
+          "selection": {
+            "candidates": [
+              {
+                "content_mean": -1.8098290486153787,
+                "content_per_token": [
+                  -11.862632,
+                  -7.795825,
+                  -0.418279,
+                  -0.007754,
+                  -0.330328,
+                  -0.541124,
+                  -0.004024,
+                  -0.260467,
+                  -1.398035,
+                  -0.90265,
+                  -0.002398,
+                  -0.002584,
+                  -0.001678
+                ],
+                "content_sha256": "7f2ce9da15b42fe5748a50606b96ed08a44562b380491c3562b0f4e2df094211",
+                "content_sum": -23.527777631999925,
+                "content_tokens": 13,
+                "label": "A",
+                "letter_mean": -12.175131797790527,
+                "letter_sum": -12.175131797790527,
+                "letter_tokens": 1
+              },
+              {
+                "content_mean": -1.5790762244505459,
+                "content_per_token": [
+                  -11.862632,
+                  -7.795825,
+                  -0.418279,
+                  -0.007754,
+                  -1.330328,
+                  -0.8543,
+                  -0.012605,
+                  -0.25596,
+                  -1.946956,
+                  -0.710255,
+                  -0.008479,
+                  -0.058107,
+                  -0.000536,
+                  -0.001272,
+                  -0.000847,
+                  -0.001084
+                ],
+                "content_sha256": "fabc4ab6e6a5091d31484d33a6e69798f8878962b106adc042c33a83f3b14757",
+                "content_sum": -25.265219591208734,
+                "content_tokens": 16,
+                "label": "B",
+                "letter_mean": -14.675131797790527,
+                "letter_sum": -14.675131797790527,
+                "letter_tokens": 1
+              },
+              {
+                "content_mean": -1.97250826509359,
+                "content_per_token": [
+                  -11.862632,
+                  -7.795825,
+                  -0.418279,
+                  -0.007754,
+                  -0.330328,
+                  -0.916124,
+                  -0.010354,
+                  -0.258049,
+                  -1.96257,
+                  -0.104335,
+                  -0.000438,
+                  -0.003412
+                ],
+                "content_sha256": "03f5d0d3746961bcd441b15747a778ddf24e21541e4982797885c28749253944",
+                "content_sum": -23.670099181123078,
+                "content_tokens": 12,
+                "label": "C",
+                "letter_mean": -14.393881797790527,
+                "letter_sum": -14.393881797790527,
+                "letter_tokens": 1
+              },
+              {
+                "content_mean": -1.509034537099069,
+                "content_per_token": [
+                  -11.862632,
+                  -7.795825,
+                  -0.418279,
+                  -0.007754,
+                  -1.330328,
+                  -0.6043,
+                  -0.014401,
+                  -0.299296,
+                  -1.551978,
+                  -0.251848,
+                  -0.002969,
+                  -0.000502,
+                  -0.000267,
+                  -0.003062,
+                  -0.000389,
+                  -0.000723
+                ],
+                "content_sha256": "77980e397f565ccb221c9abffd82ad32ae586bd8f1635f94104f775f9a1ed9dd",
+                "content_sum": -24.144552593585104,
+                "content_tokens": 16,
+                "label": "D",
+                "letter_mean": -15.425131797790527,
+                "letter_sum": -15.425131797790527,
+                "letter_tokens": 1
+              }
+            ],
+            "labels": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "primary": {
+              "choice": "D",
+              "choice_index": 3,
+              "field": "mean",
+              "margin": 0.07004168735147687,
+              "ranking": [
+                {
+                  "label": "D",
+                  "score": -1.509034537099069
+                },
+                {
+                  "label": "B",
+                  "score": -1.5790762244505459
+                },
+                {
+                  "label": "A",
+                  "score": -1.8098290486153787
+                },
+                {
+                  "label": "C",
+                  "score": -1.97250826509359
+                }
+              ],
+              "runner_up": "B",
+              "runner_up_score": -1.5790762244505459,
+              "score": -1.509034537099069,
+              "scored": true,
+              "tie": false,
+              "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+            },
+            "primary_mode": "content-mean",
+            "prompt_variant": "selection-v1",
+            "rankings": {
+              "content-mean": {
+                "choice": "D",
+                "choice_index": 3,
+                "field": "mean",
+                "margin": 0.07004168735147687,
+                "ranking": [
+                  {
+                    "label": "D",
+                    "score": -1.509034537099069
+                  },
+                  {
+                    "label": "B",
+                    "score": -1.5790762244505459
+                  },
+                  {
+                    "label": "A",
+                    "score": -1.8098290486153787
+                  },
+                  {
+                    "label": "C",
+                    "score": -1.97250826509359
+                  }
+                ],
+                "runner_up": "B",
+                "runner_up_score": -1.5790762244505459,
+                "score": -1.509034537099069,
+                "scored": true,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              },
+              "content-sum": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "sum",
+                "margin": 0.1423215491231531,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -23.527777631999925
+                  },
+                  {
+                    "label": "C",
+                    "score": -23.670099181123078
+                  },
+                  {
+                    "label": "D",
+                    "score": -24.144552593585104
+                  },
+                  {
+                    "label": "B",
+                    "score": -25.265219591208734
+                  }
+                ],
+                "runner_up": "C",
+                "runner_up_score": -23.670099181123078,
+                "score": -23.527777631999925,
+                "scored": false,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              },
+              "letter-mean": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "mean",
+                "margin": 2.21875,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -12.175131797790527
+                  },
+                  {
+                    "label": "C",
+                    "score": -14.393881797790527
+                  },
+                  {
+                    "label": "B",
+                    "score": -14.675131797790527
+                  },
+                  {
+                    "label": "D",
+                    "score": -15.425131797790527
+                  }
+                ],
+                "runner_up": "C",
+                "runner_up_score": -14.393881797790527,
+                "score": -12.175131797790527,
+                "scored": false,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              },
+              "letter-sum": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "sum",
+                "margin": 2.21875,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -12.175131797790527
+                  },
+                  {
+                    "label": "C",
+                    "score": -14.393881797790527
+                  },
+                  {
+                    "label": "B",
+                    "score": -14.675131797790527
+                  },
+                  {
+                    "label": "D",
+                    "score": -15.425131797790527
+                  }
+                ],
+                "runner_up": "C",
+                "runner_up_score": -14.393881797790527,
+                "score": -12.175131797790527,
+                "scored": false,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              }
+            },
+            "reference": "B",
+            "reference_position": 1
+          }
+        },
+        "finish_reason": "selection",
+        "latency_ms": 229,
+        "text": "D",
+        "tokens_out": 0
+      },
+      "prompt_sha256": "f1cc2c5396d8781b9bf499aea49af122100512e06eef0049125bdc55626db953"
+    },
+    {
+      "category": "lifetime-borrow",
+      "format": "patch-selection",
+      "id": "borrow-03-self-referential-window--patch",
+      "output": {
+        "extra": {
+          "selection": {
+            "candidates": [
+              {
+                "content_mean": -1.2331801588185884,
+                "content_per_token": [
+                  -13.194761,
+                  -11.723391,
+                  -0.028168,
+                  -0.113184,
+                  -0.03776,
+                  -0.021371,
+                  -0.003172,
+                  -0.015684,
+                  -0.029801,
+                  -0.002735,
+                  -0.045927,
+                  -1.152145,
+                  -0.050552,
+                  -0.010591,
+                  -0.005944,
+                  -0.001391,
+                  -0.004505,
+                  -0.013818,
+                  -0.00634,
+                  -0.000804,
+                  -0.0094,
+                  -0.603711,
+                  -0.00283,
+                  -0.019013,
+                  -0.094038,
+                  -4.87165
+                ],
+                "content_sha256": "1ac8e73fcf4af8973e8241a5703d386576561caec6e1953e3663a28de7e7e947",
+                "content_sum": -32.0626841292833,
+                "content_tokens": 26,
+                "label": "A",
+                "letter_mean": -13.882993698120117,
+                "letter_sum": -13.882993698120117,
+                "letter_tokens": 1
+              },
+              {
+                "content_mean": -1.3596379967178411,
+                "content_per_token": [
+                  -13.194761,
+                  -11.723391,
+                  -0.028168,
+                  -0.113184,
+                  -0.03776,
+                  -0.021371,
+                  -0.003172,
+                  -0.015684,
+                  -0.029801,
+                  -0.002735,
+                  -0.045927,
+                  -1.152145,
+                  -0.050552,
+                  -0.010591,
+                  -0.005944,
+                  -0.001391,
+                  -0.004505,
+                  -0.013818,
+                  -0.00634,
+                  -0.000804,
+                  -0.0094,
+                  -0.853711,
+                  -0.095954,
+                  -5.210204
+                ],
+                "content_sha256": "fdcac55c7999907499fbc356170c064ec8ca294057b156331456a4cbca223b3c",
+                "content_sum": -32.63131192122819,
+                "content_tokens": 24,
+                "label": "B",
+                "letter_mean": -16.632993698120117,
+                "letter_sum": -16.632993698120117,
+                "letter_tokens": 1
+              },
+              {
+                "content_mean": -2.1719694034169046,
+                "content_per_token": [
+                  -13.194761,
+                  -11.723391,
+                  -0.028168,
+                  -0.113184,
+                  -0.03776,
+                  -0.021371,
+                  -0.003172,
+                  -0.015684,
+                  -0.029801,
+                  -0.002735,
+                  -0.045927,
+                  -1.152145,
+                  -0.050552,
+                  -4.885591,
+                  -0.039443,
+                  -0.110898,
+                  -5.468898
+                ],
+                "content_sha256": "69b62f530693b9f35fabdf3fde62ffed6528074d9bf4a802675ac6510ea4fb6c",
+                "content_sum": -36.923479858087376,
+                "content_tokens": 17,
+                "label": "C",
+                "letter_mean": -16.726743698120117,
+                "letter_sum": -16.726743698120117,
+                "letter_tokens": 1
+              }
+            ],
+            "labels": [
+              "A",
+              "B",
+              "C"
+            ],
+            "primary": {
+              "choice": "A",
+              "choice_index": 0,
+              "field": "mean",
+              "margin": 0.1264578378992527,
+              "ranking": [
+                {
+                  "label": "A",
+                  "score": -1.2331801588185884
+                },
+                {
+                  "label": "B",
+                  "score": -1.3596379967178411
+                },
+                {
+                  "label": "C",
+                  "score": -2.1719694034169046
+                }
+              ],
+              "runner_up": "B",
+              "runner_up_score": -1.3596379967178411,
+              "score": -1.2331801588185884,
+              "scored": true,
+              "tie": false,
+              "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+            },
+            "primary_mode": "content-mean",
+            "prompt_variant": "selection-v1",
+            "rankings": {
+              "content-mean": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "mean",
+                "margin": 0.1264578378992527,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -1.2331801588185884
+                  },
+                  {
+                    "label": "B",
+                    "score": -1.3596379967178411
+                  },
+                  {
+                    "label": "C",
+                    "score": -2.1719694034169046
+                  }
+                ],
+                "runner_up": "B",
+                "runner_up_score": -1.3596379967178411,
+                "score": -1.2331801588185884,
+                "scored": true,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              },
+              "content-sum": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "sum",
+                "margin": 0.5686277919448912,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -32.0626841292833
+                  },
+                  {
+                    "label": "B",
+                    "score": -32.63131192122819
+                  },
+                  {
+                    "label": "C",
+                    "score": -36.923479858087376
+                  }
+                ],
+                "runner_up": "B",
+                "runner_up_score": -32.63131192122819,
+                "score": -32.0626841292833,
+                "scored": false,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              },
+              "letter-mean": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "mean",
+                "margin": 2.75,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -13.882993698120117
+                  },
+                  {
+                    "label": "B",
+                    "score": -16.632993698120117
+                  },
+                  {
+                    "label": "C",
+                    "score": -16.726743698120117
+                  }
+                ],
+                "runner_up": "B",
+                "runner_up_score": -16.632993698120117,
+                "score": -13.882993698120117,
+                "scored": false,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              },
+              "letter-sum": {
+                "choice": "A",
+                "choice_index": 0,
+                "field": "sum",
+                "margin": 2.75,
+                "ranking": [
+                  {
+                    "label": "A",
+                    "score": -13.882993698120117
+                  },
+                  {
+                    "label": "B",
+                    "score": -16.632993698120117
+                  },
+                  {
+                    "label": "C",
+                    "score": -16.726743698120117
+                  }
+                ],
+                "runner_up": "B",
+                "runner_up_score": -16.632993698120117,
+                "score": -13.882993698120117,
+                "scored": false,
+                "tie": false,
+                "tie_rule": "prompt order breaks a tie; a flagged tie is never a decision"
+              }
+            },
+            "reference": "B",
+            "reference_position": 1
+          }
+        },
+        "finish_reason": "selection",
+        "latency_ms": 94,
+        "text": "A",
+        "tokens_out": 0
+      },
+      "prompt_sha256": "321af193c22b6f8dff1a6b451c17d75c968c3ba5a1520cf563f68b327144060f"
+    }
+  ],
+  "preregistration": {
+    "note": "this selection run is not registered against a v2 contract",
+    "path": null,
+    "sha256": null
+  },
+  "resources": {
+    "cgroup_memory_peak_bytes": 3242205184,
+    "cgroup_memory_peak_source": "/sys/fs/cgroup/memory.peak",
+    "process_maxrss_bytes": 3603722240,
+    "process_maxrss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss",
+    "vram": {
+      "device": "NVIDIA GeForce RTX 4080 SUPER",
+      "max_memory_allocated_bytes": 1951056896,
+      "max_memory_allocated_gib": 1.817,
+      "max_memory_reserved_bytes": 1981808640,
+      "max_memory_reserved_gib": 1.846,
+      "source": "torch.cuda.max_memory_allocated / max_memory_reserved at receipt time"
+    }
+  },
+  "revision": "d27e9a54b24a1d942dbcd176c0800622a3989d90",
+  "schema": "selvedge/capability-generations/v1",
+  "stage": "select",
+  "stamp": "20261116T164621Z",
+  "suite": {
+    "counts": {
+      "by_category": {
+        "api-migration": 12,
+        "concurrency": 10,
+        "dependency-compat": 9,
+        "failing-test": 9,
+        "lifetime-borrow": 12,
+        "repo-scale": 12,
+        "semantic-repair": 9,
+        "trait-impl": 11
+      },
+      "probes": 0,
+      "suite": 84,
+      "total": 84,
+      "trio": 0
+    },
+    "formats": {
+      "by_format": {
+        "diagnostic-identification": 1,
+        "patch-selection": 1
+      },
+      "by_metric": {
+        "verified_diagnostic": 1,
+        "verified_task_success": 1
+      },
+      "by_tier": {
+        "diagnostic": 1,
+        "medium": 1
+      },
+      "extraction_policies": {
+        "tolerant": 2
+      }
+    },
+    "prompt_hashes": {
+      "borrow-03-self-referential-window--diag": "f1cc2c5396d8781b9bf499aea49af122100512e06eef0049125bdc55626db953",
+      "borrow-03-self-referential-window--patch": "321af193c22b6f8dff1a6b451c17d75c968c3ba5a1520cf563f68b327144060f"
+    },
+    "root": "/work/fixtures/capability-calibrated",
+    "suite_sha256": "1a878c4f7abe976615a8385d265027af462b6d1e983a1c97e68e480b0507a6c6"
+  }
+}
