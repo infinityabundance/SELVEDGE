@@ -31,6 +31,8 @@
   },
   "harness": {
     "commit": "d6de81643928d653435c431bae19945d41d32520",
+    "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+    "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
     "name": "EleutherAI/lm-evaluation-harness",
     "version": "0.4.14.dev0"
   },
@@ -77,11 +79,11 @@
     "rationale": "both checkpoints are Base models: they have no instruction-tuning and no chat contract, so every task uses the harness's own completion-style doc_to_text with the harness's own few-shot demonstrations. No per-model prompt tuning of any kind is permitted; the identical config applies to both models, and the run refuses a pre-registration change between them.",
     "system_instruction": null
   },
-  "revision": "22c51d6a49d9f0dd562158160e3459f6cd347e08",
+  "revision": "b5e2b2780a541842c84ce27f04951aee09386781",
   "schema": "selvedge/anchor-run/v1",
   "smoke": false,
   "stamp": "20261116T195953Z",
-  "started_utc": "2026-11-16T21:31:39Z",
+  "started_utc": "2026-11-16T22:56:15Z",
   "tasks": [
     {
       "all_metrics": {

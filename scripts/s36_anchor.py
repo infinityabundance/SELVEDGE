@@ -964,7 +964,13 @@ def cmd_rebuild(args) -> int:
             "license": model["license"],
         },
         "preregistration": {"path": args.prereg, "sha256": prereg_digest},
-        "harness": {"name": prereg["harness"]["name"], "commit": commit, "version": version},
+        "harness": {
+            "name": prereg["harness"]["name"],
+            "commit": commit,
+            "version": version,
+            "image_ref": os.environ.get("SELVEDGE_COURT_IMAGE", "unknown"),
+            "image_id": os.environ.get("SELVEDGE_COURT_IMAGE_ID", "unknown"),
+        },
         "court": {
             "memory_limit": args.memory_limit,
             "note": "rebuilt from the court logs of the invocations that scored these tasks",
