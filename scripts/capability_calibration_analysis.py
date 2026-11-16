@@ -190,6 +190,25 @@ def resource_summary(generations: dict, smoke: dict | None) -> dict:
     return summary
 
 
+def throughput(generations: dict) -> dict:
+    """Decoding throughput from the stored per-item token counts and latencies.
+
+    `latency_ms` on each item is the batch's decode time divided by the batch
+    width, so the sum over items of `tokens_out / latency_ms` is the arm's
+    measured decode throughput for this run.
+    """
+    result = {}
+    for arm, receipt in sorted(generations.items()):
+        tokens = sum(item["output"]["tokens_out"] for item in receipt["items"])
+        seconds = sum(item["output"]["latency_ms"] for item in receipt["items"]) / 1000.0
+        result[arm] = {
+            "tokens_out": tokens,
+            "decoding_seconds": round(seconds, 1),
+            "tokens_per_second": round(tokens / seconds, 1) if seconds else None,
+        }
+    return result
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--calibration", required=True)
@@ -335,6 +354,7 @@ def main(argv: list[str]) -> int:
         },
         "resources": resource_summary(
             generations, load(args.smoke) if args.smoke else None),
+        "throughput": throughput(generations),
         "suite_version": calibration.get("suite_version"),
     }
     shapes = payload["answer_shape"]
@@ -405,6 +425,10 @@ def main(argv: list[str]) -> int:
         f"{payload['resources']['max_process_maxrss_gib']:.3f} GiB process peak, "
         f"{payload['resources']['max_cgroup_memory_peak_gib']:.3f} GiB cgroup peak, "
         f"{payload['resources']['max_vram_allocated_gib']:.3f} GiB VRAM allocated")
+    payload["rendered"]["throughput"] = "; ".join(
+        f"{arm} {entry['tokens_per_second']:.1f} tokens/s over "
+        f"{entry['tokens_out']:,} tokens"
+        for arm, entry in payload["throughput"].items())
     os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as handle:
         json.dump(payload, handle, indent=2, sort_keys=True)
