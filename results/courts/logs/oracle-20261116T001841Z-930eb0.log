@@ -1,0 +1,29 @@
+....F...F.                                                               [100%]
+=================================== FAILURES ===================================
+_________ test_the_predictor_learns_the_repair_and_the_controls_do_not _________
+
+    def test_the_predictor_learns_the_repair_and_the_controls_do_not():
+        receipt = repair.run_fixture(seed=1001)
+        assert receipt["oracle_test"]["repaired"] == receipt["items"]["test"]
+        assert receipt["learned"]["repaired"] == receipt["items"]["test"]
+        assert receipt["capture"]["capture"] == pytest.approx(1.0)
+>       assert receipt["verdict"]["killed"] is False
+E       assert True is False
+
+oracle/tests/test_p11_causal_repair.py:78: AssertionError
+____ test_the_transfer_gap_is_reported_on_a_structurally_different_student _____
+
+    def test_the_transfer_gap_is_reported_on_a_structurally_different_student():
+        receipt = repair.run_fixture(seed=1001)
+        transfer = receipt["transfer"]
+        assert transfer["target"].startswith("student with bottleneck layer 2")
+        assert transfer["oracle"]["repaired"] == 12
+>       assert transfer["capture"]["capture"] >= repair.TRANSFER_CAPTURE_KILL
+E       assert 0.16666666666666666 >= 0.25
+E        +  where 0.25 = repair.TRANSFER_CAPTURE_KILL
+
+oracle/tests/test_p11_causal_repair.py:131: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p11_causal_repair.py::test_the_predictor_learns_the_repair_and_the_controls_do_not
+FAILED oracle/tests/test_p11_causal_repair.py::test_the_transfer_gap_is_reported_on_a_structurally_different_student
+2 failed, 8 passed in 34.32s

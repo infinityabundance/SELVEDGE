@@ -1,0 +1,83 @@
+......F.F..                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_the_t2_checkpoints_remap_onto_the_composed_arm ______________
+
+    def test_the_t2_checkpoints_remap_onto_the_composed_arm():
+        _core, arm = _arm()
+        state_d = _fake_checkpoint(arm, "D")
+        state_m = _fake_checkpoint(arm, "M")
+        remapped_d = composition._remap_arm_state(state_d, "D", arm)
+>       remapped_m = composition._remap_arm_state(state_m, "M", arm)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p82_composition_gate.py:286: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'step': 7, 'model': {'model.layers.1.mlp.extra.table': tensor([[ 0.0048,  0.0256],
+        [ 0.0040,  0.0106],
+      ...l.layers.1.mlp.extra.gate.weight': tensor([[-0.0018,  0.0077,  0.0079, -0.0026, -0.0053, -0.0053,  0.0298, -0.0024]])}}
+tag = 'M', arm = <composition.CompositionArm object at 0x7fe6a10ddd60>
+
+    def _remap_arm_state(state: dict, tag: str, arm: CompositionArm) -> dict:
+        """Map a T2 checkpoint's `mlp.extra.*` names onto the composed arm.
+    
+        `D`'s checkpoint carries the dense adapter; `M`'s carries the hashed memory
+        modules. Both were built inside `AdditiveFFN`, where the module is called
+        `extra`; here the two live at `mlp.dense` and `mlp.memory`. The mapping is
+        explicit and fails closed on an unmapped key, a missing key or a shape
+        mismatch.
+        """
+        source = state.get("model", state)
+        target = "dense" if tag == "D" else "memory"
+        existing = dict(arm.model.named_parameters())
+        remapped = {}
+        for name, tensor in source.items():
+            if ".mlp.extra." not in name:
+                raise ValueError(f"{tag} checkpoint: unexpected key {name}")
+            new_name = name.replace(".mlp.extra.", f".mlp.{target}.")
+            if new_name not in existing:
+                raise ValueError(f"{tag} checkpoint: {name} has no target {new_name}")
+            if tuple(existing[new_name].shape) != tuple(tensor.shape):
+                raise ValueError(f"{tag} checkpoint: {name} shape {tuple(tensor.shape)} "
+                                 f"!= {new_name} {tuple(existing[new_name].shape)}")
+            remapped[new_name] = tensor
+        if tag == "D" and len(remapped) != 3 * arm.layers:
+            raise ValueError(f"D checkpoint covers {len(remapped)} parameters, expected "
+                             f"{3 * arm.layers}")
+        if tag == "M" and len(remapped) != 4 * len(arm.memory_modules):
+>           raise ValueError(f"M checkpoint covers {len(remapped)} parameters, expected "
+                             f"{4 * len(arm.memory_modules)}")
+E           ValueError: M checkpoint covers 3 parameters, expected 4
+
+oracle/train/composition.py:619: ValueError
+__________ test_the_comparison_is_paired_and_reports_the_oracle_bound __________
+
+    def test_the_comparison_is_paired_and_reports_the_oracle_bound():
+        per_item = {
+            "D": [2.0, 2.0, 2.0, 2.0],
+            "M": [2.0, 2.0, 2.0, 2.0],
+            "sum": [2.0, 3.0, 2.0, 3.0],
+            "gate": [1.0, 1.0, 1.0, 1.0],
+        }
+        report = composition.composition_comparison(per_item)
+        assert report["items"] == 4
+        assert report["mean_loss"]["gate"] == pytest.approx(1.0)
+>       assert report["comparisons"]["gate-minus-sum"] == {
+            "mean": pytest.approx(-1.25), "low": pytest.approx(-1.75),
+            "high": pytest.approx(-0.75), "n": 4,
+            "resamples": composition.BOOTSTRAP_RESAMPLES,
+            "seed": composition.BOOTSTRAP_SEED}
+E       AssertionError: assert {'mean': -1.5..., 'n': 4, ...} == {'mean': -1.2..., 'n': 4, ...}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'high': -1.0} != {'high': -0.75 ± 7.5e-07}
+E         {'mean': -1.5} != {'mean': -1.25 ± 1.2e-06}
+E         {'low': -2.0} != {'low': -1.75 ± 1.7e-06}
+E         Use -v to get more diff
+
+oracle/tests/test_p82_composition_gate.py:316: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p82_composition_gate.py::test_the_t2_checkpoints_remap_onto_the_composed_arm
+FAILED oracle/tests/test_p82_composition_gate.py::test_the_comparison_is_paired_and_reports_the_oracle_bound
+2 failed, 9 passed in 4.00s

@@ -1,0 +1,36 @@
+..F
+=================================== FAILURES ===================================
+___________ test_the_gate_reaches_d_only_m_only_and_the_combination ____________
+
+    def test_the_gate_reaches_d_only_m_only_and_the_combination():
+        hidden, tokens = 8, 6
+        base, residual_d, residual_m = _residuals(hidden, tokens)
+        feature = torch.zeros(tokens, hidden)
+        targets = {
+            "D": (base + residual_d, (1.0, 0.0)),
+            "M": (base + residual_m, (0.0, 1.0)),
+            "sum": (base + residual_d + residual_m, (1.0, 1.0)),
+        }
+        for name, (target, coefficients) in targets.items():
+            gate = composition.BoundedGateComposition(hidden, budget=10.0)
+    
+            def step(_index, gate=gate, target=target):
+                output, _info = gate(base, residual_d, residual_m, feature)
+                return torch.nn.functional.mse_loss(output, target), tokens
+    
+            report = composition.train_gate([gate], step, steps=400, lr=0.05)
+            with torch.no_grad():
+                output, info = gate(base, residual_d, residual_m, feature)
+            assert report["final_loss"] < 1e-6, (name, report["final_loss"])
+            assert float(info["a"].mean()) == pytest.approx(coefficients[0], abs=5e-3)
+            assert float(info["b"].mean()) == pytest.approx(coefficients[1], abs=5e-3)
+>           assert torch.allclose(output, target, atol=2e-3)
+E           assert False
+E            +  where False = <built-in method allclose of type object at 0x7f88eb5572e0>(tensor([[ 0.7744,  1.1778,  0.0747,  0.9818,  1.7826,  0.9906,  2.5416, -0.5812],\n        [ 0.8491,  1.1822,  1.5078, ... 1.5341,  0.6387,  1.2761, -0.0795],\n        [ 0.4239,  0.7838,  1.2686,  1.8261,  0.0984,  1.0526,  1.6378,  1.4734]]), tensor([[ 0.7745,  1.1794,  0.0747,  0.9819,  1.7828,  0.9887,  2.5424, -0.5814],\n        [ 0.8499,  1.1805,  1.5063, ... 1.5343,  0.6394,  1.2755, -0.0792],\n        [ 0.4246,  0.7846,  1.2685,  1.8253,  0.0989,  1.0526,  1.6375,  1.4739]]), atol=0.002)
+E            +    where <built-in method allclose of type object at 0x7f88eb5572e0> = torch.allclose
+
+oracle/tests/test_p82_composition_gate.py:169: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p82_composition_gate.py::test_the_gate_reaches_d_only_m_only_and_the_combination
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 2 passed in 3.82s

@@ -1,0 +1,57 @@
+F
+=================================== FAILURES ===================================
+______________ test_zero_gate_reproduces_the_frozen_core_exactly _______________
+
+    def test_zero_gate_reproduces_the_frozen_core_exactly():
+        core, arm = _arm()
+        ids = _tokens()
+        with torch.no_grad():
+>           base = _TinyCore.forward(core, ids).logits
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p82_composition_gate.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/tests/test_p82_composition_gate.py:76: in forward
+    hidden_states = self.model(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/tests/test_p82_composition_gate.py:58: in forward
+    hidden_states = hidden_states + layer.mlp(hidden_states)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/train/composition.py:413: in forward
+    residual_m = self.memory(hidden_states)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/train/memory.py:239: in forward
+    tokens = self.context.require(length)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <memory.TokenContext object at 0x7f7e25fe3ca0>, length = 5
+
+    def require(self, length: int) -> torch.Tensor:
+        if self.ids is None:
+>           raise RuntimeError("token context is empty: install the arm's pre-hook")
+E           RuntimeError: token context is empty: install the arm's pre-hook
+
+oracle/train/memory.py:95: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p82_composition_gate.py::test_zero_gate_reproduces_the_frozen_core_exactly
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 1.62s

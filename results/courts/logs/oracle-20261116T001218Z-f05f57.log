@@ -1,0 +1,92 @@
+..F
+=================================== FAILURES ===================================
+___________ test_the_gate_reaches_d_only_m_only_and_the_combination ____________
+
+    def test_the_gate_reaches_d_only_m_only_and_the_combination():
+        hidden, tokens = 8, 6
+        base, residual_d, residual_m = _residuals(hidden, tokens)
+        feature = torch.zeros(tokens, hidden)
+        targets = {
+            "D": (base + residual_d, (1.0, 0.0)),
+            "M": (base + residual_m, (0.0, 1.0)),
+            "sum": (base + residual_d + residual_m, (1.0, 1.0)),
+        }
+        for name, (target, coefficients) in targets.items():
+            gate = composition.BoundedGateComposition(hidden, budget=10.0)
+    
+            def step(_index, gate=gate, target=target):
+                output, _info = gate(base, residual_d, residual_m, feature)
+                return torch.nn.functional.mse_loss(output, target), tokens
+    
+>           report = composition.train_gate([gate], step, steps=400, lr=0.05)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_p82_composition_gate.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/train/composition.py:694: in train_gate
+    loss, tokens = step_fn(index)
+                   ^^^^^^^^^^^^^^
+oracle/tests/test_p82_composition_gate.py:160: in step
+    output, _info = gate(base, residual_d, residual_m, feature)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = BoundedGateComposition(
+  (gate): Linear(in_features=8, out_features=2, bias=True)
+)
+base = tensor([[ 0.9234,  1.3599,  0.2180,  1.0715,  1.6648,  0.7132,  2.6206, -0.5967],
+        [ 0.9483,  0.6940,  1.2485, ... 1.0371,  0.9323,  1.4290,  0.1319],
+        [ 0.7288,  1.1416,  1.1295,  1.6814,  0.0417,  1.0639,  1.6589,  1.8195]])
+residual_d = tensor([[-0.1366,  0.6637, -0.1131, -0.0431,  0.1944, -0.6977,  0.3805, -0.0745],
+        [ 0.2873, -0.3867, -0.4945, ... 0.5958,  0.1087, -0.4169, -0.0478],
+        [ 0.0987,  0.0997,  0.0908, -0.2944,  0.3312, -0.0038, -0.2055, -0.0928]])
+residual_m = tensor([[-0.1489, -0.1805, -0.1433, -0.0896,  0.1179,  0.2755, -0.0781,  0.0153],
+        [-0.0984,  0.4865,  0.2578, ... 0.4973, -0.2929, -0.1535, -0.2111],
+        [-0.3042, -0.3570,  0.1390,  0.1439,  0.0572, -0.0113, -0.0214, -0.3455]])
+feature = tensor([[0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0... [0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0.]])
+
+    def forward(self, base: torch.Tensor, residual_d: torch.Tensor,
+                residual_m: torch.Tensor, feature: torch.Tensor) -> tuple[torch.Tensor, dict]:
+        if self.mode in ("D", "M", "sum"):
+            output = base
+            if self.mode in ("D", "sum"):
+                output = output + residual_d
+            if self.mode in ("M", "sum"):
+                output = output + residual_m
+            norms = (output - base).detach().norm(dim=-1).reshape(-1)
+            budget = self.budget_for(base)
+            info = {
+                "a": torch.full_like(norms, 1.0 if self.mode in ("D", "sum") else 0.0),
+                "b": torch.full_like(norms, 1.0 if self.mode in ("M", "sum") else 0.0),
+                "perturbation_norm": norms,
+                "scale": torch.ones_like(norms),
+                "budget": budget,
+                "mode": self.mode,
+                "budget_kind": "relative" if self.relative is not None else "absolute",
+            }
+            self.last_info = info
+            return output, info
+        coefficients = self.gate(feature)
+        a = coefficients[..., 0:1].to(base.dtype)
+        b = coefficients[..., 1:2].to(base.dtype)
+        perturbation = a * residual_d + b * residual_m
+        norms = perturbation.norm(dim=-1, keepdim=True)
+>       budget = self.budget_for(base).reshape(norms.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: shape '[6, 1]' is invalid for input of size 36
+
+oracle/train/composition.py:171: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p82_composition_gate.py::test_the_gate_reaches_d_only_m_only_and_the_combination
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 2 passed in 3.62s

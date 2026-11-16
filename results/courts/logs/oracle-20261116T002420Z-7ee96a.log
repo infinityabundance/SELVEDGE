@@ -1,0 +1,22 @@
+....F.........                                                           [100%]
+=================================== FAILURES ===================================
+_______________ test_the_layer_is_zero_at_init_and_deterministic _______________
+
+    def test_the_layer_is_zero_at_init_and_deterministic():
+        spec = tiny_spec()
+        first = geometry.LatentGeometryLayer(spec, seed=5)
+        second = geometry.LatentGeometryLayer(spec, seed=5)
+        hidden = torch.randn(2, 5, spec.d_model,
+                             generator=torch.Generator().manual_seed(7))
+        with torch.no_grad():
+            assert torch.equal(first(hidden), torch.zeros_like(hidden))
+            assert torch.equal(second(hidden), torch.zeros_like(hidden))
+>       assert all(torch.equal(left.detach(), right.detach())
+                   for left, right in zip(first.parameters(), second.parameters()))
+E       assert False
+E        +  where False = all(<generator object test_the_layer_is_zero_at_init_and_deterministic.<locals>.<genexpr> at 0x7f9dfd2f7f10>)
+
+oracle/tests/test_t3_latent_geometry.py:110: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_t3_latent_geometry.py::test_the_layer_is_zero_at_init_and_deterministic
+1 failed, 13 passed in 2.46s

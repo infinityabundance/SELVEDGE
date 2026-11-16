@@ -1,0 +1,28 @@
+.....F....                                                               [100%]
+=================================== FAILURES ===================================
+______________ test_the_equal_budget_control_is_actually_matched _______________
+
+    def test_the_equal_budget_control_is_actually_matched():
+        receipt = repair.run_fixture(seed=1001)
+        matching = receipt["parameter_matching"]
+        assert matching["distributed_lora_parameters"] <= matching["predictor"]
+        assert matching["distributed_lora_parameters"] > 0
+        # the next rank up would exceed the predictor's budget
+        student = receipt["student"]
+        next_rank = matching["distributed_lora_rank"] + 1
+        assert 2 * student["layers"] * student["hidden"] * next_rank \
+            > matching["predictor"]
+        assert matching["all_layer_rank"] == repair.ALL_LAYER_RANK
+        assert matching["all_layer_parameters"] == (
+            2 * student["layers"] * student["hidden"] * repair.ALL_LAYER_RANK)
+        # the control sees the same items/tokens/steps as the predictor
+        lora = receipt["controls"]["distributed_lora_equal"]["training"]
+        predictor = receipt["predictor_training"]
+        assert lora["steps"] == predictor["steps"]
+>       assert lora["tokens"] == predictor["tokens"]
+E       assert 18000 == 3600
+
+oracle/tests/test_p11_causal_repair.py:104: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p11_causal_repair.py::test_the_equal_budget_control_is_actually_matched
+1 failed, 9 passed in 35.58s

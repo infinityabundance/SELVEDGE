@@ -1,0 +1,60 @@
+.....F
+=================================== FAILURES ===================================
+________ test_gate_training_is_deterministic_and_touches_only_the_gates ________
+
+    def test_gate_training_is_deterministic_and_touches_only_the_gates():
+        hidden, tokens = 8, 6
+        base, residual_d, residual_m = _residuals(hidden, tokens)
+        feature = torch.randn(tokens, hidden, generator=torch.Generator().manual_seed(11))
+    
+        def train_once():
+            gate = composition.BoundedGateComposition(hidden, budget=50.0)
+    
+            def step(_index):
+                output, _info = gate(base, residual_d, residual_m, feature)
+                return torch.nn.functional.mse_loss(output, base + 0.5 * residual_d), tokens
+    
+            composition.train_gate([gate], step, steps=30, lr=0.02, seed=1001)
+            return gate.gate.weight.detach().clone(), gate.gate.bias.detach().clone()
+    
+        weight_a, bias_a = train_once()
+        weight_b, bias_b = train_once()
+        assert torch.equal(weight_a, weight_b)
+        assert torch.equal(bias_a, bias_b)
+    
+        _core, arm = _arm()
+        ids = _tokens()
+        before = {name: parameter.detach().clone()
+                  for name, parameter in arm.model.named_parameters()
+                  if not parameter.requires_grad}
+    
+        def step(_index, arm=arm, ids=ids):
+            logits = arm.model(input_ids=ids, use_cache=False).logits
+            return (logits ** 2).mean(), int(ids.numel())
+    
+        composition.train_gate(arm.gates, step, steps=5, lr=0.01)
+        after = dict(arm.model.named_parameters())
+        for name, value in before.items():
+            assert torch.equal(value, after[name].detach()), name
+>       assert float(arm.gates[0].gate.bias.abs().sum()) > 0.0
+E       assert 0.0 > 0.0
+E        +  where 0.0 = float(tensor(0., grad_fn=<SumBackward0>))
+E        +    where tensor(0., grad_fn=<SumBackward0>) = <built-in method sum of Tensor object at 0x7f10235337f0>()
+E        +      where <built-in method sum of Tensor object at 0x7f10235337f0> = tensor([0., 0.], grad_fn=<AbsBackward0>).sum
+E        +        where tensor([0., 0.], grad_fn=<AbsBackward0>) = <built-in method abs of Parameter object at 0x7f1023532710>()
+E        +          where <built-in method abs of Parameter object at 0x7f1023532710> = Parameter containing:\ntensor([0., 0.], requires_grad=True).abs
+E        +            where Parameter containing:\ntensor([0., 0.], requires_grad=True) = Linear(in_features=8, out_features=2, bias=True).bias
+E        +              where Linear(in_features=8, out_features=2, bias=True) = BoundedGateComposition(\n  (gate): Linear(in_features=8, out_features=2, bias=True)\n).gate
+
+oracle/tests/test_p82_composition_gate.py:249: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_p82_composition_gate.py::test_gate_training_is_deterministic_and_touches_only_the_gates
+  /work/oracle/tests/test_p82_composition_gate.py:249: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(arm.gates[0].gate.bias.abs().sum()) > 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p82_composition_gate.py::test_gate_training_is_deterministic_and_touches_only_the_gates
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 5 passed, 1 warning in 3.98s

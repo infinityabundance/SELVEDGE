@@ -1,0 +1,28 @@
+.....F....                                                               [100%]
+=================================== FAILURES ===================================
+______________ test_the_equal_budget_control_is_actually_matched _______________
+
+    def test_the_equal_budget_control_is_actually_matched():
+        receipt = repair.run_fixture(seed=1001)
+        matching = receipt["parameter_matching"]
+        assert matching["distributed_lora_parameters"] <= matching["predictor"]
+        assert matching["distributed_lora_parameters"] > 0
+        # the next rank up would exceed the predictor's budget
+        student = receipt["student"]
+        next_rank = matching["distributed_lora_rank"] + 1
+        assert 2 * student["layers"] * student["hidden"] * next_rank \
+            > matching["predictor"]
+>       assert matching["all_layer_parameters"] > matching["distributed_lora_parameters"]
+E       assert 512 > 576
+
+oracle/tests/test_p11_causal_repair.py:97: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_p11_causal_repair.py::test_the_fixture_student_fails_every_item_and_deletes_the_class_subspace
+  /work/oracle/tests/test_p11_causal_repair.py:34: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(hidden[0, -1, :student.classes].abs().max()) == 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p11_causal_repair.py::test_the_equal_budget_control_is_actually_matched
+1 failed, 9 passed, 1 warning in 35.78s

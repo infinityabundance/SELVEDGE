@@ -1,0 +1,9 @@
+..............                                                           [100%]
+=============================== warnings summary ===============================
+oracle/tests/test_t3_latent_geometry.py::test_the_layer_is_zero_at_init_and_deterministic
+  /work/oracle/tests/test_t3_latent_geometry.py:116: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(output.abs().max()) > 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+14 passed, 1 warning in 2.46s

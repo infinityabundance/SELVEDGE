@@ -1,0 +1,32 @@
+..F
+=================================== FAILURES ===================================
+___________ test_the_gate_reaches_d_only_m_only_and_the_combination ____________
+
+    def test_the_gate_reaches_d_only_m_only_and_the_combination():
+        hidden, tokens = 8, 6
+        base, residual_d, residual_m = _residuals(hidden, tokens)
+        feature = torch.zeros(tokens, hidden)
+        targets = {
+            "D": (base + residual_d, (1.0, 0.0)),
+            "M": (base + residual_m, (0.0, 1.0)),
+            "sum": (base + residual_d + residual_m, (1.0, 1.0)),
+        }
+        for name, (target, coefficients) in targets.items():
+            gate = composition.BoundedGateComposition(hidden, budget=10.0)
+    
+            def step(_index, gate=gate, target=target):
+                output, _info = gate(base, residual_d, residual_m, feature)
+                return torch.nn.functional.mse_loss(output, target), tokens
+    
+            report = composition.train_gate([gate], step, steps=400, lr=0.05)
+            with torch.no_grad():
+                output, info = gate(base, residual_d, residual_m, feature)
+>           assert report["final_loss"] < 1e-8, (name, report["final_loss"])
+E           AssertionError: ('D', 2.6483681025979422e-08)
+E           assert 2.6483681025979422e-08 < 1e-08
+
+oracle/tests/test_p82_composition_gate.py:166: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_p82_composition_gate.py::test_the_gate_reaches_d_only_m_only_and_the_combination
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 2 passed in 3.69s
