@@ -1,0 +1,137 @@
+{
+  "argv": [
+    "bash",
+    "-c",
+    "cargo run --release -q -p selvedge-cli -- inspect-model /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 --json --active-path text-only --certify-ceiling 1000000000 --expect-totals text=752393024,vision=100592896,mtp=20452864,checkpoint=873438784 --report-out results/accounting/20261116T183609Z-qwen35-08b-text-only.json --stamp 20261116T183609Z --revision 5aea4ec191dd2f1110a80bb71b1f29fdfe0b543b | head -5; echo RC=$?"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "fe4ee07b2b95e5638ed92a5130a1d9df628e419c2cc1adca07126f0ffb00664a",
+  "container_name": "selvedge-rust-court-20261116T183609Z-9be033",
+  "court": "rust",
+  "duration_ms": 8397,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 10737418240,
+        "expected": 10737418240
+      },
+      "memory_swap_bytes": {
+        "actual": 10737418240,
+        "expected": 10737418240
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T18:36:18Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:35bd39c53af4113c769b9581b0244dccd14ddfb5763e0c4fa2be3fd4f8c0612e",
+  "image_ref": "selvedge/rust-court:20261116-1.98-slim-2744951e34ae",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "10g",
+    "memory_bytes": 10737418240,
+    "memory_swap": "10g",
+    "memory_swap_bytes": 10737418240,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/rust-20261116T183609Z-9be033.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache:ro"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "5aea4ec191dd2f1110a80bb71b1f29fdfe0b543b",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261116T183609Z",
+  "started_utc": "2026-11-16T18:36:09Z",
+  "toolchain": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "absent",
+    "pip3": "absent",
+    "python3": "Python 3.13.5",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": false
+}
