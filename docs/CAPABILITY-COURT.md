@@ -1490,9 +1490,11 @@ carry the measured peak. Do not start this while another memory-heavy job runs:
 check `MemAvailable` and refuse if `limit + running peak` exceeds it.
 
 ```bash
-# 1a. smoke: 8 items, measure the cgroup peak, then set SELVEDGE_MEM from it
+# 1a. smoke: 8 items, measure the cgroup peak, then set SELVEDGE_MEM from it.
+# `--suite` is a top-level option: it must come before the subcommand.
 SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=4g \
-scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
+scripts/court --gpu oracle -- python3 scripts/capability_court.py \
+  --suite fixtures/capability-calibrated generate \
   --t2-arm 'H*' \
   --t2-checkpoint results/artifacts/train/t2/Hstar/step-001024.pt \
   --t2-config 'results/train/admission-configs/t2/H*.json' \
@@ -1519,7 +1521,8 @@ REC="results/t2/$ARM/run.json"
 mkdir -p "results/capability/calibration/$DIR"
 
 SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=4g \
-scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
+scripts/court --gpu oracle -- python3 scripts/capability_court.py \
+  --suite fixtures/capability-calibrated generate \
   --t2-arm "$ARM" \
   --t2-checkpoint "$CKPT" \
   --t2-config "$CFG" \
@@ -1528,18 +1531,20 @@ scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
   --t2-mask-order legacy \
   --provenance-amendment results/t2/PROVENANCE-AMENDMENT-Hstar.json \
   --preregistration docs/capability-calibration-preregistration-v1.json \
-  --suite fixtures/capability-calibrated \
   --out "results/capability/calibration/$DIR/generations.json"
 ```
+
+For `D` and `M` drop the `--provenance-amendment` line; for `X` and `H` use
+`results/t2/PROVENANCE-AMENDMENT-X-and-H.json`.
 
 Step 3 — check on CPU, with partial credit (the secondary metric):
 
 ```bash
 SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
-scripts/court rust -- python3 scripts/capability_court.py check \
+scripts/court rust -- python3 scripts/capability_court.py \
+  --suite fixtures/capability-calibrated check \
   --generations results/capability/calibration/Hstar/generations.json \
   --preregistration docs/capability-calibration-preregistration-v1.json \
-  --suite fixtures/capability-calibrated \
   --partial-credit \
   --min-category-items 0 \
   --out results/capability/calibration/Hstar/result.json
@@ -1554,20 +1559,21 @@ version (CPU):
 
 ```bash
 SELVEDGE_MEM=6g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
-scripts/court rust -- python3 scripts/capability_court.py calibrate \
-  --suite fixtures/capability-calibrated \
+scripts/court rust -- python3 scripts/capability_court.py \
+  --suite fixtures/capability-calibrated calibrate \
   --registration docs/capability-calibration-preregistration-v1.json \
   --result D=results/capability/calibration/D/result.json \
   --result M=results/capability/calibration/M/result.json \
   --result X=results/capability/calibration/X/result.json \
   --result H=results/capability/calibration/H/result.json \
   --result 'H*=results/capability/calibration/Hstar/result.json' \
-  --out results/capability/calibration-$(date -u +%Y%m%dT%H%M%SZ).json \
+  --out results/capability/calibration-20261117T000000Z.json \
   --suite-version-out fixtures/capability-calibrated/VERSION.json
 
 # and its fail-closed re-check
-scripts/court python -- python3 scripts/capability_court.py calibrate --check \
-  --out results/capability/calibration-<stamp>.json \
+scripts/court python -- python3 scripts/capability_court.py \
+  --suite fixtures/capability-calibrated calibrate --check \
+  --out results/capability/calibration-20261117T000000Z.json \
   --suite-version-out fixtures/capability-calibrated/VERSION.json
 ```
 

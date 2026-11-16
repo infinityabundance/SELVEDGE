@@ -474,8 +474,12 @@ def main(argv: list[str]) -> int:
             if not ok:
                 return 3
             if args.suite_version_out:
-                ok, message = calibrate_module.check_suite_version(
-                    args.suite_version_out, load_json(args.out))
+                try:
+                    ok, message = calibrate_module.check_suite_version(
+                        args.suite_version_out, load_json(args.out))
+                except calibrate_module.CalibrationError as exc:
+                    print(f"capability_court: {exc}")
+                    return 3
                 print(f"capability_court: {message}")
                 if not ok:
                     return 3
@@ -498,8 +502,13 @@ def main(argv: list[str]) -> int:
               f"{summary['retired']} retired, {summary['diagnostic_items']} "
               f"diagnostic -> {args.out}")
         if args.suite_version_out:
-            version = calibrate_module.build_suite_version(
-                payload, court.revision(REPO))
+            try:
+                version = calibrate_module.build_suite_version(
+                    payload, court.revision(REPO))
+            except calibrate_module.CalibrationError as exc:
+                print(f"capability_court: no suite version emitted: {exc}")
+                print(f"capability_court: the statistics receipt is {args.out}")
+                return 3
             calibrate_module._write_json(args.suite_version_out, version)
             print(f"capability_court: calibrated suite version -> "
                   f"{args.suite_version_out}")
