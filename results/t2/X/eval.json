@@ -1,0 +1,179 @@
+{
+  "arm": "X",
+  "checkpoint_sha256": "9504267555fb49862f9c5060dea2c2749540958ba0278c0dd3fc1c197271b58a",
+  "command": "oracle/eval/baseline.py --profile t2 --arm X --seed 1001 --checkpoint results/artifacts/train/t2/X/step-001024.pt --config results/train/admission-configs/t2/X.json --admission results/train/admission/t2/X.json --out results/eval/t2-X.json",
+  "compliance_label": "compliant_routed_specialists",
+  "config_sha256": "afc6d5069f1f7eb3a0caef1f9740bb2f0634d9444ff491f40788ec4edd5327b3",
+  "determinism": null,
+  "eval_receipt": "results/eval/t2-X.json",
+  "eval_receipt_stamp": "20261115T234416Z",
+  "eval_revision": "f6808fa9090c82bc6b22b0a9b46ed3f163fcae7c",
+  "instrument": {
+    "decoding": "greedy (do_sample=false, num_beams=1)",
+    "gsm8k_extractor": "last number after '####' else last number",
+    "gsm8k_max_new_tokens": 512,
+    "humaneval_address_space_bytes": 1500000000,
+    "humaneval_max_new_tokens": 256,
+    "humaneval_stop_strings": [
+      "\nclass ",
+      "\ndef ",
+      "\n#",
+      "\nif __name__",
+      "\nprint("
+    ],
+    "humaneval_timeout_seconds": 3.0,
+    "kl": "KL(teacher || student) in nats/token, f32 logits",
+    "precision": "bf16 forward, f32 logits for metrics",
+    "seed": 20261115,
+    "truthfulqa_scoring": "length-normalised log-likelihood, argmax"
+  },
+  "mixed": {
+    "kl": {
+      "ci_high": 0.5263765920543423,
+      "ci_low": 0.4804696910331646,
+      "mean": 0.5028156321495771,
+      "n": 120,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "top1": {
+      "ci_high": 0.5466121435196449,
+      "ci_low": 0.5277420775281886,
+      "mean": 0.5372770036260287,
+      "n": 120,
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "per_domain": {
+    "code": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.3783532361034304,
+        "ci_low": 0.31763226885348556,
+        "mean": 0.34710629694163797,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 4.9946552276611325,
+      "top1": 0.671100614964962,
+      "window_count": 40
+    },
+    "general": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.6456783441733568,
+        "ci_low": 0.5840688474103809,
+        "mean": 0.6132977962493896,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 26.407912015914917,
+      "top1": 0.4235293954610825,
+      "window_count": 80
+    },
+    "math": {
+      "documents": 40,
+      "kl": {
+        "ci_high": 0.602487067412585,
+        "ci_low": 0.4966066948510706,
+        "mean": 0.5480428032577038,
+        "n": 40,
+        "resamples": 10000,
+        "seed": 20261115
+      },
+      "ppl": 8.842955183982848,
+      "top1": 0.5172010004520416,
+      "window_count": 40
+    }
+  },
+  "per_task": {
+    "gsm8k_exact_match": 0.22666666666666666,
+    "humaneval_pass_at_1": 0.22560975609756098,
+    "truthfulqa_mc1": 0.2827417380660955
+  },
+  "per_task_ci": {
+    "gsm8k": {
+      "ci_high": 0.2733333333333333,
+      "ci_low": 0.17666666666666667,
+      "mean": 0.22666666666666666,
+      "n": 300,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "humaneval": {
+      "ci_high": 0.2926829268292683,
+      "ci_low": 0.16463414634146342,
+      "mean": 0.22560975609756098,
+      "n": 164,
+      "resamples": 10000,
+      "seed": 20261115
+    },
+    "truthfulqa": {
+      "ci_high": 0.31334149326805383,
+      "ci_low": 0.2521419828641371,
+      "mean": 0.2827417380660955,
+      "n": 817,
+      "resamples": 10000,
+      "seed": 20261115
+    }
+  },
+  "pooled": {
+    "kl": null,
+    "ppl": null,
+    "top1": null
+  },
+  "primary_composite_pc": 0.24500605361010772,
+  "primary_kl_mixed_p1": {
+    "ci_high": 0.5263765920543423,
+    "ci_low": 0.4804696910331646,
+    "mean": 0.5028156321495771,
+    "n": 120,
+    "resamples": 10000,
+    "seed": 20261115
+  },
+  "resources": {
+    "active_unique_params": 772440064,
+    "arm": "X",
+    "dtype_bytes": 2,
+    "experts": {
+      "active_elements_per_token": 176160768,
+      "bank_total_elements": 352321536,
+      "basis": "modelled",
+      "k": 4,
+      "layers": 28,
+      "m": 8,
+      "router_elements": 229376,
+      "weight_bytes_per_token_modelled": 352780288,
+      "width": 512
+    },
+    "extra_ledger": {
+      "bank_layers": 28,
+      "dense_adapter_layers": 0,
+      "memory_layers": 0,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 0,
+        "memory_index": 0,
+        "memory_projection": 0,
+        "memory_values": 0,
+        "router": 229376,
+        "specialist_down": 117440512,
+        "specialist_gate": 117440512,
+        "specialist_up": 117440512
+      },
+      "total": 352550912
+    },
+    "profile": "t2",
+    "total_accessible": 948600832,
+    "trainable_elements": 352550912
+  },
+  "revision": "f6808fa9090c82bc6b22b0a9b46ed3f163fcae7c",
+  "schema": "selvedge/t2-eval-summary/v1",
+  "seconds": 990.804,
+  "stamp": "20261115T234512Z",
+  "utc": "2026-11-15T23:45:12Z",
+  "vram_peak_gib": 11.596
+}

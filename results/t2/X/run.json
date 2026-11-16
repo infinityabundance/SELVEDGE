@@ -1,0 +1,198 @@
+{
+  "admission": {
+    "active_unique_params": 772440064,
+    "declared_active": 772440064,
+    "execution_unique_params": 772210688,
+    "path": "results/train/admission/t2/X.json",
+    "selector_unique_params": 229376
+  },
+  "arm": "X",
+  "budget": {
+    "accum": 64,
+    "micro_batch": 1,
+    "registered_budget_tokens": 67108864,
+    "steps": 1024,
+    "tokens_per_step": 65536,
+    "window": 1024
+  },
+  "checkpoint": {
+    "bytes": 4230746153,
+    "name": "step-001024.pt",
+    "path": "results/artifacts/train/t2/X/step-001024.pt",
+    "sha256": "9504267555fb49862f9c5060dea2c2749540958ba0278c0dd3fc1c197271b58a",
+    "sha256_source": "sidecar"
+  },
+  "compute": {
+    "declared_flops_breakdown": {
+      "controller_flops": 0,
+      "matmul_flops": 1544880128,
+      "other_flops": 9904128
+    },
+    "declared_flops_trained": 104339805185245184,
+    "declared_total_flops_per_token": 1554784256,
+    "note": "FLOPs are the admission record's declared per-token count; the receipt stores the declared value rather than a counter",
+    "tokens_per_second": 4757.609463391175,
+    "training_flops": null,
+    "training_tokens": 67108864
+  },
+  "config": {
+    "path": "results/train/admission-configs/t2/X.json",
+    "sha256": "afc6d5069f1f7eb3a0caef1f9740bb2f0634d9444ff491f40788ec4edd5327b3"
+  },
+  "data_order": {
+    "stream_sha256": "fddc1656462bcaf8000f129848ffd544c0754076e431f2d8c05ba7175050309c",
+    "targets_tokens": 67108864,
+    "teacher_manifest_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "evidence": {
+    "latest.json": {
+      "bytes": 104,
+      "path": "results/t2/X/latest.json",
+      "sha256": "46fd01aff8aa254b1cc03255404992154ca9c42e714a10230facadb423dbab58"
+    },
+    "run-meta.json": {
+      "bytes": 1513,
+      "path": "results/t2/X/run-meta.json",
+      "sha256": "feda7c6a80366a4044412c7df3236d52c8e8479d4c29d57d13e5ed1f23e4992e"
+    },
+    "summary.json": {
+      "bytes": 944,
+      "path": "results/t2/X/summary.json",
+      "sha256": "0625db62e6a8bc391ee19cd63b4a7afae9117448c7377e5f81676e09386794ee"
+    },
+    "train.jsonl": {
+      "bytes": 476329,
+      "path": "results/t2/X/train.jsonl",
+      "sha256": "a58fb1ee09a2daa1be44e301c9d8df80f4db082b5a14f1520fff4fd7ee588975"
+    },
+    "zero-point.json": {
+      "bytes": 308,
+      "path": "results/t2/X/zero-point.json",
+      "sha256": "a0bbb8227f233de4dba4d79ca6fcf792c6ff638ef9d17b35b48502eb29bde696"
+    }
+  },
+  "git_sha_at_launch": "f6808fa9090c82bc6b22b0a9b46ed3f163fcae7c",
+  "measured": {
+    "gpu_hours": 4.1178,
+    "last_grad_norm": 0.11762944608926773,
+    "last_loss": 1.681788441259414,
+    "tokens": 67108864,
+    "tokens_per_second": 4757.609463391175,
+    "train_seconds": 14105.584856510162,
+    "vram_peak_gib": 8.817480564117432,
+    "vram_peak_source": "cuda.max_memory_allocated over the whole run",
+    "wall_seconds": 14824.252536058426
+  },
+  "phases": {
+    "load_balance": true,
+    "router_phase": null,
+    "warmup_steps": 0
+  },
+  "resource": {
+    "active_extra_elements": 176390144,
+    "extra_ledger": {
+      "bank_layers": 28,
+      "dense_adapter_layers": 0,
+      "memory_layers": 0,
+      "roles": {
+        "dense_adapter": 0,
+        "memory_gate": 0,
+        "memory_index": 0,
+        "memory_projection": 0,
+        "memory_values": 0,
+        "router": 229376,
+        "specialist_down": 117440512,
+        "specialist_gate": 117440512,
+        "specialist_up": 117440512
+      },
+      "total": 352550912
+    },
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+    "grad_checkpoint": false,
+    "memory": null,
+    "torch": "2.15.0+cu132"
+  },
+  "revision": "8ef0981731f3d764cac613d2ab5a7bde71883557",
+  "run": {
+    "argv": [
+      "python3",
+      "oracle/train/loop.py",
+      "--arm",
+      "X",
+      "--profile",
+      "t2",
+      "--config",
+      "results/train/admission-configs/t2/X.json",
+      "--admission",
+      "results/train/admission/t2/X.json",
+      "--out",
+      "results/artifacts/train/t2/X",
+      "--steps",
+      "1024",
+      "--seed",
+      "1001",
+      "--micro-batch",
+      "1",
+      "--accum",
+      "64",
+      "--micro-positions",
+      "512",
+      "--checkpoint-every",
+      "100",
+      "--zero-point",
+      "--deterministic",
+      "--load-balance"
+    ],
+    "container": "selvedge-oracle-court-20261115T192010Z-f91aab",
+    "court_log": null,
+    "court_receipt": "/mnt/1tb_kingston/SELVEDGE/results/courts/oracle-20261115T192010Z-f91aab.json",
+    "directory": "results/artifacts/train/t2/X",
+    "exit_code": 0,
+    "final_step": 1024,
+    "finished_utc": "2026-11-15T23:27:31Z",
+    "started_utc": "2026-11-15T19:20:10Z",
+    "steps_logged": 1024,
+    "summary": {
+      "admitted_active_unique": 772440064,
+      "arm": "X",
+      "extra_ledger": {
+        "bank_layers": 28,
+        "dense_adapter_layers": 0,
+        "memory_layers": 0,
+        "roles": {
+          "dense_adapter": 0,
+          "memory_gate": 0,
+          "memory_index": 0,
+          "memory_projection": 0,
+          "memory_values": 0,
+          "router": 229376,
+          "specialist_down": 117440512,
+          "specialist_gate": 117440512,
+          "specialist_up": 117440512
+        },
+        "total": 352550912
+      },
+      "finished_utc": "2026-11-15T23:27:24Z",
+      "log": "results/artifacts/train/t2/X/train.jsonl",
+      "profile": "t2",
+      "router_phase": null,
+      "schema": "selvedge/train-summary/v1",
+      "seed": 1001,
+      "steps": 1024,
+      "tokens": 67108864,
+      "tokens_per_second": 4757.609463391175,
+      "total_accessible": 948600832,
+      "train_seconds": 14105.584856510162,
+      "trainable_elements": 352550912,
+      "vram_peak_gib": 8.817480564117432,
+      "wall_seconds": 14824.252536058426,
+      "warmup_steps": 0
+    }
+  },
+  "schema": "selvedge/t2-arm-receipt/v1",
+  "seed": 1001,
+  "stamp": "20261115T232731Z",
+  "total_accessible": 948600832,
+  "trainable_elements": 352550912,
+  "utc": "2026-11-15T23:27:31Z"
+}
