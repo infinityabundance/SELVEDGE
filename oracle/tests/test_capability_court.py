@@ -78,6 +78,8 @@ def test_a_full_pass_yields_a_perfect_balanced_composite(tmp_path):
     assert scores["trio_all_surfaces"] is True
     assert result["anti_gaming"]["prompt_hashes_match"] is True
     assert result["anti_gaming"]["checker_visible_to_arm"] is False
+    assert result["anti_gaming"]["tool_mode"] == "no-tools"
+    assert result["anti_gaming"]["offline_evidence"] == "no-default-route"
 
 
 def test_a_failed_category_moves_the_composite_by_one_seventh(tmp_path):
@@ -273,6 +275,23 @@ def test_a_suite_hash_mismatch_refuses_the_result(tmp_path):
     with pytest.raises(court.CourtError, match="different suite"):
         court.check(generations, SUITE_ROOT, os.path.join(str(tmp_path), "bad2.json"),
                     runner=lambda task, files: {"status": "pass"})
+
+
+def test_level3_never_invents_responsiveness(tmp_path):
+    _generations, result = run(tmp_path=tmp_path, name="level3")
+    incomplete = court.level3(result, None)
+    assert incomplete["complete"] is False
+    assert incomplete["p95_ms"]["value"] is None
+    assert incomplete["p95_ms"]["reason"]
+    assert incomplete["verified_success"] == pytest.approx(1.0)
+    complete = court.level3(result, {"p95_ms": 12.5,
+                                     "source": "results/runtime/court-f.json"})
+    assert complete["complete"] is True
+    assert complete["p95_ms"]["value"] == 12.5
+    with pytest.raises(court.CourtError, match="p95_ms and a source"):
+        court.level3(result, {"p95_ms": 12.5})
+    with pytest.raises(court.CourtError, match="p95_ms and a source"):
+        court.level3(result, {"source": "x"})
 
 
 def test_the_t2_adapter_is_declared_without_loading_a_model():

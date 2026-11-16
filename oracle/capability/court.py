@@ -407,8 +407,10 @@ def check(generations: dict, suite_root: str, out: str,
             "checker_access": "separate-process-after-generation",
             "checker_visible_to_arm": False,
             "tools": tool,
+            "tool_mode": "tools" if tool else "no-tools",
             "tool_parity": "enforced at comparison time",
             "feedback": (generations.get("decoding") or {}).get("feedback"),
+            "offline_evidence": sandbox_network_isolation(),
             "few_shot_hygiene": generations.get("few_shot"),
         },
         "scores": {
@@ -751,6 +753,46 @@ def pareto_front(rows: list) -> list:
                    for other_index, other in enumerate(rows) if other_index != index):
             front.append(row)
     return front
+
+
+def level3(result: dict, responsiveness: dict | None) -> dict:
+    """Level 3: verified offline success plus measured responsiveness.
+
+    Success comes from the check receipt; responsiveness must come from a named
+    Court F receipt (or a summary of one). A missing measurement is a null with a
+    reason, never a number, and the level is then reported as incomplete.
+    """
+    success = (result.get("scores") or {}).get("primary_composite")
+    offline = (result.get("anti_gaming") or {}).get("offline_evidence")
+    if responsiveness is None:
+        return {
+            "level": 3,
+            "statement": LEVELS[3],
+            "verified_success": success,
+            "offline_evidence": offline,
+            "p95_ms": {"value": None,
+                       "reason": "no Court F responsiveness summary was supplied"},
+            "complete": False,
+        }
+    p95 = responsiveness.get("p95_ms")
+    source = responsiveness.get("source")
+    if p95 is None or not source:
+        raise CourtError("level 3 responsiveness needs both p95_ms and a source receipt")
+    return {
+        "level": 3,
+        "statement": LEVELS[3],
+        "verified_success": success,
+        "offline_evidence": offline,
+        "p95_ms": {"value": p95, "source": source},
+        "complete": success is not None and offline == "no-default-route",
+    }
+
+
+def sandbox_network_isolation() -> str:
+    """Measured at check time; recorded in the result receipt."""
+    from . import sandbox
+
+    return sandbox.network_isolation_evidence()
 
 
 def no_hidden_teacher(adapter_metadata: dict, replay_receipt: str | None) -> dict:

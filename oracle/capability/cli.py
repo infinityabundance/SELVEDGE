@@ -106,6 +106,14 @@ def main(argv: list[str]) -> int:
     order.add_argument("--b", required=True)
     order.add_argument("--out", required=True)
 
+    level3 = subparsers.add_parser("level3")
+    level3.add_argument("--result", required=True)
+    level3.add_argument("--p95-ms", type=float, default=None,
+                        help="p95 latency from a Court F receipt")
+    level3.add_argument("--p95-source", default=None,
+                        help="the Court F receipt the p95 value comes from")
+    level3.add_argument("--out", required=True)
+
     args = parser.parse_args(argv)
 
     if args.command == "manifest":
@@ -232,6 +240,16 @@ def main(argv: list[str]) -> int:
         if args.out:
             court.write_json_atomic(args.out, {"schema": "selvedge/capability-controls/v1",
                                                "rows": rows})
+        return 0
+
+    if args.command == "level3":
+        result = load_json(args.result)
+        responsiveness = None
+        if args.p95_ms is not None or args.p95_source:
+            responsiveness = {"p95_ms": args.p95_ms, "source": args.p95_source}
+        payload = court.level3(result, responsiveness)
+        court.write_json_atomic(args.out, payload)
+        print(f"capability_court: level 3 complete={payload['complete']}")
         return 0
 
     if args.command == "order-invariance":

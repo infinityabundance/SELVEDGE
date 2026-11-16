@@ -41,7 +41,10 @@ One harness then produces three levels:
   and p95 latency as *accessible* capacity grows at approximately fixed active
   work (`capacity_scaling`).
 - **Level 3 (useful local assistant):** verified task success offline plus
-  responsiveness, with the Court F latency receipts as the other half.
+  responsiveness, with the Court F latency receipts as the other half
+  (`level3` combines the check receipt's success and measured offline evidence
+  with a named Court F p95, and reports a null with a reason when none is
+  supplied).
 
 A level is never inferred from another. Level 2 without Level 1 is a storage
 demo; Level 3 without Level 2 is a product demo with no capacity story.
@@ -402,7 +405,7 @@ scored separately by surface and never pooled into the primary.
 | prompt-order invariance | the same items in a rotated order must give identical outcomes | an order-sensitive arm is caught by `order-invariance` |
 | no test leakage into few-shot | 8-word shingles of every example against every item's prompt, code, hidden tests and reference | generation refuses on any overlap |
 | no checker access at inference | two processes; the checker exists only after generation | structural, recorded per result |
-| tool parity | a tool-using arm may only be compared with tool-using baselines | `compare` raises |
+| tool parity and no-tools mode | the local adapters are structurally tool-free (`tool_mode: "no-tools"`); a tool-using arm must declare it and may only be compared with tool-using baselines | `compare` raises |
 | feedback parity | an arm that saw compiler/test feedback must be compared with one that did | `compare` raises |
 | manifest and suite binding | prompt hashes and the suite hash are checked at scoring time | a stale or mutated suite refuses the result |
 
