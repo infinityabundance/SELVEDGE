@@ -29,20 +29,33 @@ Proven by the courts in this revision:
    checkpoint by `scripts/runtime-courts.sh court-e`.
 4. **The real checkpoint matches the NumPy reference** on a five-token prompt,
    within the pre-registered tolerance, with the argmax agreeing at every
-   position:
-   <!-- BEGIN GENERATED: runtime-parity-max-abs -->
-   <!-- END GENERATED: runtime-parity-max-abs -->
-   <!-- BEGIN GENERATED: runtime-parity-top1 -->
-   <!-- END GENERATED: runtime-parity-top1 -->
+   position. Largest absolute logit difference from the reference:
+
+<!-- BEGIN GENERATED: runtime-parity-max-abs -->
+max |reference - observed| = 0.0001354217529296875
+<!-- END GENERATED: runtime-parity-max-abs -->
+
+   Argmax agreement:
+
+<!-- BEGIN GENERATED: runtime-parity-top1 -->
+5 of 5 prefill positions agree on the argmax
+<!-- END GENERATED: runtime-parity-top1 -->
+
 5. **Every executed token is inside the ceiling and accounted.** The budget gate
    is called before execution, cumulatively, and each token's
-   `TokenAccounting` is written to JSONL. Exact mode on this checkpoint uses:
-   <!-- BEGIN GENERATED: runtime-active-unique-max -->
-   <!-- END GENERATED: runtime-active-unique-max -->
-   out of
-   <!-- BEGIN GENERATED: runtime-total-accessible -->
-   <!-- END GENERATED: runtime-total-accessible -->
-   accessible learned parameters.
+   `TokenAccounting` is written to JSONL. Exact mode on this checkpoint uses this
+   many active unique parameters:
+
+<!-- BEGIN GENERATED: runtime-active-unique-max -->
+596049920 active unique parameters
+<!-- END GENERATED: runtime-active-unique-max -->
+
+   out of this many accessible learned parameters:
+
+<!-- BEGIN GENERATED: runtime-total-accessible -->
+596049920 accessible parameters
+<!-- END GENERATED: runtime-total-accessible -->
+
 
 **Not proven, and stated rather than implied:**
 
@@ -71,11 +84,29 @@ Measured, in the rust court, from
 `results/runtime/backend-decision-20261116T012956Z.json` (which transcribes the
 two court logs named in it):
 
-| candidate | measured weight |
-| --- | --- |
-| `candle-core` + `candle-nn` 0.11.1, default (CPU) features | <!-- BEGIN GENERATED: backend-candle-dependency-edges --> <!-- END GENERATED: backend-candle-dependency-edges -->, <!-- BEGIN GENERATED: backend-candle-build-seconds --> <!-- END GENERATED: backend-candle-build-seconds -->, <!-- BEGIN GENERATED: backend-candle-peak-rss-bytes --> <!-- END GENERATED: backend-candle-peak-rss-bytes --> |
-| `tokenizers` 0.23.2, `default-features = false, features = ["onig"]` | <!-- BEGIN GENERATED: backend-tokenizers-dependency-packages --> <!-- END GENERATED: backend-tokenizers-dependency-packages -->, <!-- BEGIN GENERATED: backend-tokenizers-build-seconds --> <!-- END GENERATED: backend-tokenizers-build-seconds --> |
-| in-repo kernels | zero dependencies added, no `unsafe` |
+`candle-core` + `candle-nn` 0.11.1 with CPU features, measured in the rust court:
+
+<!-- BEGIN GENERATED: backend-candle-dependency-edges -->
+159 dependency edges
+<!-- END GENERATED: backend-candle-dependency-edges -->
+<!-- BEGIN GENERATED: backend-candle-build-seconds -->
+25.7 s cold build
+<!-- END GENERATED: backend-candle-build-seconds -->
+<!-- BEGIN GENERATED: backend-candle-peak-rss-bytes -->
+1970229248 bytes peak RSS
+<!-- END GENERATED: backend-candle-peak-rss-bytes -->
+
+`tokenizers` 0.23.2 with `default-features = false, features = ["onig"]`, measured
+the same way:
+
+<!-- BEGIN GENERATED: backend-tokenizers-dependency-packages -->
+93 dependency packages
+<!-- END GENERATED: backend-tokenizers-dependency-packages -->
+<!-- BEGIN GENERATED: backend-tokenizers-build-seconds -->
+12.94 s cold build
+<!-- END GENERATED: backend-tokenizers-build-seconds -->
+
+In-repo kernels: zero dependencies added, no `unsafe`.
 
 Reasons, in order of weight:
 
@@ -316,12 +347,16 @@ digest. The receipt is
 exact-mode logits are bitwise identical under different cache capacity, cache
 policy, prefetch, fetch order, injected device delay and thread count.
 
-| variant | configuration | device bytes per token | decode p50 |
-| --- | --- | --- | --- |
-| `court-e-cold` | no cache, 8 threads | sentinel | sentinel |
-| `court-e-warm` | 1.2 GB LRU cache, 8 threads | sentinel | sentinel |
-| `court-e-prefetch` | 1.2 GB LRU, prefetch, reverse fetch order, 4 threads | sentinel | sentinel |
-| `court-e-delay` | 64 MB LRU, 200 µs injected delay per device read, 2 threads | sentinel | sentinel |
+| variant | configuration |
+| --- | --- |
+| `court-e-cold` | no cache, 8 threads |
+| `court-e-warm` | 1.2 GB LRU cache, 8 threads |
+| `court-e-prefetch` | 1.2 GB LRU, prefetch, reverse fetch order, 4 threads |
+| `court-e-delay` | 64 MB LRU, 200 µs injected delay per device read, 2 threads |
+
+The per-variant device bytes and decode latency are in the receipt; the cold and
+warm figures also appear in the Court F table below, which measures the same
+quantity.
 
 All four share `sequence_digest e55b4f889bd2628c…` (the full digest is in the
 receipt) and the same generated tokens; a variant that is not `proven` exact, or
@@ -339,18 +374,57 @@ stopped reading.
 resident) runs of the same prompt with sixteen generated tokens, plus a
 single-threaded warm run. Receipt: `results/runtime/court-f-cpu-<stamp>.json`.
 
-| variant | prefill p50 | decode p50 | decode throughput | device bytes / token |
-| --- | --- | --- | --- | --- |
-| cold, 8 threads | <!-- BEGIN GENERATED: runtime-court-f-cold-prefill-p50-ns --> <!-- END GENERATED: runtime-court-f-cold-prefill-p50-ns --> | <!-- BEGIN GENERATED: runtime-court-f-cold-decode-p50-ns --> <!-- END GENERATED: runtime-court-f-cold-decode-p50-ns --> | <!-- BEGIN GENERATED: runtime-court-f-cold-tokens-per-second --> <!-- END GENERATED: runtime-court-f-cold-tokens-per-second --> | <!-- BEGIN GENERATED: runtime-court-f-cold-bytes-per-token --> <!-- END GENERATED: runtime-court-f-cold-bytes-per-token --> |
-| warm, 8 threads | <!-- BEGIN GENERATED: runtime-court-f-warm-prefill-p50-ns --> <!-- END GENERATED: runtime-court-f-warm-prefill-p50-ns --> | <!-- BEGIN GENERATED: runtime-court-f-warm-decode-p50-ns --> <!-- END GENERATED: runtime-court-f-warm-decode-p50-ns --> | <!-- BEGIN GENERATED: runtime-court-f-warm-tokens-per-second --> <!-- END GENERATED: runtime-court-f-warm-tokens-per-second --> | <!-- BEGIN GENERATED: runtime-court-f-warm-bytes-per-token --> <!-- END GENERATED: runtime-court-f-warm-bytes-per-token --> |
-| warm, 1 thread | — | <!-- BEGIN GENERATED: runtime-court-f-warm-1t-decode-p50-ns --> <!-- END GENERATED: runtime-court-f-warm-1t-decode-p50-ns --> | <!-- BEGIN GENERATED: runtime-court-f-warm-1t-tokens-per-second --> <!-- END GENERATED: runtime-court-f-warm-1t-tokens-per-second --> | same as warm |
+**Cold, 8 threads** — no cache, every group fetched for every token.
+
+<!-- BEGIN GENERATED: runtime-court-f-cold-prefill-p50-ns -->
+716836600 ns
+<!-- END GENERATED: runtime-court-f-cold-prefill-p50-ns -->
+<!-- BEGIN GENERATED: runtime-court-f-cold-decode-p50-ns -->
+714690914 ns
+<!-- END GENERATED: runtime-court-f-cold-decode-p50-ns -->
+<!-- BEGIN GENERATED: runtime-court-f-cold-tokens-per-second -->
+1.3998674759459198 tokens/s
+<!-- END GENERATED: runtime-court-f-cold-tokens-per-second -->
+<!-- BEGIN GENERATED: runtime-court-f-cold-bytes-per-token -->
+1056964608 bytes per token from the backing tier
+<!-- END GENERATED: runtime-court-f-cold-bytes-per-token -->
+
+**Warm, 8 threads** — the bundle resident in the store's LRU cache.
+
+<!-- BEGIN GENERATED: runtime-court-f-warm-prefill-p50-ns -->
+275838940 ns
+<!-- END GENERATED: runtime-court-f-warm-prefill-p50-ns -->
+<!-- BEGIN GENERATED: runtime-court-f-warm-decode-p50-ns -->
+274424919 ns
+<!-- END GENERATED: runtime-court-f-warm-decode-p50-ns -->
+<!-- BEGIN GENERATED: runtime-court-f-warm-tokens-per-second -->
+3.650415972383406 tokens/s
+<!-- END GENERATED: runtime-court-f-warm-tokens-per-second -->
+<!-- BEGIN GENERATED: runtime-court-f-warm-bytes-per-token -->
+50331648 bytes per token from the backing tier
+<!-- END GENERATED: runtime-court-f-warm-bytes-per-token -->
+
+**Warm, one thread** — same cache, kernels on one thread.
+
+<!-- BEGIN GENERATED: runtime-court-f-warm-1t-decode-p50-ns -->
+238533136 ns
+<!-- END GENERATED: runtime-court-f-warm-1t-decode-p50-ns -->
+<!-- BEGIN GENERATED: runtime-court-f-warm-1t-tokens-per-second -->
+4.192902074235365 tokens/s
+<!-- END GENERATED: runtime-court-f-warm-1t-tokens-per-second -->
+
+The order of the values above is: prefill p50, decode p50, decode throughput,
+device bytes per token (the single-thread variant repeats the warm byte count,
+which is unchanged).
 
 Environment: the `rust` Docker court (Debian slim, pinned toolchain), the
 explicit `SELVEDGE_MEM`/`SELVEDGE_CPUS` limits recorded in the court receipt, the
-pinned checkpoint and the 16-group bundle named in the run summary. The observed
-cgroup memory peak of the warm run is
+pinned checkpoint and the 16-group bundle named in the run summary. The observed cgroup memory peak of the warm run is:
+
 <!-- BEGIN GENERATED: runtime-court-f-memory-peak-bytes -->
-<!-- END GENERATED: runtime-court-f-memory-peak-bytes -->.
+2464423936 bytes
+<!-- END GENERATED: runtime-court-f-memory-peak-bytes -->
+
 
 Three honest observations from that table:
 
@@ -376,10 +450,14 @@ the 1.7B teacher in BF16 (four selected experts per layer). That is a different
 model, a different selected fraction and a different dtype, so its figure is *not*
 the number this run should be compared against, and no such comparison is made
 here. The comparable quantity for this phase is the measured device bytes per
-token in the table above, and the arithmetic that explains it: the bundle payload
-is <!-- BEGIN GENERATED: runtime-bundle-payload-bytes -->
-<!-- END GENERATED: runtime-bundle-payload-bytes --> bytes of unquantized f32, and
-exact mode fetches all of it once when the cache is cold. The fair generalisation
+token in the values above, and the arithmetic that explains it: the bundle
+payload is this many bytes of unquantized f32,
+
+<!-- BEGIN GENERATED: runtime-bundle-payload-bytes -->
+1056964608 bundle payload bytes
+<!-- END GENERATED: runtime-bundle-payload-bytes -->
+
+and exact mode fetches all of it once when the cache is cold. The fair generalisation
 is per-model: bytes per token = payload bytes x (selected groups / total groups),
 which for this checkpoint and a BF16 bundle would scale with both the selected
 fraction and the dtype width.
