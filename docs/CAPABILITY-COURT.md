@@ -1949,3 +1949,593 @@ prevent.
 3. **No OOM and no GPU failure.** All five generations and all five checks
    exited 0; the peaks in 17.1 are the measured evidence, and the court receipts
    carry the enforced limits and the `oom_killed` flag.
+
+## 18. The response collapse, the instrument fix and the first discriminative measurement (S30)
+
+Status: **a prompt defect was measured, the instrument was fixed by construction,
+and the fixed instrument produced the first non-degenerate measurement.** S29
+refused a suite version because every arm answered with one letter. This section
+records the forensics that located the cause, the sanity ladder that isolated it,
+the likelihood-selection instrument that removes it, its registration, and a
+two-arm pilot that discriminates at the *item* level and is explicitly unpowered
+at the *arm* level.
+
+Receipts, each carrying its own stamp and revision:
+
+- prompt forensics — `results/capability/forensics/forensics-20261116T173500Z.json`
+- sanity ladder on `D` — `results/capability/ladder/D-20261116T173600Z.json`
+- pilot selections — `results/capability/pilot/D/selection.json` and
+  `results/capability/pilot/X/selection-9g.json`
+- pilot checked results — `results/capability/pilot/{D,X}/result.json`
+- pilot analysis — `results/capability/pilot/pilot-analysis-20261116T173200Z.json`
+- instrument registration — `docs/capability-calibration-preregistration-v2.json`
+- CPU evidence — `oracle/tests/test_capability_forensics.py` and
+  `oracle/tests/test_capability_scoring.py`
+
+Nothing in this section changes §17, the v1 calibration window, the v4 capability
+pre-registration or the registered T2 verdict.
+
+### 18.1 The prompt, verified rather than assumed
+
+The exact rendered prompt for a sample of patch and diagnostic items is stored
+verbatim in the forensics receipt, together with the tokenised form the adapter
+actually feeds the model. What that audit establishes, per item:
+
+- **Every candidate is present, once.** Each candidate's content appears in the
+  prompt and each label appears as a heading exactly once; the audit fails an item
+  whose heading is duplicated or whose content is missing, and no sampled item
+  fails it.
+- **Nothing is truncated.** The adapter tokenises the prompt with a token limit;
+  the longest prompt in the calibration split is
+  <!-- BEGIN GENERATED: s30-prompt-max-tokens -->
+909 tokens
+  <!-- END GENERATED: s30-prompt-max-tokens -->
+  and the number of items the adapter would truncate is
+  <!-- BEGIN GENERATED: s30-prompt-truncated-items -->
+0 items truncated
+  <!-- END GENERATED: s30-prompt-truncated-items -->
+  Truncation is the first thing to rule out because the tail of the prompt is the
+  candidate list and the answer-format instruction, so a truncated prompt removes
+  the question.
+- **No chat template is applied.** The adapter sends the rendered text as raw
+  token ids. The checkpoint's tokenizer ships a chat template and the receipt
+  records what it *would* have rendered; this is a measured fact, not an
+  inference. It is also the right choice for this arm: the arms are next-token
+  models distilled on raw text, not instruction-tuned chat models, so a template
+  would be a different instrument and would need its own calibration.
+- **The answer-format instruction names a concrete letter.** For
+  patch-selection the prompt asks for a letter "for example
+  <!-- BEGIN GENERATED: s30-prompt-example-patch -->
+C
+  <!-- END GENERATED: s30-prompt-example-patch -->
+  ", and for diagnostic-identification "for example
+  <!-- BEGIN GENERATED: s30-prompt-example-diagnostic -->
+B
+  <!-- END GENERATED: s30-prompt-example-diagnostic -->
+  ". That letter is the only letter anywhere in the instruction.
+
+That last line is the defect. The stored S29 answers are not spread over the
+alphabet; they are the instruction's example letter:
+
+- `D`, patch-selection: of
+  <!-- BEGIN GENERATED: s30-d-patch-items -->
+23 patch items
+  <!-- END GENERATED: s30-d-patch-items -->
+  ,
+  <!-- BEGIN GENERATED: s30-d-patch-letters -->
+22 recoverable letters
+  <!-- END GENERATED: s30-d-patch-letters -->
+  are recoverable and every one is
+  <!-- BEGIN GENERATED: s30-d-patch-constant -->
+C
+  <!-- END GENERATED: s30-d-patch-constant -->
+  ;
+- `D`, diagnostic-identification: of
+  <!-- BEGIN GENERATED: s30-d-diag-items -->
+14 diagnostic items
+  <!-- END GENERATED: s30-d-diag-items -->
+  ,
+  <!-- BEGIN GENERATED: s30-d-diag-letters -->
+9 recoverable letters
+  <!-- END GENERATED: s30-d-diag-letters -->
+  are recoverable and every one is
+  <!-- BEGIN GENERATED: s30-d-diag-constant -->
+B
+  <!-- END GENERATED: s30-d-diag-constant -->
+  ;
+- `X`, patch-selection:
+  <!-- BEGIN GENERATED: s30-x-patch-letters -->
+15 recoverable letters
+  <!-- END GENERATED: s30-x-patch-letters -->
+  over
+  <!-- BEGIN GENERATED: s30-x-patch-items -->
+23 patch items
+  <!-- END GENERATED: s30-x-patch-items -->
+  , all the same letter;
+- `X`, diagnostic-identification:
+  <!-- BEGIN GENERATED: s30-x-diag-letters -->
+4 recoverable letters
+  <!-- END GENERATED: s30-x-diag-letters -->
+  over
+  <!-- BEGIN GENERATED: s30-x-diag-items -->
+14 diagnostic items
+  <!-- END GENERATED: s30-x-diag-items -->
+  , all the same letter.
+
+The forensics receipt's verdict is
+<!-- BEGIN GENERATED: s30-collapse-verdict -->
+response_collapse_copies_the_instruction_example
+<!-- END GENERATED: s30-collapse-verdict -->
+The reference letters are not constant across items, so the constant answer is
+not merely "wrong": it is the item-independent answer, and the S29 passes sat
+exactly on the items whose reference happened to be that letter.
+
+### 18.2 The sanity ladder on `D`
+
+The ladder asks the same checkpoint a sequence of short questions (greedy, a
+small token cap, no tools) and records the letter it emits. It is a diagnostic;
+it scores nothing. It ran
+<!-- BEGIN GENERATED: s30-ladder-conditions -->
+19 conditions
+<!-- END GENERATED: s30-ladder-conditions -->
+of which the table shows the informative ones.
+
+| condition | patch item whose reference is `C` | patch item whose reference is `B` | what it shows |
+| --- | --- | --- | --- |
+| trivial MCQ, answer at `A` | — | — | `A`, correct by position |
+| trivial MCQ, answer at `B` | — | — | `A`, the position not the option |
+| trivial MCQ, answer at `C` | — | — | `A`, the position not the option |
+| trivial MCQ, correct `C`, example `C` | — | — | `C`, agrees with the example |
+| trivial MCQ, correct `C`, example `A` | — | — | `A`, copies the example |
+| registered prompt (example `C`) | `C` | `C` | reproduces the S29 collapse |
+| example letter removed | `A` | `A` | a position prior replaces the example |
+| explicit "one character" instruction | `A` | `A` | the instruction text does not help |
+| candidates permuted, rotation 1 | `A` | `A` | the letter does not follow the content |
+| candidates permuted, rotation 2 | `A` | `A` | the letter does not follow the content |
+| candidates permuted, rotation 3 | `C` | `A` | the letter does not follow the content |
+| two few-shot examples | `A` | `A` | the examples do not teach the answer |
+
+The numeric part of the ladder's verdict:
+
+- of the trivial MCQs at three positions, the correct ones are
+  <!-- BEGIN GENERATED: s30-ladder-mcq-correct -->
+1
+  <!-- END GENERATED: s30-ladder-mcq-correct -->
+  of
+  <!-- BEGIN GENERATED: s30-ladder-mcq-items -->
+3
+  <!-- END GENERATED: s30-ladder-mcq-items -->
+  ;
+- in the discriminating example control (correct option `C`, instruction example
+  `A`) the arm emitted
+  <!-- BEGIN GENERATED: s30-ladder-example-wrong-letter -->
+A
+  <!-- END GENERATED: s30-ladder-example-wrong-letter -->
+  while the correct letter was
+  <!-- BEGIN GENERATED: s30-ladder-example-wrong-correct -->
+C
+  <!-- END GENERATED: s30-ladder-example-wrong-correct -->
+  ;
+- across the
+  <!-- BEGIN GENERATED: s30-ladder-patch-items -->
+2 items
+  <!-- END GENERATED: s30-ladder-patch-items -->
+  whose candidates were permuted, the number of items whose chosen *content* was
+  invariant under permutation is
+  <!-- BEGIN GENERATED: s30-ladder-content-stable -->
+0
+  <!-- END GENERATED: s30-ladder-content-stable -->
+  ;
+- the number of registered-prompt controls whose letter equals the instruction's
+  example is
+  <!-- BEGIN GENERATED: s30-ladder-controls-copied -->
+2
+  <!-- END GENERATED: s30-ladder-controls-copied -->
+  .
+
+The ladder's own conclusion, verbatim:
+
+<!-- BEGIN GENERATED: s30-ladder-interpretation -->
+the arm emits the instruction's example letter when one is shown and a fixed position prior when none is; its choice does not follow the candidate content under permutation. The collapse is a prompt-conditioning defect, not evidence about the tasks
+<!-- END GENERATED: s30-ladder-interpretation -->
+
+The trajectory of the completion explains it: asked for a letter, the arm
+continues the instruction ("For example, if the correct answer is `A`, then
+return `A`.") and then degenerates into repeated fences. It is completing a
+document, not answering a question.
+
+### 18.3 What the collapse is, and what it is not
+
+In order of what the evidence rules out:
+
+1. **Not a parse or extraction problem.** The registered parser is not the
+   binding constraint; the raw text is constant, and making the parser more
+   tolerant would read the constant more often and fabricate saturation.
+2. **Not truncation.** No calibration prompt reaches the adapter's token limit
+   (§18.1), so the question is always present.
+3. **Not the item population.** The same checkpoint answers a trivial
+   three-option question by position, and the reference letters vary across
+   items. The arm is not failing because the items are hard; it is not
+   conditioning on the item.
+4. **It is a prompt-conditioning property of a completion model.** With an
+   example letter it repeats the example; without one it applies a fixed position
+   prior. Neither behaviour can discriminate items, so *no* score computed from
+   free-form generation on this arm is informative. The S29 refusal was correct.
+
+This also means the v4 floor (`0 of 153`) and the S29 pass were both measuring the
+same defect from different angles, and neither is evidence about the tasks.
+
+### 18.4 The structural fix: likelihood selection (instrument v2)
+
+`oracle/capability/scoring.py` removes free-form generation from the selection
+formats. For each candidate it scores the model's own log-probability of that
+candidate's *content* as a continuation of the prompt, and the answer is the
+arg-max. There is no sampled or greedy token that can collapse.
+
+- **What is scored.** For patch-selection, the candidate's replacement text
+  (function or whole-file body); for diagnostic-identification, the option's
+  rendered line (`E####` plus its description). The label, the display position,
+  the reference flag and every checker output are never part of the scored text,
+  and the scorer receives only the prompt and the candidate contents.
+- **Two aggregates, both recorded.** The exact sum of token log-probabilities and
+  the length-normalised mean. The registered primary is the **mean**, because a
+  sum rewards long candidates structurally; the sum's ranking is reported beside
+  it. On `D` the primary ranking chose the checker-verified candidate for
+  <!-- BEGIN GENERATED: s30-pilot-rank-content-mean -->
+0.3514
+  <!-- END GENERATED: s30-pilot-rank-content-mean -->
+  of the selection items, the sum ranking for
+  <!-- BEGIN GENERATED: s30-pilot-rank-content-sum -->
+0.2703
+  <!-- END GENERATED: s30-pilot-rank-content-sum -->
+  and the letter-score ranking for
+  <!-- BEGIN GENERATED: s30-pilot-rank-letter-mean -->
+0.1622
+  <!-- END GENERATED: s30-pilot-rank-letter-mean -->
+  The letter ranking — the log-probability of ` A`/` B`/` C` given the prompt —
+  is recorded as an **unscored diagnostic of position bias**, and it is the worst
+  of the three.
+- **No truncation.** A scored sequence longer than the registered exactness bound
+  refuses instead of scoring a prefix.
+- **A prompt variant, recorded.** The selection prompt omits the example letter
+  and says that candidates are scored rather than typed. Its name
+  (`selection-v1`) travels in the receipt, and `check` recomputes *that* prompt's
+  hash rather than the v1 generation prompt's.
+- **The margin is a diagnostic.** Per item the best-minus-runner-up log-probability
+  is recorded and never substituted for the executable outcome.
+- **The primary metric is unchanged.** For patch-selection it is the chosen
+  candidate passing `cargo`; for diagnostic-identification it is the option's
+  registered consequence compiling and resolving the failure, reported on
+  `verified_diagnostic` and never pooled with executable success.
+
+Because the choice is over content scores, the display position cannot favour a
+candidate. The per-item reference positions are still recorded and summarised
+(`position_audit`) so a reader can see that the reference is not always shown in
+the same place; on the pilot split it occupies every label in both formats.
+
+Registration: `docs/capability-calibration-preregistration-v2.json` is a new file
+that **appends** to v1 — the v1 window, the v4 capability contract and the T2
+verdict are untouched. `court select` refuses a v2 registration whose suite hash,
+prompt variant, primary mode, entropy thresholds or formats disagree with the code.
+
+`check` also gains `--format`, because a run that asked only the selection formats
+must be scored on exactly those items: an unasked item is neither scored nor
+counted as a failure.
+
+### 18.5 The response-entropy screen
+
+Every format's answers are counted by a comparable key per arm — the chosen letter
+for a selection format, the whitespace-normalised text for a free-form format. If
+the answer distribution is below the registered entropy minimum of
+<!-- BEGIN GENERATED: s30-pilot-screen-min-bits -->
+0.1 bits
+<!-- END GENERATED: s30-pilot-screen-min-bits -->
+or above the registered modal-share maximum of
+<!-- BEGIN GENERATED: s30-pilot-screen-max-share -->
+0.9
+<!-- END GENERATED: s30-pilot-screen-max-share -->
+the format is marked **non-discriminating** and excluded for that arm; it is not
+scored.
+
+Applied to the S29 receipts, the screen separates two *different* failures rather
+than declaring every zero a collapse:
+
+- `body-completion` for `D` is constant: entropy
+  <!-- BEGIN GENERATED: s30-d-body-entropy -->
+0.000 bits
+  <!-- END GENERATED: s30-d-body-entropy -->
+  with the modal answer covering
+  <!-- BEGIN GENERATED: s30-d-body-modal-share -->
+1.000
+  <!-- END GENERATED: s30-d-body-modal-share -->
+  of the items, so the screen's verdict is
+  <!-- BEGIN GENERATED: s30-d-body-screen -->
+excluded_non_discriminating
+  <!-- END GENERATED: s30-d-body-screen -->
+  ;
+- `patch-selection` for `D` is near-constant, not constant: entropy
+  <!-- BEGIN GENERATED: s30-d-patch-entropy-before -->
+0.258 bits
+  <!-- END GENERATED: s30-d-patch-entropy-before -->
+  clears the entropy minimum, but the modal letter covers
+  <!-- BEGIN GENERATED: s30-d-patch-modal-share -->
+0.957
+  <!-- END GENERATED: s30-d-patch-modal-share -->
+  of the items, which exceeds the modal-share maximum, so the screen's verdict is
+  <!-- BEGIN GENERATED: s30-d-patch-screen-before -->
+excluded_non_discriminating
+  <!-- END GENERATED: s30-d-patch-screen-before -->
+  ;
+- `file-replacement` for `D` is **not** excluded by the screen: its answers vary
+  (entropy
+  <!-- BEGIN GENERATED: s30-d-file-entropy -->
+3.585 bits
+  <!-- END GENERATED: s30-d-file-entropy -->
+  , modal share
+  <!-- BEGIN GENERATED: s30-d-file-modal-share -->
+0.167
+  <!-- END GENERATED: s30-d-file-modal-share -->
+  ) and the screen's verdict is
+  <!-- BEGIN GENERATED: s30-d-file-screen -->
+scored
+  <!-- END GENERATED: s30-d-file-screen -->
+  . Its answers are simply all wrong: it passed
+  <!-- BEGIN GENERATED: s30-d-file-passes-s29 -->
+0
+  <!-- END GENERATED: s30-d-file-passes-s29 -->
+  of
+  <!-- BEGIN GENERATED: s30-d-file-items-s29 -->
+24
+  <!-- END GENERATED: s30-d-file-items-s29 -->
+  items on `D` (§17.1).
+
+The screen is a **necessary** condition for discrimination, not a sufficient one:
+varying answers do not imply correct answers. A format with high answer entropy
+and a zero pass rate is uninformative for a different reason, which the pass rate
+records and the screen does not. That is why the pilot's claim is restricted to
+the selection formats: `body-completion` is excluded by the screen,
+`file-replacement` is not, and neither is scored or claimed for these arms.
+
+### 18.6 The likelihood-selection pilot on `D` and `X`
+
+Two arms, the whole calibration split's selection items, one arm at a time, greedy
+generation replaced everywhere by scoring. `D` and `X` each answer
+<!-- BEGIN GENERATED: s30-pilot-selection-items -->
+37 selection items
+<!-- END GENERATED: s30-pilot-selection-items -->
+
+Per format, from the executable checker (patch) and from verified diagnostics
+(diagnostic), never from the margin:
+
+- `D`: patch
+  <!-- BEGIN GENERATED: s30-pilot-d-patch-passes -->
+11
+  <!-- END GENERATED: s30-pilot-d-patch-passes -->
+  of
+  <!-- BEGIN GENERATED: s30-pilot-d-patch-items -->
+23
+  <!-- END GENERATED: s30-pilot-d-patch-items -->
+  pass; diagnostics
+  <!-- BEGIN GENERATED: s30-pilot-d-diag-passes -->
+2
+  <!-- END GENERATED: s30-pilot-d-diag-passes -->
+  of
+  <!-- BEGIN GENERATED: s30-pilot-d-diag-items -->
+14
+  <!-- END GENERATED: s30-pilot-d-diag-items -->
+  verified.
+- `X`: patch
+  <!-- BEGIN GENERATED: s30-pilot-x-patch-passes -->
+11
+  <!-- END GENERATED: s30-pilot-x-patch-passes -->
+  of
+  <!-- BEGIN GENERATED: s30-pilot-x-patch-items -->
+23
+  <!-- END GENERATED: s30-pilot-x-patch-items -->
+  pass; diagnostics
+  <!-- BEGIN GENERATED: s30-pilot-x-diag-passes -->
+2
+  <!-- END GENERATED: s30-pilot-x-diag-passes -->
+  of
+  <!-- BEGIN GENERATED: s30-pilot-x-diag-items -->
+14
+  <!-- END GENERATED: s30-pilot-x-diag-items -->
+  verified.
+
+The across-arm accuracy spread is
+<!-- BEGIN GENERATED: s30-pilot-spread-patch -->
+0.0000
+<!-- END GENERATED: s30-pilot-spread-patch -->
+for patch-selection and
+<!-- BEGIN GENERATED: s30-pilot-spread-diag -->
+0.0000
+<!-- END GENERATED: s30-pilot-spread-diag -->
+for diagnostic-identification, so the pilot does not separate the arms.
+
+The *item* matrix does separate items, which is the question this pilot asks. Of
+<!-- BEGIN GENERATED: s30-pilot-exec-items -->
+23 executable items
+<!-- END GENERATED: s30-pilot-exec-items -->
+,
+<!-- BEGIN GENERATED: s30-pilot-both -->
+10 passed by both arms
+<!-- END GENERATED: s30-pilot-both -->
+,
+<!-- BEGIN GENERATED: s30-pilot-neither -->
+11 passed by neither
+<!-- END GENERATED: s30-pilot-neither -->
+and
+<!-- BEGIN GENERATED: s30-pilot-discordant -->
+2 by exactly one
+<!-- END GENERATED: s30-pilot-discordant -->
+No cell is saturated and no cell is zero, and the answer entropy is well above the
+screen's minimum:
+
+- `D`: patch
+  <!-- BEGIN GENERATED: s30-pilot-d-patch-entropy -->
+1.302 bits
+  <!-- END GENERATED: s30-pilot-d-patch-entropy -->
+  , diagnostic
+  <!-- BEGIN GENERATED: s30-pilot-d-diag-entropy -->
+1.985 bits
+  <!-- END GENERATED: s30-pilot-d-diag-entropy -->
+- `X`: patch
+  <!-- BEGIN GENERATED: s30-pilot-x-patch-entropy -->
+1.371 bits
+  <!-- END GENERATED: s30-pilot-x-patch-entropy -->
+  , diagnostic
+  <!-- BEGIN GENERATED: s30-pilot-x-diag-entropy -->
+1.985 bits
+  <!-- END GENERATED: s30-pilot-x-diag-entropy -->
+
+The ranking margins are small, which is itself a measurement of how weakly this
+arm prefers one candidate over another: the median primary margin on `D` is
+<!-- BEGIN GENERATED: s30-pilot-d-margin-patch -->
+0.0266 nats
+<!-- END GENERATED: s30-pilot-d-margin-patch -->
+for patch-selection and
+<!-- BEGIN GENERATED: s30-pilot-d-margin-diag -->
+0.1806 nats
+<!-- END GENERATED: s30-pilot-d-margin-diag -->
+for diagnostic-identification.
+
+**Power, measured.** Baseline pass rate over the executable items (both arms
+pooled):
+<!-- BEGIN GENERATED: s30-pilot-baseline -->
+0.478261
+<!-- END GENERATED: s30-pilot-baseline -->
+Paired-difference variance for the `D`/`X` pair:
+<!-- BEGIN GENERATED: s30-pilot-variance -->
+0.086957
+<!-- END GENERATED: s30-pilot-variance -->
+with a two-sided sign-test p of
+<!-- BEGIN GENERATED: s30-pilot-sign-p -->
+1.000
+<!-- END GENERATED: s30-pilot-sign-p -->
+At 80% power for a 10% relative effect, the registered formula needs
+<!-- BEGIN GENERATED: s30-pilot-required-n -->
+38 items per category
+<!-- END GENERATED: s30-pilot-required-n -->
+across
+<!-- BEGIN GENERATED: s30-pilot-categories -->
+8 categories
+<!-- END GENERATED: s30-pilot-categories -->
+The split carries
+<!-- BEGIN GENERATED: s30-pilot-n-available -->
+3 available per category
+<!-- END GENERATED: s30-pilot-n-available -->
+so the required n is out of reach by more than an order of magnitude, and the
+smallest effect this n could detect is
+<!-- BEGIN GENERATED: s30-pilot-mde -->
+0.1686 absolute
+<!-- END GENERATED: s30-pilot-mde -->
+—
+<!-- BEGIN GENERATED: s30-pilot-mde-relative -->
+0.35x the baseline
+<!-- END GENERATED: s30-pilot-mde-relative -->
+**The five-arm comparison is not run.** It is not that it would be expensive; with
+this measured variance it could not decide a 10% relative effect at the available
+items, and running it would produce a number that cannot support the claim it is
+registered against.
+
+**Resources, measured.** The selection stage is lighter than generation. On `D`,
+<!-- BEGIN GENERATED: s30-pilot-d-peak -->
+3.357 GiB process peak
+<!-- END GENERATED: s30-pilot-d-peak -->
+,
+<!-- BEGIN GENERATED: s30-pilot-d-cgroup -->
+3.020 GiB cgroup peak
+<!-- END GENERATED: s30-pilot-d-cgroup -->
+,
+<!-- BEGIN GENERATED: s30-pilot-d-vram -->
+1.895 GiB VRAM allocated
+<!-- END GENERATED: s30-pilot-d-vram -->
+inside a court whose enforced limit was
+<!-- BEGIN GENERATED: s30-pilot-d-limit -->
+6g
+<!-- END GENERATED: s30-pilot-d-limit -->
+and whose receipts report `enforcement=ok` and no OOM kill.
+On `X` — the host-memory high-water arm —
+<!-- BEGIN GENERATED: s30-pilot-x-peak -->
+5.459 GiB process peak
+<!-- END GENERATED: s30-pilot-x-peak -->
+,
+<!-- BEGIN GENERATED: s30-pilot-x-cgroup -->
+6.750 GiB cgroup peak
+<!-- END GENERATED: s30-pilot-x-cgroup -->
+,
+<!-- BEGIN GENERATED: s30-pilot-x-vram -->
+2.554 GiB VRAM allocated
+<!-- END GENERATED: s30-pilot-x-vram -->
+inside an enforced limit of
+<!-- BEGIN GENERATED: s30-pilot-x-limit -->
+9g
+<!-- END GENERATED: s30-pilot-x-limit -->
+and whose receipt likewise reports `enforcement=ok` and no OOM kill.
+
+**The mis-sizing is recorded rather than smoothed over.** The first `X` run used
+the limit sized for `D`; its cgroup peak landed exactly on that limit, so the run
+succeeded without headroom. It was re-run at the limit its own measured peak
+implies (measured process peak times the registered headroom factor, rounded up to
+the court's whole-gigabit unit), produced byte-identical choices, and both
+receipts are kept: the first is the sizing evidence, the second is the pilot run.
+The ladder's own limit was sized the same way from its measured peak, which was
+<!-- BEGIN GENERATED: s30-ladder-peak -->
+3706642432 bytes
+<!-- END GENERATED: s30-ladder-peak -->
+process peak with
+<!-- BEGIN GENERATED: s30-ladder-vram -->
+1.843 GiB
+<!-- END GENERATED: s30-ladder-vram -->
+VRAM allocated and a limit of
+<!-- BEGIN GENERATED: s30-ladder-limit -->
+6g
+<!-- END GENERATED: s30-ladder-limit -->
+
+### 18.7 What the instrument now does, and what it does not
+
+**Does.** It produces an item-dependent answer with a continuous signal attached,
+and it produces both non-zero and non-saturated cells on real items. The
+measured baseline moved from the S29 constant-answer rate (§17.4) to the measured
+non-zero rate in §18.6. That is the first instrument on this suite whose per-item
+outcomes carry information.
+
+**Does not.**
+
+1. **It does not measure generation ability.** Likelihood selection asks whether
+   the arm *ranks* a correct candidate above wrong ones. It bypasses writing code
+   entirely. An arm can rank correctly and still be unable to emit a compiling
+   body, so no result here may be reported as "can solve these tasks". The
+   free-form formats remain the only instrument for that, and for these arms they
+   are uninformative: `body-completion` is caught by the entropy screen,
+   `file-replacement` is not but passes nothing (§18.5).
+2. **It does not separate these two arms.** Identical totals, an across-arm
+   spread of zero and a sign-test p of one. The two discordant items are in
+   opposite directions.
+3. **It does not establish that the diagnostic format is calibrated.** Verified
+   diagnostics are *below* the chance rate of the option alphabet, so for these
+   arms diagnostic-identification is informative but not yet validated; it is
+   reported on its own metric and never pooled with executable success.
+4. **It is not powered.** The measured required n exceeds the available items
+   (§18.6), so no arm comparison at the registered effect may be reported.
+5. **It is one base model and one distillation budget.** The ranking signal is a
+   property of these checkpoints, not of the architecture family.
+
+### 18.8 What the next step is
+
+The instrument is registered and the power arithmetic is measured. The next
+honest step is **task population, not arms**: derive enough selection items to
+reach the measured required n per category, re-verify them with the same
+`verify-formats` contract, and re-run the calibration window on the grown suite.
+Only then can the five-arm comparison be registered. Two items stay open beside
+it:
+
+- the free-form formats need either a stronger solver or a different instrument;
+  the entropy screen will keep excluding `body-completion` for these arms, while
+  `file-replacement` needs a correctness screen rather than an entropy screen;
+- the diagnostic format's below-chance verified rate needs its own investigation
+  (option-set construction versus the arm's prior) before it carries any claim.
+
+The suite version is still not emitted. That is the correct state: the S29
+refusal was right about the instrument, and this section replaces it with one that
+can be calibrated rather than forcing a version out of a constant answer.

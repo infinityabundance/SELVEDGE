@@ -3502,6 +3502,23 @@ what falls short. Closing that gap is **P14.8** (appended, not a renumber). The
 discrimination are still not estimated by any solver. **Effort.** XL. **Tier.**
 CANDIDATE.
 
+**S30: difficulty and discrimination are now measured, on a repaired
+instrument.** The S29 refusal was not the end of the measurement: S30 located the
+cause of the constant answers in the prompt (the arm repeats the example letter
+the answer-format instruction shows and otherwise applies a position prior),
+replaced generation in the selection formats with a likelihood ranking, and ran a
+two-arm pilot. The pilot retires the S29 statement that no item carries
+information: the executable selection items are split between items both arms
+pass and items neither passes, the answer entropy is far above the screen's
+minimum, and the measured baseline is non-zero (`docs/CAPABILITY-COURT.md` §18.6
+and its generated numbers). It does **not** retire the power shortfall — the
+measured required n still exceeds the available items per category by more than
+an order of magnitude — and it does not touch the free-form formats, which remain
+uninformative for these arms. P14.4's acceptance evidence is therefore met for
+the selection formats (item difficulty and discrimination estimated by a solver)
+and still not met for the suite as a whole. **Effort.** XL. **Tier.**
+CANDIDATE.
+
 ### P14.5 — Strengthen checker coverage and scale for Rust cases
 
 **What.** Rust cases are **already executed** through `cargo`/`rustc`: the
@@ -3545,8 +3562,14 @@ paragraph in `docs/LIMITATIONS.md` naming the distinction.
 `docs/LIMITATIONS.md` and `docs/CAPABILITY-COURT.md` — verified success is the
 endpoint and likelihood/NLL is only a selector signal — and the result receipt
 reports no likelihood as capability. The schema test that refuses a table
-missing either named column is not implemented yet. **Effort.** S. **Tier.**
-CANDIDATE.
+missing either named column is not implemented yet. **S30 strengthens the rule
+with a new case:** the likelihood-selection instrument scores candidates by their
+content log-probability but still decides every item through `cargo`; the ranking
+margin is recorded as a diagnostic and the registration states it is never an
+outcome (`docs/CAPABILITY-COURT.md` §18.4, `docs/capability-calibration-
+preregistration-v2.json`). A likelihood instrument that ranks well and compiles
+nothing still scores zero, which is the separation this item asks for. **Effort.**
+S. **Tier.** CANDIDATE.
 
 ### P14.7 — A sealed evaluation set for external comparison
 
@@ -3641,6 +3664,22 @@ larger n but a solver that answers the question, or a re-registered single-lette
 instrument with a per-item response-entropy screen (§17.6); either must be
 calibrated before it supports a claim.
 
+**Status (S30).** The second of those two inputs was implemented and measured.
+The likelihood-selection instrument (registered as
+`docs/capability-calibration-preregistration-v2.json`) removed free-form
+generation from the selection formats, and a two-arm pilot on `D` and `X`
+measured the power inputs from a real item matrix again: the baseline is non-zero
+and the paired variance is smaller, so the required n at the registered effect
+fell by orders of magnitude relative to the S29 figure (`docs/CAPABILITY-COURT.md`
+§18.6, whose numbers are generated from
+`results/capability/pilot/pilot-analysis-20261116T173200Z.json`). It is still
+**out of reach at the available items per category**, by more than an order of
+magnitude, and the minimum detectable effect at the available n is still a large
+fraction of the baseline. **P14.8 therefore stays open, with a measured distance
+rather than an absolute one**: the next input is task population (the required n
+is now a concrete target to author toward), and the five-arm comparison must not
+be registered until that n exists.
+
 **Depends.** P14.4, P14.6, P14.7. **Status.** partially advanced by S28 and
 S29 — the **measured-variance** half is implemented and the GPU pass has run.
 S28 implemented and CPU-tested: a per-item calibration mode (`calibrate`) that
@@ -3659,9 +3698,10 @@ is `results/capability/calibration-20261116T164100Z.json` and the numbers are
 generated in `docs/CAPABILITY-COURT.md` §17.4. **Not done:** a calibrated suite
 version, and therefore any simulated power curve from a real outcome matrix.
 The measured pass shows that the binding constraint is the solver's ability to
-condition on an item, not n, so closing this item needs the solver-population or
-re-registered-instrument work in §17.6 before any power figure can be claimed.
-**Effort.** XL. **Tier.** CANDIDATE.
+condition on an item, not n. **S30** built the re-registered instrument that
+§17.6 named (likelihood selection, §18), so the solver-side constraint now has a
+measured partial answer; the remaining constraint is task population at the
+measured required n. **Effort.** XL. **Tier.** CANDIDATE.
 
 ## 20. WS15 — Beyond-MoE architectures (research hypotheses)
 

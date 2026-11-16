@@ -257,6 +257,33 @@ contradicted; it is invalid, not merely optimistic. The redesigned formats and
 the calibration protocol (§13, §14) are registered and CPU-verified, but **no arm
 has been run on them**, so no capability claim exists at any tier.
 
+**Dated addition, 2026-11-16 (S30).** The S29 pass refused a suite version because
+every arm's answer was constant. S30 measured the cause and replaced the
+selection formats with a likelihood ranking (`docs/CAPABILITY-COURT.md` §18).
+Three new limits follow, and they are narrower than the instrument they replace:
+
+- **Likelihood selection measures discrimination, not generation.** It asks
+  whether the arm ranks a checker-verified candidate above wrong ones. It
+  bypasses writing code, so a correct ranking must never be reported as "can
+  solve these tasks". An arm can rank correctly and still emit nothing that
+  compiles; that is exactly what the free-form formats show for these arms.
+- **Varying answers are necessary, not sufficient.** The answer-entropy screen
+  excludes a format whose answers are near-constant, but a format can have high
+  answer entropy and a zero pass rate. On the S29 receipts, `file-replacement`
+  passes the screen for `D` while passing no item; it is uninformative for a
+  reason the screen does not measure. The screen is therefore used to *exclude*,
+  never to *accept*, a format.
+- **The pilot is two arms of one family and is unpowered.** `D` and `X` produce
+  identical totals on the selection items, the across-arm spread is zero, and the
+  measured required n at the registered effect exceeds the available items per
+  category by more than an order of magnitude. No arm comparison at the
+  registered threshold may be reported from it, and nothing here separates the
+  five arms.
+
+Diagnostic-identification is also *informative but not calibrated*: its verified
+rate for these arms is at or below the chance rate of the option alphabet, so it
+is reported on its own metric and never pooled with executable success.
+
 The following remain true and are added to rather than replaced by the S28 work.
 
 - **The suite is authored and still small.** It is not a benchmark and not a

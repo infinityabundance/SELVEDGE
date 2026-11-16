@@ -3081,3 +3081,203 @@ check invocation is F1, and it failed closed before scoring anything.
 - No calibrated suite version, and no scored split derived from one.
 - No change to the registered T2 verdict, its thresholds, or any historical
   receipt.
+
+## 2026-11-16 — S30: the response collapse, the instrument fix and the D/X pilot
+
+### What ran
+
+S30 took the S29 refusal as a hypothesis about the *instrument* and tested it,
+then built and measured the replacement. Four stages, each an explicit court run
+with a measured OOM limit:
+
+1. **Prompt forensics** (oracle court, CPU): the exact rendered prompt for a
+   sample of patch and diagnostic items, dumped verbatim with the tokenised form
+   the adapter feeds the model, the prompt audit (candidates present, labels
+   unique, reference position, example letter) and the stored answers' letter
+   distribution.
+2. **Sanity ladder** (`D`, GPU, oracle court): a trivial MCQ at three positions,
+   the same MCQ with the example letter set to the correct and to a wrong letter,
+   and a real patch item under the registered prompt, without the example, with an
+   explicit one-character instruction, under three candidate permutations and
+   with two few-shot examples.
+3. **Implementation**: likelihood selection for the selection formats, a new
+   stage (`select`), a `--format` filter on `check`, the response-entropy screen,
+   the v2 registration, and CPU tests for all of it.
+4. **Pilot** (`D`, `X`, GPU select + rust check): the whole calibration split's
+   selection items, then the executable checker, then the power inputs from the
+   real item matrix.
+
+`MemAvailable` was read before every stage (≈89 GiB with no other heavy job), each
+limit was sized from the stage's own measured peak with the registered headroom
+factor, and every court receipt reports `enforcement=ok` with no OOM kill. The
+ladder ran in a 6g court at a measured 3.452 GiB process / 3.112 GiB cgroup /
+1.843 GiB VRAM peak; `D`'s selection ran in a 6g court at 3.357 / 3.020 / 1.895;
+`X` was first run at the same 6g and its cgroup peak landed exactly on the limit
+(5.459 GiB process), so it was re-run at 9g (5.459 × 1.5 = 8.19, rounded up) with
+byte-identical choices — both receipts are kept.
+
+### What the forensics found
+
+The prompt is clean in every respect the audit can check: every candidate's
+content is present, each label appears once, nothing is truncated, and the
+tokenizer is applied with no chat template (the receipt records the template that
+*would* have been applied, and that the arm is a raw-text next-token model makes
+raw text the right choice). The defect is one line: the answer-format section
+shows a concrete example letter, `C` for patch-selection and `B` for
+diagnostic-identification. The stored answers are that letter:
+
+<!-- BEGIN GENERATED: worklog-s30-d-patch-letters -->
+22 recoverable letters
+<!-- END GENERATED: worklog-s30-d-patch-letters -->
+over
+<!-- BEGIN GENERATED: worklog-s30-d-patch-items -->
+23 patch items
+<!-- END GENERATED: worklog-s30-d-patch-items -->
+on `D`, and every recoverable one is
+<!-- BEGIN GENERATED: worklog-s30-d-patch-constant -->
+C
+<!-- END GENERATED: worklog-s30-d-patch-constant -->
+
+The ladder then separated the two possible mechanisms. With no example letter the
+arm still answers, but with a fixed position prior; with an example letter it
+copies it even when the example is the wrong answer. Of the trivial MCQs at three
+positions it answered
+<!-- BEGIN GENERATED: worklog-s30-mcq-correct -->
+1
+<!-- END GENERATED: worklog-s30-mcq-correct -->
+of
+<!-- BEGIN GENERATED: worklog-s30-mcq-items -->
+3
+<!-- END GENERATED: worklog-s30-mcq-items -->
+correctly, and under permutation its chosen *content* was invariant on
+<!-- BEGIN GENERATED: worklog-s30-content-stable -->
+0
+<!-- END GENERATED: worklog-s30-content-stable -->
+of
+<!-- BEGIN GENERATED: worklog-s30-ladder-items -->
+2
+<!-- END GENERATED: worklog-s30-ladder-items -->
+The completion shows why: asked for a letter, the arm continues the instruction
+("For example, if the correct answer is `A`, then return `A`.") and degenerates
+into repeated fences. It is completing a document, not answering a question.
+
+**So the collapse was a prompt-conditioning defect, not evidence about the
+tasks**, and the S29 refusal was correct about the instrument.
+
+### What was built
+
+`oracle/capability/scoring.py` scores each candidate's *content* as a
+continuation of the prompt and takes the arg-max — no generation, so nothing can
+collapse. The sum and the length-normalised mean of token log-probabilities are
+both recorded (the mean is primary), the letter-score ranking is kept as an
+unscored position-bias diagnostic, the label and reference flag never enter the
+scored text, and a scored sequence past the exactness bound refuses rather than
+truncating. `court select` emits a generations-schema receipt so the registered
+`check` still compiles the chosen candidate; the selection prompt is a named
+variant whose hash `check` recomputes. `check --format` scores exactly the
+formats a run asked. The response-entropy screen marks a near-constant format
+non-discriminating. All of it is registered in
+`docs/capability-calibration-preregistration-v2.json`, which appends to v1; v1,
+v4 and the T2 verdict are untouched. CPU tests cover the ranking algebra, the tie
+rule, the leakage guards, the prompt variant, the registration check, the screen
+and the two stages end to end.
+
+### The pilot
+
+Two arms, the selection formats, one arm at a time. The instrument now varies its
+answers and produces non-zero, non-saturated cells:
+
+<!-- BEGIN GENERATED: worklog-s30-exec-items -->
+23 executable items
+<!-- END GENERATED: worklog-s30-exec-items -->
+of which
+<!-- BEGIN GENERATED: worklog-s30-both -->
+10 are passed by both arms
+<!-- END GENERATED: worklog-s30-both -->
+,
+<!-- BEGIN GENERATED: worklog-s30-neither -->
+11 by neither
+<!-- END GENERATED: worklog-s30-neither -->
+and
+<!-- BEGIN GENERATED: worklog-s30-discordant -->
+2 by exactly one
+<!-- END GENERATED: worklog-s30-discordant -->
+. `D` alone passes
+<!-- BEGIN GENERATED: worklog-s30-d-patch-passes -->
+11
+<!-- END GENERATED: worklog-s30-d-patch-passes -->
+of
+<!-- BEGIN GENERATED: worklog-s30-patch-items -->
+23
+<!-- END GENERATED: worklog-s30-patch-items -->
+patch items through `cargo`, and both arms verify the same diagnostics; the
+answer entropy is far above the screen's minimum, so both selection formats are
+scored rather than excluded.
+
+**It does not separate the arms**, and it does not rescue the free-form formats:
+`body-completion` is excluded by the screen, `file-replacement` passes the screen
+and still passes nothing. That distinction is recorded in
+`docs/CAPABILITY-COURT.md` §18.5 — the screen excludes, it never accepts.
+
+### Power
+
+The measured inputs, from the real item matrix:
+
+<!-- BEGIN GENERATED: worklog-s30-baseline -->
+0.478261
+<!-- END GENERATED: worklog-s30-baseline -->
+baseline and
+<!-- BEGIN GENERATED: worklog-s30-variance -->
+0.086957
+<!-- END GENERATED: worklog-s30-variance -->
+paired-difference variance, so at 80% power for a 10% relative effect the
+registered formula needs
+<!-- BEGIN GENERATED: worklog-s30-required-n -->
+38 items per category
+<!-- END GENERATED: worklog-s30-required-n -->
+against
+<!-- BEGIN GENERATED: worklog-s30-available -->
+3 available per category
+<!-- END GENERATED: worklog-s30-available -->
+The smallest detectable effect at the available n is
+<!-- BEGIN GENERATED: worklog-s30-mde -->
+0.1686 absolute
+<!-- END GENERATED: worklog-s30-mde -->
+**The five-arm comparison was not run**, because at this n it could not decide the
+registered effect. The shortfall is published, not absorbed.
+
+### Receipts
+
+- `results/capability/forensics/forensics-20261116T173500Z.json`
+- `results/capability/ladder/D-20261116T173600Z.json`
+- `results/capability/pilot/{D,X}/{selection,result}.json`
+- `results/capability/pilot/pilot-analysis-20261116T173200Z.json`
+- `docs/capability-calibration-preregistration-v2.json`
+- `results/courts/{oracle,rust,python}-2026*.json` for every stage
+
+### Failures and fixes
+
+**F1 — the selection stage rejected its own registration.** `load_preregistration`
+is the v1 endpoint contract and refuses the v2 schema; the select stage now loads
+the v2 document as a document and verifies it with the module that applies it,
+and `check` gained a v2 branch that calls the same verifier. **F2 — a partial
+selection run could not be checked.** `check` required every item of the suite;
+`--format` restricts both the missing-item check and the scoring to the formats a
+run asked, so an unasked item is neither scored nor counted as a failure. **F3 —
+`X` ran at `D`'s limit.** Its cgroup peak reached the limit, so it was re-run at
+the limit its own measured peak implies; both receipts are kept. **F4 — a
+precedence bug in the pilot's paired differences.** The first analysis receipt
+computed `a if pass else b - c` instead of `(a if pass else b) - c`, inflating the
+variance; the corrected analysis is the one cited and the bug is visible in the
+diff. **F5 — the entropy screen is not a correctness screen.** The first draft of
+§18.5 claimed `file-replacement` was excluded by the screen; the generated numbers
+showed it passes the screen and passes no item, and the text was corrected to say
+so.
+
+### What this entry does not claim
+
+- No capability comparison between arms, and no five-arm comparison.
+- No calibrated suite version; the scored split is still not derived.
+- No claim about the arms' ability to write code: the selection formats measure
+  ranking, not generation.
+- No change to the T2 verdict, the v1 window, v4, or any historical receipt.
