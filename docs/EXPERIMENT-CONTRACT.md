@@ -2071,6 +2071,65 @@ architecture as `D`, the same budget and the same seeds, and it is **not run in
 this pilot**: it is a sixth training arm outside the five-arm envelope. If T2's
 H*/H comparison is inside its CI, `HL` is the pre-registered next control.
 
+### A10 — 2026-11-16, before the sensitivity run: the corrected-dispatch re-evaluation of `X` and `H`, label `S1`
+
+Status: **pre-registered before the run.** This addition was written while `H*`
+was still training and before either sensitivity receipt existed. It changes no
+T2 arm, budget, threshold or kill condition, and it does not modify A8, A9 or
+T1. It registers the run the provenance amendment already names
+(`results/t2/PROVENANCE-AMENDMENT-X-and-H.json`, `future_sensitivity_run`).
+
+**What it is.** A re-evaluation — **not a retraining** — of the existing `X` and
+`H` checkpoints under the corrected dispatch mask placement
+(`mask_order=pair`), recorded as the distinct configuration **`S1`**. It is a
+sensitivity analysis of the registered result, not a replacement for it. The
+registered verdict (`PC`, `P1`, K15–K19) is computed from the registered
+`legacy` receipts exactly as written in T2.9/T2.10; `S1` is reported beside it
+and never substituted for it.
+
+**Why it is separate.** The P12.1 audit found the routed-overflow validity mask
+is applied after token-order restoration in the pre-correction kernel, so a
+routed arm's forward under overflow gates a pair by another pair's validity. The
+provenance amendment certifies that `X` and `H` trained and were evaluated under
+that (legacy) placement, which makes their checkpoints scoreable at their actual
+semantics. Whether the capability conclusion is sensitive to the placement is a
+different question and can only be answered by re-scoring the same weights.
+
+**Registered configuration.**
+
+- arms: `X`, `H`; the same step checkpoint each arm already has, bound by its own
+  sha256 sidecar; no parameter update, no additional training step;
+- mask placement: `pair` (the corrected path), recorded in the receipt as
+  `instrument.dispatch_mask_order = "pair"` and in the command;
+- everything else identical to the registered evaluation: the T2.9 instrument,
+the seed `20261115`, the resample count `10000`, the same items and prompt order;
+- output paths: `results/t2/X/eval-pair-mask.json` and
+  `results/t2/H/eval-pair-mask.json`; the registered receipts
+  (`results/eval/t2-X.json`, `results/eval/t2-H.json`) are **not** edited.
+
+**Reporting rule, fixed now.**
+
+1. For each sensitivity comparison — `S1` `X` versus the registered `X`, and
+   `S1` `H` versus the registered `H` — report the point estimate of `PC` under
+   both placements and the paired item-level difference. The `S1` receipt is
+   **point-only**: no threshold is applied to it and no kill condition is
+   evaluated against it, because a re-evaluation of the same weights is not a
+   new arm.
+2. The registered K15–K19 verdict stands whatever `S1` shows. If an `S1`
+   comparison reverses the sign of a registered decisive comparison, the report
+   says so explicitly and still does not edit or replace the registered verdict.
+3. A `S1` receipt that does not record `mask_order=pair`, or whose checkpoint
+   digest differs from the registered checkpoint, is refused rather than
+   reported (`scripts/t2_verdict.py` enforces this and names the reason).
+4. No capability-result claim is transferred from `S1` to the registered
+   capability court (`S1` is the loss- and task-based instrument only).
+
+**Exact commands.** Generated in `results/T2-PLAN.md` §7.3 from the same config
+and admission records the arms were admitted under.
+
+**Status.** registered, implemented and CPU-tested; not launched. The run needs
+the GPU and is the last measurement of the post-`H*` pipeline.
+
 ---
 
 # Experiment contract — P8.2: bounded-gate composition of the `D` and `M` residuals

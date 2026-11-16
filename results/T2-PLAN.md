@@ -475,3 +475,219 @@ receipt names the arm and the checkpoint hash.
   throughput envelope that is roughly four times one T2 arm; run the four points
   serially, never concurrently, and record each point's VRAM before the next.
 - No command above may run while the pilot's container is alive.
+
+## 7. Post-`H*` execution and verdict pipeline
+
+The GPU window between "`H*` finished" and "T2 has a verdict" is spent only on
+measurements. Everything that can be prepared before the window is prepared and
+CPU-tested now: the evaluation commands, the capability court commands with the
+provenance amendment, the registered sensitivity (`S1`), the verdict reader and
+the cross-arm comparison. The orchestrator is `scripts/post-hstar.sh`, the stage
+logic is `scripts/post_hstar.py`, and the state machine is resumable.
+
+### 7.1 The one command
+
+```sh
+scripts/post-hstar.sh --resume
+```
+
+It runs the stages below in order, stops on the first hard failure with the reason
+recorded, and skips every stage already recorded `done` in
+`results/t2/post-hstar-state.json`. `--dry-run` prints the exact argv of every
+stage without launching anything. `--stage NAME` runs one stage (repeatable).
+`--fresh` discards the state and starts over.
+
+Prerequisites it checks and refuses on:
+
+- a heavy GPU process (`>= 512 MiB`) or more than `3000 MiB` of GPU memory in use;
+- a live container whose name starts with `selvedge-`;
+- `MemAvailable` below the largest stage limit plus a `2 GiB` reserve;
+- `docker` or the daemon unavailable (there is no host-execution fallback);
+- `systemd-run` unavailable, unless `--runner direct` is passed and recorded.
+
+The preflight arithmetic and the GPU/container probe are written to
+`results/t2/post-hstar-preflight-<stamp>.json` whether it proceeds or refuses.
+
+### 7.2 Stages, guards and stop conditions
+
+| # | stage | what it does | guard that stops it |
+| ---: | --- | --- | --- |
+| 1 | `preflight` | host memory, GPU-idle and container arithmetic; per-stage limits | GPU busy, container alive, memory short, no docker/systemd |
+| 2 | `verify` | `H*` checkpoint sidecar, summary steps/tokens, utility-label sidecar, training receipt | any digest mismatch; missing summary; missing labels; no training receipt and no pending court state to harvest one |
+| 3 | `eval` | `H*` on the registered instrument; then `results/t2/H*/eval.json` | receipt absent, incomplete, for another checkpoint, or another arm |
+| 4 | `instrument` | P2.4 both-target check over `D0` and the five arms | no instrument receipt written |
+| 5 | `capability` | `generate` (GPU) then `check` (Rust court) for `D`, `M`, `X`, `H`, `H*` | result missing the registration digest, the category minimum, or the routed-arm provenance |
+| 6 | `sensitivity` | `S1`: re-evaluate `X` and `H` with `mask_order=pair` | receipt not `pair`, wrong checkpoint, wrong arm |
+| 7 | `verdict` | `scripts/t2_verdict.py --write` | any missing/mismatched receipt, missing provenance, or a `S1` receipt that is not `pair` |
+| 8 | `compare` | `scripts/capability_compare.py` across arms | unregistered result, digest/suite/threshold mismatch, missing routed-arm provenance |
+
+Every stage writes `status`, `started_utc`, `finished_utc`, the git revision, the
+seed, the config digest(s), the admitted active-parameter count, the measured
+VRAM peak where one exists, the host memory limit, the limit's arithmetic, its
+court calls and its outputs. A failed stage writes a `failure` block and the
+pipeline exits with that stage's code; nothing downstream runs.
+
+### 7.3 Exact per-stage commands
+
+The orchestrator builds these argv lists; they are listed so a stage can be
+re-run by hand without guessing.
+
+Verify and evaluate `H*`:
+
+```sh
+SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g \
+  scripts/court --gpu oracle -- python3 oracle/eval/baseline.py --profile t2 \
+  --arm 'H*' --seed 1001 \
+  --checkpoint 'results/artifacts/train/t2/Hstar/step-001024.pt' \
+  --config 'results/train/admission-configs/t2/H*.json' \
+  --admission 'results/train/admission/t2/H*.json' \
+  --out 'results/eval/t2-H*.json'
+
+python3 scripts/t2_pilot.py eval-receipt --arm 'H*' --eval 'results/eval/t2-H*.json'
+```
+
+The P2.4 check over the six students:
+
+```sh
+SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g \
+  scripts/court --gpu oracle -- python3 oracle/eval/instrument_check.py \
+  --student D0 \
+  --student 'D:results/artifacts/train/t2/D/step-001024.pt:results/train/admission-configs/t2/D.json:results/train/admission/t2/D.json:t2' \
+  --student 'M:results/artifacts/train/t2/M/step-001024.pt:results/train/admission-configs/t2/M.json:results/train/admission/t2/M.json:t2' \
+  --student 'X:results/artifacts/train/t2/X/step-001024.pt:results/train/admission-configs/t2/X.json:results/train/admission/t2/X.json:t2' \
+  --student 'H:results/artifacts/train/t2/H/step-001024.pt:results/train/admission-configs/t2/H.json:results/train/admission/t2/H.json:t2' \
+  --student 'H*:results/artifacts/train/t2/Hstar/step-001024.pt:results/train/admission-configs/t2/H*.json:results/train/admission/t2/H*.json:t2'
+```
+
+Capability court, one arm per pair of commands. `X` and `H` take the certified
+provenance amendment; `D` and `M` carry no dispatch and do not. `H*`'s mask order
+is read from its own training receipt, so the orchestrator passes what the
+receipt records rather than a default.
+
+```sh
+SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g \
+  scripts/court --gpu oracle -- python3 scripts/capability_court.py generate \
+  --t2-arm X \
+  --t2-checkpoint 'results/artifacts/train/t2/X/step-001024.pt' \
+  --t2-config 'results/train/admission-configs/t2/X.json' \
+  --t2-admission 'results/train/admission/t2/X.json' \
+  --t2-training-receipt 'results/t2/X/run.json' \
+  --t2-mask-order legacy \
+  --provenance-amendment results/t2/PROVENANCE-AMENDMENT-X-and-H.json \
+  --preregistration docs/capability-preregistration-v3.json \
+  --out 'results/capability/runs/t2-X/generations.json'
+
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=4g \
+  scripts/court rust -- python3 scripts/capability_court.py check \
+  --generations 'results/capability/runs/t2-X/generations.json' \
+  --preregistration docs/capability-preregistration-v3.json \
+  --out 'results/capability/runs/t2-X/result.json'
+```
+
+Substitute `ARM`/`RUN` for the other four. `H*` is `Hstar` on disk and `H*` in
+the config name. `D` and `M` keep `--t2-mask-order legacy` and simply omit
+`--provenance-amendment`: the adapter's mask check applies only to routed arms,
+and those two have no dispatch.
+
+The registered sensitivity `S1` (contract T2.12 A10), evaluation only:
+
+```sh
+SELVEDGE_MEM=24g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=8g \
+  scripts/court --gpu oracle -- python3 oracle/eval/baseline.py --profile t2 \
+  --arm X --seed 1001 \
+  --checkpoint 'results/artifacts/train/t2/X/step-001024.pt' \
+  --config 'results/train/admission-configs/t2/X.json' \
+  --admission 'results/train/admission/t2/X.json' \
+  --mask-order pair \
+  --out 'results/t2/X/eval-pair-mask.json'
+```
+
+and the same with `ARM=H`, `SELVEDGE_MEM=24g`. The registered receipts
+`results/eval/t2-X.json` and `results/eval/t2-H.json` are never edited.
+
+The verdict and the comparison:
+
+```sh
+SELVEDGE_MEM=8g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=2g \
+  scripts/court python -- python3 scripts/t2_verdict.py --write \
+  --d0 results/eval/t2-D0.json \
+  --sensitivity X=results/t2/X/eval-pair-mask.json \
+  --sensitivity H=results/t2/H/eval-pair-mask.json \
+  --out results/t2-verdict.json --doc results/T2-VERDICT.md
+
+SELVEDGE_MEM=8g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=2g \
+  scripts/court python -- python3 scripts/capability_compare.py \
+  --result D=results/capability/runs/t2-D/result.json \
+  --result M=results/capability/runs/t2-M/result.json \
+  --result X=results/capability/runs/t2-X/result.json \
+  --result H=results/capability/runs/t2-H/result.json \
+  --result 'H*=results/capability/runs/t2-Hstar/result.json' \
+  --preregistration docs/capability-preregistration-v3.json \
+  --out results/capability/runs/t2-comparison.json
+```
+
+### 7.4 Memory limits and their arithmetic
+
+Every stage's limit is derived from that workload's own measured VRAM peak:
+`limit = bucket(1.5 x peak)`, buckets `{16, 24, 32, 48}` GiB, with a floor of
+`16 GiB` for `D`/`M`/`X` and `24 GiB` for the hybrid arms and the six-student
+instrument check. No stage inherits the `8 GiB` documentation default.
+
+| workload | derived limit |
+| --- | ---: |
+| capability generate, `D` | 16g |
+| capability generate, `M` | 16g |
+| capability generate, `X` | 24g |
+| capability generate, `H` | 24g |
+| capability generate and eval, `H*` | 24g |
+| P2.4 instrument check (six students) | 24g |
+| capability check (Rust court) | 12g |
+| verdict, comparison (CPU readers) | 8g |
+
+The measured VRAM peak each limit was derived from is not restated here: it is
+read from the arm's own receipt at launch and written, with the multiplication
+and the bucket, into that stage's `sizing.arithmetic` in
+`results/t2/post-hstar-state.json` and into every call record. `X` is the one
+non-hybrid arm whose 1.5x headroom does not fit the `16 GiB` floor, so the table
+says `24g` for it rather than rounding down; that is why the rule is a formula
+and not a fixed table. `MemAvailable` is re-checked immediately before every
+stage (`memory_guard`), not only at preflight, and the check is recorded in that
+stage's state entry.
+
+GPU stages launch under `systemd-run --user --collect --unit=selvedge-post-hstar-<stage>-<stamp>`
+with `MemoryMax` and `MemorySwapMax` equal to the same limit the court applies
+inside the container, and `TasksMax`/`CPUQuota` set from the same argv. `--runner
+direct` exists for a host without a user systemd and for the CPU tests; it is
+recorded in the state and in every call record.
+
+### 7.5 Failure and resume semantics
+
+- State: `results/t2/post-hstar-state.json`; log: `results/t2/post-hstar.log`.
+- A stage is `pending` → `running` → `done` or `failed`.
+- A resume archives the previous `failure` into `failures` (never deletes it) and
+  re-runs only stages that are not `done`.
+- A failure stops the pipeline with the failing stage's exit code, the command and
+  the reason. A verdict is never emitted from a partial receipt set: the reader
+  refuses with a named reason and writes nothing.
+- Nothing may run while the training container is alive. Poll it read-only with
+  `scripts/poll-t2-pilot.sh`; never signal it.
+
+### 7.6 The CPU tests that gate this pipeline
+
+```sh
+SELVEDGE_MEM=8g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=2g \
+  scripts/court python -m pytest \
+  oracle/tests/test_t2_verdict.py \
+  oracle/tests/test_capability_compare.py \
+  oracle/tests/test_post_hstar.py
+```
+
+Named refusals and behaviours they pin: missing receipt, config-hash mismatch,
+admission-hash mismatch, checkpoint-sidecar mismatch, missing provenance
+amendment, amendment that does not bind the receipt, `S1` receipt that is not
+`pair`, unregistered capability result, mismatched pre-registration digest,
+result on another suite, result scored against another threshold, result below
+the category minimum, an aggregate win that fails a category regression, an arm
+with lower compute but worse quality, a resumable mid-stage failure, GPU-busy /
+low-memory / live-container preflight refusals, a capability `generate` failure,
+and a dry run that launches nothing.

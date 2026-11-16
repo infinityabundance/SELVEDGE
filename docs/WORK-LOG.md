@@ -2402,3 +2402,74 @@ file, not restated here.
 - No competitive or GPU performance claim. `H*` was not touched.
 - The provenance amendment certifies what the legacy code *did*, not that the
   legacy dispatch is correct.
+
+## 2026-11-16 — S22: the post-`H*` pipeline is built and CPU-tested before the GPU frees
+
+The GPU belongs to `H*` (training, detached) and was polled read-only. Everything
+below is CPU work: the commands that will spend the GPU window were written,
+gated and tested now, so the window is used only for measurements.
+
+### What was built
+
+- **`scripts/post-hstar.sh`** / **`scripts/post_hstar.py`** — one resumable
+  orchestrator with eight ordered stages: `preflight`, `verify`, `eval`,
+  `instrument`, `capability`, `sensitivity`, `verdict`, `compare`. State lives in
+  `results/t2/post-hstar-state.json` and is written after every transition; a
+  resume re-runs only stages that are not `done`, and archives the previous
+  failure instead of deleting it.
+- **`scripts/t2_verdict.py`** — the guarded verdict reader. The rule itself is
+  imported from `oracle/eval/t2_decision.py` (one implementation of the
+  registered statistic), and the reader adds the gate: every required receipt
+  exists for the registered arm, seed and budget; each checkpoint hashes to its
+  own sidecar; config and admission digests match the files *and* the training
+  receipt; a routed arm without a recorded dispatch mask must be covered by a
+  certified provenance amendment whose digest is carried into the verdict; and a
+  sensitivity receipt is accepted only at `mask_order=pair`. It emits
+  `results/t2-verdict.json` and renders `results/T2-VERDICT.md`, with the
+  decision-bearing scalars published as generated regions.
+- **`scripts/capability_compare.py`** — the registered Level-1 composite across
+  the five arms, with per-category intervals and the conjunctive verdict from
+  `oracle/capability/court.compare`. It refuses an unregistered result, a
+  mismatched pre-registration digest, a different suite or threshold, a result
+  below the category minimum, and a routed arm with no provenance amendment.
+  `M`'s registered comparator `D0` has no verified-task row, so that comparison
+  is recorded as not measured rather than silently substituted with `D`.
+- **Contract T2.12 A10** — the corrected-dispatch sensitivity is registered now,
+  before either receipt exists: arms `X` and `H`, same checkpoints, evaluation
+  only, `mask_order=pair`, label `S1`, point-only reporting, and an explicit rule
+  that the registered K15–K19 verdict stands whatever the sensitivity shows.
+- **`results/T2-PLAN.md` §7** — the one command, the stage/guard table, the exact
+  per-stage commands, the limit arithmetic, the resume semantics and the test
+  command.
+
+### Named CPU tests (all passing before any GPU stage ran)
+
+`oracle/tests/test_t2_verdict.py` (12): missing receipt, config-hash mismatch,
+admission-hash mismatch, checkpoint-sidecar mismatch, missing provenance
+amendment, amendment that does not bind the receipt, a genuine `K15`/`K16` win,
+an arm with lower compute and worse quality reported as a `K17` failure,
+cross-run determinism, a sensitivity receipt that is not `pair`, a sensitivity
+that is reported without re-thresholding, and thresholds that do not move.
+
+`oracle/tests/test_capability_compare.py` (13): a genuine gate win, an aggregate
+win that fails a category regression, missing arm, unregistered result,
+mismatched digest, missing amendment, amendment that does not cover the arm,
+`H*` without a recorded mask, wrong suite, wrong threshold, missing category
+minimum, the `M-D0` not-measured record, and exit `3` on refusal.
+
+`oracle/tests/test_post_hstar.py` (11): a full run in stage order with every
+limit recorded, a resumable mid-stage failure that repeats no earlier work,
+GPU-busy / low-memory / live-container preflight refusals, a missing checkpoint,
+a missing training receipt with no pending state, a verdict that stops on a
+missing receipt, a capability `generate` failure, a dry run that launches
+nothing, and the sizing arithmetic.
+
+### What this entry does not claim
+
+- No T2 verdict: `H*` is still training and the verdict reader refuses to emit
+  anything without its receipts (that refusal is itself one of the tests).
+- No capability result: no arm has been scored on the fresh suite.
+- No performance number. The limits in §7.4 are configuration derived from
+  already-recorded VRAM peaks, not new measurements.
+- The scripted court in `oracle/tests/fake_court.py` is test infrastructure; the
+  production path still runs every stage through `scripts/court` inside Docker.

@@ -2434,8 +2434,12 @@ note naming the mask's semantics and a test that the mask is applied to the righ
 tokens; a reference-implementation receipt; a dated correction entry in
 `docs/WORK-LOG.md` if anything is wrong, explicitly not folding into T2's registered
 numbers.
-**Status.** running (pilot `running`: `D` and `M` evaluated, `X` evaluated, `H` and
-`H*` pending). **Audit outcome (2026-11-15, revision `642a32b`): the defect is
+**Status.** running (pilot `running`: `D`, `M` and `X` evaluated, `H` evaluated,
+`H*` training and polled read-only). The post-`H*` execution pipeline is built and
+CPU-tested (2026-11-16, S22): `scripts/post-hstar.sh` runs verify, evaluate,
+capability court, the registered sensitivity `S1` and the verdict in order with
+per-stage limits and a resumable state, and `scripts/t2_verdict.py` refuses to
+emit a verdict from missing or mismatched receipts. **Audit outcome (2026-11-15, revision `642a32b`): the defect is
 real and reproduced.** `valid` is built in capacity-sorted pair order and applied
 after the restore, so pair `p` is gated by another pair's validity whenever an
 expert overflowed; an overflowing pair is retained and reads a clamped buffer row
@@ -2462,7 +2466,9 @@ can answer that, and the decisive pair is cheap.
 receipts (evaluation, V2 training) with `dispatch_mask_order: pair`, and a
 decision note that states whether the registered verdict survives, in the
 registered words, without editing it. **Status.** open (blocked on the GPU the
-pilot owns). **Effort.** M.
+pilot owns). The evaluation-only step is registered as `S1` in contract T2.12
+A10 and wired as the `sensitivity` stage of `scripts/post-hstar.sh`; the V2
+retraining tier remains open. **Effort.** M.
 
 ### P12.2 — Diagnose H*'s target: leave-one-out, per-expert normalisation, deployed-budget utility
 
