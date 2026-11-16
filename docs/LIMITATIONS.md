@@ -237,3 +237,38 @@ the inference-only, post-hoc selection family.
 - **The Rust selector latency is CPU, release-mode, fixture-cycled.** It is a
   controller-cost measurement, not an end-to-end serving benchmark. It excludes
   the FFN forward, memory pressure and concurrency.
+
+## The capability court is an instrument, not a result
+
+`docs/CAPABILITY-COURT.md` is the reference. As of S14 the suite, the checkers,
+the sandbox, the contamination gate and the pre-registration exist and are
+CPU-tested; no model has been evaluated on them.
+
+- **The suite is small and authored.** It is not a benchmark, not a random
+  sample of programming work, and its confidence intervals are over items, not
+  over the population of software tasks.
+- **Disjointness is a property of this repository's data, not of a
+  checkpoint.** No local test can show that a model never saw these patterns
+  during pretraining; the contamination receipt compares our text against
+  HumanEval, GSM8K, TruthfulQA, the T2 evaluation windows and a *bounded
+  deterministic sample* of the training corpus, and it fails closed on overlap.
+- **The verifier is executable but not complete.** Hidden tests plus one
+  authored wrong mutation per task show that the checker discriminates; they do
+  not prove it rejects every wrong program.
+- **The anti-superficial-specialisation trio is below P11.21's item count** and
+  its operation annotations are author-only; no inter-annotator agreement exists
+  yet.
+- **Compiler/test feedback loops are not implemented.** Feedback is recorded and
+  parity-enforced, so no arm can currently receive a hidden tool subsidy, but
+  the repair loop itself is future work.
+- **The Rust-runtime adapter has no end-to-end generation yet**, and the
+  PyTorch adapter cannot report device read counters or host residency, so those
+  fields are null with reasons.
+- **A Level 1 gain is not a Level 3 product.** Level 3 additionally needs
+  responsiveness from Court F and a product-branch (3B-8B quantised) baseline,
+  which is a planned control because no such checkpoint is present locally.
+- **The address-space limit is a toolchain constraint, not a measured workload
+  peak.** The per-checker bound is the smallest value at which the pinned
+  toolchain links a one-file crate; the enforced memory bound for the workload
+  is the container's. A cgroup OOM kill and an allocator abort under
+  `RLIMIT_AS` are recorded distinctly, and the probe receipt shows the latter.
