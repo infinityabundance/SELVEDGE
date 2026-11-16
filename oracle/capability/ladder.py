@@ -298,7 +298,14 @@ def ladder_verdict(rows: list[dict]) -> dict:
         }
 
     plain_correct = sum(1 for row in plain if row.get("correct"))
+    content_stable = [item_id for item_id, entry in items.items()
+                      if entry["permutation_content_stable"]]
+    letter_stable = [item_id for item_id, entry in items.items()
+                     if entry["permutation_letter_stable"]]
+    copied = [item_id for item_id, entry in items.items()
+              if entry["control_equals_example"]]
     return {
+        "conditions": len(rows),
         "mcq_plain_letters": [row.get("letter") for row in plain],
         "mcq_plain_correct": plain_correct,
         "mcq_plain_items": len(plain),
@@ -310,6 +317,11 @@ def ladder_verdict(rows: list[dict]) -> dict:
             for name, row in examples.items()},
         "parrots_the_example": parrots,
         "patch": items,
+        "patch_items": len(items),
+        "patch_items_content_stable": len(content_stable),
+        "patch_items_letter_stable": len(letter_stable),
+        "controls_that_equal_the_example": len(copied),
+        "patch_items_content_stable_ids": content_stable,
         "interpretation": _interpretation(parrots, items, plain_correct, len(plain)),
     }
 
