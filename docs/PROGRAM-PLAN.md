@@ -391,7 +391,7 @@ experiment, a falsifying control and a kill criterion, and none is scheduled.
 | id | item |
 | --- | --- |
 | P14.4 | Expand the evaluation suite beyond 24 tasks |
-| P14.5 | Execute Rust cases through `rustc`/tests, not only through a checker |
+| P14.5 | Strengthen checker coverage and scale for Rust cases (execution already exists) |
 | P14.6 | Keep correctness separate from reference-continuation likelihood |
 | P14.7 | A sealed evaluation set for external comparison |
 
@@ -3042,7 +3042,7 @@ invariance term) — the standard way to get this effect without the mechanism.
 **Kill criterion.** If the invariant arm does not beat augmentation-only on unseen
 rewrite families, retire; transfer across rust/numeric/logic is reported per
 domain and a single-domain win is not a transfer claim.
-**Depends.** P12.9, P14.5 (executable Rust cases). **Acceptance evidence.** the
+**Depends.** P12.9, P14.5 (executed Rust-case coverage). **Acceptance evidence.** the
 unseen-family receipt and the deceptive-set false-accept count. **Status.** open.
 **Effort.** L. **Tier.** CANDIDATE.
 
