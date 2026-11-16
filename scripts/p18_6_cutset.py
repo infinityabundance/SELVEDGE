@@ -1030,6 +1030,10 @@ def render_markdown(receipt):
     ]
     lines.extend(table(["quantity", "n", "mean", "median", "q25", "q75", "sd", "min", "max"], rows))
     lines.append("")
+    reference = s1r["overall_I_m2"]
+    lines.append(f"For reference, the receipt's own `I = -E` field has mean {f(reference['mean'])} and "
+                 f"median {f(reference['median'])}; the mean reproduces the published M2 value.")
+    lines.append("")
     lines.append(f"Positive E: {s1r['counts']['positive_E']}; negative E: {s1r['counts']['negative_E']}; zero: {s1r['counts']['zero_E']}.")
     lines.append(f"Mean-E bootstrap over the eight windows (unit = window): {f(s1r['mean_E_bootstrap']['mean'])}, "
                  f"95% CI [{f(s1r['mean_E_bootstrap']['ci_low'])}, {f(s1r['mean_E_bootstrap']['ci_high'])}].")
@@ -1143,7 +1147,9 @@ def render_markdown(receipt):
     lines.append("Population: the 160 stored `(layer, pair, window)` cells; damage label primary")
     lines.append(f"`E > {f(TAU_E, 2)}` nats ({s5r['labels']['damaging_E_gt_0.01']['n_damaging']} damaging cells). This is")
     lines.append("**not** the group-pair space: only 20 of 3,360 possible `(layer, group-pair)` cells")
-    lines.append("were ever measured.")
+    lines.append("were ever measured. The array below is a strength-2 covering array over the design")
+    lines.append("factors `(layer, pair, window)`; it is **not** a covering array over group-pair")
+    lines.append("combinations, because the stored population does not contain them.")
     lines.append("")
     for label_name, label_values in s5r["labels"].items():
         lines.append(f"Label `{label_name}` ({label_values['n_damaging']} damaging cells):")
