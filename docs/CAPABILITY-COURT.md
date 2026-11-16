@@ -30,6 +30,15 @@ must run before any capability claim, and §15 gives the exact GPU commands. The
 registered T2 verdict, its thresholds and every historical receipt are
 unchanged.
 
+**Dated correction, 2026-11-16 (S29).** The calibration pass has now run on all
+five arms (§17). It **refused a suite version**: almost no executable item
+survived the registered window, every cell was reformatted, and the declared
+ladder was not monotone. The measured cause is not the answer format — the arms
+emit the same letter, or the same markdown header, for every item, so a tolerant
+parser would score a constant, not a decision. No arm comparison was run, the
+scored split was not derived, and the sealed holdback stayed closed. The
+instrument therefore still supports no capability claim in either direction.
+
 The original pre-registration is `docs/capability-preregistration.json` (the
 historical suite, retained unchanged). The first expansion was registered in v2;
 a same-session near-duplicate audit replaced sixteen tasks and the fixture is
@@ -1464,8 +1473,14 @@ absorbed into a claim.
 
 ## 15. Exact commands for the calibration pass
 
-None of these was run in this session; the derivation, its verification and the
-taxonomy were (all CPU). The GPU is free, so these are the next session's
+**Dated correction (S29).** These commands have now been run once, on the free
+GPU, and §17 records what they produced and the refusal. The derivation and its
+verification were already CPU receipts; this section remains the reproducible
+command list, with one measured change: the generation limit was sized from the
+smoke peak (§17.1) rather than inherited at 24g.
+
+None of these was run in the S28 session; the derivation, its verification and
+the taxonomy were (all CPU). The GPU is free, so these are the next session's
 commands. The sealed holdback is never named by any of them.
 
 Step 0 — re-derive the calibration split and verify it with `cargo`
@@ -1604,8 +1619,322 @@ report an arm comparison.
    corroboration. The adapter now records `finish_reason` (`length`/`eos`/`stop`)
    and a per-item token count, so the calibration receipt will not have this gap.
 2. **A per-item memory peak.** The generation court receipts record the requested
-   limits, not `memory.peak`; the calibration smoke run is what produces the
-   measured peak the launch record needs.
+   limits, not `memory.peak`. **Update (S29):** the generate and check receipts
+   now carry a `resources` block — process `ru_maxrss`, the cgroup
+   `memory.peak`, and `torch.cuda.max_memory_allocated`/`reserved` when torch is
+   loaded — so every limit this pass used was sized from a measured peak instead
+   of a habit (§5). The court receipt still carries the enforced limits and the
+   OOM verdict; the two together are the OOM evidence.
 3. **Whether an arm could do these tasks with a different prompt.** The
    redesign changes the format and the prompt together. A future ablation could
    separate them; nothing here claims the prompt alone caused the floor.
+
+## 17. The calibration pass (S29)
+
+Status: **run once on the five arms, and it emitted no suite version.** The
+statistics receipt is `results/capability/calibration-20261116T164100Z.json`
+(stamp `20261116T162758Z`, revision `bf7d4fe`); the aggregate receipt that the
+numbers below are read from is
+`results/capability/calibration-analysis-20261116T165000Z.json` (stamp
+`20261116T162919Z`, revision `bf7d4fe`). `calibrate --check` recomputes the
+cells, the ladder, the counts **and the refusal** from the item records and
+exits 0; `fixtures/capability-calibrated/VERSION.json` does not exist and the
+check proves it must not. The scored split was not derived, no comparison
+between arms was run, and the sealed holdback was never opened.
+
+### 17.1 The run
+
+Five arms (`D`, `M`, `X`, `H`, `H*`) generated the calibration split with the
+decoding of §10(a): greedy, `max_new_tokens` 3072, seed 20261115, sorted order,
+no tools, no few-shot, and the provenance amendment each arm requires. One arm
+at a time, each generation in the oracle court under
+`systemd-run --user --collect` with `MemoryMax` = `MemorySwapMax` = 12G,
+`TasksMax` = 1024, `CPUQuota` = 800% and a 4 GiB bounded tmpfs. Every launch
+checked host `MemAvailable` first; every court receipt reports
+`enforcement=ok`, exit 0 and `oom_killed=false`.
+
+**The limit was sized from a measured peak, not inherited.** The smoke pass was
+three items on `H*` at the §15 limit of 24g, measured:
+
+<!-- BEGIN GENERATED: cap-cal-peak-smoke -->
+7.132 GiB process peak, 6.796 GiB cgroup peak, 4.054 GiB VRAM allocated
+<!-- END GENERATED: cap-cal-peak-smoke -->
+
+The sizing arithmetic is `7.132 GiB x 1.5 = 10.70 GiB`, rounded up to the
+court's whole-gig unit; the "+1 GiB, never below" floor is weaker, so 12g. The
+full five-arm pass measured:
+
+<!-- BEGIN GENERATED: cap-cal-peak-arms -->
+7.358 GiB process peak, 8.616 GiB cgroup peak, 4.668 GiB VRAM allocated
+<!-- END GENERATED: cap-cal-peak-arms -->
+
+so the 12g limit held with headroom on every arm and VRAM was never the binding
+resource. `X` is the host-memory high-water arm; the routed arms hold the
+checkpoint on the host and copy into the device, one of the streamed-load
+corrections S16C made.
+
+Per arm, executable passes over the executable items and verified diagnostics
+over the diagnostic items:
+
+- `D`:
+  <!-- BEGIN GENERATED: cap-cal-arm-d -->
+0 of 70 executable passes; 0 of 14 verified diagnostics
+  <!-- END GENERATED: cap-cal-arm-d -->
+- `M`:
+  <!-- BEGIN GENERATED: cap-cal-arm-m -->
+0 of 70 executable passes; 0 of 14 verified diagnostics
+  <!-- END GENERATED: cap-cal-arm-m -->
+- `X`:
+  <!-- BEGIN GENERATED: cap-cal-arm-x -->
+1 of 70 executable passes; 2 of 14 verified diagnostics
+  <!-- END GENERATED: cap-cal-arm-x -->
+- `H`:
+  <!-- BEGIN GENERATED: cap-cal-arm-h -->
+0 of 70 executable passes; 0 of 14 verified diagnostics
+  <!-- END GENERATED: cap-cal-arm-h -->
+- `H*`:
+  <!-- BEGIN GENERATED: cap-cal-arm-hstar -->
+1 of 70 executable passes; 1 of 14 verified diagnostics
+  <!-- END GENERATED: cap-cal-arm-hstar -->
+
+Per format, pooling the five arms:
+
+- `body-completion`:
+  <!-- BEGIN GENERATED: cap-cal-format-body -->
+0 of 115 verified executable passes
+  <!-- END GENERATED: cap-cal-format-body -->
+- `patch-selection`:
+  <!-- BEGIN GENERATED: cap-cal-format-patch -->
+2 of 115 verified executable passes
+  <!-- END GENERATED: cap-cal-format-patch -->
+- `file-replacement`:
+  <!-- BEGIN GENERATED: cap-cal-format-file -->
+0 of 120 verified executable passes
+  <!-- END GENERATED: cap-cal-format-file -->
+- `diagnostic-identification`:
+  <!-- BEGIN GENERATED: cap-cal-format-diag -->
+3 of 70 verified diagnostics
+  <!-- END GENERATED: cap-cal-format-diag -->
+
+### 17.2 The answers are constant, which is why the window closed
+
+A pure floor would be consistent with "the tasks are hard". The stored
+generations show something stronger: the arms do not condition their answer on
+the item. Reading the raw text for a standalone candidate letter (a projection,
+not the registered parser, and never used to score an item):
+
+- `patch-selection`:
+  <!-- BEGIN GENERATED: cap-cal-answer-patch -->
+103 of 115 answers hold a standalone letter, 8 of them ambiguous, and 30 name the reference
+  <!-- END GENERATED: cap-cal-answer-patch -->
+- `diagnostic-identification`:
+  <!-- BEGIN GENERATED: cap-cal-answer-diag -->
+36 of 70 answers hold a standalone letter, 0 of them ambiguous, and 7 name the reference
+  <!-- END GENERATED: cap-cal-answer-diag -->
+
+The decisive fact is not the "correct" count but the distribution of the letters
+actually chosen. The reference letters are not uniform across items, because the
+derivation picks the candidate, not its position:
+
+- patch references:
+  <!-- BEGIN GENERATED: cap-cal-refpatch -->
+A 5, B 10, C 8
+  <!-- END GENERATED: cap-cal-refpatch -->
+- diagnostic references:
+  <!-- BEGIN GENERATED: cap-cal-refdiag -->
+A 1, B 2, C 1, D 10
+  <!-- END GENERATED: cap-cal-refdiag -->
+
+and **every unambiguous patch letter any arm produced was the same letter**:
+<!-- BEGIN GENERATED: cap-cal-const-patch -->
+5
+<!-- END GENERATED: cap-cal-const-patch -->
+of the five arms have a single, constant choice, and it is `C`; the diagnostic
+arms are constant on
+<!-- BEGIN GENERATED: cap-cal-const-diag -->
+4
+<!-- END GENERATED: cap-cal-const-diag -->
+arms, and it is `B` (the remaining arm emits no letter at all). The occasional
+"pass" is therefore the base rate of the constant: the verified patch passes sit
+exactly on the items whose reference is the letter the arm always emits. A
+constant answer cannot discriminate arms or items.
+
+The executable formats fail for the same reason, not for a different one. In
+`body-completion` the arms emit a constant fenced markdown header rather than a
+function body — the modal generation for `D` is the same short fragment on every
+item — and in `file-replacement` the modal generation is a repeated sentence or
+the same header. Every one of these answers is stored, and the receipts classify
+them; none needed a parser change to diagnose.
+
+### 17.3 The registered window
+
+<!-- BEGIN GENERATED: cap-cal-run-window -->
+1 accepted, 69 retired (68 zero pass, 1 does not discriminate), 0 saturated, 0 with a partial-credit spread
+<!-- END GENERATED: cap-cal-run-window -->
+
+The only accepted item is `deps-14-workspace-inheritance--patch`; the receipt
+records its pass probability, partial-credit spread and item–total correlation.
+The other item with a pass, `deps-07-feature-conflict--patch`, was retired as
+non-discriminating. The partial-credit spread was **unavailable** on every item,
+because a solution that does not compile produces no hidden-test counts — the
+secondary metric cannot rescue an item the primary metric cannot compile.
+
+Cells (category x format):
+
+<!-- BEGIN GENERATED: cap-cal-run-cells -->
+0 scored, 24 reformatted of 24
+<!-- END GENERATED: cap-cal-run-cells -->
+
+A cell is reformatted when fewer than two items survive or more than a third are
+retired; with so few accepted items, every cell is reformatted and no category is
+scorable.
+
+The ladder is a hypothesis and it was measured, not assumed:
+
+<!-- BEGIN GENERATED: cap-cal-ladder -->
+not monotone: dependency-compat
+<!-- END GENERATED: cap-cal-ladder -->
+
+The violation is `dependency-compat`, and it is informative in the same way: the
+patch cell is the only cell with a non-zero pass rate, so it appears "easier"
+than body-completion and file-replacement, which are both at the floor. When two
+tiers are pinned at zero passes, the measured order between them is not
+estimable; the violation is a symptom of the floor, not evidence that
+patch-selection is the easiest format.
+
+### 17.4 Power: measured, and far out of reach
+
+The registered formula is evaluated on the measured baseline and the measured
+paired variance, not on 0.5. Baseline pass rate over the executable items:
+
+<!-- BEGIN GENERATED: cap-cal-baseline -->
+0.005714
+<!-- END GENERATED: cap-cal-baseline -->
+
+Paired-difference variance, median (planning) and maximum (conservative) over
+every arm pair:
+
+- planning variance:
+  <!-- BEGIN GENERATED: cap-cal-var-planning -->
+0.014082
+  <!-- END GENERATED: cap-cal-var-planning -->
+- conservative variance:
+  <!-- BEGIN GENERATED: cap-cal-var-conservative -->
+0.028571
+  <!-- END GENERATED: cap-cal-var-conservative -->
+
+Required items per category at 80% power for a 10% relative effect (two-sided
+95%), and the items available:
+
+- planning n:
+  <!-- BEGIN GENERATED: cap-cal-n-planning -->
+338,483
+  <!-- END GENERATED: cap-cal-n-planning -->
+- conservative n:
+  <!-- BEGIN GENERATED: cap-cal-n-conservative -->
+686,777
+  <!-- END GENERATED: cap-cal-n-conservative -->
+- available in the one scorable cell:
+  <!-- BEGIN GENERATED: cap-cal-n-available -->
+1
+  <!-- END GENERATED: cap-cal-n-available -->
+
+Equivalently, inverting the same formula at the available n gives the smallest
+effect this instrument could detect:
+
+- planning variance:
+  <!-- BEGIN GENERATED: cap-cal-mde-planning -->
+0.1175 absolute, 20.57x baseline
+  <!-- END GENERATED: cap-cal-mde-planning -->
+- conservative variance:
+  <!-- BEGIN GENERATED: cap-cal-mde-conservative -->
+0.1674 absolute, 29.30x baseline
+  <!-- END GENERATED: cap-cal-mde-conservative -->
+
+These are not a threshold to relax. They are the measured statement that, with
+this baseline, a 10% relative effect is far below the noise floor at any n this
+suite could plausibly reach; P14.8 stays open and the shortfall is the item's
+own input.
+
+### 17.5 The refusal
+
+```text
+<!-- BEGIN GENERATED: cap-cal-refusal -->
+cannot emit a calibrated suite version: categories ['api-migration', 'concurrency', 'dependency-compat', 'failing-test', 'lifetime-borrow', 'repo-scale', 'semantic-repair', 'trait-impl'] have a reformatted cell; redesign that format before scoring
+<!-- END GENERATED: cap-cal-refusal -->
+```
+
+The summary counts the refusal is built from:
+
+<!-- BEGIN GENERATED: cap-cal-accepted -->
+1
+<!-- END GENERATED: cap-cal-accepted -->
+accepted and
+<!-- BEGIN GENERATED: cap-cal-retired -->
+69
+<!-- END GENERATED: cap-cal-retired -->
+retired of the executable items. `VERSION.json` was not written, and the
+fail-closed re-check verifies its absence and recomputes the reason from the item
+records rather than trusting the printed line (the refusal is recorded in the
+receipt's `suite_version` block for exactly this reason).
+
+### 17.6 The measured diagnosis, and what a redesign would have to change
+
+The refusal is correct and no suite version should be forced. The measured
+facts, in order of what they rule out:
+
+1. **Not an extraction problem.** The registered parser is strict, but the raw
+   text shows the answers are constant; a more tolerant letter rule would read a
+   letter more often and would still score a constant (17.2). Making the parser
+   more tolerant would raise the patch "pass" count to the base rate of `C`
+   across items, i.e. it would fabricate saturation, not discrimination.
+2. **Not a compilation-harness problem.** The reference solutions pass the same
+   checkers (`results/capability/selftest-calibrated-20261116T143000Z.json`), and
+   the derivation verification compiled every derived item, patch candidate and
+   diagnostic consequence. The court can reach a correct answer; the arms do not
+   produce one.
+3. **The binding constraint is the arm, not the answer shape.** All five arms are
+   the same 0.6B base with a 67M-token distillation budget, and the same
+   checkpoint family that scored zero on the v4 format now passes only the patch
+   items whose reference is the letter it always emits (17.1). A format change
+   changes which text is compiled; it cannot make a model condition on a
+   question it is ignoring.
+
+**The minimum change that could yield a discriminative instrument** therefore has
+two parts, and neither is a hand-tune of this suite:
+
+- **Solver population.** The instrument needs a solver that answers the question.
+  The measured evidence for that is the response-entropy test in 17.2: an arm
+  whose letter is constant across items cannot discriminate by construction. The
+  next honest test is a stronger or instruction-tuned arm on the same suite,
+  scored identically; the receipts are ready for it.
+- **Task population, if the arm is kept.** If a redesigned instrument must stay
+  at 0.6B, the minimum change is to make the *item* decide the answer the arm can
+  emit: single-letter answers everywhere (the only shape any arm produced), with
+  the reference position balanced by construction and a per-item response-entropy
+  screen that retires any item whose answers are constant across the five arms.
+  That is a new pre-registration and a new derivation, and it must be calibrated
+  before it carries a claim; the current registration forbids treating the
+  result as a capability comparison, and this pass does not.
+
+Neither proposal is implemented here. Implementing either without a fresh
+calibration pass would repeat exactly the defect this pass was registered to
+prevent.
+
+### 17.7 Failures and fixes during the pass
+
+1. **The smoke check refused a partial generation.** `check` requires every item
+   of every selected category, so a three-item smoke could not be checked. The
+   fix was procedural, not a code change: the second smoke generated the whole
+   `lifetime-borrow` category and checked it with `--category`, and the full
+   pass generated all 84 items before any check.
+2. **A refused calibration could not be re-verified.** `calibrate --check` with
+   `--suite-version-out` demanded a `VERSION.json`, so a refusal exited 3 with
+   "VERSION.json is missing" and left no way to prove the refusal was correct.
+   The receipt now records `suite_version` (`emitted`, `revision`, `reason`), and
+   `--check` recomputes that decision: it fails closed if a version file exists,
+   if the reason changed, or if the item records now support a version. A CPU
+   test covers all three cases.
+3. **No OOM and no GPU failure.** All five generations and all five checks
+   exited 0; the peaks in 17.1 are the measured evidence, and the court receipts
+   carry the enforced limits and the `oom_killed` flag.

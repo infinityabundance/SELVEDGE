@@ -3623,6 +3623,19 @@ variance term and the unchanged 10% threshold. A formula-only power statement
 does **not** satisfy this item; the P14.4 receipt is itself the evidence that a
 formula-only statement was optimistic here.
 
+**Status (S29).** The registered calibration pass ran on all five arms and
+measured the baseline and the paired variance from a real item matrix for the
+first time. It emitted no suite version: the arms answer with a constant rather
+than conditioning on the item, so the window retired almost every item and the
+ladder could not be shown monotone (`docs/CAPABILITY-COURT.md` §17). The
+measured baseline makes the required n at the registered effect far larger than
+anything this suite could reach, and the smallest effect the instrument could
+detect at the available items is tens of times the baseline; both numbers are in
+the calibration receipt and §17.4. **P14.8 stays open.** Its next input is not a
+larger n but a solver that answers the question, or a re-registered single-letter
+instrument with a per-item response-entropy screen (§17.6); either must be
+calibrated before it supports a claim.
+
 **Depends.** P14.4, P14.6, P14.7. **Status.** partially advanced by S28 — the
 **measured-variance** half is designed and registered, the GPU pass is not run.
 S28 implemented and CPU-tested: a per-item calibration mode (`calibrate`) that

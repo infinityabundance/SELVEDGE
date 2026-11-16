@@ -2972,3 +2972,112 @@ presented as a systems or cache result.
 - No sealed-set result: the 24 sealed tasks were never scored by any arm.
 - No claim that the corrected dispatch is irrelevant in general: only that it
   moves neither `X` nor `H` past the registered thresholds at this checkpoint.
+
+## 2026-11-16 — S29: the registered calibration pass (GPU), and its refusal
+
+### What ran
+
+The GPU was free. The registered pass ran in the order the protocol fixes: smoke
+one arm to size the limit, generate the calibration split on `D`, `M`, `X`, `H`
+and `H*`, check on CPU with partial credit, then `calibrate` against
+`docs/capability-calibration-preregistration-v1.json`. The scored split was not
+derived, no comparison between arms was run, and the sealed holdback was never
+named by any command.
+
+Every GPU stage ran under `systemd-run --user --collect --pipe` with
+`MemoryMax=MemorySwapMax=12G`, `TasksMax=1024`, `CPUQuota=800%`, a 4 GiB tmpfs
+and the matching `SELVEDGE_*` variables passed with `--setenv` (the S27 lesson:
+the unit does not inherit the caller's environment). Host `MemAvailable` was read
+immediately before each launch; no second heavy job ran. Every court receipt
+reports `enforcement=ok`, exit 0 and `oom_killed=false`.
+
+The 12g limit is derived, not inherited. The first smoke (three items, `H*`) was
+launched at the §15 24g for one run only; its measured peaks and the arithmetic
+are in `docs/CAPABILITY-COURT.md` §17.1. The full pass peaked at:
+
+<!-- BEGIN GENERATED: worklog-cal-peak-arms -->
+7.358 GiB process peak, 8.616 GiB cgroup peak, 4.668 GiB VRAM allocated
+<!-- END GENERATED: worklog-cal-peak-arms -->
+
+### What it decided
+
+The protocol **refused a suite version**:
+
+<!-- BEGIN GENERATED: worklog-cal-window -->
+1 accepted, 69 retired (68 zero pass, 1 does not discriminate), 0 saturated, 0 with a partial-credit spread
+<!-- END GENERATED: worklog-cal-window -->
+
+Every category had a reformatted cell, so no category
+was scorable and no ladder could authorise a claim. The ladder was also not
+monotone: only the `dependency-compat` patch cell was off the floor, which made
+the declared easiest tier look hardest. `VERSION.json` was not written; the receipt
+records the refusal and `calibrate --check` recomputes it.
+
+The measured cause is stronger than a floor. Reading the raw generations, every
+unambiguous patch letter any arm produced was the same letter, and the
+diagnostic arms likewise; the body and file formats emit a constant markdown
+header instead of code. The arms do not condition on the item. A tolerant parser
+would therefore score a constant, and the only "passes" are the base rate of the
+reference letter. `docs/CAPABILITY-COURT.md` §17.2 and §17.6 carry the numbers
+and the changes that could yield a discriminative instrument (a solver that
+answers, or a re-registered single-letter instrument with a response-entropy
+screen). Neither was implemented, because doing so without a fresh calibration
+pass is the defect the registration exists to prevent.
+
+Power was computed from the measured baseline and paired variance, not from 0.5,
+and the instrument is far from the registered target. The smallest effect it
+could detect at the items available:
+
+<!-- BEGIN GENERATED: worklog-cal-mde-planning -->
+0.1175 absolute, 20.57x baseline
+<!-- END GENERATED: worklog-cal-mde-planning -->
+
+P14.8 remains open with that shortfall published, not absorbed.
+
+### Receipts
+
+- `results/capability/calibration-20261116T164100Z.json` — the window, cells,
+  ladder, power and the recorded refusal (stamp `20261116T162758Z`).
+- `results/capability/calibration-analysis-20261116T165000Z.json` — the
+  per-arm/per-format tables, the answer-shape projection and the resource peaks
+  the limits were sized from (stamp `20261116T162919Z`).
+- `results/capability/calibration/<arm>/{generations,result}.json` — the five
+  arms' generation and check receipts, plus `generate.log`.
+- `results/capability/calibration-smoke/` — the two smoke runs and the failed
+  partial-category check.
+- `results/courts/oracle-*.json` and `results/courts/rust-*.json` — limits,
+  enforcement and the OOM verdict for every stage.
+
+### Failures and fixes
+
+**F1 — the smoke check refused a partial generation.** `check` requires every
+item of the selected category, so the three-item smoke could not be checked. The
+second smoke generated the whole `lifetime-borrow` category and used
+`--category`; the full pass generated the complete split before any check. No
+code change.
+
+**F2 — a refused calibration could not be verified.** `calibrate --check` with
+`--suite-version-out` demanded a `VERSION.json` and exited 3 when the protocol
+had refused one, which made the refusal itself unverifiable. The receipt now
+stores `suite_version` (`emitted`, `revision`, `reason`); `--check` recomputes
+the decision and fails closed if a version file exists, if the reason no longer
+recomputes, or if the records now support a version. `oracle/tests/
+test_capability_formats.py` covers those cases, and the full capability test
+selection passes.
+
+**F3 — the receipts could not size a limit.** Neither generate nor check recorded
+a measured peak, so directive 2's arithmetic had no input. Both receipts now
+carry `resources`: process `ru_maxrss`, cgroup `memory.peak`, and CUDA
+`max_memory_allocated`/`reserved`. The 12g limit in this session is the first
+one derived from a receipt this court wrote.
+
+**No OOM, no CUDA failure, no retry caused by a killed job.** The one failed
+check invocation is F1, and it failed closed before scoring anything.
+
+### What this entry does not claim
+
+- No capability comparison: the calibration measures the instrument, not the
+  arms, and the protocol forbids reporting one.
+- No calibrated suite version, and no scored split derived from one.
+- No change to the registered T2 verdict, its thresholds, or any historical
+  receipt.

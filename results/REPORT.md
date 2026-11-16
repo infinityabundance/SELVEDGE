@@ -498,8 +498,10 @@ category), partitioned from the scored and sealed splits by a pre-registered has
 rule. `verify-formats` compiled all of them and proved, per item, that the failing
 state fails, the reference passes, a mutated reference fails, exactly one patch
 candidate passes and exactly one diagnostic consequence resolves the failure —
-`results/capability/derivation-verify-calibration.json`. **No arm has been run on
-these items**, so the calibration split is an instrument, not a result.
+`results/capability/derivation-verify-calibration.json`. **Dated correction
+(S29):** the calibration pass has now run, and it refused a suite version — see
+"The calibration pass (S29)" below. The derivation is still the instrument's
+evidence; it is not a result.
 
 The calibration protocol is registered in
 `docs/capability-calibration-preregistration-v1.json`: five arms, per-item pass
@@ -509,7 +511,55 @@ minimum), cell retirement and reformatting rules, a monotone-ladder check, a
 primary metric (executable success) with a secondary partial-credit metric that
 is never a decision input, and a power statement that cannot be finalised until
 the pass measures the baseline and the paired variance. The GPU commands are
-`docs/CAPABILITY-COURT.md` §15; none was run.
+`docs/CAPABILITY-COURT.md` §15; they have now been run once (S29).
+
+### The calibration pass (S29): refused, with the cause measured
+
+The registered pass ran on all five arms and **emitted no suite version**. The
+window it measured:
+
+<!-- BEGIN GENERATED: report-cal-window -->
+1 accepted, 69 retired (68 zero pass, 1 does not discriminate), 0 saturated, 0 with a partial-credit spread
+<!-- END GENERATED: report-cal-window -->
+
+Every category had a reformatted cell, the ladder was not monotone (only the
+`dependency-compat` patch cell was off the floor), and the refusal is recorded in
+the calibration receipt and recomputed by `calibrate --check`. `VERSION.json`
+was not written, the scored split was not derived, no arm comparison was run,
+and the sealed holdback stayed closed.
+
+The measured cause is not an extraction or checker defect. The reference
+solutions pass the same checkers and the derivation compiled every item; the
+arms, however, emit a constant answer. Every unambiguous patch letter any arm
+produced was the same letter, the diagnostic arms likewise, and the body and
+file formats emit the same markdown header on every item. So the "passes" are
+the base rate of the constant letter among the reference positions:
+
+<!-- BEGIN GENERATED: report-cal-answer-patch -->
+103 of 115 answers hold a standalone letter, 8 of them ambiguous, and 30 name the reference
+<!-- END GENERATED: report-cal-answer-patch -->
+
+A tolerant parser would read that constant more often and score saturation, not
+discrimination; it would not make the arms condition on the item.
+
+Power is now computed from the measured baseline and paired variance rather than
+an assumed 0.5 baseline:
+
+<!-- BEGIN GENERATED: report-cal-baseline -->
+0.005714
+<!-- END GENERATED: report-cal-baseline -->
+
+and the required items per category at 80% power for a 10% relative effect are
+
+<!-- BEGIN GENERATED: report-cal-n-planning -->
+338,483
+<!-- END GENERATED: report-cal-n-planning -->
+
+against the surviving items. Inverting the same formula at the available n, the
+smallest effect the instrument could detect is tens of times the measured
+baseline (`docs/CAPABILITY-COURT.md` §17.4). P14.8 therefore stays open with the
+shortfall published. No arm is ranked on this suite: the protocol forbids it,
+and a constant answer carries no ranking information.
 
 ### Instrument corrections before any arm run (S16C, CPU-only)
 
