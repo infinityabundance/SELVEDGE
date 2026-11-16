@@ -2070,3 +2070,401 @@ itself is doing the work". It is registered here as arm `HL` with the same
 architecture as `D`, the same budget and the same seeds, and it is **not run in
 this pilot**: it is a sixth training arm outside the five-arm envelope. If T2's
 H*/H comparison is inside its CI, `HL` is the pre-registered next control.
+
+---
+
+# Experiment contract — P8.2: bounded-gate composition of the `D` and `M` residuals
+
+Status: **pre-registered before any measurement of this court.** This section is
+appended after T2 and **does not modify T2**, T1, M1 or M2; every T2 arm,
+threshold, budget and kill condition stands verbatim. The implementation is
+`oracle/train/composition.py` (the gate, the composed arm, gate-only training,
+the four-reference comparison and the admission union); its CPU tests are
+`oracle/tests/test_p82_composition_gate.py`; the launch commands are
+`results/T2-PLAN.md` §6.1.
+
+## P8.2.1 Question and the four references
+
+At one frozen core, the two independently trained T2 capabilities are `D` (the
+dense adapter) and `M` (the hashed memory). Their residual outputs at a layer
+are `r_D` and `r_M`; the layer's own output is `S`. The composed output is
+
+```
+y = S + a·r_D + b·r_M,      (a, b) = g(h),   ||a r_D + b r_M||_2 <= rho_t
+```
+
+with `g` a per-layer `1024 -> 2` linear gate on the layer's input hidden state
+(the same pre-module feature T2.5 uses for the router). The four references, all
+scored on the same fresh items and the same reference continuations:
+
+1. **`D` alone** (`y = S + r_D`),
+2. **`M` alone** (`y = S + r_M`, so the non-insertion layers are `S`),
+3. **naive sum** (`y = S + r_D + r_M`, unbounded, no gate),
+4. **gated composition** (`y` above).
+
+plus the **per-item oracle**: the minimum loss over those four, which is not
+deployable and is the bound. `P8.1`'s task-level selectors are *not* references
+here; they answer a different question.
+
+## P8.2.2 The gate and its budget (fixed now)
+
+- **Zero point.** `g` is zero-initialised, so at initialisation the composition
+  is exactly `S`; this is asserted by a logit-identity check against the frozen
+  core with tolerance `1e-3` bf16 (the T2.4 instrument). A failure stops the run.
+- **Budget.** Per token, `rho_t = kappa * ||S_t||_2` with **`kappa = 0.05`**
+  pre-registered. The budget is relative because an absolute radius has no
+  scale-free meaning across layers. A realised perturbation above `rho_t(1+1e-6)`
+  is a hard violation and invalidates the run; the count is in the receipt.
+- **Parameters.** `28 * (2 * 1024 + 2) = 57,400` learned elements. They are
+  declared as a **selector** in the admission config (the gate decides
+  coefficients and carries no capacity) and are counted in the active union.
+- **Modes.** `D`, `M`, `sum` and `gate` are the same implementation with the
+  coefficients fixed; `sum` applies no projection, which is what makes it the
+  naive reference.
+
+## P8.2.3 Training protocol
+
+- **Parameters.** Gate-only. Every core, adapter and memory parameter is frozen;
+  the trainer refuses a non-gate trainable set.
+- **Data and order.** The T2 calibration slice: the first `32` windows of the
+  registered training stream (`32,768` tokens), in stream order, wrapping to
+  position `0` after the slice ends. No fresh evaluation item is in the stream
+  (P8.1's contamination receipt). The two capabilities are the **trained T2 `D`
+  and `M` checkpoints**; neither is updated.
+- **Budget.** `256` optimiser steps at `1,024` positions = `262,144` tokens
+  (8 passes over the calibration slice). AdamW, `lr = 3e-3`, betas `(0.9, 0.95)`,
+  no weight decay, gradient clip `1.0`, seed `1001`, deterministic kernels
+  requested. The gate's cost is reported separately from the capabilities' cost.
+- **Objective.** The registered T1.4 compact distillation objective on the
+  composed model's logits (the same objective every T2 arm trains on). The gate
+  receives exactly this gradient; no load-balance or interference penalty is
+  added.
+- **Logged.** Loss, gate norm, the realised `a`/`b` (mean absolute), the fraction
+  of projected tokens, the maximum budget utilisation, the active union and the
+  selector cost. The three-way interference separation is recomputed on the
+  probe batch (`accounted`, `added_effect_of_m`, `deviation_from_d_alone`) and
+  the aggregate is in the receipt.
+
+## P8.2.4 Metrics, thresholds and CIs (fixed now)
+
+The item metric is the mean NLL per reference token under the frozen model, as
+in P8.1 (lower is better; identical text for every arm, so the comparison is
+paired). **All 26 fresh items are scored**, not just the P8.1 router's test half,
+because the gate never trains on an item; the P8.1 split exists for the selector
+and does not apply here.
+
+- **Decisive comparison:** `gate` versus `sum`. The gate must improve the mean
+  NLL by at least **`0.01` nats/token absolute** (about 0.5% relative at the
+  observed ~2 nats/token) **and** have a paired percentile-bootstrap 95% CI whose
+  lower bound is below zero (improvement). `10,000` resamples, seed `20261115`.
+- **No-regression rule:** the gate must not be worse than the better single arm
+  (`D` or `M`) by more than `0.01` nats/token absolute. A gate that beats `sum`
+  but loses to the better single arm means the composition buys nothing over
+  selection (P8.1), and the report says that.
+- **Interference:** the aggregate must report `accounted = true`,
+  `within_budget = true`, and the mean/max of `added_effect_of_m` and
+  `deviation_from_d_alone` per token. The budget itself is the registered bound;
+  no second threshold is invented.
+- **Power limitation, stated now:** `n = 26` items. A difference smaller than the
+  item-level CI half-width is reported as **"not separable from noise"** (T2.8's
+  rule), never as a win, and the observed half-width is printed with the result.
+
+## P8.2.5 What a negative result means
+
+- **The gate does not beat the naive sum.** Bounded-gate composition is recorded
+  as a negative result at this scale. `P9.3` may still be run **as a
+  measurement** of the interaction term (that is what it was registered for), but
+  no composed arm is carried into `P8.3`, `P8.4` or `T7` on the strength of it.
+- **The gate beats `sum` but not the better single arm.** The perturbation helps
+  relative to the uncontrolled sum, but task-level selection is still better than
+  composition; `P8.3` (two-timescale) is *not* justified.
+- **The gate beats `sum` and the better single arm.** Composition is supported at
+  this scale, and `P8.3` becomes the next item, with the same gate as its
+  token-level component.
+- **Budget violations.** Any violation is a failed run, not a result.
+
+## P8.2.6 Evidence
+
+One receipt per run: training (`composition-run.json`, with the gate checkpoint's
+SHA-256 and the two capability checkpoints' hashes), evaluation
+(`p8/composition-eval-*.json`, per-item losses for all four references and the
+comparison block), and the admission wrapper from
+`scripts/p8-composition-admission.sh`. The fresh task set and its contamination
+receipt are copied by reference (hash), not re-generated. No number in this
+section is measured; the first measurement is the run.
+
+---
+
+# Experiment contract — P11.1: causal bottleneck repair court
+
+Status: **pre-registered before any measurement of this court.** Implementation
+`oracle/eval/causal_repair.py`; CPU tests
+`oracle/tests/test_p11_causal_repair.py`; launch commands
+`results/T2-PLAN.md` §6.2. This section does not modify any earlier section.
+
+## P11.1.1 Arms and the student
+
+The student is frozen: the pinned Qwen3-0.6B core
+(`c1899de289a04d12100db370d81485cdf75e47ca`), next-token distribution at the
+final position, teacher-forced items `{id, input_ids, label}` where `label` is the
+verified correct next token. A failed item is one the frozen student predicts
+incorrectly (or whose registered loss is above its verified threshold); the item
+set is the `P12.9` fresh Rust suite's verified failures, 200 items, split
+alternating by id into 100 train and 100 test. **Implementation gap stated now:**
+the 200-item artifact does not exist at this revision; the court runs
+`--mode self-test` until it does.
+
+Arms:
+
+1. **oracle** — per item, per candidate layer, a bounded correction found by the
+   surrogate or the verifier-driven search. Not deployable.
+2. **learned** — `C_theta(h_layer, z_c, layer) -> delta_hat`, the predictor below.
+3. **distributed LoRA (equal budget)** — rank
+   `r = floor(P / (2 * 28 * 1024))` at every layer, where `P` is the predictor's
+   parameter count; same items, same token count, same optimiser steps. This is
+   the non-causal control.
+4. **all-layer adapters** — rank `8` at every layer, a declared, unmatched
+   reference (more parameters than the predictor).
+5. **no adaptation** — the frozen student.
+
+## P11.1.2 The intervention and the budget (fixed now)
+
+The intervention adds one hidden-space vector to the **final position** of layer
+`layer`'s output. Candidate layers: **all 28 core layers**, 0-based, at the
+layer output. Budget:
+
+```
+epsilon_l = 0.10 * median_{items} || h_l(item) ||_2
+```
+
+computed on the **training** split at layer `l`, before any test item is scored.
+Every correction is projected onto `||delta||_2 <= epsilon_l`; a violation is a
+failed run. The per-layer `epsilon_l` values are in the receipt.
+
+## P11.1.3 Oracle definition
+
+For each failed item and layer: `150` projected Adam steps at `lr = 0.5` on
+`delta` minimising the cross-entropy to the verified label (surrogate variant), or
+a verifier-driven search over a fixed direction set (the identity basis plus 32
+seeded random unit directions) with a 4-point line search, reading only the
+verified outcome and its margin. The **bottleneck layer** is the **earliest**
+layer at which a bounded correction flips the verified outcome: correcting later
+can bypass the cause. The oracle's `repaired` count is the upper bound.
+
+## P11.1.4 The learned predictor and its causal inputs
+
+`C_theta` is a shared MLP over `[h_layer (final position), z_c, one_hot(layer)]`.
+`z_c` is the mean of the **frozen input embedding** over the item's tokens; the
+label, the verifier outcome, the teacher target and the student's logits are not
+inputs. A test changes the label of an item and asserts the prediction is
+unchanged. Training targets are the oracle's corrections at **every layer where
+the oracle succeeded** on the training items, so the predictor learns the
+intervention and not one layer index. `300` steps, AdamW `lr = 0.05`, MSE,
+features cached once (the student is frozen). The deployed layer is the
+**median earliest-successful layer on the training split**, computed and recorded
+before test scoring.
+
+## P11.1.5 Metrics, thresholds and the kill condition (fixed now)
+
+```
+capture = (learned_repaired - baseline_repaired) / (oracle_repaired - baseline_repaired)
+```
+
+on the 100 test failures, `baseline = no adaptation`. A zero denominator is
+reported as `null`, never as one.
+
+- **Kill condition:** kill if `capture < 0.50`. That is: the learned predictor must
+  reproduce at least half of the oracle's repaired successes, otherwise the
+  mechanism is mostly offline search and not a deployable predictor.
+- **Generalisation:** a structurally different problem — a different bottleneck
+  depth and sequence length, same token vocabulary and class set — with its
+  target layer declared by that problem's own registration (not learned from its
+  evaluation items). `transfer_capture = (learned - baseline)/(oracle - baseline)`
+  on the new problem's test half. **Kill if `transfer_capture < 0.25`.**
+- **Reported, not thresholded:** the learned-versus-oracle gap in repaired
+  successes, the per-layer bottleneck histogram, the ratio of learned to
+  distributed-LoRA repairs, VRAM and wall-clock per arm, and the predictor's
+  parameter count against the matched rank.
+- The 0.6B claim is only ever "the learned predictor beats the equal-budget
+  non-causal control on repaired successes"; the fixture result in the CPU tests
+  is labelled a fixture and is not carried into the claim.
+
+## P11.1.6 What a negative result means
+
+- **`capture < 0.5`.** Causal repair is an oracle-only effect at this scale; the
+  predictor is not carried into `P10.12` or `P11.12`.
+- **No transfer.** The predictor is task-specific rather than a causal repair
+  operator; `P11.2` (operator algebra) is not justified by this court.
+- **The learned arm ties or loses to the distributed LoRA.** The word "causal"
+  buys nothing over an equal-budget adaptation, and the mechanism is recorded as
+  unsupported regardless of the oracle bound.
+
+---
+
+# Experiment contract — T3 (P10.2 / P12.3): latent-geometry court
+
+Status: **pre-registered before any measurement.** Implementation
+`oracle/train/latent_geometry.py`; CPU tests
+`oracle/tests/test_t3_latent_geometry.py`; quality is scored by
+`oracle/eval/baseline.py --profile t3 --latent-spec` (the same instrument as T1
+and T2). Launch commands: `results/T2-PLAN.md` §6.3.
+
+**Framing.** This is an **accounting replication** of published latent-MoE
+geometry, not a discovery. The prior art is LatentMoE (2601.18089; accuracy per
+FLOP/parameter), Shaping Latent MoE (2610.14644; local Jacobian rank bounded by
+expert input and intermediate width, near-square experts win at fixed per-expert
+parameters) and Multi-View Latent MoE (2610.40577; single-router rankings
+disagree with expert-utility rankings). SELVEDGE's increment is the union/bytes
+ledger at a fixed **active** cost and utility diversity as a measured behavioural
+quantity.
+
+## T3.1 Arms and the matched-compute rule (fixed now)
+
+Per layer: a shared `P: 1024 -> L` and `Q: L -> 1024`, `m = 2k` stored experts in
+latent space, `k` active, every expert **square** (input `L`, intermediate width
+`w = L`, output `L`) at `3 L^2` elements. The reference is the T2 `X` form
+(`d = 1024`, `w = 512`, `m = 8`, `k = 4`), whose per-layer active cost is
+`6,299,648` elements. At that same budget, `k(L)` is the largest integer with
+`2*1024*L + k*3*L^2 + 1024*2k <= 6,299,648`:
+
+| arm | `L` | `w` | `k` | `m` | active/layer | utilisation |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `T3-L128` | 128 | 128 | 117 | 234 | 6,252,544 | 99.25% |
+| `T3-L256` | 256 | 256 | 29 | 58 | 6,285,312 | 99.77% |
+| `T3-L384` | 384 | 384 | 12 | 24 | 6,119,424 | 97.14% |
+| `T3-L512` | 512 | 512 | 6 | 12 | 5,779,456 | 91.74% |
+| `X` (reference) | — | 512 | 4 | 8 | 6,299,648 | 100% |
+
+The counts are arithmetic from the registered constants (`python3
+oracle/train/latent_geometry.py --sweep` prints them; the sweep receipt is the
+authority and the Rust ledger is the authority for the active union). Matched
+compute means: same tokens, data order, optimiser, LR schedule, seed and step
+count as T2's `X`; no load-balance term (as `X`); the router is trained by the
+distillation gradient. The arm's active elements per layer must be at or below
+the reference's; the slack is reported and is not spent elsewhere.
+
+## T3.2 Metrics (fixed now)
+
+1. **Verified task success** (primary): the T2 instrument
+   (HumanEval pass@1, GSM8K exact match, TruthfulQA MC1, composite `PC`).
+2. **Teacher KL** (co-primary): pooled compact and full-vocabulary KL, as A9.
+3. **Local Jacobian rank:** the numerical SVD rank of the layer's local
+   input→output Jacobian at one token per layer, at relative tolerance `1e-4`,
+   plus the participation-ratio effective rank, and the per-expert rank. The
+   analytic bound is reported with the measurement: for a shared projection the
+   layer rank is bounded by **`L`** (all active experts read the same rank-`L`
+   code), while the native reference is bounded by `min(k*512, 1024) = 1024`. A
+   measured rank at or below `L` is the expected result and is reported, not
+   hidden.
+4. **Utility diversity** under the **deployed** `k`-read
+   (deployed-budget leave-one-selected-expert-out on a calibration slice):
+   mean pairwise correlation, mean absolute pairwise correlation, JS divergence
+   from the uniform share, effective expert count and top-1 share.
+5. **VRAM** (measured peak during a forward and during training) and
+   **decode overhead** (measured median forward time on 64 tokens plus the
+   modelled FLOP/byte decomposition).
+6. **Active union** from the Rust ledger, and accessible total.
+
+## T3.3 Thresholds and kill condition (fixed now)
+
+- **Primary:** a latent width must improve the composite `PC` over `X` by at
+  least **3% relative**, with a paired 95% bootstrap CI lower bound above zero,
+  and must not regress pooled teacher KL beyond `1.02x` (T2.9's margin). The
+  decision order is T2.9's: if both arms' paired `PC` CI contains zero, the
+  decisive statistic becomes pooled KL, lower is better.
+- **Kill:** kill the geometry axis if **no** latent width improves verified
+  success at fixed active FLOPs with a CI excluding zero. The report then states
+  that the published geometry does not transfer to this backbone/budget under the
+  SELVEDGE ledger, and `P12.4` (generated weights) is not conditioned on it.
+- **If the rank proxy collapses with `L` and success does not improve:** that is a
+  real result about the shared projection, not a null result; it is reported as
+  the measured cost of the shared bottleneck at fixed active parameters.
+- Seeds, budgets, data order and the evaluation sample are T2's; no new data.
+
+## T3.4 What this court does not claim
+
+It does not claim a new geometry, a new latent-MoE mechanism, or a discovery of
+rank bounds. It measures whether the published geometry's accounting survives at
+this backbone, this budget and this ledger, and it reports the rank and utility
+measurements that the published work reports differently.
+
+---
+
+# Experiment contract — P9.3: combination utility and the interaction-aware controller
+
+Status: **pre-registered before any measurement.** Implementation
+`oracle/eval/combination_utility.py`; CPU tests
+`oracle/tests/test_p9_combination_utility.py`; launch command
+`results/T2-PLAN.md` §6.4.
+
+## P9.3.1 The four-condition artifact (fixed now)
+
+- **Source.** The T2 hybrid arm whose checkpoint exists at run time; `H*` is
+  preferred (it is the error-directed arm) and `H` is the fallback; the receipt
+  names the arm and its checkpoint hash. **Implementation gap stated now:** the
+  court needs `H*`'s or `H`'s final checkpoint, which the running pilot produces.
+- **Items.** `64` calibration windows (`65,536` tokens) from the registered
+  training stream, in stream order, disjoint from every evaluation item. An item
+  is one window; its causal features are the 8 registered token-id statistics
+  (log length, mean id, std id, first id, last id, unique fraction, and two
+  length/marker terms) computed from the window's tokens. No label, no teacher
+  target and no model output is a controller input.
+- **Four conditions.** Both paths toggled by forward hooks that zero the
+  module's output: `none`, `m` (memory active), `e` (experts active), `both`.
+- **Metric.** `R = -mean` T1.4 per-token distillation loss over the window
+  (higher is better). The artifact stores all four rewards, the per-item
+  interaction, an input hash per item, the item-id hash, the feature hash and the
+  leakage assertions that were executed. The runner receives a `CausalView`
+  whose outcome keys raise.
+- **Split.** Alternating over the id-sorted set: 32 train / 32 test.
+
+## P9.3.2 Estimator and decision labels (fixed now)
+
+`I = R_both - R_m - R_e + R_none`, per item, summarised with a percentile
+bootstrap over items (`10,000` resamples, seed `20261115`) plus the standard
+error. Labels: lower bound above zero → **synergy**; upper bound below zero →
+**antagonism**; interval containing zero → **no detectable interaction**. The
+last is never called "independence".
+
+## P9.3.3 Controller arms (fixed now)
+
+1. **additive-utility** — ridge predictions of `u_m(x)`, `u_e(x)`; subset value
+   is the sum; no cross term. This is `H*`'s independent-utility weighting.
+2. **interaction-aware** — the same two heads plus `I_hat(x)` from the same
+   causal features; the pair subset's value includes `I_hat`.
+3. **independent-gates** — one thresholded gate per capability.
+4. **load-balanced** — always both, zero parameters.
+5. **combinatorial-oracle** — the best of the four measured subsets per item;
+   not deployable, reported separately.
+
+All controllers choose a subset; the realised reward is looked up from the
+measured four-condition table for that item, so the comparison is paired and
+never re-measures. Learned-parameter counts are reported per arm.
+
+## P9.3.4 Thresholds and kill condition (fixed now)
+
+- **If `I` is detectable** (its CI excludes zero): the interaction-aware
+  controller must beat the additive controller on realised reward on the test
+  half by at least **`0.5%` relative** (or `0.01` absolute when the arm's mean
+  reward is below `2.0`) with a paired 95% CI lower bound above zero. If it does
+  not, the interaction-aware controller is recorded as **not supported**: the
+  cross term is measurable but not usable by this controller class.
+- **If `I` is not detectable:** the additive target is adequate for this pair at
+  this budget; that is the result, and the interaction controller's extra
+  parameters are recorded as unjustified.
+- **Oracle reported separately, never as a deployable result.** The gap to the
+  oracle is reported, and a controller that matches the oracle exactly is
+  checked for leakage before it is believed (the manifest is the evidence).
+- `n = 32` test items: any difference smaller than the item-level CI half-width
+  is reported as "not separable from noise".
+
+## P9.3.5 What a negative result means
+
+- **`I` detectable but the controller does not use it.** The target is right and
+  the controller class is too weak; `P9.3`'s next step is a stronger
+  differentiable top-`k` surrogate, and no claim is made that interaction-aware
+  routing works.
+- **`I` not detectable.** The T2.5 additive utility was adequate for this pair;
+  the T2.5/T2.6 risk is not what limited the hybrid, and the miss is elsewhere.
+  This is stated as a negative result for the interaction term, not for
+  composition (P8.2 answers that).

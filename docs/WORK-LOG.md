@@ -1617,3 +1617,156 @@ None started here. The next GPU job is whatever `scripts/run-t2-pilot.sh` does
 next (`H` then `H*`). The next program steps remain P12.1a (evaluation-only
 re-score of `X` under the corrected placement) and P12.2 (run the diagnostics the
 moment `H*` writes its labels).
+
+## 2026-11-16 — S11: four successor courts built and CPU-tested while the pilot owns the GPU
+
+The detached T2 pilot was running `H` throughout this session and owned the
+device. Nothing here started, stopped, restarted or reconfigured a container, no
+GPU job was launched, and the pilot was read only. The work is CPU-only code,
+tests and pre-registration, so the moment the card is free the four courts below
+launch with the commands in `results/T2-PLAN.md` §6.
+
+### P8.2 — the missing composition entry point
+
+`oracle/train/composition.py` now has `--run-composition` and
+`--score-composition`, on top of the gate that already existed:
+
+* a relative, per-token budget `rho_t = kappa ||S_t||_2` with `kappa = 0.05`
+  (an absolute radius has no scale-free meaning across layers);
+* a composed arm (`ComposedFFN`, `CompositionArm`) that installs T2 `D`'s dense
+  adapter and T2 `M`'s hashed memory on **one** frozen core, maps the two T2
+  checkpoints onto it with an explicit, fail-closed key remap, and freezes every
+  adapter/memory parameter;
+* gate-only training (`train_gate`) on the registered T2 calibration slice:
+  256 steps x 1,024 positions = 262,144 tokens in stream order, AdamW lr 3e-3,
+  seed 1001, the registered T1.4 distillation objective, features cached, and a
+  receipt that logs `a`, `b`, projection share, budget utilisation, the three-way
+  interference separation, the active union and the selector cost;
+* `composition_comparison` with the four registered references and the per-item
+  oracle, paired percentile bootstrap (10,000, seed 20261115).
+
+The earlier WORK-LOG note that "`--run-composition` is the one entry point that
+does not exist yet" is superseded by this entry. No gate has been trained: the
+GPU was busy, so P8.2 has **no measurement**.
+
+### P11.1 — causal bottleneck repair court
+
+`oracle/eval/causal_repair.py`:
+
+* a student protocol (`logits(ids, intervention)`, `hidden_state(ids, layer)`),
+  with `TinyLayeredStudent` as the CPU fixture and `HFCausalStudent` as the
+  frozen-0.6B adapter with a forward hook at the layer output;
+* the offline bounded oracle: projected Adam on the verified loss (surrogate) and
+  a verifier-driven search over the identity basis plus seeded directions, both
+  inside `||delta|| <= epsilon` with `epsilon = 0.10 * median ||h_l||`;
+* the bottleneck definition (the **earliest** successful layer) and the deployed
+  layer (median earliest success on the training split);
+* `CausalRepairPredictor` over `[h_layer, z_c, one_hot(layer)]`, where `z_c` is
+  the mean of the frozen input embedding and the label/verifier/logits are not
+  inputs (tested by relabelling an item and asserting the prediction is
+  unchanged);
+* the controls: distributed LoRA at the largest rank under the predictor's
+  parameter count, all-layer adapters at rank 8, and no adaptation, all on the
+  same items, tokens and steps;
+* the gap metric and the registered kill rule (`capture < 0.5`, transfer
+  `capture < 0.25`).
+
+Implementation gap, stated in the contract and the receipt: the 200-item
+failed-item artifact does not exist. The court runs `--mode self-test` today and
+the 0.6B command is ready in `results/T2-PLAN.md` §6.2.
+
+### T3 — latent-geometry court
+
+`oracle/train/latent_geometry.py`:
+
+* the matched-active-cost sweep: shared `P`/`Q`, square experts (`w = L`),
+  `m = 2k`, and `k` the largest value that fits the T2 `X` per-layer active
+  budget. At `L = 128/256/384/512` that is `k = 117/29/12/6` (99.3/99.8/97.1/91.7%
+  utilisation) — arithmetic, not measurement;
+* the deterministic, capacity-free dispatch (one write per `(token, slot)`, fixed
+  slot order), zero-init parity, and the per-layer/per-expert numerical Jacobian
+  rank with the analytic bounds (`L` for the shared projection, `1024` for the
+  native reference — the shared bottleneck, not `k*L`, is the real cap);
+* deployed-budget leave-one-selected-expert-out utility labelling, utility
+  diversity (correlation, JS from uniform, effective experts, top-1 share),
+  decode overhead and modelled VRAM;
+* a T3 admission config that reuses T2 `X`'s core slices and the Rust ledger as
+  the source of truth, plus training and measurement entry points;
+* `oracle/eval/baseline.py` gained `--profile t3 --latent-spec`, so T3's quality
+  is scored by the same instrument as T1/T2 rather than a new one.
+
+The T3 registration frames this explicitly as an accounting replication of
+LatentMoE / Shaping Latent MoE / Multi-View Latent MoE, not a discovery.
+
+### P9.3 — combination utility
+
+`oracle/eval/combination_utility.py`:
+
+* four-condition generation (`none/m/e/both`) through a restricted `CausalView`
+  whose outcome keys raise, with a manifest carrying the item-id, feature and
+  input hashes and the leakage assertions that were executed;
+* the interaction estimator with a paired bootstrap CI, a standard error and the
+  three decision labels (a CI containing zero is "no detectable interaction",
+  never "independence");
+* the controller prototype (additive marginals; the interaction-aware version adds
+  `I_hat(x)`), independent gates, a load-balanced control and the small
+  combinatorial oracle, all choosing a subset whose reward is looked up from the
+  measured table so the comparison is paired;
+* the GPU path toggles the memory/expert paths with forward hooks that zero their
+  outputs on a calibration slice, with one window per forward to stay inside the
+  16 GiB device.
+
+### Tests
+
+All CPU, in the oracle court (`scripts/court oracle -- python3 -m pytest
+oracle/tests`): 160 passed.
+
+* `oracle/tests/test_p82_composition_gate.py` — zero point on a tiny end-to-end
+  composition, gate reachability (D-only / M-only / both), relative budget,
+  coefficients independent of the residuals (no leakage), determinism, frozen
+  capabilities after training, checkpoint remap and its fail-closed path,
+  paired comparison and the shared bootstrap.
+* `oracle/tests/test_p11_causal_repair.py` — the planted bottleneck is the
+  earliest successful layer for every failed item; the oracle stays in budget;
+  the verifier-driven variant repairs without gradients; the predictor captures
+  the oracle gain; the controls behave as the fixture implies; relabelling does
+  not change the prediction; determinism; transfer to a different bottleneck
+  depth and sequence length; the kill rule.
+* `oracle/tests/test_t3_latent_geometry.py` — sweep arithmetic (square experts,
+  `k` maximal, matched active cost, ceiling), the T2 `X` reference count,
+  shared-projection accounting, zero-init parity, determinism, dispatch against a
+  direct loop, Jacobian rank against its bound, utility diversity against known
+  structure, decode-overhead decomposition and the admission mirror.
+* `oracle/tests/test_p9_combination_utility.py` — artifact completeness and
+  determinism, the causal view blocking outcome keys, sign recovery for synergy
+  and antagonism, "no detectable interaction" under independence, CI coverage
+  >= 0.85 over 40 replications, both sign conventions agreeing, the interaction
+  controller beating the additive one only when an interaction exists, and the
+  documented control costs.
+
+### Registrations
+
+New sections appended to `docs/EXPERIMENT-CONTRACT.md`, with no change to any
+existing section or T2 number: **P8.2** (composition gate), **P11.1** (causal
+repair), **T3** (latent geometry) and **P9.3** (combination utility). Each fixes
+arms, budgets, metrics, thresholds, CIs and the kill condition, and each says what
+a negative result means. `docs/PROGRAM-PLAN.md` statuses for P8.2, P9.3, P10.2,
+P11.1 and P12.3 now point at them; no item was renumbered.
+
+### Pilot progress, read-only
+
+`scripts/poll-t2-pilot.sh` at `2026-11-16T00:29:46Z`, revision `1dd7270`:
+`D`, `M` and `X` are evaluated; `H` is running at step 165/1024 (16.1%) at 4,656
+tokens/s and a 10.86 GiB peak, ETA about 3.4 h by its own rate; `H*` is pending.
+No ordering between arms is stated, before or after this session.
+
+### What is not true
+
+* No court above has a measurement. Every number in this entry is arithmetic, a
+  fixture, or a read-only pilot progress figure.
+* The T3 `k` values are design arithmetic at the T2 `X` active budget; they are
+  not a throughput, VRAM or quality result.
+* P11.1's fixture shows the oracle and predictor repairing all 12 test failures
+  and the distributed LoRA repairing none, because the fixture deletes the only
+  class-carrying hidden signal. That is a property of the fixture by
+  construction and is not evidence about the 0.6B student.

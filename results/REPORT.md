@@ -186,7 +186,7 @@ As of the last poll before this commit (`scripts/poll-t2-pilot.sh`,
 | `D` (dense control) | **completed** — trained the registered budget and evaluated | `results/t2/D/run.json`, `results/t2/D/eval.json`, `results/eval/t2-D.json` |
 | `M` (memory only) | **completed** — trained the registered budget and evaluated | `results/t2/M/run.json`, `results/t2/M/eval.json`, `results/eval/t2-M.json` |
 | `X` (specialists) | **completed** — trained the registered budget and evaluated | `results/t2/X/run.json`, `results/t2/X/eval.json`, `results/eval/t2-X.json` |
-| `H` (naive hybrid) | **training** — launched after `X` evaluated | `results/t2/H/run.json` in progress |
+| `H` (naive hybrid) | **training** — step 165/1024 (16.1%), 4,656 tokens/s, 10.86 GiB peak, ETA ≈ 3.4 h at its own rate (poll 2026-11-16T00:29:46Z) | `results/t2/H/run.json` in progress |
 | `H*` (error-directed hybrid) | **pending** | — |
 
 Three of five arms have both a training receipt and an evaluation summary. The
@@ -194,6 +194,13 @@ two hybrids, which carry the registered K15/K16 comparison, have not finished.
 The pilot is therefore **not separable from "unfinished"** and no ordering
 between arms is stated here, deliberately — an early ordering is exactly the
 reading that T2.8 and the one-seed risk in `results/T2-PLAN.md` §5 forbid.
+
+While the pilot occupies the GPU, three successor courts were built and
+CPU-tested without touching it: `P8.2` (bounded-gate composition, including the
+missing `--run-composition` entry point), `P11.1` (causal bottleneck repair),
+`T3` (latent geometry) and `P9.3` (combination utility). They are registered as
+new sections of `docs/EXPERIMENT-CONTRACT.md` and their launch commands are in
+`results/T2-PLAN.md` §6. None has a measurement.
 
 Read-only monitoring is `scripts/poll-t2-pilot.sh` (one report) or `--follow`. It
 reads state, per-arm logs, `docker ps` and free disk; it writes nothing to the

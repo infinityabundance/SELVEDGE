@@ -1136,7 +1136,11 @@ are what make a composition result interpretable.
 **Depends.** P8.1.
 **Acceptance evidence.** four receipts on the same fresh tasks; an interference
 metric with a pre-registered bound; the gate's own parameters counted in the union.
-**Status.** open.
+**Status.** implemented and pre-registered (`docs/EXPERIMENT-CONTRACT.md` P8.2);
+CPU tests `oracle/tests/test_p82_composition_gate.py` pass; the GPU runs are
+blocked only on the pilot releasing the card. The entry points are
+`oracle/train/composition.py --run-composition` and `--score-composition`;
+launch commands are `results/T2-PLAN.md` §6.1. No measurement exists yet.
 **Effort.** L.
 
 ### P8.3 — Two-timescale selector: task-level working set, token-level inside it
@@ -1265,7 +1269,10 @@ what makes "composition" more than a weighted sum.
 **Acceptance evidence.** the four-condition dataset manifest with hashes; a
 controller receipt naming its inputs and proving no label leakage; five arm
 results at matched union budget; the oracle bound reported separately.
-**Status.** open.
+**Status.** implemented and pre-registered (`docs/EXPERIMENT-CONTRACT.md` P9.3);
+CPU tests `oracle/tests/test_p9_combination_utility.py` pass on synthetic ground
+truth (sign recovery, CI coverage). The GPU run needs the pilot's `H*` (or `H`)
+checkpoint; launch command `results/T2-PLAN.md` §6.4. No measurement exists yet.
 **Effort.** XL.
 
 ### P9.4 — Student-deficit-conditioned addressing
@@ -1391,7 +1398,11 @@ measurement as a behavioural quantity rather than a rank bound.
 the accounting triple (P7.7).
 **Kill criterion.** kill the geometry axis if no latent width improves verified
 success at fixed active FLOPs with a CI excluding zero.
-**Status.** open.
+**Status.** implemented and pre-registered as the T3 section of
+`docs/EXPERIMENT-CONTRACT.md`; CPU tests `oracle/tests/test_t3_latent_geometry.py`
+pass; entry points `oracle/train/latent_geometry.py --train/--report` and
+`oracle/eval/baseline.py --profile t3 --latent-spec`. GPU runs blocked on the
+pilot; commands in `results/T2-PLAN.md` §6.3. No measurement exists yet.
 **Effort.** L.
 
 ### P10.3 — Writable fast-weight memory split into stable / episodic / working
@@ -1690,7 +1701,11 @@ something.
 (oracle intervention, learned predictor, distributed LoRA control).
 **Kill criterion.** kill if the learned predictor does not beat the equal-budget
 non-causal control on repaired successes.
-**Depends.** P12.9. **Status.** open. **Effort.** XL.
+**Depends.** P12.9. **Status.** implemented and pre-registered
+(`docs/EXPERIMENT-CONTRACT.md` P11.1); CPU fixture tests
+`oracle/tests/test_p11_causal_repair.py` pass. The 0.6B run is blocked on the
+failed-item artifact and on the GPU; command in `results/T2-PLAN.md` §6.2. No
+measurement exists yet. **Effort.** XL.
 
 ### P11.2 — Capability Operator Algebra
 
@@ -2060,7 +2075,9 @@ with the near-square expert configuration, on the T2 data order and budget.
 **Why.** It changes the model's shape, not the program's machinery: no runtime, no
 new storage, no new data.
 **Depends.** P12.1, P12.2. **Acceptance evidence.** the sweep receipt and the decision
-rule fixed beforehand. **Status.** open. **Effort.** L.
+rule fixed beforehand. **Status.** implemented and pre-registered as the T3
+section of `docs/EXPERIMENT-CONTRACT.md`; GPU runs blocked on the pilot.
+**Effort.** L.
 
 ### P12.4 — T4: generated-weight versus stored-weight court (P10.1)
 

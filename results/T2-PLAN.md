@@ -316,3 +316,161 @@ restates the mapping from result to consequence.
   GPU. If that is too small for the effect, the result is "budget too small",
   which T2.11 pre-registers as a distinct outcome from "the architecture
   fails".
+
+## 6. Successor courts ready to launch (P8.2, P11.1, T3, P9.3)
+
+These are registered in `docs/EXPERIMENT-CONTRACT.md` as separate sections; they
+do not alter T2. They run **only after the pilot releases the GPU**. Each carries
+its own receipt; none replaces a T2 number. Every command runs in the GPU court
+with the same hard limits as the pilot.
+
+Environment for all of them:
+
+```sh
+export SELVEDGE_MEM=28g SELVEDGE_TMP=8g
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+```
+
+### 6.1 P8.2 — bounded-gate composition of `D` and `M`
+
+Prerequisite: the T2 `D` and `M` final checkpoints. Admission first (the Rust
+ledger decides the union):
+
+```sh
+scripts/p8-composition-admission.sh
+```
+
+Then gate-only training on the T2 calibration slice (256 steps, 262,144 tokens):
+
+```sh
+scripts/court --gpu oracle -- python3 oracle/train/composition.py --run-composition \
+  --config-d results/train/admission-configs/t2/D.json \
+  --admission-d results/train/admission/t2/D.json \
+  --config-m results/train/admission-configs/t2/M.json \
+  --admission-m results/train/admission/t2/M.json \
+  --checkpoint-d results/artifacts/train/t2/D/step-001024.pt \
+  --checkpoint-m results/artifacts/train/t2/M/step-001024.pt \
+  --out results/artifacts/train/p8/composition \
+  --steps 256 --kappa 0.05 --gate-lr 3e-3 --seed 1001 \
+  --calibration-windows 32 --positions 1024 \
+  --hf-root /hf-cache --artifact-dir results/artifacts/train --deterministic
+```
+
+Score the four references and the per-item oracle on all 26 fresh items:
+
+```sh
+scripts/court --gpu oracle -- python3 oracle/train/composition.py --score-composition \
+  --config-d results/train/admission-configs/t2/D.json \
+  --admission-d results/train/admission/t2/D.json \
+  --config-m results/train/admission-configs/t2/M.json \
+  --admission-m results/train/admission/t2/M.json \
+  --checkpoint-d results/artifacts/train/t2/D/step-001024.pt \
+  --checkpoint-m results/artifacts/train/t2/M/step-001024.pt \
+  --gate-checkpoint results/artifacts/train/p8/composition/gate-000256.pt \
+  --hf-root /hf-cache \
+  --out results/p8/composition-eval-20261116T000000Z.json
+```
+
+The decisive statistic is `gate-minus-sum` in the receipt (contract P8.2.4).
+
+### 6.2 P11.1 — causal bottleneck repair
+
+CPU fixture check (no GPU, writes a fixture receipt):
+
+```sh
+scripts/court oracle -- python3 oracle/eval/causal_repair.py \
+  --mode self-test --out results/p11/fixture-20261116T000000Z.json
+```
+
+The 0.6B run needs the failed-item artifact `--items` (a JSON list of
+`{id, input_ids, label}`; contract P11.1.1). **This artifact does not exist at
+this revision**; producing it from the `P12.9` suite is the remaining piece of
+engineering. With it:
+
+```sh
+scripts/court --gpu oracle -- python3 oracle/eval/causal_repair.py --mode checkpoint \
+  --items results/p11/failed-items.json \
+  --model-size 0.6b --hf-root /hf-cache \
+  --layers all --oracle-variant surrogate --seed 1001 \
+  --out results/p11/causal-repair-20261116T000000Z.json
+```
+
+### 6.3 T3 — latent-geometry sweep
+
+Arithmetic and specs (CPU; no model):
+
+```sh
+scripts/court oracle -- python3 oracle/train/latent_geometry.py --sweep \
+  --out results/t3/sweep.json --emit-specs results/t3/specs
+```
+
+Per point `L` in `128 256 384 512`: emit the admission config, admit it with the
+Rust ledger, train on the T2 data order and budget, then measure.
+
+```sh
+scripts/court oracle -- python3 oracle/train/latent_geometry.py \
+  --emit-config results/train/admission-configs/t3/L128.json \
+  --spec results/t3/specs/L128.json
+
+scripts/court rust -- sh -c '
+cargo build --release -q -p selvedge-cli
+mkdir -p results/train/admission/t3
+./target/release/selvedge admit \
+  --config results/train/admission-configs/t3/L128.json \
+  --out results/train/admission/t3/L128.json
+'
+
+scripts/court --gpu oracle -- python3 oracle/train/latent_geometry.py --train \
+  --spec results/t3/specs/L128.json \
+  --config results/train/admission-configs/t3/L128.json \
+  --admission results/train/admission/t3/L128.json \
+  --out results/artifacts/train/t3/L128 --steps 1024 \
+  --micro-batch 1 --accum 64 --micro-positions 512 \
+  --checkpoint-every 100 --zero-point --deterministic
+
+scripts/court --gpu oracle -- python3 oracle/train/latent_geometry.py --report \
+  --spec results/t3/specs/L128.json \
+  --checkpoint results/artifacts/train/t3/L128/step-001024.pt \
+  --measure-utilities --calibration-positions 1024 \
+  --utilities-out results/t3/utilities-L128.pt \
+  --out results/t3/report-L128.json
+
+scripts/court --gpu oracle -- python3 oracle/eval/baseline.py --profile t3 \
+  --arm T3-L128 --latent-spec results/t3/specs/L128.json \
+  --checkpoint results/artifacts/train/t3/L128/step-001024.pt \
+  --config results/train/admission-configs/t3/L128.json \
+  --admission results/train/admission/t3/L128.json \
+  --out results/eval/t3-L128.json
+```
+
+The other three points are identical with `L256`, `L384`, `L512`. The reference
+point is the existing T2 `X` evaluation (`results/eval/t2-X.json`), re-scored in
+the same session by the same instrument if the receipt is older than the code.
+
+### 6.4 P9.3 — combination utility on the hybrid arm
+
+Prerequisite: the T2 `H*` checkpoint (preferred) or `H`. 64 calibration windows,
+four conditions, controller comparison:
+
+```sh
+scripts/court --gpu oracle -- python3 oracle/eval/combination_utility.py \
+  --mode checkpoint --arm 'H*' \
+  --checkpoint 'results/artifacts/train/t2/Hstar/step-001024.pt' \
+  --config 'results/train/admission-configs/t2/H*.json' \
+  --admission 'results/train/admission/t2/H*.json' \
+  --calibration-windows 64 --artifact-dir results/artifacts/train \
+  --out results/p9/combination-20261116T000000Z.json
+```
+
+If `H*` is unavailable, the same command with `--arm H` and the `H` paths. The
+receipt names the arm and the checkpoint hash.
+
+### 6.5 Ordering and constraints
+
+- P8.2 needs `D` and `M` only; it can run immediately after the pilot.
+- P9.3 needs `H*` (or `H`); it is the last of these four in the queue.
+- T3 trains four arms at the full T2 budget (`1024` steps each). On the measured
+  throughput envelope that is roughly four times one T2 arm; run the four points
+  serially, never concurrently, and record each point's VRAM before the next.
+- No command above may run while the pilot's container is alive.
