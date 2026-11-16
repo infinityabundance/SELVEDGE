@@ -115,13 +115,36 @@ def verify_registration(result: dict, arm: str, prereg_path: str, prereg: dict,
             f"match {_rel(prereg_path)} ({prereg_digest[:16]}…)")
     threshold = recorded.get("primary_relative_threshold")
     registered_threshold = (prereg.get("primary") or {}).get("relative_threshold")
-    if threshold is None:
-        raise Refusal(f"{arm}: the result records no threshold; re-run check()")
-    if threshold != registered_threshold or threshold != court.PRIMARY_THRESHOLD:
+    endpoint_kind = recorded.get("primary_endpoint_kind") or court.ENDPOINT_RELATIVE
+    registered_kind = (prereg.get("primary") or {}).get(
+        "endpoint_kind", court.ENDPOINT_RELATIVE)
+    if endpoint_kind != registered_kind:
         raise Refusal(
-            f"{arm}: the result was scored against threshold {threshold!r}, the "
-            f"registration fixes {registered_threshold!r} "
-            f"(court default {court.PRIMARY_THRESHOLD!r})")
+            f"{arm}: the result was scored on a {endpoint_kind!r} endpoint, the "
+            f"registration fixes {registered_kind!r}")
+    if endpoint_kind == court.ENDPOINT_ABSOLUTE:
+        minimum = recorded.get("primary_minimum_absolute_effect")
+        registered_minimum = (prereg.get("primary") or {}).get(
+            "minimum_absolute_effect")
+        if minimum is None:
+            raise Refusal(
+                f"{arm}: the result records no minimum absolute effect; re-run check()")
+        if minimum != registered_minimum:
+            raise Refusal(
+                f"{arm}: the result was scored against a minimum absolute effect of "
+                f"{minimum!r}, the registration fixes {registered_minimum!r}")
+        if threshold is not None:
+            raise Refusal(
+                f"{arm}: an absolute-endpoint result also records a relative "
+                f"threshold; the two endpoints are never pooled")
+    else:
+        if threshold is None:
+            raise Refusal(f"{arm}: the result records no threshold; re-run check()")
+        if threshold != registered_threshold or threshold != court.PRIMARY_THRESHOLD:
+            raise Refusal(
+                f"{arm}: the result was scored against threshold {threshold!r}, the "
+                f"registration fixes {registered_threshold!r} "
+                f"(court default {court.PRIMARY_THRESHOLD!r})")
     suite_hash = (result.get("suite") or {}).get("suite_sha256")
     if suite_hash != manifest["suite_sha256"]:
         raise Refusal(f"{arm}: the result was measured on suite {str(suite_hash)[:12]}…, "
@@ -293,12 +316,21 @@ def compare(paths: dict, preregistration: str, suite_root: str,
         "stamp": court.stamp_now(),
         "created_utc": court.utc_now(),
         "revision": court.revision(REPO),
-        "instrument": "verified task success, category-balanced paired bootstrap, "
-                      "conjunctive with the no-regression margin (CAPABILITY-COURT §7)",
+        "instrument": ("verified task success, category-balanced paired bootstrap, "
+                      + ("absolute endpoint with a pre-registered minimum "
+                         "(per-category regressions reported and blocking transfer)"
+                         if (prereg.get("primary") or {}).get(
+                             "endpoint_kind") == court.ENDPOINT_ABSOLUTE else
+                         "conjunctive with the no-regression margin "
+                         "(CAPABILITY-COURT §7)")),
         "preregistration": {
             "path": _rel(preregistration),
             "sha256": prereg_digest,
+            "endpoint_kind": (prereg.get("primary") or {}).get(
+                "endpoint_kind", court.ENDPOINT_RELATIVE),
             "threshold": (prereg.get("primary") or {}).get("relative_threshold"),
+            "minimum_absolute_effect": (prereg.get("primary") or {}).get(
+                "minimum_absolute_effect"),
             "category_minimum_items": (prereg.get("primary") or {}).get(
                 "category_minimum_items"),
             "suite_sha256": prereg.get("suite_sha256"),

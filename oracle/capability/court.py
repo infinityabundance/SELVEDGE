@@ -84,6 +84,15 @@ CONTROL_FIELDS = (
 )
 
 PRIMARY_THRESHOLD = 0.10
+
+#: The endpoint a pre-registration may decide on. `relative` is the original
+#: registration (v1-v4): a relative improvement of the composite with a CI above
+#: zero. `absolute` is the dated amendment (v5): a paired CI lower bound at or
+#: above a pre-registered minimum absolute effect. The two are never mixed in one
+#: comparison and are never pooled into a single number.
+ENDPOINT_RELATIVE = "relative"
+ENDPOINT_ABSOLUTE = "absolute"
+ENDPOINT_KINDS = (ENDPOINT_RELATIVE, ENDPOINT_ABSOLUTE)
 SECONDARY_MAX_CATEGORY_REGRESSION = 0.05
 CAPACITY_ACTIVE_TOLERANCE = 0.05
 
@@ -864,6 +873,12 @@ def check(generations: dict, suite_root: str, out: str,
             "primary_relative_threshold": (
                 (prereg.get("primary") or {}).get("relative_threshold") if prereg
                 else None),
+            "primary_endpoint_kind": (
+                (prereg.get("primary") or {}).get("endpoint_kind", ENDPOINT_RELATIVE)
+                if prereg else None),
+            "primary_minimum_absolute_effect": (
+                (prereg.get("primary") or {}).get("minimum_absolute_effect")
+                if prereg else None),
             "problems": prereg_problems,
         },
         "anti_gaming": {
@@ -1034,7 +1049,22 @@ def verify_preregistration(prereg: dict, manifest: dict,
         return problems
     if prereg.get("suite_sha256") != manifest["suite_sha256"]:
         problems.append("the pre-registration binds a different suite hash")
-    if prereg.get("primary", {}).get("relative_threshold") != PRIMARY_THRESHOLD:
+    primary = prereg.get("primary") or {}
+    kind = primary.get("endpoint_kind", ENDPOINT_RELATIVE)
+    if kind not in ENDPOINT_KINDS:
+        problems.append(f"the pre-registered endpoint kind {kind!r} is not one of "
+                        f"{', '.join(ENDPOINT_KINDS)}")
+    elif kind == ENDPOINT_ABSOLUTE:
+        minimum = primary.get("minimum_absolute_effect")
+        if isinstance(minimum, bool) or not isinstance(minimum, (int, float)) or minimum <= 0:
+            problems.append(
+                "the pre-registered absolute endpoint has no positive minimum "
+                "absolute effect")
+        if primary.get("relative_threshold") is not None:
+            problems.append(
+                "an absolute endpoint must not also register a relative threshold: "
+                "one endpoint decides, and the two are never pooled")
+    elif primary.get("relative_threshold") != PRIMARY_THRESHOLD:
         problems.append("the pre-registered primary threshold is not 0.10 relative")
     if (prereg.get("primary", {}).get("bootstrap", {}).get("seed") != stats.SEED
             or prereg.get("primary", {}).get("bootstrap", {}).get("resamples")
@@ -1074,17 +1104,21 @@ def _values_by_category(result: dict) -> dict:
             for category, items in sorted(values.items())}
 
 
-def registered_threshold(arm: dict, baseline: dict,
-                         preregistration: dict | None = None,
-                         requested: float | None = None) -> float:
-    """The threshold a comparison is allowed to use, and its provenance.
+def registered_endpoint_spec(arm: dict, baseline: dict,
+                             preregistration: dict | None = None,
+                             requested: float | None = None) -> dict:
+    """The registered endpoint a comparison is allowed to decide on.
 
-    A registered result carries the digest of the pre-registration it was made
-    against. When either side is registered, the comparison is a registered one:
-    the threshold comes from the receipt, it must be the contract's threshold,
-    and an externally supplied value that differs is refused rather than honed
-    into a verdict. `threshold_met` is therefore never computed against a number
-    chosen after the results were read.
+    During T2's lifetime this returned the relative threshold. The dated
+    amendment (v5) adds an `absolute` endpoint, so the decision needs the *kind*
+    as well as the number, and a registered run may not mix the two: a
+    comparison against a relative registration keeps deciding on a relative
+    threshold, and one against an absolute registration decides on a paired CI
+    lower bound against the pre-registered minimum absolute effect.
+
+    A result that records no endpoint kind is a result made under the original
+    registration, and is read as `relative` — the historical receipts stay valid
+    without being rewritten.
     """
     arm_prereg = arm.get("preregistration") or {}
     base_prereg = baseline.get("preregistration") or {}
@@ -1094,58 +1128,139 @@ def registered_threshold(arm: dict, baseline: dict,
             raise CourtError(
                 "a pre-registration was supplied for comparison, but neither result "
                 "was generated against one; the comparison would not be registered")
-        return PRIMARY_THRESHOLD if requested is None else requested
+        return {
+            "kind": ENDPOINT_RELATIVE,
+            "relative_threshold": PRIMARY_THRESHOLD if requested is None else requested,
+            "source": "caller-supplied (unregistered comparison)",
+        }
     if len(digests) != 1 or None in digests:
         raise CourtError(
             "one side of the comparison is registered and the other is not; a "
             "verdict may not mix a registered run with an unregistered one")
-    thresholds = {side.get("primary_relative_threshold")
-                  for side in (arm_prereg, base_prereg)}
-    if len(thresholds) != 1:
-        raise CourtError("the two registered results record different thresholds")
-    registered = thresholds.pop()
-    if registered is None:
-        raise CourtError(
-            "the registered results do not record the threshold they were scored "
-            "against; re-run check() to emit it")
-    if registered != PRIMARY_THRESHOLD:
-        raise CourtError(
-            f"the results record a threshold of {registered!r}, which is not the "
-            f"pre-registered {PRIMARY_THRESHOLD!r}; the receipt was tampered with or "
-            "made against a superseded contract")
+
+    kinds = {side.get("primary_endpoint_kind") or ENDPOINT_RELATIVE
+             for side in (arm_prereg, base_prereg)}
+    if len(kinds) != 1:
+        raise CourtError("the two registered results record different endpoint kinds")
+    kind = kinds.pop()
+    if kind not in ENDPOINT_KINDS:
+        raise CourtError(f"the results record an unknown endpoint kind {kind!r}")
+
+    if kind == ENDPOINT_RELATIVE:
+        thresholds = {side.get("primary_relative_threshold")
+                      for side in (arm_prereg, base_prereg)}
+        if len(thresholds) != 1:
+            raise CourtError("the two registered results record different thresholds")
+        registered = thresholds.pop()
+        if registered is None:
+            raise CourtError(
+                "the registered results do not record the threshold they were scored "
+                "against; re-run check() to emit it")
+        if registered != PRIMARY_THRESHOLD:
+            raise CourtError(
+                f"the results record a threshold of {registered!r}, which is not the "
+                f"pre-registered {PRIMARY_THRESHOLD!r}; the receipt was tampered with "
+                "or made against a superseded contract")
+        spec = {
+            "kind": ENDPOINT_RELATIVE,
+            "relative_threshold": registered,
+            "source": "pre-registration receipt",
+        }
+    else:
+        minimums = {side.get("primary_minimum_absolute_effect")
+                    for side in (arm_prereg, base_prereg)}
+        if len(minimums) != 1:
+            raise CourtError(
+                "the two registered results record different minimum absolute effects")
+        minimum = minimums.pop()
+        if isinstance(minimum, bool) or not isinstance(minimum, (int, float)) or minimum <= 0:
+            raise CourtError(
+                "the registered results do not record a positive minimum absolute "
+                "effect; re-run check() to emit it")
+        if requested is not None and requested != minimum:
+            raise CourtError(
+                f"an externally supplied threshold of {requested!r} was given, but "
+                "this comparison is registered on an absolute endpoint with a "
+                "minimum of {minimum!r}; a registered comparison may not be "
+                "re-thresholded")
+        spec = {
+            "kind": ENDPOINT_ABSOLUTE,
+            "minimum_absolute_effect": float(minimum),
+            "source": "pre-registration receipt",
+        }
+
     if preregistration is not None:
         problems = []
-        if preregistration.get("primary", {}).get("relative_threshold") != registered:
-            problems.append("its threshold is not the one the results were scored against")
+        primary = preregistration.get("primary") or {}
+        if primary.get("endpoint_kind", ENDPOINT_RELATIVE) != kind:
+            problems.append("its endpoint kind is not the one the results were scored "
+                            "against")
+        if kind == ENDPOINT_RELATIVE:
+            if primary.get("relative_threshold") != spec["relative_threshold"]:
+                problems.append(
+                    "its threshold is not the one the results were scored against")
+        elif float(primary.get("minimum_absolute_effect") or 0.0) != spec[
+                "minimum_absolute_effect"]:
+            problems.append(
+                "its minimum absolute effect is not the one the results were scored "
+                "against")
         if preregistration.get("suite_sha256") != arm["suite"]["suite_sha256"]:
             problems.append("it binds a different suite")
         if problems:
             raise CourtError("the supplied pre-registration does not govern this "
                              "comparison: " + "; ".join(problems))
-    if requested is not None and requested != registered:
+    if requested is not None and kind == ENDPOINT_RELATIVE \
+            and requested != spec["relative_threshold"]:
         raise CourtError(
             f"an externally supplied threshold of {requested!r} was given, but these "
-            f"results are registered against {registered!r}; a registered comparison "
-            "may not be re-thresholded")
-    return registered
+            f"results are registered against {spec['relative_threshold']!r}; a "
+            "registered comparison may not be re-thresholded")
+    return spec
+
+
+def registered_threshold(arm: dict, baseline: dict,
+                        preregistration: dict | None = None,
+                        requested: float | None = None) -> float:
+    """The relative threshold a comparison is allowed to use, and its provenance.
+
+    Kept as the historical accessor: a comparison registered on an absolute
+    endpoint has no relative threshold, so asking for one is refused instead of
+    answered with a number that would re-threshold it.
+    """
+    spec = registered_endpoint_spec(arm, baseline, preregistration, requested)
+    if spec["kind"] != ENDPOINT_RELATIVE:
+        raise CourtError(
+            "this comparison is registered on an absolute endpoint; it has no "
+            "relative threshold to return")
+    return spec["relative_threshold"]
 
 
 def compare(arm: dict, baseline: dict, threshold: float | None = None,
             preregistration: dict | None = None) -> dict:
     """Level 1 comparison: paired, category-stratified, with a decision rule.
 
-    The verdict is **conjunctive**: the arm must clear the primary threshold with
-    a paired CI above zero *and* must not regress any category by more than the
-    registered margin. Both conditions were computed before; only the first used
-    to decide, so an aggregate winner that bought its gain by wrecking one
-    category was reported as a win. That is the defect this signature fixes.
+    Two registered endpoints exist and are never mixed:
 
-    `threshold=None` means "use the registered threshold" when the results are
+    * **relative** (v1-v4, the original contract): the verdict is conjunctive —
+      the arm must clear the primary threshold with a paired CI above zero *and*
+      must not regress any category by more than the registered margin. Both
+      conditions were computed before; only the first used to decide, so an
+      aggregate winner that bought its gain by wrecking one category was
+      reported as a win. That is the defect this signature fixes.
+    * **absolute** (v5, the dated amendment): the verdict is the paired CI lower
+      bound at or above the pre-registered minimum absolute effect. The
+      regression clause is still computed and reported per category, and it
+      blocks a *transfer* claim, but it is not a conjunct of the primary: the
+      amendment's own power receipt measures that the conjunct costs roughly a
+      quarter of the decision power at the same effect, which turns true effects
+      into "no result". The disclosure is mandatory and cannot be omitted.
+
+    `threshold=None` means "use the registered endpoint" when the results are
     registered; a caller-supplied value must equal it.
     """
     if arm["suite"]["suite_sha256"] != baseline["suite"]["suite_sha256"]:
         raise CourtError("the two results were measured on different suites")
-    threshold = registered_threshold(arm, baseline, preregistration, threshold)
+    spec = registered_endpoint_spec(arm, baseline, preregistration, threshold)
     arm_adapter = arm["generations"]["adapter"]
     base_adapter = baseline["generations"]["adapter"]
     if bool(arm_adapter.get("tools")) != bool(base_adapter.get("tools")):
@@ -1173,14 +1288,50 @@ def compare(arm: dict, baseline: dict, threshold: float | None = None,
 
     diff = stats.paired_category_bootstrap(paired_arm, paired_base)
     relative = diff["relative_difference"]
-    improvement = (relative is not None and relative >= threshold
-                   and diff["ci_low"] > 0)
+    if spec["kind"] == ENDPOINT_RELATIVE:
+        improvement = (relative is not None
+                       and relative >= spec["relative_threshold"]
+                       and diff["ci_low"] > 0)
+    else:
+        improvement = diff["ci_low"] >= spec["minimum_absolute_effect"]
     regressions = {category: value for category, value in
                    diff["per_category_difference"].items()
                    if value < -SECONDARY_MAX_CATEGORY_REGRESSION}
-    passed = improvement and not regressions
+    if spec["kind"] == ENDPOINT_RELATIVE:
+        passed = improvement and not regressions
+    else:
+        passed = improvement
     arm_trio = arm["scores"].get("trio", {})
     base_trio = baseline["scores"].get("trio", {})
+    if spec["kind"] == ENDPOINT_RELATIVE:
+        rule = ("conjunctive: primary improvement AND no category regression "
+                "beyond the margin")
+        rule_met = passed
+        verdict_ok = (
+            f"arm improves the primary composite by at least {int(spec['relative_threshold'] * 100)}% "
+            "relative with a CI above zero and regresses no category beyond the margin")
+        verdict_no_improvement = "no pre-registered primary improvement; no win is claimed"
+        verdict_regressed = (
+            "the primary improvement is met but categories regress beyond the "
+            "registered margin, so no win is claimed: "
+            + ", ".join(f"{category} {value:+.3f}"
+                        for category, value in sorted(regressions.items())))
+    else:
+        rule = ("absolute: paired CI lower bound at or above the pre-registered "
+                "minimum absolute effect; per-category regressions are reported and "
+                "block a transfer claim, not the primary")
+        rule_met = passed
+        verdict_ok = (
+            "arm's paired improvement has a 95% CI lower bound at or above the "
+            f"pre-registered {spec['minimum_absolute_effect']!r} absolute minimum")
+        verdict_no_improvement = (
+            "no pre-registered absolute improvement at the registered minimum; no "
+            "win is claimed" + (
+                "; categories beyond the regression margin were also observed: "
+                + ", ".join(f"{category} {value:+.3f}"
+                            for category, value in sorted(regressions.items()))
+                if regressions else ""))
+        verdict_regressed = verdict_no_improvement
     return {
         "schema": "selvedge/capability-comparison/v1",
         "arm": arm_adapter.get("name"),
@@ -1189,17 +1340,18 @@ def compare(arm: dict, baseline: dict, threshold: float | None = None,
         "level": 1,
         "level_statement": LEVELS[1],
         "primary": {
-            "threshold_relative": threshold,
-            "threshold_source": ("pre-registration receipt"
-                                 if (arm.get("preregistration") or {}).get("sha256")
-                                 else "caller-supplied (unregistered comparison)"),
+            "endpoint_kind": spec["kind"],
+            "threshold_relative": spec.get("relative_threshold"),
+            "minimum_absolute_effect": spec.get("minimum_absolute_effect"),
+            "threshold_source": spec["source"],
             "difference": diff,
             "improvement_met": improvement,
             "regression_limit": SECONDARY_MAX_CATEGORY_REGRESSION,
             "category_regressions_beyond_margin": regressions,
             "threshold_met": passed,
-            "rule": "conjunctive: primary improvement AND no category regression "
-                    "beyond the margin",
+            "transfer_permitted": bool(passed and not regressions),
+            "rule": rule,
+            "rule_met": rule_met,
         },
         "trio": {
             "arm": arm_trio,
@@ -1208,15 +1360,8 @@ def compare(arm: dict, baseline: dict, threshold: float | None = None,
             "baseline_all_surfaces": baseline["scores"].get("trio_all_surfaces"),
         },
         "verdict": (
-            f"arm improves the primary composite by at least {int(threshold * 100)}% "
-            "relative with a CI above zero and regresses no category beyond the margin"
-            if passed else
-            ("no pre-registered primary improvement; no win is claimed"
-             if not improvement else
-             "the primary improvement is met but categories regress beyond the "
-             "registered margin, so no win is claimed: "
-             + ", ".join(f"{category} {value:+.3f}"
-                         for category, value in sorted(regressions.items())))),
+            verdict_ok if passed else
+            verdict_regressed if improvement else verdict_no_improvement),
     }
 
 

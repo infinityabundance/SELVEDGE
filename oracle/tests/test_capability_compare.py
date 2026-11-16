@@ -313,3 +313,123 @@ def test_main_returns_three_on_refusal(environment, capsys):
                   "--out", os.path.join(environment["root"], "comparison.json")]
     assert capability_compare.main(arguments) == 3
     assert "REFUSED" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------------------
+# the absolute endpoint (v5 dated amendment)
+#
+# The relative endpoint was unreachable at any feasible n (the amendment receipt
+# prints the arithmetic). v5 registers an absolute endpoint, and these tests hold
+# the court to it: the decision is the paired CI lower bound against the
+# pre-registered minimum, a per-category regression is disclosed and blocks a
+# transfer claim rather than being silently dropped, and the two endpoints are
+# never mixed in one comparison.
+
+SUITE_HASH = "b" * 64
+ABS_DIGEST = "e" * 64
+
+
+def absolute_receipt(counts: dict, *, minimum: float = 0.04,
+                     digest: str = ABS_DIGEST,
+                     suite_hash: str = SUITE_HASH) -> dict:
+    receipt = result_receipt(counts, digest=digest, suite_hash=suite_hash)
+    recorded = receipt["preregistration"]
+    recorded.pop("primary_relative_threshold", None)
+    recorded["primary_endpoint_kind"] = court.ENDPOINT_ABSOLUTE
+    recorded["primary_minimum_absolute_effect"] = minimum
+    return receipt
+
+
+def absolute_preregistration(*, minimum: float = 0.04,
+                             extra_relative: float | None = None) -> dict:
+    primary = {
+        "endpoint_kind": court.ENDPOINT_ABSOLUTE,
+        "minimum_absolute_effect": minimum,
+        "bootstrap": {"seed": court.stats.SEED, "resamples": court.stats.RESAMPLES},
+        "suite_items": 144,
+        "category_minimum_items": court.MIN_CATEGORY_ITEMS,
+    }
+    if extra_relative is not None:
+        primary["relative_threshold"] = extra_relative
+    return {
+        "schema": court.SCHEMA_PREREG,
+        "suite_sha256": SUITE_HASH,
+        "primary": primary,
+    }
+
+
+def absolute_manifest() -> dict:
+    return {"suite_sha256": SUITE_HASH, "counts": {"suite": 144}}
+
+
+def test_absolute_endpoint_win_is_the_ci_lower_bound_at_the_minimum():
+    base = absolute_receipt(BASE)
+    arm = absolute_receipt(WIN)
+    comparison = court.compare(arm, base)
+    assert comparison["primary"]["endpoint_kind"] == court.ENDPOINT_ABSOLUTE
+    assert comparison["primary"]["minimum_absolute_effect"] == 0.04
+    assert comparison["primary"]["threshold_relative"] is None
+    assert comparison["primary"]["difference"]["ci_low"] >= 0.04
+    assert comparison["primary"]["improvement_met"] is True
+    assert comparison["primary"]["threshold_met"] is True
+    assert comparison["primary"]["transfer_permitted"] is True
+
+
+def test_absolute_endpoint_rejects_a_positive_effect_below_the_minimum():
+    # one item better in one category out of eight: a real but tiny positive
+    # difference, below the pre-registered minimum, so it is not a win
+    marginal = {category: 4 for category in CATEGORIES}
+    marginal[CATEGORIES[0]] = 5
+    base = absolute_receipt({category: 4 for category in CATEGORIES})
+    arm = absolute_receipt(marginal)
+    comparison = court.compare(arm, base)
+    difference = comparison["primary"]["difference"]
+    assert difference["mean_difference"] > 0
+    assert difference["ci_low"] < 0.04
+    assert comparison["primary"]["improvement_met"] is False
+    assert comparison["primary"]["threshold_met"] is False
+    assert "no pre-registered absolute improvement" in comparison["verdict"]
+
+
+def test_absolute_endpoint_discloses_regression_and_blocks_transfer():
+    # the composite clears the minimum, but one category collapses
+    collapsed = {category: 7 for category in CATEGORIES}
+    collapsed[CATEGORIES[3]] = 0
+    base = absolute_receipt(BASE)
+    arm = absolute_receipt(collapsed)
+    comparison = court.compare(arm, base)
+    assert comparison["primary"]["threshold_met"] is True
+    assert comparison["primary"]["transfer_permitted"] is False
+    assert CATEGORIES[3] in comparison["primary"]["category_regressions_beyond_margin"]
+
+
+def test_absolute_endpoint_refuses_a_relative_threshold_beside_it():
+    problems = court.verify_preregistration(
+        absolute_preregistration(extra_relative=0.10), absolute_manifest())
+    assert any("must not also register a relative threshold" in problem
+               for problem in problems)
+    assert court.verify_preregistration(absolute_preregistration(),
+                                        absolute_manifest()) == []
+
+
+def test_absolute_endpoint_needs_a_positive_minimum():
+    prereg = absolute_preregistration()
+    prereg["primary"]["minimum_absolute_effect"] = 0
+    problems = court.verify_preregistration(prereg, absolute_manifest())
+    assert any("positive minimum absolute effect" in problem for problem in problems)
+
+
+def test_registered_comparison_refuses_mixed_endpoint_kinds():
+    base = absolute_receipt(BASE)
+    relative_arm = result_receipt(WIN, digest=ABS_DIGEST, suite_hash=SUITE_HASH)
+    with pytest.raises(court.CourtError, match="different endpoint kinds"):
+        court.compare(relative_arm, base)
+
+
+def test_absolute_endpoint_is_not_re_thresholded_by_an_external_value():
+    base = absolute_receipt(BASE)
+    arm = absolute_receipt(WIN)
+    with pytest.raises(court.CourtError, match="may not be re-thresholded"):
+        court.compare(arm, base, threshold=0.01)
+    with pytest.raises(court.CourtError, match="no relative threshold"):
+        court.registered_threshold(arm, base)

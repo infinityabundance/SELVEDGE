@@ -1,0 +1,59 @@
+{
+ "created_utc": "2026-11-16T19:14:11Z",
+ "discrimination": {
+  "binding_required": "a receipt naming the pair fixture's sha256, the mutation rule and the scoring rule; until then the endpoint is registered and unusable",
+  "endpoint": "candidate-ranking accuracy: the fraction of registered pairs in which the model assigns a higher likelihood to the correct candidate than to a mutated one",
+  "never_pooled_with": "the absolute primary endpoint, and never pooled across categories",
+  "status": "not_available",
+  "why": "no pair fixture exists and no receipt binds one, so no discrimination number may be reported"
+ },
+ "endpoint": {
+  "decision_rule": "WIN iff the paired 95% CI lower bound is at or above the minimum absolute effect. Per-category regressions beyond 0.05 absolute are reported and block a transfer claim; they are not a conjunct of the primary, because the conjunct is measured to cost about a quarter of the decision power at the same effect.",
+  "estimand": "category-balanced mean verified task success, paired",
+  "kind": "absolute",
+  "mde_absolute_conservative": 0.03946286111787824,
+  "mde_absolute_conservative_over_baseline": 6.906000695628691,
+  "mde_absolute_planning": 0.027704422174733,
+  "mde_absolute_planning_over_baseline": 4.848273880578275,
+  "minimum_absolute_effect": 0.04,
+  "minimum_absolute_effect_derivation": "ceil(max(planning MDE, conservative MDE) at the registered n to the next 0.01); the conservative variance is the one that must be reachable, so the minimum is set from it",
+  "z_total_recovered_from_receipt": 2.801585218112968
+ },
+ "measured_variance": {
+  "baseline_pass_rate": 0.005714285714285714,
+  "conservative_variance": 0.02857142857142857,
+  "planning_variance": 0.014081632653061225
+ },
+ "old_endpoint_unreachable": {
+  "registered_n_per_category": 18,
+  "relative_effect_at_baseline_absolute": 0.0005714285714285715,
+  "required_n_per_category_conservative": 686777,
+  "required_n_per_category_planning": 338483,
+  "shortfall_multiple_conservative": 38154.27777777778,
+  "shortfall_multiple_planning": 18804.61111111111,
+  "statement": "a 10% relative effect at the measured baseline needs the required n above per category; the suite registers the per-category minimum printed beside it"
+ },
+ "registered_n": {
+  "categories": 8,
+  "per_category": 18,
+  "relative_threshold": 0.1,
+  "suite_items": 144
+ },
+ "revision": "6083c4dd0bc60bed5b5ab32997d919cd7721d170",
+ "schema": "selvedge/capability-endpoint-amendment/v1",
+ "source_receipt": {
+  "path": "results/capability/calibration-analysis-20261116T165500Z.json",
+  "revision": "b3b3b1a32426776381609fa01600228b49ac47d3",
+  "stamp": "20261116T163243Z"
+ },
+ "stamp": "20261116T191411Z",
+ "supersedes": {
+  "path": "docs/capability-preregistration-v4.json",
+  "reason": "the 10%-relative endpoint cannot be resolved at any feasible item count on this instrument; the endpoint becomes an absolute effect whose minimum is derived from the measured variance at the registered n",
+  "sha256": "a95723b6d2d46e7cd04267a4d897441fb3e1e107bb96aff12227166936dbbec2"
+ },
+ "written_registration": {
+  "path": "docs/capability-preregistration-v5.json",
+  "sha256": "038a7bf73551372f053b54884a55cae9c419af9be14a87b7ef62e12f247676eb"
+ }
+}

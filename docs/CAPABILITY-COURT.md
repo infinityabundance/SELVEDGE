@@ -848,6 +848,133 @@ receipt of what was registered; the corrected power statement is §14's: it is
 computed from a measured baseline and measured paired variance, and it is not
 available until the calibration pass runs.
 
+### 7.3 The endpoint amendment (2026-11-16, S35): the relative threshold was unreachable
+
+The 10%-relative endpoint above is **retained verbatim as the registration of
+record for v1–v4** and it is not edited. It is also **unreachable at any feasible
+item count**, and that is a measured statement, not an opinion: the calibration
+pass measured the baseline and the paired variance, and the power arithmetic is
+in `results/capability/calibration-analysis-20261116T165500Z.json`.
+
+Measured baseline pass rate over the executable items:
+
+<!-- BEGIN GENERATED: cap-amend-baseline -->
+0.0057
+<!-- END GENERATED: cap-amend-baseline -->
+
+The two paired-difference variance estimates the arithmetic uses are
+
+<!-- BEGIN GENERATED: cap-amend-var-planning -->
+0.0141
+<!-- END GENERATED: cap-amend-var-planning -->
+
+(planning) and
+
+<!-- BEGIN GENERATED: cap-amend-var-conservative -->
+0.0286
+<!-- END GENERATED: cap-amend-var-conservative -->
+
+(conservative).
+
+A 10% relative effect at that baseline is therefore an absolute effect of
+
+<!-- BEGIN GENERATED: cap-amend-rel-effect-abs -->
+0.000571
+<!-- END GENERATED: cap-amend-rel-effect-abs -->
+
+on the category-balanced composite. Resolving it at 80% power needs, per
+category, planning-variance n of
+
+<!-- BEGIN GENERATED: cap-amend-n-planning -->
+338,483
+<!-- END GENERATED: cap-amend-n-planning -->
+
+and conservative-variance n of
+
+<!-- BEGIN GENERATED: cap-amend-n-conservative -->
+686,777
+<!-- END GENERATED: cap-amend-n-conservative -->
+
+against the registered per-category minimum of
+
+<!-- BEGIN GENERATED: cap-amend-n-registered -->
+18
+<!-- END GENERATED: cap-amend-n-registered -->
+
+— a shortfall of about
+
+<!-- BEGIN GENERATED: cap-amend-shortfall -->
+38,154×
+<!-- END GENERATED: cap-amend-shortfall -->
+
+under the conservative estimate. A threshold that no feasible suite can resolve
+is not a strict threshold; it manufactures "no result" for every arm, forever.
+
+**What replaces it, dated.** `docs/capability-preregistration-v5.json` (sha256
+
+<!-- BEGIN GENERATED: cap-amend-v5-sha -->
+038a7bf73551372f053b54884a55cae9c419af9be14a87b7ef62e12f247676eb
+<!-- END GENERATED: cap-amend-v5-sha -->
+
+) supersedes v4 **without editing it** and registers two endpoints. They are never
+pooled with each other and never pooled across categories.
+
+The **primary** is an absolute effect: the category-balanced mean verified task
+success, paired bootstrap with v4's seed and resample count, decided by the
+paired 95% CI lower bound at or above a pre-registered minimum absolute effect
+of
+
+<!-- BEGIN GENERATED: cap-amend-min-effect -->
+0.04
+<!-- END GENERATED: cap-amend-min-effect -->
+
+That minimum is not chosen to fit an outcome. It is the smallest effect this
+instrument can detect at the registered n, taken from the **conservative**
+measured variance and rounded up. The planning-variance minimum detectable
+effect at the registered n is
+
+<!-- BEGIN GENERATED: cap-amend-mde-planning -->
+0.0277
+<!-- END GENERATED: cap-amend-mde-planning -->
+
+and the conservative-variance one is
+
+<!-- BEGIN GENERATED: cap-amend-mde-conservative -->
+0.0395
+<!-- END GENERATED: cap-amend-mde-conservative -->
+
+so the amendment takes the conservative value. The relative endpoint was
+unreachable because the baseline sits at the floor; the absolute one is reachable
+because it asks for a movement the measured variance can resolve.
+
+The **secondary** is a discrimination endpoint, registered and deliberately
+**not available**: candidate-ranking accuracy, the fraction of registered pairs
+in which the model prefers the correct candidate to a mutated one. It is
+registered now so it cannot be invented after a run, and it may not be reported
+until a receipt names the pair fixture's sha256, the mutation rule and the scoring
+rule.
+
+**The per-category regression clause changed role, and this is its power
+argument.** In v4 the clause was a conjunct: improvement **and** no category
+regressing beyond 0.05. The power receipt (§7.1) simulates both rules at the same
+effect and reports the conjunctive decision power as
+
+<!-- BEGIN GENERATED: cap-amend-decision-power -->
+0.492
+<!-- END GENERATED: cap-amend-decision-power -->
+
+at the analytic MDE, while the CI alone is at the margin above. A conjunct that
+halves the decision power turns true effects into "no result", so in v5 the
+clause is **disclosed per category and blocks a transfer claim**, not the
+primary. `transfer_permitted` is a separate field in every comparison receipt for
+exactly that reason; it is never inferred from `threshold_met`.
+
+**What this amendment does not do.** It does not re-score the stored T2 receipts
+under v5 (that would be re-reading a finished comparison against a new rule); it
+does not claim the floor would have been different; and it does not touch the
+suite itself, whose calibrated formats still fail their own acceptance window
+(§17.5). Until that window is met, v5 has an endpoint and no scorable run.
+
 ## 8. What a win on this suite establishes — and what it does not
 
 A win establishes, at the pre-registered threshold and on this instrument:

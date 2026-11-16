@@ -3616,6 +3616,18 @@ not to this set), and P14.8 must size any external comparison it is used for.
 
 ### P14.8 — Close the statistical-power gap: reach 80% power at a 10% relative effect
 
+**Status at 2026-11-16 (S35): superseded as an endpoint, still open as a suite-scale
+item.** The calibration pass measured the baseline at the floor, so the required n
+for a 10% relative effect is a six-figure count *per category* and the 10% endpoint
+is unreachable at any feasible n. The court's endpoint is therefore superseded by a
+dated amendment (`docs/CAPABILITY-COURT.md` §7.3, `docs/capability-preregistration-v5.json`):
+primary = an absolute effect with a pre-registered minimum derived from the measured
+variance, with a discrimination endpoint registered and not yet available. This item
+remains open for the *suite*, not the *threshold*: growing n and measuring per-item
+variance still improves the new endpoint's resolution, and the fixed-threshold clause
+below is read as "the endpoint registered at the time of the run". Nothing in this
+item may be used to re-threshold a run that has already been scored.
+
 **What.** Make the registered instrument able to *decide* the registered 10%
 relative claim, by three changes that are allowed to move and one that is not:
 
