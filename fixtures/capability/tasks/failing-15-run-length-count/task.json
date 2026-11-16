@@ -1,0 +1,28 @@
+{
+  "capability": "Reset a run counter to one, not zero, after emitting a run.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "failing-15-run-length-count",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "count += 1;",
+    "replace": "count += 2;"
+  },
+  "observed_failure": "thread 'tests::visible_two_as' panicked at src/lib.rs:21:9:\nassertion `left == right` failed\n  left: \"a2b0\"\n right: \"a2b1\"",
+  "prompt_intro": "The visible test fails. `encode` counts every run but restarts the counter at zero after a run is emitted, so the final run of every input is one short. A run is its character followed by its decimal length, always. Empty input yields the empty string.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

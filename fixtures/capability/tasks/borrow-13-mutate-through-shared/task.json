@@ -1,0 +1,28 @@
+{
+  "capability": "Take a mutable reference when a function mutates its argument.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "borrow-13-mutate-through-shared",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0596"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "entries[index] += 1;",
+    "replace": "entries[index] += 2;"
+  },
+  "observed_failure": "error[E0596]: cannot borrow `*entries` as mutable, as it is behind a `&` reference\n --> src/lib.rs:5:37\n  |\n5 |     for index in 0..entries.len() { entries[index] += 1; }\n  |                                     ^^^^^^^^^^^^^^^ cannot borrow as mutable",
+  "prompt_intro": "This crate does not compile. `stamp` increments every entry, but it receives `&Vec<u32>` and cannot write through a shared reference. Change the parameter to a mutable reference and return the sum of the incremented entries. The caller's vector must hold the new values afterwards.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

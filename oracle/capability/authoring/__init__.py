@@ -15,7 +15,7 @@ evaluation source and fails closed on overlap.
 
 from __future__ import annotations
 
-from . import (concurrency, concurrency2, dependency, dependency2, expanded,
+from . import (batch3, concurrency, concurrency2, dependency, dependency2, expanded,
                failing, failing2, lifetime, lifetime2, migration, migration2,
                probes, repo_scale, repo_scale2, semantic, traits, traits2, trio,
                trio2)
@@ -60,6 +60,7 @@ _BASE_TASKS = (
     + traits2.TASKS
     + repo_scale2.TASKS
     + semantic.TASKS
+    + batch3.TASKS
 )
 SUITE_TASKS = tuple(task for task in _BASE_TASKS if task["id"] not in _SUPERSEDED)
 SUITE_TASKS = SUITE_TASKS + tuple(expanded.TASKS)

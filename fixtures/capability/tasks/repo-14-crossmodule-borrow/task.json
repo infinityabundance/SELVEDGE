@@ -1,0 +1,28 @@
+{
+  "capability": "Finish reading a collection before mutating it from another module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-14-crossmodule-borrow",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0502"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/sync.rs",
+    "find": "unwrap_or(0)",
+    "replace": "unwrap_or(1)"
+  },
+  "observed_failure": "error[E0502]: cannot borrow `store.items` as mutable because it is also borrowed as immutable\n --> src/sync.rs:5:19\n  |\n4 |     let first = &store.items[0];\n  |                  ----------- immutable borrow occurs here\n5 |     for item in extra {\n  |                   ^^^^^ mutable borrow occurs here",
+  "prompt_intro": "This crate does not compile. `sync::append_all` holds a borrow of the first stored item while it pushes new items through the same `Store`. Take the measurement before mutating, and return `0` when the store is empty.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

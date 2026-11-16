@@ -1,0 +1,28 @@
+{
+  "capability": "Honour the documented order when a clamp's bounds are inverted.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-13-inverted-clamp",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "return low;",
+    "replace": "return high;"
+  },
+  "observed_failure": "the crate builds and tests pass; clamp(5, 10, 0) is 0 where the contract requires 10",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract says an inverted bound pair returns the low bound: `clamp(5, 10, 0)` is 10. With a well-ordered pair the normal clamp applies. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -45,7 +45,7 @@ DECLARATION_KEYS = {
     "id", "kind", "category", "capability", "difficulty", "prompt_intro",
     "observed_failure", "files", "hidden", "reference", "readonly", "manifest",
     "manifest_policy", "limits", "run_limits", "initial_failure", "checker",
-    "mutation", "shared_operation", "operation_items", "probe_expectation",
+    "mutation", "naive", "shared_operation", "operation_items", "probe_expectation",
     "probe_stdout_contains",
 }
 
@@ -87,6 +87,8 @@ def expected_files(declaration: dict) -> dict:
         metadata["initial_failure"] = declaration["initial_failure"]
     if "mutation" in declaration:
         metadata["mutation"] = declaration["mutation"]
+    if "naive" in declaration:
+        metadata["naive"] = declaration["naive"]
     if "shared_operation" in declaration:
         metadata["shared_operation"] = declaration["shared_operation"]
     if "operation_items" in declaration:

@@ -1,0 +1,28 @@
+{
+  "capability": "Complete a trait implementation split across modules.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-16-missing-associated-item",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/memory.rs",
+    "find": "Ok(())",
+    "replace": "Err(())"
+  },
+  "observed_failure": "error[E0046]: not all trait items implemented, missing: `finish`\n --> src/memory.rs:5:1\n  |\n5 | impl Sink for Memory {\n  | ^^^^^^^^^^^^^^^^^^^^ missing `finish` in implementation",
+  "prompt_intro": "This crate does not compile. The `Sink` trait declared in `traits.rs` requires `accept` and `finish`; the `Memory` impl in `memory.rs` only provides `accept`. Add `finish` and keep the error type.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

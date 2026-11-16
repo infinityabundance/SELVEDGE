@@ -1,0 +1,28 @@
+{
+  "capability": "Include the ellipsis inside the requested character budget.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "semantic-15-shorten-with-ellipsis",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "take(limit - 1)",
+    "replace": "take(limit)"
+  },
+  "observed_failure": "the crate builds and tests pass; shorten(\"abcdef\", 4) is \"abcd\u2026\" (5 characters) where the contract requires \"abc\u2026\"",
+  "prompt_intro": "The helper builds and its visible test passes, but the result must be at most `limit` characters **including** the ellipsis: `shorten(\"abcdef\", 4)` is `abc\u2026`. A limit of zero is the empty string. Inputs that already fit are returned unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

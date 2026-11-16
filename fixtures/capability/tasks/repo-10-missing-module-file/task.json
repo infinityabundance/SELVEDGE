@@ -1,0 +1,28 @@
+{
+  "capability": "Restore a module file the rest of the crate depends on.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-10-missing-module-file",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0583"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/config.rs",
+    "find": "retries: 3",
+    "replace": "retries: 4"
+  },
+  "observed_failure": "error[E0583]: file not found for module `config`\n --> src/lib.rs:4:1\n  |\n4 | pub mod config;\n  | ^^^^^^^^^^^^^^^\n  = help: to create the module `config`, create file \"src/config.rs\" or \"src/config/mod.rs\"",
+  "prompt_intro": "This crate does not compile. `lib.rs` declares `mod config`, and `service.rs` reads `Settings` from it, but `src/config.rs` is missing. Recreate it: `Settings` has `retries: u32` and `label: String`, and `Settings::default()` is `retries: 3`, `label: \"default\"`. Derive `Debug`, `Clone` and `PartialEq`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

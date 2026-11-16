@@ -1,0 +1,28 @@
+{
+  "capability": "Count the separating space when deciding a greedy line break.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "failing-11-wrap-counts-the-space",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "current.len() + 1 + word.len() > width",
+    "replace": "current.len() + word.len() > width"
+  },
+  "observed_failure": "thread 'tests::visible_line_breaks' panicked at src/lib.rs:25:9:\nassertion `left == right` failed\n  left: [\"aaa bbb\"]\n right: [\"aaa\", \"bbb\"]",
+  "prompt_intro": "The visible test fails. `wrap` places words greedily so that no line exceeds `width` characters, but it forgets the space it is about to insert when it measures the candidate line. A word longer than `width` is kept whole on its own line. Empty input yields no lines.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

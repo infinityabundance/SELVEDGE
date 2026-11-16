@@ -1,0 +1,28 @@
+{
+  "capability": "Restore a required package field that the manifest omits.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-15-missing-package-name",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "missing field `package.name`"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "name = \"deps_15_missing_package_name\"\n",
+    "replace": ""
+  },
+  "observed_failure": "error: failed to parse manifest at `.../Cargo.toml`\nCaused by:\n  missing field `package.name`",
+  "prompt_intro": "This crate does not build. Its `[package]` table has no `name`, and Cargo cannot name the target. Add the package name `deps_15_missing_package_name`. Keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

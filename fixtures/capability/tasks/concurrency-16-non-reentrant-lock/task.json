@@ -1,0 +1,32 @@
+{
+  "capability": "Take a non-reentrant mutex exactly once on a code path.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-16-non-reentrant-lock",
+  "initial_failure": {
+    "kind": "timeout",
+    "must_contain": [
+      "running 1 test"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "limits": {
+    "cpu_seconds": 40,
+    "wall_seconds": 25.0
+  },
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value * 2",
+    "replace": "value * 3"
+  },
+  "observed_failure": "running 1 test\ntest tests::visible_read ... ",
+  "prompt_intro": "The crate builds, but `read_twice` never returns: `std::sync::Mutex` is not reentrant, and the function takes the same lock twice. Take it once and return twice the value. The lock is uncontended; there is no second writer.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

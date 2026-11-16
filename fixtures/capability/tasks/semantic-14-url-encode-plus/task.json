@@ -1,0 +1,28 @@
+{
+  "capability": "Encode a literal plus separately from a space in a query value.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "semantic-14-url-encode-plus",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "text.replace('+', \"%2B\")",
+    "replace": "text.replace('+', \"%2b\")"
+  },
+  "observed_failure": "the crate builds and tests pass; encode(\"a+b\") is \"a+b\" where the contract requires \"a%2Bb\"",
+  "prompt_intro": "The helper builds and its visible test passes, but a literal `+` in the input is data and must be percent-encoded: `encode(\"a+b\")` is `a%2Bb`, while a space becomes `+`. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

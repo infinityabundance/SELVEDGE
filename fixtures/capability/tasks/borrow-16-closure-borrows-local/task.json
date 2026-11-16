@@ -1,0 +1,28 @@
+{
+  "capability": "Move captured state into a closure that outlives the call.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-16-closure-borrows-local",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0373"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value += 1;",
+    "replace": "value += 2;"
+  },
+  "observed_failure": "error[E0373]: closure may outlive the current function, but it borrows `value`, which is owned by the current function\n --> src/lib.rs:5:5\n  |\n5 |     || {\n  |     ^^ may outlive borrowed value `value`\n6 |         value += 1;\n  |         ----- `value` is borrowed here\n  |\nhelp: to force the closure to take ownership of `value` (and any other referenced variables), use the `move` keyword",
+  "prompt_intro": "This crate does not compile. `make_counter` returns a closure that borrows the local counter, so the closure cannot outlive the call. Move the captured state into the closure. Each call returns the next value, starting at `seed + 1`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,31 @@
+{
+  "capability": "Satisfy a new generic conversion bound introduced in version 2.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "migrate-18-conversion-bound",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "value as f64",
+    "replace": "(value / 2) as f64"
+  },
+  "observed_failure": "error[E0277]: the trait bound `f64: From<u64>` is not satisfied\n --> src/lib.rs:4:18\n  |\n4 |     scale::scale(value)\n  |     ------------ ^^^^^ the trait `From<u64>` is not implemented for `f64`",
+  "prompt_intro": "This crate does not build against the vendored `scale` 2.0.0. Version 2 made the input generic over `Into<f64>`, which `u64` does not implement. Convert the value explicitly. `scale_units` returns the value as `f64`. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,28 @@
+{
+  "capability": "Repair a package name that is not a valid crate identifier.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-17-invalid-package-name",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "invalid character"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "name = \"deps_17_invalid_package_name\"",
+    "replace": "name = \"deps 17\""
+  },
+  "observed_failure": "error: invalid character ` ` in package name: `deps 17`, characters must be Unicode XID characters (numbers, `-`, `_`, or most letters)\n --> Cargo.toml:2:8\n  |\n2 | name = \"deps 17\"",
+  "prompt_intro": "This crate does not build. Its package name contains a space, which Cargo rejects. Rename the package to `deps_17_invalid_package_name`. Keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

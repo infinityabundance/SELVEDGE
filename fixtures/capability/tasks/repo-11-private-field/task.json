@@ -1,0 +1,28 @@
+{
+  "capability": "Use a constructor instead of constructing a struct with a private field.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "repo-11-private-field",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0451"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/build.rs",
+    "find": "Config::new(2)",
+    "replace": "Config::new(3)"
+  },
+  "observed_failure": "error[E0451]: field `value` of struct `Config` is private\n --> src/build.rs:4:5\n  |\n4 |     Config { value: 2 }\n  |     ^^^^^^^^^^^^^^^^^^^^ field `value` is private",
+  "prompt_intro": "This crate does not compile. `model::Config` keeps its `value` field private and offers a constructor; `build` constructs the struct directly from another module. Use the constructor so the module boundary is respected.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

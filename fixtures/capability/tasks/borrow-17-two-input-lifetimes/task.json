@@ -1,0 +1,28 @@
+{
+  "capability": "Unify two input lifetimes when the result may borrow from either.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-17-two-input-lifetimes",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "lifetime may not live long enough"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "right.len() > left.len()",
+    "replace": "right.len() >= left.len()"
+  },
+  "observed_failure": "error: lifetime may not live long enough\n --> src/lib.rs:2:35\n  |\n1 | pub fn longer<'a, 'b>(left: &'a str, right: &'b str) -> &'a str {\n  |               --        - let's call the lifetime of this reference `'1`\n2 |     if right.len() > left.len() { right } else { left }\n  |                                   ^^^^^ returning this value requires that `'1` must outlive `'a`",
+  "prompt_intro": "This crate does not compile. `longer` declares two independent input lifetimes but can return either input, so the result cannot be tied to one of them. Give both inputs the same lifetime. Return the longer text, and the first argument when the lengths are equal.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

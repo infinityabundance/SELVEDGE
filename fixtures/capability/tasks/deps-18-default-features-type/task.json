@@ -1,0 +1,31 @@
+{
+  "capability": "Correct a dependency field whose value has the wrong TOML type.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-18-default-features-type",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "expected a boolean"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "default-features = false",
+    "replace": "default-features = \"false\""
+  },
+  "observed_failure": "error: invalid type: string \"false\", expected a boolean\n  --> Cargo.toml:12:9\n   |\n12 | codec = { path = \"dep\", default-features = \"false\" }\n   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+  "prompt_intro": "This crate does not build. The dependency's `default-features` value is the string `\"false\"`; Cargo requires a boolean. Correct the type. Do not modify `dep/`. Keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

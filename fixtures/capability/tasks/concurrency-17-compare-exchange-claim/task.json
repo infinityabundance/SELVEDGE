@@ -1,0 +1,28 @@
+{
+  "capability": "Claim a one-shot flag with compare-exchange on the released value.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-17-compare-exchange-claim",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "compare_exchange(false, true,",
+    "replace": "compare_exchange(false, false,"
+  },
+  "observed_failure": "thread 'tests::visible_first_claim' panicked at src/lib.rs:12:9:\nassertion failed: claim(&flag)",
+  "prompt_intro": "The visible test fails. `claim` must succeed exactly once for a flag: it sets the flag only when it is still free, and reports whether this caller did the claiming. The comparison currently uses the claimed value as the expected value, so no caller ever wins.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

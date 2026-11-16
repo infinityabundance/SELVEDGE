@@ -1,0 +1,28 @@
+{
+  "capability": "Supply an associated constant the trait requires.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-12-associated-const",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0046"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "const MAX: usize = 8;",
+    "replace": "const MAX: usize = 9;"
+  },
+  "observed_failure": "error[E0046]: not all trait items implemented, missing: `MAX`\n --> src/lib.rs:5:1\n  |\n5 | impl Limits for Small {\n  | ^^^^^^^^^^^^^^^^^^^^^^ missing `MAX` in implementation",
+  "prompt_intro": "This crate does not compile. The `Limits` trait requires an associated constant `MAX`, and the `Small` impl omits it. Add `MAX = 8` and cap through it so the constant and the behaviour agree.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

@@ -1,0 +1,31 @@
+{
+  "capability": "Diagnose the pre-2018 extern crate requirement for a dependency path.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "deps-12-edition-2015-paths",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0432"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "edition = \"2021\"",
+    "replace": "edition = \"2015\""
+  },
+  "observed_failure": "error[E0432]: unresolved import `textkit`\n --> src/lib.rs:3:5\n  |\n3 | use textkit::label;\n  |     ^^^^^^^ maybe a missing crate `textkit`?\n  |\n  = help: consider adding `extern crate textkit` to use the crate",
+  "prompt_intro": "This crate does not build. It declares edition 2015, where a dependency must be introduced with `extern crate` before a `use` path can name it. Move the crate to an edition where the import works without that declaration. Keep the behaviour: `label_of` returns the vendored label.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

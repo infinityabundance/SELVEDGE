@@ -1,0 +1,28 @@
+{
+  "capability": "Put a method that the trait does not declare in an inherent impl.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-17-method-not-in-trait",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0407"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.name = new.to_string();",
+    "replace": "self.name.push_str(new);"
+  },
+  "observed_failure": "error[E0407]: method `rename` is not a member of trait `Named`\n --> src/lib.rs:10:5\n  |\n10 |     fn rename(&mut self, new: &str) { self.name = new.to_string(); }\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not a member of trait `Named`",
+  "prompt_intro": "This crate does not compile. The `Named` impl adds a `rename` method that the trait does not declare. Move it to an inherent impl for `Tag` and keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

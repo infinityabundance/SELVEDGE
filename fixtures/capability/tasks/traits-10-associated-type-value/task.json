@@ -1,0 +1,28 @@
+{
+  "capability": "Make an associated type agree with the values the method yields.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-10-associated-type-value",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.current += 1;",
+    "replace": "self.current += 2;"
+  },
+  "observed_failure": "error[E0308]: mismatched types\n --> src/lib.rs:12:54\n  |\n12 |     fn next_item(&mut self) -> Option<Self::Item> { Some(self.current as u64) }\n  |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^ expected `u32`, found `u64`",
+  "prompt_intro": "This crate does not compile. `Counter` declares `type Item = u32` but its `next_item` yields a `u64`. Fix the associated type so the impl matches the method and the generic `drain` helper accepts `Counter`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

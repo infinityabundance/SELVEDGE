@@ -1,0 +1,33 @@
+{
+  "capability": "Lowercase only the domain of an address, preserving the local part.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-18-email-domain-case",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "domain.to_lowercase()",
+    "replace": "domain.to_uppercase()"
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "domain.to_lowercase()",
+    "replace": "domain.to_string()"
+  },
+  "observed_failure": "the crate builds and tests pass; normalise(\"User@Example.COM\") is \"user@example.com\" where the contract requires \"User@example.com\"",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract lowercases only the domain of an address: `normalise(\"User@Example.COM\")` is `User@example.com`. The local part keeps its case. Input without `@` is returned unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

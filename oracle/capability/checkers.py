@@ -69,7 +69,8 @@ def validate_manifest_text(text: str, workdir: str, task_id: str) -> list[str]:
     package = parsed.get("package") or {}
     if "build" in package:
         problems.append(f"{task_id}: a build script is not allowed")
-    if "edition" in package and package["edition"] not in ("2021", "2024"):
+    if "edition" in package and package["edition"] not in (
+            "2015", "2018", "2021", "2024"):
         problems.append(f"{task_id}: edition {package['edition']!r} is not supported")
     dependencies = parsed.get("dependencies") or {}
     if not isinstance(dependencies, dict):
@@ -90,8 +91,10 @@ def validate_manifest_text(text: str, workdir: str, task_id: str) -> list[str]:
         resolved = os.path.abspath(os.path.join(root, path))
         if not (resolved == root or resolved.startswith(root + os.sep)):
             problems.append(f"{task_id}: dependency path {path!r} escapes the crate")
-        elif not os.path.isdir(resolved):
-            problems.append(f"{task_id}: dependency path {path!r} does not exist")
+        # A path that does not exist is not rejected here: it is a legitimate
+        # failing state (several dependency-compat tasks start from a wrong
+        # directory) and Cargo reports it. Containment above is the security
+        # property; existence is behaviour.
         features = spec.get("features", [])
         if not isinstance(features, list) or not all(isinstance(f, str) for f in features):
             problems.append(f"{task_id}: dependency {name!r} features must be a list of strings")
@@ -359,3 +362,27 @@ def mutate_reference(task) -> tuple[dict, dict]:
                                       "from": character, "to": replacement}
                 break
     raise CheckerError(f"{task.id}: no generic mutation applies; add a declared mutation")
+
+
+def naive_solution(task) -> tuple[dict, dict]:
+    """The declared *shallow* fix: it must compile and fail the hidden tests.
+
+    A mutation proves the tests reject an arbitrary wrong answer. A naive fix
+    proves they reject the plausible shallow answer -- the string-level patch an
+    arm reaches for first. It is only declared for the tasks where that shallow
+    answer exists; the self-test requires it to build and then fail.
+    """
+    declaration = task.metadata.get("naive")
+    if not isinstance(declaration, dict):
+        raise CheckerError(f"{task.id}: no naive fix is declared")
+    solution = task.reference_solution()
+    path = declaration["file"]
+    find = declaration["find"]
+    replace = declaration["replace"]
+    if path not in solution:
+        raise CheckerError(f"{task.id}: naive file {path!r} is not in the reference")
+    if find not in solution[path]:
+        raise CheckerError(f"{task.id}: naive find {find!r} is absent")
+    solution[path] = solution[path].replace(find, replace, 1)
+    return solution, {"kind": "declared_naive", "file": path, "find": find,
+                      "replace": replace}

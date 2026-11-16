@@ -1,0 +1,32 @@
+{
+  "capability": "Match the barrier's participant count to the threads that reach it.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "hard",
+  "entry": "src/lib.rs",
+  "id": "concurrency-18-barrier-early-return",
+  "initial_failure": {
+    "kind": "timeout",
+    "must_contain": [
+      "running 1 test"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "limits": {
+    "cpu_seconds": 40,
+    "wall_seconds": 25.0
+  },
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "total.fetch_add(*value as usize, Ordering::SeqCst)",
+    "replace": "total.fetch_add(*value as usize * 2, Ordering::SeqCst)"
+  },
+  "observed_failure": "running 1 test\ntest tests::visible_with_zero ... ",
+  "prompt_intro": "The crate builds, but `sum_nonzero` never returns for input containing a zero: the barrier is sized for every element, and the zero workers return before the rendezvous, so the others wait forever. Size the barrier for the workers that actually rendezvous. Zero values are ignored; the result is the sum of the non-zero values.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

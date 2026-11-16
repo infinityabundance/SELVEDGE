@@ -1,0 +1,28 @@
+{
+  "capability": "Add the bound a blanket impl's body requires.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-11-blanket-impl-bound",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0277"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"{}\", self)",
+    "replace": "format!(\"<{}>\", self)"
+  },
+  "observed_failure": "error[E0277]: `T` doesn't implement `std::fmt::Display`\n --> src/lib.rs:4:49\n  |\n4 |     fn summary(&self) -> String { format!(\"{}\", self) }\n  |                                                 ^^^^ `T` cannot be formatted with the default formatter",
+  "prompt_intro": "This crate does not compile. The blanket impl formats `self`, which requires `Display`, but the impl has no such bound. Add the bound; do not restrict the impl to a concrete type.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

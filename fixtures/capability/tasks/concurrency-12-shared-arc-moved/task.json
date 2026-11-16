@@ -1,0 +1,28 @@
+{
+  "capability": "Clone a shared handle for each worker instead of moving it once.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "concurrency-12-shared-arc-moved",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "step_by(threads)",
+    "replace": "step_by(1)"
+  },
+  "observed_failure": "error[E0382]: use of moved value: `values`\n --> src/lib.rs:9:41\n  |\n7 |         handles.push(std::thread::spawn(move || {\n  |                                        ------- value moved into closure here, in previous iteration of loop\n9 |         handles.push(std::thread::spawn(move || {\n  |                                         ^^^^ value used here after move",
+  "prompt_intro": "This crate does not compile. The worker loop moves the `Arc` into the first closure and then uses it again for the next worker. Clone the handle per worker. Each worker sums the values at indices congruent to its own index modulo the thread count.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

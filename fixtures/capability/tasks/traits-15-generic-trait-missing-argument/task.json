@@ -1,0 +1,28 @@
+{
+  "capability": "Name the generic argument of a generic trait in its impl.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-15-generic-trait-missing-argument",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0107"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"{value:02x}\")",
+    "replace": "format!(\"{value:02X}\")"
+  },
+  "observed_failure": "error[E0107]: missing generics for trait `Encode`\n --> src/lib.rs:7:12\n  |\n7 | impl Encode for Hex {\n  |      ^^^^^^ expected 1 generic argument",
+  "prompt_intro": "This crate does not compile. `Encode` takes a type parameter for the value it encodes, and the impl omits it. Implement `Encode<u8>` and keep the two-digit lowercase hexadecimal form.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

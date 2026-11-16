@@ -1,0 +1,28 @@
+{
+  "capability": "Call the trait item that exists from a default method.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-13-default-method-missing-item",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"[{}]\", self.title())",
+    "replace": "format!(\"({})\", self.title())"
+  },
+  "observed_failure": "error[E0599]: no method named `heading` found for reference `&Self` in the current scope\n --> src/lib.rs:3:55\n  |\n3 |     fn render(&self) -> String { format!(\"[{}]\", self.heading()) }\n  |                                                       ^^^^^^^ help: there is a method with a similar name: `title`",
+  "prompt_intro": "This crate does not compile. The trait's default `render` calls `self.heading()`, but the trait declares `title`, not `heading`. Use the declared item and keep the `[title]` form.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

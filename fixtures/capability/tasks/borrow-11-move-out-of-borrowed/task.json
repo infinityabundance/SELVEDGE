@@ -1,0 +1,28 @@
+{
+  "capability": "Copy out of a shared reference instead of moving the referent.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "borrow-11-move-out-of-borrowed",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0507"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "owned.sort();",
+    "replace": "owned.sort_by(|a, b| b.cmp(a));"
+  },
+  "observed_failure": "error[E0507]: cannot move out of `*values` which is behind a shared reference\n --> src/lib.rs:5:21\n  |\n5 |     let mut owned = *values;\n  |                     ^^^^^^^ move occurs because `*values` has type `Vec<String>`, which does not implement the `Copy` trait",
+  "prompt_intro": "This crate does not compile. `sorted_copy` moves the `Vec` out of a shared reference. Return a sorted copy and leave the caller's list usable: the caller must still see every element after the call. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

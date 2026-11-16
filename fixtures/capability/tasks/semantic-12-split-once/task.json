@@ -1,0 +1,28 @@
+{
+  "capability": "Split a key from a value at the first separator only.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-12-split-once",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "split_once(':')",
+    "replace": "split_once(';')"
+  },
+  "observed_failure": "the crate builds and tests pass; split_key(\"a:b:c\") is (\"a\", \"b\") where the contract requires (\"a\", \"b:c\")",
+  "prompt_intro": "The helper builds and its visible test passes, but the value may itself contain the separator: `split_key(\"a:b:c\")` is `(\"a\", \"b:c\")`. Split at the first `:` only. Empty key or value parts are allowed; a string with no separator is `None`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

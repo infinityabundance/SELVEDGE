@@ -1,0 +1,31 @@
+{
+  "capability": "Convert a borrowed argument where version 2 takes ownership.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "migrate-11-owned-argument",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0308"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "text.to_string()",
+    "replace": "text.to_ascii_uppercase()"
+  },
+  "observed_failure": "error[E0308]: mismatched types\n --> src/lib.rs:4:22\n  |\n4 |     nameplate::render(text)\n  |              ------ ^^^^ expected `String`, found `&str`",
+  "prompt_intro": "This crate does not build against the vendored `nameplate` 2.0.0. Version 2 takes the text by value (`String`) instead of by reference, so the caller must produce an owned string. Adapt `plate`. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

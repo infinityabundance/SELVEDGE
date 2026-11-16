@@ -1,0 +1,31 @@
+{
+  "capability": "Cover a variant added to a vendored enum.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "migrate-14-new-enum-variant",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0004"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "State::Live => 1",
+    "replace": "State::Live => 9"
+  },
+  "observed_failure": "error[E0004]: non-exhaustive patterns: `State::Draft` not covered\n --> src/lib.rs:4:11\n  |\n4 |     match state {\n  |           ^^^^^ pattern `State::Draft` not covered",
+  "prompt_intro": "This crate does not build against the vendored `status` 2.0.0. Version 2 added `State::Draft`, and the caller's `match` is no longer exhaustive. Map `Draft` to `0` and keep `Live` at `1`, `Paused` at `2`. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

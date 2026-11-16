@@ -1,0 +1,13 @@
+[package]
+name = "migrate_13_const_generic"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "dep"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+frame = { path = "dep" }

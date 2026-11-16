@@ -1,0 +1,36 @@
+{
+  "capability": "Point a path dependency at the directory that actually exists.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-16-missing-dependency-dir",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "failed to load manifest for dependency"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "path = \"vendor\"",
+    "replace": "path = \"dep\""
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "codec::label()",
+    "replace": "\"codec\""
+  },
+  "observed_failure": "error: failed to load manifest for dependency `codec`\nCaused by:\n  failed to read `.../dep/Cargo.toml`\nCaused by:\n  No such file or directory (os error 2)",
+  "prompt_intro": "This crate does not build. Its manifest points the `codec` dependency at `dep`, but the vendored copy lives in `vendor`. Correct the path. Do not modify `vendor/`. Keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "vendor/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

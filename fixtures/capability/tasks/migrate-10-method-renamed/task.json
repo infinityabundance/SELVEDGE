@@ -1,0 +1,36 @@
+{
+  "capability": "Follow a renamed method across a vendored dependency upgrade.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "migrate-10-method-renamed",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "tally.total()",
+    "replace": "tally.total() * 2"
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "tally.total()",
+    "replace": "tally.total().max(0)"
+  },
+  "observed_failure": "error[E0599]: no method named `sum` found for struct `Tally` in the current scope\n --> src/lib.rs:6:11\n  |\n6 |     tally.sum()\n  |           ^^^ help: there is a method with a similar name: `total`",
+  "prompt_intro": "This crate does not build against the vendored `stats` 2.0.0. Version 1 exposed `Tally::sum`; version 2 renamed it to `Tally::total` with the same behaviour. Adapt the caller. Do not modify `dep/`. Keep `running_total(&[i64]) -> i64` summing every value.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

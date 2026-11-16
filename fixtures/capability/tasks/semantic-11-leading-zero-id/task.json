@@ -1,0 +1,28 @@
+{
+  "capability": "Reject a numeric identifier that carries a leading zero.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-11-leading-zero-id",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "text.len() > 1 && text.starts_with('0')",
+    "replace": "text.len() > 3 && text.starts_with('0')"
+  },
+  "observed_failure": "the crate builds and tests pass; parse_id(\"012\") is Some(12) where the contract requires None",
+  "prompt_intro": "The helper builds and its visible test passes, but identifiers with a leading zero are not canonical and must be rejected: `parse_id(\"012\")` is `None`, while `parse_id(\"0\")` and `parse_id(\"12\")` parse. Empty input and non-digits are `None`. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

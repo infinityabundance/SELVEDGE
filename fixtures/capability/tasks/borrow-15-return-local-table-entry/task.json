@@ -1,0 +1,33 @@
+{
+  "capability": "Return owned data instead of a reference into a local table.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-15-return-local-table-entry",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "format!(\"value-{key}\")",
+    "replace": "format!(\"value\")"
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "table.get(key).cloned().unwrap_or_default()",
+    "replace": "key.to_string()"
+  },
+  "observed_failure": "error[E0515]: cannot return value referencing local variable `table`\n --> src/lib.rs:6:5\n  |\n4 |     table.insert(key.to_string(), format!(\"value-{key}\"));\n  |     ----- `table` is borrowed here\n6 |     table.get(key).map(|v| v.as_str()).unwrap_or(\"\")\n  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ returns a value referencing data owned by the current function",
+  "prompt_intro": "This crate does not compile. `seed` builds a local `BTreeMap` and returns a reference into it. Change the return type to `String` and return the seeded value, or the empty string when the key is absent.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

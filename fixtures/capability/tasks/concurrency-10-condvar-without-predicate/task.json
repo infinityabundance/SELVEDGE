@@ -1,0 +1,32 @@
+{
+  "capability": "Wait on a condition variable inside a predicate loop.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-10-condvar-without-predicate",
+  "initial_failure": {
+    "kind": "timeout",
+    "must_contain": [
+      "running 1 test"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "limits": {
+    "cpu_seconds": 40,
+    "wall_seconds": 25.0
+  },
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "while !*guard {",
+    "replace": "while !*guard && false {"
+  },
+  "observed_failure": "running 1 test\ntest tests::visible_run ... ",
+  "prompt_intro": "The crate builds, but `run` never returns: the readiness signal is sent before the waiter parks, and `wait_for_ready` waits without checking the predicate, so the wake-up is lost. Wait in a predicate loop and return the flag. A signal delivered before the wait must not be lost.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

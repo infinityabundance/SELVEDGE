@@ -1,0 +1,28 @@
+{
+  "capability": "Call a trait method on an opaque return type instead of an absent one.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-17-opaque-return-method",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0599"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/api.rs",
+    "find": "open().get(0)",
+    "replace": "open().get(1)"
+  },
+  "observed_failure": "error[E0599]: no method named `first` found for opaque type `impl Store` in the current scope\n --> src/api.rs:6:36\n  |\n6 | pub fn peek() -> Option<u8> { open().first() }\n  |                                    ^^^^^ method not found in `impl Store`",
+  "prompt_intro": "This crate does not compile. `api::open` returns `impl Store`, so only the trait's methods are visible; `peek` calls `first`, which is not one of them. Return the value stored under key `0`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

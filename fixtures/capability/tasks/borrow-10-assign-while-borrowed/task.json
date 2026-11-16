@@ -1,0 +1,28 @@
+{
+  "capability": "Split a read of a value from the write that follows it.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "borrow-10-assign-while-borrowed",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0506"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "unwrap_or(current)",
+    "replace": "unwrap_or(0)"
+  },
+  "observed_failure": "error[E0506]: cannot assign to `current` because it is borrowed\n --> src/lib.rs:4:5\n  |\n3 |     let previous = &current;\n  |                    -------- borrow of `current` occurs here\n4 |     current = readings.last().copied().unwrap_or(current);\n  |     ^^^^^^^ assignment to borrowed `current` occurs here",
+  "prompt_intro": "This crate does not compile. `compare_with_last` keeps a reference to `current` and then assigns to `current` while the reference is still live. Remove the overlapping borrow: compare the previous value with the last reading, or with `current` itself when the slice is empty. Do not change the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

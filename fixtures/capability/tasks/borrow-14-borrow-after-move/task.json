@@ -1,0 +1,28 @@
+{
+  "capability": "Compute from a value before consuming it.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "borrow-14-borrow-after-move",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0382"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "parts.join(\"-\")",
+    "replace": "parts.join(\"+\")"
+  },
+  "observed_failure": "error[E0382]: borrow of moved value: `parts`\n --> src/lib.rs:5:17\n  |\n3 |     let first = parts.into_iter().next().unwrap_or_default();\n  |                 ----- value moved here\n5 |     let count = parts.len();\n  |                 ^^^^^ value borrowed here after move",
+  "prompt_intro": "This crate does not compile. `join_then_measure` consumes `parts` and then asks for its length. Compute the length before the consumption. The result is the joined text, a colon, the first part (empty when there is none), and the number of parts.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

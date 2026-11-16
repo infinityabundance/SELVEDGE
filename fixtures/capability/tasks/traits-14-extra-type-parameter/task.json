@@ -1,0 +1,28 @@
+{
+  "capability": "Match the trait method's generic parameter list exactly.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "traits-14-extra-type-parameter",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0049"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.text.clone()",
+    "replace": "self.text.to_uppercase()"
+  },
+  "observed_failure": "error[E0049]: method `encode` has 1 type parameter but its trait declaration has 0 type parameters\n --> src/lib.rs:9:15\n  |\n9 |     fn encode<T>(&self) -> String {\n  |               ^ unexpected type parameter",
+  "prompt_intro": "This crate does not compile. The `Encode` trait's `encode` method has no type parameters, but the impl declares one. Remove the extra parameter and keep the encoded text.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

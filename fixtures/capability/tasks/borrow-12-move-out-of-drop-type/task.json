@@ -1,0 +1,28 @@
+{
+  "capability": "Hand a field out of a type that implements Drop without moving it.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-12-move-out-of-drop-type",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0509"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "std::mem::take(&mut buffer.data)",
+    "replace": "Vec::new()"
+  },
+  "observed_failure": "error[E0509]: cannot move out of type `Buffer`, which implements the `Drop` trait\n --> src/lib.rs:11:5\n  |\n11 |     buffer.data\n   |     ^^^^^^^^^^^ cannot move out of here",
+  "prompt_intro": "This crate does not compile. `Buffer` implements `Drop`, so its `data` field cannot be moved out of it. Return the buffered bytes by taking them out of the value instead, leaving the destructor with an empty buffer. Keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

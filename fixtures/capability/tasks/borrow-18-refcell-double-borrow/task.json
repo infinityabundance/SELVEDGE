@@ -1,0 +1,28 @@
+{
+  "capability": "Hold one interior borrow while reading and writing a ledger.",
+  "category": "lifetime-borrow",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "borrow-18-refcell-double-borrow",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "already borrowed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "entries.push(total + value);",
+    "replace": "entries.push(value);"
+  },
+  "observed_failure": "thread 'tests::visible_record_panics' panicked at src/lib.rs:10:37:\nRefCell already borrowed",
+  "prompt_intro": "The crate builds and its visible test fails at run time: `record` takes a mutable borrow of the ledger's cell, keeps it, and then takes a second one. Hold a single borrow and run the ledger forward: each record appends the running total plus the new value. Keep the signatures.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

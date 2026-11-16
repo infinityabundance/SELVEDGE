@@ -1,0 +1,31 @@
+{
+  "capability": "Handle an Option-returning lookup after an API change.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "migrate-12-option-result-change",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0369"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "count + 1",
+    "replace": "count"
+  },
+  "observed_failure": "error[E0369]: cannot add `{integer}` to `Option<i64>`\n --> src/lib.rs:4:5\n  |\n4 |     registry.lookup(key) + 1\n  |     --------------------- ^ - {integer}\n  |     Option<i64>",
+  "prompt_intro": "This crate does not build against the vendored `registry` 2.0.0. Version 1 returned the stored count directly; version 2 returns `Option<i64>` because a key may be absent. `next_count` must return the stored count plus one, or `0` when the key is absent. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

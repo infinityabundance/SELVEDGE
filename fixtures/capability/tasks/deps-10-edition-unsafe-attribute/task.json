@@ -1,0 +1,28 @@
+{
+  "capability": "Recognise an edition-2024 rule that makes an attribute unsafe.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-10-edition-unsafe-attribute",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "unsafe attribute used without unsafe"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "edition = \"2021\"",
+    "replace": "edition = \"2024\""
+  },
+  "observed_failure": "error: unsafe attribute used without unsafe\n --> src/lib.rs:1:3\n  |\n1 | #[no_mangle]\n  |   ^^^^^^^^^ attribute is unsafe\n  |\n  = help: consider adding `unsafe(...)` to this attribute",
+  "prompt_intro": "This crate does not build under its declared edition 2024. Edition 2024 requires `#[no_mangle]` to be written as an unsafe attribute. Keep the exported function and its behaviour; you may edit `Cargo.toml` or `src/lib.rs`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

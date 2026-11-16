@@ -112,6 +112,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--workroot", default=DEFAULT_WORKROOT)
     parser.add_argument("--keep", action="store_true")
     parser.add_argument("--mem-budget", type=int, default=4096)
+    parser.add_argument("--filter", default="",
+                        help="only check tasks whose id contains this text")
+    parser.add_argument("--category", default="",
+                        help="only check tasks in this capability category")
     args = parser.parse_args(argv)
 
     court_mem = os.environ.get("SELVEDGE_COURT_MEM_BYTES")
@@ -144,8 +148,12 @@ def main(argv: list[str]) -> int:
     items = []
     failures = []
     initial_ok = reference_ok = mutation_ok = probes_ok = 0
+    naive_ok = naive_declared = 0
+    selected = [task for task in loaded["suite"] + loaded["trio"]
+                if (not args.filter or args.filter in task.id)
+                and (not args.category or task.category == args.category)]
 
-    for task in loaded["suite"] + loaded["trio"]:
+    for task in selected:
         initial = checkers.run_initial(task, args.workroot, keep=args.keep)
         expected_kind = task.metadata["initial_failure"]["kind"]
         initial_matches = (initial["occurred_as_expected"]
@@ -179,6 +187,30 @@ def main(argv: list[str]) -> int:
             failures.append(f"{task.id}: the declared mutation passed the checker; "
                             f"the tests do not discriminate {mutation}")
 
+        naive_record = None
+        if task.metadata.get("naive"):
+            naive_declared += 1
+            shallow, naive_spec = checkers.naive_solution(task)
+            shallow_build = checkers.run_build(task, shallow, args.workroot,
+                                               keep=args.keep)
+            shallow_run = checkers.run_check(task, shallow, args.workroot,
+                                             keep=args.keep)
+            naive_record = {
+                "declaration": naive_spec,
+                "build_status": shallow_build.get("status"),
+                "check_status": shallow_run["status"],
+                "rejected": shallow_run["status"] != sandbox.STATUS_PASS,
+                "compiles": shallow_build.get("status") == sandbox.STATUS_PASS,
+                "evidence": summarise(shallow_run),
+            }
+            naive_rejected = naive_record["rejected"] and naive_record["compiles"]
+            naive_ok += 1 if naive_rejected else 0
+            if not naive_rejected:
+                failures.append(
+                    f"{task.id}: the declared naive fix was not rejected after "
+                    f"compiling (build {shallow_build.get('status')}, check "
+                    f"{shallow_run['status']})")
+
         max_workdir = max(max_workdir, initial["evidence"]["workdir_bytes"] or 0)
         max_workdir = max(max_workdir, reference["evidence"]["workdir_bytes"] or 0)
         max_workdir = max(max_workdir, wrong["evidence"]["workdir_bytes"] or 0)
@@ -205,7 +237,9 @@ def main(argv: list[str]) -> int:
             "build": summarise({"evidence": build}),
             "mutation": dict(mutation, status=wrong["status"],
                              evidence=summarise(wrong)),
-            "passed": bool(initial_matches and reference_passed and mutation_failed),
+            "naive": naive_record,
+            "passed": bool(initial_matches and reference_passed and mutation_failed
+                           and (naive_record is None or naive_record["rejected"])),
         })
         print(f"capability_selftest: {task.id}: initial={initial['status']} "
               f"reference={reference['status']} mutation={wrong['status']}", flush=True)
@@ -260,12 +294,18 @@ def main(argv: list[str]) -> int:
             "counts": counts,
             "manifest_matches": manifest_ok,
             "manifest_message": manifest_message,
+            "partial": bool(args.filter or args.category),
+            "filter": args.filter,
+            "category_filter": args.category,
         },
         "checker": {
             "tasks_checked": len(items) - len(loaded["probes"]),
+            "tasks_selected": len(selected),
             "initial_as_expected": initial_ok,
             "reference_passed": reference_ok,
             "mutation_failed": mutation_ok,
+            "naive_declared": naive_declared,
+            "naive_rejected": naive_ok,
             "probes_checked": len(loaded["probes"]),
             "probes_as_expected": probes_ok,
             "failures": failures,
@@ -295,6 +335,8 @@ def main(argv: list[str]) -> int:
             "trio_tasks": counts["trio"],
             "probe_tasks": counts["probes"],
             "tasks_checked": len(items) - len(loaded["probes"]),
+            "naive_declared": naive_declared,
+            "naive_rejected": naive_ok,
             "checker_timeout_seconds": limit_module.DEFAULT_TIMEOUT_SECONDS,
             "checker_cpu_seconds": limit_module.DEFAULT_CPU_SECONDS,
             "checker_address_space_gib": (
@@ -316,7 +358,8 @@ def main(argv: list[str]) -> int:
     }
     write_json_atomic(args.out, receipt)
     print(f"capability_selftest: {verdict}; {initial_ok} initial, {reference_ok} "
-          f"reference, {mutation_ok} mutation, {probes_ok} probes; receipt {args.out}")
+          f"reference, {mutation_ok} mutation, {naive_ok}/{naive_declared} naive, "
+          f"{probes_ok} probes; receipt {args.out}")
     if not manifest_ok:
         print(f"capability_selftest: {manifest_message}", file=sys.stderr)
     return 0 if verdict == "pass" else 1

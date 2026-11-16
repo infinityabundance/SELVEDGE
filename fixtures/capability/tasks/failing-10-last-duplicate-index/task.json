@@ -1,0 +1,28 @@
+{
+  "capability": "Find the last index of a duplicated value with a correct bound.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "failing-10-last-duplicate-index",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "values[low - 1] == target",
+    "replace": "values[low - 1] != target"
+  },
+  "observed_failure": "thread 'tests::visible_last_position' panicked at src/lib.rs:21:9:\nassertion `left == right` failed\n  left: Some(1)\n right: Some(2)",
+  "prompt_intro": "The visible test fails. `last_index` returns the first matching position instead of the last. It must return the highest index whose value equals the target, or `None`. The input is sorted ascending.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

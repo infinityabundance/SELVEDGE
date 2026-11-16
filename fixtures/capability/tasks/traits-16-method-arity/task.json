@@ -1,0 +1,33 @@
+{
+  "capability": "Match the trait method's parameter list.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-16-method-arity",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0050"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.value * factor as u64",
+    "replace": "self.value + factor as u64"
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "self.value * factor as u64",
+    "replace": "self.value"
+  },
+  "observed_failure": "error[E0050]: method `scale` has 1 parameter but the declaration in trait `Scale::scale` has 2\n --> src/lib.rs:5:33\n  |\n5 |     fn scale(&self) -> u64 { self.value }\n  |                                 ^^^^ expected 2 parameters, found 1",
+  "prompt_intro": "This crate does not compile. The `Scale` trait declares `scale` with a factor parameter, and the impl omits it. Accept the factor and return the value multiplied by it.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

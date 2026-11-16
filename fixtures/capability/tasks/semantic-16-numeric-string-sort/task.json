@@ -1,0 +1,28 @@
+{
+  "capability": "Sort numbers numerically rather than by their decimal text.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-16-numeric-string-sort",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "out.sort_unstable();",
+    "replace": "out.sort_unstable_by(|a, b| b.cmp(a));"
+  },
+  "observed_failure": "the crate builds and tests pass; sorted(&[10, 9, 100]) is [10, 100, 9] where the contract requires [9, 10, 100]",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract sorts numbers by value: `sorted(&[10, 9, 100])` is `[9, 10, 100]`. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

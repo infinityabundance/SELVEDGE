@@ -1,0 +1,28 @@
+{
+  "capability": "Remove only adjacent duplicate values, preserving later repeats.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "semantic-17-adjacent-dedup",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "out.last() != Some(value)",
+    "replace": "out.last() == Some(value)"
+  },
+  "observed_failure": "the crate builds and tests pass; collapse(&[1, 2, 1]) is [1, 2] where the contract requires [1, 2, 1]",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract removes only **adjacent** duplicates: `collapse(&[1, 2, 1])` is `[1, 2, 1]`. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

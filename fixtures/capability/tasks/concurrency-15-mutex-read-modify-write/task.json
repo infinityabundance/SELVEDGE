@@ -1,0 +1,28 @@
+{
+  "capability": "Hold the mutex across a read-modify-write instead of around each half.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "concurrency-15-mutex-read-modify-write",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "*guard += 1;",
+    "replace": "*guard += 2;"
+  },
+  "observed_failure": "thread 'tests::visible_pair' panicked at src/lib.rs:33:9:\nassertion `left == right` failed\n  left: 1\n right: 2",
+  "prompt_intro": "The visible test fails. Both workers read the counter under the lock, meet at a barrier after dropping it, and then write the value they read, so an update is lost. Hold the lock across the whole update. `bump_pair` adds two, and `bump_many(counter, threads, per_thread)` adds `threads * per_thread`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

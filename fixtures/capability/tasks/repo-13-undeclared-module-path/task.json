@@ -1,0 +1,28 @@
+{
+  "capability": "Resolve a crate-local module path from a sibling module.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "repo-13-undeclared-module-path",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0433"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/api.rs",
+    "find": "slug(text)",
+    "replace": "text.to_string()"
+  },
+  "observed_failure": "error[E0433]: failed to resolve: use of undeclared crate or module `util`\n --> src/api.rs:3:5\n  |\n3 | use util::slug;\n  |     ^^^^ use of undeclared crate or module `util`",
+  "prompt_intro": "This crate does not compile. `api.rs` imports `util::slug`, which the compiler resolves as an external crate, but `util` is a sibling module of this crate. Use the crate-relative path.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

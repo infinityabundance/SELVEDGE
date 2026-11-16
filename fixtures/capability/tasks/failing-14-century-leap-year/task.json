@@ -1,0 +1,33 @@
+{
+  "capability": "Apply the century rule of the Gregorian leap year.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "failing-14-century-leap-year",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "year % 400 == 0",
+    "replace": "year % 500 == 0"
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);",
+    "replace": "let leap = year % 4 == 0 && year % 100 != 0;"
+  },
+  "observed_failure": "thread 'tests::visible_nineteen_hundred' panicked at src/lib.rs:15:9:\nassertion `left == right` failed\n  left: 29\n right: 28",
+  "prompt_intro": "The visible test fails. `days_in_month` treats every fourth year as a leap year, so February 1900 has 29 days instead of 28. A year is a leap year when it is divisible by 4, except centuries that are not divisible by 400. A month outside 1..=12 has 0 days.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

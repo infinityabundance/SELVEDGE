@@ -1,0 +1,28 @@
+{
+  "capability": "Merge duplicate inherent impl blocks that define the same method.",
+  "category": "trait-impl",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "traits-18-duplicate-inherent-method",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0592"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "self.value\n    }",
+    "replace": "self.value * 2\n    }"
+  },
+  "observed_failure": "error[E0592]: duplicate definitions with name `ratio`\n --> src/lib.rs:3:14\n  |\n3 | impl Meter { pub fn ratio(&self) -> u64 { self.value * 2 } }\n  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `ratio`",
+  "prompt_intro": "This crate does not compile. Two inherent impl blocks for `Meter` both define `ratio`. Keep one definition that returns the value unchanged.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

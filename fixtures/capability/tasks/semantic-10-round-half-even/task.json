@@ -1,0 +1,28 @@
+{
+  "capability": "Round ties to the nearest even integer rather than away from zero.",
+  "category": "semantic-repair",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "semantic-10-round-half-even",
+  "initial_failure": {
+    "kind": "hidden_test_failure",
+    "must_contain": [
+      "test result: FAILED"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "(floor as i64) % 2 == 0",
+    "replace": "(floor as i64) % 2 != 0"
+  },
+  "observed_failure": "the crate builds and tests pass; round_half_even(2.5) is 3 where the contract requires 2",
+  "prompt_intro": "The helper builds and its visible test passes, but the contract rounds ties to the nearest **even** integer: 2.5 becomes 2 and 3.5 becomes 4 (and -2.5 becomes -2). Non-ties round to the nearest integer. Fix the helper; keep the signature.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

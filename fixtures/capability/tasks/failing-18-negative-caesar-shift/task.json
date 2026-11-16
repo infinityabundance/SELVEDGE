@@ -1,0 +1,28 @@
+{
+  "capability": "Rotate letters by a negative amount without underflow.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "failing-18-negative-caesar-shift",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": ".rem_euclid(26) as u8;",
+    "replace": ".rem_euclid(25) as u8;"
+  },
+  "observed_failure": "thread 'tests::visible_backwards' panicked at src/lib.rs:18:9:\nassertion `left == right` failed\n  left: \"vab\"\n right: \"zab\"",
+  "prompt_intro": "The visible test fails. `shift` rotates ASCII letters and leaves every other character alone, but a negative amount is converted to `u8` before the rotation, so shifting backwards produces the wrong letters. Perform the arithmetic with a signed type and a non-negative remainder.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

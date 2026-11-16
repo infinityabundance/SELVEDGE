@@ -1,0 +1,31 @@
+{
+  "capability": "Supply a const generic argument that version 2 made mandatory.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "migrate-13-const-generic",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0107"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "Frame<4>",
+    "replace": "Frame<3>"
+  },
+  "observed_failure": "error[E0107]: missing generics for struct `Frame`\n --> src/lib.rs:4:37\n  |\n4 | pub fn make_counter() -> Frame { Frame::new() }\n  |                                 ^^^^^ expected 1 generic argument",
+  "prompt_intro": "This crate does not build against the vendored `frame` 2.0.0. Version 2 made the frame length a const generic (`Frame<const N: usize>`), so every use must name the length. `make_counter` must return a frame of four cells. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

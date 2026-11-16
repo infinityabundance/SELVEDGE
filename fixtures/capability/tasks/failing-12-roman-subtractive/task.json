@@ -1,0 +1,28 @@
+{
+  "capability": "Encode Roman numerals with the subtractive pairs.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "failing-12-roman-subtractive",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "(900, \"CM\"), (500, \"D\"), (400, \"CD\")",
+    "replace": "(900, \"DCCCC\"), (500, \"D\"), (400, \"CCCC\")"
+  },
+  "observed_failure": "thread 'tests::visible_subtractive_four' panicked at src/lib.rs:22:9:\nassertion `left == right` failed\n  left: \"IIII\"\n right: \"IV\"",
+  "prompt_intro": "The visible test fails. `to_roman` encodes 1..=3999 but only uses additive symbols, so 4 becomes `IIII` instead of `IV`. Use the subtractive pairs (IV, IX, XL, XC, CD, CM). Values outside 1..=3999 return the empty string.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

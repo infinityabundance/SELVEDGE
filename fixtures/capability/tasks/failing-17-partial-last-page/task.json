@@ -1,0 +1,28 @@
+{
+  "capability": "Clamp the last page to the number of items.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "failing-17-partial-last-page",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "(start + page_size).min(total)",
+    "replace": "(start + page_size).max(total)"
+  },
+  "observed_failure": "thread 'tests::visible_partial_page' panicked at src/lib.rs:17:9:\nassertion `left == right` failed\n  left: (4, 6)\n right: (4, 5)",
+  "prompt_intro": "The visible test fails. `page_bounds` returns the half-open range of a one-based page, but the last page ends past the number of items. Clamp the end to `total`. A zero page, a zero page size, or a page past the end yields an empty range.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

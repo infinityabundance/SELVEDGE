@@ -1,0 +1,33 @@
+{
+  "capability": "Use the atomic operation that matches the accumulated operation.",
+  "category": "concurrency",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "concurrency-13-atomic-fetch-or",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "counter.fetch_add(*value, Ordering::SeqCst)",
+    "replace": "counter.fetch_add(*value + 1, Ordering::SeqCst)"
+  },
+  "naive": {
+    "file": "src/lib.rs",
+    "find": "counter.fetch_add(*value, Ordering::SeqCst);",
+    "replace": "counter.fetch_add(1, Ordering::SeqCst);"
+  },
+  "observed_failure": "thread 'tests::visible_pair' panicked at src/lib.rs:20:9:\nassertion `left == right` failed\n  left: 1\n right: 2",
+  "prompt_intro": "The visible test fails. `accumulate` needs to add each value to the counter, but it uses a bitwise OR. Replace it with the atomic add that matches the contract, and keep the starting value.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

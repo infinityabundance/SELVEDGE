@@ -1,0 +1,28 @@
+{
+  "capability": "Repair a library target path that points at a missing file.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "deps-13-wrong-lib-path",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "can't find lib"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "Cargo.toml",
+    "find": "path = \"src/lib.rs\"",
+    "replace": "path = \"src/other.rs\""
+  },
+  "observed_failure": "error: can't find lib `deps_13_wrong_lib_path` at path `/work/.../src/other.rs`\n --> Cargo.toml\nerror: could not compile due to 1 previous target resolution error",
+  "prompt_intro": "This crate does not build. Its manifest points the library target at `src/other.rs`, which does not exist; the source lives at `src/lib.rs`. Repair the manifest. Keep the behaviour.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

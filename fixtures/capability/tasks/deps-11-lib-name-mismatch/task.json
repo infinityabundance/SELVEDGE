@@ -1,0 +1,31 @@
+{
+  "capability": "Alias a dependency whose library target name differs from its package name.",
+  "category": "dependency-compat",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "deps-11-lib-name-mismatch",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0433"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "arm",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "codec_impl::label()",
+    "replace": "codec::label()"
+  },
+  "observed_failure": "error[E0433]: cannot find module or crate `codec` in this scope\n --> src/lib.rs:4:5\n  |\n4 |     codec::label()\n  |     ^^^^^ use of unresolved module or unlinked crate `codec`",
+  "prompt_intro": "This crate does not build. The vendored package is named `codec`, but its library target is named `codec_impl`, and the code imports `codec`. Rename the dependency to the library target name and keep the package mapping. You may edit `Cargo.toml` and `src/lib.rs`; do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

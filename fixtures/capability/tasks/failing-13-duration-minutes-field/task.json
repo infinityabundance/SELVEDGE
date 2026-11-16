@@ -1,0 +1,28 @@
+{
+  "capability": "Reduce the minute field modulo sixty when formatting a duration.",
+  "category": "failing-test",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "failing-13-duration-minutes-field",
+  "initial_failure": {
+    "kind": "test_failure",
+    "must_contain": [
+      "assertion `left == right` failed"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "let minutes = (total_seconds / 60) % 60;",
+    "replace": "let minutes = total_seconds / 60;"
+  },
+  "observed_failure": "thread 'tests::visible_one_hour' panicked at src/lib.rs:9:9:\nassertion `left == right` failed\n  left: \"01:61:01\"\n right: \"01:01:01\"",
+  "prompt_intro": "The visible test fails. `format_duration` prints `hh:mm:ss` with two digits per field, but the minute field is the total number of minutes rather than the minutes within the hour. Hours are not capped at 24.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}

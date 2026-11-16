@@ -1,0 +1,31 @@
+{
+  "capability": "Read a renamed struct field after a dependency upgrade.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "migrate-17-field-renamed",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0609"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "measure.amount * 2.0",
+    "replace": "measure.amount"
+  },
+  "observed_failure": "error[E0609]: no field `value` on type `Measure`\n --> src/lib.rs:4:39\n  |\n4 |     measure::load(text).map(|measure| measure.value * 2.0)\n  |                                               ^^^^^ unknown field\n  |\n  = help: a field with a similar name exists: `amount`",
+  "prompt_intro": "This crate does not build against the vendored `measure` 2.0.0. Version 2 renamed the struct field `value` to `amount`. `doubled` returns twice the parsed amount, or `None`. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

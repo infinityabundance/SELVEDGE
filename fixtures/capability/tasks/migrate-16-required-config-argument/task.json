@@ -1,0 +1,31 @@
+{
+  "capability": "Pass a new required argument that version 2 introduced.",
+  "category": "api-migration",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "easy",
+  "entry": "src/lib.rs",
+  "id": "migrate-16-required-config-argument",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0061"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/lib.rs",
+    "find": "label::render(text, 10)",
+    "replace": "label::render(text, 8)"
+  },
+  "observed_failure": "error[E0061]: this function takes 2 arguments but 1 argument was supplied\n --> src/lib.rs:4:5\n  |\n4 |     label::render(text)\n  |     ^^^^^^^^^^^^^ ----- argument #1 of type `&str` is supplied\n  |\n  = note: expected parameter `&str`, `usize`",
+  "prompt_intro": "This crate does not build against the vendored `label` 2.0.0. Version 2 requires an explicit width argument. `render_label` must render at width 10: the text, padded with spaces on the right to at least ten characters, and never truncated. Do not modify `dep/`.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "readonly": [
+    "dep/"
+  ],
+  "schema": "selvedge/capability-task/v1"
+}

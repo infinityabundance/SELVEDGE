@@ -1,0 +1,28 @@
+{
+  "capability": "Return owned data when the producing module owns the buffer.",
+  "category": "repo-scale",
+  "checker": {
+    "kind": "cargo_test"
+  },
+  "difficulty": "medium",
+  "entry": "src/lib.rs",
+  "id": "repo-12-returned-local-reference",
+  "initial_failure": {
+    "kind": "compile_error",
+    "must_contain": [
+      "E0515"
+    ]
+  },
+  "kind": "suite",
+  "license": "MIT OR Apache-2.0",
+  "manifest_policy": "locked",
+  "mutation": {
+    "file": "src/cache.rs",
+    "find": "crate::format::normalise(text)",
+    "replace": "text.to_string()"
+  },
+  "observed_failure": "error[E0515]: cannot return value referencing local variable `value`\n --> src/cache.rs:5:5\n  |\n4 |     let value = crate::format::normalise(text);\n  |         ----- `value` is borrowed here\n5 |     &value\n  |     ^^^^^^ returns a value referencing data owned by the current function",
+  "prompt_intro": "This crate does not compile. `format::normalise` returns an owned `String`, and `cache::cached` tries to return a reference to that local value. Return an owned `String` from `cached` as well.",
+  "provenance": "original; authored for SELVEDGE P12.9/P11.21 (S14), no public benchmark text",
+  "schema": "selvedge/capability-task/v1"
+}
