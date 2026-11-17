@@ -195,6 +195,36 @@ The screen is registered (arms `utility-outcome`, `utility-ce`,
 control) and **not run**. The win bar and the next route are in the
 registration; no 20M router arm may be registered without a win here.
 
+## (f) Model-level optimiser comparison, custom int8 state vs fp32 AdamW
+
+The CPU harness is `oracle/frontier/optim_compare.py`; its contract is
+`oracle/tests/test_s53_optimizer_comparison.py` and it passes on fake states.
+The GPU driver is `scripts/s53_optimizer_comparison.py`. It captures one exact
+initial trainable state, restores it for each arm, uses the same stream offsets
+and the same fixed evaluation batches for both arms, and reports fixed-batch
+teacher KL plus held-out CE at init and every 25 steps for 200 steps. The arms
+run sequentially so only one student is resident.
+
+No smoke of this workload has run, so **no container limit is written here**.
+Run a short smoke first with a generous explicit `SELVEDGE_MEM`, read
+`container_memory.memory_peak` from its receipt, and size the 200-step run at
+max(1.5x peak, peak + 1 GiB) before any number is quoted. The queued command is:
+
+```bash
+SELVEDGE_MEM=<from the smoke receipt> SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 \
+SELVEDGE_TMP=2g scripts/court --gpu oracle -- \
+  python3 scripts/s53_optimizer_comparison.py \
+    --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json \
+    --start-token 2000000 --steps 200 --eval-every 25 --batches 8 \
+    --seq-len 512 --grad-accum 4 --lr 1e-5 --temperature 2.0 --kl-weight 0.5 \
+    --grad-clip 1.0 --seed 0 \
+    --out results/stage2/s53-optimiser-comparison-<stamp>.json
+```
+
+This is queued, not run. It does not replace the real-gradient first-moment
+validation in (d); it asks the model-level question that a per-tensor parity
+test cannot answer.
+
 ## Numbers in this page and their receipts
 
 These are operational limits and byte projections, not new measurements:
