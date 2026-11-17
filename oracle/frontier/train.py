@@ -39,6 +39,7 @@ import glob
 import json
 import math
 import os
+import statistics
 import sys
 import time
 from datetime import datetime, timezone
@@ -250,6 +251,33 @@ def learning_rate(step: int, args, steps: int, warmup: int) -> float:
     raise SystemExit(f"unknown schedule {args.schedule!r}")
 
 
+def tripwire_decision(ce_history: list[float], factor: float,
+                      baseline_steps: int, window: int) -> dict | None:
+    """Evaluate the registered early-loss tripwire from the CE history.
+
+    The baseline is the median CE over the first `baseline_steps` optimiser
+    steps; the monitored statistic is the median over the trailing `window`
+    steps. The tripwire fires when the trailing median exceeds `factor` times
+    the baseline. Nothing is checked until both a full baseline and a full
+    trailing window exist, so a short run cannot trip it by construction.
+    """
+    if factor <= 0.0 or baseline_steps <= 0 or window <= 0:
+        return None
+    if len(ce_history) < baseline_steps + window:
+        return None
+    baseline = statistics.median(ce_history[:baseline_steps])
+    trailing = statistics.median(ce_history[-window:])
+    if baseline <= 0.0:
+        return None
+    ratio = trailing / baseline
+    return {
+        "baseline_median_ce": baseline,
+        "trailing_median_ce": trailing,
+        "ratio": ratio,
+        "fired": ratio > factor,
+    }
+
+
 def prune_checkpoints(run_dir: str, keep: int) -> None:
     if keep <= 0:
         return
@@ -438,6 +466,14 @@ def run(args) -> int:
             "objective_signed_advantage": (
                 "log p_T(y_t) - log p_B(y_t) on the supervised target at T=1.0"),
         })
+    if args.abort_ce_factor > 0.0:
+        # Added only when the registered tripwire is active, so no existing
+        # arm's config hash (and therefore no resume) changes.
+        config.update({
+            "abort_ce_factor": args.abort_ce_factor,
+            "abort_ce_baseline_steps": args.abort_ce_baseline_steps,
+            "abort_ce_window": args.abort_ce_window,
+        })
     if args.arm in matched_controls.CONTROL_KINDS:
         # Added only for the S47 controls, so no existing arm's config hash (and
         # therefore no resume) changes. `control_role` is the attribution the
@@ -498,6 +534,15 @@ def run(args) -> int:
     numerics_log: list[dict] = []
     step_time = 0.0
     run_tokens = start_step * tokens_per_step
+    ce_history: list[float] = []
+    if start_step and args.abort_ce_factor > 0.0:
+        # A resumed run must keep the tripwire's baseline and trajectory.
+        with open(log_path, "r", encoding="utf-8") as prior:
+            for line in prior:
+                try:
+                    ce_history.append(float(json.loads(line)["ce"]))
+                except (ValueError, KeyError):
+                    continue
     global_started = time.time()
     for step in range(start_step, steps):
         lr = learning_rate(step, args, steps, warmup)
@@ -615,6 +660,41 @@ def run(args) -> int:
                   f"ce={entry['ce']:.4f} kl={entry['kl']:.4f} "
                   f"{entry['tokens_per_second']:.0f} tok/s "
                   f"peak={peak_alloc:.2f}GiB", flush=True)
+        if args.abort_ce_factor > 0.0:
+            ce_history.append(entry["ce"])
+            decision = tripwire_decision(
+                ce_history, args.abort_ce_factor,
+                args.abort_ce_baseline_steps, args.abort_ce_window)
+            if decision is not None and decision["fired"]:
+                # The tripwire is a registered stop, not an exception: the
+                # abort record is the evidence, the log is left closed and no
+                # checkpoint is written from this path.
+                abort = {
+                    "schema": "selvedge/stage2-train-abort/v1",
+                    "kind": "train-abort",
+                    "created_utc": utcnow(),
+                    "stamp": stamp(),
+                    "revision": revision(),
+                    "arm": args.arm,
+                    "reason": ("early-loss tripwire: the trailing-window "
+                               "median CE exceeded the registered factor of "
+                               "the baseline median CE"),
+                    "step": step + 1,
+                    "tokens_seen": run_tokens,
+                    "baseline_steps": args.abort_ce_baseline_steps,
+                    "window_steps": args.abort_ce_window,
+                    "factor": args.abort_ce_factor,
+                    **decision,
+                    "log": log_path,
+                    "config": config,
+                    "command": sys.argv,
+                }
+                write_json(os.path.join(args.run_dir, "abort.json"), abort)
+                log.close()
+                print(f"train: TRIPWIRE step {step + 1} ratio="
+                      f"{decision['ratio']:.3f} > {args.abort_ce_factor:.3f}; "
+                      f"aborted", flush=True)
+                return 86
         if (step + 1) % args.ckpt_every == 0 or step + 1 == steps:
             payload = {
                 "schema": "selvedge/stage2-ckpt/v1",
@@ -669,6 +749,12 @@ def run(args) -> int:
         "arm_accounting": arm_report,
         "optimizer_state": optimizer_report,
         "optimizer_numerics": numerics_summary,
+        "tripwire": ({
+            "factor": args.abort_ce_factor,
+            "baseline_steps": args.abort_ce_baseline_steps,
+            "window_steps": args.abort_ce_window,
+            "tripped": False,
+        } if args.abort_ce_factor > 0.0 else None),
         "objective": objective,
         "correction_gate_final": (
             corrective_module.gate_summary() if corrective_module is not None
@@ -741,6 +827,13 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--allow-dense-optimizer", action="store_true")
     parser.add_argument("--schedule", choices=["constant", "cosine"], default="constant")
     parser.add_argument("--min-lr-ratio", type=float, default=0.1)
+    parser.add_argument("--abort-ce-factor", type=float, default=0.0,
+                        help="early-loss tripwire: abort when the trailing-window "
+                             "median CE exceeds this factor of the baseline median")
+    parser.add_argument("--abort-ce-baseline-steps", type=int, default=100,
+                        help="optimiser steps whose median CE is the tripwire baseline")
+    parser.add_argument("--abort-ce-window", type=int, default=50,
+                        help="trailing optimiser steps whose median CE is monitored")
     parser.add_argument("--freeze-embedding", dest="freeze_embedding",
                         action="store_true", default=True)
     parser.add_argument("--no-freeze-embedding", dest="freeze_embedding",

@@ -1,0 +1,50 @@
+.....F.F..F...                                                           [100%]
+=================================== FAILURES ===================================
+______________ test_tripwire_fires_on_the_diverged_bar_trajectory ______________
+
+    def test_tripwire_fires_on_the_diverged_bar_trajectory():
+        # The recorded 20M bar's shape: a warmup trough near 2.77, then a run above
+        # 5.7 for the rest of training. The baseline (first 100) is about 3.81, so
+        # 1.5x is 5.71 and the trailing window is above it from about step 150.
+        history = (
+            [2.8 - 0.02 * index for index in range(50)]
+            + [2.8 + 0.06 * index for index in range(50, 100)]
+            + [6.0 + 0.2 * (index % 5) for index in range(100, 300)]
+        )
+        decision = train.tripwire_decision(history, 1.5, 100, 50)
+        assert decision is not None
+>       assert decision["fired"] is True
+E       assert False is True
+
+oracle/tests/test_s49_tripwire.py:72: AssertionError
+___________________ test_log_stats_finds_the_first_crossing ____________________
+
+    def test_log_stats_finds_the_first_crossing():
+        rows = make_log(3.0)
+        for row in rows[149:]:
+            row["ce"] = 6.0
+        stats = sweep.log_stats(rows)
+        assert stats["trailing_ratio"] == pytest.approx(2.0)
+>       assert stats["first_step_trailing_over_factor"] == 150
+E       assert 175 == 150
+
+oracle/tests/test_s49_stability.py:67: AssertionError
+________________ test_a_held_out_regression_disqualifies_an_arm ________________
+
+    def test_a_held_out_regression_disqualifies_an_arm():
+        rows = [
+            make_row("high", 3e-05, 3.0, 0.02),
+            make_row("mid", 1e-05, 3.0, 0.005),
+        ]
+        decision = sweep.decide(rows)
+        assert decision["chosen"]["arm"] == "mid"
+>       assert "held-out CE" in " ".join(
+            row["evaluation"]["reasons"] for row in rows if row["arm"] == "high")
+E       TypeError: sequence item 0: expected str instance, list found
+
+oracle/tests/test_s49_stability.py:99: TypeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s49_tripwire.py::test_tripwire_fires_on_the_diverged_bar_trajectory
+FAILED oracle/tests/test_s49_stability.py::test_log_stats_finds_the_first_crossing
+FAILED oracle/tests/test_s49_stability.py::test_a_held_out_regression_disqualifies_an_arm
+3 failed, 11 passed in 1.56s

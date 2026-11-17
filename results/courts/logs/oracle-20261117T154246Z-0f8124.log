@@ -1,0 +1,17 @@
+
+==================================== ERRORS ====================================
+_____________ ERROR collecting oracle/tests/test_s49_stability.py ______________
+ImportError while importing test module '/work/oracle/tests/test_s49_stability.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+oracle/tests/test_s49_stability.py:20: in <module>
+    import s49_bar_curve as curve  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 's49_bar_curve'
+=========================== short test summary info ============================
+ERROR oracle/tests/test_s49_stability.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 1.60s

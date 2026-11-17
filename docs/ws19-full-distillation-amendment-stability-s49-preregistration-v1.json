@@ -1,0 +1,229 @@
+{
+  "schema": "selvedge/ws19-full-distillation-amendment/v1",
+  "registering_session": "S49",
+  "registered_utc": "2026-11-17T15:39:00Z",
+  "amends": {
+    "path": "docs/ws19-full-distillation-preregistration-v1.json",
+    "sha256": "167f5d5c82f8a7a6217ce6b242f62dc84b53384a4aa2787d7def63885410ad0c",
+    "stream_amendment": {
+      "path": "docs/ws19-full-distillation-amendment-math-stream-preregistration-v1.json",
+      "sha256": "b507f897d498be422c92d5dcf8480ad48eaa903e60e1a0caaaf7c7bfcfd8a31c"
+    },
+    "vram_amendment": {
+      "path": "docs/ws19-full-distillation-amendment-vram-measured-preregistration-v1.json",
+      "sha256": "a330b416a9f6461b6d67bc0c8f964699300cfe58407443ec46fc44791d9d965f"
+    },
+    "rule": "the pre-registration and its two amendments are not edited. This amendment replaces one recipe input, the full-arm learning rate, after the registered 20M bar diverged, and registers the sweep that selects the replacement before any arm is run. The stream, teacher, objective, optimiser family, frozen partition, token budget and scoring basis are unchanged."
+  },
+  "finding": {
+    "what_was_run": "the registered 20M full-backbone distillation bar (results/stage2/runs/full-20m-math) at lr 1e-4, Adam8bit block 256 with stochastic rounding, cosine to 10%, warmup 200, grad-clip 1.0, objective CE + 0.5*T^2*KL, 19,998,720 realised tokens on the math-weighted stream",
+    "log": "results/stage2/runs/full-20m-math/log.jsonl",
+    "training_receipt": "results/stage2/runs/full-20m-math/receipt.json",
+    "anchored_receipt": "results/stage2/eval/full-20m-math/eval.json",
+    "anchored_receipt_stamp": "20261117T120059Z",
+    "what_the_log_records": {
+      "steps": 9765,
+      "tokens_seen": 19998720,
+      "median_ce_first_50_steps": 2.76777583360672,
+      "median_ce_first_100_steps": 3.8050988018512726,
+      "median_ce_last_50_steps": 6.1120330691337585,
+      "ratio_last_50_to_first_50": 2.208283270241976,
+      "ratio_last_50_to_first_100": 1.6062744720741828,
+      "first_step_with_9_step_running_median_above_2x_first_50_median": 88,
+      "first_step_with_trailing_50_median_above_1_5x_first_100_median": 117,
+      "median_ce_by_1000_step_block": [
+        {"steps": "1-1000", "median": 6.9767, "max": 23.2},
+        {"steps": "1001-2000", "median": 7.3655, "max": 14.63},
+        {"steps": "2001-3000", "median": 6.8264, "max": 15.88},
+        {"steps": "3001-4000", "median": 5.8943, "max": 16.9},
+        {"steps": "4001-5000", "median": 7.0637, "max": 11.31},
+        {"steps": "5001-6000", "median": 6.6274, "max": 9.49},
+        {"steps": "6001-7000", "median": 6.2245, "max": 9.77},
+        {"steps": "7001-8000", "median": 6.1893, "max": 11.51},
+        {"steps": "8001-9000", "median": 6.1081, "max": 10.08},
+        {"steps": "9001-9765", "median": 6.0293, "max": 8.31}
+      ],
+      "lr_at_step_93": 4.65e-05,
+      "lr_at_step_200": 0.0001,
+      "lr_at_step_500": 9.978317686308709e-05,
+      "lr_at_step_9765": 1.0000002427237713e-05,
+      "reading": "the loss left the initialised model during warmup and never returned; the block medians after the first 1,000 steps stay between 5.89 and 7.37 nats against a first-50 median of 2.77. This is a diverged optimisation, not a learning-rate floor and not a data effect."
+    },
+    "what_the_score_records": {
+      "mmlu": 0.2295,
+      "mmlu_stderr": 0.0035,
+      "mmlu_pro": 0.0,
+      "gsm8k": 0.0,
+      "minerva_math500": 0.024,
+      "minerva_math500_stderr": 0.0069,
+      "family_mean_knowledge": 0.1147,
+      "family_mean_math": 0.012,
+      "base_mmlu": 0.3747,
+      "base_math_family": 0.3198,
+      "generation": "degenerate: MMLU-Pro continuations repeat a single token and the S45 exact extractor finds no final answer in any of the 500 MATH-500 completions",
+      "reading": "the registered 20M bar is a collapse; every stage-2 win condition that names this arm currently compares against a collapsed run. That is a recipe defect, not a data result, and it does not move any S48 screen verdict."
+    },
+    "label": "measured; the score receipt and the log are the evidence, and both are unchanged by this amendment"
+  },
+  "amendment_scope": {
+    "replaced": "the full-arm learning rate (0.0001) and, only if the registered condition below is met, warmup and grad-clip",
+    "unchanged": [
+      "student Qwen/Qwen3.5-0.8B-Base revision dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "teacher Qwen/Qwen3.5-2B-Base revision b1485b2fa6dfa1287294f269f5fb618e03d52d7c, online, no cache",
+      "full text tower with the tied token embedding frozen (trainable 498,113,344; deployed active union 752,393,024)",
+      "objective CE + 0.5*T^2*KL at T=2.0",
+      "optimiser Adam8bit, block 256, betas 0.9/0.95, stochastic rounding, no fp32 master copy",
+      "schedule cosine to 10% of peak",
+      "sequence 512, micro-batch 1, gradient accumulation 4, 2,048 tokens per optimiser step",
+      "seed 0",
+      "the mathematical stream results/stage2/stage2-math-stream-20261117T071120Z.json and its SHA-256 9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+      "the held-out slice results/stage2/stage2-heldout-20261117T024542Z.json",
+      "the anchored instrument docs/anchor-preregistration-v1.json, its SDPA attention kernel and the amended total-cap basis"
+    ]
+  },
+  "stability_sweep": {
+    "purpose": "select the highest full-backbone learning rate that trains 2M tokens without leaving the initialised loss and without degrading held-out likelihood; one factor (lr) is swept, and nothing else, until or unless the registered second factor is required",
+    "label": "registered before any arm, smoke or score was run",
+    "stream": {
+      "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+      "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+      "tokens": 2000000,
+      "train_tokens": 2000000,
+      "graft_tokens": 0,
+      "note": "the same manifest and the same leading tokens as the S48 2M screen, so a sweep arm and a screen arm see the same prefix"
+    },
+    "common": {
+      "arm": "full",
+      "tokens": 2000000,
+      "seq_len": 512,
+      "micro_batch": 1,
+      "grad_accum": 4,
+      "tokens_per_step": 2048,
+      "steps": 976,
+      "realised_tokens": 1998848,
+      "teacher_temperature": 2.0,
+      "kl_weight": 0.5,
+      "objective": "ce_kl",
+      "optimizer": "adam8bit",
+      "optim_block_elements": 256,
+      "optimizer_numerics": "stochastic",
+      "schedule": "cosine",
+      "min_lr_ratio": 0.1,
+      "warmup_requested": 200,
+      "warmup_effective_steps": 97,
+      "warmup_arithmetic": "oracle/frontier/train.py sets warmup = min(args.warmup, max(1, steps // 10)); at 976 steps that is 97. The same clamp is why the registered 20M run warmed up over 200 steps and not fewer.",
+      "schedule_horizon_note": "the 2M arm's cosine horizon is 976 steps against the bar's 9,765, and its effective warmup is 97 against the bar's 200. The sweep is a stability screen at a fixed budget, not an exact scaled copy of the 20M schedule; the decision rule reads it as a screen, and the bar rerun restores the 20M horizon.",
+      "grad_clip": 1.0,
+      "seed": 0,
+      "vram_limit_gib": 12.5,
+      "checkpoints": {"every_steps": 488, "keep": 2},
+      "log_every": 50,
+      "why_2m": "a 2M-token arm costs about 18 minutes at the measured ~1,850 tokens/s, so three learning rates can be screened sequentially in under an hour, and the S48 screen already trained five arms at exactly this budget on this stream"
+    },
+    "arms": [
+      {"name": "stability-lr3e-5-2m", "lr": 3e-05, "run_dir": "results/stage2/runs/stability-lr3e-5-2m"},
+      {"name": "stability-lr1e-5-2m", "lr": 1e-05, "run_dir": "results/stage2/runs/stability-lr1e-5-2m"},
+      {"name": "stability-lr5e-6-2m", "lr": 5e-06, "run_dir": "results/stage2/runs/stability-lr5e-6-2m"}
+    ],
+    "early_loss_tripwire": {
+      "implemented_in": "oracle/frontier/train.py",
+      "arguments": ["--abort-ce-factor 1.5", "--abort-ce-baseline-steps 100", "--abort-ce-window 50"],
+      "factor": 1.5,
+      "baseline_steps": 100,
+      "window_steps": 50,
+      "smoke_limit": "12g for the 20-step smoke, the bound at which the S43 full-arm smoke measured 6.449 GiB without reaching it",
+      "baseline": "median CE over optimiser steps 1 through 100",
+      "trailing": "median CE over the trailing 50 optimiser steps",
+      "evaluation": "evaluated after every step from step 150 onward, the first step at which a full trailing window and the full baseline exist",
+      "fire_condition": "trailing median CE > 1.5 * baseline median CE",
+      "action": "write abort.json in the run directory with step, tokens_seen, both medians, the ratio, the window definition, the log path and the launched configuration; close the log; exit with status 86; write no checkpoint from the abort path",
+      "why_these_numbers": "the diverged bar's own trailing-50 median first crosses 1.5x its first-100 median at step 117, so this tripwire would have stopped it near step 150 or about 307,200 tokens instead of 19,998,720; the baseline is the first 100 steps rather than the first 50 because the first 50 sit entirely inside warmup and understate the initialised loss",
+      "recorded_aborts": []
+    },
+    "second_factor": {
+      "condition": "run only if the lr sweep alone does not stabilise: every arm trips the tripwire, or no arm satisfies the decision rule",
+      "arms": [
+        {"name": "stability-lr<chosen>-clip0.5-2m", "tokens": 2000000, "grad_clip": 0.5, "note": "the clip half is expressible at 2M"},
+        {"name": "stability-lr<chosen>-warmup500-clip0.5-10m", "tokens": 10240000, "steps": 5000, "warmup": 500, "grad_clip": 0.5, "note": "warmup 500 is not expressible at 2M: the trainer clamps warmup to steps//10, which is 97 at 976 steps and 244 at 2,441 steps. The smallest registered budget at which the clamp does not truncate 500 steps is 5,000 steps = 10,240,000 tokens."}
+      ],
+      "unchanged": "every other setting, including the sweep's stream and the optimiser",
+      "note": "not run unless the condition holds; if it is reached, the second-factor arm and its budget are recorded in the decision receipt before it is launched"
+    },
+    "decision_rule": {
+      "registered_text": "the chosen recipe is the highest learning rate among the sweep arms that satisfies both conditions: (a) the arm never tripped the tripwire and its trailing-50 median CE at 2M tokens is below 1.5x its first-100-step median; (b) its held-out mean next-token CE is at most base + 0.01 nats on the registered 3,906-chunk held-out slice, with the paired per-chunk delta against base reported beside it.",
+      "why_highest": "the highest surviving rate is the least departure from the registered 1e-4 recipe; a lower rate is admissible only when every higher rate fails",
+      "tie_break": "if several arms satisfy both conditions, the highest lr wins; if none does, the second factor is required; if the second factor also fails, the bar is not rerun and the amendment reports a null recipe finding",
+      "evidence": "training receipt and log per arm, a held-out receipt per arm with the paired base comparison, and one decision receipt written by scripts/s49_stability_table.py that evaluates this rule on those files"
+    },
+    "measured_limits": {
+      "rule": "each stage is sized from a measured peak at a bound that was not reached, then 1.5x headroom, never below +1 GiB; no stage inherits another stage's limit unless it is the same workload, and then the previous arm's measured peak sets the floor",
+      "smoke": "a 20-step, 40,960-token smoke per learning rate in its own run dir at a 12 GiB container bound, before that arm's 2M launch; the smoke's GPU peak must be below 12.5 GiB and its cgroup peak plus the rule determines SELVEDGE_MEM for the 2M arm",
+      "sweep_arm_limit": "12 GiB for every 2M stability arm: 1.86x the 6.449 GiB 20-step smoke peak of the same full-arm shapes and above the max(1.5 x smoke, smoke + 1 GiB) = 9.67 GiB floor. Once a 2M arm has measured its own long-run peak, every later arm must satisfy max(1.5 x that peak, that peak + 1 GiB) or the launcher refuses.",
+      "bar_limit": "14 GiB for the 20M rerun. The previous 20M bar's own training receipt records a cgroup peak of 8,762,351,616 bytes (8.761 GiB) in its 10 GiB limit, 2.31 GiB above the 20-step smoke and only 1.14x under the limit; the rerun is therefore sized from the long-run measured peak, not the smoke: 14 GiB is 1.60x and +5.24 GiB over it, and it also clears 1.5x the smoke (9.67 GiB). This corrects the smoke-only sizing used for the diverged bar.",
+      "reservation": "one GPU job at a time; host MemAvailable is checked before every launch and the launch refuses if limit + 4 GiB reserve exceeds it; the applied limits are re-verified with docker inspect by the court",
+      "vram": "the registered 12.5 GiB device limit is unchanged; the diverged run measured 11.429 GiB allocated and 11.672 GiB reserved, so the rerun keeps 12.5 GiB and fails closed above it"
+    }
+  },
+  "bar_rerun": {
+    "condition": "only with the recipe the decision receipt selects; the launcher fails closed without that receipt",
+    "run_dir": "results/stage2/runs/full-20m-math-s49",
+    "recipe": "the chosen lr with the common sweep settings and the 20M schedule of the base registration; warmup 200 (not clamped at 9,765 steps), clip 1.0, cosine to 10%",
+    "tokens": 20000000,
+    "steps": 9765,
+    "realised_tokens": 19998720,
+    "stream": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "stream_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "tripwire": "the same registered tripwire; an abort is a recorded result and stops the bar rather than spending the remaining hours",
+    "checkpoints": {
+      "every_steps": 1000,
+      "keep": 10,
+      "milestones": [
+        {"name": "m5", "step": 3000, "tokens_seen": 6144000, "definition": "first checkpoint at or after 5,000,000 tokens"},
+        {"name": "m10", "step": 5000, "tokens_seen": 10240000, "definition": "first checkpoint at or after 10,000,000 tokens"},
+        {"name": "m20", "step": 9765, "tokens_seen": 19998720, "definition": "final checkpoint, the registered 20M budget"}
+      ],
+      "why_not_exact": "2,048 tokens per step does not divide 5,000,000 or 10,000,000; milestone checkpoints are the first at or after each threshold, and their exact token counts are printed with every score",
+      "payload": "as registered: trainable state, int8 moments, step, offset, RNG states, config hash and stream hash"
+    },
+    "scoring_basis": {
+      "driver": "scripts/s43_score_total_cap.py",
+      "arm": "full-distill",
+      "tasks": {"mmlu_pro": {"limit": "per subject, 504 items"}, "mmlu": {"total_cap": 14042}, "gsm8k": {"items": 1319, "metric": "exact_match,strict-match"}, "minerva_math500": {"items": 500, "metric": "math_verify"}},
+      "attention": "the anchored instrument's default SDPA",
+      "sequence_correctness": "the S47/S48 exact final-answer verdict on the primary filter, reported beside the harness metric and never substituted for it",
+      "registration": "docs/ws19-anchored-subset-amendment-preregistration-v2.json",
+      "receipts": "one anchored receipt per milestone under results/stage2/eval/full-20m-math-s49/<milestone>/eval.json"
+    },
+    "curve": "median CE per 1,000-step block from the training log, plus the three anchored milestones; the knowledge and math family means are the unweighted means of their tasks with independent combined standard errors",
+    "slope_rule": {
+      "registered_text": "the math-family slope is the ordinary least-squares slope of the three milestone math-family means against tokens_seen. The registered 100M extension is recommended only if that slope is positive and the 10M-to-20M increment is also positive; otherwise the amendment reports the measured slope, states that the extension is not justified by this bar, and names the next route instead.",
+      "why": "a single 20M endpoint cannot distinguish a real upward trend from noise; the milestone curve is the smallest registered design that can say whether more tokens are doing anything on the target family"
+    }
+  },
+  "corrective_comparison": {
+    "condition": "run only if the rerun bar is stable and its math-family mean is above base",
+    "method": "compare the already-trained S48 2M corrective arms and their two matched controls against the rerun bar using their existing anchored receipts and paired per-item intervals on GSM8K and MATH-500; no arm is retrained and no checkpoint is rescored",
+    "receipts": [
+      "results/stage2/eval/corrective-kl-2m-math/eval.json",
+      "results/stage2/eval/corrective-signed-exp-2m-math/eval.json",
+      "results/stage2/eval/corrective-signed-true-2m-math/eval.json",
+      "results/stage2/eval/adapter-2m-math-matched/eval.json",
+      "results/stage2/eval/gated-dense-2m-math/eval.json"
+    ],
+    "note": "the arms are 2M-token arms and the bar is 20M; the comparison is matched in stream and teacher but not in tokens, and the receipt says so"
+  },
+  "what_this_amendment_does_not_establish": [
+    "that any swept learning rate is sufficient: that is the experiment",
+    "that the 1e-4 divergence was caused only by the learning rate: warmup length, gradient clipping, 8-bit moment quantisation and the frozen tied embedding all remain possible contributors, and the sweep changes none of them",
+    "that a lower learning rate will not under-train the 20M arm: that is what the milestone curve measures",
+    "that 2M tokens is enough to select the rate the 20M arm should use: the held-out rule is a stability and preservation test, not a 20M-scale optimum",
+    "that the anchored harness can see a small math gain: the registered standard errors are reported and the slope rule is written before the scores"
+  ],
+  "limits_derived_from": [
+    "results/stage2/runs/full-20m-math/log.jsonl",
+    "results/stage2/runs/full-20m-math/receipt.json",
+    "results/stage2/eval/full-20m-math/eval.json",
+    "results/stage2/s48-heldout-corrective-kl-2m-math.json"
+  ],
+  "registration_note": "registered before any stability arm was launched, before any smoke for this amendment, and before the bar rerun. The finding quotes the already-produced S48 receipts and log; it changes none of them."
+}
