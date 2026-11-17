@@ -8,6 +8,9 @@
 # Resumption: if latest.pt exists the same command is re-issued with
 # `--resume latest`; train.py verifies the config and stream hashes before
 # loading. A completed run is not restarted.
+#
+# `--optim-numerics stochastic` is the S42 registered default (see
+# docs/ws19-full-distillation-amendment-preregistration-v1.json).
 set -Eeuo pipefail
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
@@ -36,6 +39,7 @@ exec scripts/court --gpu oracle -- python3 oracle/frontier/train.py \
   --kl-weight 0.5 \
   --optimizer adam8bit \
   --optim-block 256 \
+  --optim-numerics stochastic \
   --schedule cosine \
   --min-lr-ratio 0.1 \
   --warmup 200 \

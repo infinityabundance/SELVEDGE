@@ -10,6 +10,13 @@ where the teacher distribution is computed **online** on the same batch — no
 logit cache is built or read. `T` and `lambda` are command-line values written
 into the run manifest before the first step; they are not tuned here.
 
+Weight-update numerics are recorded too (S42). A bf16 weight update below half
+an ulp rounds to zero under round-to-nearest; `optim8bit` applies stochastic
+rounding by default and can be asked for nearest or an error-compensation buffer.
+On measured steps the optimiser reports the fraction of parameter elements left
+bitwise unchanged, beside the round-to-nearest fraction and the sub-half-ulp
+fraction, and the run receipt carries the peak-LR and minimum-LR records.
+
 Discipline recorded per run:
 
 * the memory table is **not** in the active union; only the 8 rows read per
@@ -226,6 +233,35 @@ def next_batch(stream: torch.Tensor, offset: int, seq_len: int) -> tuple[torch.T
     return chunk[None, :], offset + seq_len
 
 
+def summarise_numerics(records: list[dict]) -> dict | None:
+    """Peak-LR and minimum-LR unchanged fractions from measured steps."""
+    if not records:
+        return None
+    peak = max(records, key=lambda record: record["lr"])
+    low = min(records, key=lambda record: record["lr"])
+
+    def pick(record: dict) -> dict:
+        return {
+            "step": record["step"], "lr": record["lr"],
+            "unchanged_fraction": record["unchanged_fraction"],
+            "unchanged_fraction_round_to_nearest": record[
+                "unchanged_fraction_round_to_nearest"],
+            "sub_half_ulp_fraction": record["sub_half_ulp_fraction"],
+        }
+
+    return {
+        "records": records,
+        "peak_lr": pick(peak),
+        "min_lr": pick(low),
+        "reading": (
+            "unchanged_fraction is measured bitwise, element by element, after "
+            "the applied update; the round-to-nearest column is the outcome the "
+            "same exact fp32 result would have had under nearest-even. A large "
+            "measured fraction beside a large sub-half-ulp fraction means the "
+            "update is below the grid, not that the weight did not move."),
+    }
+
+
 def run(args) -> int:
     started = time.time()
     if not torch.cuda.is_available():
@@ -296,9 +332,13 @@ def run(args) -> int:
         optimizer_report = {"kind": "stage2_adamw", "name": "AdamW",
                             "betas": [0.9, 0.95]}
     elif args.optimizer == "adam8bit":
-        optimizer = optim8bit.Adam8bit(trainable, lr=args.lr, betas=(0.9, 0.95),
-                                       weight_decay=args.weight_decay,
-                                       block=args.optim_block)
+        rounding_generator = torch.Generator(device=device)
+        rounding_generator.manual_seed(args.seed + 1)
+        optimizer = optim8bit.Adam8bit(
+            trainable, lr=args.lr, betas=(0.9, 0.95),
+            weight_decay=args.weight_decay, block=args.optim_block,
+            weight_rounding=args.optim_numerics,
+            generator=rounding_generator)
         optimizer_report = optimizer.receipt()
     else:
         raise SystemExit(f"train: unknown optimizer {args.optimizer!r}")
@@ -342,6 +382,8 @@ def run(args) -> int:
             "min_lr_ratio": args.min_lr_ratio,
             "freeze_embedding": bool(args.freeze_embedding),
             "gradient_checkpointing": bool(args.gradient_checkpointing),
+            "optimizer_numerics": args.optim_numerics,
+            "optimizer_measure_every": int(args.optim_measure_every),
         })
     config["config_sha256"] = config_hash(config)
     os.makedirs(args.run_dir, exist_ok=True)
@@ -373,6 +415,8 @@ def run(args) -> int:
         arm.load_state_dict(payload["arm_state"])
         arm.to(device)
         optimizer.load_state_dict(payload["optimizer"])
+        if args.optimizer == "adam8bit":
+            optimizer.set_rng_state(payload.get("rounding_rng"))
         torch.set_rng_state(payload["torch_rng"])
         np.random.set_state(payload["numpy_rng"])
         start_step = int(payload["step"])
@@ -381,6 +425,12 @@ def run(args) -> int:
 
     log_path = os.path.join(args.run_dir, "log.jsonl")
     log = open(log_path, "a" if start_step else "w", encoding="utf-8")
+    # Measure the bitwise outcome at the start, at the first full-LR step and at
+    # the final (minimum-LR) step; `--optim-measure-every` adds periodic points.
+    measure_at = {0, min(max(warmup - 1, 0), steps - 1), steps - 1}
+    if args.optim_measure_every > 0:
+        measure_at.update(range(0, steps, args.optim_measure_every))
+    numerics_log: list[dict] = []
     step_time = 0.0
     run_tokens = start_step * tokens_per_step
     global_started = time.time()
@@ -411,7 +461,12 @@ def run(args) -> int:
             kl_sum += float(kl)
         offset = offset + tokens_per_step
         torch.nn.utils.clip_grad_norm_(trainable, args.grad_clip)
-        optimizer.step()
+        measure = args.optimizer == "adam8bit" and step in measure_at
+        if measure:
+            optimizer.step(measure=True)
+            numerics_log.append({"step": step + 1, **optimizer.last_numerics})
+        else:
+            optimizer.step()
         step_time = time.time() - step_started
         run_tokens += tokens_per_step
         peak_alloc = torch.cuda.max_memory_allocated() / GIB
@@ -432,6 +487,8 @@ def run(args) -> int:
             "peak_reserved_gib": round(peak_reserved, 3),
             "active_per_token": arm_report.get("active_per_token"),
         }
+        if measure:
+            entry["numerics"] = optimizer.last_numerics
         if step % args.collision_every == 0 and args.arm == "memory":
             sample = stream[offset - args.seq_len:offset]
             collision = arm.collision_report(sample[None, :])
@@ -456,6 +513,8 @@ def run(args) -> int:
                 "arm": args.arm,
                 "arm_state": arm.state_dict(),
                 "optimizer": optimizer.state_dict(),
+                "rounding_rng": (optimizer.rng_state()
+                                 if args.optimizer == "adam8bit" else None),
                 "torch_rng": torch.get_rng_state(),
                 "numpy_rng": np.random.get_state(),
             }
@@ -466,6 +525,11 @@ def run(args) -> int:
             print(f"train: checkpoint {ckpt}", flush=True)
 
     log.close()
+    if args.optimizer == "adam8bit":
+        # The construction receipt is stale by now; report allocated state and
+        # the final measured numerics as saved.
+        optimizer_report = optimizer.receipt()
+    numerics_summary = summarise_numerics(numerics_log)
     wall = time.time() - global_started
     receipt = {
         "schema": "selvedge/stage2-train/v1",
@@ -491,6 +555,7 @@ def run(args) -> int:
         "trainable_arm_elements": int(sum(p.numel() for p in arm.parameters())),
         "arm_accounting": arm_report,
         "optimizer_state": optimizer_report,
+        "optimizer_numerics": numerics_summary,
         "final_checkpoint": os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt"),
         "final_checkpoint_sha256": sha256_file(
             os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt")),
@@ -526,6 +591,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--grad-clip", type=float, default=1.0)
     parser.add_argument("--optimizer", choices=["adamw", "adam8bit"], default="adamw")
     parser.add_argument("--optim-block", type=int, default=256)
+    parser.add_argument("--optim-numerics",
+                        choices=list(optim8bit.NUMERICS),
+                        default=optim8bit.DEFAULT_NUMERICS,
+                        help="weight-update rounding for the 8-bit optimizer")
+    parser.add_argument("--optim-measure-every", type=int, default=0,
+                        help="also measure unchanged-element fractions every N steps")
     parser.add_argument("--allow-dense-optimizer", action="store_true")
     parser.add_argument("--schedule", choices=["constant", "cosine"], default="constant")
     parser.add_argument("--min-lr-ratio", type=float, default=0.1)

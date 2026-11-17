@@ -5,6 +5,11 @@
 # The measured peak from this run replaces the modelled activation term in
 # results/stage2/s40-full-arithmetic-20261117T024151Z.json before the 20M-token
 # launch. The host memory limit is set by the systemd unit, not here.
+#
+# `--optim-numerics stochastic` is the S42 default: bf16 weight updates below
+# half an ulp change the weight with probability update/ulp instead of never.
+# The run measures the bitwise-unchanged fraction at the first step, the first
+# full-LR step and the final step and writes them into its receipt.
 set -Eeuo pipefail
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
@@ -22,6 +27,7 @@ exec scripts/court --gpu oracle -- python3 oracle/frontier/train.py \
   --kl-weight 0.5 \
   --optimizer adam8bit \
   --optim-block 256 \
+  --optim-numerics stochastic \
   --schedule cosine \
   --min-lr-ratio 0.1 \
   --warmup 5 \

@@ -1,0 +1,84 @@
+F..F...F...                                                              [100%]
+=================================== FAILURES ===================================
+____ test_sub_half_ulp_update_changes_half_under_sr_and_never_under_nearest ____
+
+    def test_sub_half_ulp_update_changes_half_under_sr_and_never_under_nearest():
+        # Adam's first-step magnitude is ~1, so the update is |lr| in weight units.
+        # 0.49 ulp is strictly below the nearest-even threshold of half an ulp.
+        lr = 0.49 * ULP_AT_ONE
+        start = torch.ones(4096, dtype=torch.bfloat16)
+        stochastic, sr_optimizer = _one_step(lr, "stochastic")
+        nearest, _ = _one_step(lr, "nearest")
+    
+        sr_changed = _changed_fraction(start, stochastic.detach())
+        rn_changed = _changed_fraction(start, nearest.detach())
+        assert 0.4 <= sr_changed <= 0.6, sr_changed
+        assert rn_changed == 0.0, rn_changed
+    
+        # and every element that changed moved by exactly one ulp, in the sign of
+        # the update: no element takes a second grid step
+        moved = (stochastic.detach().float() - start.float()) / ULP_AT_ONE
+        assert torch.allclose(moved, torch.round(moved), atol=0, rtol=0)
+>       assert float(moved.min()) >= 0.0
+E       assert -1.0 >= 0.0
+E        +  where -1.0 = float(tensor(-1.))
+E        +    where tensor(-1.) = <built-in method min of Tensor object at 0x7fd2083f6f30>()
+E        +      where <built-in method min of Tensor object at 0x7fd2083f6f30> = tensor([ 0., -1.,  0.,  ..., -1., -1.,  0.]).min
+
+oracle/tests/test_s42_optim_numerics.py:85: AssertionError
+_______________ test_unchanged_fraction_is_measured_at_half_ulp ________________
+
+    def test_unchanged_fraction_is_measured_at_half_ulp():
+        lr = 0.49 * ULP_AT_ONE
+        parameter, optimizer = _one_step(lr, "stochastic")
+        stats = optimizer.last_numerics
+        assert stats["elements"] == 4096
+        assert stats["sub_half_ulp_fraction"] == 1.0
+        assert stats["unchanged_fraction_round_to_nearest"] == 1.0
+        assert 0.4 <= stats["changed_fraction"] <= 0.6
+        # the measured fraction agrees with the arithmetic prediction
+>       assert stats["unchanged_fraction"] == pytest.approx(
+            stats["expected_unchanged_fraction_stochastic"], abs=0.02)
+E       assert 0.51904296875 == 0.7549972534179688 ± 0.02
+E         
+E         comparison failed
+E         Obtained: 0.51904296875
+E         Expected: 0.7549972534179688 ± 0.02
+
+oracle/tests/test_s42_optim_numerics.py:130: AssertionError
+__________ test_error_compensation_bounds_accumulated_rounding_error ___________
+
+    def test_error_compensation_bounds_accumulated_rounding_error():
+        steps = 1000
+        increment = 0.1 * ULP_AT_ONE
+        target = 1.0 + steps * increment
+    
+        compensated = _ones_parameter(512)
+        nearest = _ones_parameter(512)
+        generator = torch.Generator(device="cpu").manual_seed(1)
+        optimizer = optim8bit.Adam8bit(
+            [compensated], lr=increment, betas=(0.9, 0.95), block=BLOCK,
+            weight_rounding="compensated", generator=generator)
+        control = optim8bit.Adam8bit(
+            [nearest], lr=increment, betas=(0.9, 0.95), block=BLOCK,
+            weight_rounding="nearest")
+        for _ in range(steps):
+            for parameter, opt in ((compensated, optimizer), (nearest, control)):
+                parameter.grad = torch.ones_like(parameter)
+                opt.step()
+    
+        compensation_error = float(
+            (compensated.detach().float() - target).abs().max())
+        nearest_error = float((nearest.detach().float() - target).abs().max())
+        # nearest-even discards every 0.1-ulp increment: the weight never moves
+        assert nearest_error == pytest.approx(steps * increment, rel=1e-6)
+        # the carry keeps the accumulated error inside about one ulp
+>       assert compensation_error <= 1.5 * ULP_AT_ONE
+E       assert 0.78125 <= (1.5 * 0.00390625)
+
+oracle/tests/test_s42_optim_numerics.py:208: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s42_optim_numerics.py::test_sub_half_ulp_update_changes_half_under_sr_and_never_under_nearest
+FAILED oracle/tests/test_s42_optim_numerics.py::test_unchanged_fraction_is_measured_at_half_ulp
+FAILED oracle/tests/test_s42_optim_numerics.py::test_error_compensation_bounds_accumulated_rounding_error
+3 failed, 8 passed in 3.79s

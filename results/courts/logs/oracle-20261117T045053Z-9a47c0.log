@@ -1,0 +1,84 @@
+usage: train.py [-h] --arm {memory,adapter,full} --stream-manifest
+                STREAM_MANIFEST [--student-dir STUDENT_DIR]
+                [--teacher-dir TEACHER_DIR] [--memory-init MEMORY_INIT]
+                [--site SITE] [--hidden HIDDEN] [--tokens TOKENS]
+                [--seq-len SEQ_LEN] [--micro-batch MICRO_BATCH]
+                [--grad-accum GRAD_ACCUM] [--lr LR]
+                [--weight-decay WEIGHT_DECAY] [--warmup WARMUP]
+                [--temperature TEMPERATURE] [--kl-weight KL_WEIGHT]
+                [--grad-clip GRAD_CLIP] [--optimizer {adamw,adam8bit}]
+                [--optim-block OPTIM_BLOCK]
+                [--optim-numerics {stochastic,nearest,compensated}]
+                [--optim-measure-every OPTIM_MEASURE_EVERY]
+                [--allow-dense-optimizer] [--schedule {constant,cosine}]
+                [--min-lr-ratio MIN_LR_RATIO] [--freeze-embedding]
+                [--no-freeze-embedding] [--gradient-checkpointing]
+                [--keep-checkpoints KEEP_CHECKPOINTS] [--seed SEED]
+                [--log-every LOG_EVERY] [--collision-every COLLISION_EVERY]
+                [--ckpt-every CKPT_EVERY] [--resume RESUME] --run-dir RUN_DIR
+                [--vram-limit-gib VRAM_LIMIT_GIB]
+
+Stage-2 training loop: frozen anchor, trainable memory, online teacher KL. The
+core is frozen. Only the arm module (the memory or the parameter-matched dense
+adapter) receives gradients. The objective is L = CE(student, next token) +
+lambda * T^2 * KL(teacher_T || student_T) where the teacher distribution is
+computed **online** on the same batch — no logit cache is built or read. `T`
+and `lambda` are command-line values written into the run manifest before the
+first step; they are not tuned here. Weight-update numerics are recorded too
+(S42). A bf16 weight update below half an ulp rounds to zero under round-to-
+nearest; `optim8bit` applies stochastic rounding by default and can be asked
+for nearest or an error-compensation buffer. On measured steps the optimiser
+reports the fraction of parameter elements left bitwise unchanged, beside the
+round-to-nearest fraction and the sub-half-ulp fraction, and the run receipt
+carries the peak-LR and minimum-LR records. Discipline recorded per run: * the
+memory table is **not** in the active union; only the 8 rows read per token
+are. The projections and the convolution are. `active_per_token` comes from
+`memory.MemoryGeometry`, never from a parameter count; * the data order is the
+pinned stream in order (no shuffling in the smoke); resume continues at the
+recorded token offset, so a resumed run sees exactly the same tokens; * the
+checkpoint carries the arm state, optimiser, step, offset, RNG states, the
+stream hash and the config hash. `--resume latest` verifies the hashes before
+loading; * every step logs loss, CE, KL, learning rate, tokens/s, peak
+allocated and reserved VRAM, and (periodically) the measured distinct-identity
+count.
+
+options:
+  -h, --help            show this help message and exit
+  --arm {memory,adapter,full}
+  --stream-manifest STREAM_MANIFEST
+  --student-dir STUDENT_DIR
+  --teacher-dir TEACHER_DIR
+  --memory-init MEMORY_INIT
+  --site SITE
+  --hidden HIDDEN
+  --tokens TOKENS
+  --seq-len SEQ_LEN
+  --micro-batch MICRO_BATCH
+  --grad-accum GRAD_ACCUM
+  --lr LR
+  --weight-decay WEIGHT_DECAY
+  --warmup WARMUP
+  --temperature TEMPERATURE
+  --kl-weight KL_WEIGHT
+  --grad-clip GRAD_CLIP
+  --optimizer {adamw,adam8bit}
+  --optim-block OPTIM_BLOCK
+  --optim-numerics {stochastic,nearest,compensated}
+                        weight-update rounding for the 8-bit optimizer
+  --optim-measure-every OPTIM_MEASURE_EVERY
+                        also measure unchanged-element fractions every N steps
+  --allow-dense-optimizer
+  --schedule {constant,cosine}
+  --min-lr-ratio MIN_LR_RATIO
+  --freeze-embedding
+  --no-freeze-embedding
+  --gradient-checkpointing
+  --keep-checkpoints KEEP_CHECKPOINTS
+                        keep only the newest N ckpt-*.pt files (0 keeps all)
+  --seed SEED
+  --log-every LOG_EVERY
+  --collision-every COLLISION_EVERY
+  --ckpt-every CKPT_EVERY
+  --resume RESUME
+  --run-dir RUN_DIR
+  --vram-limit-gib VRAM_LIMIT_GIB
