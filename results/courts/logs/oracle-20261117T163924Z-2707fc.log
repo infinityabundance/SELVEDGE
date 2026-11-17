@@ -1,0 +1,11 @@
+compare: device free 14.02 GiB
+compare: base
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+compare: full-distill
+arm                           CE       SE        KL       SE       dCE       SE
+-------------------------------------------------------------------------------
+base                     2.80930  0.00652   0.27466  0.00067  +0.00000  0.00000
+full-distill             3.16586  0.00685   0.32027  0.00098  +0.35657  0.00220
+delta columns are paired per-chunk differences against base
+compare: receipt results/stage2/s49-heldout-stability-lr1e-5-2m.json
