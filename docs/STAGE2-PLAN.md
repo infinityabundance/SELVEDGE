@@ -1,10 +1,16 @@
 # WS19 stage 2 — teacher-grafted conditional memory (S37 registration and smoke)
 
-Status: **implemented (stream, graft, accounting) and not smoke-run.** No arm has
-trained and no arm has been evaluated: there is no smoke receipt at this revision,
-which §5 states plainly. The full-budget plan is *not* started in this session;
-this document registers its budget and routes from the measured graft and
-accounting receipts. Every number below that is a performance, storage, throughput
+Status (updated 2026-11-17, S48): **measured; no mechanism win.** The stream,
+graft, accounting and training loop are implemented, smoke-run and scored. Six
+arms have anchored receipts under `results/stage2/eval/`; the ranked table is
+rendered in `results/REPORT.md` (M10) by `scripts/s44_arm_table.py` from
+`results/stage2/s44-arm-table-20261117T081002Z.json`. The memory residual loses
+the math family, the parameter-matched dense adapter does not recover it, and
+every trained arm ranks below `base` and `memory-ungrafted`. The 20M
+full-distillation bar is in flight at this revision, so its row is absent rather
+than estimated. The S46 gate-headroom bound and the S48 corrective screen are
+recorded in `docs/WORK-LOG.md` and in the receipts they name. Nothing in this
+document claims a mechanism win, and the M1/M2 negatives stand. Every number below that is a performance, storage, throughput
 or resource measurement is generated from a receipt between sentinels by
 `scripts/perf_numbers.py`; editing one by hand is a defect. The arithmetic of the
 design (8 reads per token, 4 bigram + 4 trigram heads, one site after decoder
@@ -200,26 +206,34 @@ The three controls are the same harness and the same evaluation:
 A fourth arm, **memory-graft**, is the step-0 graft with no training. It isolates
 the teacher initialisation from the training.
 
-## 5. Smoke results — none, and this section used to imply otherwise
+## 5. Smoke results — superseded: the arms have receipts (S44, S48)
 
-**No smoke receipt exists.** There is a pinned stream receipt, two graft receipts
-and an accounting receipt under `results/stage2/`, and there is no
-`stage2-smoke-*` and no per-arm evaluation receipt. The previous revision of this
-section printed generated regions whose bodies were `0.0` and `0` for every arm
-delta, throughput and VRAM figure. Those numbers were not measurements of a null
-result; they were the absence of a receipt rendered as a number, which reads as a
-measured zero and is worse than a blank. The regions and their rows have been
-removed, and the honest statement is the one sentence above.
+This section used to say that **no smoke receipt exists**, and it was true when
+it was written. It is no longer: every stage-2 arm that has been trained has an
+anchored evaluation receipt under `results/stage2/eval/<arm>/eval.json`, and the
+ranked table is generated from them. The historical paragraph is kept because
+what it records matters: an earlier revision printed generated regions whose
+bodies were `0.0` and `0` for every arm delta, throughput and VRAM figure. Those
+numbers were not measurements of a null result; they were the absence of a
+receipt rendered as a number, which reads as a measured zero and is worse than a
+blank. The regions and their rows were removed and are not reintroduced here.
 
-What does exist is a **measured teacher-gradient signal**, not a quality result:
-the graft receipt's reconstruction numbers in §3 say how much of the teacher's
-information a row carries at initialisation, and they are a reason to run the
-smoke, not a substitute for it.
+The measurements live where they are generated: the arm table and paired
+per-item comparisons in `results/REPORT.md` (M10, owner
+`scripts/s44_arm_table.py`), the generative-math diagnosis in the S45 section, the
+gate-headroom bound in the S46 section, and the 2M screen in the S48 section. The
+first stage-2 receipt is the pinned stream
+`results/stage2/stage2-math-stream-20261117T071120Z.json`; the teacher-gradient
+signal in §3 remains a reason to run arms, not a substitute for a score.
 
 ## 6. Signal
 
-*(To be filled from a smoke receipt. None exists at this revision; no arm is
-declared a winner, a null **or** a loss.)*
+*(Two directions are measured and both are negative for the memory mechanism as
+implemented: the residual loses the math family at 2M and 20M, and the dense
+adapter does not recover the loss. The numbers are generated in
+`results/REPORT.md` M10 from `results/stage2/s44-arm-table-20261117T081002Z.json`;
+none is restated here. The S46 bounds say the damage is per-position and that no
+cheap one-threshold gate reaches the recoverable headroom.)*
 
 ## 7. Registered full-budget plan
 
