@@ -3,21 +3,45 @@
 
 `bitsandbytes` is not in the pinned oracle image, and rebuilding the court image
 to add it is a larger change than the control needs. This module implements the
-same idea in readable PyTorch: the two Adam moments are stored as int8 with one
-float32 scale per block of 256 elements, and the update arithmetic is float32.
-It is the documented 8-bit-optimizer construction of Dettmers et al.
-(arXiv:2110.02861, ICLR 2022), not a new optimizer.
+same idea in readable PyTorch: the first moment is stored as int8 with one
+float32 scale per block of 256 elements, the second moment is stored in
+bfloat16, and the update arithmetic is float32. The first moment follows the
+block-wise construction of Dettmers et al. (arXiv:2110.02861, ICLR 2022); the
+second-moment storage is a correction registered in S50.
 
-What is stored per trainable element:
+What is stored per trainable element (S50 onward):
 
 * first moment: 1 byte (int8, block-wise absmax scale)
-* second moment: 1 byte
-* two float32 scales per 256-element block: 0.03125 bytes
+* second moment: 2 bytes (bfloat16, one exponent and eight mantissa bits)
+* one float32 scale per 256-element block: 0.015625 bytes
 * the parameter itself stays in its model dtype (bf16 for this arm), so there is
   no fp32 master copy
 
-Total ~2.03 bytes per trainable element for the two moments, against 8 bytes for
-fp32 AdamW. The quantization is nearest-even (deterministic), symmetric in
+Total ~3.02 bytes per trainable element, against 8 bytes for fp32 AdamW. For the
+498,113,344 trainable elements of the full arm that is 3.016 B/element =
+1.399 GiB of moment state, 0.456 GiB more than the pre-S50 2.031 B/element
+(0.943 GiB). The measured full-arm peak was 11.4289 GiB allocated against the
+12.5 GiB limit, so the corrected projection is 11.885 GiB and stays under the
+limit; fp32 second moments (add 1.392 GiB, projecting 12.821 GiB) would not.
+
+Why the second moment cannot be linear int8 (S50 defect). A linear absmax code
+has spacing `absmax / 127` inside each block, so every squared gradient below
+about `absmax / 254` rounds to exactly zero. Because Adam forms
+`m / (sqrt(v) + eps)`, a zeroed `v` collapses the denominator to `eps = 1e-8`
+whenever the current gradient is also small: the element's update becomes up to
+`~1e8` times its AdamW value. The reproduction in
+`scripts/s50_optim_defect_sim.py` measures 57.7% of elements with a zeroed
+stored second moment and a nonzero first moment at lognormal scale spread 1.0,
+with a maximum update 3.2e4 times fp32 AdamW's and a 313% parameter error after
+50 steps. bfloat16 has a fixed 0.4% relative error at every magnitude (sqrt
+halves it to 0.2% in the denominator), so it cannot zero a small moment.
+
+The int8 first moment is retained because its error is absolute within a block
+(`absmax_m / 254`) rather than a relative collapse, and an update direction of
+order one arises only where `m` is comparable to its block's scale. It costs one
+byte per element; a bf16 first moment would add another 0.928 GiB and push the
+projected peak to 12.35 GiB, inside the limit by only 0.15 GiB, so it is not
+used. The quantization is nearest-even (deterministic), symmetric in
 [-127, 127], and per-block so a single large value cannot flatten a whole tensor.
 The reported bytes come from the allocated state tensors, not from arithmetic.
 
@@ -58,6 +82,11 @@ import torch
 DEFAULT_BLOCK = 256
 DEFAULT_NUMERICS = "stochastic"
 NUMERICS = ("stochastic", "nearest", "compensated")
+# S50: the second moment is stored in bfloat16, not linear int8. bfloat16 has a
+# fixed relative precision at every magnitude, so a small squared gradient
+# cannot quantise to zero (see the module docstring for the defect and bytes).
+SECOND_MOMENT_DTYPE = torch.bfloat16
+SECOND_MOMENT_BYTES = 2
 # Elements per bounded fp32 temporary. 2**22 bf16 elements are 8 MiB; the whole
 # per-chunk working set stays under ~40 MiB, so the transient does not compete
 # with the 1.2 GiB registration headroom.
@@ -229,6 +258,11 @@ class Adam8bit(torch.optim.Optimizer):
         self.generator = generator
         self.last_numerics: dict | None = None
         self.numerics_steps_measured = 0
+        # S50 tripwire: the largest per-element |update| / lr over the whole step.
+        # A well-conditioned Adam step is of order one; a value above the
+        # registered factor is a moment-storage defect, not a training regime.
+        self.last_max_update_over_lr: float | None = None
+        self.max_update_over_lr_ever: float = 0.0
 
     # -- RNG (saved beside the torch/numpy states so a resume is exact) -------
     def rng_state(self):
@@ -308,6 +342,7 @@ class Adam8bit(torch.optim.Optimizer):
                 loss = closure()
         stats = _empty_stats() if measure else None
         measured_lr = None
+        max_direction = None
         for group in self.param_groups:
             lr = group["lr"]
             beta1, beta2 = group["betas"]
@@ -332,13 +367,16 @@ class Adam8bit(torch.optim.Optimizer):
                     zeros = torch.zeros(state["padded"], dtype=torch.float32,
                                         device=parameter.device)
                     state["q_m"], state["absmax_m"] = quantize(zeros, block)
-                    state["q_v"], state["absmax_v"] = quantize(zeros, block)
+                    # Unquantised bf16 second moment: no linear absmax code, so
+                    # no squared gradient can round to zero.
+                    state["v"] = torch.zeros(state["padded"],
+                                             dtype=SECOND_MOMENT_DTYPE,
+                                             device=parameter.device)
                 state["step"] += 1
                 step = state["step"]
                 moment = dequantize(state["q_m"], state["absmax_m"],
                                     state["padded"], block)
-                variance = dequantize(state["q_v"], state["absmax_v"],
-                                      state["padded"], block)
+                variance = state["v"].to(torch.float32)
                 if weight_decay != 0.0:
                     # Decoupled AdamW decay, not an L2 term in the gradient.
                     parameter.mul_(1.0 - lr * weight_decay)
@@ -355,10 +393,23 @@ class Adam8bit(torch.optim.Optimizer):
                 denominator = (variance / bias2).sqrt().add_(eps)
                 update = (moment / bias1) / denominator
                 update = update[:state["numel"]].reshape(state["shape"])
+                # `amax`/`amin` read the tensor without an abs() temporary.
+                if max_direction is None:
+                    max_direction = torch.maximum(update.amax(), -update.amin())
+                else:
+                    max_direction = torch.maximum(
+                        max_direction,
+                        torch.maximum(update.amax(), -update.amin()))
                 self._apply_update(parameter, update, lr, state, stats)
                 state["q_m"], state["absmax_m"] = quantize(moment, block)
-                state["q_v"], state["absmax_v"] = quantize(variance, block)
+                state["v"].copy_(variance.to(SECOND_MOMENT_DTYPE))
                 measured_lr = lr
+        if max_direction is not None:
+            self.last_max_update_over_lr = float(max_direction.item())
+            self.max_update_over_lr_ever = max(self.max_update_over_lr_ever,
+                                               self.last_max_update_over_lr)
+        else:
+            self.last_max_update_over_lr = 0.0
         if stats is not None:
             self.numerics_steps_measured += 1
             self.last_numerics = finalise_stats(stats, lr=measured_lr or 0.0)
@@ -378,10 +429,15 @@ class Adam8bit(torch.optim.Optimizer):
                   for parameter in group["params"]]
         preserved = {}
         for index, state in (state_dict.get("state") or {}).items():
+            if "q_v" in state or "absmax_v" in state:
+                raise ValueError(
+                    "pre-S50 Adam8bit state stores the second moment as a linear "
+                    "int8 absmax code; that state is invalidated by the S50 "
+                    "optimiser defect and cannot be resumed. Rerun from the "
+                    "arm's initialisation with the corrected optimizer.")
             preserved[index] = {
                 key: value.detach().clone() for key, value in state.items()
-                if key in ("q_m", "q_v", "absmax_m", "absmax_v",
-                           "compensation")}
+                if key in ("q_m", "absmax_m", "v", "compensation")}
         result = super().load_state_dict(state_dict)
         for index, tensors in preserved.items():
             parameter = params[index]
@@ -393,7 +449,7 @@ class Adam8bit(torch.optim.Optimizer):
         """Bytes actually allocated for optimizer moments and scales."""
         total = 0
         for state in self.state.values():
-            for key in ("q_m", "q_v", "absmax_m", "absmax_v"):
+            for key in ("q_m", "absmax_m", "v"):
                 value = state.get(key)
                 if isinstance(value, torch.Tensor):
                     total += value.numel() * value.element_size()
@@ -427,6 +483,13 @@ class Adam8bit(torch.optim.Optimizer):
             "basis": "block-wise quantized Adam moments, Dettmers et al. arXiv:2110.02861",
             "block_elements": block,
             "quantization": "symmetric int8, nearest-even, per-block float32 absmax",
+            "second_moment_storage": "bfloat16 (unquantised; S50 correction)",
+            "second_moment_basis": (
+                "linear absmax int8 zeroes any squared gradient below "
+                "absmax/254, collapsing the Adam denominator to eps when the "
+                "current gradient is also small; bfloat16 has fixed 0.4% "
+                "relative precision at every magnitude (S50)"),
+            "second_moment_bytes_per_element": float(SECOND_MOMENT_BYTES),
             "parameter_dtype": "model dtype (bf16 for this arm); no fp32 master copy",
             "weight_rounding": group.get("weight_rounding", DEFAULT_NUMERICS),
             "weight_rounding_basis": {
@@ -446,4 +509,6 @@ class Adam8bit(torch.optim.Optimizer):
             "total_state_bytes": self.total_state_bytes(),
             "numerics_steps_measured": self.numerics_steps_measured,
             "last_numerics": self.last_numerics,
+            "max_update_over_lr": self.last_max_update_over_lr,
+            "max_update_over_lr_ever": self.max_update_over_lr_ever,
         }

@@ -66,22 +66,23 @@ def test_adam8bit_converges_on_a_quadratic():
     assert eight_loss <= reference_loss * 10.0 + 1e-6
 
 
-def test_adam8bit_stores_int8_moments_and_reports_their_bytes():
+def test_adam8bit_stores_int8_first_moment_and_bf16_second_moment():
     parameter = nn.Parameter(torch.randn(1000))
     parameter.grad = torch.randn(1000)
     optimizer = optim8bit.Adam8bit([parameter], block=BLOCK)
     optimizer.step()
     state = optimizer.state[parameter]
     assert state["q_m"].dtype == torch.int8
-    assert state["q_v"].dtype == torch.int8
+    assert state["v"].dtype == torch.bfloat16
     assert state["q_m"].numel() == state["padded"] == 1024
     reported = optimizer.state_bytes()
-    # two int8 moments + two float32 scales per 64-element block
-    expected = 2 * 1024 + 2 * (1024 // BLOCK) * 4
+    # int8 first moment + bf16 second moment + one float32 scale per block
+    expected = 1024 + 2 * 1024 + (1024 // BLOCK) * 4
     assert reported == expected
-    assert 2.0 < optimizer.moment_bytes_per_element() < 2.2
+    assert 3.0 < optimizer.moment_bytes_per_element() < 3.2
     receipt = optimizer.receipt()
-    assert receipt["moment_bytes_per_element"] > 2.0
+    assert receipt["moment_bytes_per_element"] > 3.0
+    assert receipt["second_moment_storage"].startswith("bfloat16")
     assert receipt["block_elements"] == BLOCK
 
 
@@ -110,7 +111,7 @@ def test_adam8bit_state_round_trip_keeps_int8_moments_and_replays_exactly():
     state = replay_optimizer.state[replay]
     # PyTorch's loader would cast these to the parameter dtype; ours must not.
     assert state["q_m"].dtype == torch.int8
-    assert state["q_v"].dtype == torch.int8
+    assert state["v"].dtype == torch.bfloat16
     assert state["absmax_m"].dtype == torch.float32
     replay.data.copy_(saved_parameter)
     replay.grad = second_grad.clone()

@@ -278,6 +278,29 @@ def tripwire_decision(ce_history: list[float], factor: float,
     }
 
 
+def update_tripwire_decision(max_update_over_lr: float | None,
+                             factor: float) -> dict | None:
+    """Per-step tripwire on the largest Adam update direction.
+
+    A corrected Adam step has an update of order one per element: the first
+    moment is a normalised moving average of the gradient and the denominator is
+    its root-mean-square, so `|update| / lr` is the step the parameter takes in
+    units of the learning rate. With beta1 = 0.9 the theoretical bound is
+    `1 / (1 - beta1) = 10`; in practice it stays near one. A value above the
+    registered factor can only come from a collapsing denominator (a zeroed
+    second moment), so it aborts the run instead of being logged and ignored.
+
+    A disabled factor (<= 0) or a step that produced no update is silent.
+    """
+    if factor <= 0.0 or max_update_over_lr is None:
+        return None
+    return {
+        "max_update_over_lr": float(max_update_over_lr),
+        "factor": float(factor),
+        "fired": float(max_update_over_lr) > float(factor),
+    }
+
+
 def prune_checkpoints(run_dir: str, keep: int) -> None:
     if keep <= 0:
         return
@@ -455,6 +478,7 @@ def run(args) -> int:
             "gradient_checkpointing": bool(args.gradient_checkpointing),
             "optimizer_numerics": args.optim_numerics,
             "optimizer_measure_every": int(args.optim_measure_every),
+            "max_update_over_lr_factor": float(args.abort_update_factor),
         })
     if args.arm == "corrective":
         config.update({
@@ -535,6 +559,7 @@ def run(args) -> int:
     step_time = 0.0
     run_tokens = start_step * tokens_per_step
     ce_history: list[float] = []
+    update_max_ever = 0.0
     if start_step and args.abort_ce_factor > 0.0:
         # A resumed run must keep the tripwire's baseline and trajectory.
         with open(log_path, "r", encoding="utf-8") as prior:
@@ -608,6 +633,11 @@ def run(args) -> int:
             numerics_log.append({"step": step + 1, **optimizer.last_numerics})
         else:
             optimizer.step()
+        step_max_update = None
+        if args.optimizer == "adam8bit":
+            step_max_update = optimizer.last_max_update_over_lr
+            if step_max_update is not None:
+                update_max_ever = max(update_max_ever, step_max_update)
         step_time = time.time() - step_started
         run_tokens += tokens_per_step
         peak_alloc = torch.cuda.max_memory_allocated() / GIB
@@ -630,6 +660,8 @@ def run(args) -> int:
         }
         if measure:
             entry["numerics"] = optimizer.last_numerics
+        if step_max_update is not None:
+            entry["max_update_over_lr"] = step_max_update
         if objective_sum and corrective_module is not None:
             entry["objective"] = {
                 key: value / args.grad_accum
@@ -660,6 +692,36 @@ def run(args) -> int:
                   f"ce={entry['ce']:.4f} kl={entry['kl']:.4f} "
                   f"{entry['tokens_per_second']:.0f} tok/s "
                   f"peak={peak_alloc:.2f}GiB", flush=True)
+        if args.optimizer == "adam8bit":
+            decision = update_tripwire_decision(step_max_update,
+                                                args.abort_update_factor)
+            if decision is not None and decision["fired"]:
+                # The update tripwire is a registered stop: a collapsing Adam
+                # denominator is a storage defect, not a training regime.
+                abort = {
+                    "schema": "selvedge/stage2-train-abort/v1",
+                    "kind": "train-abort",
+                    "created_utc": utcnow(),
+                    "stamp": stamp(),
+                    "revision": revision(),
+                    "arm": args.arm,
+                    "reason": ("update tripwire: max|update|/lr exceeded the "
+                               "registered factor; the Adam denominator is "
+                               "collapsing (zeroed second moment)"),
+                    "step": step + 1,
+                    "tokens_seen": run_tokens,
+                    **decision,
+                    "optimizer": optimizer.receipt(),
+                    "log": log_path,
+                    "config": config,
+                    "command": sys.argv,
+                }
+                write_json(os.path.join(args.run_dir, "abort.json"), abort)
+                log.close()
+                print(f"train: UPDATE TRIPWIRE step {step + 1} "
+                      f"max|update|/lr={decision['max_update_over_lr']:.3f} > "
+                      f"{args.abort_update_factor:.3f}; aborted", flush=True)
+                return 86
         if args.abort_ce_factor > 0.0:
             ce_history.append(entry["ce"])
             decision = tripwire_decision(
@@ -755,6 +817,11 @@ def run(args) -> int:
             "window_steps": args.abort_ce_window,
             "tripped": False,
         } if args.abort_ce_factor > 0.0 else None),
+        "update_tripwire": ({
+            "factor": args.abort_update_factor,
+            "max_update_over_lr_ever": update_max_ever,
+            "tripped": False,
+        } if args.optimizer == "adam8bit" else None),
         "objective": objective,
         "correction_gate_final": (
             corrective_module.gate_summary() if corrective_module is not None
@@ -834,6 +901,10 @@ def main(argv: list[str]) -> int:
                         help="optimiser steps whose median CE is the tripwire baseline")
     parser.add_argument("--abort-ce-window", type=int, default=50,
                         help="trailing optimiser steps whose median CE is monitored")
+    parser.add_argument("--abort-update-factor", type=float, default=10.0,
+                        help="update tripwire: abort when max|update|/lr over a "
+                             "step exceeds this factor (0 disables); the Adam "
+                             "bound with beta1=0.9 is 1/(1-beta1)=10")
     parser.add_argument("--freeze-embedding", dest="freeze_embedding",
                         action="store_true", default=True)
     parser.add_argument("--no-freeze-embedding", dest="freeze_embedding",
