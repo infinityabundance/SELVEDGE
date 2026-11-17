@@ -388,23 +388,38 @@ def test_items() -> list[dict]:
     return items
 
 
+def _shingle_bag(words: list[str]) -> set[tuple[str, ...]]:
+    if len(words) < SHINGLE_WIDTH:
+        return {tuple(words)} if words else set()
+    return {tuple(words[index:index + SHINGLE_WIDTH])
+            for index in range(len(words) - SHINGLE_WIDTH + 1)}
+
+
 def contamination_check(items: list[dict], tests: list[dict] | None = None) -> dict:
     tests = tests if tests is not None else test_items()
-    test_shingles = [(entry["task"], _shingles(_words(entry["text"])))
-                     for entry in tests]
+    test_bags = [_shingle_bag(_words(entry["text"])) for entry in tests]
+    inverted: dict[tuple[str, ...], list[int]] = {}
+    for index, bag in enumerate(test_bags):
+        for shingle in bag:
+            inverted.setdefault(shingle, []).append(index)
     worst = 0.0
     above_discard = 0
     above_fail = 0
     examples = []
     for item in items:
-        literal = _shingles(_words(item["prompt"] + "\n" + item["solution"]))
+        bag = _shingle_bag(_words(item["prompt"] + "\n" + item["solution"]))
+        shared: dict[int, int] = {}
+        for shingle in bag:
+            for index in inverted.get(shingle, ()):
+                shared[index] = shared.get(index, 0) + 1
         best = 0.0
         best_task = None
-        for task, shingles in test_shingles:
-            score = _jaccard(literal, shingles)
+        for index, count in shared.items():
+            union = len(bag) + len(test_bags[index]) - count
+            score = count / union if union else 0.0
             if score > best:
                 best = score
-                best_task = task
+                best_task = tests[index]["task"]
         if best > worst:
             worst = best
         if best >= DISCARD_JACCARD:
