@@ -418,6 +418,38 @@ def test_runner_refuses_missing_or_unpaired_rollouts(tmp_path):
     assert runner.require_rollouts(path)["prompt_count"] == 1
 
 
+def test_routed_arm_wraps_a_pre_read_router_and_fetches_only_selected():
+    from frontier import memory as mem
+
+    core = mem.ConditionalMemory(hidden=4, value_dim=8, rows=8, sites=(0,),
+                                 table_dtype=torch.float32)
+    core.context.ids = torch.tensor([[1, 2, 3]])
+    hidden = torch.randn(1, 3, 4)
+
+    # zero-init router, positive cost: sigmoid(-0.7) < 0.5, nothing is fetched
+    rejecting = runner.RoutedMemoryArm(
+        core, router=runner.build_router(4, seed=0), threshold=0.5, cost=0.35)
+    out = rejecting(hidden)
+    assert out.shape == hidden.shape
+    assert float(out.detach().abs().max()) == 0.0
+    assert rejecting.ledger.report()["calls"] == 0
+    assert rejecting.ledger.report()["requested_rows"] == 0
+
+    # zero cost: the gate is exactly 0.5 and every token is selected
+    dense = runner.RoutedMemoryArm(
+        core, router=runner.build_router(4, seed=0), threshold=0.5, cost=0.0)
+    dense(hidden)
+    report = dense.ledger.report()
+    assert report["calls"] == 1
+    assert report["requested_rows"] == 3 * 8
+    assert report["unique_rows"] > 0
+
+    # no router is the dense memory condition
+    plain = runner.RoutedMemoryArm(core)
+    plain(hidden)
+    assert plain.ledger.report()["requested_rows"] == 3 * 8
+
+
 def test_win_bar_needs_both_controls_and_fewer_bytes():
     arms = {
         "base": {"correct": 10, "items": 50, "read_requests": 0,

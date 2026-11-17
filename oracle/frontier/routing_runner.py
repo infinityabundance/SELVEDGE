@@ -521,6 +521,13 @@ class RoutedMemoryArm(torch.nn.Module):
                  ledger: "StoreLedger | None" = None, site_index: int = 0):
         super().__init__()
         self.core = core
+        if router is not None and not isinstance(
+                router, routing.TwoStageUtilityRouter):
+            wrapped = routing.TwoStageUtilityRouter(
+                hidden=int(core.hidden), tau=float(router.tau),
+                use_post_read=False)
+            wrapped.pre.load_state_dict(router.state_dict())
+            router = wrapped
         self.router = router
         self.threshold = float(threshold)
         self.cost = float(cost)
@@ -797,8 +804,10 @@ class StoreLedger:
                cache: bool = False) -> torch.Tensor:
         if addresses.ndim != 1:
             raise ValueError("addresses must be 1-D")
-        if addresses.numel() and (
-                int(addresses.min()) < 0 or int(addresses.max()) >= table.shape[0]):
+        if addresses.numel() == 0:
+            # A rejected token requests nothing; an empty gather is not a call.
+            return table.new_zeros((0,) + tuple(table.shape[1:]))
+        if int(addresses.min()) < 0 or int(addresses.max()) >= table.shape[0]:
             raise ValueError("address outside the table")
         self.calls += 1
         self.requested += int(addresses.numel())

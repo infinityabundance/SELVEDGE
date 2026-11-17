@@ -1,0 +1,9 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+completion: '\n\n2 + '
+ce: 0.15840462091728114 tokens: 4
+ledger: {'calls': 5, 'requested_rows': 184, 'unique_rows': 73, 'bytes': 74752, 'row_bytes': 1024, 'cache_hits': 0, 'basis': 'measured gather ledger: unique addressed table rows'}
+masked completion: '\n\n2 + '
+masked ledger: {'calls': 5, 'requested_rows': 0, 'unique_rows': 0, 'bytes': 0, 'row_bytes': 1024, 'cache_hits': 0, 'basis': 'measured gather ledger: unique addressed table rows'}

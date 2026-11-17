@@ -63,7 +63,7 @@
     "utility-outcome": {"supervision": "counterfactual-outcome", "role": "the registered P19.9 outcome route"},
     "utility-ce": {"supervision": "counterfactual-token-loss", "role": "the CE route; asks whether outcome labels are needed"},
     "no-memory-gate": {"supervision": "counterfactual-outcome", "read": "zero read at every selected token", "role": "gate-only control: any accuracy change cannot come from memory content; parity with base is the expected outcome"},
-    "matched-dense": {"module": "oracle/frontier/matched_controls.py:MatchedDenseAdapter", "checkpoint": "results/stage2/runs/gated-dense-2m-math/ckpt-000976.pt is the gate-attribution control; the matched dense adapter is the data control", "role": "equal active union without the external memory"},
+    "matched-dense": {"module": "oracle/frontier/matched_controls.py:MatchedDenseAdapter", "checkpoint": null, "role": "the registered data control at the corrective arm's 539,649-element active union. No trained matched-dense 2M checkpoint exists in the repository, so the screen cannot quote it; it is registered as an arm that must be trained before a matched-data comparison is made. The screen's attribution control is gated-dense."},
     "gated-dense": {"module": "oracle/frontier/matched_controls.py:IdentityGatedDenseResidual", "checkpoint": "results/stage2/runs/gated-dense-2m-math/ckpt-000976.pt", "role": "attribution control: the same zero-initialised gate over a dense read; a routed win must also beat this arm"},
     "base": {"role": "frozen student with no arm"}
   },
@@ -103,11 +103,11 @@
   },
   "implementation": {
     "runner": "oracle/frontier/routing_runner.py",
-    "runner_sha256": "438d56ac1d7803726edd929f285a10429e684198695fe5f37aaebdba53f2373d",
+    "runner_sha256": "3c27d71c7bc41723429d31f2cb07869f82a70eaa7f6cfb0c0283d989c8f84ff3",
     "driver": "scripts/s52_p19_9_router.py",
     "driver_sha256": "a82dca69f90a0bdbaf7bef1aee70086f22b9792637587952286557c52fa742a6",
     "tests": "oracle/tests/test_s52_p19_9_runner.py",
-    "tests_sha256": "5ecbb1d88183c4c1c32eca286ccac722b69846f2cef983856cf3d84f8524beba",
+    "tests_sha256": "b3574bbafaa903fe7d0e2d463fd1e4cc82c3f91355da58f7e763a7f64d885968",
     "test_claims": [
       "prompt-set split leakage and sampling drift refuse",
       "Delta_outcome sign is correct on hand-built paired rollouts and each side is verified separately",
