@@ -234,41 +234,74 @@ parameter-matched dense adapter, which is the arm the distillation control
 trains); `results/stage2/throughput-summary-20261117T005345Z.json` derives the
 budget from them.
 
-| quantity | memory arm | adapter arm |
-| --- | ---: | ---: |
-| tokens/s at a 2,048-token optimiser step (median) | <!-- BEGIN GENERATED: s2-throughput-memory-tok-s -->
-2,285.0
-<!-- END GENERATED: s2-throughput-memory-tok-s --> | <!-- BEGIN GENERATED: s2-throughput-adapter-tok-s -->
-2,321.0
-<!-- END GENERATED: s2-throughput-adapter-tok-s --> |
-| median optimiser step (ms) | <!-- BEGIN GENERATED: s2-throughput-memory-median-ms -->
-896.3
-<!-- END GENERATED: s2-throughput-memory-median-ms --> | <!-- BEGIN GENERATED: s2-throughput-adapter-median-ms -->
-882.4
-<!-- END GENERATED: s2-throughput-adapter-median-ms --> |
-| p95 optimiser step (ms) | — | <!-- BEGIN GENERATED: s2-throughput-adapter-p95-ms -->
-890.3
-<!-- END GENERATED: s2-throughput-adapter-p95-ms --> |
-| peak allocated VRAM (GiB) | <!-- BEGIN GENERATED: s2-throughput-memory-peak-gib -->
-9.21
-<!-- END GENERATED: s2-throughput-memory-peak-gib --> | <!-- BEGIN GENERATED: s2-throughput-adapter-peak-gib -->
-8.94
-<!-- END GENERATED: s2-throughput-adapter-peak-gib --> |
+Measured at that geometry, median over 50 steps after 20 discarded warmup steps:
 
-At the measured adapter rate the registered 20,000,000-token control costs
+**Memory arm** — tokens/s at a 2,048-token optimiser step:
+
+<!-- BEGIN GENERATED: s2-throughput-memory-tok-s -->
+2,285.0
+<!-- END GENERATED: s2-throughput-memory-tok-s -->
+
+**Memory arm** — median optimiser step, milliseconds:
+
+<!-- BEGIN GENERATED: s2-throughput-memory-median-ms -->
+896.3
+<!-- END GENERATED: s2-throughput-memory-median-ms -->
+
+**Memory arm** — peak allocated VRAM, GiB:
+
+<!-- BEGIN GENERATED: s2-throughput-memory-peak-gib -->
+9.21
+<!-- END GENERATED: s2-throughput-memory-peak-gib -->
+
+**Adapter arm** (the arm the distillation control trains) — tokens/s:
+
+<!-- BEGIN GENERATED: s2-throughput-adapter-tok-s -->
+2,321.0
+<!-- END GENERATED: s2-throughput-adapter-tok-s -->
+
+**Adapter arm** — median optimiser step, milliseconds:
+
+<!-- BEGIN GENERATED: s2-throughput-adapter-median-ms -->
+882.4
+<!-- END GENERATED: s2-throughput-adapter-median-ms -->
+
+**Adapter arm** — p95 optimiser step, milliseconds:
+
+<!-- BEGIN GENERATED: s2-throughput-adapter-p95-ms -->
+890.3
+<!-- END GENERATED: s2-throughput-adapter-p95-ms -->
+
+**Adapter arm** — peak allocated VRAM, GiB:
+
+<!-- BEGIN GENERATED: s2-throughput-adapter-peak-gib -->
+8.94
+<!-- END GENERATED: s2-throughput-adapter-peak-gib -->
+
+At the measured adapter rate the registered 20,000,000-token control costs this
+many hours:
+
 <!-- BEGIN GENERATED: s2-control-hours -->
 2.39
-<!-- END GENERATED: s2-control-hours --> hours, inside the 6 h window; a full 6 h
-window would fund <!-- BEGIN GENERATED: s2-six-hour-capacity-tokens -->
+<!-- END GENERATED: s2-control-hours -->
+
+which is inside the 6 h window. A full 6 h window would fund this many tokens:
+
+<!-- BEGIN GENERATED: s2-six-hour-capacity-tokens -->
 50,132,848
-<!-- END GENERATED: s2-six-hour-capacity-tokens --> tokens. The budget is
-deliberately **not** raised to that capacity: it was registered before the
-measurement, and changing it afterwards would be a post-measurement budget
-change. The loop runs whole 2,048-token steps, so the budget is realised as
+<!-- END GENERATED: s2-six-hour-capacity-tokens -->
+
+The budget is deliberately **not** raised to that capacity: it was registered
+before the measurement, and changing it afterwards would be a post-measurement
+budget change. The loop runs whole 2,048-token steps, so the budget is realised
+as this many tokens:
+
 <!-- BEGIN GENERATED: s2-control-realised-tokens -->
 19,998,720
-<!-- END GENERATED: s2-control-realised-tokens --> tokens in 9,765 steps —
-1,280 tokens (0.0064%) below the registered budget, never above it.
+<!-- END GENERATED: s2-control-realised-tokens -->
+
+in 9,765 steps — 1,280 tokens (0.0064%) below the registered budget, never above
+it.
 
 The phase breakdown attributed the median adapter step as 58.3% backward, 19.8%
 teacher forward, 14.6% student forward, 7.2% loss and 0.0% optimiser, from CUDA
