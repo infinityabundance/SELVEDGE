@@ -203,3 +203,33 @@ regenerated anyway.
 - **Determinism is a kernel property.** It holds here with
   `torch.use_deterministic_algorithms(True)`; without the flag the dense control
   itself is not reproducible.
+
+## 7. Temporal state in a training loop (and the rule that was wrong)
+
+No looped arm exists yet, but the state contract binds every later stage, so it
+is written down here before the code that will depend on it. The rule, corrected
+at S38 (`docs/PROGRAM-PLAN.md` P19.4, `docs/RUNTIME.md` §13.3):
+
+1. **State is carried across tokens** inside one sequence. `S_{k,t} -> S_{k,t+1}`.
+   A pass is not a one-token function and the training loop must not reset the
+   state between positions of a sequence.
+2. **State is reset between sequences**, at the batch-sample boundary: a new
+   document is an independent sequence, so every pass starts from the zero state
+   for it. With packed sequences this is a reset at each document boundary within
+   the pack, not only at the pack boundary.
+3. **Each pass owns its state.** A K-pass arm allocates K independent
+   `(conv, DeltaNet, KV)` triples; the gradient path may connect passes through
+their *activations*, never through their state buffers.
+
+The reference implementation exposes exactly this (`PassState` in
+`oracle/reference/qwen35.py`, with the `-Base` receipt at
+`results/reference/20261117T003300Z-qwen35-base-state-contract.json`). The stage-2
+trainer (`oracle/frontier/train.py`) trains a single pass and therefore needs no
+per-pass bookkeeping yet; when it grows a loop it must allocate the state from
+the same object rather than inventing a second convention.
+
+The checkpoint consequence is small but real: a resumable arm must persist the
+state or a definable resume point, or declare that it resumes at a sequence
+boundary. The stage-2 trainer persists optimiser and RNG state and starts each
+step from a fresh sequence, which is the conservative choice and is why its
+resume is exact.

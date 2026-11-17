@@ -593,7 +593,32 @@ construction.
    is not needed for a text-only decode loop; `inspect-model --active-path`
    accounts it separately so its cost can be priced without executing it.
 
-### 13.3 What must not change
+### 13.3 Per-pass temporal state (the rule, and the correction)
+
+A kernel that runs **one** pass needs only the rule in 13.2: carry the
+convolution window and the DeltaNet state across token boundaries. A runtime that
+runs **K passes** (P19.3/P19.4) needs one more rule, and it was written down
+wrongly once (S38) in the plan:
+
+1. **Carried across tokens.** Pass `k`'s state at token `t + 1` is what pass `k`
+   produced at token `t`: `S_{k,t} -> S_{k,t+1}`. It is **not** reset per token.
+2. **Reset only between independent sequences.** A new document or prompt starts
+   every pass from the zero state; nothing else resets it.
+3. **No sharing.** Pass `k` reads and writes only its own `(conv, DeltaNet, KV)`
+   triple. The state is per `(pass, layer, kind)`.
+4. **Chunking is exact.** Splitting a sequence and carrying the state across the
+   split must be **bit-identical** to the single pass over it. That is the test
+   that makes a prefill/decode split defensible.
+
+The reference implements this as `PassState` / `MultiPassState` / `step_token` in
+`oracle/reference/qwen35.py` and proves it with `multi_pass_state_test`; the
+receipt on the `-Base` anchor is
+`results/reference/20261117T003300Z-qwen35-base-state-contract.json`. The Rust
+kernel set in 13.2 must expose the same object — a per-pass state buffer whose
+lifetime is the sequence — and the same exactness test before stage 5 can carry
+a serving claim.
+
+### 13.4 What must not change
 
 The runtime's existing guarantees are the reason its numbers are quotable, and a
 new kernel is not an excuse to weaken them:
@@ -608,7 +633,7 @@ new kernel is not an excuse to weaken them:
 - **no hidden allocation growth**: the delta state and conv state are bounded by
   the config, not by the sequence length.
 
-### 13.4 The Court E parity plan
+### 13.5 The Court E parity plan
 
 Court E currently proves streaming invariance on Qwen3-0.6B. For the anchor it
 becomes a three-stage court, and the stages are ordered so a failure is localised:
@@ -651,7 +676,7 @@ The state tests are part of E2, not an optional extra:
 - **reset:** the second chunk from a fresh state must *differ*, proving the test
   would catch a kernel that ignored the state it was handed.
 
-### 13.5 Next step, stated as one sentence
+### 13.6 Next step, stated as one sentence
 
 Implement `delta_rule_scan`, `causal_conv_state`, `rms_norm_gated` and
 `partial_rope_with_gate` in `kernels.rs` in that order, each with the E2 test

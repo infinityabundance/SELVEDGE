@@ -5217,16 +5217,92 @@ the mechanism. **The win requires beating both (i) and (ii)**, because (i)
 isolates the information and (ii) isolates the rereading; only beating both
 attributes the effect to the conditioning.
 
-**Temporal-state independence, mandatory.** Every pass carries its **own**
-DeltaNet recurrent state and its **own** KV; no pass may read another pass's
-state, and a pass's state must be reset between tokens. The extra state is real
-memory and is accounted:
+**Temporal-state independence, mandatory — and corrected at S38.** Every pass
+carries its **own** DeltaNet recurrent state and its **own** KV cache, no pass may
+read another pass's state, and the state is **carried across tokens** within a
+sequence. The earlier sentence said a pass's state "must be reset between
+tokens"; that was wrong, and it was wrong in the direction that would have made
+the whole stage vacuous: an autoregressive Gated DeltaNet whose state is reset at
+every token is a one-token function, and the chunking-equivalence claim below
+would have been not merely unproven but false. The correct rule is
+`S_{k,t} -> S_{k,t+1}` across tokens, read only within pass `k`, and reset at
+the boundary of an **independent sequence** (a new document, a new prompt) —
+never between tokens of the same sequence. The same statement applies to each
+pass's attention KV.
 
-DeltaNet state, all linear layers, elements per pass:
+The rules are implemented as an explicit interface in the reference
+(`oracle/reference/qwen35.py`: `PassState`, `MultiPassState`, `step_token`) and
+proven by `multi_pass_state_test`, whose receipt on the `-Base` anchor is
+`results/reference/20261117T003300Z-qwen35-base-state-contract.json` (court
+`results/courts/oracle-20261117T002813Z-e67bd8.json`):
+
+- carry across tokens: token-by-token from the zero state reproduces `forward`
+  with **identical argmax** at every position and cosine
+
+  <!-- BEGIN GENERATED: state-contract-carry-cosine -->
+0.9997768402099609
+  <!-- END GENERATED: state-contract-carry-cosine -->
+
+  at a maximum absolute logit difference of
+
+  <!-- BEGIN GENERATED: state-contract-carry-max-abs -->
+0.22265625
+  <!-- END GENERATED: state-contract-carry-max-abs -->
+
+  (an operation-order artefact of bf16 BLAS blocking, not a state difference —
+  the two checks below are bit-exact);
+- a chunk boundary: the two halves run with the state carried are
+  **bit-identical** to the single run;
+- reset between sequences: a second sequence from a reset state is bit-identical
+  to that sequence started fresh, and the same sequence **without** the reset
+  differs from it by
+
+  <!-- BEGIN GENERATED: state-contract-reset-differs -->
+9.4609375
+  <!-- END GENERATED: state-contract-reset-differs -->
+
+- no cross-pass mixing: perturbing pass 1's state leaves pass 0's state
+  **bit-identical** at every token and changes the output by
+
+  <!-- BEGIN GENERATED: state-contract-pass0-isolation-abs -->
+17.53125
+  <!-- END GENERATED: state-contract-pass0-isolation-abs -->
+
+the CPU test (`oracle/tests/test_reference_state.py`) runs the same contract on a
+tiny random model and on the anchor whenever the cache is present.
+
+The per-pass state is real memory and is accounted. DeltaNet state, all linear
+layers, elements per pass:
 
 <!-- BEGIN GENERATED: w19-state-delta-elements -->
 4,718,592
 <!-- END GENERATED: w19-state-delta-elements -->
+
+the convolution windows the table above omits, elements per pass:
+
+<!-- BEGIN GENERATED: w19-state-conv-elements -->
+331,776
+<!-- END GENERATED: w19-state-conv-elements -->
+
+(kernel-1 columns of the concatenated `[q;k;v]` projection on every linear layer,
+measured from the loaded state, not assumed), and attention KV, elements per
+pass per token of context:
+
+<!-- BEGIN GENERATED: w19-state-kv-elements-per-token -->
+6,144
+<!-- END GENERATED: w19-state-kv-elements-per-token -->
+
+so the state total is `DeltaNet + conv + context x KV`. At zero context that is
+
+<!-- BEGIN GENERATED: state-contract-elements-per-pass -->
+5,050,368
+<!-- END GENERATED: state-contract-elements-per-pass -->
+
+elements per pass as the loaded model reports it. The 8k/32k figures
+below are **DeltaNet plus KV only** — they are the registered arithmetic of
+S35 and exclude the convolution windows, which add the
+`331,776` elements above per pass and are reported separately so the omission is
+visible rather than silent.
 
 At 8,192 tokens of context, state per pass (GiB):
 
@@ -5254,9 +5330,9 @@ and across the four passes (GiB):
 
 **Chunking equivalence, mandatory.** A chunked forward (split the sequence into
 chunks, carry state across chunks) must reproduce the token-by-token forward's
-state to the registered tolerance, and the per-pass state must be identical
-whether the pass ran on the full sequence or in chunks. Without this test the
-serving path in stage 5 cannot be claimed to execute the same computation.
+state **bit-identically**, and the per-pass state must be identical whether the
+pass ran on the full sequence or in chunks. This is now measured, not only
+required: the chunk check in the state receipt is exact to the bit on the anchor.
 
 **Depends.** P19.2, P19.3.
 **Acceptance evidence.** the four arms from one harness, one seed at this stage,
