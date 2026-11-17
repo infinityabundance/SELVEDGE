@@ -137,26 +137,63 @@ both fail, the first moment is not the cause and a storage switch must not be
 used to excuse the gradient or step-size regime. Do not change the running bar
 mid-run.
 
-## (e) P19.9 counterfactual pre-read router, 2M screen — BLOCKED
+## (e) P19.9 counterfactual pre-read router, 2M screen
 
-The router module and its CPU contract are committed
-(`oracle/frontier/utility_routing.py`: `select` returns a boolean mask, `execute`
-fetches only selected rows, the two-stage gate cannot resurrect a rejected
-token). The GPU training runner is **not implemented yet**, so no executable
-command is written here. The queue entry is a gate:
+The router interface is `oracle/frontier/utility_routing.py` (`select` returns a
+boolean mask, `execute` fetches only selected rows, the two-stage gate cannot
+resurrect a rejected token). Its runner is now implemented:
 
-1. the runner must consume `counterfactual-outcome` or
-   `counterfactual-token-loss` supervision from `labels_from_records`, with the
-   prompt-level fit/holdout split enforced;
-2. it must call `execute` with a read path that records unique rows, tier bytes
-   and cache hits, and it must report `physical_read_accounting` in its receipt;
-3. its memory must be sized from its own smoke peak, because a bf16 first moment
-   leaves only 0.16 GiB of the 12.5 GiB VRAM limit and the router adds parameters;
-4. only then may a 2M screen run, and it must run after (d) so the first-moment
-   storage is settled.
+- `oracle/frontier/routing_runner.py` — paired rollouts, the counterfactual
+  labels, pre-read training, mask-enforced selection audit and read accounting;
+- `scripts/s52_p19_9_router.py` — the executable stages;
+- `oracle/tests/test_s52_p19_9_runner.py` — the CPU contract;
+- `docs/s52-p19.9-router-screen-registration-v1.json` — the registered arms,
+  win bar and next route;
+- `docs/s52-p19.9-calibration-prompts-v1.json` — the registered 64-prompt
+  GSM8K-train calibration set (48 fit / 8 calib / 8 holdout), disjoint from the
+  harness tasks.
 
-Writing a fake invocation for a script that does not exist would be fabricated
-evidence. The command will be added when the runner and its CPU tests pass.
+The stage gates, all enforced by the driver rather than remembered:
+
+1. supervision is `counterfactual-outcome` (primary) or
+   `counterfactual-token-loss` (secondary) through `labels_from_records`, with
+   the prompt-level fit/calib/holdout split enforced and the same prompt text
+   forbidden in two splits;
+2. the routed read calls `execute` with a read path that records the unique
+   table rows it gathers; the receipt reports that ledger beside
+   `physical_read_accounting` (unique rows, tier bytes, cache hits), and the
+   read-magnitude surrogate `measured_cost(read)` is never used;
+3. the GPU stages refuse to start before the bar receipt and the real-gradient
+   validation receipt exist, and a `switch-first-moment-to-bfloat16` decision
+   forces `--first-moment bfloat16`;
+4. the container limit must come from this workload's own smoke peak. No smoke
+   has run yet, so the number below is deliberately absent: run `rollouts` once
+   with a generous limit, read `container_memory.memory_peak` from its receipt,
+   and size the real run from that measured peak (factor 1.5, never below
+   +1 GiB) before any screen number is quoted.
+
+```bash
+SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=512m \
+  scripts/s52_p19_9_screen.sh frame
+
+# smoke: size the limit from the receipt's container_memory.memory_peak later
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/s52_p19_9_screen.sh rollouts
+
+SELVEDGE_MEM=4g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
+  scripts/s52_p19_9_screen.sh train
+
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/s52_p19_9_screen.sh eval
+
+SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=512m \
+  scripts/s52_p19_9_screen.sh screen
+```
+
+The screen is registered (arms `utility-outcome`, `utility-ce`,
+`no-memory-gate`, `matched-dense`, with `gated-dense` as the attribution
+control) and **not run**. The win bar and the next route are in the
+registration; no 20M router arm may be registered without a win here.
 
 ## Numbers in this page and their receipts
 
