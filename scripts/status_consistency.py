@@ -55,6 +55,8 @@ WS19_LAUNCH = WS19_RUN_REL + "/launch.json"
 WS19_MANIFEST = WS19_RUN_REL + "/manifest.json"
 WS19_LOG = WS19_RUN_REL + "/log.jsonl"
 WS19_EVAL = "results/stage2/eval/full-20m-math/eval.json"
+WS19_SELECTED = "results/stage2/runs/full-20m-math-s49-selected.json"
+WS19_AMENDED_EVAL = "results/stage2/eval/full-20m-math-s49/m20/eval.json"
 
 REGIONS = (
     ("readme-status", "README.md"),
@@ -103,13 +105,27 @@ def load_ws19(root: str) -> dict | None:
     writes, which would make the court fail for a reason that is not a status
     contradiction. The state moves to `complete` when the recorded step reaches
     the manifest's last step, and to `scored` when an anchored receipt exists.
+
+    When the S49 selection marker exists, the block describes the amended bar
+    (the stability rerun), not the lr 1e-4 run that diverged; the diverged run's
+    receipt is named as retained history on its own line.
     """
-    launch = read_json(os.path.join(root, WS19_LAUNCH))
-    manifest = read_json(os.path.join(root, WS19_MANIFEST))
+    marker = read_json(os.path.join(root, WS19_SELECTED))
+    selected = (marker or {}).get("selected") or {}
+    amended = bool(selected.get("run_dir"))
+    if amended:
+        run_dir = selected["run_dir"]
+        launch = read_json(os.path.join(root, run_dir, "launch.json"))
+        manifest = read_json(os.path.join(root, run_dir, "manifest.json"))
+        log_tail = _last_json_line(os.path.join(root, run_dir, "log.jsonl"))
+        receipt = read_json(os.path.join(root, WS19_AMENDED_EVAL))
+    else:
+        launch = read_json(os.path.join(root, WS19_LAUNCH))
+        manifest = read_json(os.path.join(root, WS19_MANIFEST))
+        log_tail = _last_json_line(os.path.join(root, WS19_LOG))
+        receipt = read_json(os.path.join(root, WS19_EVAL))
     if launch is None and manifest is None:
         return None
-    log_tail = _last_json_line(os.path.join(root, WS19_LOG))
-    receipt = read_json(os.path.join(root, WS19_EVAL))
     steps = int((manifest or {}).get("steps") or 0)
     last_step = int((log_tail or {}).get("step") or -1)
     if receipt is not None:
@@ -126,6 +142,10 @@ def load_ws19(root: str) -> dict | None:
         "manifest": manifest,
         "eval_present": receipt is not None,
         "eval_stamp": (receipt or {}).get("stamp"),
+        "amended": amended,
+        "selected": selected,
+        "eval_path": WS19_AMENDED_EVAL if amended else WS19_EVAL,
+        "diverged_receipt": read_json(os.path.join(root, WS19_EVAL)),
     }
 
 
@@ -227,9 +247,18 @@ def render_readme_status(facts: dict) -> str:
             f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
             f"steps on stream `{sha[:16]}…`; "
             + (f"anchored receipt stamp `{ws19['eval_stamp']}` "
-               f"(`{WS19_EVAL}`)." if ws19["eval_present"] else
+               f"(`{ws19['eval_path']}`)." if ws19["eval_present"] else
                "no anchored score exists yet.")
         )
+        if ws19["amended"]:
+            recipe = (ws19["selected"] or {}).get("lr")
+            lines.append(
+                "- **The bar is the stability-amended rerun** — "
+                f"lr `{recipe}`, selected by the registered S49b escalation "
+                f"(`{ws19['selected']['run_dir']}`). The lr 1e-4 run is retained "
+                f"as a recorded divergence (`{WS19_EVAL}`); it is not the arm the "
+                "stage-2 win conditions compare against."
+            )
     verdict = facts["verdict"]
     if verdict is None:
         lines.append(
