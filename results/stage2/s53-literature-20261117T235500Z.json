@@ -1,0 +1,130 @@
+{
+  "schema": "selvedge/s53-literature/v1",
+  "stamp": "20261117T235500Z",
+  "accessed_utc": "2026-11-17",
+  "revision": "b615d07",
+  "method": "arXiv API search/abstract reads and the vLLM documentation, read 2026-11-17 UTC; no claim is from memory",
+  "sources": [
+    {
+      "id": "CANON",
+      "title": "Consensus as Privileged Context for Label-Free Self-Distillation",
+      "authors": ["John Gkountouras", "Josip Jukić", "Ivan Titov"],
+      "url": "https://arxiv.org/abs/2607.13643",
+      "submitted": "2026-07-15",
+      "claim": "samples multiple solutions, extracts the majority answer, conditions a frozen model snapshot on a solution that reaches it, and supervises the model on its own rollouts at every token; pass@1 up to +12 points; +6 points over label-free RL at a seventh of its compute; approaches a gold-conditioned teacher",
+      "verdict": "VERIFIED",
+      "partial": "their teacher conditions on a consensus solution only; stage 3 also requires the train-label-verified condition"
+    },
+    {
+      "id": "D-LoopOPD",
+      "title": "Recurrent Self-Improvement: Dynamic Cross-Loop On-Policy Distillation for Looped Language Models",
+      "authors": ["Yi Wang", "Rui Qian", "Yu Li", "Haoyang Yao", "Wenjie Wang"],
+      "url": "https://arxiv.org/abs/2610.10623",
+      "submitted": "2026-10-23",
+      "claim": "LoopOPD uses a frozen terminal loop policy as a compute-privileged teacher for an intermediate loop student on student rollouts, without an external teacher or privileged information; D-LoopOPD refreshes the terminal teacher; math training also improves general reasoning and code",
+      "verdict": "VERIFIED",
+      "partial": "the teacher is the terminal loop of the same model, not a frozen R=1 snapshot with a consensus+verified solution"
+    },
+    {
+      "id": "learnability-gap",
+      "title": "Small Models Struggle to Learn from Strong Reasoners",
+      "authors": ["Yuetai Li", "Xiang Yue", "Zhangchen Xu", "Fengqing Jiang", "Luyao Niu", "Bill Yuchen Lin", "Bhaskar Ramasubramanian", "Radha Poovendran"],
+      "url": "https://arxiv.org/abs/2502.12143",
+      "submitted": "2025-11-13",
+      "claim": "small models (<=3B) do not consistently benefit from long CoT or distillation from larger models; shorter/simpler reasoning chains align better; Mix Distillation improves small-model reasoning",
+      "verdict": "VERIFIED",
+      "partial": "not the Qwen3.5-0.8B post-trained checkpoint"
+    },
+    {
+      "id": "MiCoTA",
+      "title": "MiCoTA: Bridging the Learnability Gap with Intermediate CoT and Teacher Assistants",
+      "authors": ["Dongyi Ding", "Tiannan Wang", "Chenghao Zhu", "Meiling Tao", "Yuchen Eleanor Jiang", "Wangchunshu Zhou"],
+      "url": "https://arxiv.org/abs/2507.01887",
+      "submitted": "2025-07-02",
+      "claim": "intermediate-sized teacher assistants and intermediate-length CoT; Qwen2.5-7B-Instruct and Qwen2.5-3B-Instruct improve 3.47 and 3.93 on average on AIME2024, AMC, Olympiad, MATH-500 and GSM8K",
+      "verdict": "VERIFIED",
+      "partial": "the numbers are Qwen2.5 7B/3B averages, not Qwen3.5-0.8B single-task gains"
+    },
+    {
+      "id": "retrofitted-recurrence-mcleish",
+      "title": "Teaching Pretrained Language Models to Think Deeper with Retrofitted Recurrence",
+      "authors": ["Sean McLeish", "Ang Li", "John Kirchenbauer", "Dayal Singh Kalra", "Brian R. Bartoldson", "Bhavya Kailkhura", "Avi Schwarzschild", "Jonas Geiping", "Tom Goldstein", "Micah Goldblum"],
+      "url": "https://arxiv.org/abs/2511.07384",
+      "submitted": "2025-11-10",
+      "claim": "a curriculum of recurrences converts pretrained non-recurrent LMs into depth-recurrent ones; better performance at a given compute budget than post-training the original non-recurrent model on mathematics",
+      "verdict": "VERIFIED",
+      "partial": "the internal reading records the GSM8K 46.2 -> 52.0 point at 32x inference compute, not matched inference compute"
+    },
+    {
+      "id": "retrofitted-recurrence-shapiro",
+      "title": "Retrofitting Recurrent Depth into a Pretrained Language Model: Installation, Extrapolation, Transfer, and Retention at Two Parameter Budgets",
+      "authors": ["Mark Shapiro"],
+      "url": "https://arxiv.org/abs/2608.11233",
+      "submitted": "2026-07-31",
+      "claim": "Qwen2.5-0.5B-Instruct split into Prelude/weight-tied Recurrent Block/Coda with an identity-preserving one-loop path and re-entry bridge; non-inferior at loop 1; 6M and 180M budgets; 83.8% vs 84.0%; 53% vs 2.5% beyond depth 10; 7.6x faster than a scratchpad model",
+      "verdict": "VERIFIED",
+      "partial": "different model (0.5B) and task battery (ARC), not Qwen3.5-0.8B on GSM8K/MATH"
+    },
+    {
+      "id": "system2-to-system1",
+      "title": "Distilling System 2 into System 1",
+      "authors": ["Ping Yu", "Jing Xu", "Jason Weston", "Ilia Kulikov"],
+      "url": "https://arxiv.org/abs/2407.06023",
+      "submitted": "2024-07-24",
+      "claim": "self-supervised methods compile higher-quality System 2 outputs back into generations without intermediate reasoning tokens; improved over System 1 with less inference cost than System 2",
+      "verdict": "VERIFIED",
+      "partial": "distils inference-time techniques, not a teacher's consensus+verified solution; no single universal point gain"
+    },
+    {
+      "id": "one-shot-rlvr",
+      "title": "Reinforcement Learning for Reasoning in Large Language Models with One Training Example",
+      "authors": ["Yiping Wang", "Qing Yang", "Zhiyuan Zeng", "Liliang Ren", "Liyuan Liu", "Baolin Peng", "Hao Cheng", "Xuehai He", "Kuan Wang", "Jianfeng Gao", "Weizhu Chen", "Shuohang Wang", "Simon Shaolei Du", "Yelong Shen"],
+      "url": "https://arxiv.org/abs/2504.20571",
+      "submitted": "2025-10-24",
+      "claim": "one RLVR example moves Qwen2.5-Math-1.5B MATH500 36.0% -> 73.6% (8.6% beyond format correction) and the six-benchmark average 17.6% -> 35.7% (7.0% non-format); matches the 1.2k DeepScaleR subset; two examples slightly exceed it",
+      "verdict": "VERIFIED",
+      "number_warning": "8.6 is the beyond-format-correction gain, not the total MATH500 gain (+37.6 points)"
+    },
+    {
+      "id": "on-policy-distillation-gkd",
+      "title": "On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes",
+      "authors": ["Rishabh Agarwal", "Nino Vieillard", "Yongchao Zhou", "Piotr Stanczyk", "Sabela Ramos", "Matthieu Geist", "Olivier Bachem"],
+      "url": "https://arxiv.org/abs/2306.13649",
+      "venue": "ICLR 2024",
+      "claim": "trains the student on its self-generated output sequences using teacher feedback, instead of a fixed output set; evaluated on summarization, translation and arithmetic reasoning",
+      "verdict": "VERIFIED",
+      "partial": "encoder-decoder/small students, not post-trained Qwen3.5-0.8B at 20M tokens"
+    },
+    {
+      "id": "vllm-qwen35-recipe",
+      "title": "Qwen3.5 & Qwen3.6 Usage Guide",
+      "url": "https://docs.vllm.ai/projects/recipes/en/latest/Qwen/Qwen3.5.html",
+      "page_updated": "2026-06-18",
+      "claim": "serves Qwen/Qwen3.5-397B-A17B and Qwen/Qwen3.6-35B-A3B with --language-model-only, --reasoning-parser qwen3, the enable_thinking chat-template flag, prefix caching and optional MTP-1",
+      "verdict": "VERIFIED for 397B-A17B/35B-A3B",
+      "unsupported": "the page does not name the 0.8B/2B chat checkpoints; it is not a small-checkpoint recipe"
+    },
+    {
+      "id": "vllm-supported-models",
+      "title": "vLLM Supported Models",
+      "url": "https://docs.vllm.ai/en/latest/models/supported_models.html",
+      "accessed": "2026-11-17",
+      "claim": "lists Qwen3_5ForConditionalGeneration with example Qwen/Qwen3.5-9B-Instruct; notes Qwen-3.5 is hybrid-only and needs --language-model-only for text-only",
+      "verdict": "VERIFIED at family level",
+      "partial": "the example is 9B-Instruct; the 0.8B/2B checkpoint support is not stated on this page"
+    }
+  ],
+  "number_mismatches": [
+    {"claim_that_would_be_wrong": "retrofitted recurrence improves GSM8K 46.2 -> 52.0 at matched inference compute", "source_says": "the 52.0 point is at test recurrence 32; recurrence 1 is 25.6; the matched claim is about training FLOPs", "verdict": "MISMATCH if quoted as matched"},
+    {"claim_that_would_be_wrong": "1-shot RLVR improves MATH500 by 8.6 points", "source_says": "MATH500 moves 36.0 -> 73.6 (+37.6 points); 8.6 is the improvement beyond format correction", "verdict": "MISMATCH"},
+    {"claim_that_would_be_wrong": "CANON improves pass@1 by 12 points and beats RL by 12 points", "source_says": "12 is the pass@1 gain; 6 is the over-RL margin; 1/7 is the compute fraction", "verdict": "MISMATCH if merged"},
+    {"claim_that_would_be_wrong": "vLLM publishes a Qwen3.5-0.8B/2B recipe", "source_says": "the recipe page is for 397B-A17B and 35B-A3B; the supported-models page is family-level with a 9B-Instruct example", "verdict": "UNSUPPORTED"},
+    {"claim_that_would_be_wrong": "MiCoTA gives the 0.8B +3.47 points", "source_says": "+3.47/+3.93 are Qwen2.5-7B/3B-Instruct averages over five tasks", "verdict": "MISMATCH if transferred"},
+    {"claim_that_would_be_wrong": "D-LoopOPD conditions its teacher on consensus+gold", "source_says": "the teacher is the terminal loop of the same model, without an external teacher or privileged information", "verdict": "UNSUPPORTED; this is our extension"}
+  ],
+  "what_this_does_not_establish": [
+    "that any mechanism transfers to the post-trained Qwen3.5-0.8B at 20M tokens",
+    "that the vLLM 0.34.0 wheel was downloaded and hashed here; the PyPI record was read and the wheel hash is in the registration",
+    "that the 2026 Qwen3.5-scale OPD papers in docs/S45-LITERATURE.md were re-read"
+  ]
+}
