@@ -153,12 +153,23 @@ class NGMInjector(nn.Module):
 # installation
 
 
-def load_model(model_dir: str, dtype=torch.bfloat16, device: str = "cuda"):
+def load_model(model_dir: str, dtype=torch.bfloat16, device: str = "cuda",
+               attn_implementation: str | None = "eager"):
+    """Load the pinned checkpoint.
+
+    ``attn_implementation="eager"`` is the stage-2 training default and is kept
+    for every registered training receipt. Passing ``None`` leaves the
+    transformers default in place, which is the anchor instrument's setting
+    (``sdpa`` for this checkpoint); the eval path uses that so a stage-2 score
+    is not compared to the anchor across two different attention kernels.
+    """
     from transformers import AutoModelForCausalLM
 
+    kwargs = {}
+    if attn_implementation is not None:
+        kwargs["attn_implementation"] = attn_implementation
     model = AutoModelForCausalLM.from_pretrained(
-        model_dir, dtype=dtype, trust_remote_code=False,
-        attn_implementation="eager")
+        model_dir, dtype=dtype, trust_remote_code=False, **kwargs)
     model.to(device)
     model.eval()
     return model

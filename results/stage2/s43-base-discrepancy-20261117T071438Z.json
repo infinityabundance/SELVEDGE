@@ -1,0 +1,356 @@
+{
+  "answer": "the two instruments loaded the same checkpoint with different attention kernels. The S36 anchor passes `model=hf` to the harness, which loads the checkpoint with the transformers default, measured as `sdpa` for this model. The S40/S41 stage-2 loader called `arms.load_model`, which passed `attn_implementation='eager'` explicitly. Identical prompts under greedy decoding then produce different continuations wherever the two kernels' floating-point reductions diverge, and a few of those continuations change the extracted answer. No other score-setting input differs.",
+  "cause": "CONFIG DIFFERENCE \u2014 attention implementation (anchor sdpa vs stage-2 eager)",
+  "created_utc": "2026-11-17T07:14:38Z",
+  "fix": {
+    "code": [
+      "oracle/frontier/arms.py: load_model gains an `attn_implementation` argument and omits the kwarg when it is None, leaving the transformers default in place",
+      "scripts/s40_compare.py: the eval backbone loads with the anchor's default (attention=None); the held-out instrument keeps the registered eager path it used before",
+      "scripts/s40_compare.py: build_named_arm records `eval_attention_implementation` and its source in the arm report, so every future receipt names the kernel"
+    ],
+    "next_score": "the next stage-2 base score is produced under the anchor's attention setting and is the one to compare to the anchor; this receipt records why the earlier one is not the comparison",
+    "not_history": "the anchor and stage-2 receipts are not edited or re-run here; each keeps the configuration it recorded"
+  },
+  "inputs": {
+    "anchor_receipt": {
+      "path": "results/frontier/anchor-0.8b-20261116T195953Z.json",
+      "sha256": "49bd832bd6ca78f9d4d83b2336bb331ae43496b1456d42f4d5289a8e6dfbc764"
+    },
+    "raw": {
+      "gsm8k": {
+        "anchor": "results/frontier/anchor-raw/20261116T195953Z-Qwen__Qwen3.5-0.8B-Base-gsm8k.json",
+        "anchor_sha256": "6873681a572c38058e024ddf96ae2fec875833d9a1efa3e2d536a3b8f3889b28",
+        "stage2": "results/stage2/eval/base/raw/20261117T042753Z-gsm8k.json",
+        "stage2_sha256": "9aea22983c0723e3857c54a7e3c84db510d9272b17095d426303bb5c6133baba"
+      },
+      "minerva_math500": {
+        "anchor": "results/frontier/anchor-raw/20261116T195953Z-Qwen__Qwen3.5-0.8B-Base-minerva_math500.json",
+        "anchor_sha256": "ae21b8239da5a24c8c110a532cf0379980eb88989e9cf0bac95f9befd314c591",
+        "stage2": "results/stage2/eval/base/raw/20261117T043134Z-minerva_math500.json",
+        "stage2_sha256": "47d3a4e1c0befd60d0614bb175cab6de8301c3986da4166a00f87c837b6ba756"
+      },
+      "mmlu_pro": {
+        "anchor": "results/frontier/anchor-raw/20261116T195953Z-Qwen__Qwen3.5-0.8B-Base-mmlu_pro.json",
+        "anchor_sha256": "7a8447e41511b6da711871be2bfca637f701577d677500ad2601a4b81835e6d2",
+        "stage2": "results/stage2/eval/base/raw/20261117T040831Z-mmlu_pro.json",
+        "stage2_sha256": "a9c595df14cb27bce398aa82c5193e9f7ee7f9c1c665b09640e39b4276101a0d"
+      }
+    },
+    "stage2_receipt": {
+      "path": "results/stage2/eval/base/eval.json",
+      "sha256": "3f29fe32ca780a7d9bdf60c1b4e4b069bd7e68e0662cd53c0aa97c3649c6d6ef"
+    }
+  },
+  "invariant_and_checked": {
+    "dtype": "bfloat16 in both",
+    "harness_commit": "both receipts name d6de81643928d653435c431bae19945d41d32520",
+    "harness_image": "both receipts name selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78 with image sha256:42a0ddab6264...",
+    "limits_fewshot_batch": "identical: mmlu_pro 36 per subject / 5-shot / batch 8; minerva_math500 full 500 / 4-shot / batch 8; gsm8k full 1319 / 5-shot / batch 8; mmlu full 14042 / 5-shot / batch 2",
+    "lm_eval_and_transformers": "0.4.14.dev0 and 5.23.0 in both",
+    "model_id_and_revision": "both receipts name Qwen/Qwen3.5-0.8B-Base at dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "prompts": "identical prompt hashes on every item",
+    "seeds": "random 0, numpy 1234, torch 1234, fewshot 1234 in both; greedy decoding (do_sample false, temperature 0.0)",
+    "targets": "identical target hashes on every item",
+    "task_configs": "identical for every compared subtask (config_diff below is empty)"
+  },
+  "item_level": {
+    "gsm8k": {
+      "anchor_correct": 512,
+      "anchor_correct_stage2_wrong": 30,
+      "config_diff": {
+        "differing": [],
+        "normalised_away": [
+          "process-local function reprs (`<function ... at 0x...>`)",
+          "`metadata`, which the anchor's HFLM model_args path fills with dtype/pretrained/parallelize and the pre-initialised-model path fills with a harness version; it is loader bookkeeping, not a score setting"
+        ],
+        "subtasks_compared": 1
+      },
+      "differing_extracted_answers": 201,
+      "differing_generations": 436,
+      "examples": [
+        {
+          "anchor_filtered": [
+            "32"
+          ],
+          "anchor_metric": 0.0,
+          "doc_id": 0,
+          "stage2_filtered": [
+            "-64"
+          ],
+          "stage2_metric": 0.0
+        },
+        {
+          "anchor_filtered": [
+            "366"
+          ],
+          "anchor_metric": 1.0,
+          "doc_id": 10,
+          "stage2_filtered": [
+            "366"
+          ],
+          "stage2_metric": 1.0
+        },
+        {
+          "anchor_filtered": [
+            "8"
+          ],
+          "anchor_metric": 0.0,
+          "doc_id": 1000,
+          "stage2_filtered": [
+            "8"
+          ],
+          "stage2_metric": 0.0
+        }
+      ],
+      "identical_doc_id_and_hash": 1319,
+      "identical_prompt_hash": 1319,
+      "identical_target_hash": 1319,
+      "items": 1319,
+      "stage2_correct": 514,
+      "stage2_correct_anchor_wrong": 32,
+      "versions": {
+        "anchor": {
+          "git_hash": "22c51d6",
+          "lm_eval": "0.4.14.dev0",
+          "transformers": "5.23.0"
+        },
+        "stage2": {
+          "git_hash": "3cb6fd2",
+          "lm_eval": "0.4.14.dev0",
+          "transformers": "5.23.0"
+        }
+      }
+    },
+    "minerva_math500": {
+      "anchor_correct": 117,
+      "anchor_correct_stage2_wrong": 9,
+      "config_diff": {
+        "differing": [],
+        "normalised_away": [
+          "process-local function reprs (`<function ... at 0x...>`)",
+          "`metadata`, which the anchor's HFLM model_args path fills with dtype/pretrained/parallelize and the pre-initialised-model path fills with a harness version; it is loader bookkeeping, not a score setting"
+        ],
+        "subtasks_compared": 1
+      },
+      "differing_extracted_answers": 220,
+      "differing_generations": 220,
+      "examples": [
+        {
+          "anchor_filtered": [
+            " The measure of $\\alpha$ is the angle between the two chords $pD$ and $pE$. The measure of the angle between two chords of a circle is half the difference of the measures of the arcs intercepted by the chords and by the opposite angles. The measure of the arc $pDpE$ is $170^\\circ-80^\\circ=90^\\circ$. Therefore, the measure of $\\alpha$ is $\\frac{1}{2}(90^\\circ)=\\boxed{45^\\circ}.$\nFinal Answer: The final answer is $45^\\circ$. I hope it is correct.\n\n"
+          ],
+          "anchor_metric": 0,
+          "doc_id": 100,
+          "stage2_filtered": [
+            " The measure of $\\alpha$ is the measure of the angle between the two chords $pD$ and $pE$. The measure of the angle between two chords of a circle is half the difference of the measures of the arcs intercepted by the chords and by the opposite angles. The measure of the arc intercepted by $pD$ and $pE$ is the difference between the measures of the arcs intercepted by $pA$ and $pF$. The measure of the arc intercepted by $pA$ and $pF$ is the sum of the measures of the arcs intercepted by $pB$ and $pC$. Therefore, the measure of $\\alpha$ is\n\n\\begin{align*}\n\\frac{1}{2}(\\text{arc }pDpE) &= \\frac{1}{2}(\\text{arc }pApF) - \\frac{1}{2}(\\text{arc }pBpC)\\\\\n&= \\frac{1}{2}(\\text{arc }pApF) - \\frac{1}{2}(\\text{arc }pBpC)\\\\\n&= \\frac{1}{2}(\\text{arc }pApF) -"
+          ],
+          "stage2_metric": 0
+        },
+        {
+          "anchor_filtered": [
+            " We have that $r_i\\overline{r}_i=|r_i|^2$ for each $i$. Therefore,\n\\begin{align*}\n\\frac 1{r_1\\overline{r}_1}+\\frac 1{r_2\\overline{r}_2}+\\frac 1{r_3\\overline{r}_3}+\\frac 1{r_4\\overline{r}_4}+\\frac 1{r_5\\overline{r}_5}\n&=\\frac 1{|r_1|^2}+\\frac 1{|r_2|^2}+\\frac 1{|r_3|^2}+\\frac 1{|r_4|^2}+\\frac 1{|r_5|^2}\\\\\n&=\\frac 1{r_1^2}+\\frac 1{r_2^2}+\\frac 1{r_3^2}+\\frac 1{r_4^2}+\\frac 1{r_5^2}\\\\\n&=\\frac 1{(r_1+r_2+r_3+r_4+r_5)^2}\\\\\n&"
+          ],
+          "anchor_metric": 0,
+          "doc_id": 101,
+          "stage2_filtered": [
+            " We have that $r_1\\overline{r}_1=13x-1$ and $r_2\\overline{r}_2=13x-1,$ so $\\frac 1{r_1\\overline{r}_1}+\\frac 1{r_2\\overline{r}_2}=2$.  Similarly, $\\frac 1{r_3\\overline{r}_3}+\\frac 1{r_4\\overline{r}_4}=2$ and $\\frac 1{r_5\\overline{r}_5}+\\frac 1{r_6\\overline{r}_6}=2$.  Therefore, the sum of the five terms is $\\boxed{10}.$\nFinal Answer: The final answer is $10$. I hope it is correct.\n\n"
+          ],
+          "stage2_metric": 0
+        },
+        {
+          "anchor_filtered": [
+            " The first equation can be rewritten as\n\n\\begin{align*}\n(x+3)^2 + (y-12)^2 &= 72-36-48\\\\\n&= -24.\n\\end{align*}\n\nSince the left-hand side is a sum of squares, it is always non-negative.  Therefore, the first equation has no real solutions.  The second equation can be rewritten as\n\n\\begin{align*}\n(x-3)^2 + (y+8)^2 &= 46-36-16\\\\\n&= -26.\n\\end{align*}\n\nAgain, the left-hand side is a sum of squares, so the second equation has no real solutions.  Therefore, the two graphs do not intersect.  However, the problem states that the graphs intersect at four points.  This is a contradiction, so the problem is ill-posed.  The sum of the distances from the four points to $(-3,2)$ is undefined.  The final answer is $\\boxed{\\text{undefined}}$.\n\n"
+          ],
+          "anchor_metric": 0,
+          "doc_id": 104,
+          "stage2_filtered": [
+            " The first equation can be rewritten as\n\n\\begin{align*}\n(x+3)^2 + (y-12)^2 &= 72-36-48\\\\\n&= -24.\n\\end{align*}\n\nSince the left-hand side is a sum of squares, it is always non-negative.  Therefore, the first equation has no real solutions.  The second equation can be rewritten as\n\n\\begin{align*}\n(x-3)^2 + (y+8)^2 &= 46-36-16\\\\\n&= -26.\n\\end{align*}\n\nAgain, the left-hand side is a sum of squares, so the second equation has no real solutions.  Therefore, the two graphs do not intersect.  However, the problem states that the graphs intersect at four points.  This is a contradiction, so the problem is ill-posed.  The correct answer is $\\boxed{\\text{No solution}}$.\n\n"
+          ],
+          "stage2_metric": 0
+        }
+      ],
+      "identical_doc_id_and_hash": 500,
+      "identical_prompt_hash": 500,
+      "identical_target_hash": 500,
+      "items": 500,
+      "stage2_correct": 125,
+      "stage2_correct_anchor_wrong": 17,
+      "versions": {
+        "anchor": {
+          "git_hash": "22c51d6",
+          "lm_eval": "0.4.14.dev0",
+          "transformers": "5.23.0"
+        },
+        "stage2": {
+          "git_hash": "3cb6fd2",
+          "lm_eval": "0.4.14.dev0",
+          "transformers": "5.23.0"
+        }
+      }
+    },
+    "mmlu_pro": {
+      "anchor_correct": 139,
+      "anchor_correct_stage2_wrong": 16,
+      "config_diff": {
+        "differing": [],
+        "normalised_away": [
+          "process-local function reprs (`<function ... at 0x...>`)",
+          "`metadata`, which the anchor's HFLM model_args path fills with dtype/pretrained/parallelize and the pre-initialised-model path fills with a harness version; it is loader bookkeeping, not a score setting"
+        ],
+        "subtasks_compared": 14
+      },
+      "differing_extracted_answers": 69,
+      "differing_generations": 156,
+      "examples": [
+        {
+          "anchor_filtered": [
+            "C"
+          ],
+          "anchor_metric": 1.0,
+          "doc_id": 0,
+          "stage2_filtered": [
+            "C"
+          ],
+          "stage2_metric": 1.0
+        },
+        {
+          "anchor_filtered": [
+            "C"
+          ],
+          "anchor_metric": 0.0,
+          "doc_id": 0,
+          "stage2_filtered": [
+            "C"
+          ],
+          "stage2_metric": 0.0
+        },
+        {
+          "anchor_filtered": [
+            "C"
+          ],
+          "anchor_metric": 1.0,
+          "doc_id": 0,
+          "stage2_filtered": [
+            "H"
+          ],
+          "stage2_metric": 0.0
+        }
+      ],
+      "identical_doc_id_and_hash": 504,
+      "identical_prompt_hash": 504,
+      "identical_target_hash": 504,
+      "items": 504,
+      "stage2_correct": 135,
+      "stage2_correct_anchor_wrong": 12,
+      "versions": {
+        "anchor": {
+          "git_hash": "22c51d6",
+          "lm_eval": "0.4.14.dev0",
+          "transformers": "5.23.0"
+        },
+        "stage2": {
+          "git_hash": "3cb6fd2",
+          "lm_eval": "0.4.14.dev0",
+          "transformers": "5.23.0"
+        }
+      }
+    }
+  },
+  "question": "why does the stage-2 base score differ from the anchor base score on the same checkpoint?",
+  "schema": "selvedge/s43-base-discrepancy/v1",
+  "scores": {
+    "gsm8k": {
+      "anchor": {
+        "limit": null,
+        "num_fewshot": 5,
+        "primary_metric": "exact_match,strict-match",
+        "sample_len": 1319,
+        "score": 0.38817285822592873,
+        "stderr": 0.013423607564002751
+      },
+      "delta_stage2_minus_anchor": 0.0015163002274450332,
+      "stage2": {
+        "limit": null,
+        "num_fewshot": 5,
+        "primary_metric": "exact_match,strict-match",
+        "sample_len": 1319,
+        "score": 0.38968915845337376,
+        "stderr": 0.013433123236110721
+      }
+    },
+    "minerva_math500": {
+      "anchor": {
+        "limit": null,
+        "num_fewshot": 4,
+        "primary_metric": "math_verify,none",
+        "sample_len": 500,
+        "score": 0.234,
+        "stderr": 0.018952741564893755
+      },
+      "delta_stage2_minus_anchor": 0.015999999999999986,
+      "stage2": {
+        "limit": null,
+        "num_fewshot": 4,
+        "primary_metric": "math_verify,none",
+        "sample_len": 500,
+        "score": 0.25,
+        "stderr": 0.019384310743640384
+      }
+    },
+    "mmlu": {
+      "anchor": {
+        "limit": null,
+        "num_fewshot": 5,
+        "primary_metric": "acc,none",
+        "sample_len": 14042,
+        "score": 0.4821962683378436,
+        "stderr": 0.004102566327596066
+      },
+      "delta_stage2_minus_anchor": -0.0006409343398376399,
+      "stage2": {
+        "limit": 2000,
+        "num_fewshot": 5,
+        "primary_metric": "acc,none",
+        "sample_len": 14042,
+        "score": 0.481555333998006,
+        "stderr": 0.004098974719703994
+      }
+    },
+    "mmlu_pro": {
+      "anchor": {
+        "limit": 36,
+        "num_fewshot": 5,
+        "primary_metric": "exact_match,custom-extract",
+        "sample_len": 504,
+        "score": 0.2757936507936508,
+        "stderr": 0.019844104105957
+      },
+      "delta_stage2_minus_anchor": -0.007936507936507964,
+      "stage2": {
+        "limit": 36,
+        "num_fewshot": 5,
+        "primary_metric": "exact_match,custom-extract",
+        "sample_len": 504,
+        "score": 0.26785714285714285,
+        "stderr": 0.019587377846722334
+      }
+    }
+  },
+  "stamp": "20261117T071438Z",
+  "the_one_difference": {
+    "anchor": "transformers default; measured `sdpa` for this checkpoint by loading it with no attn_implementation argument",
+    "evidence": {
+      "anchor_code": "scripts/s36_anchor.py passes model=hf and model_args=dtype=bfloat16,trust_remote_code=false,parallelize=false,add_bos_token=false; attn_implementation is absent",
+      "probe_output": "DEFAULT_ATTN sdpa / EAGER_ATTN eager",
+      "probe_receipt": "results/courts/oracle-20261117T070212Z-666a5c.json",
+      "stage2_code": "scripts/s40_score.py calls comparison.load_backbone -> arms.load_model, which passed attn_implementation='eager'"
+    },
+    "setting": "attn_implementation",
+    "stage2": "`eager`, passed explicitly by oracle/frontier/arms.py",
+    "why_it_changes_scores": "the kernels compute the same mathematical operation with different reduction orders and different fused paths, so bf16 logits differ in the last bits; under greedy decoding a near-tie at any position can select a different token and the continuation diverges. The effect is small per item but visible as a shifted exact-match count on 500-1,300-item generation tasks."
+  },
+  "what_this_does_not_establish": [
+    "that sdpa is more correct than eager: they are two numerical paths to the same operator, and the anchor's setting is the comparison basis, not a truth claim",
+    "that no other difference exists in unmeasured tasks: the compared tasks are the four the pass scored, and the item-level evidence is for mmlu_pro, minerva_math500 and gsm8k"
+  ]
+}

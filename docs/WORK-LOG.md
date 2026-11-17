@@ -3866,11 +3866,20 @@ running anchored-harness court exits.
 
 ### The optimizer numerics
 
-A bf16 weight stores 7 mantissa bits. At the registered 1e-4 learning rate the
-whole update is below half an ulp of a weight of order 0.01–1, so nearest-even
-rounds every step to zero and the weight never moves — the run would train the
-8-bit moments and nothing else. `oracle/frontier/optim8bit.py` now applies the
-exact fp32 result to the bf16 grid with one of three registered numerics:
+A bf16 weight stores 7 mantissa bits (8 significand bits including the
+implicit one). Within a binade `x ∈ [2^e, 2^(e+1))` the spacing is
+`ULP = 2^(e-7) ≈ x·2^-7`, so half an ulp is `≈ x·2^-8 = x/256`. Adam's
+normalised step has magnitude of order the learning rate, `1e-4`. A step is
+lost under nearest-even when `1e-4 < x/256`, i.e. above `x ≈ 1e-4·256 =
+0.0256 ≈ 0.026`; exactly, half an ulp is constant inside a binade, so the
+boundary is the binade edge `2^-5 = 0.03125` (half-ulp `2^-13 = 1.22e-4 >
+1e-4` above it, `2^-14 = 6.10e-5 < 1e-4` below it). The affected regime is
+therefore large-magnitude weights, not the whole model: a weight of order
+0.01 has half-ulp `3.05e-5–6.10e-5`, so a `1e-4` update moves it by one or two
+grid points. Where the step falls between half and one ulp, nearest-even
+rounds it to one ulp; only the fraction below half an ulp is truly discarded.
+`oracle/frontier/optim8bit.py` now applies the exact fp32 result to the bf16
+grid with one of three registered numerics:
 
 - `stochastic` (default): bracket the exact value between adjacent bf16 grid
   points and take the upper one with probability `(x-lo)/(hi-lo)`. Expected value
@@ -3880,6 +3889,19 @@ exact fp32 result to the bf16 grid with one of three registered numerics:
 - `compensated`: nearest plus a bf16 residual carry (error feedback in the
   weight-update domain), one bf16 element per trainable element, with its bytes
   reported by the optimiser rather than estimated.
+
+**Correction (2026-11-17, S43).** This entry originally said "at the registered
+1e-4 learning rate the whole update is below half an ulp of a weight of order
+0.01–1, so nearest-even rounds every step to zero and the weight never moves".
+That is an overstatement and the 0.01 end of the range is wrong. The arithmetic
+is above: half an ulp is `≈ x/256`, so the `1e-4` step is below half an ulp only
+for `x ≳ 0.026` (`0.03125` at the binade edge), and a weight of order 0.01 is
+moved by one or two grid points. The measured S42 tests already showed the
+corrected behaviour — a 0.49-ulp update changes about half the elements under
+stochastic rounding and exactly none under nearest-even, while a 0.01-ulp
+update is not fully lost — but the summary sentence described a wider regime
+than the arithmetic supports. The mechanism and the three numerics are
+unchanged; only the claimed cutoff is corrected.
 
 The update is applied in bounded chunks of `2**22` elements, so the transient is
 tens of MB and does not compete with the registration headroom. The rounding
@@ -4029,3 +4051,147 @@ is higher on MMLU and lower on the other three tasks, so the family means are
 close and the per-task directions disagree. That is a description, not a verdict:
 both arms are 2M-token arms, the registered comparison has four arms still
 unscored, and the brief forbids a mechanism verdict from 2M numbers.
+
+## 2026-11-17 — S43: a math-weighted stream, provenance corrections, and a token-conditioned gate
+
+### Plan
+
+The largest controllable lever on the math family is the training stream, which
+was 100% FineWeb-Edu. This session builds and registers a math-weighted mixture
+before the full-distillation run, fixes two provenance defects (a total cap that
+never capped, and a base score compared across two attention kernels), corrects
+one overstatement about bf16 rounding, and replaces the corrective graft's
+global scalar gate with a token-conditioned gate plus a signed-advantage
+supervision option. GPU work waits for the running anchored-harness court.
+
+### The math-weighted stream
+
+`oracle/frontier/math_stream.py` builds a 20,000,000-token mixture from pinned
+sources: NuminaMath-CoT 8.0M (Apache-2.0, revision `9d8d210c...`, shard
+`train-00000-of-00005.parquet`, SHA-256 `25c0fa2c...`), MATH-train 2.2M (MIT,
+revision `21a56338...`), GSM8K-train 1.2M (MIT, revision `740312ad...`) and
+FineWeb-Edu 8.6M (ODC-By 1.0, revision `87f09149...`). That is 57.0% math and
+43.0% general. GSM8K rows are written in the scored `Question: … Answer: …`
+format and MATH rows in the scored `Problem: … Solution: …` format, so the
+online teacher's distribution covers the worked solution after the same marker
+the evaluation uses. There is no pre-generated teacher corpus and no logit
+cache.
+
+`nvidia/Nemotron-CC-Math-v1` was the intended third math source. It is gated:
+an unauthenticated request for `3/part_000000.parquet` returns HTTP 401
+`GatedRepo`, and no token is available. NuminaMath-CoT is the declared
+substitute, with its own revision, licence and SHA-256 in the manifest; the
+substitution is explicit and recorded, not silent.
+
+Determinism is the source revisions plus a fixed 10,000-token cycle
+(4,000 Numina, 1,100 MATH, 600 GSM8K, 4,300 FineWeb) repeated 20 times per
+200,000-token shard, 100 shards. Every shard carries its own SHA-256 and its
+exact per-source counts; rebuilding reproduced stream SHA-256
+`9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56` twice.
+`math_stream.py verify` re-checks every shard and the token total.
+
+**Contamination.** The guard is 5-word-shingle Jaccard against every cached test
+split (GSM8K, MATH-500, MMLU and MMLU-Pro, HumanEval, IFEval, ARC-Challenge,
+TriviaQA) and the sealed capability holdback (`fixtures/capability/sealed/**`
+plus `SEALED.json`): 51,902 items, 1,922,185 distinct shingles. Documents at or
+above 0.2 are excluded and recorded by digest; a near-verbatim copy at or above
+0.5 is additionally flagged. The build measured 102 excluded documents (95
+MATH-train, 3 GSM8K-train, 4 NuminaMath) and a **maximum retained Jaccard of
+0.1935**. The build fails closed if a source cannot fill its budget from clean
+documents or if any retained document reaches 0.2. Verdict: **PASS, zero
+retained overlap**; the high-Jaccard MATH-train/exam near-duplicates are
+excluded rather than trained on. Receipt:
+`results/stage2/stage2-math-stream-20261117T071120Z.json`.
+
+The stream is registered as an amendment to the full-distillation bar
+(`docs/ws19-full-distillation-amendment-math-stream-preregistration-v1.json`)
+**before any training on it**; the previous stream is labelled general-only.
+The amendment names the one declared substitution and the unchanged objective,
+optimiser, token budget and step count.
+
+### Provenance: the total cap that never capped
+
+The anchored-subset registration says MMLU is capped at 2,000 items; the
+receipts show `sample_len = 14042` in every arm. MMLU is a 57-subject group task
+and the harness applies `limit` per subtask, so `--limit-map mmlu=2000` selected
+`min(2000, n_subject)` everywhere. The full set was scored, and the base wall
+time (654 s) is the anchor's full-set time (639 s), not a seventh of it. The
+pre-registration is not edited; `docs/ws19-anchored-subset-amendment-preregistration-v2.json`
+records the defect and the actual basis (full 14,042, same basis as the
+anchor's 37.90 knowledge mean).
+
+The new enforcement is new code, because `scripts/s40_score.py` was executing:
+`scripts/s43_score_total_cap.py` expresses a total cap through
+`simple_evaluate(samples={leaf: indices})`, allocating the requested total over
+the group's leaves by largest remainder. Its self-test measured 57 MMLU leaves
+and 14,042 items, and a 2,000-item total cap allocating exactly 2,000, with a
+cap below the leaf count failing closed. Existing receipts need no re-run; they
+are already full-MMLU.
+
+### Provenance: why the base differs from the anchor
+
+`scripts/s43_discrepancy_report.py` compared the raw fixed samples. Prompts and
+targets are identical on every item in MMLU-Pro (504), MATH-500 (500) and GSM8K
+(1,319); task configs are identical after normalising process-local function
+reprs and loader metadata; model revision, harness commit, harness image,
+lm_eval/transformers versions, limits, batch sizes and seeds are identical. The
+generations differ (156 / 220 / 436 items), and the metric flips go both ways
+(16 vs 12, 9 vs 17, 30 vs 32). The cause is the one unexamined setting: the
+anchor loads through `HFLM(model="hf")` with the **transformers default
+attention, measured `sdpa`**, while the stage-2 loader passed
+`attn_implementation="eager"`. Different kernels, bf16 reductions in different
+orders, greedy decoding amplifying near-ties. The fix is a config fix, not a
+history fix: `arms.load_model` now takes `attn_implementation`, the eval
+backbone uses the anchor default, the held-out instrument keeps its previous
+eager path, and `build_named_arm` records the kernel in every future receipt.
+Receipt: `results/stage2/s43-base-discrepancy-20261117T071438Z.json`.
+
+### Correction: the bf16 cutoff was overstated
+
+The S42 entry said the `1e-4` update was below half an ulp "of a weight of
+order 0.01–1". The arithmetic does not support the 0.01 end. Half an ulp is
+`≈ x·2^-8 = x/256`, so the step is lost when `1e-4 < x/256`, i.e. above
+`x ≈ 0.026` (the binade edge is `0.03125`). At 0.01 the half-ulp is
+`3.05e-5–6.10e-5`, so the update moves the weight by one or two grid points. The
+mechanism and the three registered numerics are unchanged; the entry now states
+the arithmetic and marks the original sentence as an overstatement.
+
+### The token-conditioned gate and the signed advantage
+
+`oracle/frontier/corrective.py` replaces the global scalar gate with
+
+    alpha_t = tanh(w . [h_t ; r_t] + b),   w = 0, b = 0,
+
+so the untrained model is still bit-identical to base (tested with grafted rows
+and a non-zero constant offset). `phi(h, r) = [h ; r]` is parameter-free, so the
+active cost is `2*hidden + 1 = 2,049` elements per site and the active union is
+539,649 against the memory arm's 537,600. Once `w` is non-zero the gate varies
+per token, and identical `(h, r)` gives identical `alpha`.
+
+The objective gains a registered position weight: the existing KL-disagreement
+weight, the signed teacher advantage `A_t = log p_T(y_t) - log p_B(y_t)` on the
+supervised target, or both as the geometric mean of the normalised weights. The
+preservation penalty stays, and the objective now reports harm on the tokens the
+base already matches the teacher — the lowest advantage quartile (the P19.8
+definition) and the signed `A_t >= 0` set — as count, mean delta KL and the
+fraction worse. The comparison is registered before training in
+`docs/ws19-corrective-gate-advantage-preregistration-v1.json`, with a four-
+branch decision rule and the next route for each branch.
+
+**Tests.** `oracle/tests/test_s42_corrective.py` was updated to the token gate
+and `oracle/tests/test_s43_token_gate.py` was added: zero-init bit-identity,
+per-token variation, identical-`(h,r)` equality, signed-advantage sign,
+weight ordering, row gradient after the gate opens, determinism, the harm
+measurement, and the 2,049-element cost. The full oracle suite is **576 passed**
+(receipt `results/courts/oracle-20261117T071747Z-9889ee.json`).
+
+### What this entry does not claim
+
+- **No full-arm smoke or launch yet.** The anchored-harness court was still
+  running; GPU work is deferred to the continuation entry.
+- **No measured full-arm VRAM.** The 12.5 GiB limit is still a projection; the
+  smoke must replace it.
+- **No verdict on the token gate or the signed advantage.** Both are registered
+  and tested; neither has been trained for a score.
+- **No claim that NuminaMath-CoT equals Nemotron-CC-Math.** It is a declared
+  substitute for an unavailable gated dataset.

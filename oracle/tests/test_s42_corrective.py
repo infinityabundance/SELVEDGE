@@ -2,7 +2,7 @@
 
 Three properties the registration depends on:
 
-* **gate-zero parity is bit-exact.** With ``gate_raw = 0`` the residual is
+* **gate-zero parity is bit-exact.** With ``w = 0`` and ``b = 0`` the residual is
   ``tanh(0) * read = 0``, so the injected model is the base model element for
   element — including when the rows and projections already carry the
   representation fit. This is the "gate-zero control" arm.
@@ -146,7 +146,7 @@ def test_constant_offset_is_structurally_excluded():
     hidden = torch.randn(1, 5, 32)
     module.context.observe(torch.randint(0, 50, (1, 5), dtype=torch.int64))
     with torch.no_grad():
-        module.gate_raw[0].fill_(0.5)
+        module.gate_b[0].fill_(0.5)
         first = module(hidden).clone()
         module.out_bias[0].add_(10.0)
         second = module(hidden)
@@ -168,8 +168,8 @@ def test_gate_gradient_is_nonzero_at_zero_and_rows_follow():
         logits = lm(tokens, use_cache=False).logits
         logits.pow(2).sum().backward()
         # at alpha = 0 the gate itself has a non-zero gradient ...
-        assert module.gate_raw[0].grad is not None
-        assert float(module.gate_raw[0].grad.abs()) > 0.0
+        assert module.gate_w[0].grad is not None
+        assert float(module.gate_w[0].grad.abs().sum()) > 0.0
         # ... while the multiplicative pathway carries none yet
         assert all(table.grad is None
                    or float(table.grad.abs().sum()) == 0.0
@@ -177,8 +177,10 @@ def test_gate_gradient_is_nonzero_at_zero_and_rows_follow():
 
         # open the gate and repeat: gradient now reaches every table
         with torch.no_grad():
-            module.gate_raw[0].fill_(0.2)
-            module.gate_raw[1].fill_(0.2)
+            module.gate_w[0].fill_(0.05)
+            module.gate_b[0].fill_(0.2)
+            module.gate_w[1].fill_(0.05)
+            module.gate_b[1].fill_(0.2)
         for table in module.tables:
             table.grad = None
         if module.key_proj[0].weight.grad is not None:
@@ -211,12 +213,12 @@ def test_gate_can_open_on_the_real_objective():
             teacher = base + 0.25 * torch.randn_like(base)
         loss, ce, kl, diagnostics = corrective.corrective_objective(
             student, base, teacher, targets, temperature=2.0, kl_weight=0.5,
-            objective="correction", gate=module.gate(0),
+            objective="correction", gate=module.last_gate,
             preserve_weight=0.5, interference_weight=0.05)
         loss.backward()
         assert diagnostics["objective"] == "correction"
-        assert module.gate_raw[0].grad is not None
-        assert float(module.gate_raw[0].grad.abs()) > 0.0
+        assert module.gate_w[0].grad is not None
+        assert float(module.gate_w[0].grad.abs().sum()) > 0.0
     finally:
         arms.uninstall(handles)
 
@@ -302,8 +304,8 @@ def test_active_union_is_the_memory_union_plus_one_gate_scalar_per_site():
         sites=(2,), conv_kernel=geometry.conv_kernel)
     report = module.active_parameter_report()
     assert report["active_per_token_before_gate"] == 537_600
-    assert report["correction_gate_elements"] == 1
-    assert report["active_per_token"] == 537_601
+    assert report["correction_gate_elements"] == 2 * geometry.hidden + 1
+    assert report["active_per_token"] == 537_600 + 2 * geometry.hidden + 1
     assert report["constant_offset_in_residual"] is False
     assert module.identity_at_init()
 
@@ -311,12 +313,13 @@ def test_active_union_is_the_memory_union_plus_one_gate_scalar_per_site():
 def test_state_dict_round_trips_gate_and_rows():
     module = _module(sites=(0,))
     with torch.no_grad():
-        module.gate_raw[0].fill_(0.3)
+        module.gate_w[0].fill_(0.01)
+        module.gate_b[0].fill_(0.3)
     state = module.state_dict()
-    assert "gate_raw.0" in state
+    assert "gate_w.0" in state and "gate_b.0" in state
     rebuilt = _module(sites=(0,))
     rebuilt.load_state_dict(state, strict=True)
-    assert rebuilt.gate_values() == module.gate_values()
+    assert rebuilt.gate_summary() == module.gate_summary()
     assert torch.equal(rebuilt.tables[0], module.tables[0])
 
 
@@ -345,10 +348,10 @@ def test_train_builds_the_corrective_arm_from_its_init_checkpoint(tmp_path):
     args = SimpleNamespace(memory_init=str(path), site=0, hidden=32)
     arm, handles, report = train.build_arm("corrective", lm, args, "cpu")
     try:
-        assert report["kind"] == "stage2_corrective_active"
+        assert report["kind"] == "stage2_corrective_token_gate_active"
         assert report["identity_at_init"] is True
-        assert report["active_per_token"] == report["active_per_token_before_gate"] + 1
-        assert any(name.startswith("gate_raw") for name, _ in arm.named_parameters())
+        assert report["active_per_token"] == report["active_per_token_before_gate"] + 2 * 32 + 1
+        assert any(name.startswith("gate_w") for name, _ in arm.named_parameters())
         assert len(handles) == 2  # token context + one site
     finally:
         arms.uninstall(handles)

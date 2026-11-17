@@ -159,6 +159,18 @@ def build_memory(init_path: str, checkpoint: str | None, device: str,
 
 def build_named_arm(name: str, model, args, device: str):
     """Install one arm on a fresh backbone. Returns (model, handles, report)."""
+    model, handles, report = _build_named_arm(name, model, args, device)
+    report.setdefault(
+        "eval_attention_implementation",
+        getattr(getattr(model, "config", None), "_attn_implementation", None))
+    report.setdefault(
+        "eval_attention_source",
+        "transformers default, to match the anchor instrument")
+    return model, handles, report
+
+
+def _build_named_arm(name: str, model, args, device: str):
+    """Install one arm on a fresh backbone. Returns (model, handles, report)."""
     if name == "base":
         return model, [], {"kind": "stage2_base", "added_elements": 0}
     if name in ("adapter-2m", CONTROL_ARM):
@@ -213,12 +225,13 @@ def build_named_arm(name: str, model, args, device: str):
     raise SystemExit(f"unknown arm {name!r}")
 
 
-def load_backbone(args, device: str):
+def load_backbone(args, device: str, attention: str | None = None):
     if args.fake:
         from frontier import fake
         torch.manual_seed(0)
         return fake.TinyLM(args.vocab, args.hidden, args.layers).to(device)
-    return arms.load_model(args.student_dir, dtype=torch.bfloat16, device=device)
+    return arms.load_model(args.student_dir, dtype=torch.bfloat16,
+                           device=device, attn_implementation=attention)
 
 
 def load_teacher(args, device: str):
@@ -268,7 +281,7 @@ def score_all(args, device: str, names: list[str]):
     paths = {}
     for name in names:
         print(f"compare: {name}", flush=True)
-        model = load_backbone(args, device)
+        model = load_backbone(args, device, attention="eager")
         model.eval()
         model, handles, report = build_named_arm(name, model, args, device)
         model.eval()

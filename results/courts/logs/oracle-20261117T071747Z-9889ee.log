@@ -1,0 +1,16 @@
+........................................................................ [ 12%]
+........................................................................ [ 25%]
+........................................................................ [ 37%]
+........................................................................ [ 50%]
+........................................................................ [ 62%]
+........................................................................ [ 75%]
+........................................................................ [ 87%]
+........................................................................ [100%]
+=============================== warnings summary ===============================
+oracle/tests/test_s43_token_gate.py::test_rows_receive_gradient_once_the_gate_is_open_and_the_path_is_deterministic
+  /work/oracle/tests/test_s43_token_gate.py:218: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    gate_means.append(float(module.last_gate.mean()))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+576 passed, 1 warning in 105.90s (0:01:45)

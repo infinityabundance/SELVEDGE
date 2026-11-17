@@ -1,0 +1,165 @@
+{
+  "schema": "selvedge/ws19-corrective-gate-advantage-preregistration/v1",
+  "registering_session": "S43",
+  "registered_utc": "2026-11-17T07:18:30Z",
+  "purpose": "Register, before any arm is trained, the token-conditioned correction gate and the three supervision weights (KL-disagreement, signed teacher advantage, both), with the decision rule that picks one for the next route. This amends the corrective-graft mechanism registered at S42; the S42 file is not edited.",
+  "amends": {
+    "path": "docs/ws19-corrective-graft-preregistration-v1.json",
+    "sha256": "d2d1058127f288f0a0bb62b37c24f2405c22f75e27826a4f3cc49858cf0b2e16",
+    "note": "the S42 mechanism is superseded in the gate parameterisation and adds the signed-advantage comparison; its 2M token budget, teacher, stream and evaluation are unchanged"
+  },
+  "relation_to_existing_registrations": {
+    "s42_corrective": "the S42 corrective graft used a global scalar gate alpha(site) = tanh(gate_raw) and a KL-disagreement weight. This file replaces the scalar with a token-conditioned gate and registers the signed-advantage comparison.",
+    "full_bar": "docs/ws19-full-distillation-preregistration-v1.json remains the 20M bar; no verdict about it is drawn from 2M numbers",
+    "math_stream_amendment": "docs/ws19-full-distillation-amendment-math-stream-preregistration-v1.json replaces the general-only stream for the full arm; the 2M corrective arms stay on the registered 2M stream so they remain comparable to the existing 2M receipts"
+  },
+  "mechanism": {
+    "gate": "alpha_t = tanh(w . phi(h_t, r_t) + b)",
+    "feature_map": "phi(h_t, r_t) = [h_t ; r_t], a parameter-free concatenation of the site's hidden state and the memory read",
+    "initialisation": "w = 0 and b = 0 exactly, so alpha_t = 0 for every token and the untrained model is the base bit for bit; no zero multiplicand is used, so dL/dalpha is non-zero at zero",
+    "active_parameter_cost": {
+      "gate_weight_elements_per_site": 2048,
+      "gate_bias_elements_per_site": 1,
+      "gate_parameters_per_site": 2049,
+      "sites": 1,
+      "active_union": 539649,
+      "memory_union": 537600,
+      "delta": 2049,
+      "basis": "the read, key projection, value projection, convolution and table are the S40/S42 memory construction; only the gate's parameterisation changes"
+    },
+    "why_token_conditioned": "a scalar gate must make the same correction everywhere; the measured harm of the representation graft was largest where the base was already correct, and the held-out distribution mixes positions where the base matches the teacher with positions where it does not. A per-token gate can be open on the latter and closed on the former; the preservation penalty is the training-time incentive, the gate is the capacity.",
+    "constant_offset_in_residual": false
+  },
+  "supervision": {
+    "teacher": "Qwen/Qwen3.5-2B-Base at b1485b2fa6dfa1287294f269f5fb618e03d52d7c, online, no logit cache",
+    "student": "Qwen/Qwen3.5-0.8B-Base at dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68, frozen backbone",
+    "kl_disagreement_weight": {
+      "symbol": "a_t",
+      "form": "KL(teacher_T || base_T) at position t, detached",
+      "normalisation": "u_t = a_t / mean(a)"
+    },
+    "signed_teacher_advantage": {
+      "symbol": "A_t",
+      "form": "log p_T(y_t) - log p_B(y_t) on the supervised target, at T = 1.0, detached",
+      "sign": "positive where the teacher assigns more probability than the base to the true next token; negative where the base is already better",
+      "normalisation": "u_t = exp(clamp(A_t, -4, 4)) / mean(exp(clamp(A_t, -4, 4)))"
+    },
+    "both": {
+      "form": "u_t = sqrt(u_kl,t * u_signed,t) renormalised to mean 1",
+      "why": "the geometric mean keeps a position high only if both the disagreement and the signed advantage are high, instead of letting one unbounded quantity dominate"
+    },
+    "objective": "CE + w*T^2*sum(u_t KL_t)/sum(u_t) + w*preserve_weight*T^2*mean(p_t*max(KL_t - a_t, 0)) + interference_weight*mean(p_t)*mean(alpha_t^2)",
+    "preservation_weight": "p_t = sigmoid(-(a_t - mean a)/mean a), high where the base already matches the teacher",
+    "registered_values": {"temperature": 2.0, "kl_weight": 0.5, "preserve_weight": 0.5, "interference_weight": 0.05}
+  },
+  "harm_measurement": {
+    "requirement": "the preservation penalty is not accepted on the mean alone; harm is reported separately on the tokens the base already handles",
+    "masks": {
+      "lowest_quartile": "a_t <= the 25th percentile of a_t over the batch, the P19.8 interference-cost definition",
+      "signed_base_better": "A_t >= 0, i.e. the teacher assigns no more probability to the true token than the base"
+    },
+    "quantities": [
+      "number of tokens in the mask",
+      "mean delta KL = mean(KL_student - KL_base) on the mask",
+      "fraction of mask tokens where the student is worse than the base"
+    ],
+    "reading": "a positive mean delta and a fraction worse above zero is the harm the preservation term exists to prevent; it must be reported even when the mean CE improves"
+  },
+  "arms": {
+    "corrective-gate-kl": {
+      "objective": "correction",
+      "weighting": "kl",
+      "run_dir": "results/stage2/runs/corrective-gate-kl-2m",
+      "role": "the token gate under the S42 supervision signal; the like-for-like comparison to the scalar-gate arm"
+    },
+    "corrective-gate-signed": {
+      "objective": "correction",
+      "weighting": "signed",
+      "run_dir": "results/stage2/runs/corrective-gate-signed-2m",
+      "role": "the signed teacher advantage replaces the KL-disagreement weight"
+    },
+    "corrective-gate-both": {
+      "objective": "correction",
+      "weighting": "both",
+      "run_dir": "results/stage2/runs/corrective-gate-both-2m",
+      "role": "the registered combination"
+    },
+    "corrective-cekl-2m": {
+      "objective": "ce_kl",
+      "run_dir": "results/stage2/runs/corrective-cekl-2m",
+      "role": "the objective control from the S42 registration, unchanged and re-stated here"
+    },
+    "gate-zero-control": {
+      "kind": "untrained token-gate corrective init",
+      "expected": "bit-identical to base logits",
+      "role": "parity control for the new gate parameterisation"
+    },
+    "common": {
+      "tokens_per_arm": 2000000,
+      "sequence_length": 512,
+      "micro_batch": 1,
+      "gradient_accumulation": 4,
+      "steps": 976,
+      "realised_tokens": 1998848,
+      "optimizer": "AdamW, lr 1e-3, betas 0.9/0.95, constant, warmup 50, clip 1.0",
+      "init": "results/stage2/graft/corrective/<stamp>/memory-init.pt built by graft.py --corrective",
+      "same_stream": "results/stage2/stage2-stream-20261117T004849Z.json",
+      "same_teacher": true,
+      "same_active_union": 539649
+    }
+  },
+  "decision_rule": [
+    "1. If signed or both beats kl on held-out CE by more than the combined standard error and does not lose KL beyond its standard error, adopt that weighting and carry the token-gated corrective arm to the 20M bar comparison.",
+    "2. If CE ties within the combined standard error and signed or both lowers the harm on the base-match masks by more than its standard error, adopt that weighting and record the CE tie.",
+    "3. If signed and both lose CE to kl beyond the combined standard error, keep the KL-disagreement weighting and record that the signed advantage is too noisy at 2M; the next route is a registered gate-feature change (phi adds the base advantage scalar) or no gate conditioning, not an unregistered retune.",
+    "4. If every corrective arm loses to base on CE, the 2M mechanism screen is a null; the next route is the 20M full-arm bar and then P19.4, not another 2M variant."
+  ],
+  "next_route": {
+    "if_a_weighting_wins": "score the winning arm on the anchored harness beside the 20M full arm; only a gain over the full arm at equal tokens and equal deployed active union is a mechanism win",
+    "if_kl_wins": "the gate is still the S43 mechanism; the supervision stays KL and the next objective question is a registered feature-map change",
+    "if_all_lose": "the 2M screen is a null for the corrective family; register no further 2M objective variant before the 20M bar"
+  },
+  "evaluation": {
+    "heldout": {
+      "manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+      "manifest_sha256": "901c0a3fd5b7f5661b6ba3abcf27e25cc980ca45e8ae43118ea42a9a0c782fd5",
+      "stream_sha256": "468e36903cf3bbbea2eacd38dfd726a8542a11bf368f73b8a8fd492c1da1c43e",
+      "tokens": 2000000,
+      "metrics": "mean next-token CE and mean KL(teacher_T || student_T) at T=2.0, standard errors across non-overlapping 512-token chunks, paired per-chunk against base and against each other",
+      "harm": "the two masks above, with paired per-chunk deltas"
+    },
+    "anchored_harness": {
+      "instrument": "docs/anchor-preregistration-v1.json",
+      "driver": "scripts/s40_score.py; a total-capped run must use scripts/s43_score_total_cap.py",
+      "tasks": ["mmlu_pro", "mmlu", "gsm8k", "minerva_math500"],
+      "verdict_policy": "no verdict on the mechanism against the 20M bar from 2M numbers"
+    }
+  },
+  "tests": {
+    "files": [
+      "oracle/tests/test_s42_corrective.py (updated to the token gate; 20 tests pass with the new file)",
+      "oracle/tests/test_s43_token_gate.py"
+    ],
+    "claims": [
+      "zero-init bit-identity with grafted rows and a non-zero offset",
+      "the gate is zero at init and varies per token once w is non-zero; identical (h, r) gives identical alpha",
+      "the signed advantage is positive when the teacher is better on the target and negative when the base is",
+      "gradient reaches rows, key and value projections once the gate is open, and the path is deterministic for a fixed seed",
+      "the signed and both weights order positions by the signed advantage",
+      "harm is reported on the lowest-advantage quartile and the signed base-better set",
+      "the active union is the memory union plus 2*hidden+1 per site"
+    ],
+    "receipt": "results/courts/oracle-20261117T071710Z-1fbd25.json"
+  },
+  "what_this_file_does_not_establish": [
+    "that the token gate beats the scalar gate: that is the experiment; the scalar gate has not been trained either",
+    "that the signed advantage is better than KL: it is a registered alternative with a decision rule",
+    "that 2M tokens transfer to 20M: no verdict about the bar is drawn from 2M numbers",
+    "that the gate feature map [h ; r] is optimal: it is the registered first map, chosen for a 2,049-element cost per site"
+  ],
+  "limits_derived_from": [
+    "results/courts/oracle-20261117T071710Z-1fbd25.json",
+    "results/stage2/stage2-heldout-20261117T024542Z.json"
+  ],
+  "scoring_receipts": []
+}

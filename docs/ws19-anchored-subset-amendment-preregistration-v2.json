@@ -1,0 +1,87 @@
+{
+  "schema": "selvedge/ws19-anchored-subset-amendment/v2",
+  "registering_session": "S43",
+  "registered_utc": "2026-11-17T07:15:30Z",
+  "amends": {
+    "path": "docs/ws19-anchored-subset-preregistration-v1.json",
+    "sha256": "e7aa099f0dfa56329869e107bd55429bf61829ad5944d0edf7a4f64150835f5c",
+    "registered_utc": "2026-11-17T02:58:29Z",
+    "prior_amendment": {
+      "path": "docs/ws19-anchored-subset-amendment-preregistration-v1.json",
+      "sha256": "f92af6b6d57ba37b2943d4b94fd58d2f18fdf33cdf9a4eff9ceab0d49df15bb5",
+      "role": "S41 recorded the measured fact once, in reading only; this amendment records the corrected basis, the defect in the runner, and the new enforcement code"
+    },
+    "rule": "the pre-registration is not edited. This amendment records the actual sample basis and the defect, and registers the enforcement that a future total cap must use."
+  },
+  "finding": {
+    "what_was_registered": "the anchored-subset registration says the intermediate pass caps MMLU at 2,000 items and calls that 'total items; the same stratified first-2000 the harness selects under a fixed seed'. It calls the knowledge mean an estimate on 2,000 of 14,042.",
+    "what_was_actually_scored": "all 14,042 MMLU items in every arm. MMLU is a 57-subject group task and lm-evaluation-harness applies `limit` per subtask, not to the group total. `--limit-map mmlu=2000` therefore selected min(2000, n_subject) for every subject; every subject has fewer than 2,000 items, so the effective sample was the full set.",
+    "measured_evidence": {
+      "receipts": [
+        "results/stage2/eval/base/eval.json",
+        "results/stage2/eval/adapter-2m/eval.json",
+        "results/stage2/eval/memory-2m/eval.json"
+      ],
+      "mmlu_sample_len_in_each": 14042,
+      "mmlu_sample_count_in_each": 14042,
+      "base_mmlu_wall_seconds": 654.0,
+      "anchor_full_mmlu_wall_seconds": 638.8,
+      "reading": "a true 2,000-item run would be about one seventh of the anchor's full-MMLU wall time; 654 s against 639 s is the full set, and the receipt's own `sample_len` says 14,042"
+    },
+    "defect": {
+      "class": "the runner passed a total-item intention to a per-subtask parameter; the harness had no way to know the intention",
+      "registration_text_status": "`anchored_subset.tasks.mmlu.limit = 2000` and `limit_semantics = total items` remain written in the pre-registration because that file is not edited. They are superseded by this amendment's stated basis.",
+      "runner_status": "the receipts record what was run (`pre_registered.limit = 2000`, `limit_from_limit_map = true`) beside what was scored (`n_samples.sample_len = 14042`); the receipt is read that way"
+    }
+  },
+  "corrected_basis": {
+    "mmlu": {
+      "items": 14042,
+      "kind": "all 57 subjects, every item",
+      "limit_semantics_effective": "none; the full set",
+      "basis_identity": "the same basis as the anchor's 37.90 knowledge mean and the registered 42.01 knowledge threshold"
+    },
+    "mmlu_pro": {"items": 504, "limit_semantics_effective": "36 per subject, 14 subjects"},
+    "gsm8k": {"items": 1319, "limit_semantics_effective": "full test set"},
+    "minerva_math500": {"items": 500, "limit_semantics_effective": "full MATH-500"}
+  },
+  "enforcement": {
+    "new_code": "scripts/s43_score_total_cap.py",
+    "why_new_code": "scripts/s40_score.py was executing when this was written and must not be edited during a pass; the new driver does not modify it",
+    "mechanism": "the harness exposes exact sample selection through `simple_evaluate(samples={leaf: [indices]})`, so a group total cap is expressed as a largest-remainder allocation of the requested total over the group's leaves. The allocation is deterministic, the per-leaf lengths sum to exactly the requested total, and the driver refuses a cap smaller than the leaf count.",
+    "receipt_field": "`total_cap_enforcement` records the requested cap, the allocation, the effective total read back from the harness's own `n-samples`, and `within_cap`",
+    "fail_closed": "the run raises if the effective total exceeds the requested cap; the receipt is not written as complete",
+    "self_test": {
+      "command": "SELVEDGE_MEM=6g SELVEDGE_CPUS=4 SELVEDGE_PIDS=256 SELVEDGE_TMP=1g scripts/court eval -- python3 scripts/s43_score_total_cap.py --self-test",
+      "receipt": "results/courts/eval-20261117T071332Z-2d1d8b.json",
+      "measured": "mmlu leaves = 57, full total = 14,042, a 2,000-item total cap allocates exactly 2,000, the allocation is deterministic, and a cap below the leaf count fails closed"
+    },
+    "no_rerun": "the existing MMLU receipts are already on the full 14,042-item basis, so the defect changed the reading, not the data. Any future MMLU subset must use the new driver; it may not re-use `--limit-map` as if it were a total cap."
+  },
+  "related_provenance_fix": {
+    "question": "why the stage-2 base differs from the anchor base on the same checkpoint",
+    "receipt": "results/stage2/s43-base-discrepancy-20261117T071438Z.json",
+    "receipt_sha256": "049ad0e3b53dc14362608ca08e07b1b2b8ce898b0859f4424c9d486d10f11ed2",
+    "cause": "CONFIG DIFFERENCE: the anchor loads the checkpoint through HFLM with the transformers default attention (measured `sdpa`); the stage-2 loader passed `attn_implementation='eager'`. Prompts, targets, task configs, limits, batch sizes, seeds, lm_eval and transformers versions, model revision and harness commit are identical.",
+    "item_level": {
+      "mmlu_pro": "504 items; 156 generations differ; 139 vs 135 correct; 16 anchor-correct/stage-2-wrong and 12 the other way",
+      "minerva_math500": "500 items; 220 generations differ; math_verify 117 vs 125; 9 anchor-correct/stage-2-wrong and 17 the other way",
+      "gsm8k": "1,319 items; 436 generations differ; strict-match 512 vs 514; 30 and 32 the other way"
+    },
+    "fix": "oracle/frontier/arms.py now takes `attn_implementation` and omits it when None; scripts/s40_compare.py's eval backbone uses the anchor default and records `eval_attention_implementation` in the arm report. The held-out instrument keeps its previous eager path. The two historical receipts are not edited; the next base score is the one to compare to the anchor."
+  },
+  "what_this_amendment_does_not_establish": [
+    "that a 2,000-item MMLU estimate equals the full MMLU score: it is an estimate, and the existing receipts are the full set",
+    "that the stage-2 base and the anchor base measure different model states: the weights are identical and the difference is the attention kernel",
+    "that the attention kernel difference explains every future score difference: it explains the measured generation divergence here; it is not a licence to ignore other config changes",
+    "that any arm's family mean should be compared to the 42.01 / 39.27 thresholds as a win: the intermediate pass still draws no win verdict"
+  ],
+  "limits_derived_from": [
+    "results/stage2/s43-base-discrepancy-20261117T071438Z.json",
+    "results/stage2/eval/base/eval.json",
+    "results/stage2/eval/adapter-2m/eval.json",
+    "results/stage2/eval/memory-2m/eval.json",
+    "results/courts/eval-20261117T071332Z-2d1d8b.json"
+  ],
+  "scoring_receipts": []
+}

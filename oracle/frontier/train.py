@@ -416,6 +416,9 @@ def run(args) -> int:
             "objective_preserve_weight": args.preserve_weight,
             "objective_interference_weight": args.interference_weight,
             "objective_advantage": "KL(teacher_T || base_T) per position, detached",
+            "objective_advantage_weighting": args.advantage_weighting,
+            "objective_signed_advantage": (
+                "log p_T(y_t) - log p_B(y_t) on the supervised target at T=1.0"),
         })
     config["config_sha256"] = config_hash(config)
     os.makedirs(args.run_dir, exist_ok=True)
@@ -486,8 +489,10 @@ def run(args) -> int:
             if teacher is not None:
                 with torch.no_grad():
                     teacher_logits = teacher(input_ids=inputs, use_cache=False).logits
-            if (corrective_module is not None and objective == "correction"
-                    and teacher_logits is not None):
+            if (corrective_module is not None and objective == "correction"):
+                if teacher_logits is None:
+                    raise SystemExit(
+                        "train: the correction objective requires the online teacher")
                 # The frozen base logits are needed for the advantage and the
                 # preservation term. `bypass` returns exactly zero and does not
                 # advance the convolution state, so this is a clean base pass.
@@ -495,10 +500,15 @@ def run(args) -> int:
                     corrective_module.bypass = True
                     base_logits = model(input_ids=inputs, use_cache=False).logits
                     corrective_module.bypass = False
+                gate = corrective_module.last_gate
+                if gate is None:
+                    raise SystemExit("train: the corrective gate was not recorded "
+                                     "on the student forward")
                 loss, ce, kl, diagnostics = corrective.corrective_objective(
                     student, base_logits, teacher_logits, targets,
                     args.temperature, args.kl_weight, objective=objective,
-                    gate=corrective_module.gate(0),
+                    weighting=args.advantage_weighting,
+                    gate=gate,
                     preserve_weight=args.preserve_weight,
                     interference_weight=args.interference_weight)
                 for key, value in diagnostics.items():
@@ -546,7 +556,7 @@ def run(args) -> int:
                 key: value / args.grad_accum
                 for key, value in objective_sum.items()
                 if key != "objective"}
-            entry["gate"] = corrective_module.gate_values()
+            entry["gate"] = corrective_module.gate_summary()
         if step % args.collision_every == 0 and args.arm == "memory":
             sample = stream[offset - args.seq_len:offset]
             collision = arm.collision_report(sample[None, :])
@@ -616,7 +626,7 @@ def run(args) -> int:
         "optimizer_numerics": numerics_summary,
         "objective": objective,
         "correction_gate_final": (
-            corrective_module.gate_values() if corrective_module is not None
+            corrective_module.gate_summary() if corrective_module is not None
             else None),
         "final_checkpoint": os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt"),
         "final_checkpoint_sha256": sha256_file(
@@ -664,6 +674,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--objective", choices=list(corrective.OBJECTIVES),
                         default=None,
                         help="correction (default for --arm corrective) or ce_kl")
+    parser.add_argument("--advantage-weighting",
+                        choices=list(corrective.WEIGHTINGS), default="kl",
+                        help="the correction objective's position weight: the "
+                             "registered KL-disagreement weight, the signed "
+                             "teacher advantage on the target, or both")
     parser.add_argument("--preserve-weight", type=float, default=0.5)
     parser.add_argument("--interference-weight", type=float, default=0.05)
     parser.add_argument("--allow-dense-optimizer", action="store_true")
