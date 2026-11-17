@@ -1,0 +1,27 @@
+compare: base
+compare: adapter-2m
+compare: memory-2m
+compare: memory-ungrafted
+compare: memory-grafted
+compare: full-distill
+arm                           CE       SE        KL       SE       dCE       SE
+-------------------------------------------------------------------------------
+base                    32.09639  0.11245   1.42901  0.12477  -2.06659  0.53071
+adapter-2m              32.21271  0.16535   1.44066  0.12450  -1.95027  0.61143
+memory-2m               32.08948  0.11251   1.42674  0.12412  -2.07349  0.52975
+memory-ungrafted        32.09639  0.11245   1.42901  0.12477  -2.06659  0.53071
+memory-grafted          32.09639  0.11245   1.42901  0.12477  -2.06659  0.53071
+full-distill            34.16298  0.62373   1.58705  0.12073  +0.00000  0.00000
+delta columns are paired per-chunk differences against full-distill
+compare: receipt /tmp/s40-selftest-rr1wjlws/compare.json
+Traceback (most recent call last):
+  File "/work/scripts/s40_compare.py", line 427, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s40_compare.py", line 418, in main
+    return self_test()
+           ^^^^^^^^^^^
+  File "/work/scripts/s40_compare.py", line 390, in self_test
+    assert receipt["arms"]["memory-grafted"]["ce"]["mean"] != base_ce
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

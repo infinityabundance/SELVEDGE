@@ -1,0 +1,64 @@
+...................F..F....                                              [100%]
+=================================== FAILURES ===================================
+________________ test_cached_memory_output_equals_full_sequence ________________
+
+    def test_cached_memory_output_equals_full_sequence():
+        torch.manual_seed(3)
+        tokens = torch.randint(0, 100, (1, 12), dtype=torch.int64)
+        hidden = torch.randn(1, 12, 32)
+    
+        full_module, full_context = _small_memory()
+        _randomise_memory(full_module, seed=7)
+        full_context.observe(tokens)
+        full = full_module(hidden)
+        assert not torch.equal(full, torch.zeros_like(full))
+    
+        cached_module, cached_context = _small_memory()
+        cached_module.load_state_dict(full_module.state_dict())
+        prefill = 4
+        cached_context.observe(tokens[:, :prefill])
+        pieces = [cached_module(hidden[:, :prefill])]
+        for position in range(prefill, tokens.shape[1]):
+            cached_context.observe(tokens[:, position:position + 1],
+                                   past=_FakePast(position))
+            pieces.append(cached_module(hidden[:, position:position + 1]))
+        cached = torch.cat(pieces, dim=1)
+>       assert torch.allclose(cached, full, atol=1e-6, rtol=0)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7f5c739572e0>(tensor([[[-2.7772e+00, -1.3234e+00, -4.6678e-01, -1.9753e+00, -3.2691e-01,\n           7.6613e+00,  6.2778e-01,  1.3603...+00,  1.1747e+01, -2.1584e+01, -4.3964e+00, -7.3790e+00,\n           1.3057e+00,  5.6689e+00]]], grad_fn=<CatBackward0>), tensor([[[-2.7772e+00, -1.3234e+00, -4.6678e-01, -1.9753e+00, -3.2691e-01,\n           7.6613e+00,  6.2778e-01,  1.3603...+00,  1.1747e+01, -2.1584e+01, -4.3964e+00, -7.3790e+00,\n           1.3057e+00,  5.6689e+00]]], grad_fn=<AddBackward0>), atol=1e-06, rtol=0)
+E        +    where <built-in method allclose of type object at 0x7f5c739572e0> = torch.allclose
+
+oracle/tests/test_stage2_memory.py:316: AssertionError
+__________ test_full_sequence_logits_equal_cached_continuation_logits __________
+
+    def test_full_sequence_logits_equal_cached_continuation_logits():
+        torch.manual_seed(5)
+        vocab, hidden, layers = 64, 32, 4
+        lm = _TinyLM(vocab, hidden, layers)
+        context = mem.TokenContext()
+        module = mem.ConditionalMemory(hidden=hidden, value_dim=8, rows=64,
+                                       sites=(0, 2), conv_kernel=3, context=context,
+                                       table_dtype=torch.float32)
+        _randomise_memory(module, seed=9)
+        handles = arms.install_memory(lm, module)
+        try:
+            tokens = torch.randint(0, vocab, (1, 10), dtype=torch.int64)
+            full = lm(tokens, use_cache=False).logits
+            prefill = 4
+            lm(tokens[:, :prefill], use_cache=False)
+            pieces = []
+            for position in range(prefill, tokens.shape[1]):
+                step = lm(tokens[:, position:position + 1],
+                          past_key_values=_FakePast(position), use_cache=True)
+                pieces.append(step.logits[:, -1:])
+            cached = torch.cat(pieces, dim=1)
+>           assert torch.allclose(cached, full[:, prefill:], atol=1e-6, rtol=0)
+E           assert False
+E            +  where False = <built-in method allclose of type object at 0x7f5c739572e0>(tensor([[[  6.2076,  15.7280,  -7.4969,   6.0783,   8.8681, -13.2298,  -5.4830,\n            9.5476,   2.0137,  -6.0664...    -8.6547,   2.5761,   5.0556,   9.0850,  15.7288,   8.9099,  -5.1550,\n           -4.4406]]], grad_fn=<CatBackward0>), tensor([[[-4.3156e-01,  1.5990e+00, -1.1363e+01,  7.7986e+00,  6.9591e+00,\n          -1.7243e+01, -4.0974e+00,  5.9642...717e+00,  3.9055e+00,\n           1.3696e+01, -1.8521e-01,  4.6221e-01, -1.9982e+00]]],\n       grad_fn=<SliceBackward0>), atol=1e-06, rtol=0)
+E            +    where <built-in method allclose of type object at 0x7f5c739572e0> = torch.allclose
+
+oracle/tests/test_stage2_memory.py:433: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_stage2_memory.py::test_cached_memory_output_equals_full_sequence
+FAILED oracle/tests/test_stage2_memory.py::test_full_sequence_logits_equal_cached_continuation_logits
+2 failed, 25 passed in 1.75s

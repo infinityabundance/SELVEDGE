@@ -1,0 +1,8 @@
+outer Qwen3_5ForCausalLM
+text Qwen3_5TextModel layers 24
+total params 752393024
+core params 752393024
+embed torch.Size([248320, 1024])
+first ['embed_tokens.weight', 'layers.0.linear_attn.dt_bias', 'layers.0.linear_attn.A_log'] last ['layers.23.input_layernorm.weight', 'layers.23.post_attention_layernorm.weight', 'norm.weight']
+report {'text_tower_elements': 752393024, 'frozen_embedding_elements': 254279680, 'trainable_elements': 498113344, 'deployed_active_union_elements': 752393024, 'frozen_identities': ['embed_tokens.weight']}
+trainable first ['layers.0.linear_attn.dt_bias', 'layers.0.linear_attn.A_log', 'layers.0.linear_attn.conv1d.weight']

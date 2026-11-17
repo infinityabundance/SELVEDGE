@@ -1,0 +1,44 @@
+...F.....                                                                [100%]
+=================================== FAILURES ===================================
+____ test_adam8bit_state_round_trip_keeps_int8_moments_and_replays_exactly _____
+
+    def test_adam8bit_state_round_trip_keeps_int8_moments_and_replays_exactly():
+        torch.manual_seed(4)
+        start = torch.randn(300)
+        first_grad = torch.randn(300)
+        second_grad = torch.randn(300)
+    
+        reference = nn.Parameter(start.clone())
+        optimizer = optim8bit.Adam8bit([reference], lr=1e-2, block=BLOCK)
+        reference.grad = first_grad.clone()
+        optimizer.step()
+        saved = optimizer.state_dict()
+        saved_parameter = reference.detach().clone()
+        reference.grad = second_grad.clone()
+        optimizer.step()
+        expected = reference.detach().clone()
+    
+        replay = nn.Parameter(start.clone())
+        replay_optimizer = optim8bit.Adam8bit([replay], lr=1e-2, block=BLOCK)
+        replay.grad = first_grad.clone()
+        replay_optimizer.step()
+        replay_optimizer.load_state_dict(saved)
+        state = replay_optimizer.state[replay]
+        # PyTorch's loader would cast these to the parameter dtype; ours must not.
+        assert state["q_m"].dtype == torch.int8
+        assert state["q_v"].dtype == torch.int8
+        assert state["absmax_m"].dtype == torch.float32
+        replay.data.copy_(saved_parameter)
+        replay.grad = second_grad.clone()
+        replay_optimizer.step()
+>       assert torch.allclose(replay.detach(), expected, atol=1e-6, rtol=0)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7f93ebf572e0>(tensor([-9.4347e-01,  1.2728e+00, -1.6378e-01,  1.3098e-01,  1.2275e-01,\n        -2.5857e-01, -2.5848e+00,  6.2131e-01...5e+00, -1.9448e+00,  1.6470e+00,  1.0363e+00,\n         2.2242e+00,  6.3439e-01, -8.7602e-01,  9.9374e-01, -7.2003e-01]), tensor([-9.4504e-01,  1.2761e+00, -1.6385e-01,  1.3094e-01,  1.2427e-01,\n        -2.5848e-01, -2.5840e+00,  6.2075e-01...0e+00, -1.9464e+00,  1.6471e+00,  1.0386e+00,\n         2.2206e+00,  6.3772e-01, -8.7340e-01,  9.9032e-01, -7.2148e-01]), atol=1e-06, rtol=0)
+E        +    where <built-in method allclose of type object at 0x7f93ebf572e0> = torch.allclose
+E        +    and   tensor([-9.4347e-01,  1.2728e+00, -1.6378e-01,  1.3098e-01,  1.2275e-01,\n        -2.5857e-01, -2.5848e+00,  6.2131e-01...5e+00, -1.9448e+00,  1.6470e+00,  1.0363e+00,\n         2.2242e+00,  6.3439e-01, -8.7602e-01,  9.9374e-01, -7.2003e-01]) = <built-in method detach of Parameter object at 0x7f937d61f430>()
+E        +      where <built-in method detach of Parameter object at 0x7f937d61f430> = Parameter containing:\ntensor([-9.4347e-01,  1.2728e+00, -1.6378e-01,  1.3098e-01,  1.2275e-01,\n        -2.5857e-01, -2...e+00,  1.0363e+00,\n         2.2242e+00,  6.3439e-01, -8.7602e-01,  9.9374e-01, -7.2003e-01],\n       requires_grad=True).detach
+
+oracle/tests/test_s40_full_arm.py:116: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s40_full_arm.py::test_adam8bit_state_round_trip_keeps_int8_moments_and_replays_exactly
+1 failed, 8 passed in 3.59s
