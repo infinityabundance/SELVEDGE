@@ -1,0 +1,196 @@
+{
+  "schema": "selvedge/ws19-stage2b-corrective-advantage-preregistration/v1",
+  "registering_session": "S44",
+  "registered_utc": "2026-11-17T08:12:00Z",
+  "purpose": "Register, before any stage-2b arm is trained, the three corrective supervision weightings (KL-disagreement, signed teacher advantage, both) on the S43 math-weighted 20M stream at the stage-2 budget, with the win bar that decides whether a corrective mechanism replaces the full-distillation bar, the decision rule, and the next route. This file changes no S42 or S43 registration; it instantiates the S43 mechanism at the bar's budget on the bar's stream.",
+  "relation_to_existing_registrations": {
+    "s43_gate_mechanism": {
+      "path": "docs/ws19-corrective-gate-advantage-preregistration-v1.json",
+      "sha256": "39cacf330078fba2e81607fc678864ee4a0d0c670b31321c1841e6bb0c34113d",
+      "role": "defines the token gate, the three weights, the preservation penalty and the 2M mechanism screen. Stage-2b is the same mechanism at 20M on the math-weighted stream; the 2M registration is not edited and its decision rule still governs the 2M screen if it is run."
+    },
+    "full_bar": {
+      "path": "docs/ws19-full-distillation-preregistration-v1.json",
+      "role": "the 20M full-backbone arm on the same stream and teacher whose anchored score is the bar. No verdict about it is drawn here."
+    },
+    "math_stream_amendment": {
+      "path": "docs/ws19-full-distillation-amendment-math-stream-preregistration-v1.json",
+      "role": "the math-weighted stream and its contamination discipline; stage-2b reuses the identical stream, not a new one."
+    },
+    "anchored_subset_v2": {
+      "path": "docs/ws19-anchored-subset-amendment-preregistration-v2.json",
+      "role": "the corrected total-cap basis: MMLU is all 14,042 items. Stage-2b scores on that basis and no other."
+    }
+  },
+  "stream": {
+    "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "mix": "57% math (NuminaMath-CoT 40%, MATH 11%, GSM8K 6%) / 43% FineWeb general, repeated per 10,000-token cycle",
+    "tokens": 20000000,
+    "why_identical": "a stage-2b arm that used a different stream could not be compared with the bar at equal data; the stream is therefore not re-mixed"
+  },
+  "teacher": "Qwen/Qwen3.5-2B-Base at b1485b2fa6dfa1287294f269f5fb618e03d52d7c, online, no logit cache, temperature 2.0 for KL and 1.0 for the signed advantage",
+  "student": "Qwen/Qwen3.5-0.8B-Base at dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68, frozen backbone",
+  "mechanism": {
+    "gate": "alpha_t = tanh(w . [h_t ; r_t] + b), w = 0 and b = 0 at init",
+    "active_union": 539649,
+    "memory_union": 537600,
+    "gate_elements_per_site": 2049,
+    "sites": 1,
+    "constant_offset_in_residual": false
+  },
+  "arms": {
+    "corrective-kl-20m-math": {
+      "weighting": "kl",
+      "run_dir": "results/stage2/runs/corrective-kl-20m-math",
+      "role": "the S42/S43 supervision signal at the bar's budget; the like-for-like comparison to the full arm at equal tokens and equal stream"
+    },
+    "corrective-signed-20m-math": {
+      "weighting": "signed",
+      "run_dir": "results/stage2/runs/corrective-signed-20m-math",
+      "role": "the signed teacher advantage A_t = log p_T(y_t) - log p_B(y_t) replaces the KL-disagreement weight"
+    },
+    "corrective-both-20m-math": {
+      "weighting": "both",
+      "run_dir": "results/stage2/runs/corrective-both-20m-math",
+      "role": "the registered geometric-mean combination; run only if neither single weighting wins outright"
+    }
+  },
+  "common": {
+    "tokens": 20000000,
+    "realised_tokens": 19998720,
+    "sequence_length": 512,
+    "micro_batch": 1,
+    "gradient_accumulation": 4,
+    "steps": 9765,
+    "optimizer": "AdamW (fp32 moments; 539,649 parameters, dense)",
+    "lr": 0.001,
+    "betas": [0.9, 0.95],
+    "weight_decay": 0.0,
+    "schedule": "constant",
+    "warmup_steps": 50,
+    "grad_clip": 1.0,
+    "seed": 0,
+    "deterministic_algorithms": true,
+    "why_this_optimizer": "the S43 registration fixed AdamW lr 1e-3, constant, warmup 50, clip 1.0 for the corrective arms. Stage-2b keeps it verbatim so a stage-2b result is the same mechanism at a larger budget, not a retune. One seed per arm; the comparison arms (base, adapter-2m/20m, full) are also seed 0."
+  },
+  "objective": {
+    "temperature": 2.0,
+    "kl_weight": 0.5,
+    "preserve_weight": 0.5,
+    "interference_weight": 0.05,
+    "form": "CE + w T^2 sum(u_t KL_t)/sum(u_t) + w preserve_weight T^2 mean(p_t max(KL_t - a_t, 0)) + interference_weight mean(p_t) mean(alpha_t^2)",
+    "weights": {
+      "kl": "u_t = a_t / mean(a), a_t = KL(teacher_T || base_T)",
+      "signed": "u_t = exp(clamp(A_t, -4, 4)) / mean(exp(clamp(A_t, -4, 4)))",
+      "both": "u_t = sqrt(u_kl,t u_signed,t), renormalised to mean 1"
+    }
+  },
+  "init": {
+    "builder": "oracle/frontier/graft.py --corrective",
+    "command": "SELVEDGE_MEM=<smoke peak x1.5> SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g scripts/court --gpu oracle -- python3 oracle/frontier/graft.py --corrective --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json --seed 0 --vram-limit-gib 12.5 --out-dir results/stage2/graft/corrective",
+    "why_gpu": "the rows are the S40/S42 representation fit read from the student's own hidden states; the fit needs a forward pass. The gate stays exactly zero, so the init itself is bit-identical to the base.",
+    "one_init_for_three_arms": "the three weightings differ only in supervision, so they share one init checkpoint; the file's SHA-256 is recorded in every arm manifest"
+  },
+  "evaluation": {
+    "heldout": {
+      "manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+      "metrics": "mean next-token CE and mean KL(teacher_T || student_T) at T=2.0 over 3,906 non-overlapping 512-token chunks, paired per chunk against base and against each other",
+      "harm": "the two registered masks (lowest-advantage quartile, signed A_t >= 0), with the token count, mean delta KL and fraction worse; reported even when mean CE improves"
+    },
+    "anchored_harness": {
+      "driver": "scripts/s40_score.py with --adapter-checkpoint/--memory-checkpoint omitted and --memory-init <corrective init>; the arm is scored through the corrective module, whose gate is trained",
+      "tasks": ["mmlu_pro", "mmlu", "gsm8k", "minerva_math500"],
+      "basis": "all 14,042 MMLU items, 504 MMLU-Pro, 1,319 GSM8K, 500 MATH-500 (amendment v2)",
+      "table": "scripts/s44_arm_table.py re-renders the complete arm table and the paired per-item comparisons against base and adapter-2m; no arm is compared on family means alone",
+      "instrument": "docs/anchor-preregistration-v1.json, transformers default attention (sdpa), the one basis on which the stage-2 receipts are comparable"
+    }
+  },
+  "target_family": {
+    "name": "math",
+    "members": ["gsm8k (exact_match,strict-match)", "minerva_math500 (math_verify,none)"],
+    "why": "the stage-2 measurements put every trained arm below base on math and the loss is concentrated in the generative tasks; math is the family the bar and the mechanism are both supposed to move"
+  },
+  "win_bar": {
+    "statement": "A stage-2b corrective arm wins only if it beats BOTH the full-distillation bar AND adapter-2m on the target family, at equal tokens, equal stream, equal teacher and equal deployed active union, without buying the gain with a held-out or knowledge regression.",
+    "conditions_all_required": [
+      "1. math family mean exceeds the full-distillation arm's by more than the combined independent standard error, and the paired per-item bootstrap interval on the math tasks excludes zero in the same direction",
+      "2. math family mean exceeds adapter-2m's by more than the combined independent standard error, with the same paired requirement",
+      "3. held-out CE delta against base is not positive beyond its paired per-chunk standard error",
+      "4. neither registered harm mask shows a positive mean delta KL on the base-match tokens beyond its standard error, and the knowledge family mean is not below base by more than the combined standard error"
+    ],
+    "why_adapter": "adapter-2m is the cheapest learned correction on the same frozen backbone and active budget; a mechanism that costs the same per token and loses to it is not a mechanism win even if it beats the 20M backbone arm",
+    "why_equal_active_union": "539,649 against 537,600 is the only accounting difference between the corrective family and the memory/adapter families; a win bought with extra active parameters is reported as such, not as a mechanism win"
+  },
+  "decision_rule": [
+    "1. If one weighting satisfies every win-bar condition, adopt it: that arm becomes the mechanism carried to the next phase, and the other two are recorded as measured alternatives rather than run further.",
+    "2. If an arm satisfies conditions 1, 3 and 4 but not 2 (it beats the bar, not the adapter), the finding is 'the residual beats a 20M backbone update at equal tokens but not a 2M adapter'; the next route is a registered adapter-plus-gate comparison, not a new 20M residual variant.",
+    "3. If no arm beats the bar but the corrective arm beats base on held-out CE and does not lose the target family beyond its standard error, the 20M correction is real but not on the scored family; the next route is a registered feature-map change (phi adds the base advantage scalar A_t) or dropping the gate conditioning, chosen before the next run.",
+    "4. If every corrective arm loses on the target family and on held-out CE, the corrective-residual family is a null at 20M on this stream; the next route is P19.4 (the anchored scoreboard route) and no further residual variant without a new registered mechanism."
+  ],
+  "next_route": {
+    "if_a_weighting_wins": "score it on the anchored harness beside the full arm and adapter-2m with scripts/s44_arm_table.py; only then is a mechanism claim made",
+    "if_signed_wins": "the signed advantage is adopted for the corrective family and the KL-disagreement weight is kept only as the control",
+    "if_all_lose": "no further 20M residual arm on this stream; the residual budget is spent and the next phase is the registered scoreboard route",
+    "no_unregistered_retune": "lr, schedule, temperature, the three objective weights, the feature map and the stream are fixed by this file; a change is a new registration with its own decision rule"
+  },
+  "sequencing": {
+    "order": ["corrective-kl-20m-math", "corrective-signed-20m-math", "corrective-both-20m-math"],
+    "why_sequential": "one GPU; the memory accounting forbids two memory-heavy jobs at once",
+    "early_stop": "if branch 1 or branch 4 of the decision rule fires after the first arm's held-out and anchored score, the remaining arms are not launched and the reason is receipted",
+    "bar_first": "the full-20m-math arm is scored before any stage-2b arm is launched, so the bar is a measured number and not an expectation"
+  },
+  "sizing": {
+    "vram": {
+      "measured_corrective_shape_reference": "results/stage2/runs/memory-2m/log.jsonl: 9.211 GiB allocated / 9.363 GiB reserved peak, the same student+teacher+residual forward/backward shape",
+      "measured_full_arm_reference": "results/stage2/runs/full-20m-math/launch.json: 11.4289 GiB allocated / 11.672 GiB reserved at a 12.5 GiB limit",
+      "limit_gib": 12.5,
+      "arithmetic": "9.363 GiB reserved + the gate's 2,049 parameters (16 KiB) + one (B, T) float gate and its backward (512 x 4 bytes x 2, per micro-batch) + allocator slack < 12.5 GiB; no reduction is expected to be needed",
+      "ladder_if_over": [
+        "sequence 512 -> 384 with gradient accumulation 4 -> 5 (keeps 1,920 tokens/step, needs an amendment because the registered schedule changes)",
+        "sequence 384 -> 256 with accumulation 5 -> 8 (2,048 tokens/step, same amendment)",
+        "micro-batch stays 1: raising it is not in the ladder"
+      ]
+    },
+    "container": {
+      "sizing_rule": "SELVEDGE_MEM = 1.5 x the arm's own smoke cgroup peak, never below measured + 1 GiB; the launcher refuses to run without it",
+      "reference": "the full arm's 20-step smoke measured 6.449 GiB cgroup peak at a 12 GiB bound with no reclaim, and its launch used 10 GiB (1.55x)",
+      "expected": "the corrective arm's host side is the same python + stream mmap as the memory arm; a 20-step smoke is run first and sizes the launch"
+    },
+    "reservation": "before each launch, host MemAvailable must exceed the new container's limit plus 4 GiB; the full arm holds about 10 GiB until it exits, so stage-2b starts only after the bar run's unit is inactive"
+  },
+  "tests": {
+    "files": [
+      "oracle/tests/test_s43_token_gate.py (the mechanism)",
+      "oracle/tests/test_s42_corrective.py (the objective)",
+      "oracle/tests/test_s44_stage2b.py (the three entry points, the accounting, determinism, and the launcher-to-registration consistency)"
+    ],
+    "claims": [
+      "each of the three weightings runs a CPU training step: finite loss, a non-zero gate after the step, non-zero gradients on the gate, the rows, the key and value projections",
+      "two identical seeded runs of one step produce bit-identical losses and identical post-step parameters",
+      "the corrective active union is 539,649 and the memory union is 537,600, a difference of 2,049 per site",
+      "the untrained corrective arm reproduces the base logits bit for bit",
+      "the signed advantage is positive where the teacher is better on the target and negative where the base is",
+      "the launcher's registered arguments match this file (weighting, tokens, seed, stream hash, run dir)"
+    ],
+    "receipt": "recorded with the S44 court run"
+  },
+  "what_this_file_does_not_establish": [
+    "that any corrective arm beats the bar: that is the experiment, and the bar is not yet scored",
+    "that 20M corrective tokens are enough for the gate to open usefully: the 2M screen has not been run either",
+    "that the signed advantage is less noisy than the KL-disagreement weight at 20M",
+    "that the feature map [h ; r] is optimal: it is the registered first map at a 2,049-element cost per site",
+    "that one seed per arm identifies a mechanism effect: the intervals are per-item sampling intervals, not seed variance"
+  ],
+  "limits_derived_from": [
+    "results/stage2/runs/memory-2m/log.jsonl",
+    "results/stage2/runs/full-smoke-math-mem12/receipt.json",
+    "results/stage2/runs/full-20m-math/launch.json",
+    "results/stage2/runs/full-20m-math/manifest.json",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "results/stage2/s44-arm-table-20261117T081002Z.json",
+    "results/stage2/s41-heldout-comparison.json",
+    "docs/ws19-corrective-gate-advantage-preregistration-v1.json"
+  ],
+  "scoring_receipts": []
+}

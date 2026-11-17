@@ -64,12 +64,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(REPO, "oracle"))
 
-from frontier import arms, compare, full, memory  # noqa: E402
+from frontier import arms, compare, corrective, full, memory  # noqa: E402
 
 ARMS = ("base", "adapter-2m", "memory-2m", "memory-ungrafted",
         "memory-grafted", "full-distill")
 CONTROL_ARM = "adapter-20m"
-SCORED_ARMS = ARMS + (CONTROL_ARM,)
+#: Stage-2b corrective arms. They are scored through the corrective module with
+#: the trained gate, on the same anchored instrument as the other arms.
+CORRECTIVE_ARMS = ("corrective-kl-20m-math", "corrective-signed-20m-math",
+                   "corrective-both-20m-math")
+SCORED_ARMS = ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS
 REFERENCE_ARM = "full-distill"
 FAMILIES = {"knowledge": ["mmlu_pro", "mmlu"],
             "math": ["gsm8k", "minerva_math500"]}
@@ -209,6 +213,47 @@ def _build_named_arm(name: str, model, args, device: str):
         report["extension"] = report.pop("kind", "stage2_memory")
         report["kind"] = "stage2_memory_arm"
         return model, handles, report
+    if name in CORRECTIVE_ARMS:
+        if not args.memory_init:
+            raise SystemExit("--memory-init is required for a corrective arm")
+        init_payload = torch.load(args.memory_init, map_location="cpu",
+                                  weights_only=False)
+        config = init_payload["config"]
+        module = corrective.CorrectiveMemory(
+            hidden=config["hidden"], value_dim=config["value_dim"],
+            rows=config["rows"], sites=tuple(config["sites"]),
+            conv_kernel=config["conv_kernel"], table_dtype=torch.float32,
+            seed=config["seed"])
+        module.load_state_dict(init_payload["state_dict"], strict=True)
+        report = {
+            "memory_init": args.memory_init,
+            "memory_init_sha256": sha256_file(args.memory_init),
+            "init_variant": config.get("variant"),
+            "checkpoint": None,
+            "checkpoint_sha256": None,
+            "grafted": True,
+            "gate_initialisation": "zero (the untrained corrective arm is the base)",
+        }
+        if args.memory_checkpoint:
+            payload = torch.load(args.memory_checkpoint, map_location="cpu",
+                                 weights_only=False)
+            if payload.get("arm") not in (None, "corrective"):
+                raise SystemExit(f"{args.memory_checkpoint}: not a corrective checkpoint")
+            module.load_state_dict(payload["arm_state"], strict=True)
+            report.update({
+                "checkpoint": args.memory_checkpoint,
+                "checkpoint_sha256": sha256_file(args.memory_checkpoint),
+                "checkpoint_step": payload.get("step"),
+                "checkpoint_tokens_seen": payload.get("tokens_seen"),
+            })
+        module = module.to(device)
+        module.eval()
+        handles = arms.install_memory(model, module)
+        report.update(module.active_parameter_report())
+        report["extension"] = report.pop("kind", "stage2_corrective")
+        report["kind"] = "stage2_corrective_arm"
+        report["arm_family"] = name
+        return model, handles, report
     if name == "full-distill":
         if not args.full_checkpoint:
             raise SystemExit("--full-checkpoint is required for full-distill")
@@ -310,6 +355,8 @@ def checkpoint_path(name: str, args) -> dict:
                "memory-grafted": args.memory_init,
                "full-distill": args.full_checkpoint,
                "base": None}
+    for name in CORRECTIVE_ARMS:
+        mapping[name] = args.memory_checkpoint
     path = mapping.get(name)
     return {"path": path, "sha256": sha256_file(path) if path else None}
 

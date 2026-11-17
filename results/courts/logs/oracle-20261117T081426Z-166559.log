@@ -1,0 +1,97 @@
+..FFFF..........................                                         [100%]
+=================================== FAILURES ===================================
+___________ test_each_weighting_runs_a_registered_training_step[kl] ____________
+
+weighting = 'kl'
+
+    @pytest.mark.parametrize("weighting", ["kl", "signed", "both"])
+    def test_each_weighting_runs_a_registered_training_step(weighting):
+        result = _step(weighting)
+        assert torch.isfinite(torch.tensor(result["loss"]))
+        assert result["loss"] > 0.0 and result["ce"] > 0.0
+        diagnostics = result["diagnostics"]
+        assert diagnostics["objective"] == "correction"
+        assert diagnostics["weighting"] == weighting
+        # the gate was open for the student forward: a zero gate would mean the
+        # objective never saw the residual and no gradient could reach it
+>       assert float(result["gate_before"].abs().max()) > 0.0
+E       assert 0.0 > 0.0
+E        +  where 0.0 = float(tensor(0.))
+E        +    where tensor(0.) = <built-in method max of Tensor object at 0x7fefc980f020>()
+E        +      where <built-in method max of Tensor object at 0x7fefc980f020> = tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]).max
+E        +        where tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]) = <built-in method abs of Tensor object at 0x7fefbe945400>()
+E        +          where <built-in method abs of Tensor object at 0x7fefbe945400> = tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]).abs
+
+oracle/tests/test_s44_stage2b.py:212: AssertionError
+_________ test_each_weighting_runs_a_registered_training_step[signed] __________
+
+weighting = 'signed'
+
+    @pytest.mark.parametrize("weighting", ["kl", "signed", "both"])
+    def test_each_weighting_runs_a_registered_training_step(weighting):
+        result = _step(weighting)
+        assert torch.isfinite(torch.tensor(result["loss"]))
+        assert result["loss"] > 0.0 and result["ce"] > 0.0
+        diagnostics = result["diagnostics"]
+        assert diagnostics["objective"] == "correction"
+        assert diagnostics["weighting"] == weighting
+        # the gate was open for the student forward: a zero gate would mean the
+        # objective never saw the residual and no gradient could reach it
+>       assert float(result["gate_before"].abs().max()) > 0.0
+E       assert 0.0 > 0.0
+E        +  where 0.0 = float(tensor(0.))
+E        +    where tensor(0.) = <built-in method max of Tensor object at 0x7fefc97d14a0>()
+E        +      where <built-in method max of Tensor object at 0x7fefc97d14a0> = tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]).max
+E        +        where tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]) = <built-in method abs of Tensor object at 0x7fefbe91e7b0>()
+E        +          where <built-in method abs of Tensor object at 0x7fefbe91e7b0> = tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]).abs
+
+oracle/tests/test_s44_stage2b.py:212: AssertionError
+__________ test_each_weighting_runs_a_registered_training_step[both] ___________
+
+weighting = 'both'
+
+    @pytest.mark.parametrize("weighting", ["kl", "signed", "both"])
+    def test_each_weighting_runs_a_registered_training_step(weighting):
+        result = _step(weighting)
+        assert torch.isfinite(torch.tensor(result["loss"]))
+        assert result["loss"] > 0.0 and result["ce"] > 0.0
+        diagnostics = result["diagnostics"]
+        assert diagnostics["objective"] == "correction"
+        assert diagnostics["weighting"] == weighting
+        # the gate was open for the student forward: a zero gate would mean the
+        # objective never saw the residual and no gradient could reach it
+>       assert float(result["gate_before"].abs().max()) > 0.0
+E       assert 0.0 > 0.0
+E        +  where 0.0 = float(tensor(0.))
+E        +    where tensor(0.) = <built-in method max of Tensor object at 0x7fefbe91d180>()
+E        +      where <built-in method max of Tensor object at 0x7fefbe91d180> = tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]).max
+E        +        where tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]) = <built-in method abs of Tensor object at 0x7fefbe91f6b0>()
+E        +          where <built-in method abs of Tensor object at 0x7fefbe91f6b0> = tensor([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]).abs
+
+oracle/tests/test_s44_stage2b.py:212: AssertionError
+______________ test_the_signed_advantage_has_the_registered_sign _______________
+
+    def test_the_signed_advantage_has_the_registered_sign():
+        torch.manual_seed(31)
+        vocab, positions = 8, 4
+        targets = torch.tensor([[1, 2, 3, 4]])
+        logits = torch.zeros(1, positions, vocab)
+        # the teacher prefers the true token at positions 0 and 1, the base at 2 and 3
+        teacher = logits.clone()
+        teacher[0, 0, 1] = 4.0
+        teacher[0, 1, 2] = 2.0
+        base = logits.clone()
+        base[0, 2, 3] = 4.0
+        base[0, 3, 4] = 2.0
+        advantage = corrective.signed_teacher_advantage(base, teacher, targets)
+>       assert advantage[0, 0] > 0 and advantage[0, 1] > 0
+               ^^^^^^^^^^^^^^^
+E       IndexError: too many indices for tensor of dimension 1
+
+oracle/tests/test_s44_stage2b.py:239: IndexError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s44_stage2b.py::test_each_weighting_runs_a_registered_training_step[kl]
+FAILED oracle/tests/test_s44_stage2b.py::test_each_weighting_runs_a_registered_training_step[signed]
+FAILED oracle/tests/test_s44_stage2b.py::test_each_weighting_runs_a_registered_training_step[both]
+FAILED oracle/tests/test_s44_stage2b.py::test_the_signed_advantage_has_the_registered_sign
+4 failed, 28 passed in 5.47s
