@@ -1,0 +1,82 @@
+.FFFF..                                                                  [100%]
+=================================== FAILURES ===================================
+______________________ test_uniform_gates_recover_nothing ______________________
+
+    def test_uniform_gates_recover_nothing():
+        worse = [row("A", "digit", 1.0, 1.5), row("B", "letter", 2.0, 2.5)]
+        result = gate._per_token_oracle(worse, "ce")
+        assert result["value"] == pytest.approx(result["level"]["all_off"])
+        assert result["gate_on_fraction"] == 0.0
+>       assert result["recovery_fraction"] == pytest.approx(0.0)
+E       assert 1.0 == 0.0 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 1.0
+E         Expected: 0.0 ± 1.0e-12
+
+oracle/tests/test_s46_oracle_gate.py:65: AssertionError
+________________ test_class_oracle_recovers_a_planted_structure ________________
+
+    def test_class_oracle_recovers_a_planted_structure():
+        rows = []
+        for _ in range(10):
+            rows.append(row("A", "digit", 1.0, 0.5))
+            rows.append(row("B", "digit", 1.0, 0.5))
+            rows.append(row("A", "letter", 1.0, 3.0))
+            rows.append(row("B", "letter", 1.0, 3.0))
+        result = gate._class_oracle(rows, "ce")
+        assert result["in_sample"]["on_classes"] == ["digit"]
+        assert result["in_sample"]["value"] == pytest.approx(0.75)
+>       assert result["in_sample"]["recovery_fraction"] == pytest.approx(1.0)
+E       assert 1.3333333333333333 == 1.0 ± 1.0e-06
+E         
+E         comparison failed
+E         Obtained: 1.3333333333333333
+E         Expected: 1.0 ± 1.0e-06
+
+oracle/tests/test_s46_oracle_gate.py:87: AssertionError
+___________ test_cross_fitting_does_not_leak_a_fold_local_structure ____________
+
+    def test_cross_fitting_does_not_leak_a_fold_local_structure():
+        # Digits help in fold A only; letters hurt everywhere. The A-fit gate turns
+        # digits on and is wrong on fold B by construction; the B-fit gate sees no
+        # helping class and leaves fold A entirely off.
+        rows = []
+        for _ in range(10):
+            rows.append(row("A", "digit", 1.0, 0.5))
+            rows.append(row("B", "digit", 1.0, 2.0))
+            rows.append(row("A", "letter", 1.0, 2.0))
+            rows.append(row("B", "letter", 1.0, 2.0))
+        result = gate._class_oracle(rows, "ce")
+>       assert result["in_sample"]["on_classes"] == ["digit"]
+E       AssertionError: assert [] == ['digit']
+E         
+E         Right contains one more item: 'digit'
+E         Use -v to get more diff
+
+oracle/tests/test_s46_oracle_gate.py:104: AssertionError
+_________ test_feature_oracle_recovers_a_perfect_separator_out_of_fold _________
+
+    def test_feature_oracle_recovers_a_perfect_separator_out_of_fold():
+        rows = []
+        for index in range(20):
+            # Helpful positions have a high feature value in both folds.
+            rows.append(row("A", "digit", 1.0, 0.5, feature=9.0 + index))
+            rows.append(row("B", "letter", 1.0, 0.5, feature=8.0 + index))
+            rows.append(row("A", "digit", 1.0, 2.0, feature=1.0))
+            rows.append(row("B", "letter", 1.0, 2.0, feature=2.0))
+        result = gate._feature_oracle(rows, "base_entropy", "ce")
+>       assert result["value"] == pytest.approx(0.75)
+E       assert 0.75625 == 0.75 ± 7.5e-07
+E         
+E         comparison failed
+E         Obtained: 0.75625
+E         Expected: 0.75 ± 7.5e-07
+
+oracle/tests/test_s46_oracle_gate.py:125: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s46_oracle_gate.py::test_uniform_gates_recover_nothing
+FAILED oracle/tests/test_s46_oracle_gate.py::test_class_oracle_recovers_a_planted_structure
+FAILED oracle/tests/test_s46_oracle_gate.py::test_cross_fitting_does_not_leak_a_fold_local_structure
+FAILED oracle/tests/test_s46_oracle_gate.py::test_feature_oracle_recovers_a_perfect_separator_out_of_fold
+4 failed, 3 passed in 0.04s

@@ -1,0 +1,24 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+doc 18 split=A P=256 C=75 CE base/mem=0.3648/0.3593 mean_delta=-0.0056 help=30/75
+doc 27 split=B P=256 C=87 CE base/mem=0.5130/0.4158 mean_delta=-0.0972 help=24/87
+doc 120 split=A P=256 C=60 CE base/mem=0.2651/0.2560 mean_delta=-0.0091 help=30/60
+doc 126 split=B P=256 C=31 CE base/mem=0.1486/0.1520 mean_delta=+0.0034 help=9/31
+doc 360 split=A P=256 C=55 CE base/mem=0.2656/0.2417 mean_delta=-0.0239 help=18/55
+doc 442 split=B P=256 C=96 CE base/mem=0.3402/0.3011 mean_delta=-0.0391 help=42/96
+doc 477 split=A P=256 C=71 CE base/mem=0.3806/0.3203 mean_delta=-0.0603 help=22/71
+doc 616 split=B P=256 C=86 CE base/mem=0.2895/0.3115 mean_delta=+0.0220 help=24/86
+doc 659 split=A P=256 C=96 CE base/mem=0.1161/0.1228 mean_delta=+0.0067 help=15/96
+doc 820 split=B P=256 C=96 CE base/mem=0.1848/0.1986 mean_delta=+0.0137 help=18/96
+doc 889 split=A P=256 C=52 CE base/mem=0.2790/0.3274 mean_delta=+0.0484 help=8/52
+doc 940 split=B P=256 C=29 CE base/mem=0.5409/0.6190 mean_delta=+0.0781 help=6/29
+doc 984 split=A P=256 C=96 CE base/mem=0.3002/0.3175 mean_delta=+0.0173 help=27/96
+doc 988 split=B P=256 C=96 CE base/mem=0.3963/0.3792 mean_delta=-0.0171 help=45/96
+doc 1098 split=A P=256 C=30 CE base/mem=0.2774/0.2522 mean_delta=-0.0252 help=9/30
+doc 1286 split=B P=256 C=48 CE base/mem=0.2221/0.2006 mean_delta=-0.0215 help=14/48
+doc 312 split=A P=256 C=52 CE base/mem=0.0914/0.1019 mean_delta=+0.0105 help=12/52
+doc 619 split=B P=256 C=77 CE base/mem=0.1748/0.1677 mean_delta=-0.0071 help=27/77
+doc 791 split=A P=256 C=42 CE base/mem=0.2382/0.2511 mean_delta=+0.0130 help=8/42
+doc 1273 split=B P=256 C=95 CE base/mem=0.3458/0.3413 mean_delta=-0.0044 help=33/95
+receipt: results/stage2/s46-oracle-forwards-20261117T084309Z.json
+seconds=58.23 tokens=1370 rss_peak_gib=7.93

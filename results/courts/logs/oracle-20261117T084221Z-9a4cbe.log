@@ -1,0 +1,13 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+Traceback (most recent call last):
+  File "/work/scripts/s46_oracle_gate.py", line 898, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_oracle_gate.py", line 891, in main
+    return run_forward(args)
+           ^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_oracle_gate.py", line 248, in run_forward
+    "target": item["target"],
+              ~~~~^^^^^^^^^^
+KeyError: 'target'

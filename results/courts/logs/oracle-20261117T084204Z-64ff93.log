@@ -1,0 +1,29 @@
+....F..                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_feature_oracle_recovers_a_perfect_separator_out_of_fold _________
+
+    def test_feature_oracle_recovers_a_perfect_separator_out_of_fold():
+        rows = []
+        for index in range(20):
+            # The helpful positions share the same feature range in both folds, so
+            # a threshold fitted on either half separates the evaluation half.
+            rows.append(row("A", "digit", 1.0, 0.5, feature=10.0 + index))
+            rows.append(row("B", "digit", 1.0, 0.5, feature=10.0 + index))
+            rows.append(row("A", "letter", 1.0, 2.0, feature=float(index % 5)))
+            rows.append(row("B", "letter", 1.0, 2.0, feature=float(index % 5)))
+        result = gate._feature_oracle(rows, "base_entropy", "ce")
+        assert result["value"] == pytest.approx(0.75)
+        for name, fold in result["folds"].items():
+            assert fold["direction"] == "high"
+            assert fold["value"] == pytest.approx(0.75)
+>       assert result["recovery_fraction"] == pytest.approx(1.0)
+E       assert 2.0 == 1.0 ± 1.0e-06
+E         
+E         comparison failed
+E         Obtained: 2.0
+E         Expected: 1.0 ± 1.0e-06
+
+oracle/tests/test_s46_oracle_gate.py:136: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s46_oracle_gate.py::test_feature_oracle_recovers_a_perfect_separator_out_of_fold
+1 failed, 6 passed in 0.04s
