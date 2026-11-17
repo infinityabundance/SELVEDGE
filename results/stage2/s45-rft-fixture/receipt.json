@@ -1,0 +1,84 @@
+{
+  "accepted_path": "results/stage2/s45-rft-fixture/accepted.jsonl",
+  "accepted_sha256": "4d7ff3a10ca89efe64058e8844c8cf20ef9fddf941621f568796f35299a95040",
+  "contamination": {
+    "at_or_above_discard": 0,
+    "at_or_above_fail": 0,
+    "discard_jaccard": 0.2,
+    "examples": [],
+    "fail_closed": false,
+    "fail_jaccard": 0.5,
+    "items": 3,
+    "max_jaccard": 0.02,
+    "shingle_width": 5,
+    "test_items": 1819
+  },
+  "created_utc": "2026-11-17T08:27:30Z",
+  "curriculum": "none",
+  "dataset": "mixed:gsm8k,math",
+  "elapsed_seconds": 0.0,
+  "kind": "rejection_sampling",
+  "model_dir": null,
+  "objective": "sft",
+  "policy": "teacher",
+  "schema": "selvedge/s45-rft-sampling/v1",
+  "source": {
+    "kind": "file",
+    "path": "fixtures/s45/rft-samples.jsonl",
+    "sha256": "00173adeb1ee8712d943c041273c9bab42a50ff14e34d46fbabde5995c935957"
+  },
+  "stamp": "20261117T082730Z",
+  "summary": {
+    "dedup_retention": 0.75,
+    "kept_solutions": 3,
+    "per_prompt": [
+      {
+        "id": "gsm8k-train:0",
+        "kept": 1,
+        "sampled": 4,
+        "verdicts": {
+          "ambiguous": 0,
+          "correct": 2,
+          "unparseable": 1,
+          "wrong": 1
+        },
+        "verified": 2
+      },
+      {
+        "id": "gsm8k-train:1",
+        "kept": 0,
+        "sampled": 3,
+        "verdicts": {
+          "ambiguous": 2,
+          "correct": 0,
+          "unparseable": 1,
+          "wrong": 0
+        },
+        "verified": 0
+      },
+      {
+        "id": "math-train:algebra:0",
+        "kept": 2,
+        "sampled": 3,
+        "verdicts": {
+          "ambiguous": 0,
+          "correct": 2,
+          "unparseable": 0,
+          "wrong": 1
+        },
+        "verified": 2
+      }
+    ],
+    "prompts": 3,
+    "prompts_with_a_kept_solution": 2,
+    "sampled_solutions": 10,
+    "verified_rate": 0.4,
+    "verified_solutions": 4
+  },
+  "tokenizer_vocab_sha256": null,
+  "verifier": {
+    "dataset": "mixed:gsm8k,math",
+    "definition": "one unambiguous extracted answer, compared exactly (numeric 1e-9 relative, else canonical string)",
+    "numeric_tolerance": 1e-09
+  }
+}

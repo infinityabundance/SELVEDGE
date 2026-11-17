@@ -1,0 +1,68 @@
+{
+  "bytes": 200000,
+  "command": [
+    "scripts/s45_rft_stream.py",
+    "--input",
+    "results/stage2/s45-rft-fixture",
+    "--tokens",
+    "50000",
+    "--label",
+    "fixture",
+    "--out-dir",
+    "results/artifacts/s45-rft-fixture",
+    "--receipt-dir",
+    "results/stage2"
+  ],
+  "contamination": [
+    {
+      "input": "results/stage2/s45-rft-fixture",
+      "sampling_receipt": {
+        "at_or_above_discard": 0,
+        "at_or_above_fail": 0,
+        "discard_jaccard": 0.2,
+        "examples": [],
+        "fail_closed": false,
+        "fail_jaccard": 0.5,
+        "items": 3,
+        "max_jaccard": 0.02,
+        "shingle_width": 5,
+        "test_items": 1819
+      }
+    }
+  ],
+  "created_utc": "2026-11-17T08:30:22Z",
+  "dtype": "uint32-le",
+  "graft_tokens": 0,
+  "kind": "s45-rft-build",
+  "label": "fixture",
+  "revision": "2612c6e49c441dc12740597f6878a36ce4e6fe5c",
+  "schema": "selvedge/stage2-stream/v1",
+  "sha256": "9cbc64a522c9053b287410c093889d3f458ebecefc86c2f655a34951b7a9de28",
+  "sources": {
+    "corpus_tokens_per_pass": 121,
+    "document_order": "(input index, id, sample_index), ascending",
+    "documents": 3,
+    "eos_token_id": 248044,
+    "epochs": 414,
+    "inputs": [
+      {
+        "accepted_sha256": "4d7ff3a10ca89efe64058e8844c8cf20ef9fddf941621f568796f35299a95040",
+        "dir": "results/stage2/s45-rft-fixture",
+        "index": 0,
+        "receipt_path": "/work/results/stage2/s45-rft-fixture/receipt.json"
+      }
+    ],
+    "passes": 414,
+    "separator": "eos_token"
+  },
+  "split": "all tokens are training data for the RFT/KD arm",
+  "stamp": "20261117T083022Z",
+  "stream_path": "results/artifacts/s45-rft-fixture/fixture-stream-20261117T083022Z.u32",
+  "tokenizer": {
+    "note": "the anchor's own Qwen3.5 tokenizer",
+    "path": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "tokenizer_sha256": "365c2d8a0c0e72d4bcc5dbc6c2e9330a87dae7ffc77e9fcd9d65739f4d16bfff"
+  },
+  "tokens": 50000,
+  "train_tokens": 50000
+}

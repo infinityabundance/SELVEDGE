@@ -336,15 +336,17 @@ def run(args) -> int:
 
     teacher = None
     teacher_params = 0
-    if args.teacher_dir and args.kl_weight > 0.0:
+    if args.teacher_dir and args.kl_weight > 0.0 and objective != "sft":
         print(f"train: loading teacher {args.teacher_dir}", flush=True)
         teacher = arms.load_model(args.teacher_dir, dtype=torch.bfloat16, device=device)
         teacher_params = sum(parameter.numel() for parameter in teacher.parameters())
         for parameter in teacher.parameters():
             parameter.requires_grad_(False)
-    if args.arm == "full" and (teacher is None or args.kl_weight <= 0.0):
+    if args.arm == "full" and objective != "sft" and (
+            teacher is None or args.kl_weight <= 0.0):
         raise SystemExit("train: the full-backbone control requires the online "
-                         "teacher and kl_weight > 0")
+                         "teacher and kl_weight > 0; use --objective sft for "
+                         "verified-solution cross-entropy")
 
     trainable = [parameter for parameter in arm.parameters() if parameter.requires_grad]
     if args.optimizer == "adamw":
@@ -489,7 +491,11 @@ def run(args) -> int:
             if teacher is not None:
                 with torch.no_grad():
                     teacher_logits = teacher(input_ids=inputs, use_cache=False).logits
-            if (corrective_module is not None and objective == "correction"):
+            if objective == "sft":
+                # Verified-solution cross-entropy: no teacher, no KL.
+                loss, ce, kl = token_loss(student, None, targets,
+                                          args.temperature, 0.0)
+            elif (corrective_module is not None and objective == "correction"):
                 if teacher_logits is None:
                     raise SystemExit(
                         "train: the correction objective requires the online teacher")
@@ -642,6 +648,16 @@ def run(args) -> int:
     return 0
 
 
+def validate_objective_args(args) -> None:
+    """Fail-closed wiring shared by main and the CPU tests."""
+    if args.objective == "correction" and args.arm != "corrective":
+        raise SystemExit("--objective correction requires --arm corrective")
+    if args.objective == "sft" and args.kl_weight != 0.0:
+        raise SystemExit("--objective sft requires --kl-weight 0")
+    if args.arm == "full" and args.objective != "sft" and args.kl_weight <= 0.0:
+        raise SystemExit("--arm full needs kl_weight > 0 unless --objective sft")
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm",
@@ -671,9 +687,10 @@ def main(argv: list[str]) -> int:
                         help="weight-update rounding for the 8-bit optimizer")
     parser.add_argument("--optim-measure-every", type=int, default=0,
                         help="also measure unchanged-element fractions every N steps")
-    parser.add_argument("--objective", choices=list(corrective.OBJECTIVES),
+    parser.add_argument("--objective", choices=list(corrective.OBJECTIVES) + ["sft"],
                         default=None,
-                        help="correction (default for --arm corrective) or ce_kl")
+                        help="correction (default for --arm corrective), ce_kl, or "
+                             "sft (verified-solution cross-entropy, kl_weight 0)")
     parser.add_argument("--advantage-weighting",
                         choices=list(corrective.WEIGHTINGS), default="kl",
                         help="the correction objective's position weight: the "
@@ -701,8 +718,7 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     if args.arm in ("memory", "corrective") and not args.memory_init:
         raise SystemExit(f"--memory-init is required for --arm {args.arm}")
-    if args.objective == "correction" and args.arm != "corrective":
-        raise SystemExit("--objective correction requires --arm corrective")
+    validate_objective_args(args)
     if args.arm != "full" and (args.optimizer != "adamw" or args.schedule != "constant"):
         raise SystemExit("the registered adapter/memory/corrective arms are AdamW + "
                          "constant LR; do not change them retroactively")

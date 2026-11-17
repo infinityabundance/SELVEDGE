@@ -1,0 +1,319 @@
+{
+  "schema": "selvedge/ws19-onpolicy-rft-preregistration/v1",
+  "registering_session": "S45",
+  "registered_utc": "2026-11-17T08:35:00Z",
+  "registered_revision": "2612c6e49c441dc12740597f6878a36ce4e6fe5c",
+  "purpose": "Register the next route after the measured generative-math collapse: teacher-generated verified-solution SFT, student-policy rejection-sampling KD, and their mixture, on GSM8K-train and MATH-train, with the verifier, sampling parameters, contamination discipline, seeds, evaluation protocol, win bar, sequencing and longer-budget plan fixed before any generation or training. This file changes no S42/S43/S44 registration and does not score the 20M bar.",
+  "relation_to_existing_registrations": {
+    "full_bar": {
+      "path": "docs/ws19-full-distillation-preregistration-v1.json",
+      "role": "the 20M full-backbone CE+KL arm on the S43 math-weighted stream whose anchored score is the bar; the RFT full-backbone arms use the same active union and the same anchored instrument"
+    },
+    "math_stream_amendment": {
+      "path": "docs/ws19-full-distillation-amendment-math-stream-preregistration-v1.json",
+      "role": "defines the S43 stream and contamination discipline; RFT uses the same train splits but a new accepted-solution stream, registered here"
+    },
+    "stage2b_corrective": {
+      "path": "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json",
+      "role": "defines the corrective residual, the token gate, the signed advantage and the preservation penalty; the 2M RFT corrective screen reuses that mechanism verbatim"
+    },
+    "s44_arm_table": {
+      "path": "results/stage2/s44-arm-table-20261117T081002Z.json",
+      "role": "the measured collapse this route answers: every trained arm below base on math; memory-2m -9.55 GSM8K / -6.20 MATH-500 points; held-out CE only +0.0203 nats"
+    },
+    "s45_collapse_diagnosis": {
+      "path": "results/stage2/s45-forward-analysis-20261117T082511Z.json",
+      "role": "the diagnostic target: on the correct solution path the memory residual adds +0.0373 nats/token over 80.0% of positions, first-10 +0.276 nats, total +13.220 nats over the five probed items; the gate is a near-constant 0.471 and the residual norm 0.768, with near-zero correlation to per-token damage. RFT must remove a persistent bias, not one bad token."
+    }
+  },
+  "diagnosis_that_motivates_the_route": {
+    "artifact_receipt": "results/stage2/s45-collapse-artifacts-20261117T082147Z.json",
+    "forward_receipt": "results/stage2/s45-forward-positional-20261117T082412Z.json",
+    "forward_analysis_receipt": "results/stage2/s45-forward-analysis-20261117T082511Z.json",
+    "findings": [
+      "memory-2m: 208 base-correct items become wrong and 82 wrong items become correct on GSM8K (net -126, -9.55 points); 203 of the 208 losses change the extracted final answer",
+      "every one of the 208 GSM8K losses diverges in the reasoning region, not at the final-answer marker; 40 first differ on a digit and 20 on an operator",
+      "the loss is length-dependent: -0.0270 in the shortest base-response quartile and -0.1295 / -0.1131 / -0.1131 in the next three",
+      "byte-identical responses are exactly score-neutral (100 items, delta +0.0000): all damage is in the items whose trajectory changed",
+      "on the correct teacher-forced path the memory residual adds +0.0373 nats/token over 80.0% of positions, +0.276 nats in the first 10 tokens and +13.220 nats total; the per-token rate is not growing, the sign is persistently positive",
+      "the memory gate is 0.471 mean |alpha| with a 0.36-0.50 range and the residual norm 0.768; neither correlates with per-token damage (Pearson near zero). A constant-magnitude residual is the problem"
+    ],
+    "implication": "verified-solution SFT is the direct counter-pressure: it raises the probability of the exact correct continuation tokens that the residual devalues, without asking the teacher KL to average over all tokens. On-policy KD is the control that the stage-2 route already measured; the mixture tests whether the two signals compose."
+  },
+  "data": {
+    "splits": {
+      "gsm8k": {
+        "repo_id": "openai/gsm8k",
+        "revision": "740312add88f781978c0658806c59bc2815b9866",
+        "split": "train",
+        "rows": 7473,
+        "prompt": "Question: {question}\nAnswer:",
+        "target": "the last `####` value, extracted and normalised by the verifier",
+        "license": "MIT"
+      },
+      "math": {
+        "repo_id": "EleutherAI/hendrycks_math",
+        "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+        "split": "train",
+        "rows": 7500,
+        "prompt": "Problem:\n{problem}\n\nSolution:",
+        "target": "the last `\\boxed{}` value, extracted and normalised by the verifier",
+        "subjects": ["algebra", "counting_and_probability", "geometry", "intermediate_algebra", "number_theory", "prealgebra", "precalculus"],
+        "license": "MIT"
+      }
+    },
+    "prompts_total": 14973,
+    "reference_skips": "a reference solution whose own answer cannot be extracted unambiguously is dropped before sampling and counted in the sampling receipt",
+    "no_test_split_in_training": "only the train splits above are used; the contamination check below re-verifies against the test splits"
+  },
+  "teacher_sampling": {
+    "teacher": "Qwen/Qwen3.5-2B-Base at b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+    "student": "Qwen/Qwen3.5-0.8B-Base at dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "policy": {
+      "sft": "teacher samples K solutions per prompt",
+      "kd": "student samples K solutions per prompt from the frozen base student (on-policy sampling, offline optimisation; see limits)",
+      "both": "one teacher pass and one student pass, each rejection-filtered, mixed 1:1 at the document level"
+    },
+    "samples_per_prompt": 8,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 512,
+    "do_sample": true,
+    "seed": 451,
+    "seed_rule": "torch.manual_seed(451 + prompt_index) per prompt; the generation job records the index-to-seed mapping",
+    "max_generated_tokens_one_pass": 61329408,
+    "max_generated_tokens_one_pass_basis": "14,973 prompts x 8 samples x 512 tokens",
+    "acceptance_rate": "unmeasured until the generation job runs; the job writes verified/sampled, kept/verified and per-prompt verdict counts",
+    "device": "generation job may use CUDA; S45 runs the verifier and the job's file path on CPU only, because the 20M bar occupies the GPU"
+  },
+  "verifier": {
+    "implementation": "oracle/frontier/rft.py",
+    "definition": "exactly one answer must be extractable; it is compared to the reference answer with exact numeric equality (1e-9 relative) or, if not numeric, exact canonical-string equality after the fixed LaTeX rewrite list",
+    "gsm8k_extraction": "the last `#### value`; if no marker, the last number in the text (documented fallback)",
+    "math_extraction": "the last balanced `\\boxed{...}`; if none, the last `final answer is ...` phrase (documented fallback)",
+    "canonicalisation": [
+      "remove `\\left`, `\\right`, `\\!`, `\\,`, `\\;`, `\\:`, spaces and `$`",
+      "rewrite `\\dfrac`/`\\tfrac` to `\\frac`, `\\cdot`/`\\times` to `*`, `\\div` to `/`",
+      "remove braces around a single token (`\\sqrt{2}` -> `\\sqrt2`)",
+      "strip one trailing period"
+    ],
+    "numeric_forms": ["integers", "decimals", "comma grouping", "percent", "a/b", "\\frac{a}{b}", "\\frac ab"],
+    "ambiguous": "two distinct `####` answers, two distinct boxed answers, or a boxed alternative containing `or` is rejected, not resolved",
+    "not_symbolic": "algebraically equal but differently written expressions are rejected; a false accept is worse than a false reject for this route",
+    "answered_verdicts": ["correct", "wrong", "ambiguous", "unparseable"],
+    "cpu_tests": "oracle/tests/test_s45_rft.py + `python3 oracle/frontier/rft.py self-test`"
+  },
+  "rejection_and_deduplication": {
+    "keep": "only verdict == correct",
+    "deduplicate": "within a prompt by whitespace-normalised solution text; the first verified occurrence in sample order is kept",
+    "do_not_cross_prompt_deduplicate": true,
+    "acceptance_arithmetic": "verified_rate = verified/sampled; dedup_retention = kept/verified; prompts_with_a_kept_solution recorded",
+    "stream_builder": "scripts/s45_rft_stream.py; deterministic (input index, id, sample_index) order; whole cycles repeated until the token budget; epochs recorded; graft_tokens = 0"
+  },
+  "contamination": {
+    "test_splits": [
+      "openai/gsm8k test (1,319 rows, the anchored GSM8K basis)",
+      "MATH-500 (500 rows, from results/stage2/eval/base/raw/20261117T043134Z-minerva_math500.json doc fields)"
+    ],
+    "method": "5-word shingle Jaccard on lowercased word sequences of prompt + solution against every test item",
+    "discard_threshold": 0.2,
+    "fail_closed_threshold": 0.5,
+    "action": "the sampling job writes the maximum Jaccard and the count at/above each threshold; any item at or above 0.5 fails the job closed; the stream builder carries the sampling receipt's report",
+    "why_also_needed": "the splits are disjoint by construction, but the accepted solutions are teacher/student generations, so a memorised test item is still possible and must be checked"
+  },
+  "arms": {
+    "stage_a_2m_corrective_screen": {
+      "substrate": "corrective residual, 539,649 active elements, zero-init gate, frozen base",
+      "purpose": "cheap test of whether the diagnosis's persistent bias is removable before spending a 20M full-backbone run",
+      "arms": {
+        "rft-sft-2m-corrective": {
+          "data": "teacher verified solutions",
+          "objective": "sft (CE only, kl_weight 0)",
+          "run_dir": "results/stage2/runs/rft-sft-2m-corrective"
+        },
+        "rft-kd-2m-corrective": {
+          "data": "student verified rollouts",
+          "objective": "ce_kl (CE + teacher KL, kl_weight 0.5, T=2.0)",
+          "run_dir": "results/stage2/runs/rft-kd-2m-corrective"
+        },
+        "rft-kd-signed-2m-corrective": {
+          "data": "student verified rollouts",
+          "objective": "correction with the signed advantage, preserve_weight 0.5, interference_weight 0.05",
+          "run_dir": "results/stage2/runs/rft-kd-signed-2m-corrective"
+        },
+        "rft-both-2m-corrective": {
+          "data": "1:1 teacher verified solutions and student verified rollouts",
+          "objective": "ce_kl (CE + teacher KL, kl_weight 0.5, T=2.0)",
+          "run_dir": "results/stage2/runs/rft-both-2m-corrective"
+        }
+      },
+      "decision": "an arm that does not beat base on the math family, or that loses held-out CE beyond its paired standard error, is not carried to stage B; the 2M screen is a filter, not a win"
+    },
+    "stage_b_20m_full_backbone": {
+      "substrate": "full text tower, tied embedding frozen, 498,113,344 trainable elements, the bar's active union",
+      "why_full": "the win bar is the 20M full-backbone bar; a data/objective win at a smaller active union would not be comparable",
+      "arms": {
+        "rft-sft-20m-full": {
+          "data": "teacher verified solutions",
+          "objective": "sft (CE only, kl_weight 0); no teacher is loaded during training",
+          "run_dir": "results/stage2/runs/rft-sft-20m-full"
+        },
+        "rft-kd-20m-full": {
+          "data": "student verified rollouts",
+          "objective": "ce_kl (CE + online teacher KL, kl_weight 0.5, T=2.0)",
+          "run_dir": "results/stage2/runs/rft-kd-20m-full"
+        },
+        "rft-both-20m-full": {
+          "data": "1:1 teacher verified solutions and student verified rollouts",
+          "objective": "ce_kl (CE + online teacher KL, kl_weight 0.5, T=2.0)",
+          "run_dir": "results/stage2/runs/rft-both-20m-full"
+        },
+        "rft-sft-format-20m-full": {
+          "data": "teacher verified solutions with the target-side math-format curriculum (`prefix+steps`)",
+          "objective": "sft (CE only, kl_weight 0)",
+          "run_dir": "results/stage2/runs/rft-sft-format-20m-full",
+          "status": "registered ablation, launched only if rft-sft-20m-full wins its stage"
+        }
+      },
+      "common": {
+        "tokens": 20000000,
+        "realised_tokens_at_2048": 19998720,
+        "steps": 9765,
+        "sequence_length": 512,
+        "micro_batch": 1,
+        "gradient_accumulation": 4,
+        "optimizer": "adam8bit (block 256, stochastic rounding), the bar's optimizer",
+        "lr": 0.0001,
+        "schedule": "cosine",
+        "min_lr_ratio": 0.1,
+        "warmup_steps": 200,
+        "grad_clip": 1.0,
+        "weight_decay": 0.0,
+        "freeze_embedding": true,
+        "deterministic_algorithms": true,
+        "seed": 0,
+        "why_bar_settings": "the bar's optimizer and schedule are kept verbatim so a win or loss is attributable to the data and objective, not to a retune; a change is a new registration"
+      }
+    }
+  },
+  "objective_ablation_prep": {
+    "module": "oracle/frontier/rft_objective.py",
+    "terms_already_registered": {
+      "base_preservation": "corrective.corrective_objective's per-token `max(KL_student - KL_base, 0)` weighted by `sigmoid(-(a - mean a)/mean a)`",
+      "signed_advantage": "`A_t = log p_T(y_t) - log p_B(y_t)` at T=1, bounded by `exp(clamp(A_t, -4, 4))`",
+      "gate_interference": "`preserve_mean * mean(alpha_t^2)`"
+    },
+    "new_option": {
+      "name": "math-format curriculum",
+      "implementation": "oracle/frontier/rft.format_curriculum",
+      "modes": ["none", "prefix", "steps", "prefix+steps"],
+      "target_side_only": true,
+      "eval_format_unchanged": "the prompt is never edited; only the training solution text gets a `Solution:` prefix and/or `Step k:` line markers; the verifier is run after formatting and must still extract the same answer",
+      "tests": "oracle/tests/test_s45_rft.py::test_curriculum_keeps_the_answer_verifiable and the marker-preservation test"
+    },
+    "registration_position": "the 2M signed/preserved arm and the optional format arm are registered above before any score of them"
+  },
+  "seeds": {
+    "sampling": 451,
+    "training": 0,
+    "one_training_seed_per_arm": true,
+    "evaluation": "the anchored harness's own seeds (fewshot_seed 1234, random_seed 0, torch_seed 1234) and the S44 paired bootstrap seed 44",
+    "resamples": 4000
+  },
+  "evaluation": {
+    "instrument": "scripts/s40_score.py through the anchored lm-evaluation-harness, transformers default attention (sdpa), the same basis as every stage-2 receipt",
+    "tasks": ["mmlu", "mmlu_pro", "gsm8k", "minerva_math500"],
+    "basis": "all 14,042 MMLU items, 504 MMLU-Pro, 1,319 GSM8K, 500 MATH-500 (amendment v2)",
+    "heldout": "the 2M-token held-out slice, 3,906 non-overlapping 512-token chunks, CE and KL(T=2.0) paired per chunk against base",
+    "math_family": "unweighted mean of GSM8K exact_match,strict-match and MATH-500 math_verify,none",
+    "item_level": "scripts/s44_arm_table.py pairs by (task, doc_id) only when the doc-hash sequences match; paired percentile bootstrap 95% CI and McNemar on discordant items; no family-mean-only comparison",
+    "bar_scored_first": "full-20m-math is scored before any RFT arm is scored, so the bar is a measured number"
+  },
+  "win_bar": {
+    "statement": "An RFT arm wins the route only if it beats BOTH the frozen base AND the full-20m-math bar on the math family, at equal tokens and equal active union (full-backbone arms), without buying the gain with a held-out or knowledge regression.",
+    "conditions_all_required": [
+      "1. math family mean exceeds base by more than the combined independent standard error, and the paired per-item bootstrap interval on the math tasks excludes zero in the same direction",
+      "2. math family mean exceeds full-20m-math's measured math family mean by more than the combined standard error, with the same paired requirement",
+      "3. held-out CE delta against base is not positive beyond its paired per-chunk standard error",
+      "4. neither registered harm mask shows a positive mean delta KL on the base-match tokens beyond its standard error, and the knowledge family mean is not below base by more than the combined standard error"
+    ],
+    "2m_screen_bar": "a stage-A arm must beat base on the math family by more than the combined standard error and must not lose held-out CE beyond its paired standard error; it is then carried to stage B, but the 2M score is not the route win",
+    "no_softening": "a gain on MMLU or MMLU-Pro alone, or a family-mean tie, is not a win"
+  },
+  "decision_rule": [
+    "1. Score full-20m-math first. If it has no anchored receipt, no RFT arm is compared to it.",
+    "2. Run the four stage-A 2M corrective arms in the registered order; stop after the first that satisfies the 2M screen bar and record the other three as measured or not-run with the reason.",
+    "3. If a stage-A arm beats base but not its held-out condition, the 2M route is a partial and stage B is not launched without a new registration.",
+    "4. If a stage-A arm satisfies the screen, run the three stage-B 20M full arms in the order sft, kd, both; score each on the anchored harness and the held-out slice.",
+    "5. If one stage-B arm satisfies every win-bar condition, adopt it and extend it to 60M and 100M with the checkpoint plan below; the format-curriculum arm is launched only after that win.",
+    "6. If no stage-B arm beats the bar but one beats base, report a data-route partial (the full bar still wins on math) and do not spend the 60M/100M budget without a new registered mechanism.",
+    "7. If no stage-B arm beats base, the RFT/on-policy route is a null at 20M on this data; the next route is the registered scoreboard route, not another unregistered retune."
+  ],
+  "longer_budget_plan": {
+    "receipt": "results/stage2/s45-budget-plan-20261117T082853Z.json",
+    "rate_tokens_per_second": 1836.0,
+    "rate_basis": "median of the last 50 log lines of full-20m-math (tokens_per_second); the last line was 1836.0 at step 1446",
+    "step_tokens": 2048,
+    "horizons": {
+      "20M": {"steps": 9766, "hours": 3.026},
+      "40M": {"steps": 19532, "hours": 6.052},
+      "60M": {"steps": 29297, "hours": 9.077},
+      "100M": {"steps": 48829, "hours": 15.129}
+    },
+    "checkpoint_plan": {
+      "60M_run": [{"tokens": 20000000, "step": 9766, "hours": 3.026}, {"tokens": 40000000, "step": 19532, "hours": 6.052}, {"tokens": 60000000, "step": 29297, "hours": 9.077}],
+      "100M_run": [{"tokens": 20000000, "step": 9766, "hours": 3.026}, {"tokens": 40000000, "step": 19532, "hours": 6.052}, {"tokens": 60000000, "step": 29297, "hours": 9.077}, {"tokens": 100000000, "step": 48829, "hours": 15.129}],
+      "why": "one 100M run with checkpoints at 20/40/60/100M lets a single run draw the whole curve instead of four separate runs; the 60M run is the cheaper first extension"
+    },
+    "checkpoint_storage": "measured checkpoint 2,008,524,311 bytes; 60M milestones 5.61 GiB, 100M milestones 7.48 GiB; with the newest/latest copy 7.48 / 9.35 GiB",
+    "sampling_bound": "one teacher pass over both train splits is at most 61,329,408 generated tokens (14,973 x 8 x 512); the acceptance rate and the realised token count are the generation job's measurement",
+    "kdp_note": "the 60M/100M extension uses the winning stage-B stream; the sampling pass is re-run only if the winning arm used a different policy, and the recomputed acceptance rate is receipted"
+  },
+  "sequencing": {
+    "order": ["score full-20m-math", "rft-sft-2m-corrective", "rft-kd-2m-corrective", "rft-kd-signed-2m-corrective", "rft-both-2m-corrective", "rft-sft-20m-full", "rft-kd-20m-full", "rft-both-20m-full"],
+    "why_sequential": "one GPU; the memory accounting forbids two memory-heavy jobs at once",
+    "early_stop": "if the 2M screen has no arm above its bar, stage B is not launched and the reason is receipted",
+    "bar_first": "the bar run is in flight at registration and must be scored before any 20M RFT score is compared"
+  },
+  "sizing": {
+    "stage_a_2m_corrective": {
+      "vram_gib": 12.5,
+      "basis": "the stage-2b corrective shape measured 9.211 GiB allocated / 9.363 GiB reserved; 12.5 GiB is the stage-2b limit, and the 2M screen uses the same shape"
+    },
+    "stage_b_20m_full": {
+      "vram_gib": 12.5,
+      "basis": "the bar's full arm measured 11.429 GiB allocated / 11.672 GiB reserved at 12.5 GiB; SFT loads no teacher and KD loads the same teacher as the bar, so the limit is unchanged",
+      "smoke_required": "each stage-B arm runs its own 20-step smoke and records the GPU peak before launch; a higher peak is a new amendment, not a silent limit change"
+    },
+    "container": {
+      "sizing_rule": "SELVEDGE_MEM = 1.5x the arm's own smoke cgroup peak, never below measured + 1 GiB",
+      "bar_reference": "the bar's smoke measured 6.449 GiB cgroup peak and launched at 10 GiB (1.55x)",
+      "generation": "the generation job's teacher-only or teacher+student shape is smoked first; its limit is derived from that peak, not from the bar's"
+    },
+    "reservation": "before each launch, host MemAvailable must exceed the new container's limit plus 4 GiB; no second memory-heavy job starts while the bar unit is active"
+  },
+  "implementation_status": {
+    "implemented_and_cpu_tested": [
+      "oracle/frontier/rft.py: extraction, verifier, rejection sampling, deduplication, acceptance receipt, contamination check, teacher/student sampler",
+      "scripts/s45_rft_stream.py: deterministic accepted-solution stream with receipt hash verification and epoch accounting",
+      "oracle/frontier/rft_objective.py: SFT CE, CE+KL control, the registered preservation/signed/gate terms, and the weighted SFT+KD combination",
+      "oracle/frontier/train.py: `--objective sft` (verified-solution CE, kl_weight 0) for the full arm, with a fail-closed validator",
+      "oracle/tests/test_s45_rft.py: 30 CPU tests (verifier cases, curriculum, rejection arithmetic, contamination, objective arithmetic, CLI wiring)"
+    ],
+    "deferred_to_gpu": [
+      "the teacher and student sampling pass (61.3M generated tokens maximum per pass)",
+      "the 2M corrective screen and the 20M full arms",
+      "anchored scoring and held-out comparison of any RFT arm"
+    ],
+    "why_deferred": "the 20M math-weighted full-distillation bar is training on the single GPU until approximately 11:00Z; starting a second GPU job would violate the reservation rule and could OOM the bar"
+  },
+  "what_this_file_does_not_establish": [
+    "that any acceptance rate, kept-solution count or realised token count is known: the generation pass has not run",
+    "that 20M verified-solution tokens are enough to move GSM8K: this is the experiment",
+    "that verified-solution SFT removes the measured persistent bias: the 2M screen is the test",
+    "that student-policy sampling is fully on-policy: the rollouts are sampled once and optimised offline, not re-sampled during training; a fully online variant is a separate registration",
+    "that the canonical-string verifier is symbolic: algebraically equal but differently written MATH answers are rejected",
+    "that the format curriculum helps: it is a registered ablation, not a default",
+    "that the bar has been scored: full-20m-math is in flight and has no anchored receipt at registration"
+  ]
+}
