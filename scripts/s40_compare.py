@@ -333,7 +333,7 @@ def run(args) -> int:
             "manifest_sha256": sha256_file(args.heldout_manifest),
             "stream_sha256": manifest.get("sha256"),
             "tokens": int(manifest.get("tokens", 0)),
-            "tokens_scored": int(sum(row["tokens_scored"] for row in scored.values())) // len(scored),
+            "tokens_scored": int(scored[REFERENCE_ARM]["tokens_scored"]),
             "seq_len": args.seq_len,
             "chunks": scored[REFERENCE_ARM]["chunks"],
             "chunking": "non-overlapping next-token chunks, partial tail dropped",
