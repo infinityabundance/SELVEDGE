@@ -81,7 +81,7 @@ hand.
 - **T2 pilot `done`** — started `2026-11-15T13:26:56Z`, finished `2026-11-16T09:18:31Z`, receipt stamp `2026-11-16T09:18:32Z` (`results/t2/pilot-state.json`).
 - **Arms evaluated: 5 of 5** (`D`, `H`, `H*`, `M`, `X`); **0 training**, **0 neither trained-and-scored nor training**.
 - **T2 branch: complete** — the pilot is terminal and every arm is evaluated; this is the closed branch, not the live work.
-- **WS19 stage-2b: `running`** — the 20M math-weighted full-distillation bar (`selvedge-fulldistill-math-20261117T080200Z.service`) was launched `2026-11-17T08:02:59Z` at `20000000` tokens / `9765` steps on stream `9c5fb53b20a8f916…`; no anchored score exists yet.
+- **WS19 stage-2b: `scored`** — the 20M math-weighted full-distillation bar (`selvedge-fulldistill-math-20261117T080200Z.service`) was launched `2026-11-17T08:02:59Z` at `20000000` tokens / `9765` steps on stream `9c5fb53b20a8f916…`; anchored receipt stamp `20261117T120059Z` (`results/stage2/eval/full-20m-math/eval.json`).
 - **Registered T2 outcome: `error_direction_not_supported`** — K15–K19: K15 FAIL, K16 FAIL, K17 PASS, K18 FAIL, K19 FAIL; verdict receipt stamp `20261116T134706Z`, revision `afe554692985…` (`results/t2-verdict.json`).
 - **Verified-task comparison: `conditional_capacity_not_supported_on_verified_tasks`** — receipt stamp `20261116T134342Z`, revision `afe554692985…` (`results/capability/runs/t2-comparison.json`). A floor on the instrument is not a ranking of arms; the diagnosis is in `docs/CAPABILITY-COURT.md` §12.
 <!-- END GENERATED: readme-status -->
