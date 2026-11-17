@@ -7,12 +7,46 @@ import os
 import sys
 
 import torch
+import pytest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.dirname(HERE))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.join(REPO, "scripts"))
 
 from frontier import compare, fake, train  # noqa: E402
+
+
+def test_arm_selection_requires_the_reference_to_be_selected():
+    import s40_compare
+
+    class Args:
+        pass
+
+    args = Args()
+    args.arms = "base,adapter-2m"
+    args.reference_arm = "base"
+    assert s40_compare.selected_arms(args) == ["base", "adapter-2m"]
+    args.reference_arm = "full-distill"
+    with pytest.raises(SystemExit):
+        s40_compare.selected_arms(args)
+    args.arms = "base,not-an-arm"
+    with pytest.raises(SystemExit):
+        s40_compare.selected_arms(args)
+
+
+def test_limit_map_is_per_task_and_refuses_unknown_names():
+    import s40_score
+
+    declared = {"mmlu": {}, "mmlu_pro": {}, "gsm8k": {}}
+    tasks = ["mmlu_pro", "mmlu", "gsm8k"]
+    assert s40_score.parse_limit_map(None, declared, tasks) == {}
+    assert s40_score.parse_limit_map("mmlu=2000", declared, tasks) == {"mmlu": 2000}
+    assert s40_score.parse_limit_map("mmlu=2000,gsm8k=1319", declared, tasks) == {
+        "mmlu": 2000, "gsm8k": 1319}
+    for bad, selected in (("arc=1", tasks), ("mmlu=2000", ["gsm8k"]), ("mmlu=x", tasks)):
+        with pytest.raises(SystemExit):
+            s40_score.parse_limit_map(bad, declared, selected)
 
 
 def test_chunk_ce_kl_matches_the_training_loss_element_for_element():

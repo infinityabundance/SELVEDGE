@@ -10,6 +10,13 @@ Arms, built from their registered artifacts and scored identically:
     memory-grafted     the step-0 teacher graft, no training
     full-distill       full-backbone distillation, tied embedding frozen
 
+A seventh arm, `adapter-20m`, is the S39 20M-token adapter control. It is not
+part of the registered six-arm comparison (whose default list is unchanged);
+it exists so the 10x-token question can be scored by this instrument with an
+honest label instead of reusing the `adapter-2m` slot. Select it with `--arms`.
+The reference arm is `full-distill` unless `--reference-arm` names a selected
+arm, so an intermediate table can be produced before the full arm exists.
+
 Two measurements:
 
 1. **Held-out CE/KL** on a stream disjoint from training and grafting. The
@@ -61,6 +68,8 @@ from frontier import arms, compare, full, memory  # noqa: E402
 
 ARMS = ("base", "adapter-2m", "memory-2m", "memory-ungrafted",
         "memory-grafted", "full-distill")
+CONTROL_ARM = "adapter-20m"
+SCORED_ARMS = ARMS + (CONTROL_ARM,)
 REFERENCE_ARM = "full-distill"
 FAMILIES = {"knowledge": ["mmlu_pro", "mmlu"],
             "math": ["gsm8k", "minerva_math500"]}
@@ -152,18 +161,23 @@ def build_named_arm(name: str, model, args, device: str):
     """Install one arm on a fresh backbone. Returns (model, handles, report)."""
     if name == "base":
         return model, [], {"kind": "stage2_base", "added_elements": 0}
-    if name == "adapter-2m":
-        if not args.adapter_checkpoint:
-            raise SystemExit("--adapter-checkpoint is required for adapter-2m")
-        payload = torch.load(args.adapter_checkpoint, map_location="cpu",
-                             weights_only=False)
+    if name in ("adapter-2m", CONTROL_ARM):
+        checkpoint = (args.control_checkpoint if name == CONTROL_ARM
+                      else args.adapter_checkpoint)
+        if not checkpoint:
+            flag = "--control-checkpoint" if name == CONTROL_ARM else "--adapter-checkpoint"
+            raise SystemExit(f"{flag} is required for {name}")
+        payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
         module = arms.DenseAdapter(hidden=args.hidden).to(device)
         module.load_state_dict(payload["arm_state"], strict=True)
         handles = arms.install_adapter(model, module, (args.site,))
         report = module.active_parameter_report()
-        report.update({"checkpoint": args.adapter_checkpoint,
-                       "checkpoint_sha256": sha256_file(args.adapter_checkpoint),
-                       "checkpoint_step": payload.get("step")})
+        report.update({"checkpoint": checkpoint,
+                       "checkpoint_sha256": sha256_file(checkpoint),
+                       "checkpoint_step": payload.get("step"),
+                       "checkpoint_tokens_seen": payload.get("tokens_seen")})
+        if name == CONTROL_ARM:
+            report["control"] = "S39 20M-token frozen-backbone adapter"
         return model, handles, report
     if name in ("memory-2m", "memory-ungrafted", "memory-grafted"):
         if not args.memory_init:
@@ -215,7 +229,21 @@ def load_teacher(args, device: str):
     return arms.load_model(args.teacher_dir, dtype=torch.bfloat16, device=device)
 
 
-def score_all(args, device: str):
+def selected_arms(args) -> list[str]:
+    names = [name.strip() for name in args.arms.split(",") if name.strip()]
+    if not names:
+        raise SystemExit("--arms selected no arm")
+    unknown = sorted(set(names) - set(SCORED_ARMS))
+    if unknown:
+        raise SystemExit(f"--arms has unknown arm(s) {unknown}; known {list(SCORED_ARMS)}")
+    if len(set(names)) != len(names):
+        raise SystemExit(f"--arms repeats an arm: {names}")
+    if args.reference_arm not in names:
+        raise SystemExit(f"--reference-arm {args.reference_arm!r} is not in --arms")
+    return names
+
+
+def score_all(args, device: str, names: list[str]):
     manifest, tokens = read_manifest(args.heldout_manifest)
     tokens = torch.from_numpy(tokens.astype(np.int64))
     teacher = load_teacher(args, device)
@@ -226,7 +254,7 @@ def score_all(args, device: str):
     scored = {}
     reports = {}
     paths = {}
-    for name in ARMS:
+    for name in names:
         print(f"compare: {name}", flush=True)
         model = load_backbone(args, device)
         model.eval()
@@ -251,6 +279,7 @@ def score_all(args, device: str):
 
 def checkpoint_path(name: str, args) -> dict:
     mapping = {"adapter-2m": args.adapter_checkpoint,
+               CONTROL_ARM: args.control_checkpoint,
                "memory-2m": args.memory_checkpoint,
                "memory-ungrafted": None,
                "memory-grafted": args.memory_init,
@@ -260,13 +289,14 @@ def checkpoint_path(name: str, args) -> dict:
     return {"path": path, "sha256": sha256_file(path) if path else None}
 
 
-def harness_section(directory: str | None) -> dict:
+def harness_section(directory: str | None, names: list[str],
+                    reference_arm: str) -> dict:
     if not directory:
         return {"status": "not_scored",
                 "reason": "no --harness-dir was given; no arm has an anchored receipt"}
     per_arm: dict[str, dict[str, dict]] = {}
     missing = []
-    for name in ARMS:
+    for name in names:
         path = os.path.join(directory, name, "eval.json")
         if not os.path.exists(path):
             missing.append(name)
@@ -276,7 +306,7 @@ def harness_section(directory: str | None) -> dict:
                  for row in payload.get("tasks", [])}
         per_arm[name] = tasks
     families = compare.family_means(per_arm, FAMILIES)
-    reference = families.get(REFERENCE_ARM, {})
+    reference = families.get(reference_arm, {})
     deltas = {}
     for name, rows in families.items():
         deltas[name] = {}
@@ -294,13 +324,13 @@ def harness_section(directory: str | None) -> dict:
     return {"status": "scored" if per_arm else "not_scored",
             "directory": directory, "families": families,
             "deltas_vs_reference": deltas, "missing_arms": missing,
-            "reference_arm": REFERENCE_ARM}
+            "reference_arm": reference_arm}
 
 
-def table_rows(scored: dict) -> list[dict]:
-    reference = scored[REFERENCE_ARM]
+def table_rows(scored: dict, names: list[str], reference_arm: str) -> list[dict]:
+    reference = scored[reference_arm]
     rows = []
-    for name in ARMS:
+    for name in names:
         summary = compare.arm_summary(scored[name], reference)
         summary["arm"] = name
         rows.append(summary)
@@ -317,9 +347,10 @@ def run(args) -> int:
             raise SystemExit(f"compare: limit {args.vram_limit_gib} GiB exceeds free "
                              f"{free_bytes / GIB:.2f} GiB")
         print(f"compare: device free {free_bytes / GIB:.2f} GiB", flush=True)
-    manifest, scored, reports, paths = score_all(args, device)
-    rows = table_rows(scored)
-    text = compare.format_table(rows, REFERENCE_ARM)
+    names = selected_arms(args)
+    manifest, scored, reports, paths = score_all(args, device, names)
+    rows = table_rows(scored, names, args.reference_arm)
+    text = compare.format_table(rows, args.reference_arm)
     print(text, flush=True)
 
     payload = {
@@ -333,23 +364,24 @@ def run(args) -> int:
             "manifest_sha256": sha256_file(args.heldout_manifest),
             "stream_sha256": manifest.get("sha256"),
             "tokens": int(manifest.get("tokens", 0)),
-            "tokens_scored": int(scored[REFERENCE_ARM]["tokens_scored"]),
+            "tokens_scored": int(scored[args.reference_arm]["tokens_scored"]),
             "seq_len": args.seq_len,
-            "chunks": scored[REFERENCE_ARM]["chunks"],
+            "chunks": scored[args.reference_arm]["chunks"],
             "chunking": "non-overlapping next-token chunks, partial tail dropped",
         },
         "temperature": args.temperature,
-        "reference_arm": REFERENCE_ARM,
+        "reference_arm": args.reference_arm,
+        "selected_arms": names,
         "arms": {
             name: {
-                **compare.arm_summary(scored[name], scored[REFERENCE_ARM]),
+                **compare.arm_summary(scored[name], scored[args.reference_arm]),
                 "report": reports[name],
                 "checkpoint": paths[name],
             }
-            for name in ARMS
+            for name in names
         },
         "table": text,
-        "harness": harness_section(args.harness_dir),
+        "harness": harness_section(args.harness_dir, names, args.reference_arm),
         "fake": bool(args.fake),
         "command": sys.argv,
     }
@@ -367,12 +399,14 @@ def self_test() -> int:
         fake=True, vocab=paths["vocab"], hidden=paths["hidden"],
         layers=paths["layers"], student_dir=None, teacher_dir=None,
         adapter_checkpoint=paths["adapter"],
+        control_checkpoint=None,
         memory_init=paths["memory_init"],
         memory_checkpoint=paths["memory_trained"],
         full_checkpoint=paths["full"],
         heldout_manifest=paths["stream_manifest"],
         seq_len=paths["seq_len"], temperature=2.0, vocab_chunk=4,
-        site=2, harness_dir=None,
+        site=2, harness_dir=None, arms=",".join(ARMS),
+        reference_arm=REFERENCE_ARM,
         out=os.path.join(root, "compare.json"),
         vram_limit_gib=12.0)
     code = run(args)
@@ -388,7 +422,29 @@ def self_test() -> int:
     assert abs(base_ce - ungrafted_ce) < 1e-9, (base_ce, ungrafted_ce)
     # the grafted step-0 arm is a real function change
     assert receipt["arms"]["memory-grafted"]["ce"]["mean"] != base_ce
-    print(f"selftest: six arms scored, ungrafted == base, receipt {args.out}", flush=True)
+    # a selected subset with a non-default reference must score only what it
+    # names and pair every delta against that reference
+    subset = SimpleNamespace(**vars(args))
+    subset.arms = "base,adapter-2m"
+    subset.reference_arm = "base"
+    subset.out = os.path.join(root, "compare-subset.json")
+    run(subset)
+    sub = json.load(open(subset.out, encoding="utf-8"))
+    assert sub["selected_arms"] == ["base", "adapter-2m"], sub["selected_arms"]
+    assert set(sub["arms"]) == {"base", "adapter-2m"}, sub["arms"].keys()
+    assert sub["reference_arm"] == "base"
+    assert sub["arms"]["base"]["delta_ce_vs_reference"]["mean"] == 0.0
+    try:
+        bad = SimpleNamespace(**vars(args))
+        bad.arms = "base,memory-2m"
+        bad.reference_arm = "adapter-2m"
+        selected_arms(bad)
+    except SystemExit:
+        pass
+    else:
+        raise AssertionError("selected_arms accepted a reference outside --arms")
+    print(f"selftest: six arms scored, ungrafted == base, subset + reference "
+          f"selection pass, receipts {root}", flush=True)
     return code
 
 
@@ -396,11 +452,18 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--fake", action="store_true")
+    parser.add_argument("--arms", default=",".join(ARMS),
+                        help="comma-separated arms to score; default is the "
+                             "registered six-arm comparison")
+    parser.add_argument("--reference-arm", default=REFERENCE_ARM,
+                        help="arm the paired deltas are against; must be selected")
     parser.add_argument("--vocab", type=int, default=64)
     parser.add_argument("--student-dir", default=DEFAULT_STUDENT)
     parser.add_argument("--teacher-dir", default=DEFAULT_TEACHER)
     parser.add_argument("--heldout-manifest", default=None)
     parser.add_argument("--adapter-checkpoint", default=None)
+    parser.add_argument("--control-checkpoint", default=None,
+                        help="S39 20M-token adapter checkpoint for adapter-20m")
     parser.add_argument("--memory-init", default=None)
     parser.add_argument("--memory-checkpoint", default=None)
     parser.add_argument("--full-checkpoint", default=None)

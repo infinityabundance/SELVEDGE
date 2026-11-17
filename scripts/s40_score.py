@@ -62,6 +62,26 @@ def cgroup_peak() -> dict:
     return report
 
 
+def parse_limit_map(text: str | None, declared: dict, tasks: list[str]) -> dict[str, int]:
+    """Parse `task=<int>,...` overrides; every name must be pre-registered and selected."""
+    overrides: dict[str, int] = {}
+    for item in (text or "").split(","):
+        item = item.strip()
+        if not item:
+            continue
+        name, _, raw = item.partition("=")
+        name = name.strip()
+        if name not in declared:
+            raise SystemExit(f"--limit-map names unregistered task {name!r}")
+        if name not in tasks:
+            raise SystemExit(f"--limit-map names {name!r}, which is not in --tasks")
+        try:
+            overrides[name] = int(raw)
+        except ValueError:
+            raise SystemExit(f"--limit-map {item!r} is not task=<int>")
+    return overrides
+
+
 def receipt_base(args, prereg, prereg_digest, commit, version, arm_report,
                  free_bytes, total_bytes, entries) -> dict:
     import torch
@@ -93,6 +113,7 @@ def receipt_base(args, prereg, prereg_digest, commit, version, arm_report,
             "cuda_runtime": torch.version.cuda,
         },
         "arm_report": arm_report,
+        "limit_overrides": dict(args.limit_overrides),
         "scored_tasks": sorted(entries),
         "tasks": [entries[name] for name in sorted(entries)],
         "complete": False,
@@ -123,6 +144,8 @@ def run(args) -> int:
         if name not in FAMILY_TASKS:
             raise SystemExit(f"task {name!r} is not a registered family member")
 
+    args.limit_overrides = parse_limit_map(args.limit_map, declared, tasks)
+
     if not torch.cuda.is_available():
         raise SystemExit("s40_score: CUDA required; run through scripts/court --gpu eval")
     device = "cuda"
@@ -144,7 +167,12 @@ def run(args) -> int:
     entries = {}
     for name in tasks:
         task = declared[name]
-        limit = args.limit if args.limit is not None else task.get("limit")
+        if name in args.limit_overrides:
+            limit = args.limit_overrides[name]
+        elif args.limit is not None:
+            limit = args.limit
+        else:
+            limit = task.get("limit")
         torch.cuda.reset_peak_memory_stats()
         started = time.time()
         lm.batch_size_per_gpu = int(task.get("batch_size", 1))
@@ -204,6 +232,7 @@ def run(args) -> int:
             "pre_registered": {
                 "limit": limit,
                 "limit_from_preregistration": task.get("limit"),
+                "limit_from_limit_map": name in args.limit_overrides,
                 "num_fewshot": task["num_fewshot"],
                 "batch_size": task.get("batch_size"),
             },
@@ -240,13 +269,14 @@ def run(args) -> int:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--arm", choices=comparison.ARMS, required=True)
+    parser.add_argument("--arm", choices=comparison.SCORED_ARMS, required=True)
     parser.add_argument("--prereg", default=DEFAULT_PREREG)
     parser.add_argument("--student-dir", default=comparison.DEFAULT_STUDENT)
     parser.add_argument("--teacher-dir", default=comparison.DEFAULT_TEACHER)
     parser.add_argument("--memory-init", default=None)
     parser.add_argument("--memory-checkpoint", default=None)
     parser.add_argument("--adapter-checkpoint", default=None)
+    parser.add_argument("--control-checkpoint", default=None)
     parser.add_argument("--full-checkpoint", default=None)
     parser.add_argument("--heldout-manifest", default=None)
     parser.add_argument("--hidden", type=int, default=1024)
@@ -258,6 +288,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--temperature", type=float, default=2.0)
     parser.add_argument("--tasks", default="mmlu_pro,mmlu,gsm8k,minerva_math500")
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--limit-map", default=None,
+                        help="comma-separated task=<int> overrides for a "
+                             "pre-registered subset; unlisted tasks use the "
+                             "anchor pre-registration's own limit")
     parser.add_argument("--fake", action="store_true")
     parser.add_argument("--harness-dir", default=None)
     parser.add_argument("--out", required=True)
