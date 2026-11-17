@@ -165,6 +165,8 @@ def test_matched_dense_adapter_forward_is_finite_and_zero_initialised():
     module = matched.MatchedDenseAdapter(hidden=32,
                                          target_active=28769)
     assert module.active_elements == 28769
+    assert module.identity_at_init() is True
+    assert module.active_parameter_report()["identity_at_init"] is True
     output = module(torch.randn(2, 4, 32))
     assert output.shape == (2, 4, 32)
     assert torch.isfinite(output).all()

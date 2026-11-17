@@ -72,6 +72,12 @@ class MatchedDenseAdapter(nn.Module):
     def active_elements(self) -> int:
         return 2 * self.hidden * self.rank + self.hidden + 1
 
+    def identity_at_init(self) -> bool:
+        """Zero up-projection and zero bias: the residual is exactly zero."""
+
+        return (float(self.up.weight.detach().abs().sum()) == 0.0
+                and float(self.bias.detach().abs().sum()) == 0.0)
+
     def active_parameter_report(self) -> dict:
         return {
             "kind": "stage2_matched_dense_adapter_active",
@@ -83,6 +89,7 @@ class MatchedDenseAdapter(nn.Module):
             "bias_elements": self.hidden,
             "scale_elements": 1,
             "gate_elements": 0,
+            "identity_at_init": self.identity_at_init(),
             "corrective_active_union": CORRECTIVE_ACTIVE,
             "match_delta": self.active_elements - CORRECTIVE_ACTIVE,
             "role": "matched-data control: the external memory and the token "

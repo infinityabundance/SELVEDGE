@@ -77,7 +77,15 @@ CORRECTIVE_ARMS = ("corrective-kl-20m-math", "corrective-signed-20m-math",
 #: S47 mandatory matched controls: the same data without the external memory,
 #: and the same gate over a dense residual instead of the memory.
 MATCHED_CONTROLS = ("adapter-20m-math-matched", "gated-dense-20m-math")
-SCORED_ARMS = ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
+#: S48 screen variants of the same arms at the 2M budget. The names differ so a
+#: receipt can never be mistaken for a 20M arm's receipt; the construction,
+#: accounting and installed module are identical.
+SCREEN_CORRECTIVE_ARMS = ("corrective-kl-2m-math",
+                          "corrective-signed-exp-2m-math",
+                          "corrective-signed-true-2m-math")
+SCREEN_MATCHED_CONTROLS = ("adapter-2m-math-matched", "gated-dense-2m-math")
+SCORED_ARMS = (ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
+               + SCREEN_CORRECTIVE_ARMS + SCREEN_MATCHED_CONTROLS)
 REFERENCE_ARM = "full-distill"
 FAMILIES = {"knowledge": ["mmlu_pro", "mmlu"],
             "math": ["gsm8k", "minerva_math500"]}
@@ -217,20 +225,19 @@ def _build_named_arm(name: str, model, args, device: str):
         report["extension"] = report.pop("kind", "stage2_memory")
         report["kind"] = "stage2_memory_arm"
         return model, handles, report
-    if name in MATCHED_CONTROLS:
-        if name == "adapter-20m-math-matched":
+    if name in MATCHED_CONTROLS + SCREEN_MATCHED_CONTROLS:
+        if name in ("adapter-20m-math-matched", "adapter-2m-math-matched"):
             checkpoint = getattr(args, "matched_adapter_checkpoint", None)
             if not checkpoint:
                 raise SystemExit(
-                    "--matched-adapter-checkpoint is required for "
-                    "adapter-20m-math-matched")
+                    f"--matched-adapter-checkpoint is required for {name}")
             module = matched_controls.MatchedDenseAdapter(
                 hidden=args.hidden).to(device)
         else:
             checkpoint = getattr(args, "gated_dense_checkpoint", None)
             if not checkpoint:
                 raise SystemExit(
-                    "--gated-dense-checkpoint is required for gated-dense-20m-math")
+                    f"--gated-dense-checkpoint is required for {name}")
             module = matched_controls.IdentityGatedDenseResidual(
                 hidden=args.hidden).to(device)
         payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
@@ -245,7 +252,7 @@ def _build_named_arm(name: str, model, args, device: str):
             "arm_family": name,
         })
         return model, handles, report
-    if name in CORRECTIVE_ARMS:
+    if name in CORRECTIVE_ARMS + SCREEN_CORRECTIVE_ARMS:
         if not args.memory_init:
             raise SystemExit("--memory-init is required for a corrective arm")
         init_payload = torch.load(args.memory_init, map_location="cpu",
@@ -387,8 +394,12 @@ def checkpoint_path(name: str, args) -> dict:
                "memory-grafted": args.memory_init,
                "full-distill": args.full_checkpoint,
                "base": None}
-    for name in CORRECTIVE_ARMS:
+    for name in CORRECTIVE_ARMS + SCREEN_CORRECTIVE_ARMS:
         mapping[name] = args.memory_checkpoint
+    for name in SCREEN_MATCHED_CONTROLS:
+        mapping[name] = (args.matched_adapter_checkpoint
+                         if name == "adapter-2m-math-matched"
+                         else args.gated_dense_checkpoint)
     path = mapping.get(name)
     return {"path": path, "sha256": sha256_file(path) if path else None}
 

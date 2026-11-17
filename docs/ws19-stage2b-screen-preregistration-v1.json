@@ -1,0 +1,175 @@
+{
+  "schema": "selvedge/ws19-stage2b-screen-preregistration/v1",
+  "registering_session": "S48",
+  "registered_utc": "2026-11-17T09:27:00Z",
+  "purpose": "Run one 2M-token screen of the stage-2b corrective weightings beside the two S47 matched controls on the S43 math-weighted stream, before any 20M corrective arm is trained, and apply the stage-2b v1 decision rule at 2M to decide which mechanism, if any, is worth the 20M budget. This is a screen, not the win bar: no win-condition threshold is moved, and a screen result cannot be quoted as the 20M win bar.",
+  "relation_to_existing_registrations": {
+    "stage2b_v1": {
+      "path": "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json",
+      "role": "the win bar and the decision rule. Its four conditions and every threshold are used verbatim, applied at 2M; they are not edited"
+    },
+    "amendment_s47": {
+      "path": "docs/ws19-stage2b-corrective-amendment-s47-preregistration-v1.json",
+      "role": "registers `signed-true` as a distinct objective and makes the two 539,649-element matched controls mandatory comparison rows. This screen is the first run of both"
+    },
+    "s43_gate": {
+      "path": "docs/ws19-corrective-gate-advantage-preregistration-v1.json",
+      "role": "the historical mechanism registration; its gate and active union are unchanged"
+    },
+    "s46_bounds": {
+      "path": "results/stage2/s46-headroom-summary-20261117T092225Z.json",
+      "role": "the measured reason the screen does not add a fourth weighting: the headroom is per-position, not per-class or per-feature-threshold, so the screen asks whether the existing objectives reach any of it, not whether a new cheap gate does"
+    }
+  },
+  "why_2m": {
+    "argument": "The bar receives a 20M budget because it is the distillation control, not because 20M is known to be needed. A weighting that cannot separate from its controls at 2M is not worth 9,765 steps, and the 2M rate is measured (2,316 and 2,354 tok/s for the two existing 2M arms), so five arms cost about 73 minutes of GPU. The 20M stage-2b arms remain registered and untouched.",
+    "not_a_win": "a 2M superiority is not the win bar. The bar's conditions are evaluated at 20M on all four anchored tasks; here only the two math tasks are scored and the knowledge family is not, so condition 4's knowledge clause is reported as not measured, not as satisfied",
+    "screening_rule": "the screen decides which arm, if any, is promoted to the registered 20M arms; it does not decide a mechanism claim"
+  },
+  "stream": {
+    "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "tokens_used": 2000000,
+    "why_identical": "the same stream, teacher, objective weights and optimizer as the 20M arms and the bar, so a 2M screen is the same mechanism at a smaller budget, not a retune"
+  },
+  "common": {
+    "tokens": 2000000,
+    "realised_tokens": 1998848,
+    "sequence_length": 512,
+    "micro_batch": 1,
+    "gradient_accumulation": 4,
+    "tokens_per_step": 2048,
+    "steps": 976,
+    "optimizer": "AdamW (fp32 moments; dense, at most 539,649 trainable parameters)",
+    "lr": 0.001,
+    "betas": [0.9, 0.95],
+    "weight_decay": 0.0,
+    "schedule": "constant",
+    "warmup_steps": 50,
+    "grad_clip": 1.0,
+    "seed": 0,
+    "deterministic_algorithms": true,
+    "why": "the S43/S44 registered 2M settings, unchanged, so each screen arm is comparable to memory-2m and adapter-2m at equal tokens"
+  },
+  "teacher": {
+    "path": "Qwen/Qwen3.5-2B-Base",
+    "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+    "temperature": 2.0,
+    "kl_weight": 0.5
+  },
+  "init": {
+    "builder": "oracle/frontier/graft.py --corrective",
+    "path_glob": "results/stage2/graft/corrective/*/memory-init.pt",
+    "one_init_for_three_weightings": true,
+    "state_at_registration": "not built; the build needs one GPU forward pass and runs after the 20M bar exits. Its SHA-256 is recorded in every corrective arm manifest",
+    "identity": "the corrective gate is exactly zero at init, so every corrective arm starts bit-identical to base"
+  },
+  "arms": {
+    "corrective-kl-2m-math": {
+      "family": "corrective",
+      "weighting": "kl",
+      "run_dir": "results/stage2/runs/corrective-kl-2m-math",
+      "role": "the S42/S43 KL-disagreement weight at 2M"
+    },
+    "corrective-signed-exp-2m-math": {
+      "family": "corrective",
+      "weighting": "signed-exp",
+      "weighting_alias": "signed",
+      "run_dir": "results/stage2/runs/corrective-signed-exp-2m-math",
+      "role": "exp(clamp(A_t, -4, 4)) weight, the S43/S44 signed control at 2M"
+    },
+    "corrective-signed-true-2m-math": {
+      "family": "corrective",
+      "weighting": "signed-true",
+      "run_dir": "results/stage2/runs/corrective-signed-true-2m-math",
+      "signed_tau": 1.0,
+      "base_protection_weight": 0.5,
+      "role": "sigmoid(A_t / tau) plus the A_t < 0 token-loss protection term, the S47 objective at 2M"
+    },
+    "adapter-2m-math-matched": {
+      "family": "matched_control_data",
+      "implementation": "oracle/frontier/matched_controls.py::MatchedDenseAdapter",
+      "active_added_parameters": 539649,
+      "run_dir": "results/stage2/runs/adapter-2m-math-matched",
+      "role": "same stream, teacher and optimizer budget at the corrective arm's exact active union, with no memory and no gate: attributes a gain to the data"
+    },
+    "gated-dense-2m-math": {
+      "family": "matched_control_gate",
+      "implementation": "oracle/frontier/matched_controls.py::IdentityGatedDenseResidual",
+      "active_added_parameters": 539649,
+      "gate": "alpha_t = tanh(w . [h_t ; r_t] + b), w = b = 0 at init",
+      "external_memory": false,
+      "run_dir": "results/stage2/runs/gated-dense-2m-math",
+      "role": "the same zero-initialised gate over a dense residual with no external memory: attributes a gain to the gate"
+    }
+  },
+  "accounting": {
+    "corrective_union": 539649,
+    "matched_control_union": 539649,
+    "components": "537,600 dense or memory elements + 2,049 gate elements",
+    "reference_rows": "base = 0 added; adapter-2m = 537,600 added at 2M tokens (results/stage2/runs/adapter-2m)"
+  },
+  "evaluation": {
+    "heldout": {
+      "driver": "scripts/s40_compare.py --arms base,<arm> --reference-arm base --heldout-manifest results/stage2/stage2-heldout-20261117T024542Z.json",
+      "manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+      "metrics": "mean next-token CE and mean KL(teacher_T || student_T) at T=2.0 over 3,906 non-overlapping 512-token chunks, paired per chunk against base",
+      "harm": "the three corrected sign masks (teacher_better A_t > 0, base_better A_t < 0, tie A_t == 0) plus the lowest-advantage quartile, with token count, mean delta KL and fraction worse; taken from the training log's per-step objective diagnostics and reported as a training-stream measurement, not as held-out",
+      "gate_statistics": "mean, mean |alpha|, min and max of the trained gate on the held-out chunks for the corrective and gated-dense arms; the training log's per-step gate summary for every arm that has a gate"
+    },
+    "anchored_math": {
+      "driver": "scripts/s40_score.py --tasks gsm8k,minerva_math500",
+      "tasks": ["gsm8k", "minerva_math500"],
+      "sequence_correctness": "the S47 block: the S45 exact final-answer verdict on the harness's own generations, reported beside the harness metric",
+      "why_two_tasks": "the screen is about the math family. The knowledge family is not scored at 2M, so decision-rule condition 4's knowledge clause is reported as not measured rather than assumed satisfied",
+      "basis": "all 1,319 GSM8K items and all 500 MATH-500 items, the same basis as the anchored table"
+    }
+  },
+  "decision_rule": {
+    "source": "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json, decision_rule, applied at 2M with `adapter-2m` and `adapter-2m-math-matched` as the two comparison rows",
+    "conditions": [
+      "1. math family mean exceeds base by more than the combined independent standard error, and the paired per-item bootstrap interval on both math tasks excludes zero in the same direction",
+      "2. math family mean exceeds adapter-2m by more than the combined independent standard error, with the same paired requirement",
+      "3. held-out CE delta against base is not positive beyond its paired per-chunk standard error",
+      "4. no registered harm mask shows a positive mean delta KL on base_better tokens beyond its standard error; the knowledge clause is not measured at 2M and is reported as not measured"
+    ],
+    "attribution": "before any mechanism claim: an arm whose gain is matched by adapter-2m-math-matched is a data gain; one matched by gated-dense-2m-math is a gate gain",
+    "verdicts": {
+      "corrective_arm_promoted": "one corrective weighting satisfies all four measurable conditions and exceeds both matched controls: promote that weighting to the registered 20M arm",
+      "data_gain": "the matched dense adapter satisfies the same conditions and is not separated from the corrective arm: the screen result is the data, and 20M corrective training is not justified by it",
+      "gate_gain": "gated-dense-2m-math satisfies them and the corrective arm is not separated from it: the gate is the mechanism, not the external memory",
+      "null": "no arm beats base and adapter-2m on math: the corrective-residual family is not run at 20M on this route; the next route is the registered P19.9 utility routing, not another weighting",
+      "ambiguous": "the interval excludes zero but the sign is not consistent across the two math tasks, or the conclusion flips between the harness metric and sequence correctness: report both and promote nothing"
+    }
+  },
+  "sequencing": {
+    "runs_after": "the 20M bar exits and is scored. The screen is launched only after that receipt exists, so no second GPU job competes with the bar",
+    "order": "corrective-kl, corrective-signed-exp, corrective-signed-true, adapter-2m-math-matched, gated-dense-2m-math; one at a time",
+    "each_run": "train 2M, held-out receipt, anchored receipt, then the next arm"
+  },
+  "limits": {
+    "host_memory": "6 GiB per arm: 2.0x the measured 2.95 GiB cgroup peak of the same student+teacher+memory shape (results/stage2/runs/memory-2m/receipt.json)",
+    "cpus": 8,
+    "pids": 1024,
+    "tmp": "2 GiB",
+    "vram_limit_gib": 12.5,
+    "refuse_when": "the 20M bar is active, or host MemAvailable is below the limit plus 4 GiB"
+  },
+  "limits_derived_from": [
+    "results/stage2/s44-arm-table-20261117T081002Z.json",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "results/stage2/s46-headroom-summary-20261117T092225Z.json",
+    "results/stage2/runs/memory-2m/receipt.json",
+    "results/stage2/runs/adapter-2m/receipt.json"
+  ],
+  "thresholds": {
+    "moved": false,
+    "statement": "no win-bar condition, token budget at 20M, optimizer setting, seed or evaluation basis is changed. The 2M budget is the screen's, not the bar's; the registered 20M arms and their budget remain as registered"
+  },
+  "what_this_file_does_not_establish": [
+    "that any weighting beats base or adapter-2m on math: that is the experiment",
+    "that a 2M separation survives to 20M: the screen is a gate on the 20M spend, not a scaling claim",
+    "that the knowledge family is unaffected: it is not measured at 2M",
+    "that the S46-gated mechanism is unnecessary in general: the bounds show no cheap one-threshold gate reaches the headroom on the selected sample, which is why this screen tests the existing objectives rather than a new cheap gate"
+  ]
+}
