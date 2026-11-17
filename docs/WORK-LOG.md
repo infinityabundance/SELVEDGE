@@ -4378,3 +4378,158 @@ registration is ordered before any score of it.
   over items, not over training seeds; each arm is one seed.
 - **No claim that the corrective arms will fit in VRAM.** The arithmetic says
   they should; the smoke is what decides, and the ladder is registered.
+
+## 2026-11-17 — S45: the generative-math collapse diagnosed, and the RFT/on-policy route registered
+
+### Plan
+
+Three jobs, CPU only: (1) diagnose why `memory-2m` loses 9.55 GSM8K points while
+its held-out CE is only +0.0203 nats; (2) build and register the next route
+(verified-solution SFT, on-policy KD, both) with an exact verifier, a
+contamination check, a stream builder and a longer-budget plan; (3) prepare the
+objective ablation (the registered preservation and signed-advantage terms plus
+a target-side math-format curriculum). The 20M math-weighted full-distillation
+bar was training throughout and was not touched; no GPU job was started.
+
+### The collapse is a persistent bias, not a single bad token
+
+`scripts/s45_collapse_diagnosis.py` has two modes. `--artifacts` re-reads the
+stored lm-evaluation-harness samples and pairs by `doc_id`, requiring the prompt
+hash to match; `--forward` teacher-forces a bounded set of prompts through base,
+`memory-2m`, `adapter-2m` and the 2B teacher on CPU, then `--analyse-forward`
+classifies the stored per-position arrays. No number below is typed by hand.
+
+The artifact receipt is `results/stage2/s45-collapse-artifacts-20261117T082147Z.json`
+(stamp `20261117T082147Z`, revision `2612c6e49c441dc12740597f6878a36ce4e6fe5c`).
+The direct answers:
+
+- `memory-2m` on GSM8K: 208 base-correct items become wrong, 82 base-wrong items
+  become correct (net -126, -9.55 points). 203 of the 208 losses change the
+  extracted final answer.
+- every one of the 208 losses first differs in the **reasoning** region, not at
+  the `####` marker; 40 first differences are on a digit and 20 on an operator.
+- the loss is length-dependent: -0.0270 in the shortest base-response quartile,
+  then -0.1295 / -0.1131 / -0.1131.
+- the 100 byte-identical responses have exactly +0.0000 delta; all damage is in
+  the items whose trajectory changed.
+- MATH-500: 53 base-correct losses, 22 gains, 25.00 -> 18.80 (-6.20).
+- `adapter-2m` loses 126 and gains 88; `adapter-20m` loses 139 and gains 97. More
+  tokens did not fix the direction.
+
+The forward receipt is
+`results/stage2/s45-forward-positional-20261117T082412Z.json`; the analysis is
+`results/stage2/s45-forward-analysis-20261117T082511Z.json` (stamp
+`20261117T082511Z`, same revision). On the correct (base) solution path the
+memory residual adds +0.0373 nats/token over 80.0% of positions, +0.276 nats in
+the first ten tokens and +13.220 nats total over five sequences. The per-token
+rate does not grow with position (Pearson near zero): it is a persistent sign.
+The gate is a near-constant |alpha| = 0.471 (range 0.36-0.50) and the residual
+norm is 0.768; neither correlates with the per-token damage. By token class on
+the correct path: letter +0.557, space +0.060, digit +0.003, operator -0.010
+nats of class-mean CE delta. The residual moves prose, and the prose change
+flips the answer on some items.
+
+This is the first measurement in the program that explains the
+CE-versus-accuracy dissociation instead of restating it: the local distribution
+is only slightly worse, but the sign is positive almost everywhere, so the
+cumulative cost over a 60-80-token solution is more than ten nats.
+
+### The next route is built and registered
+
+`docs/ws19-onpolicy-rft-preregistration-v1.json` registers:
+
+- data: GSM8K-train (7,473) and MATH-train (7,500), prompts from the train
+  splits only, answers extracted by the registered verifier;
+- sampling: teacher Qwen3.5-2B or the frozen 0.8B student, K=8, temperature 0.8,
+  top-p 0.95, 512 new tokens, seed 451; one pass is bounded by 61,329,408
+  generated tokens;
+- verifier: exactly one unambiguous answer; numeric equality at 1e-9 relative,
+  otherwise a documented canonical LaTeX string; ambiguity (two `####`, two
+  `\boxed{}`, or a boxed `or`) is rejected;
+- rejection/dedup: keep only `correct`, deduplicate within a prompt by
+  whitespace-normalised solution text, record verified/sampled and kept/verified;
+- contamination: 5-word shingle Jaccard against GSM8K-test and MATH-500,
+  discard >= 0.2, fail closed >= 0.5;
+- arms: four 2M corrective-screen arms (`rft-sft`, `rft-kd`, `rft-kd-signed`,
+  `rft-both`) and three 20M full-backbone arms (`rft-sft-20m-full`,
+  `rft-kd-20m-full`, `rft-both-20m-full`), plus an optional format-curriculum
+  arm; seed 0 per training arm, the bar's Adam8bit/cosine/1e-4 settings;
+- eval: the anchored harness on all 14,042 MMLU / 504 MMLU-Pro / 1,319 GSM8K /
+  500 MATH-500 items, held-out CE/KL on the 3,906 chunks, paired per-item
+  bootstrap and McNemar;
+- win bar: beat base **and** the measured full-20m-math bar on the math family,
+  with no held-out or knowledge regression, and a seven-branch decision rule.
+
+The implementation is `oracle/frontier/rft.py` (verifier, rejection sampling,
+acceptance receipt, contamination check, teacher/student sampler),
+`scripts/s45_rft_stream.py` (deterministic accepted-solution stream),
+`oracle/frontier/rft_objective.py` (SFT CE, CE+KL, the registered
+preservation/signed/gate terms, and the weighted SFT+KD combination), and the
+`--objective sft` path in `oracle/frontier/train.py` (verified-solution CE with
+`kl_weight 0`, fail-closed validation). The fixture run in
+`results/stage2/s45-rft-fixture/receipt.json` samples 10, verifies 4, keeps 3,
+with a 0.0200 maximum contamination Jaccard. The stream builder produced a
+50,000-token fixture stream from a 121-token corpus in 414 epochs, with the
+receipt hash checked `results/stage2/s45-rft-stream-20261117T083022Z.json`.
+
+`oracle/tests/test_s45_rft.py` is 30 CPU tests: correct/wrong/ambiguous/
+multiple-answer/LaTeX/numeric verifier cases, the curriculum (including that a
+formatted solution still verifies), rejection and dedup arithmetic, the
+contamination fail-closed path, the SFT/KD/correction objective arithmetic, and
+the `--objective sft` CLI wiring. The pre-existing S40/S42/S43/S44 suites also
+pass with the memory instrumentation added (66 tests).
+
+### Longer-budget arithmetic
+
+The receipt is `results/stage2/s45-budget-plan-20261117T082853Z.json` (stamp
+`20261117T082853Z`, revision
+`2612c6e49c441dc12740597f6878a36ce4e6fe5c`). It reads the in-flight bar's
+`log.jsonl` and uses the median of its last 50 lines: **1,836.0 tok/s**. At
+2,048 tokens per step, 20M is 9,766 steps / 3.026 h, 40M is 19,532 / 6.052 h,
+60M is 29,297 / 9.077 h, and 100M is 48,829 / 15.129 h. One 100M run with
+checkpoints at 20/40/60/100M draws the whole curve; the 60M run is the cheaper
+first extension. The measured checkpoint is 2,008,524,311 bytes; 60M milestones
+are 5.61 GiB, 100M milestones 7.48 GiB (7.48 / 9.35 GiB with the newest/latest
+copy). The teacher-sampling pass is bounded at 61.3M generated tokens; the
+acceptance rate is unmeasured until the job runs.
+
+### Literature
+
+`docs/S45-LITERATURE.md` records URL, fetch date, stated claim and verdict.
+The strongest new sources are CoRD (`2611.07959`: OPD gains on five math
+benchmarks with Qwen3/Qwen3.5 0.6B-4B students), SD-OPD (`2611.07722`: style
+positions carry 3.5x the teacher-student log-probability difference of math
+positions, the same shape as the class split measured here), RFT (`2308.01825`:
+LLaMA-7B GSM8K 49.3% versus 35.9% and larger gains for weaker models), and
+`2610.07405` (RFT at 1.5B can lose hard-problem coverage and diversity). The
+exact 20M-token budget is **UNSUPPORTED**: an arXiv API query for `"20M tokens"
+AND distillation` returned zero records on 2026-11-17.
+
+### The bar's progress
+
+At 08:26Z the in-flight log (`results/stage2/runs/full-20m-math/log.jsonl`) had
+logged step 1,299 and 2,660,352 tokens, about 13% of the 9,765 steps. The S43
+launch receipt (`results/stage2/runs/full-20m-math/launch.json`, revision
+`78caa6a1ae96b8c50094f0bdaff6691695777ebe`) recorded 1,847.1 tok/s steady and an
+ETA near 11:02Z. There is no anchored receipt and therefore no bar score or bar
+row; nothing was launched or scored in this continuation.
+
+### Courts
+
+`commit_identity`, `perf_numbers`, `status_consistency` and
+`prereg_provenance` are run after the commit; the registration is ordered
+before any score of it. The `oracle` court ran the new S45 tests and the
+existing S40/S42/S43/S44 suites; the diagnostic and budget scripts ran in the
+`python` court at measured limits (2-4 GiB), and the CPU forward pass ran in the
+`oracle` court at 10 GiB, 1.58x its measured 6.35 GiB process peak.
+
+### What this entry does not claim
+
+- **No RFT or on-policy result.** No GPU generation, no training, no acceptance
+  rate.
+- **No bar score.** The 20M run is in flight; its row is absent, not estimated.
+- **No mechanism win.** The diagnosis is a measured bias; the route is
+  registered, not run.
+- **No seed variance.** Five prompt/sequence pairs on one checkpoint per arm.
+- **No symbolic verifier.** The extractor is deliberately conservative; equal
+  but differently written MATH answers are rejected.
