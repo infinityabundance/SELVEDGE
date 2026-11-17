@@ -9,6 +9,7 @@ embedding, the exported state cannot carry the embedding, and the block-wise
 
 from __future__ import annotations
 
+import copy
 import os
 import sys
 
@@ -82,6 +83,39 @@ def test_adam8bit_stores_int8_moments_and_reports_their_bytes():
     receipt = optimizer.receipt()
     assert receipt["moment_bytes_per_element"] > 2.0
     assert receipt["block_elements"] == BLOCK
+
+
+def test_adam8bit_state_round_trip_keeps_int8_moments_and_replays_exactly():
+    torch.manual_seed(4)
+    start = torch.randn(300)
+    first_grad = torch.randn(300)
+    second_grad = torch.randn(300)
+
+    reference = nn.Parameter(start.clone())
+    optimizer = optim8bit.Adam8bit([reference], lr=1e-2, block=BLOCK)
+    reference.grad = first_grad.clone()
+    optimizer.step()
+    # `state_dict()` holds live references; a real resume reads a fresh payload.
+    saved = copy.deepcopy(optimizer.state_dict())
+    saved_parameter = reference.detach().clone()
+    reference.grad = second_grad.clone()
+    optimizer.step()
+    expected = reference.detach().clone()
+
+    replay = nn.Parameter(start.clone())
+    replay_optimizer = optim8bit.Adam8bit([replay], lr=1e-2, block=BLOCK)
+    replay.grad = first_grad.clone()
+    replay_optimizer.step()
+    replay_optimizer.load_state_dict(saved)
+    state = replay_optimizer.state[replay]
+    # PyTorch's loader would cast these to the parameter dtype; ours must not.
+    assert state["q_m"].dtype == torch.int8
+    assert state["q_v"].dtype == torch.int8
+    assert state["absmax_m"].dtype == torch.float32
+    replay.data.copy_(saved_parameter)
+    replay.grad = second_grad.clone()
+    replay_optimizer.step()
+    assert torch.allclose(replay.detach(), expected, atol=1e-6, rtol=0)
 
 
 def test_adam8bit_quantize_dequantize_round_trip_is_bounded():
@@ -163,6 +197,31 @@ def test_full_arm_rejects_a_state_that_carries_the_embedding():
     state["embed_tokens.weight"] = torch.zeros(32, 8)
     with pytest.raises(ValueError):
         arm.load_state_dict(state)
+
+
+def test_train_build_arm_full_and_schedules():
+    from types import SimpleNamespace
+    from frontier import train
+
+    model = _TinyLM(vocab=32, hidden=8)
+    args = SimpleNamespace(freeze_embedding=True, gradient_checkpointing=False,
+                           optimizer="adam8bit")
+    arm, handles, report = train.build_arm("full", model, args, "cpu")
+    assert handles == []
+    assert report["kind"] == "stage2_full_backbone"
+    assert report["frozen_embedding_elements"] == 32 * 8
+    assert report["optimizer"] == "adam8bit"
+    assert len(arm.parameters()) > 0
+
+    schedule = SimpleNamespace(lr=1.0, schedule="cosine", min_lr_ratio=0.1)
+    warmup = 10
+    steps = 110
+    assert train.learning_rate(0, schedule, steps, warmup) == pytest.approx(0.1)
+    assert train.learning_rate(9, schedule, steps, warmup) == pytest.approx(1.0)
+    assert train.learning_rate(10, schedule, steps, warmup) == pytest.approx(1.0)
+    assert train.learning_rate(steps, schedule, steps, warmup) == pytest.approx(0.1)
+    constant = SimpleNamespace(lr=1.0, schedule="constant", min_lr_ratio=0.1)
+    assert train.learning_rate(steps, constant, steps, warmup) == pytest.approx(1.0)
 
 
 def test_full_arm_bytes_arithmetic_is_exact():

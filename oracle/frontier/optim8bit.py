@@ -111,10 +111,10 @@ class Adam8bit(torch.optim.Optimizer):
                                     state["padded"], block)
                 variance = dequantize(state["q_v"], state["absmax_v"],
                                       state["padded"], block)
-                grad_flat = grad.detach().to(torch.float32).reshape(-1)
                 if weight_decay != 0.0:
-                    grad_flat = grad_flat + weight_decay * parameter.detach(
-                    ).to(torch.float32).reshape(-1)
+                    # Decoupled AdamW decay, not an L2 term in the gradient.
+                    parameter.mul_(1.0 - lr * weight_decay)
+                grad_flat = grad.detach().to(torch.float32).reshape(-1)
                 if grad_flat.numel() < state["padded"]:
                     grad_flat = torch.cat([
                         grad_flat,
@@ -131,6 +131,27 @@ class Adam8bit(torch.optim.Optimizer):
                 state["q_m"], state["absmax_m"] = quantize(moment, block)
                 state["q_v"], state["absmax_v"] = quantize(variance, block)
         return loss
+
+    def load_state_dict(self, state_dict):
+        """Restore int8 moments without PyTorch's dtype cast to the parameter.
+
+        `Optimizer.load_state_dict` casts floating-point state to the parameter
+        dtype; that would turn the int8 moments into bf16 and silently undo the
+        8-bit storage. Keep the quantized tensors and float32 scales as they are.
+        """
+        params = [parameter for group in self.param_groups
+                  for parameter in group["params"]]
+        preserved = {}
+        for index, state in (state_dict.get("state") or {}).items():
+            preserved[index] = {
+                key: value.detach().clone() for key, value in state.items()
+                if key in ("q_m", "q_v", "absmax_m", "absmax_v")}
+        result = super().load_state_dict(state_dict)
+        for index, tensors in preserved.items():
+            parameter = params[index]
+            for key, value in tensors.items():
+                self.state[parameter][key] = value.to(device=parameter.device)
+        return result
 
     def state_bytes(self) -> int:
         """Bytes actually allocated for optimizer state (moments and scales)."""
