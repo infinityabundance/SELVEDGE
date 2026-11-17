@@ -1,0 +1,198 @@
+{
+  "schema": "selvedge/s52-literature/v1",
+  "kind": "s52-literature",
+  "created_utc": "2026-11-17T23:02:00Z",
+  "stamp": "20261117T230200Z",
+  "accessed": "2026-11-17",
+  "revision": "8425377",
+  "agent": "S52",
+  "question": "outcome-supervised and pre-fetch routing; counterfactual utility labels from paired rollouts; cost-aware gating; published evidence that deciding to retrieve before the fetch preserves quality",
+  "sources": [
+    {
+      "id": "jeong-2024-adaptive-rag",
+      "topic": "outcome-supervised pre-fetch routing",
+      "citation": "Soyeong Jeong, Jinheon Baek, Sukmin Cho, Sung Ju Hwang, Jong C. Park. Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity. NAACL 2024. arXiv:2403.14403v2.",
+      "url": "https://arxiv.org/abs/2403.14403",
+      "dates": {"submitted": "2024-03-21", "v2": "2024-03-28"},
+      "claims": [
+        "A smaller LM classifier selects the retrieval strategy, including no-retrieval, before the strategy runs.",
+        "The classifier's labels are collected from the actual predicted outcomes of the candidate models, not from a fixed heuristic.",
+        "The paper reports improved overall efficiency and accuracy against adaptive-retrieval baselines."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and submission metadata read on 2026-11-17 from https://arxiv.org/abs/2403.14403",
+      "relevance": "direct precedent for an outcome-supervised router whose decision precedes retrieval; the S52 router differs in deciding per token from the causal hidden state rather than per query from a complexity class"
+    },
+    {
+      "id": "asai-2023-self-rag",
+      "topic": "pre-fetch / on-demand retrieval gating",
+      "citation": "Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, Hannaneh Hajishirzi. Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection. arXiv:2310.11511v1.",
+      "url": "https://arxiv.org/abs/2310.11511",
+      "dates": {"submitted": "2023-10-17"},
+      "claims": [
+        "Indiscriminate retrieval regardless of necessity can reduce versatility or produce unhelpful responses.",
+        "Self-RAG trains one LM to adaptively retrieve on demand using reflection tokens, and it can decide not to retrieve.",
+        "It reports gains over retrieval-augmented Llama2-chat and ChatGPT on open-domain QA, reasoning and fact verification."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and submission metadata read on 2026-11-17 from https://arxiv.org/abs/2310.11511",
+      "relevance": "the retrieve-on-demand premise; Self-RAG's reflection token is a decoded decision, whereas S52 predicts utility from a causal hidden state before the read"
+    },
+    {
+      "id": "jiang-2023-flare",
+      "topic": "pre-fetch / on-demand retrieval gating",
+      "citation": "Zhengbao Jiang, Frank F. Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, Graham Neubig. Active Retrieval Augmented Generation. EMNLP 2023. arXiv:2305.06983v2.",
+      "url": "https://arxiv.org/abs/2305.06983",
+      "dates": {"submitted": "2023-05-11", "v2": "2023-10-22"},
+      "claims": [
+        "Methods that actively decide when and what to retrieve across generation are a generalization of retrieve-once RAG.",
+        "FLARE retrieves and regenerates only when a predicted upcoming sentence contains low-confidence tokens.",
+        "FLARE is superior or competitive on four long-form knowledge-intensive generation tasks."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from https://arxiv.org/abs/2305.06983",
+      "relevance": "a low-confidence trigger is a pre-fetch signal, but it is an absolute confidence, not an estimate of the marginal utility of the read; S52's label is the paired difference"
+    },
+    {
+      "id": "su-2024-dragin",
+      "topic": "pre-fetch / on-demand retrieval gating",
+      "citation": "Weihang Su, Yichen Tang, Qingyao Ai, Zhijing Wu, Yiqun Liu. DRAGIN: Dynamic Retrieval Augmented Generation based on the Information Needs of Large Language Models. arXiv:2403.10081v3.",
+      "url": "https://arxiv.org/abs/2403.10081",
+      "dates": {"submitted": "2024-03-15", "v3": "2024-09-21"},
+      "claims": [
+        "Dynamic RAG must decide when to retrieve during generation; static rules are identified as a weakness.",
+        "DRAGIN decides from the LM's real-time information need and reports superior results on four knowledge-intensive datasets."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and submission metadata read on 2026-11-17 from https://arxiv.org/abs/2403.10081",
+      "relevance": "supports per-generation-step decisions; DRAGIN scores a query/uncertainty signal, not a counterfactual outcome difference"
+    },
+    {
+      "id": "zou-2026-cobra",
+      "topic": "counterfactual utility labels from paired rollouts",
+      "citation": "Wenhao Zou, Xianglong Liu, Wendong Bi, Hanjie Wang, Simin Zhao, Gong Zhi. CoBRA: Learning Tool-Use Boundaries via Counterfactual Margins. EMNLP 2026. arXiv:2609.00967v1.",
+      "url": "https://arxiv.org/abs/2609.00967",
+      "dates": {"submitted": "2026-09-01"},
+      "claims": [
+        "Triggers based on absolute difficulty, confidence or final reward lack an explicit estimate of the instance-level marginal benefit of tool use.",
+        "CoBRA builds internal and external experts from the same base model and collects paired trajectories, estimating the reward margin between answering with and without tools.",
+        "The margin partitions data into internal-favored, external-favored and ambiguous cases and supervises the boundary decision.",
+        "Retrieval is the main tool; the experiments report improved tool-use efficiency and boundary-sensitive answer accuracy."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and submission metadata read on 2026-11-17 from https://arxiv.org/abs/2609.00967",
+      "relevance": "closest published match to S52's label: a paired with/without-tool outcome difference supervises the boundary. PARTIAL as token-level precedent: CoBRA's label is per trajectory/instance, while S52 broadcasts a prompt-level delta to token rows and predicts it from the pre-read hidden state"
+    },
+    {
+      "id": "he-2026-radeg",
+      "topic": "cost-aware gating and pre-execution utility prediction",
+      "citation": "Liang He, Jingbo Wen, Hongyu Gu, Hao Li, Haoyu Wang, Yixiong Chen, Kangning Cui, Xilu Wang. From Relevance to Execution Utility: Reward-Aware Dynamic Execution Gating for Skill-Based LLM Agents. arXiv:2608.09168v1.",
+      "url": "https://arxiv.org/abs/2608.09168",
+      "dates": {"submitted": "2026-08-10"},
+      "claims": [
+        "A plausible retrieved bundle does not guarantee that executing it is worthwhile, and every conditioned rollout is expensive.",
+        "RADEG predicts execution utility before the expensive rollout from a low-cost surrogate.",
+        "Matched same-query rollouts that perturb the bundle isolate composition effects for supervision.",
+        "Under a held-out evaluation it reduces unnecessary executions while preserving a large fraction of verifier reward."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from the arXiv API record for 2608.09168",
+      "relevance": "direct support for a cost-aware pre-execution gate trained on matched rollouts; the utility is the verifier reward, as in S52's verified-outcome difference"
+    },
+    {
+      "id": "hashemi-2025-cost-aware-depth",
+      "topic": "cost-aware gating",
+      "citation": "Helia Hashemi, Victor Ruhle, Saravan Rajmohan. Cost-Aware Retrieval-Augmentation Reasoning Models with Adaptive Retrieval Depth. arXiv:2510.15719v1.",
+      "url": "https://arxiv.org/abs/2510.15719",
+      "dates": {"submitted": "2025-10-17"},
+      "claims": [
+        "Both retrieval and reasoning tokens contribute substantially to cost.",
+        "The paper develops a cost-aware advantage function for reinforcement learning of efficient retrieval-augmented reasoning.",
+        "Across seven QA datasets it reports roughly 16-20% lower latency and about +5% average exact match."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from the arXiv API record for 2510.15719",
+      "relevance": "cost belongs in the objective rather than in a post-hoc filter; S52 keeps the cost in physical bytes and sweeps the threshold instead of pricing bytes in nats"
+    },
+    {
+      "id": "mishra-2026-ca-rag",
+      "topic": "cost-aware gating and routing-before-retrieval quality",
+      "citation": "Sanjay Mishra. Cost-Aware Query Routing in RAG: Empirical Analysis of Retrieval Depth Tradeoffs. arXiv:2606.02581v1.",
+      "url": "https://arxiv.org/abs/2606.02581",
+      "dates": {"submitted": "2026-03-26"},
+      "claims": [
+        "Static retrieval configurations cannot resolve the quality/cost/latency trade-off across heterogeneous queries.",
+        "CA-RAG routes each query to a strategy bundle, including retrieval-free direct inference, by maximizing a utility that combines a quality prior with latency and billed-token penalties.",
+        "It reports 26% fewer billed tokens than always-heavy retrieval and 34% lower mean latency than always-direct inference while maintaining equivalent answer quality."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from the arXiv API record for 2606.02581",
+      "relevance": "published evidence that a pre-retrieval route can preserve quality at lower measured cost; it is query-level and the benchmark is 28 queries, so the quality equivalence is not a token-level routing result"
+    },
+    {
+      "id": "zhao-2026-additional-retrieval-worthwhile",
+      "topic": "cost-aware gating and routing-before-retrieval quality",
+      "citation": "Zhouting Zhao. When Is Additional Retrieval Worthwhile? A Cost-Aware Study of Evidence Gain and Answer Reliability in RAG. arXiv:2610.37358v1.",
+      "url": "https://arxiv.org/abs/2610.37358",
+      "dates": {"submitted": "2026-10-27"},
+      "claims": [
+        "The paper estimates the question-specific incremental evidence-retrieval benefit of a stronger retriever using features available before the routing decision.",
+        "The routing model and threshold are frozen before held-out evaluation, on document-grouped cross-validation.",
+        "On 188 held-out questions the policy triggers the stronger retriever on 24.5% and matches always-stronger evidence Hit@10, but paired bootstrap intervals do not establish a reliable utility advantage.",
+        "The author reports no clear correctness or faithfulness improvement in provisional answer-level assessment and labels the work a reproducible empirical study, not established answer-quality superiority."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from the arXiv API record for 2610.37358",
+      "relevance": "the most directly relevant caution: a pre-decision benefit estimate can save retrieval without preserving answer quality. S52 therefore makes exact-answer accuracy and the matched controls part of the win bar, not read savings alone"
+    },
+    {
+      "id": "ong-2024-routellm",
+      "topic": "cost-aware gating (adjacent: model routing)",
+      "citation": "Isaac Ong, Amjad Almahairi, Vincent Wu, Wei-Lin Chiang, Tianhao Wu, Joseph E. Gonzalez, M Waleed Kadous, Ion Stoica. RouteLLM: Learning to Route LLMs with Preference Data. arXiv:2406.18665v4.",
+      "url": "https://arxiv.org/abs/2406.18665",
+      "dates": {"submitted": "2024-06-26", "v4": "2025-02-23"},
+      "claims": [
+        "A router can choose between a stronger and a weaker model at inference to trade cost against quality.",
+        "Routers trained on preference data reduce cost by over 2x in some cases without compromising response quality.",
+        "Router models transfer when the strong and weak models change."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "abstract read on 2026-11-17 from https://arxiv.org/abs/2406.18665",
+      "relevance": "cost-aware routing with preserved quality, but the routed action is which model answers, not whether to fetch memory before a token. It supports the shape of the win bar, not the S52 mechanism"
+    },
+    {
+      "id": "dong-2023-raft",
+      "topic": "rollout-derived supervision",
+      "citation": "Hanze Dong, Wei Xiong, Deepanshu Goyal, Yihan Zhang, Winnie Chow, Rui Pan, Shizhe Diao, Jipeng Zhang, Kashun Shum, Tong Zhang. RAFT: Reward rAnked FineTuning for Generative Foundation Model Alignment. TMLR. arXiv:2304.06767v4.",
+      "url": "https://arxiv.org/abs/2304.06767",
+      "dates": {"submitted": "2023-04-13", "v4": "2023-12-01"},
+      "claims": [
+        "A reward model plus a sufficient number of sampled responses can select high-quality samples and discard undesired ones.",
+        "Fine-tuning on the filtered samples improves the model under reward and other automated metrics."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "abstract read on 2026-11-17 from https://arxiv.org/abs/2304.06767",
+      "relevance": "verifies rollout selection as supervision, but RAFT ranks a single condition's samples; it does not form a paired with/without-memory difference, so it does not establish the S52 label"
+    },
+    {
+      "id": "no-token-level-paired-router",
+      "topic": "counterfactual utility labels from paired rollouts",
+      "citation": "No primary source found that trains a per-token pre-read router on a paired with/without-memory verified-outcome difference and evaluates it with a mask-enforced sparse read.",
+      "url": null,
+      "dates": {"searched": "2026-11-17"},
+      "claims": [
+        "CoBRA and RADEG use paired with/without-tool or matched-bundle rollouts at the instance/trajectory level.",
+        "No paper found estimates a per-token utility label by pairing the same prompt's rollouts with and without an external memory read."
+      ],
+      "status": "UNSUPPORTED",
+      "how_verified": "absence of evidence from the arXiv searches above; not evidence of absence",
+      "relevance": "this is the gap the S52 screen tests; the registration keeps the claim at the prompt-level label and does not assert token-level utility identification"
+    }
+  ],
+  "conclusion": {
+    "pre_fetch_routing": "Pre-fetch retrieval decisions are well established (Adaptive-RAG, Self-RAG, FLARE, DRAGIN). Adaptive-RAG in particular trains its router on actual model outcomes, which is the closest precedent for outcome-supervised routing.",
+    "counterfactual_labels": "Paired with/without-tool rollouts are published (CoBRA, RADEG, TQG-Exp) but at instance or trajectory granularity. A per-token pre-read utility label is not published as far as these searches reach; S52 registers a prompt-level label and says so.",
+    "cost_aware": "Cost-aware routing is published and can preserve quality at lower billed cost (CA-RAG, cost-aware depth). The 2026 cost-aware evidence-gain study is the important counterweight: a pre-decision benefit estimate can save retrieval without improving answer correctness, so accuracy against base and a matched control is part of the S52 win bar.",
+    "quality_preservation": "Published evidence that routing before retrieval preserves quality is PARTIAL: strong at query level for Adaptive-RAG and CA-RAG; not established for token-level memory routing and explicitly not established for answer quality in arXiv:2610.37358."
+  }
+}
