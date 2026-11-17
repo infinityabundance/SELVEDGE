@@ -3991,3 +3991,41 @@ the file's commit. It was corrected to `04:52:00Z`, inside the writing window an
 before the commit, at a time when no arm of that registration had been scored.
 The correction is recorded in the file itself (`registration_timestamp_note`) and
 in the commit message.
+
+### The anchored-harness pass: what it covered, and the runner defect
+
+The S41 pass did **not** finish. It scored `base` and `adapter-2m` and then died
+at the first call after `adapter-2m` with `line 41: arm: unbound variable`. The
+cause is process, not arithmetic: commit `e8e5908` edited
+`scripts/s41_anchored_harness.sh` at 04:36 while the systemd unit was executing
+it. Bash reads a script incrementally by byte offset, so the shell resumed in the
+middle of a different line. The unit exited `status=1/FAILURE` and
+`memory-2m`, `memory-ungrafted`, `memory-grafted` and `adapter-20m` were never
+scored.
+
+The runner is now resumable: an arm whose `results/stage2/eval/<arm>/eval.json`
+is complete is skipped (`SELVEDGE_FORCE=1` re-scores deliberately), and the file's
+header says not to edit it during a pass. The four unscored arms were relaunched
+under `systemd-run --user --collect` with `MemoryMax=MemorySwapMax=12G`,
+`TasksMax=1024`, `CPUQuota=800%` and the registered `SELVEDGE_*` variables.
+
+The two receipts that exist are quoted here with their stamps and revisions;
+neither is a verdict about any mechanism, and neither is compared to the 20M bar.
+
+| arm | task | primary metric | score | stderr | receipt |
+| --- | --- | --- | --- | --- | --- |
+| base | mmlu_pro | exact_match,custom-extract | 0.26785714285714285 | 0.019587377846722334 | `results/stage2/eval/base/eval.json`, stamp `20261117T043134Z`, revision `3cb6fd23fd1b3eebe13aeb3b952701665832f2e4` |
+| base | mmlu | acc | 0.481555333998006 | 0.004098974719703994 | same receipt |
+| base | gsm8k | exact_match,strict-match | 0.38968915845337376 | 0.013433123236110721 | same receipt |
+| base | minerva_math500 | math_verify | 0.25 | 0.019384310743640384 | same receipt |
+| adapter-2m | mmlu_pro | exact_match,custom-extract | 0.23809523809523808 | 0.01898373641139568 | `results/stage2/eval/adapter-2m/eval.json`, stamp `20261117T051019Z`, revision `6105bae3726fdf7fedca5d1dd4718c2bd8f7c986` |
+| adapter-2m | mmlu | acc | 0.5101125195841049 | 0.004076313936257515 | same receipt |
+| adapter-2m | gsm8k | exact_match,strict-match | 0.36087945413191813 | 0.013228626753925148 | same receipt |
+| adapter-2m | minerva_math500 | math_verify | 0.21 | 0.01823362086530592 | same receipt |
+
+The unweighted family means of those quotations are 0.374706 (knowledge) and
+0.319845 (math) for base, and 0.374104 and 0.285440 for adapter-2m. The adapter
+is higher on MMLU and lower on the other three tasks, so the family means are
+close and the per-task directions disagree. That is a description, not a verdict:
+both arms are 2M-token arms, the registered comparison has four arms still
+unscored, and the brief forbids a mechanism verdict from 2M numbers.

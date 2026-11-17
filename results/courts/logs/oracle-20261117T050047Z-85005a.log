@@ -1,0 +1,25 @@
+compare: base
+compare: adapter-2m
+compare: memory-2m
+compare: memory-ungrafted
+compare: memory-grafted
+compare: full-distill
+arm                           CE       SE        KL       SE       dCE       SE
+-------------------------------------------------------------------------------
+base                    32.37280  0.71754   1.33517  0.15634  -1.50599  0.67544
+adapter-2m              32.36015  0.73374   1.34201  0.14450  -1.51864  0.82534
+memory-2m               32.37685  0.71842   1.33580  0.15591  -1.50194  0.67574
+memory-ungrafted        32.37280  0.71754   1.33517  0.15634  -1.50599  0.67544
+memory-grafted          32.38835  0.70495   1.33523  0.15528  -1.49044  0.68077
+full-distill            33.87880  1.31932   1.37960  0.20585  +0.00000  0.00000
+delta columns are paired per-chunk differences against full-distill
+compare: receipt /tmp/s40-selftest-cpl89870/compare.json
+compare: base
+compare: adapter-2m
+arm                           CE       SE        KL       SE       dCE       SE
+-------------------------------------------------------------------------------
+base                    32.37280  0.71754   1.33517  0.15634  +0.00000  0.00000
+adapter-2m              32.36015  0.73374   1.34201  0.14450  -0.01265  0.22405
+delta columns are paired per-chunk differences against base
+compare: receipt /tmp/s40-selftest-cpl89870/compare-subset.json
+selftest: six arms scored, ungrafted == base, subset + reference selection pass, receipts /tmp/s40-selftest-cpl89870
