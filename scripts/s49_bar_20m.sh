@@ -167,14 +167,19 @@ if pgrep -f 'oracle/frontier/train.py' >/dev/null 2>&1; then
   exit 75
 fi
 
-python3 - "$SELVEDGE_MEM" "results/stage2/runs/full-20m-math/receipt.json" "${chosen_dir}-smoke/receipt.json" <<'PY'
-import json, os, re, sys
-limit_text, prior_bar, smoke = sys.argv[1:4]
+python3 - "$SELVEDGE_MEM" "results/stage2/runs/full-20m-math/receipt.json" "${chosen_dir}-smoke/receipt.json" "${chosen_dir}/receipt.json" <<'PY'
+import glob, json, os, re, sys
+limit_text, prior_bar, smoke, chosen_receipt = sys.argv[1:5]
 n = int(re.match(r"([0-9]+)", limit_text).group(1))
 unit = limit_text[-1].lower()
 limit = n * {"k": 1024, "m": 1048576, "g": 1073741824}[unit]
+candidates = [(prior_bar, "the previous 20M bar"),
+              (smoke, "the chosen recipe's smoke"),
+              (chosen_receipt, "the chosen recipe's 2M arm")]
+for path in sorted(glob.glob("results/stage2/runs/stability-*/receipt.json")):
+    candidates.append((path, "a completed stability arm"))
 floors = []
-for path, label in ((prior_bar, "the previous 20M bar"), (smoke, "the chosen recipe's smoke")):
+for path, label in candidates:
     if not path or not os.path.exists(path):
         continue
     memory = json.load(open(path)).get("container_memory") or {}
