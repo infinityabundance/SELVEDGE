@@ -1,0 +1,64 @@
+{
+  "default_geometry": {
+    "kind": "stage2_memory_geometry",
+    "hidden": 1024,
+    "value_dim": 256,
+    "rows_per_site": 65536,
+    "reads_per_token_per_site": 8,
+    "orders": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+    ],
+    "sites": 1,
+    "conv_kernel": 4,
+    "rows_read_elements_per_token_per_site": 2048,
+    "key_projection_elements_per_site": 262144,
+    "value_projection_elements_per_site": 263168,
+    "conv_elements_per_site": 10240,
+    "gate_elements_per_site": 0,
+    "active_per_token_per_site": 537600,
+    "active_per_token": 537600,
+    "table_elements_per_site": 16777216,
+    "trainable_per_site": 535552,
+    "accessible_per_site": 17312768,
+    "table_elements_total": 16777216,
+    "accessible_added_total": 17312768,
+    "resident_table_bytes_bf16": 33554432,
+    "resident_table_bytes_fp32": 67108864,
+    "read_bytes_per_token_bf16": 1075200,
+    "read_bytes_per_token_basis": "modelled distinct-identity lower bound",
+    "table_charged_to_active": false
+  },
+  "dense_adapter": {
+    "kind": "stage2_dense_adapter_active",
+    "hidden": 1024,
+    "rank": 262,
+    "active_per_token": 537600,
+    "projection_elements": 536576,
+    "bias_elements": 1024,
+    "gate_elements": 0,
+    "memory_active_per_token_per_site": 537600,
+    "exact_match": true,
+    "delta": 0,
+    "rank_choice": "round((active - hidden) / (2 * hidden))"
+  },
+  "ngm": {
+    "kind": "stage2_ngm_active",
+    "hidden": 1024,
+    "orders": [
+      2,
+      3
+    ],
+    "read_elements_per_token": 5120,
+    "added_elements": 0,
+    "gate_elements": 0,
+    "basis": "the embedding table is the backbone's own; it is read, not added"
+  }
+}
+accounting: results/stage2/stage2-accounting-20261116T232022Z.json

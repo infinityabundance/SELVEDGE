@@ -1,0 +1,166 @@
+{
+  "artifacts": {
+    "bytes": 69779461,
+    "checkpoint": "results/stage2/graft/20261116T230545Z/memory-init.pt",
+    "checkpoint_sha256": "2f8ba344d0525908e055ef5d62ac01af0b22fcc953ec512efbedd607f282d31f"
+  },
+  "command": [
+    "oracle/frontier/graft.py",
+    "--stream-manifest",
+    "results/stage2/stage2-stream-20261116T230328Z.json",
+    "--vram-limit-gib",
+    "12"
+  ],
+  "created_utc": "2026-11-16T23:06:28Z",
+  "determinism": {
+    "dtype": "bfloat16 capture, float32 fits",
+    "torch_deterministic": true
+  },
+  "disk": {
+    "cache_filesystem_free_bytes": 31539458048,
+    "teacher_2b_required_bytes": 4548221488,
+    "teacher_4b_cached": true,
+    "teacher_4b_fits_now": true,
+    "teacher_4b_required_bytes": 9319828096
+  },
+  "geometry": {
+    "accessible_added_total": 17312768,
+    "accessible_per_site": 17312768,
+    "active_per_token": 537600,
+    "active_per_token_per_site": 537600,
+    "conv_elements_per_site": 10240,
+    "conv_kernel": 4,
+    "gate_elements_per_site": 0,
+    "hidden": 1024,
+    "key_projection_elements_per_site": 262144,
+    "kind": "stage2_memory_geometry",
+    "orders": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+    ],
+    "read_bytes_per_token_basis": "modelled distinct-identity lower bound",
+    "read_bytes_per_token_bf16": 1075200,
+    "reads_per_token_per_site": 8,
+    "resident_table_bytes_bf16": 33554432,
+    "resident_table_bytes_fp32": 67108864,
+    "rows_per_site": 65536,
+    "rows_read_elements_per_token_per_site": 2048,
+    "sites": 1,
+    "table_charged_to_active": false,
+    "table_elements_per_site": 16777216,
+    "table_elements_total": 16777216,
+    "trainable_per_site": 535552,
+    "value_dim": 256,
+    "value_projection_elements_per_site": 263168
+  },
+  "kind": "graft",
+  "models": {
+    "student": {
+      "dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "hidden_at_site": 1024,
+      "parameters": 752393024
+    },
+    "teacher": {
+      "dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "hidden_at_site": 2048,
+      "parameters": 1881825088
+    }
+  },
+  "pca": {
+    "basis_shape": [
+      1024,
+      256
+    ],
+    "eigensolver": "torch.linalg.eigh on the float64 covariance",
+    "explained_variance": 0.7959621969138733,
+    "mean_norm": 0.8826440572738647,
+    "total_variance": 1.912669487863811,
+    "value_dim": 256
+  },
+  "projection": {
+    "W": {
+      "fit_tokens": 200000,
+      "heldout_relative_frobenius_error": 0.48559371148189695,
+      "heldout_tokens": 50000,
+      "mapped_state_relative_error": 0.44969773701287563,
+      "ridge_fraction": 0.001,
+      "ridge_lambda": 1.3320201416015625,
+      "solver": "normal equations, torch.linalg.solve, float32",
+      "student_width": 1024,
+      "teacher_width": 2048
+    },
+    "method": "ridge least squares teacher->student"
+  },
+  "reconstruction": {
+    "coefficient_relative_error": 0.38076903968174164,
+    "hidden_source": "the frozen student's own hidden state at the site",
+    "mean_only_relative_error": 0.872032642364502,
+    "memory_output_mean_cosine": 0.6425505876541138,
+    "memory_output_relative_frobenius_error": 0.8154492974281311,
+    "note": "per-head error uses one row + the site mean; the memory output is the gated sum of all 8 reads plus the mean once",
+    "pca_state_relative_error": 0.38076903968174164,
+    "per_head_row_relative_error": {
+      "order2_head0": 0.8068552613258362,
+      "order2_head1": 0.8052870035171509,
+      "order2_head2": 0.804486870765686,
+      "order2_head3": 0.8065077066421509,
+      "order3_head4": 0.8579082489013672,
+      "order3_head5": 0.8577925562858582,
+      "order3_head6": 0.8580450415611267,
+      "order3_head7": 0.8571986556053162
+    },
+    "sample_tokens": 4096
+  },
+  "revision": "62c132b257383d50f29fb7d44cdccba560e760aa",
+  "rows": {
+    "collision_ratio": 0.967232,
+    "empty_rows": 0,
+    "max_count": 2490,
+    "mean_count_nonempty": 30.517578125,
+    "median_count_nonempty": 26.0,
+    "occupancy_fraction": 1.0,
+    "read_identities": 2000000,
+    "row_dtype": "float32 for training; bf16 is the deployment size",
+    "rows": 65536,
+    "rows_with_at_least_one_token": 65536
+  },
+  "schema": "selvedge/stage2-graft/v1",
+  "site": 2,
+  "stamp": "20261116T230545Z",
+  "stream": {
+    "contamination": {
+      "eval_split_filter": "cached arrow files whose basename contains 'test'",
+      "evaluation_items": 51769,
+      "index": {
+        "distinct_shingles": 1917192,
+        "items": 51769,
+        "width_words": 5
+      },
+      "max_shingle_jaccard_eval_set": "TIGER-Lab___mmlu-pro/default/0.0.0/b189ec765aa7ed75c8acfea42df31fdae71f97be/mmlu-pro-test.arrow",
+      "max_shingle_jaccard_seen": 0.016042780748663103,
+      "shingle_width_words": 5,
+      "threshold_discard": 0.2,
+      "threshold_fail_closed": 0.5
+    },
+    "graft_tokens": 250000,
+    "manifest": "results/stage2/stage2-stream-20261116T230328Z.json",
+    "sha256": "32a9a9dcf40e8e414fc8f94f57366b4a71d8354c1f5b362d9e615aae2be91ce8",
+    "skipped_train_tokens": 2000000,
+    "tokenizer_sha256": "fe000e3ed39ed12b8d2481d527d44f93c65d37e87645d2dcc80d1bf9d50d2927"
+  },
+  "vram": {
+    "device_total_gib": 15.61370849609375,
+    "free_at_start_gib": 13.17718505859375,
+    "limit_gib": 12.0,
+    "source": "torch.cuda.max_memory_allocated",
+    "student_capture_peak_gib": 1.6491470336914062,
+    "teacher_capture_peak_gib": 3.755807876586914
+  },
+  "wall_seconds": 43.317
+}

@@ -1,0 +1,102 @@
+lm_eval 0.4.14.dev0
+HFLM init signature: (self, pretrained: 'str | transformers.PreTrainedModel', backend: "Literal['default', 'causal', 'seq2seq']" = 'default', revision: 'str | None' = 'main', subfolder: 'str' = '', tokenizer: 'str | transformers.PreTrainedTokenizer | transformers.PreTrainedTokenizerFast | None' = None, truncation: 'bool | None' = False, logits_cache: 'bool' = True, max_length: 'int | None' = None, device: 'str | None' = 'cuda', dtype: 'str | torch.dtype | None' = 'auto', softmax_dtype: 'str | torch.dtype | None' = None, mixed_precision_dtype: 'str | torch.dtype | None' = None, batch_size: 'int | str | None' = 1, max_batch_size: 'int | None' = 64, trust_remote_code: 'bool | None' = False, use_fast_tokenizer: 'bool | None' = True, add_bos_token: 'bool | None' = None, prefix_token_id: 'int | None' = None, parallelize: 'bool | None' = False, max_memory_per_gpu: 'int | str | None' = None, max_cpu_memory: 'int | str | None' = None, offload_folder: 'str | os.PathLike | None' = './offload', tp_plan: 'str | dict | None' = None, peft: 'str | None' = None, delta: 'str | None' = None, autogptq: 'bool | str | None' = False, gptqmodel: 'bool | None' = False, gguf_file: 'str | None' = None, think_end_token: 'str | int | None' = None, enable_thinking: 'bool | None' = None, chat_template_args: 'dict[str, Any] | None' = None, **kwargs) -> 'None'
+--- _create_model ---
+    def _create_model(
+        self,
+        pretrained: str,
+        revision: str | None = "main",
+        dtype: str | torch.dtype | None = "auto",
+        trust_remote_code: bool | None = False,
+        # arguments used for splitting a model across GPUs naively.
+        # only used if `parallelize=True`.
+        # (accelerate naive PP (device_map) options)
+        parallelize: bool | None = False,
+        gpus: int | None = None,
+        max_memory_per_gpu: int | str | None = None,
+        max_cpu_memory: int | str | None = None,
+        offload_folder: str | None = "./offload",
+        # Tensor Parallelism options
+        tp_plan: str | dict | None = None,
+        # PEFT, delta weights and quantization options
+        peft: str | None = None,
+        delta: str | None = None,
+        autogptq: bool | str | None = False,
+        gptqmodel: bool | None = False,
+        gguf_file: str | None = None,
+        quantization_config: AutoQuantizationConfig | None = None,
+        subfolder: str = "",
+        **kwargs,
+    ) -> None:
+        """Initializes an HF or HF-compatible PreTrainedModel from scratch
+        inside HFLM, using the kwargs passed into self.__init__().
+
+        Also handles functionality such as AutoGPTQ usage and PEFT wrapping.
+
+        For future similar extensions to AutoGPTQ that are not core to HF's ecosystem,
+        (such as PyTorch models that are nearly, but not quite, fully mirroring
+        HF's public interface relied on in this HFLM class)
+        please consider subclassing HFLM and overriding this and other methods as needed.
+        """
+
+        model_kwargs = kwargs or {}
+
+        if tp_plan is not None:
+            # TP mode: tp_plan and device_map are mutually exclusive in transformers
+            model_kwargs["tp_plan"] = tp_plan
+        else:
+            model_kwargs.update(
+                self._get_accelerate_args(
+                    parallelize=parallelize,
+                    device_map=kwargs.get("device_map"),
+                    max_memory_per_gpu=max_memory_per_gpu,
+                    max_cpu_memory=max_cpu_memory,
+                    offload_folder=offload_folder,
+                    gpus=gpus,
+                )
+            )
+
+        if not autogptq and not gptqmodel:
+            if model_kwargs.get("load_in_4bit"):
+                assert vparse(transformers.__version__) >= vparse("4.30.0"), (
+                    "load_in_4bit requires transformers >= 4.30.0"
+                )
+                if compute_dtype := model_kwargs.get("bnb_4bit_compute_dtype"):
+                    model_kwargs["bnb_4bit_compute_dtype"] = get_dtype(compute_dtype)
+            dtype_arg = (
+                "dtype"
+                if vparse(transformers.__version__) >= vparse("4.56.0")
+                else "torch_dtype"
+            )
+            self._model = self.AUTO_MODEL_CLASS.from_pretrained(
+                pretrained,
+                revision=revision,
+                **{dtype_arg: get_dtype(dtype)},
+                trust_remote_code=trust_remote_code,
+                gguf_file=gguf_file,
+                quantization_config=quantization_config,
+                subfolder=subfolder,
+                **model_kwargs,
+            )
+        else:
+            if autogptq and gptqmodel:
+                raise ValueError(
+                    "Cannot use both 'autogptq' and 'gptqmodel' options at the same time."
+                )
+
+            if autogptq:
+                try:
+                    from auto_gptq import AutoGPTQForCausalLM
+                except ModuleNotFoundError as exception:
+                    raise type(exception)(
+                        "Tried to load auto_gptq, but auto-gptq is not installed ",
+                        "please install auto-gptq via pip install lm-eval[gptq] or pip install -e .[gptq]",
+                    ) from exception
+
+                self._model = AutoGPTQForCausalLM.from_quantized(
+                    pretrained,
+                    trust_remote_code=trust_remote_code
+--- _model use ---
+self._model 22
+_model = 5
+def forward 1
+def loglikelihood 2

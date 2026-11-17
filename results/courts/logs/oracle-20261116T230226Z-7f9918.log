@@ -1,0 +1,39 @@
+..................F.                                                     [100%]
+=================================== FAILURES ===================================
+______________________ test_dense_adapter_starts_at_zero _______________________
+
+    def test_dense_adapter_starts_at_zero():
+        adapter = arms.DenseAdapter(hidden=1024, rank=8)
+        x = torch.randn(2, 5, 1024)
+>       assert torch.equal(adapter(x), torch.zeros_like(adapter(x)))
+                           ^^^^^^^^^^
+
+oracle/tests/test_stage2_memory.py:255: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1787: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1798: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = DenseAdapter(
+  (down): Linear(in_features=1024, out_features=8, bias=False)
+  (up): Linear(in_features=8, out_features=1024, bias=False)
+)
+hidden_states = tensor([[[ 0.4136, -0.7936, -0.1659,  ...,  2.1940,  0.1381,  0.0400],
+         [ 1.1311,  0.5886, -0.5562,  ..., -0.7...33,  1.2167,  ...,  0.1979,  0.2978,  0.0197],
+         [-2.0096, -0.9591,  1.3714,  ..., -0.6708, -1.0431,  0.8936]]])
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        x = hidden_states.float()
+        z = F.gelu(self.down(x))
+>       gate = torch.sigmoid((x * z).sum(-1, keepdim=True) / self._scale)
+                              ^^^^^
+E       RuntimeError: The size of tensor a (1024) must match the size of tensor b (8) at non-singleton dimension 2
+
+oracle/frontier/arms.py:78: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_stage2_memory.py::test_dense_adapter_starts_at_zero
+1 failed, 19 passed in 1.72s

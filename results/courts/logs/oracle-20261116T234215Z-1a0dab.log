@@ -1,0 +1,83 @@
+.......................FFF..                                             [100%]
+=================================== FAILURES ===================================
+_________________ test_pca_recovers_a_known_low_rank_subspace __________________
+
+    def test_pca_recovers_a_known_low_rank_subspace():
+        torch.manual_seed(1)
+        rank = 8
+        basis_true = torch.linalg.qr(torch.randn(32, rank))[0]
+        coefficients = torch.randn(5000, rank)
+        mean_true = torch.randn(32)
+        targets = coefficients @ basis_true.T + mean_true
+        mean, basis, report = graft.fit_pca(targets, rank, device="cpu", chunk=1024)
+>       assert torch.allclose(mean, mean_true, atol=1e-4)
+E       assert False
+E        +  where False = <built-in method allclose of type object at 0x7fc6613572e0>(tensor([ 1.2110, -1.0688,  0.5314, -0.9457, -0.2779, -1.7894,  0.1714, -1.0949,\n         0.2294, -1.0621,  0.6586, -0....4, -1.8424,  0.1409, -1.4158,  1.4740,\n         0.6335,  0.2365,  0.8058,  0.3760,  0.8956,  0.1313, -1.7544,  0.6898]), tensor([ 1.2100, -1.0691,  0.5312, -0.9521, -0.2862, -1.7944,  0.1697, -1.0813,\n         0.2152, -1.0653,  0.6628, -0....6, -1.8484,  0.1424, -1.4062,  1.4734,\n         0.6511,  0.2412,  0.8038,  0.3779,  0.8815,  0.1334, -1.7505,  0.6908]), atol=0.0001)
+E        +    where <built-in method allclose of type object at 0x7fc6613572e0> = torch.allclose
+
+oracle/tests/test_stage2_graft.py:66: AssertionError
+___________________ test_graft_rows_stores_means_and_counts ____________________
+
+    def test_graft_rows_stores_means_and_counts():
+        tokens = torch.tensor([[1, 2, 3, 4, 5, 6]], dtype=torch.int64)
+        coefficients = torch.arange(6 * 4, dtype=torch.float32).reshape(6, 4)
+>       rows, counts = graft.graft_rows(tokens, coefficients, rows=8, site=2,
+                                        device="cpu")
+
+oracle/tests/test_stage2_graft.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/frontier/graft.py:252: in graft_rows
+    addresses = memory.address(batch, site, order, head, rows)[0]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = tensor([[[1, 2, 3, 4, 5, 6]]]), site = 2, order = 2, head = 0, rows = 8
+
+    def address(tokens: torch.Tensor, site: int, order: int, head: int,
+                rows: int) -> torch.Tensor:
+        """Address of the `order`-gram ending at each position.
+    
+        `tokens` is `[B, T]` int64. Returns `[B, T]` int64 in `[0, rows)`.
+        Position `t` reads only `tokens[..., :t+1]`: incomplete prefixes are
+        left-padded with token id 0, so the address is causal by construction.
+        """
+        if tokens.dim() != 2:
+>           raise ValueError(f"tokens must be [B, T], got {tuple(tokens.shape)}")
+E           ValueError: tokens must be [B, T], got (1, 1, 6)
+
+oracle/frontier/memory.py:86: ValueError
+____________________ test_graft_rows_keeps_empty_rows_zero _____________________
+
+    def test_graft_rows_keeps_empty_rows_zero():
+        tokens = torch.tensor([[7]], dtype=torch.int64)
+        coefficients = torch.ones(1, 4)
+>       rows, counts = graft.graft_rows(tokens, coefficients, rows=16, site=0,
+                                        device="cpu")
+
+oracle/tests/test_stage2_graft.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+oracle/frontier/graft.py:252: in graft_rows
+    addresses = memory.address(batch, site, order, head, rows)[0]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = tensor([[[7]]]), site = 0, order = 2, head = 0, rows = 16
+
+    def address(tokens: torch.Tensor, site: int, order: int, head: int,
+                rows: int) -> torch.Tensor:
+        """Address of the `order`-gram ending at each position.
+    
+        `tokens` is `[B, T]` int64. Returns `[B, T]` int64 in `[0, rows)`.
+        Position `t` reads only `tokens[..., :t+1]`: incomplete prefixes are
+        left-padded with token id 0, so the address is causal by construction.
+        """
+        if tokens.dim() != 2:
+>           raise ValueError(f"tokens must be [B, T], got {tuple(tokens.shape)}")
+E           ValueError: tokens must be [B, T], got (1, 1, 1)
+
+oracle/frontier/memory.py:86: ValueError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_stage2_graft.py::test_pca_recovers_a_known_low_rank_subspace
+FAILED oracle/tests/test_stage2_graft.py::test_graft_rows_stores_means_and_counts
+FAILED oracle/tests/test_stage2_graft.py::test_graft_rows_keeps_empty_rows_zero
+3 failed, 25 passed in 1.75s

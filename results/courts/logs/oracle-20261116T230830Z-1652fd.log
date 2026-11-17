@@ -1,0 +1,9 @@
+train: loading student /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+train: loading teacher /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+train: resumed step=10 offset=270480
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+train: step 11/20 loss=3.9568 ce=3.3531 kl=0.3019 1825 tok/s peak=9.21GiB
+train: step 16/20 loss=3.2312 ce=2.6787 kl=0.2763 2327 tok/s peak=9.21GiB
+train: checkpoint results/stage2/runs/smoke-memory/ckpt-000020.pt
+train: receipt results/stage2/runs/smoke-memory/receipt.json

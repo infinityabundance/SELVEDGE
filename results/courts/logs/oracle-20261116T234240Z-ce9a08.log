@@ -1,0 +1,21 @@
+........................F...                                             [100%]
+=================================== FAILURES ===================================
+___________________ test_graft_rows_stores_means_and_counts ____________________
+
+    def test_graft_rows_stores_means_and_counts():
+        tokens = torch.tensor([[1, 2, 3, 4, 5, 6]], dtype=torch.int64)
+        coefficients = torch.arange(6 * 4, dtype=torch.float32).reshape(6, 4)
+        rows, counts = graft.graft_rows(tokens, coefficients, rows=8, site=2,
+                                        device="cpu")
+        assert int(counts.sum()) == tokens.numel() * memory.HEADS
+>       assert int((counts == 0).sum()) > 0  # 8 rows cannot hold 48 distinct reads
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 0 > 0
+E        +  where 0 = int(tensor(0))
+E        +    where tensor(0) = <built-in method sum of Tensor object at 0x7f1657019090>()
+E        +      where <built-in method sum of Tensor object at 0x7f1657019090> = tensor([6, 7, 5, 8, 5, 2, 8, 7]) == 0.sum
+
+oracle/tests/test_stage2_graft.py:82: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_stage2_graft.py::test_graft_rows_stores_means_and_counts
+1 failed, 27 passed in 1.73s

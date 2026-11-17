@@ -1,0 +1,26 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_graft_rows_stores_means_and_counts ____________________
+
+    def test_graft_rows_stores_means_and_counts():
+        tokens = torch.tensor([[1, 2, 3, 4, 5, 6]], dtype=torch.int64)
+        coefficients = torch.arange(6 * 4, dtype=torch.float32).reshape(6, 4)
+        rows, counts = graft.graft_rows(tokens, coefficients, rows=8, site=2,
+                                        device="cpu")
+        assert int(counts.sum()) == tokens.numel() * memory.HEADS
+        # 48 reads into 8 rows: at least one row is hit more than once
+        assert int((counts > 1).sum()) >= 1
+        # every non-empty row is the mean of the coefficients that hashed to it
+        for head, order in enumerate(memory.ORDERS):
+            addresses = memory.address(tokens, 2, order, head, 8)[0]
+            for address in torch.unique(addresses).tolist():
+                expected = coefficients[addresses == address].mean(0)
+>               assert torch.allclose(rows[address], expected, atol=1e-6)
+E               assert False
+E                +  where False = <built-in method allclose of type object at 0x7f61c99572e0>(tensor([10.6667, 11.6667, 12.6667, 13.6667]), tensor([16., 17., 18., 19.]), atol=1e-06)
+E                +    where <built-in method allclose of type object at 0x7f61c99572e0> = torch.allclose
+
+oracle/tests/test_stage2_graft.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_stage2_graft.py::test_graft_rows_stores_means_and_counts
+1 failed in 1.56s
