@@ -164,7 +164,8 @@
       "4. neither registered harm mask shows a positive mean delta KL on the base-match tokens beyond its standard error, and the knowledge family mean is not below base by more than the combined standard error"
     ],
     "why_adapter": "adapter-2m is the cheapest learned correction on the same frozen backbone and active budget; a mechanism that costs the same per token and loses to it is not a mechanism win even if it beats the 20M backbone arm",
-    "why_equal_active_union": "539,649 against 537,600 is the only accounting difference between the corrective family and the memory/adapter families; a win bought with extra active parameters is reported as such, not as a mechanism win"
+    "why_equal_active_union": "539,649 against 537,600 is the only accounting difference between the corrective family and the memory/adapter families; a win bought with extra active parameters is reported as such, not as a mechanism win",
+    "matched_control_reading": "the two S47 rows are mandatory and interpreted before a mechanism claim: if adapter-20m-math-matched (same 20M math stream, teacher, optimizer budget and active union, no memory and no gate) matches the corrective gain, the gain is attributed to the data; if gated-dense-20m-math (same gate, dense residual, no external memory) matches it, the gain is attributed to the gate. A corrective win is a memory-mechanism win only when it exceeds both matched controls by more than their combined standard errors. This adds no condition to the four thresholds above; it names the attribution the existing conditions cannot make on their own"
   },
   "decision_rule": [
     "1. If one weighting satisfies every win-bar condition, adopt it: that arm becomes the mechanism carried to the next phase, and the other two are recorded as measured alternatives rather than run further.",
