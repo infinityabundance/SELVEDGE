@@ -1,0 +1,718 @@
+{
+  "argv": [
+    "scripts/s40_score.py",
+    "--arm",
+    "memory-grafted",
+    "--registration",
+    "docs/ws19-anchored-subset-preregistration-v1.json",
+    "--tasks",
+    "mmlu_pro,mmlu,gsm8k,minerva_math500",
+    "--limit-map",
+    "mmlu=2000",
+    "--vram-limit-gib",
+    "12.5",
+    "--out",
+    "results/stage2/eval/memory-grafted/eval.json",
+    "--memory-init",
+    "results/stage2/graft/20261116T231451Z/memory-init.pt"
+  ],
+  "arm": "memory-grafted",
+  "arm_report": {
+    "accessible_added_total": 17312768,
+    "accessible_per_site": 17312768,
+    "active_per_token": 537600,
+    "active_per_token_per_site": 537600,
+    "checkpoint": null,
+    "checkpoint_sha256": null,
+    "conv_elements_per_site": 10240,
+    "conv_kernel": 4,
+    "extension": "stage2_memory_geometry",
+    "gate_elements_per_site": 0,
+    "grafted": true,
+    "hidden": 1024,
+    "key_projection_elements_per_site": 262144,
+    "kind": "stage2_memory_arm",
+    "memory_init": "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "memory_init_sha256": "2f8ba344d0525908e055ef5d62ac01af0b22fcc953ec512efbedd607f282d31f",
+    "orders": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+    ],
+    "read_bytes_per_token_basis": "modelled distinct-identity lower bound",
+    "read_bytes_per_token_bf16": 1075200,
+    "reads_per_token_per_site": 8,
+    "resident_table_bytes_bf16": 33554432,
+    "resident_table_bytes_fp32": 67108864,
+    "rows_per_site": 65536,
+    "rows_read_elements_per_token_per_site": 2048,
+    "sites": 1,
+    "table_charged_to_active": false,
+    "table_elements_per_site": 16777216,
+    "table_elements_total": 16777216,
+    "trainable_per_site": 535552,
+    "value_dim": 256,
+    "value_projection_elements_per_site": 263168
+  },
+  "complete": false,
+  "created_utc": "2026-11-17T06:57:56Z",
+  "device": {
+    "cuda_runtime": "13.2",
+    "free_at_start_bytes": 14624096256,
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "torch": "2.15.0+cu132",
+    "total_memory_bytes": 16765091840
+  },
+  "harness": {
+    "commit": "d6de81643928d653435c431bae19945d41d32520",
+    "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+    "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+    "name": "EleutherAI/lm-evaluation-harness",
+    "version": "0.4.14.dev0"
+  },
+  "harness_preregistration": {
+    "path": "docs/anchor-preregistration-v1.json",
+    "sha256": "49181e669d18e90dc10788471b762166e5286b740ba39cb6109bba5320d131c7"
+  },
+  "kind": "arm-eval",
+  "limit_overrides": {
+    "mmlu": 2000
+  },
+  "model": {
+    "directory": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "id": "Qwen/Qwen3.5-0.8B-Base",
+    "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68"
+  },
+  "preregistration": {
+    "path": "docs/ws19-anchored-subset-preregistration-v1.json",
+    "sha256": "e7aa099f0dfa56329869e107bd55429bf61829ad5944d0edf7a4f64150835f5c"
+  },
+  "revision": "d2549528bdab4203e7160ebfd671748e0e3ee60c",
+  "schema": "selvedge/stage2-arm-eval/v1",
+  "scored_tasks": [
+    "mmlu_pro"
+  ],
+  "stamp": "20261117T065756Z",
+  "tasks": [
+    {
+      "all_metrics": {
+        "alias": "mmlu_pro",
+        "exact_match,custom-extract": 0.09722222222222222,
+        "exact_match_stderr,custom-extract": 0.012984829691189774,
+        "name": "mmlu_pro",
+        "sample_count": {
+          "exact_match,custom-extract": 504
+        },
+        "sample_len": 504
+      },
+      "cgroup": {
+        "memory_max": "12884901888",
+        "memory_peak": "1777709056",
+        "memory_swap_peak": "0"
+      },
+      "family": "knowledge",
+      "harness_config": {
+        "group": true,
+        "subtasks": {
+          "mmlu_pro_biology": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_biology"
+          },
+          "mmlu_pro_business": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_business"
+          },
+          "mmlu_pro_chemistry": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_chemistry"
+          },
+          "mmlu_pro_computer_science": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_computer_science"
+          },
+          "mmlu_pro_economics": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_economics"
+          },
+          "mmlu_pro_engineering": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_engineering"
+          },
+          "mmlu_pro_health": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_health"
+          },
+          "mmlu_pro_history": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_history"
+          },
+          "mmlu_pro_law": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_law"
+          },
+          "mmlu_pro_math": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_math"
+          },
+          "mmlu_pro_other": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_other"
+          },
+          "mmlu_pro_philosophy": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_philosophy"
+          },
+          "mmlu_pro_physics": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_physics"
+          },
+          "mmlu_pro_psychology": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7f812bf619e0>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_psychology"
+          }
+        }
+      },
+      "n_samples": {
+        "sample_count": 504,
+        "sample_len": 504
+      },
+      "peak_memory_allocated_bytes": 6741861888,
+      "pre_registered": {
+        "batch_size": 8,
+        "limit": 36,
+        "limit_from_limit_map": false,
+        "limit_from_preregistration": 36,
+        "num_fewshot": 5
+      },
+      "primary_metric": "exact_match,custom-extract",
+      "primary_metric_registered": "exact_match,custom-extract",
+      "score": 0.09722222222222222,
+      "stderr": 0.012984829691189774,
+      "task": "mmlu_pro",
+      "wall_clock_s": 1401.1
+    }
+  ]
+}

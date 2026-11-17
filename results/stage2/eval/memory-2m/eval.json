@@ -1,0 +1,2299 @@
+{
+  "argv": [
+    "scripts/s40_score.py",
+    "--arm",
+    "memory-2m",
+    "--registration",
+    "docs/ws19-anchored-subset-preregistration-v1.json",
+    "--tasks",
+    "mmlu_pro,mmlu,gsm8k,minerva_math500",
+    "--limit-map",
+    "mmlu=2000",
+    "--vram-limit-gib",
+    "12.5",
+    "--out",
+    "results/stage2/eval/memory-2m/eval.json",
+    "--memory-init",
+    "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "--memory-checkpoint",
+    "results/stage2/runs/memory-2m/ckpt-000976.pt"
+  ],
+  "arm": "memory-2m",
+  "arm_report": {
+    "accessible_added_total": 17312768,
+    "accessible_per_site": 17312768,
+    "active_per_token": 537600,
+    "active_per_token_per_site": 537600,
+    "checkpoint": "results/stage2/runs/memory-2m/ckpt-000976.pt",
+    "checkpoint_sha256": "21645d86bd497d11a01cb06fe48fa33b3a0cee87fdc33e1237c926f394e14a3f",
+    "conv_elements_per_site": 10240,
+    "conv_kernel": 4,
+    "extension": "stage2_memory_geometry",
+    "gate_elements_per_site": 0,
+    "grafted": true,
+    "hidden": 1024,
+    "key_projection_elements_per_site": 262144,
+    "kind": "stage2_memory_arm",
+    "memory_init": "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "memory_init_sha256": "2f8ba344d0525908e055ef5d62ac01af0b22fcc953ec512efbedd607f282d31f",
+    "orders": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+    ],
+    "read_bytes_per_token_basis": "modelled distinct-identity lower bound",
+    "read_bytes_per_token_bf16": 1075200,
+    "reads_per_token_per_site": 8,
+    "resident_table_bytes_bf16": 33554432,
+    "resident_table_bytes_fp32": 67108864,
+    "rows_per_site": 65536,
+    "rows_read_elements_per_token_per_site": 2048,
+    "sites": 1,
+    "table_charged_to_active": false,
+    "table_elements_per_site": 16777216,
+    "table_elements_total": 16777216,
+    "trainable_per_site": 535552,
+    "value_dim": 256,
+    "value_projection_elements_per_site": 263168
+  },
+  "complete": true,
+  "created_utc": "2026-11-17T05:55:44Z",
+  "device": {
+    "cuda_runtime": "13.2",
+    "free_at_start_bytes": 14532673536,
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "torch": "2.15.0+cu132",
+    "total_memory_bytes": 16765091840
+  },
+  "finished_utc": "2026-11-17T05:55:44Z",
+  "framework": {
+    "lm_eval": "0.4.14.dev0",
+    "transformers": "5.23.0"
+  },
+  "harness": {
+    "commit": "d6de81643928d653435c431bae19945d41d32520",
+    "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+    "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+    "name": "EleutherAI/lm-evaluation-harness",
+    "version": "0.4.14.dev0"
+  },
+  "harness_preregistration": {
+    "path": "docs/anchor-preregistration-v1.json",
+    "sha256": "49181e669d18e90dc10788471b762166e5286b740ba39cb6109bba5320d131c7"
+  },
+  "kind": "arm-eval",
+  "limit_overrides": {
+    "mmlu": 2000
+  },
+  "model": {
+    "directory": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "id": "Qwen/Qwen3.5-0.8B-Base",
+    "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68"
+  },
+  "preregistration": {
+    "path": "docs/ws19-anchored-subset-preregistration-v1.json",
+    "sha256": "e7aa099f0dfa56329869e107bd55429bf61829ad5944d0edf7a4f64150835f5c"
+  },
+  "revision": "d2549528bdab4203e7160ebfd671748e0e3ee60c",
+  "schema": "selvedge/stage2-arm-eval/v1",
+  "scored_tasks": [
+    "gsm8k",
+    "minerva_math500",
+    "mmlu",
+    "mmlu_pro"
+  ],
+  "stamp": "20261117T055544Z",
+  "tasks": [
+    {
+      "all_metrics": {
+        "alias": "gsm8k",
+        "exact_match,flexible-extract": 0.2971948445792267,
+        "exact_match,strict-match": 0.2941622441243366,
+        "exact_match_stderr,flexible-extract": 0.012588685966624186,
+        "exact_match_stderr,strict-match": 0.01255128533147015,
+        "name": "gsm8k",
+        "sample_len": 1319
+      },
+      "cgroup": {
+        "memory_max": "12884901888",
+        "memory_peak": "3445202944",
+        "memory_swap_peak": "0"
+      },
+      "family": "math",
+      "harness_config": {
+        "dataset_name": "main",
+        "dataset_path": "openai/gsm8k",
+        "doc_to_target": "{{answer}}",
+        "doc_to_text": "Question: {{question}}\nAnswer:",
+        "fewshot_delimiter": "\n\n",
+        "filter_list": [
+          {
+            "filter": [
+              {
+                "function": "regex",
+                "regex_pattern": "#### (\\-?[0-9\\.\\,]+)"
+              },
+              {
+                "function": "take_first"
+              }
+            ],
+            "name": "strict-match"
+          },
+          {
+            "filter": [
+              {
+                "function": "regex",
+                "group_select": -1,
+                "regex_pattern": "(-?[$0-9.,]{2,})|(-?[0-9]+)"
+              },
+              {
+                "function": "take_first"
+              }
+            ],
+            "name": "flexible-extract"
+          }
+        ],
+        "generation_kwargs": {
+          "do_sample": false,
+          "temperature": 0.0,
+          "until": [
+            "Question:",
+            "</s>",
+            "<|im_end|>"
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "ignore_case": true,
+            "ignore_punctuation": false,
+            "metric": "exact_match",
+            "regexes_to_ignore": [
+              ",",
+              "\\$",
+              "(?s).*#### ",
+              "\\.$"
+            ]
+          }
+        ],
+        "num_fewshot": 5,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "gsm8k"
+      },
+      "n_samples": {
+        "sample_count": null,
+        "sample_len": 1319
+      },
+      "peak_memory_allocated_bytes": 4024951296,
+      "pre_registered": {
+        "batch_size": 8,
+        "limit": null,
+        "limit_from_limit_map": false,
+        "limit_from_preregistration": null,
+        "num_fewshot": 5
+      },
+      "primary_metric": "exact_match,strict-match",
+      "primary_metric_registered": "exact_match,strict-match",
+      "score": 0.2941622441243366,
+      "stderr": 0.01255128533147015,
+      "task": "gsm8k",
+      "wall_clock_s": 542.1
+    },
+    {
+      "all_metrics": {
+        "alias": "minerva_math500",
+        "exact_match,none": 0.182,
+        "exact_match_stderr,none": 0.017272773297730436,
+        "math_verify,none": 0.188,
+        "math_verify_stderr,none": 0.01749067888034626,
+        "name": "minerva_math500",
+        "sample_len": 500
+      },
+      "cgroup": {
+        "memory_max": "12884901888",
+        "memory_peak": "3445202944",
+        "memory_swap_peak": "0"
+      },
+      "family": "math",
+      "harness_config": {
+        "dataset_name": "default",
+        "dataset_path": "HuggingFaceH4/MATH-500",
+        "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+        "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+        "fewshot_delimiter": "\n\n",
+        "generation_kwargs": {
+          "do_sample": false,
+          "temperature": 0.0,
+          "until": [
+            "Problem:"
+          ]
+        },
+        "metric_list": [
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "exact_match"
+          },
+          {
+            "aggregation": "mean",
+            "higher_is_better": true,
+            "metric": "math_verify"
+          }
+        ],
+        "num_fewshot": 4,
+        "output_type": "generate_until",
+        "target_delimiter": " ",
+        "task": "minerva_math500"
+      },
+      "n_samples": {
+        "sample_count": null,
+        "sample_len": 500
+      },
+      "peak_memory_allocated_bytes": 3709411328,
+      "pre_registered": {
+        "batch_size": 8,
+        "limit": null,
+        "limit_from_limit_map": false,
+        "limit_from_preregistration": null,
+        "num_fewshot": 4
+      },
+      "primary_metric": "math_verify,none",
+      "primary_metric_registered": "math_verify",
+      "score": 0.188,
+      "stderr": 0.01749067888034626,
+      "task": "minerva_math500",
+      "wall_clock_s": 232.7
+    },
+    {
+      "all_metrics": {
+        "acc,none": 0.4846887907705455,
+        "acc_stderr,none": 0.00408396629224581,
+        "alias": "mmlu",
+        "name": "mmlu",
+        "sample_count": {
+          "acc,none": 14042
+        },
+        "sample_len": 14042
+      },
+      "cgroup": {
+        "memory_max": "12884901888",
+        "memory_peak": "3445202944",
+        "memory_swap_peak": "0"
+      },
+      "family": "knowledge",
+      "harness_config": {
+        "group": true,
+        "subtasks": {
+          "mmlu_abstract_algebra": {
+            "dataset_name": "abstract_algebra",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_abstract_algebra"
+          },
+          "mmlu_anatomy": {
+            "dataset_name": "anatomy",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_anatomy"
+          },
+          "mmlu_astronomy": {
+            "dataset_name": "astronomy",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_astronomy"
+          },
+          "mmlu_business_ethics": {
+            "dataset_name": "business_ethics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_business_ethics"
+          },
+          "mmlu_clinical_knowledge": {
+            "dataset_name": "clinical_knowledge",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_clinical_knowledge"
+          },
+          "mmlu_college_biology": {
+            "dataset_name": "college_biology",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_college_biology"
+          },
+          "mmlu_college_chemistry": {
+            "dataset_name": "college_chemistry",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_college_chemistry"
+          },
+          "mmlu_college_computer_science": {
+            "dataset_name": "college_computer_science",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_college_computer_science"
+          },
+          "mmlu_college_mathematics": {
+            "dataset_name": "college_mathematics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_college_mathematics"
+          },
+          "mmlu_college_medicine": {
+            "dataset_name": "college_medicine",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_college_medicine"
+          },
+          "mmlu_college_physics": {
+            "dataset_name": "college_physics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_college_physics"
+          },
+          "mmlu_computer_security": {
+            "dataset_name": "computer_security",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_computer_security"
+          },
+          "mmlu_conceptual_physics": {
+            "dataset_name": "conceptual_physics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_conceptual_physics"
+          },
+          "mmlu_econometrics": {
+            "dataset_name": "econometrics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_econometrics"
+          },
+          "mmlu_electrical_engineering": {
+            "dataset_name": "electrical_engineering",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_electrical_engineering"
+          },
+          "mmlu_elementary_mathematics": {
+            "dataset_name": "elementary_mathematics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_elementary_mathematics"
+          },
+          "mmlu_formal_logic": {
+            "dataset_name": "formal_logic",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_formal_logic"
+          },
+          "mmlu_global_facts": {
+            "dataset_name": "global_facts",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_global_facts"
+          },
+          "mmlu_high_school_biology": {
+            "dataset_name": "high_school_biology",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_biology"
+          },
+          "mmlu_high_school_chemistry": {
+            "dataset_name": "high_school_chemistry",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_chemistry"
+          },
+          "mmlu_high_school_computer_science": {
+            "dataset_name": "high_school_computer_science",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_computer_science"
+          },
+          "mmlu_high_school_european_history": {
+            "dataset_name": "high_school_european_history",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_european_history"
+          },
+          "mmlu_high_school_geography": {
+            "dataset_name": "high_school_geography",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_geography"
+          },
+          "mmlu_high_school_government_and_politics": {
+            "dataset_name": "high_school_government_and_politics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_government_and_politics"
+          },
+          "mmlu_high_school_macroeconomics": {
+            "dataset_name": "high_school_macroeconomics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_macroeconomics"
+          },
+          "mmlu_high_school_mathematics": {
+            "dataset_name": "high_school_mathematics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_mathematics"
+          },
+          "mmlu_high_school_microeconomics": {
+            "dataset_name": "high_school_microeconomics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_microeconomics"
+          },
+          "mmlu_high_school_physics": {
+            "dataset_name": "high_school_physics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_physics"
+          },
+          "mmlu_high_school_psychology": {
+            "dataset_name": "high_school_psychology",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_psychology"
+          },
+          "mmlu_high_school_statistics": {
+            "dataset_name": "high_school_statistics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_statistics"
+          },
+          "mmlu_high_school_us_history": {
+            "dataset_name": "high_school_us_history",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_us_history"
+          },
+          "mmlu_high_school_world_history": {
+            "dataset_name": "high_school_world_history",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_high_school_world_history"
+          },
+          "mmlu_human_aging": {
+            "dataset_name": "human_aging",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_human_aging"
+          },
+          "mmlu_human_sexuality": {
+            "dataset_name": "human_sexuality",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_human_sexuality"
+          },
+          "mmlu_international_law": {
+            "dataset_name": "international_law",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_international_law"
+          },
+          "mmlu_jurisprudence": {
+            "dataset_name": "jurisprudence",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_jurisprudence"
+          },
+          "mmlu_logical_fallacies": {
+            "dataset_name": "logical_fallacies",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_logical_fallacies"
+          },
+          "mmlu_machine_learning": {
+            "dataset_name": "machine_learning",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_machine_learning"
+          },
+          "mmlu_management": {
+            "dataset_name": "management",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_management"
+          },
+          "mmlu_marketing": {
+            "dataset_name": "marketing",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_marketing"
+          },
+          "mmlu_medical_genetics": {
+            "dataset_name": "medical_genetics",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_medical_genetics"
+          },
+          "mmlu_miscellaneous": {
+            "dataset_name": "miscellaneous",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_miscellaneous"
+          },
+          "mmlu_moral_disputes": {
+            "dataset_name": "moral_disputes",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_moral_disputes"
+          },
+          "mmlu_moral_scenarios": {
+            "dataset_name": "moral_scenarios",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_moral_scenarios"
+          },
+          "mmlu_nutrition": {
+            "dataset_name": "nutrition",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_nutrition"
+          },
+          "mmlu_philosophy": {
+            "dataset_name": "philosophy",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_philosophy"
+          },
+          "mmlu_prehistory": {
+            "dataset_name": "prehistory",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_prehistory"
+          },
+          "mmlu_professional_accounting": {
+            "dataset_name": "professional_accounting",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_professional_accounting"
+          },
+          "mmlu_professional_law": {
+            "dataset_name": "professional_law",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_professional_law"
+          },
+          "mmlu_professional_medicine": {
+            "dataset_name": "professional_medicine",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_professional_medicine"
+          },
+          "mmlu_professional_psychology": {
+            "dataset_name": "professional_psychology",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_professional_psychology"
+          },
+          "mmlu_public_relations": {
+            "dataset_name": "public_relations",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_public_relations"
+          },
+          "mmlu_security_studies": {
+            "dataset_name": "security_studies",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_security_studies"
+          },
+          "mmlu_sociology": {
+            "dataset_name": "sociology",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_sociology"
+          },
+          "mmlu_us_foreign_policy": {
+            "dataset_name": "us_foreign_policy",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_us_foreign_policy"
+          },
+          "mmlu_virology": {
+            "dataset_name": "virology",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_virology"
+          },
+          "mmlu_world_religions": {
+            "dataset_name": "world_religions",
+            "dataset_path": "cais/mmlu",
+            "doc_to_choice": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "doc_to_target": "answer",
+            "doc_to_text": "{{question.strip()}}\nA. {{choices[0]}}\nB. {{choices[1]}}\nC. {{choices[2]}}\nD. {{choices[3]}}\nAnswer:",
+            "fewshot_delimiter": "\n\n",
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "metric": "acc"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "multiple_choice",
+            "target_delimiter": " ",
+            "task": "mmlu_world_religions"
+          }
+        }
+      },
+      "n_samples": {
+        "sample_count": 14042,
+        "sample_len": 14042
+      },
+      "peak_memory_allocated_bytes": 10910290432,
+      "pre_registered": {
+        "batch_size": 2,
+        "limit": 2000,
+        "limit_from_limit_map": true,
+        "limit_from_preregistration": null,
+        "num_fewshot": 5
+      },
+      "primary_metric": "acc,none",
+      "primary_metric_registered": "acc",
+      "score": 0.4846887907705455,
+      "stderr": 0.00408396629224581,
+      "task": "mmlu",
+      "wall_clock_s": 662.5
+    },
+    {
+      "all_metrics": {
+        "alias": "mmlu_pro",
+        "exact_match,custom-extract": 0.2222222222222222,
+        "exact_match_stderr,custom-extract": 0.01847324668166165,
+        "name": "mmlu_pro",
+        "sample_count": {
+          "exact_match,custom-extract": 504
+        },
+        "sample_len": 504
+      },
+      "cgroup": {
+        "memory_max": "12884901888",
+        "memory_peak": "1924853760",
+        "memory_swap_peak": "0"
+      },
+      "family": "knowledge",
+      "harness_config": {
+        "group": true,
+        "subtasks": {
+          "mmlu_pro_biology": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_biology"
+          },
+          "mmlu_pro_business": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_business"
+          },
+          "mmlu_pro_chemistry": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_chemistry"
+          },
+          "mmlu_pro_computer_science": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_computer_science"
+          },
+          "mmlu_pro_economics": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_economics"
+          },
+          "mmlu_pro_engineering": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_engineering"
+          },
+          "mmlu_pro_health": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_health"
+          },
+          "mmlu_pro_history": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_history"
+          },
+          "mmlu_pro_law": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_law"
+          },
+          "mmlu_pro_math": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_math"
+          },
+          "mmlu_pro_other": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_other"
+          },
+          "mmlu_pro_philosophy": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_philosophy"
+          },
+          "mmlu_pro_physics": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_physics"
+          },
+          "mmlu_pro_psychology": {
+            "dataset_path": "TIGER-Lab/MMLU-Pro",
+            "doc_to_target": "answer",
+            "doc_to_text": "functools.partial(<function format_cot_example at 0x7fd5ec2d1580>, including_answer=False)",
+            "fewshot_delimiter": "\n\n",
+            "filter_list": [
+              {
+                "filter": [
+                  {
+                    "function": "regex",
+                    "regex_pattern": "answer is \\(?([ABCDEFGHIJ])\\)?"
+                  },
+                  {
+                    "function": "take_first"
+                  }
+                ],
+                "name": "custom-extract"
+              }
+            ],
+            "generation_kwargs": {
+              "do_sample": false,
+              "max_gen_toks": 2048,
+              "temperature": 0.0,
+              "until": [
+                "Question:"
+              ]
+            },
+            "metric_list": [
+              {
+                "aggregation": "mean",
+                "higher_is_better": true,
+                "ignore_case": true,
+                "ignore_punctuation": true,
+                "metric": "exact_match"
+              }
+            ],
+            "num_fewshot": 5,
+            "output_type": "generate_until",
+            "target_delimiter": " ",
+            "task": "mmlu_pro_psychology"
+          }
+        }
+      },
+      "n_samples": {
+        "sample_count": 504,
+        "sample_len": 504
+      },
+      "peak_memory_allocated_bytes": 6741861888,
+      "pre_registered": {
+        "batch_size": 8,
+        "limit": 36,
+        "limit_from_limit_map": false,
+        "limit_from_preregistration": 36,
+        "num_fewshot": 5
+      },
+      "primary_metric": "exact_match,custom-extract",
+      "primary_metric_registered": "exact_match,custom-extract",
+      "score": 0.2222222222222222,
+      "stderr": 0.01847324668166165,
+      "task": "mmlu_pro",
+      "wall_clock_s": 1003.6
+    }
+  ]
+}
