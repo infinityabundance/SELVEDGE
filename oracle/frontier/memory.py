@@ -425,6 +425,10 @@ class ConditionalMemory(nn.Module):
         self._conv_state: list[torch.Tensor | None] = [None] * len(self.sites)
         self._conv_generation: int | None = None
         self._conv_context: int | None = None
+        # Diagnostic view of the most recent per-read gates (B, T, reads) and
+        # the mixed read before the constant offset. Detached; not state.
+        self.last_gate: torch.Tensor | None = None
+        self.last_mixed: torch.Tensor | None = None
         generator = torch.Generator(device="cpu").manual_seed(int(seed))
         with torch.no_grad():
             for table in self.tables:
@@ -495,6 +499,8 @@ class ConditionalMemory(nn.Module):
         self._conv_state = [None] * len(self.sites)
         self._conv_generation = None
         self._conv_context = None
+        self.last_gate = None
+        self.last_mixed = None
 
     def _state_for(self, site_index: int, batch: int) -> torch.Tensor | None:
         """Carried conv state for this sequence, or `None` on a new sequence."""
@@ -537,11 +543,17 @@ class ConditionalMemory(nn.Module):
         key = self.key_proj[site_index](hidden_states.float())  # [B,T,VD]
         score = (values * key[:, :, None, :]).sum(-1) / (self.value_dim ** 0.5)
         gate = torch.sigmoid(score)                             # [B,T,8]
+        # Non-persistent diagnostic state, like `CorrectiveMemory.last_gate`.
+        # It is detached and never enters a checkpoint or a state dict; the
+        # forward arithmetic is unchanged.
+        self.last_gate = gate.detach()
+        self.last_mixed = None  # set by site_forward after the read is summed
         projected = self.value_proj[site_index](values)         # [B,T,8,H]
         return (gate[..., None] * projected).sum(dim=2)         # [B,T,H]
 
     def site_forward(self, site_index: int, hidden_states: torch.Tensor) -> torch.Tensor:
         mixed = self.site_mixed(site_index, hidden_states)
+        self.last_mixed = mixed.detach()
         return (mixed + self.out_bias[site_index]).to(hidden_states.dtype)
 
     def forward(self, hidden_states: torch.Tensor, site_index: int = 0) -> torch.Tensor:

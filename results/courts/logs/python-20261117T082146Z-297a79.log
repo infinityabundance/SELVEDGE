@@ -1,0 +1,27 @@
+== gsm8k n=1319 filter=strict-match
+  memory-2m: acc 0.2942 vs base 0.3897 | -208 +82 | identical 100 (delta +0.0000)
+    losses: 208 (identical 0, answer changed 203, digit changed 200) first diff reasoning 208 / answer 0 | classes {'operator': 20, 'space': 19, 'letter': 115, 'digit': 40, 'other': 14}
+    by length: q1 -0.0270 (n=333), q2 -0.1295 (n=332), q3 -0.1131 (n=327), q4 -0.1131 (n=327)
+    by first-diff position: 0-10% -0.0861 (n=476), 10-25% -0.1408 (n=341), 25-50% -0.0917 (n=229), 50-100% -0.0925 (n=173)
+  adapter-2m: acc 0.3609 vs base 0.3897 | -126 +88 | identical 192 (delta +0.0000)
+    losses: 126 (identical 0, answer changed 122, digit changed 122) first diff reasoning 125 / answer 1 | classes {'operator': 7, 'other': 18, 'letter': 77, 'digit': 17, 'space': 7}
+    by length: q1 +0.0030 (n=333), q2 -0.0512 (n=332), q3 -0.0306 (n=327), q4 -0.0367 (n=327)
+    by first-diff position: 0-10% -0.0111 (n=361), 10-25% -0.0664 (n=271), 25-50% -0.0332 (n=241), 50-100% -0.0315 (n=254)
+  adapter-20m: acc 0.3578 vs base 0.3897 | -139 +97 | identical 151 (delta +0.0000)
+    losses: 139 (identical 0, answer changed 133, digit changed 133) first diff reasoning 139 / answer 0 | classes {'operator': 18, 'letter': 67, 'other': 13, 'digit': 29, 'space': 12}
+    by length: q1 +0.0030 (n=333), q2 -0.0060 (n=332), q3 -0.0550 (n=327), q4 -0.0703 (n=327)
+    by first-diff position: 0-10% -0.0234 (n=427), 10-25% -0.0671 (n=283), 25-50% -0.0177 (n=226), 50-100% -0.0388 (n=232)
+== minerva_math500 n=500 filter=none
+  memory-2m: acc 0.1880 vs base 0.2500 | -53 +22 | identical 16 (delta +0.0000)
+    losses: 53 (identical 0, answer changed 47, digit changed 43) first diff reasoning 53 / answer 0 | classes {'letter': 31, 'other': 10, 'latex': 4, 'digit': 6, 'space': 2}
+    by length: q1 -0.0794 (n=126), q2 -0.0880 (n=125), q3 -0.0560 (n=125), q4 -0.0242 (n=124)
+    by first-diff position: 0-10% -0.0643 (n=249), 10-25% -0.0672 (n=134), 25-50% -0.0769 (n=78), 50-100% +0.0000 (n=23)
+  adapter-2m: acc 0.2100 vs base 0.2500 | -46 +26 | identical 29 (delta +0.0000)
+    losses: 46 (identical 0, answer changed 38, digit changed 34) first diff reasoning 46 / answer 0 | classes {'letter': 26, 'other': 8, 'space': 1, 'latex': 5, 'digit': 6}
+    by length: q1 -0.0238 (n=126), q2 -0.0400 (n=125), q3 -0.0480 (n=125), q4 -0.0484 (n=124)
+    by first-diff position: 0-10% -0.0564 (n=195), 10-25% -0.0472 (n=127), 25-50% -0.0230 (n=87), 50-100% -0.0161 (n=62)
+  adapter-20m: acc 0.1980 vs base 0.2500 | -47 +21 | identical 37 (delta +0.0000)
+    losses: 47 (identical 0, answer changed 41, digit changed 40) first diff reasoning 46 / answer 1 | classes {'letter': 30, 'digit': 6, 'other': 6, 'space': 2, 'latex': 3}
+    by length: q1 -0.0159 (n=126), q2 -0.0880 (n=125), q3 -0.0720 (n=125), q4 -0.0323 (n=124)
+    by first-diff position: 0-10% -0.0708 (n=226), 10-25% -0.0273 (n=110), 25-50% -0.0667 (n=90), 50-100% -0.0270 (n=37)
+receipt: results/stage2/s45-collapse-artifacts-20261117T082147Z.json

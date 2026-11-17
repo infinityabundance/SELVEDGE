@@ -1,0 +1,13 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+doc 984 source=memory P=320 C=80 CE base/mem/adapt/teacher=0.290/0.309/0.320/0.359 first CE divergence=0
+doc 984 source=base P=320 C=80 CE base/mem/adapt/teacher=0.228/0.280/0.263/0.303 first CE divergence=0
+doc 126 source=memory P=320 C=31 CE base/mem/adapt/teacher=0.157/0.153/0.161/0.209 first CE divergence=7
+doc 126 source=base P=320 C=38 CE base/mem/adapt/teacher=0.162/0.186/0.173/0.184 first CE divergence=7
+doc 120 source=memory P=320 C=60 CE base/mem/adapt/teacher=0.220/0.231/0.204/0.350 first CE divergence=10
+doc 120 source=base P=320 C=80 CE base/mem/adapt/teacher=0.341/0.378/0.340/0.289 first CE divergence=10
+doc 820 source=memory P=320 C=80 CE base/mem/adapt/teacher=0.246/0.251/0.244/0.397 first CE divergence=2
+doc 820 source=base P=320 C=80 CE base/mem/adapt/teacher=0.274/0.325/0.295/0.298 first CE divergence=2
+doc 791 source=memory P=320 C=42 CE base/mem/adapt/teacher=0.164/0.195/0.169/0.188 first CE divergence=4
+doc 791 source=base P=320 C=50 CE base/mem/adapt/teacher=0.204/0.228/0.210/0.257 first CE divergence=4
+receipt: results/stage2/s45-forward-positional-20261117T082412Z.json
