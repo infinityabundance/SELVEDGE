@@ -365,7 +365,8 @@ def _harm_report(kl_positions: torch.Tensor, advantage: torch.Tensor,
     correction made that token worse.
     """
     delta = (kl_positions - advantage).detach()
-    masks = sign_masks(signed)
+    sign_only = sign_masks(signed)
+    masks = dict(sign_only)
     masks["lowest_quartile"] = advantage <= torch.quantile(advantage, 0.25)
     report = {}
     for name, mask in masks.items():
@@ -380,7 +381,7 @@ def _harm_report(kl_positions: torch.Tensor, advantage: torch.Tensor,
             report[f"harm_{name}_mean_delta_kl"] = 0.0
             report[f"harm_{name}_fraction_worse"] = 0.0
     report["harm_sign_counts"] = {
-        name: int(mask.sum()) for name, mask in masks.items()}
+        name: int(mask.sum()) for name, mask in sign_only.items()}
     return report
 
 
