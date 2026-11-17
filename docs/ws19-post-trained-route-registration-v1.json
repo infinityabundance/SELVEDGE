@@ -1,0 +1,267 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-registration/v1",
+  "registering_session": "S53",
+  "registered_utc": "2026-11-17T23:50:00Z",
+  "registered_revision": "f7fbd59",
+  "registration_time_note": "Registered before any post-trained checkpoint was scored and before any stage-1 generation. No score of this route exists at registration.",
+  "target_change": {
+    "statement": "The win is now measured against the POST-TRAINED Qwen3.5-0.8B, not against the Base checkpoint. Base remains a control and is never the target.",
+    "why": "The post-trained checkpoint is the model a user would actually run. A route that only beats a base checkpoint has not shown a capability gain over the deployed model.",
+    "target": "Qwen/Qwen3.5-0.8B",
+    "control": "Qwen/Qwen3.5-0.8B-Base"
+  },
+  "identities": {
+    "post_trained_0_8b": {
+      "repo_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "role": "TARGET and stage-2 student",
+      "architecture": "Qwen3_5ForConditionalGeneration (same graph as Base: identical safetensors header, tensor names, shapes, dtypes and offsets)",
+      "text_tower_elements": 752393024,
+      "audited_elements": 752393024,
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+      "auditor_certificates": [
+        {
+          "path": "results/accounting/20261116T183609Z-qwen35-08b-text-only.json",
+          "sha256": "e8ddc4e062c7d6c34ddc4c38cf89c495decec2849a9c29c7e7aae57e7d606623",
+          "kind": "per-tensor element accounting",
+          "text_elements": 752393024
+        },
+        {
+          "path": "results/frontier/20261117T002500Z-revision-compare-08b-chat-vs-base.json",
+          "sha256": "ec2dc23aad86c87ccc7b2fb2c4b04d93f6e1644ef9eb9fcb1f808ecde6f8fa95",
+          "kind": "header, tensor table, shard hash, small-file comparison against Base",
+          "verdict": "same graph, different weights; chat tokenizer adds four control tokens at 248066-248069"
+        }
+      ],
+      "tokenizer_note": "the chat tokenizer is NOT byte-identical to the Base tokenizer: it adds <tool_response>, </tool_response>, <think>, </think> at 248066-248069. Each checkpoint is prompted with its own chat template and tokenizer."
+    },
+    "post_trained_2b": {
+      "repo_id": "Qwen/Qwen3.5-2B",
+      "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "role": "stage-2 teacher and stage-1 upper reference",
+      "architecture": "Qwen3_5ForConditionalGeneration (same graph as 2B-Base)",
+      "text_tower_elements": 1881825088,
+      "audited_elements": 1881825088,
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+      "auditor_certificates": [
+        {
+          "path": "results/frontier/20261117T233931Z-revision-compare-2b-chat-vs-base.json",
+          "sha256": "ada2e1676f817819e43e74c0664d6885e8b1f803cf4989a01b431b37a4d2c3cd",
+          "kind": "header, tensor table, shard hash, small-file comparison against 2B-Base",
+          "verdict": "same graph, different weights; the same four control tokens are the only added-token difference"
+        },
+        {
+          "path": "results/frontier/s53-fetch-2b-chat.json",
+          "sha256": "468ef3685e63e5798a8ce20f38bbba397dc4031cae2028117598c2c0fb97eafa",
+          "kind": "fetch receipt",
+          "weight_sha256": "aa33250c4fc64891ddfaba3a314fd9542ea371843c387178b425fbcc5ed680b1"
+        },
+        {
+          "path": "results/frontier-models/20261116-probe-p2.json",
+          "sha256": "3598f241dca7b994c89a9cceb732a93dc24003f3263e4854629985488575978a",
+          "kind": "per-tensor element accounting from safetensors headers",
+          "text_elements": 1881825088
+        }
+      ]
+    },
+    "base_0_8b_control": {
+      "repo_id": "Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "role": "control only",
+      "text_tower_elements": 752393024,
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "50cbab8a892c5f2993b8c7351a99182507472def3b1374558308605d99b86b32",
+      "auditor_certificate": {
+        "path": "results/accounting/20261117T001252Z-qwen35-08b-base-text-only.json",
+        "sha256": "b658894498f03d40f69ea323a14b62675f2451cb0f22e07f58c7519f5ed08a89",
+        "text_elements": 752393024
+      }
+    },
+    "base_2b_control": {
+      "repo_id": "Qwen/Qwen3.5-2B-Base",
+      "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "role": "control only",
+      "text_tower_elements": 1881825088,
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "50cbab8a892c5f2993b8c7351a99182507472def3b1374558308605d99b86b32",
+      "auditor_certificate": {
+        "path": "results/frontier-models/20261116-probe-p2.json",
+        "sha256": "3598f241dca7b994c89a9cceb732a93dc24003f3263e4854629985488575978a",
+        "text_elements": 1881825088
+      }
+    }
+  },
+  "stage_1_measurement": {
+    "purpose": "measure the post-trained starting point before any distillation or looping; this stage is a measurement, not a win",
+    "tasks": ["gsm8k-test (1,319 items)", "minerva_math500 (500 items)"],
+    "protocol": "chat protocol, zero-shot chain-of-thought, final answer in \\boxed{}",
+    "prompt": {
+      "system": "none (the checkpoint's default system behaviour)",
+      "user_template": "{question}\\n\\nSolve the problem step by step. Put the final answer in \\boxed{}.",
+      "few_shot": 0,
+      "template": "each checkpoint's own chat_template.jinja, loaded from its own revision",
+      "thinking_modes": {
+        "non_thinking": "chat template enable_thinking=false",
+        "thinking": "chat template enable_thinking=true"
+      }
+    },
+    "decoding": {
+      "greedy": {"temperature": 0.0, "top_p": 1.0, "n": 1},
+      "majority_of_16": {"temperature": 0.8, "top_p": 0.95, "n": 16,
+                          "seed_rule": "torch.manual_seed(5300 + item_index) per item; vLLM sampling seed recorded per request"},
+      "max_new_tokens": 4096,
+      "stop": "EOS only; no string stop that could hide a thinking loop",
+      "truncation": "a generation that reaches max_new_tokens is counted as answered-only-if-extractable and its truncation is reported separately"
+    },
+    "extraction": {
+      "implementation": "the S45 exact extractor in oracle/frontier/rft.py, unchanged",
+      "primary": "the last balanced \\boxed{...}",
+      "gsm8k_secondary": "the last #### value; then the last number (documented fallback)",
+      "math_secondary": "the last 'final answer is ...' phrase (documented fallback)",
+      "ambiguity": "two distinct answers or a boxed 'or' alternative is wrong, not resolved",
+      "not_symbolic": "algebraically equal but differently written answers are rejected; this is stated, not hidden"
+    },
+    "majority": {
+      "vote_unit": "the canonicalised extracted answer",
+      "tie": "the earliest sample's answer wins the tie",
+      "no_answer": "a sample with no extractable answer does not vote"
+    },
+    "engine": {
+      "pin": "vllm==0.34.0",
+      "wheel": "vllm-0.34.0-cp38-abi3-manylinux_2_28_x86_64.whl",
+      "wheel_sha256": "79ca4b3cd74aec08c4bf476bdf0cb15735b605ae5368526a2faae1e30f044ca2",
+      "pypi_release_utc": "2026-11-16T23:51:23Z",
+      "why": "0.34.0 is the current release and its supported-model list names Qwen3.5; the recipe page supplies --language-model-only, --reasoning-parser qwen3 and the enable_thinking chat-template flag",
+      "server_flags": ["--language-model-only", "--reasoning-parser qwen3",
+                        "--enable-prefix-caching", "--max-model-len 32768"],
+      "installation": "the eval image does not contain vLLM today; stage 1 requires a new image pinning the wheel above and a receipt for the installed version. An unpinned vLLM may not produce a scored number.",
+      "tokens_per_second": "output tokens divided by decode wall seconds, measured per model x mode x decoding, recorded in the receipt"
+    },
+    "report_table": {
+      "rows": "model (post-0.8B, post-2B, base-0.8B, base-2B) x mode (thinking, non-thinking) x decoding (greedy, maj@16) x task (GSM8K, MATH-500)",
+      "columns": ["accuracy (all-items denominator)", "binomial stderr",
+                  "answered", "format-correct", "answer-correct",
+                  "truncated", "generation_tokens_per_second",
+                  "mean new tokens per answer", "FLOPs per answer"],
+      "no_hand_numbers": "every cell is emitted from the stage-1 receipt; no number is typed into this registration or a report"
+    }
+  },
+  "stage_2_on_policy_distillation": {
+    "teacher": "post-trained Qwen3.5-2B at 15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "student": "post-trained Qwen3.5-0.8B at 2fc06364715b967f1860aea9cf38778875588b17",
+    "data": ["gsm8k-train", "math-train"],
+    "data_selection": "seeded stratified selection over source, difficulty and reasoning-length quartile (the S53 RFT amendment)",
+    "rollouts": {
+      "policy": "student",
+      "samples_per_prompt": 4,
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "max_new_tokens": 1024,
+      "refresh": "re-sample every 1,000 optimiser steps; the actual refresh count and token count are receipted",
+      "on_policy_note": "fully online rollouts at every step are out of budget; the refresh schedule makes the mismatch explicit and measurable"
+    },
+    "objective": {
+      "kl": "per-token reverse KL, KL(student_T || teacher_T) at T=2.0, on the student's own rollouts",
+      "reward": "verified-answer reward: 1.0 when the extracted answer equals the reference answer exactly, 0.0 otherwise",
+      "assembly": "reward_weight * reverse_KL per rollout token; incorrect rollouts contribute zero KL weight and are reported as such",
+      "no_forward_kl": "the forward-KL stage-2 objective is not reused"
+    },
+    "model": {
+      "backbone": "full post-trained text tower",
+      "tied_embedding": "frozen",
+      "trainable_elements": 498113344,
+      "unique_active_elements": 752393024,
+      "active_union_basis": "finetuning changes values, not identities; the deployed text tower is the full 752,393,024"
+    },
+    "optimiser": {
+      "kind": "adam8bit, block 256, stochastic rounding, corrected second moment",
+      "lr": 1e-05,
+      "lr_basis": "the S50 KL-validated rate; a higher rate needs its own fixed-batch KL-gate receipt",
+      "schedule": "cosine to 0.1",
+      "warmup_steps": 200,
+      "grad_clip": 1.0,
+      "weight_decay": 0.0,
+      "tokens": 20000000,
+      "seed": 0,
+      "smoke": "20-step smoke per arm; container limit from its own cgroup peak (1.5x, never below +1 GiB)"
+    },
+    "win": {
+      "statement": "stage 2 wins iff greedy beats post-trained 0.8B on BOTH GSM8K and MATH-500 with paired 95% item-level intervals above zero",
+      "interval": "item-level paired bootstrap 95%, 4,000 resamples, seed 53, all items in the denominator",
+      "both_tasks": true,
+      "no_softening": "a gain on one task, a family-mean tie, or a maj@16-only gain is not the win",
+      "retention": "MMLU and MMLU-Pro are reported against post-trained 0.8B but are not a win condition in this registration"
+    }
+  },
+  "stage_3_looped_self_distillation": {
+    "student": "stage-2 model at R=1",
+    "loop": {
+      "layers": "8 through 15 inclusive (8 transformer layers)",
+      "passes": "R repeated passes",
+      "re_entry_gate": "zero-initialised; the R=1 path is bit-identical to stage-2",
+      "per_pass_depth_lora": "one zero-initialised low-rank adapter per pass; rank and parameter count are registered before launch",
+      "bit_identical_test": "with the gate and every adapter at zero, the looped model's logits at R=1 must equal stage-2's logits exactly (bitwise) on a fixed batch"
+    },
+    "teacher": {
+      "source": "stage-2 model at R=1 (a frozen snapshot)",
+      "privileged_context": "a solution that is BOTH the maj@16 consensus AND verified against the training label",
+      "student_context": "the prompt only; the student never sees the privileged solution at inference",
+      "why_privileged": "the teacher is a compute- and information-privileged view of the same parameters, not a larger external model"
+    },
+    "student_rollouts": "the looped model on its own rollouts",
+    "objective": "per-token reverse KL, KL(student_T || teacher_T) at T=2.0",
+    "win": {
+      "statement": "greedy R=4 beats stage-2 greedy on the paired 95% interval, and closes most of the gap to stage-2 maj@16 at a fraction of its FLOPs per answer",
+      "paired_interval": "item-level paired bootstrap 95%, 4,000 resamples, seed 53",
+      "closes_most": "the R=4 greedy score is at least two thirds of the way from stage-2 greedy to stage-2 maj@16 on BOTH GSM8K and MATH-500",
+      "flops_fraction": "R=4 greedy FLOPs per answer <= 0.30 of stage-2 maj@16 FLOPs per answer",
+      "flops_basis": "prefill + decode FLOPs from the executed set (layers, hidden width, vocabulary head, generated tokens); the Rust executed-set audit supplies the layer/parameter counts"
+    }
+  },
+  "stage_4_confirmation": {
+    "recipe": "the winning stage-3 recipe",
+    "seeds": [0, 1, 2],
+    "audit": "the Rust executed-set audit (selvedge inspect-model / executed-set report) records the parameter and FLOPs identities of every scored checkpoint",
+    "evaluation": "greedy and maj@16 on GSM8K and MATH-500 under the identical stage-1 protocol",
+    "comparison": "post-trained 0.8B, same protocol, same item set",
+    "report": "per-seed scores, the seed mean and its interval, FLOPs per answer, and every truncated or unparseable answer",
+    "win": "the seed mean preserves the stage-3 win in the same direction on both tasks, and no seed reverses it"
+  },
+  "risks_and_mitigations": [
+    {
+      "risk": "thinking-loop mode: the chat checkpoint can emit a long or repeated thinking block, so a score can be a truncation artefact",
+      "mitigation": "cap max_new_tokens at the registered value, report truncation and repetition separately, and never count a truncated generation as a reasoning win; the non-thinking mode is measured separately"
+    },
+    {
+      "risk": "co-residency: the teacher and student are both resident, and a second job can OOM the first",
+      "mitigation": "one GPU job at a time; the teacher is loaded once per arm; the container limit comes from that arm's own smoke peak (1.5x, never below +1 GiB); host MemAvailable must exceed limit + 4 GiB before launch"
+    },
+    {
+      "risk": "per-pass state: a looped model that carries convolution or cache state across passes or examples can leak one example into the next",
+      "mitigation": "reset per-pass state at every sequence boundary, test state-digest equality on repeated calls, and require the R=1 bit-identical test before any R>1 score"
+    },
+    {
+      "risk": "contamination: the train prompts and the test items are different splits but a generated solution can reproduce a test item",
+      "mitigation": "the S45 5-word shingle Jaccard check, discard at 0.2, fail closed at 0.5, carried into every sampling and stream receipt"
+    },
+    {
+      "risk": "formatting-versus-reasoning: a gain in \\boxed{} formatting can look like a reasoning gain",
+      "mitigation": "report format-correct/answer-wrong and answer-correct-without-box separately; the win is answer exactness, and a formatting-only shift is not a win"
+    },
+    {
+      "risk": "FLOPs: a looped model can look cheaper by parameter count while using more sequential compute per answer",
+      "mitigation": "report prefill + decode FLOPs per answer from the executed set; the R=4 win requires <= 0.30 of stage-2 maj@16 FLOPs, not a parameter-count comparison"
+    }
+  ],
+  "what_this_registration_does_not_establish": [
+    "that any post-trained checkpoint has been scored: stage 1 has not run",
+    "that vLLM 0.34.0 runs these exact 0.8B/2B chat checkpoints on this host: the recipe page names the 397B-A17B model and the supported-model list names Qwen3.5; a stage-1 smoke must confirm the small checkpoints before a score",
+    "that stage 2 will win: the win is the experiment",
+    "that the privileged teacher is available at inference: it is not; only the student is deployed",
+    "that the looped model is parameter-cheaper: it reuses parameters but spends more sequential compute; FLOPs are reported",
+    "that a maj@16 gain is a greedy win: stage 2 and stage 3 require the greedy comparison",
+    "that the exact extractor is symbolic: it is not, and a false reject is treated as safer than a false accept"
+  ]
+}

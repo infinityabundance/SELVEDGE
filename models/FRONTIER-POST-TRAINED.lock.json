@@ -1,0 +1,71 @@
+{
+  "schema": "selvedge/frontier-post-trained-lock/v1",
+  "stamp": "20261117T235000Z",
+  "registered_by": "S53",
+  "note": "The S53 target change: the win is measured against the post-trained Qwen3.5-0.8B. Base checkpoints remain controls. This file does not rewrite models/FRONTIER.lock.json; it records the post-trained identities and the receipts that audit them.",
+  "target": {
+    "id": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "cache_relative_dir": "models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "text_tower_elements": 752393024,
+    "total_elements": 873438784,
+    "elements_by_tower": {"text": 752393024, "vision": 100592896, "mtp": 20452864},
+    "licence": "Apache-2.0",
+    "licence_file_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+    "weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+    "auditor_certificates": [
+      {"path": "results/accounting/20261116T183609Z-qwen35-08b-text-only.json",
+       "sha256": "e8ddc4e062c7d6c34ddc4c38cf89c495decec2849a9c29c7e7aae57e7d606623"},
+      {"path": "results/frontier/20261117T002500Z-revision-compare-08b-chat-vs-base.json",
+       "sha256": "ec2dc23aad86c87ccc7b2fb2c4b04d93f6e1644ef9eb9fcb1f808ecde6f8fa95"}
+    ],
+    "tokenizer": {
+      "base_vocab_entries": 248044,
+      "added_tokens": ["<tool_response>", "</tool_response>", "<think>", "</think>"],
+      "added_token_ids": [248066, 248067, 248068, 248069],
+      "note": "the Base revision does not define these four tokens; each checkpoint is prompted with its own tokenizer and chat template"
+    }
+  },
+  "stage_2_teacher": {
+    "id": "Qwen/Qwen3.5-2B",
+    "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "cache_relative_dir": "models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "text_tower_elements": 1881825088,
+    "total_elements": 2274069824,
+    "elements_by_tower": {"text": 1881825088, "vision": 331416576, "mtp": 60828160},
+    "licence": "Apache-2.0",
+    "licence_file_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+    "weight_sha256": "aa33250c4fc64891ddfaba3a314fd9542ea371843c387178b425fbcc5ed680b1",
+    "auditor_certificates": [
+      {"path": "results/frontier/20261117T233931Z-revision-compare-2b-chat-vs-base.json",
+       "sha256": "ada2e1676f817819e43e74c0664d6885e8b1f803cf4989a01b431b37a4d2c3cd"},
+      {"path": "results/frontier/s53-fetch-2b-chat.json",
+       "sha256": "468ef3685e63e5798a8ce20f38bbba397dc4031cae2028117598c2c0fb97eafa"},
+      {"path": "results/frontier-models/20261116-probe-p2.json",
+       "sha256": "3598f241dca7b994c89a9cceb732a93dc24003f3263e4854629985488575978a"}
+    ]
+  },
+  "controls": {
+    "base_0_8b": {
+      "id": "Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "text_tower_elements": 752393024,
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "50cbab8a892c5f2993b8c7351a99182507472def3b1374558308605d99b86b32",
+      "auditor_certificate": "results/accounting/20261117T001252Z-qwen35-08b-base-text-only.json"
+    },
+    "base_2b": {
+      "id": "Qwen/Qwen3.5-2B-Base",
+      "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "text_tower_elements": 1881825088,
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "50cbab8a892c5f2993b8c7351a99182507472def3b1374558308605d99b86b32",
+      "auditor_certificate": "results/frontier-models/20261116-probe-p2.json"
+    }
+  },
+  "registration": {
+    "path": "docs/ws19-post-trained-route-registration-v1.json",
+    "sha256": null,
+    "note": "the registration's own hash is recorded by the commit that adds this file; it is not self-referential"
+  }
+}
