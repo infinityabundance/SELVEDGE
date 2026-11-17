@@ -37,11 +37,13 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import os
 import re
 import sys
 import tempfile
+from typing import Sequence
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -57,6 +59,15 @@ WS19_LOG = WS19_RUN_REL + "/log.jsonl"
 WS19_EVAL = "results/stage2/eval/full-20m-math/eval.json"
 WS19_SELECTED = "results/stage2/runs/full-20m-math-s49-selected.json"
 WS19_AMENDED_EVAL = "results/stage2/eval/full-20m-math-s49/m20/eval.json"
+# S51: the live bar is the corrected-optimiser rerun. It is named by its own
+# launch receipt, so the status block does not have to infer it from an
+# invalidated selection marker.
+CURRENT_BAR_REL = "results/stage2/runs/s50-bar-20m-lr1e-5"
+CURRENT_BAR_LAUNCH = CURRENT_BAR_REL + "/launch.json"
+CURRENT_BAR_MANIFEST = CURRENT_BAR_REL + "/manifest.json"
+CURRENT_BAR_LOG = CURRENT_BAR_REL + "/log.jsonl"
+CURRENT_BAR_EVAL = "results/stage2/eval/s50-bar-20m-lr1e-5/eval.json"
+INVALIDATION_GLOB = "results/stage2/*invalidation*.json"
 
 REGIONS = (
     ("readme-status", "README.md"),
@@ -66,6 +77,11 @@ REGIONS = (
 
 TRAINING_STATES = {"training", "running", "launched", "queued"}
 EVALUATED_STATES = {"evaluated"}
+#: Result eligibility is a property of receipts, not of prose. A result is
+#: `currently_eligible` only when its own anchored score exists and no
+#: invalidation receipt names it; an invalidated score is retained as
+#: `historically_scored` evidence and may never be cited as the current bar.
+RESULT_STATES = ("currently_eligible", "historically_scored", "invalidated")
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +112,124 @@ def _last_json_line(path: str) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
-def load_ws19(root: str) -> dict | None:
+def _normalise_path(path: str) -> str:
+    return str(path).rstrip("/")
+
+
+def _empty_invalidations() -> dict:
+    return {
+        "paths": set(),
+        "runs": set(),
+        "evaluations": set(),
+        "selections": set(),
+        "masters": [],
+        "disposition": None,
+        "superseded_by": {},
+    }
+
+
+def load_invalidations(root: str) -> dict:
+    """Collect every artefact an invalidation receipt marks as unusable.
+
+    The master records under `results/stage2/*invalidation*.json` name their
+    affected runs, evaluations and selections; the per-directory
+    `INVALIDATED.json` markers are read too, so a directory is classified even
+    if only the marker survived. This function never deletes or edits a receipt;
+    it only derives eligibility.
+    """
+    result = _empty_invalidations()
+    for path in sorted(glob.glob(os.path.join(root, INVALIDATION_GLOB))):
+        record = read_json(path)
+        if not isinstance(record, dict):
+            continue
+        schema = str(record.get("schema", ""))
+        if not (schema.endswith("/invalidation/v1")
+                or record.get("kind") == "s50-invalidation"):
+            continue
+        result["masters"].append(os.path.relpath(path, root))
+        result["disposition"] = result["disposition"] or record.get("disposition")
+        for key, value in (record.get("superseded_by") or {}).items():
+            result["superseded_by"][key] = value
+        affected = record.get("affected") or {}
+        for category, entries in affected.items():
+            if not isinstance(entries, list):
+                continue
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                if not (entry.get("invalidated")
+                        or entry.get("invalidated_as_evidence")):
+                    continue
+                rel = entry.get("path")
+                if not isinstance(rel, str) or not rel:
+                    continue
+                rel = _normalise_path(rel)
+                result["paths"].add(rel)
+                bucket = {
+                    "runs": "runs", "evaluations": "evaluations",
+                    "selections": "selections",
+                }.get(category)
+                if bucket:
+                    result[bucket].add(rel)
+    # A marker is authoritative for the directory it sits in, whether or not the
+    # master record is present (the marker and the master are written together,
+    # but a shallow checkout may have only one).
+    for pattern in ("results/stage2/runs/*/INVALIDATED.json",
+                    "results/stage2/eval/*/INVALIDATED.json"):
+        for marker_path in glob.glob(os.path.join(root, pattern)):
+            marker = read_json(marker_path)
+            if not isinstance(marker, dict) or not marker.get("invalidated"):
+                continue
+            directory = _normalise_path(
+                os.path.dirname(os.path.relpath(marker_path, root)))
+            result["paths"].add(directory)
+            if "/runs/" in f"/{directory}/":
+                result["runs"].add(directory)
+            elif "/eval/" in f"/{directory}/":
+                result["evaluations"].add(directory)
+    return result
+
+
+def _is_invalidated(path: str, invalidations: dict) -> bool:
+    """True when the path, or any directory above it, is invalidated.
+
+    The master record names run/eval directories while the result is usually a
+    file inside one (`eval.json`); a marker in the directory invalidates the
+    files below it.
+    """
+    normalised = _normalise_path(path)
+    if not normalised:
+        return False
+    for invalid in invalidations["paths"]:
+        invalid = _normalise_path(invalid)
+        if normalised == invalid or normalised.startswith(invalid + "/"):
+            return True
+    return False
+
+
+def classify_result(path: str, scored: bool, invalidations: dict,
+                    current_bar: str | None = None) -> str:
+    """Classify one result artefact for the status machinery.
+
+    * `invalidated` — an invalidation receipt names it; it may only be cited as
+      `historically_scored` evidence, never as a bar, baseline or eligible
+      result;
+    * `currently_eligible` — it has its own anchored score and is the live bar;
+    * `historically_scored` — it has a score but is not the live bar (superseded
+      without being invalidated);
+    * `unscored` — no anchored score exists yet.
+    """
+    normalised = _normalise_path(path)
+    if _is_invalidated(normalised, invalidations):
+        return "invalidated"
+    if scored and current_bar and normalised == _normalise_path(current_bar):
+        return "currently_eligible"
+    if scored:
+        return "historically_scored"
+    return "unscored"
+
+
+def load_ws19(root: str, invalidations: dict | None = None) -> dict | None:
     """Derive the WS19 stage-2 bar's state without reading a live step count.
 
     The block must stay stable while the bar runs, so it publishes the launch
@@ -108,27 +241,46 @@ def load_ws19(root: str) -> dict | None:
 
     When the S49 selection marker exists, the block describes the amended bar
     (the stability rerun), not the lr 1e-4 run that diverged; the diverged run's
-    receipt is named as retained history on its own line.
+    receipt is named as retained history on its own line. S51 additionally names
+    the corrected-optimiser rerun by its own launch receipt when that exists,
+    and classifies every anchored score against the invalidation receipts.
     """
-    marker = read_json(os.path.join(root, WS19_SELECTED))
-    selected = (marker or {}).get("selected") or {}
-    amended = bool(selected.get("run_dir"))
-    if amended:
-        run_dir = selected["run_dir"]
-        launch = read_json(os.path.join(root, run_dir, "launch.json"))
-        manifest = read_json(os.path.join(root, run_dir, "manifest.json"))
-        log_tail = _last_json_line(os.path.join(root, run_dir, "log.jsonl"))
-        receipt = read_json(os.path.join(root, WS19_AMENDED_EVAL))
+    invalidations = invalidations or _empty_invalidations()
+    current_launch = read_json(os.path.join(root, CURRENT_BAR_LAUNCH))
+    if current_launch is not None:
+        run_dir = CURRENT_BAR_REL
+        launch = current_launch
+        manifest = read_json(os.path.join(root, CURRENT_BAR_MANIFEST))
+        log_tail = _last_json_line(os.path.join(root, CURRENT_BAR_LOG))
+        receipt = read_json(os.path.join(root, CURRENT_BAR_EVAL))
+        amended = False
+        selected: dict = {}
+        eval_path = CURRENT_BAR_EVAL
     else:
-        launch = read_json(os.path.join(root, WS19_LAUNCH))
-        manifest = read_json(os.path.join(root, WS19_MANIFEST))
-        log_tail = _last_json_line(os.path.join(root, WS19_LOG))
-        receipt = read_json(os.path.join(root, WS19_EVAL))
+        marker = read_json(os.path.join(root, WS19_SELECTED))
+        selected = (marker or {}).get("selected") or {}
+        amended = bool(selected.get("run_dir"))
+        if amended:
+            run_dir = selected["run_dir"]
+            launch = read_json(os.path.join(root, run_dir, "launch.json"))
+            manifest = read_json(os.path.join(root, run_dir, "manifest.json"))
+            log_tail = _last_json_line(os.path.join(root, run_dir, "log.jsonl"))
+            receipt = read_json(os.path.join(root, WS19_AMENDED_EVAL))
+            eval_path = WS19_AMENDED_EVAL
+        else:
+            launch = read_json(os.path.join(root, WS19_LAUNCH))
+            manifest = read_json(os.path.join(root, WS19_MANIFEST))
+            log_tail = _last_json_line(os.path.join(root, WS19_LOG))
+            receipt = read_json(os.path.join(root, WS19_EVAL))
+            eval_path = WS19_EVAL
     if launch is None and manifest is None:
         return None
     steps = int((manifest or {}).get("steps") or 0)
     last_step = int((log_tail or {}).get("step") or -1)
-    if receipt is not None:
+    invalidated = _is_invalidated(eval_path, invalidations)
+    if invalidated:
+        state = "invalidated"
+    elif receipt is not None:
         state = "scored"
     elif steps and last_step >= steps - 1:
         state = "complete"
@@ -144,8 +296,17 @@ def load_ws19(root: str) -> dict | None:
         "eval_stamp": (receipt or {}).get("stamp"),
         "amended": amended,
         "selected": selected,
-        "eval_path": WS19_AMENDED_EVAL if amended else WS19_EVAL,
+        "run_dir": run_dir,
+        "eval_path": eval_path,
+        "invalidated": invalidated,
+        "score_state": classify_result(
+            eval_path, receipt is not None, invalidations,
+            current_bar=eval_path if not invalidated else None),
         "diverged_receipt": read_json(os.path.join(root, WS19_EVAL)),
+        "diverged_invalidated": (
+            _is_invalidated(WS19_EVAL, invalidations)),
+        "amended_invalidated": (
+            _is_invalidated(WS19_AMENDED_EVAL, invalidations)),
     }
 
 
@@ -165,11 +326,13 @@ def load_facts(root: str) -> dict:
     states = {arm: (pilot["arms"][arm].get("status") or "unknown") for arm in arms}
     training = [arm for arm in arms if states[arm] in TRAINING_STATES]
     evaluated = [arm for arm in arms if states[arm] in EVALUATED_STATES]
+    invalidations = load_invalidations(root)
     return {
         "pilot": pilot,
         "verdict": verdict,
         "capability": capability,
-        "ws19": load_ws19(root),
+        "invalidations": invalidations,
+        "ws19": load_ws19(root, invalidations),
         "arms": arms,
         "states": states,
         "training_arms": training,
@@ -196,6 +359,31 @@ def _revision_of(receipt: dict, rel: str) -> str:
     if not isinstance(revision, str) or not revision:
         raise pn.Failure(f"{rel}: receipt has no revision to publish")
     return revision[:12]
+
+
+def _eligibility_line(facts: dict,
+                      eligible_paths: Sequence[str] = ()) -> str:
+    """Render the eligibility of scored results from the invalidation receipts."""
+    invalidations = facts.get("invalidations") or _empty_invalidations()
+    masters = invalidations.get("masters") or []
+    evaluations = sorted(invalidations.get("evaluations") or [])
+    eligible = (", ".join(f"`{path}`" for path in sorted(eligible_paths))
+                if eligible_paths else "none")
+    if invalidations["paths"]:
+        invalid_text = (
+            f"{len(invalidations['paths'])} artefact(s) are **`invalidated`**"
+            + (f", including the anchored scores "
+               f"{', '.join(f'`{path}`' for path in evaluations)}"
+               if evaluations else "")
+            + "; they are retained as `historically_scored` evidence only and "
+              "may not be cited as the current bar, baseline or eligible result"
+            + (f" (master record "
+               f"{', '.join(f'`{master}`' for master in masters)})"
+               if masters else "")
+            + ".")
+    else:
+        invalid_text = "no result is invalidated at this revision."
+    return f"- **Result eligibility:** `currently_eligible`: {eligible}; {invalid_text}"
 
 
 def render_readme_status(facts: dict) -> str:
@@ -240,17 +428,40 @@ def render_readme_status(facts: dict) -> str:
         manifest = ws19["manifest"] or {}
         stream = launch.get("stream") or {}
         sha = stream.get("sha256") or (manifest.get("stream_sha256") or "")
-        lines.append(
-            f"- **WS19 stage-2b: `{ws19['state']}`** — the 20M math-weighted "
-            f"full-distillation bar (`{launch.get('unit', WS19_RUN_REL)}`) was "
-            f"launched `{launch.get('created_utc')}` at "
-            f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
-            f"steps on stream `{sha[:16]}…`; "
-            + (f"anchored receipt stamp `{ws19['eval_stamp']}` "
-               f"(`{ws19['eval_path']}`)." if ws19["eval_present"] else
-               "no anchored score exists yet.")
-        )
-        if ws19["amended"]:
+        unit = launch.get("run_dir", ws19.get("run_dir", WS19_RUN_REL))
+        if ws19["state"] == "invalidated":
+            lines.append(
+                "- **WS19 stage-2b: `invalidated`** — the only anchored score at "
+                f"`{ws19['eval_path']}` (stamp `{ws19['eval_stamp']}`) is "
+                "invalidated by the S50 optimiser defect; it is "
+                "`historically_scored` evidence, not an eligible bar or baseline."
+            )
+        elif ws19["state"] == "scored":
+            lines.append(
+                f"- **WS19 stage-2b: `currently_eligible`** — the 20M math-weighted "
+                f"full-distillation bar (`{unit}`) was launched "
+                f"`{launch.get('created_utc')}` at "
+                f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
+                f"steps on stream `{sha[:16]}…`; anchored receipt stamp "
+                f"`{ws19['eval_stamp']}` (`{ws19['eval_path']}`)."
+            )
+        else:
+            lines.append(
+                f"- **WS19 stage-2b: `{ws19['state']}`** — the 20M math-weighted "
+                f"full-distillation bar (`{unit}`) was launched "
+                f"`{launch.get('created_utc')}` at "
+                f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
+                f"steps on stream `{sha[:16]}…`; no anchored score exists yet."
+            )
+        if ws19["amended"] and ws19["amended_invalidated"]:
+            recipe = (ws19["selected"] or {}).get("lr")
+            lines.append(
+                "- **The S49 stability-amended rerun is retained history** — "
+                f"lr `{recipe}` (`{ws19['selected']['run_dir']}`) and its score "
+                f"(`{WS19_AMENDED_EVAL}`) are `invalidated` by the S50 optimiser "
+                "defect; neither is a bar or baseline."
+            )
+        elif ws19["amended"]:
             recipe = (ws19["selected"] or {}).get("lr")
             lines.append(
                 "- **The bar is the stability-amended rerun** — "
@@ -259,6 +470,11 @@ def render_readme_status(facts: dict) -> str:
                 f"as a recorded divergence (`{WS19_EVAL}`); it is not the arm the "
                 "stage-2 win conditions compare against."
             )
+    lines.append(_eligibility_line(
+        facts,
+        eligible_paths=[ws19["eval_path"]] if (
+            ws19 is not None and ws19["score_state"] == "currently_eligible")
+        else []))
     verdict = facts["verdict"]
     if verdict is None:
         lines.append(
@@ -303,8 +519,9 @@ def render_report_status(facts: dict) -> str:
     capability = facts["capability"]
     tail = (
         " The frontier program below (`docs/PROGRAM-PLAN.md` §24, WS19) is "
-        "registered; its stages are not started, and the two committed win "
-        "conditions are stated per stage, not only its risks."
+        "registered; the WS19 stage state above is derived from its launch and "
+        "score receipts, and the two committed win conditions are stated per "
+        "stage, not only its risks."
     )
     lines = [
         "Status: **the T2 pilot is "
@@ -342,6 +559,20 @@ def render_report_status(facts: dict) -> str:
             "A floor effect cannot rank arms; it is reported as an instrument limit, "
             "not as a statement that any mechanism is impossible."
         )
+    ws19 = facts.get("ws19")
+    if ws19 is not None:
+        lines.append(
+            "- WS19 stage-2b is **`"
+            + (ws19["score_state"] if ws19["eval_present"] else ws19["state"])
+            + f"`** (`{ws19['run_dir']}`); every scored result is classified by "
+            "`scripts/status_consistency.py` against the invalidation receipts."
+        )
+        lines.append(_eligibility_line(
+            facts,
+            eligible_paths=[ws19["eval_path"]]
+            if ws19["score_state"] == "currently_eligible" else []))
+    else:
+        lines.append(_eligibility_line(facts))
     lines.append(tail)
     return "\n".join(lines)
 
@@ -457,6 +688,48 @@ def contradiction_rules(facts: dict) -> list[dict]:
                     ),
                 }
             )
+    invalidations = facts.get("invalidations") or _empty_invalidations()
+    if invalidations["paths"]:
+        # Any prose line that names an invalidated artefact and also calls
+        # something the current bar/baseline is a contradiction unless it is
+        # explicitly marking the artefact as history. The generated regions are
+        # stripped before this runs, so the block may name the paths and state
+        # that they are invalidated without tripping its own rule.
+        names = set()
+        for path in invalidations["paths"]:
+            rel = _normalise_path(path)
+            names.add(rel)
+            base = os.path.basename(rel)
+            if base:
+                names.add(base)
+        alternatives = "|".join(
+            re.escape(name) for name in sorted(names, key=len, reverse=True))
+        rules.append(
+            {
+                "name": "invalidated-not-current",
+                "why": (
+                    "an invalidation receipt marks this artefact as usable only "
+                    "as historical evidence, never as the current bar or baseline"),
+                "pattern": re.compile(
+                    rf"({alternatives})[^\n]{{0,120}}\b(is|remains|serves\s+as)\s+"
+                    r"(the\s+)?(current\s+)?(bar|baseline)\b"
+                    rf"|\b(current|eligible)\b[^\n]{{0,80}}\b(bar|baseline)\b"
+                    rf"[^\n]{{0,120}}({alternatives})"
+                    rf"|\b(bar|baseline)\b\s*[:=]\s*[^\n]{{0,80}}({alternatives})"
+                    rf"|\b(bar|baseline)\s+is\s+[^\n]{{0,80}}({alternatives})\b"
+                    rf"|({alternatives})[^\n]{{0,40}}\b(bar|baseline)\b"
+                    rf"|({alternatives})[^\n]{{0,60}}\b(scored|score|eligible)\b"
+                    rf"|({alternatives})[^\n]{{0,80}}\bcurrent\s+(bar|baseline)\b",
+                    re.IGNORECASE,
+                ),
+                "exempt": re.compile(
+                    r"\b(not|no\s+longer|never|invalidated|historical|history|"
+                    r"retained|superseded|may\s+not|cannot|isn't|is\s+not|"
+                    r"are\s+not)\b",
+                    re.IGNORECASE,
+                ),
+            }
+        )
     return rules
 
 
@@ -465,6 +738,9 @@ def find_contradictions(doc: str, text: str, rules: list[dict]) -> list[str]:
     for number, line in _strip_regions(text, doc):
         for rule in rules:
             if rule["pattern"].search(line):
+                exempt = rule.get("exempt")
+                if exempt is not None and exempt.search(line):
+                    continue
                 problems.append(
                     f"{doc}:{number}: status contradiction ({rule['name']}): {line.strip()!r} "
                     f"— {rule['why']}"
