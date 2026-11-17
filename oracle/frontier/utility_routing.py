@@ -37,6 +37,7 @@ generate; the runner is a later GPU job.
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from typing import Mapping, Sequence
 
 import torch
@@ -211,18 +212,129 @@ class PreReadUtilityRouter(nn.Module):
         mask = gated >= threshold
         self.last_prediction = predicted.detach()
         self.last_pre_gate = gated.detach()
+        self.last_selection_mask = mask.detach()
         return mask, predicted, gated
+
+
+def _selection_mask(mask: torch.Tensor, hidden_states: torch.Tensor) -> torch.Tensor:
+    """Validate the caller's pre-read mask against the token grid."""
+    if not isinstance(mask, torch.Tensor):
+        raise ValueError("selection_mask must be a torch.Tensor")
+    if mask.dtype != torch.bool:
+        raise ValueError(
+            f"selection_mask must be bool, got {mask.dtype}; a float mask would "
+            "let a rejected token receive a scaled memory contribution")
+    expected = hidden_states.shape[:-1]
+    if mask.shape != expected:
+        raise ValueError(
+            f"selection_mask shape {tuple(mask.shape)} != token grid "
+            f"{tuple(expected)}")
+    return mask.to(device=hidden_states.device)
+
+
+@dataclass(frozen=True)
+class ReadAccounting:
+    """Physical-read accounting for one routed batch.
+
+    This is the interface the store path must fill once it is wired; nothing
+    here infers a price or a latency. `measured_cost(read)` is still a surrogate
+    measured on the *dense* read tensor, not a byte count from a real store.
+    """
+
+    tokens: int
+    requests: int
+    unique_rows_requested: int
+    bytes_by_tier: dict[str, int]
+    cache_hits: int
+    cache_misses: int
+    basis: str
+
+
+def physical_read_accounting(
+        selection_mask: torch.Tensor,
+        row_bytes_by_tier: Mapping[str, int] | None = None,
+        cache_hits: int = 0,
+        row_ids: torch.Tensor | None = None) -> ReadAccounting:
+    """Count the rows a sparse read would request and the bytes per tier.
+
+    `selection_mask` is the boolean mask returned by the pre-read stage. The
+    count is over *unique* memory rows: when `row_ids` maps each selected token
+    to its store row, tokens that share a row are counted once. Without
+    `row_ids` the mapping is unavailable and the conservative assumption is one
+    row per selected token (reported in `basis`).
+
+    `cache_hits` must come from the store; it is not derivable from the mask.
+    `bytes_by_tier` is `unique rows * row_bytes` for every tier the caller names
+    (e.g. hot/warm/cold), so a tier with a zero byte size is not hidden.
+    """
+    if not isinstance(selection_mask, torch.Tensor):
+        raise ValueError("selection_mask must be a torch.Tensor")
+    if selection_mask.dtype != torch.bool:
+        raise ValueError("selection_mask must be bool")
+    flat = selection_mask.reshape(-1)
+    requests = int(flat.sum().item())
+    if row_ids is not None:
+        rows = torch.as_tensor(row_ids).reshape(-1).to(flat.device)
+        if rows.numel() != flat.numel():
+            raise ValueError(
+                "row_ids must have one entry per token ("
+                f"{rows.numel()} != {flat.numel()})")
+        unique_rows = int(torch.unique(rows[flat]).numel()) if requests else 0
+        uniqueness = "unique store rows from row_ids"
+    else:
+        unique_rows = requests
+        uniqueness = "one row per selected token (row_ids not supplied)"
+    if not isinstance(cache_hits, int) or cache_hits < 0:
+        raise ValueError("cache_hits must be a non-negative int")
+    if cache_hits > requests:
+        raise ValueError("cache_hits cannot exceed requests")
+    bytes_by_tier: dict[str, int] = {}
+    for tier, size in sorted((row_bytes_by_tier or {}).items()):
+        if not isinstance(size, int) or size < 0:
+            raise ValueError(f"byte size for tier {tier!r} must be a non-negative int")
+        bytes_by_tier[tier] = unique_rows * size
+    basis = (
+        f"logical selection; {uniqueness}; "
+        + ("tier byte sizes supplied" if bytes_by_tier
+           else "tier byte sizes not supplied")
+        + "; measured_cost(read) remains a surrogate until the store path is "
+          "wired and reports real bytes and cache state")
+    return ReadAccounting(
+        tokens=int(flat.numel()), requests=requests,
+        unique_rows_requested=unique_rows, bytes_by_tier=bytes_by_tier,
+        cache_hits=cache_hits, cache_misses=requests - cache_hits, basis=basis)
+
+
+@dataclass(frozen=True)
+class ReadExecution:
+    """What one pre-read routing call actually fetched and admitted."""
+
+    contribution: torch.Tensor
+    selection_mask: torch.Tensor
+    predicted: torch.Tensor
+    gate: torch.Tensor
+    requested_indices: torch.Tensor
+    accounting: ReadAccounting
 
 
 class TwoStageUtilityRouter(nn.Module):
     """Optional post-read refinement of the pre-read gate.
 
-    The pre-read prediction is always computed first and without the read. When
-    `use_post_read` is true the post-read router's prediction is added in logit
-    space before the gate, so the refinement can close a gate but cannot open
-    one the pre-read stage rejected (the caller only fetches where the pre-read
-    stage selected). With `use_post_read=False` the module is exactly the
-    pre-read router and the read is never consumed by the gate.
+    The pre-read prediction is always computed first and without the read. The
+    pre-read stage returns a **boolean selection mask**, and the caller must
+    pass that same mask to `forward` (and to `execute`, which fetches only the
+    selected rows). The module enforces the contract rather than trusting the
+    caller:
+
+    * the read is zeroed at unselected tokens before the post-read predictor
+      sees it;
+    * the returned contribution is multiplied by the mask, so an unselected
+      token receives exactly zero;
+    * the post-read refinement is added in logit space before the gate, so it
+      can close a gate the pre-read stage opened but cannot resurrect a
+      rejected token.
+
+    With `use_post_read=False` the module is exactly the pre-read router.
     """
 
     def __init__(self, hidden: int = 1024, read_dim: int | None = None,
@@ -249,16 +361,78 @@ class TwoStageUtilityRouter(nn.Module):
     def forward(self, hidden_states: torch.Tensor,
                 metadata: Mapping[str, torch.Tensor | float],
                 read: torch.Tensor,
+                selection_mask: torch.Tensor,
                 cost: torch.Tensor | float = 0.0) -> torch.Tensor:
+        """Gate the read; `selection_mask` is the pre-read `select` mask.
+
+        Unselected tokens are mathematically guaranteed to receive zero: the
+        read is zeroed before the post-read predictor and the final contribution
+        is multiplied by the mask.
+        """
+        mask = _selection_mask(selection_mask, hidden_states)
+        if read.shape[:-1] != mask.shape:
+            raise ValueError(
+                f"read token grid {tuple(read.shape[:-1])} != selection_mask "
+                f"{tuple(mask.shape)}")
+        # The post-read stage must not see values it was never allowed to fetch.
+        read = read * mask[..., None].to(read.dtype)
         pre_prediction = self.pre.predict(hidden_states, metadata)
         prediction = pre_prediction
         if self.post is not None:
             prediction = prediction + self.post.predict(hidden_states, read)
         gated = torch.sigmoid((prediction - cost) / max(self.tau, 1e-6))
+        contribution = gated[..., None] * read * mask[..., None].to(read.dtype)
         self.last_prediction = prediction.detach()
         self.last_pre_gate = self.pre.gate(pre_prediction, cost).detach()
         self.last_gate = gated.detach()
-        return gated[..., None] * read
+        self.last_selection_mask = mask.detach()
+        return contribution
+
+    def execute(self, hidden_states: torch.Tensor,
+                metadata: Mapping[str, torch.Tensor | float],
+                read_path,
+                cost: torch.Tensor | float = 0.0,
+                threshold: float = DEFAULT_PRE_READ_THRESHOLD,
+                row_ids: torch.Tensor | None = None,
+                row_bytes_by_tier: Mapping[str, int] | None = None,
+                cache_hits: int = 0) -> ReadExecution:
+        """Select, fetch only the selected rows, then apply the two stages.
+
+        `read_path(indices)` is the store call: it receives a 1-D `LongTensor` of
+        flat token indices and must return a `[len(indices), hidden]` tensor of
+        rows. It is called exactly once, with exactly the selected indices, so a
+        spy can prove that no unselected token was requested. The returned
+        reads are scattered into a zero tensor and passed through `forward`,
+        which enforces the mask again.
+        """
+        mask, predicted, gate = self.select(hidden_states, metadata, cost,
+                                            threshold)
+        flat_mask = mask.reshape(-1)
+        indices = flat_mask.nonzero(as_tuple=False).squeeze(-1)
+        reads = read_path(indices)
+        if not isinstance(reads, torch.Tensor):
+            raise ValueError("read_path must return a torch.Tensor")
+        if reads.ndim != 2 or reads.shape[0] != indices.numel() \
+                or reads.shape[1] != hidden_states.shape[-1]:
+            raise ValueError(
+                "read_path must return [selected, hidden], got "
+                f"{tuple(reads.shape)} for {indices.numel()} selected tokens")
+        read = hidden_states.new_zeros(hidden_states.shape)
+        flat_read = read.reshape(-1, hidden_states.shape[-1])
+        if indices.numel():
+            flat_read.index_copy_(0, indices,
+                                  reads.to(device=flat_read.device,
+                                           dtype=flat_read.dtype))
+        contribution = self.forward(hidden_states, metadata, read, mask, cost)
+        accounting = physical_read_accounting(
+            mask, row_bytes_by_tier=row_bytes_by_tier, cache_hits=cache_hits,
+            row_ids=row_ids)
+        self.last_requested_indices = indices.detach().to("cpu")
+        return ReadExecution(
+            contribution=contribution, selection_mask=mask,
+            predicted=predicted, gate=gate,
+            requested_indices=self.last_requested_indices,
+            accounting=accounting)
 
 
 def counterfactual_improvement(base_losses: torch.Tensor,
@@ -273,9 +447,10 @@ def measured_cost(read: torch.Tensor, price_per_element: float = 1.0,
                   latency: float = 0.0) -> torch.Tensor:
     """A measured per-token cost: read magnitude times a price, plus latency.
 
-    The registration fixes `price_per_element` and `latency` from the runtime
-    receipt before the arm runs. This function only defines the arithmetic; it
-    does not invent a price.
+    **Surrogate.** This is arithmetic on the dense `read` tensor, not a byte or
+    cache count from a memory store. It remains the routing cost until the store
+    path is wired; `physical_read_accounting` is the interface that will replace
+    it with unique-row and tier-byte counts from the real read path.
     """
     if price_per_element < 0.0 or latency < 0.0:
         raise ValueError("cost terms must be non-negative")

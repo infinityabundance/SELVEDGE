@@ -94,21 +94,23 @@ def test_post_read_gate_is_optional_and_cannot_run_without_the_read():
     metadata = _metadata(batch=1, positions=4)
 
     pre_only = routing.TwoStageUtilityRouter(hidden=6, use_post_read=False)
-    pre_only(hidden, metadata, read, cost=0.0)
+    mask, _, _ = pre_only.select(hidden, metadata, cost=0.0)
+    pre_only(hidden, metadata, read, mask, cost=0.0)
     gate_a = pre_only.last_gate.clone()
     assert torch.equal(pre_only.last_gate, pre_only.last_pre_gate)
     # changing the read cannot change a pre-read-only gate
-    pre_only(hidden, metadata, read * 1000.0, cost=0.0)
+    pre_only(hidden, metadata, read * 1000.0, mask, cost=0.0)
     assert torch.equal(gate_a, pre_only.last_gate)
 
     # with a fitted post-read stage the read does move the prediction
     two_stage = routing.TwoStageUtilityRouter(hidden=6, use_post_read=True)
+    mask, _, _ = two_stage.select(hidden, metadata, cost=0.0)
     with torch.no_grad():
         two_stage.post.predictor[0].weight.fill_(0.05)
         two_stage.post.predictor[2].weight.fill_(0.05)
-    two_stage(hidden, metadata, read, cost=0.0)
+    two_stage(hidden, metadata, read, mask, cost=0.0)
     prediction_one = two_stage.last_prediction.clone()
-    two_stage(hidden, metadata, read * 3.0, cost=0.0)
+    two_stage(hidden, metadata, read * 3.0, mask, cost=0.0)
     assert not torch.allclose(prediction_one, two_stage.last_prediction,
                               atol=1e-9, rtol=1e-6)
 
