@@ -67,3 +67,24 @@ def test_every_source_has_a_pinned_revision_and_licence():
     assert math_stream.SOURCES["numina"]["license"] == "Apache-2.0"
     assert math_stream.SOURCES["fineweb"]["license"] == "ODC-By-1.0"
     assert math_stream.SOURCES["numina"]["lfs_oid"].startswith("25c0fa2c")
+
+
+def test_the_graft_builder_accepts_the_math_stream_manifest():
+    """The corrective init is fitted on this stream, so the schema must pass.
+
+    The graft builder reads `stream_path`, `sha256`, `graft_tokens`, `tokenizer`
+    and `contamination`. The math manifest carries all five; its schema label
+    differs only because it records the mixture.
+    """
+    import json
+
+    path = os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                        "results", "stage2",
+                        "stage2-math-stream-20261117T071120Z.json")
+    manifest = json.load(open(path, encoding="utf-8"))
+    assert manifest["schema"] in ("selvedge/stage2-stream/v1",
+                                  "selvedge/stage2-math-stream/v1")
+    for key in ("stream_path", "sha256", "graft_tokens", "tokenizer",
+                "contamination"):
+        assert key in manifest, key
+    assert "tokenizer_sha256" in manifest["tokenizer"]

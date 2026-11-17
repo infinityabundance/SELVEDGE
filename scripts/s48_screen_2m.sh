@@ -95,8 +95,12 @@ if ((init)); then
     printf 's48-screen: corrective init already exists: %s\n' "$memory_init"
     exit 0
   fi
+  # The math stream declares no graft split (its full-distillation consumer
+  # trains on every token), so the fit uses a declared leading prefix and the
+  # receipt says the fit tokens are not held out from training.
   cmd=(python3 oracle/frontier/graft.py --corrective
     --stream-manifest "$stream_manifest" --seed "$seed"
+    --graft-tokens 250000
     --vram-limit-gib "$vram" --out-dir results/stage2/graft/corrective)
 else
   if [[ -z "$arm" ]] || ! is_known_arm "$arm"; then

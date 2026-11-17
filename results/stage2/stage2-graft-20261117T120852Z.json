@@ -1,0 +1,827 @@
+{
+  "artifacts": {
+    "bytes": 69788293,
+    "checkpoint": "results/stage2/graft/corrective/20261117T120852Z/memory-init.pt",
+    "checkpoint_sha256": "440fb7a4571556ac44544054510107d4188914de83279ea7a67f6962c69f46fc"
+  },
+  "command": [
+    "oracle/frontier/graft.py",
+    "--corrective",
+    "--stream-manifest",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "--seed",
+    "0",
+    "--graft-tokens",
+    "250000",
+    "--vram-limit-gib",
+    "12.5",
+    "--out-dir",
+    "results/stage2/graft/corrective"
+  ],
+  "container_memory": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": "6442450944",
+    "memory_peak": "6090272768",
+    "memory_swap_peak": "0"
+  },
+  "created_utc": "2026-11-17T12:09:36Z",
+  "determinism": {
+    "dtype": "bfloat16 capture, float32 fits",
+    "torch_deterministic": true
+  },
+  "disk": {
+    "cache_filesystem_free_bytes": 31025573888,
+    "teacher_2b_required_bytes": 4548221488,
+    "teacher_4b_cached": true,
+    "teacher_4b_fits_now": true,
+    "teacher_4b_required_bytes": 9319828096
+  },
+  "geometry": {
+    "accessible_added_total": 17312768,
+    "accessible_per_site": 17312768,
+    "active_per_token": 539649,
+    "active_per_token_before_gate": 537600,
+    "active_per_token_per_site": 537600,
+    "basis": "same reads, projections and convolution as the representation graft, plus a 2*hidden+1 element token gate per site",
+    "constant_offset_in_residual": false,
+    "conv_elements_per_site": 10240,
+    "conv_kernel": 4,
+    "core_report_kind": "stage2_memory_geometry",
+    "correction_gate_elements": 2049,
+    "correction_gate_elements_per_site": 2049,
+    "gate_bias_elements_per_site": 1,
+    "gate_elements_per_site": 0,
+    "gate_feature_map": "phi(h_t, r_t) = [h_t ; r_t] (parameter-free)",
+    "gate_init": "w = 0 and b = 0, so alpha_t = tanh(0) = 0 exactly for every token; the untrained residual is exactly zero",
+    "gate_parameters_per_site": 2049,
+    "gate_shape": "per token (B, T); the gate varies across positions once w is non-zero",
+    "gate_weight_elements_per_site": 2048,
+    "hidden": 1024,
+    "key_projection_elements_per_site": 262144,
+    "kind": "stage2_corrective_token_gate_active",
+    "orders": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+    ],
+    "read_bytes_per_token_basis": "modelled distinct-identity lower bound",
+    "read_bytes_per_token_bf16": 1075200,
+    "reads_per_token_per_site": 8,
+    "resident_table_bytes_bf16": 33554432,
+    "resident_table_bytes_fp32": 67108864,
+    "rows_per_site": 65536,
+    "rows_read_elements_per_token_per_site": 2048,
+    "sites": 1,
+    "table_charged_to_active": false,
+    "table_elements_per_site": 16777216,
+    "table_elements_total": 16777216,
+    "trainable_per_site": 535552,
+    "value_dim": 256,
+    "value_projection_elements_per_site": 263168,
+    "variant": "corrective_token_gate"
+  },
+  "kind": "graft",
+  "models": {
+    "student": {
+      "dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "hidden_at_site": 1024,
+      "parameters": 752393024
+    },
+    "teacher": {
+      "dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "hidden_at_site": 2048,
+      "parameters": 1881825088
+    }
+  },
+  "pca": {
+    "basis_shape": [
+      1024,
+      256
+    ],
+    "eigensolver": "torch.linalg.eigh on the float64 covariance",
+    "explained_variance": 0.8127501968613019,
+    "mean_norm": 0.8336655497550964,
+    "total_variance": 1.748042237498807,
+    "value_dim": 256
+  },
+  "projection": {
+    "W": {
+      "fit_tokens": 200000,
+      "heldout_relative_frobenius_error": 0.4417476889908695,
+      "heldout_tokens": 50000,
+      "mapped_state_relative_error": 0.42700174185813594,
+      "ridge_fraction": 0.001,
+      "ridge_lambda": 1.13910595703125,
+      "solver": "normal equations, torch.linalg.solve, float32",
+      "student_width": 1024,
+      "teacher_width": 2048
+    },
+    "method": "ridge least squares teacher->student"
+  },
+  "reconstruction": {
+    "gate_parameters_per_site": 2049,
+    "gate_summary": {
+      "max": 0.0,
+      "mean": 0.0,
+      "mean_abs": 0.0,
+      "min": 0.0,
+      "tokens": 4096
+    },
+    "gate_tokens": 4096,
+    "hidden_norm_mean": 1.8139564990997314,
+    "identity_at_init": true,
+    "identity_check": "gate alpha = tanh(0) = 0 exactly, so the untrained residual is zero and the model reproduces the base bit for bit (see the S42 test)",
+    "note": "the residual is alpha_t * read with alpha_t = tanh(0) = 0 for every token, so it is exactly zero and the untrained model is the base bit for bit; the read ratio is the magnitude the gate opens onto once trained",
+    "pca_state_relative_error": 0.6468876318326551,
+    "read_norm_mean": 1.0835731029510498,
+    "read_to_hidden_norm_ratio": 0.5973533987998962,
+    "residual_max_abs": 0.0,
+    "residual_norm": 0.0,
+    "sample_tokens": 4096,
+    "supervision": "learned by corrective_objective (advantage-weighted KL + base preservation + gate interference); the rows are only initialised from the representation fit"
+  },
+  "revision": "d2cfb0ff697a73d3038053b1b254cba5798286f8",
+  "rows": {
+    "collision_ratio": 0.967232,
+    "empty_rows": 0,
+    "max_count": 2096,
+    "mean_count_nonempty": 30.517578125,
+    "median_count_nonempty": 22.0,
+    "occupancy_fraction": 1.0,
+    "read_identities": 2000000,
+    "row_dtype": "float32 for training; bf16 is the deployment size",
+    "rows": 65536,
+    "rows_with_at_least_one_token": 65536
+  },
+  "schema": "selvedge/stage2-graft/v1",
+  "site": 2,
+  "stamp": "20261117T120852Z",
+  "stream": {
+    "contamination": {
+      "documents_rejected": [
+        {
+          "digest": "5d96f04c320061eb4b961bc98606b2e1b3302aed112277f88995606a6a3c3ff9",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.23846153846153847,
+          "source": "math"
+        },
+        {
+          "digest": "26b53a41d3778f95935ea59074855c7dc814535f35e817c5f798f956c14c3c6a",
+          "eval_item": "openai___gsm8k/main/0.0.0/740312add88f781978c0658806c59bc2815b9866/gsm8k-test.arrow",
+          "jaccard": 0.20270270270270271,
+          "source": "gsm8k"
+        },
+        {
+          "digest": "416a941320814d53791d52ae09e996a4aa1c7c721c43db880049b5941c4afc28",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.2,
+          "source": "math"
+        },
+        {
+          "digest": "82ea88e9144745cf85b5b160c5f9a6f2c9da1df6d06fbace188339aa1f481548",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.35904255319148937,
+          "source": "numina"
+        },
+        {
+          "digest": "5d67deb42a8beb5afba1f5f29ca9df6215c987f635183b437c8093df6f774054",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.32831325301204817,
+          "source": "math"
+        },
+        {
+          "digest": "05acad9a2e4458027b1c5ffd902371b624ac80a09e304ee7f87b01c6f4881af3",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.36046511627906974,
+          "source": "math"
+        },
+        {
+          "digest": "cebfbe6f9d6c5d5c4da6fcdb7528380401056aa125db124420a5cff25470274f",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.3037974683544304,
+          "source": "math"
+        },
+        {
+          "digest": "b44754497e586baa55932ff407519711edb95d54a6f892e1ca16533ae3cf2a44",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.25757575757575757,
+          "source": "math"
+        },
+        {
+          "digest": "ef689b198ad725832b2dd57335598e9090e39e22f4c023caf74bd8f133799b76",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.28699551569506726,
+          "source": "math"
+        },
+        {
+          "digest": "edc3fe73de452c6665e4941b3f00eefe09395e767bd68b899f6641f6ff979d27",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2651685393258427,
+          "source": "math"
+        },
+        {
+          "digest": "652ecbb7ff8a8a0c812a875009e28edba2af28cb2bbf15eb79da6e9d2701469a",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.21739130434782608,
+          "source": "math"
+        },
+        {
+          "digest": "442efe510a427ac24bf4f675e8694fa20e43ee7563e881b1abc62dfd79223000",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.28852459016393445,
+          "source": "math"
+        },
+        {
+          "digest": "326780afff1a61d81a74612f9adc33b4ad95c9c8db120d1d388983dcd32e4a57",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3505747126436782,
+          "source": "math"
+        },
+        {
+          "digest": "d8253ac423e8b4da8613446a5892ff3e2c6411656bb37d4933e19b0e5a1f5dbf",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.21333333333333335,
+          "source": "math"
+        },
+        {
+          "digest": "29bad7c6e500cd2e18bbf5fd1ed7a0ce8cd40fee870a0f7bd3261129e3ca6e0a",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.27884615384615385,
+          "source": "math"
+        },
+        {
+          "digest": "b3b4a78889875dad47b82cca951b93323a7f12a86f7abacdfdfa165e4232f451",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2706766917293233,
+          "source": "math"
+        },
+        {
+          "digest": "d4f2589551b295b1d579f6ff1aa9c54a92a0f70bdb93975bd63064ff3cbb25c4",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.47368421052631576,
+          "source": "math"
+        },
+        {
+          "digest": "2300ba3271fd9bcd3004fd1b02548f22bf457f05d6c65525924fe63f25a900a9",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.33053221288515405,
+          "source": "math"
+        },
+        {
+          "digest": "a2e4662d3e1b04403f31255b3ccf50250d011db845eff6dafa1f1f2556e77650",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.34951456310679613,
+          "source": "math"
+        },
+        {
+          "digest": "2c76e0adf6538ea632313668f3b09416d6061f903b6013dfd4bff7a12a439426",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2037037037037037,
+          "source": "math"
+        },
+        {
+          "digest": "dca7e21dd6bbe2b8bbf19570132bc029f30b572e03cce9c6ce027abb69866716",
+          "eval_item": "openai___gsm8k/main/0.0.0/740312add88f781978c0658806c59bc2815b9866/gsm8k-test.arrow",
+          "jaccard": 0.2631578947368421,
+          "source": "gsm8k"
+        },
+        {
+          "digest": "b42e40daf4881f800c5b2fe2549373cf443ae9595d55d0c4a15dc56449b80c88",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3900709219858156,
+          "source": "math"
+        },
+        {
+          "digest": "bbde0fc5c559c5d329b0787dd9f32c13755cbbc749644128cc93bad9998da141",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.25925925925925924,
+          "source": "math"
+        },
+        {
+          "digest": "a1e9bc9dfa76cfc56ffca2e6117f9cf1fff52eacc3009eb1dce1104b3a40f2d1",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.32941176470588235,
+          "source": "math"
+        },
+        {
+          "digest": "158287ff29c790ceda8658c9250a9f2c1a9f6d98a63960efe53f1a2ef089e1b8",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3900709219858156,
+          "source": "math"
+        },
+        {
+          "digest": "351d05cd5a8350a8b0c1cddf1119e8b7562d7ece7a2271d62f6da4f829bd8673",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.37398373983739835,
+          "source": "math"
+        },
+        {
+          "digest": "f7d1bdeddc5a94c4b5aa0a4aeca9ec074a9ca8fb184f2cd208aa8bf1c748ddec",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.2265625,
+          "source": "math"
+        },
+        {
+          "digest": "8c693cefee664dd4cab4c579e9c7a53799326767af88a8f8ae090d17e9cea7f7",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.2765957446808511,
+          "source": "math"
+        },
+        {
+          "digest": "acc39b4a4173909217842bf4b3fbdc8d831d18eee5a6981ac7778716e33cbab6",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3284457478005865,
+          "source": "numina"
+        },
+        {
+          "digest": "5a89f07ff416e2e780e088a0268acae1c1f26ce96261c34c1f23e1fec82eac3b",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2744186046511628,
+          "source": "math"
+        },
+        {
+          "digest": "4fdfe7ab41f75e618ddac439e6c8e40ee7724bea37961068eded2234dc655552",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.4931506849315068,
+          "source": "math"
+        },
+        {
+          "digest": "66e57b85768ba8d445553177503cb782d8b8673d5de6bf0a63afa4b7cd0b475f",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.26865671641791045,
+          "source": "math"
+        },
+        {
+          "digest": "5c9ef5077d535f81f13dc637372922f5ac3586c3e5e0bfd3d01422dc9af69684",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2755905511811024,
+          "source": "math"
+        },
+        {
+          "digest": "1e94d8a0386fdce107d3b07f4b4ddd17fef45a803d75bc7f4674a41b5589cd30",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2757009345794392,
+          "source": "math"
+        },
+        {
+          "digest": "9f3331dc7d9cf48cfda397861f0a4b1e57c43b16c43a7470aa681a3ce669bc57",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.34911242603550297,
+          "source": "math"
+        },
+        {
+          "digest": "0b7526c0f1cb992fb77be41e95c8f40df538f480f76f5a1488695d134ce7cf3f",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.20212765957446807,
+          "source": "math"
+        },
+        {
+          "digest": "6ec9bbe30ad12758e01f196e3a4572f90fd2868a8ca90bcc2cdeea3e07c8283f",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.2204724409448819,
+          "source": "math"
+        },
+        {
+          "digest": "6d0d2d91c8b8bb91212bc40e57ff645508f4044ef2cecfc5a2f01e0d70f3d6e9",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2222222222222222,
+          "source": "math"
+        },
+        {
+          "digest": "71d541f990fcc0853db3879d82feb4c697ea335593673fa47afdd8a9a74fab66",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.23076923076923078,
+          "source": "math"
+        },
+        {
+          "digest": "90e6c91a5279c7487f2a49752ec9d5bd719c20a6f424cb098730e0844897e9b8",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.32954545454545453,
+          "source": "math"
+        },
+        {
+          "digest": "58cf35fbb00569d046ca267fb734233144d69fa5f63052e732df4304c0f89779",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.344559585492228,
+          "source": "math"
+        },
+        {
+          "digest": "ad120cac6f4802c75572b4a1d97176fd619ba7707410f328788310c898c88a1b",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.22580645161290322,
+          "source": "math"
+        },
+        {
+          "digest": "f97dac4c813a37a9fba561a3cb85a1198473394a35c96bb15d268924a0257403",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.25882352941176473,
+          "source": "math"
+        },
+        {
+          "digest": "e6f57689ab3abf7f15d397a12e0d713817c944a6f1a6b71e0be91ec97cae5b9e",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.24210526315789474,
+          "source": "math"
+        },
+        {
+          "digest": "d8bc21379b53c2ced92d474c32de61fd86c62dafbe55753fbed44978dc0f0f39",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2647058823529412,
+          "source": "math"
+        },
+        {
+          "digest": "33825ee0dc24668de64874195fb8c494238da6e39b7b30184e92005a8a7783b9",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.28078817733990147,
+          "source": "numina"
+        },
+        {
+          "digest": "3dba6d2494d857dd6cd24d8fe7dc3528684be4f7ab22eceedea16b77f5f953c7",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.3057324840764331,
+          "source": "math"
+        },
+        {
+          "digest": "ba9e1270a3b71f5e2526fc2991154b276ff1c9e7c884130023aa5f5f68cf761e",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.30025445292620867,
+          "source": "math"
+        },
+        {
+          "digest": "52f03598cc24060ed958fa8e552c39b27168f0bb13123b22c84671dd5ad06896",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.23636363636363636,
+          "source": "math"
+        },
+        {
+          "digest": "7b2717e911dee382afa0150a1aa089101826afc9df81a195caa4b0f3e90b798d",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.336734693877551,
+          "source": "math"
+        },
+        {
+          "digest": "1e5ceb0742a02247db1746df783f31bba9f08558e5bfd0985dbb4de5b4ce4062",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.24285714285714285,
+          "source": "math"
+        },
+        {
+          "digest": "ab8aeb907eaa41d090a3bbc4fb2c144f10397996563dca8a088e66e32b884809",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2076271186440678,
+          "source": "math"
+        },
+        {
+          "digest": "e82a09b8cfe60ef9b7d40329ec8088daf5eb494f18517289d52e32e937b9c9de",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.3918918918918919,
+          "source": "math"
+        },
+        {
+          "digest": "4a436932b2c5421942e5b29c577cdf7e4ca1ba795a93b731f2eb2be1ab6910f9",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3333333333333333,
+          "source": "math"
+        },
+        {
+          "digest": "3823e59fa52cd919da8542e7c916216223c290aaeea215425e3988747bed2196",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.36363636363636365,
+          "source": "math"
+        },
+        {
+          "digest": "ba3c0a93501bf02b8743915f0b5315d3a102489b810d00c59498ef794a9423e3",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.21495327102803738,
+          "source": "math"
+        },
+        {
+          "digest": "854ab8bfdbdfb5ee919d9653373d1fa1b1c226ff7e37bce69d8a9684c3b41e8b",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3586626139817629,
+          "source": "math"
+        },
+        {
+          "digest": "f52292ca509de47fc98d4ea0ae04d7543a9d4eefa238a84138635a60a8020899",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3089005235602094,
+          "source": "math"
+        },
+        {
+          "digest": "1511305bf6f5d454481370dba2ed5e0ece742aef51db5a7c474708f9289da677",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.22448979591836735,
+          "source": "math"
+        },
+        {
+          "digest": "53713d940d85e54318b2b533e221a20e53961bb2a30031ad5308e243819bbeee",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.2972972972972973,
+          "source": "math"
+        },
+        {
+          "digest": "88ae471d8e7628c03c8afef777a1de0b4f431cfd345da3a3f9ea3b5814bdf37b",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.25806451612903225,
+          "source": "math"
+        },
+        {
+          "digest": "9d0297827ae27e3859e926ea4c1baaffc6e1eff1d89834e9fdb9bae1d4dddeda",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.42857142857142855,
+          "source": "math"
+        },
+        {
+          "digest": "891867e6ced4c4780ad2e9823b4b4f7fd9415135beaeffe42f6ac8de9010ad1d",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3489827856025039,
+          "source": "math"
+        },
+        {
+          "digest": "80b2618f868e2ceeaed819fb48d335466d13d50e54e1bb1d927c1d0e74c1fbba",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.215,
+          "source": "math"
+        },
+        {
+          "digest": "f9ff7434d70f48e1e1c81e292f6e85c3d15849f49b9dd07e2f0e48973232c5a2",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.21904761904761905,
+          "source": "math"
+        },
+        {
+          "digest": "1d74226c4ccf7e732ae2fe9114702489e22f5bb74fcb29f457e24a21349d713a",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.21076233183856502,
+          "source": "math"
+        },
+        {
+          "digest": "c41a8f545cb2d26c769d2e2d83c5474621ce0edda8cf399853eb47a7ead5aa93",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.21739130434782608,
+          "source": "math"
+        },
+        {
+          "digest": "ff28e5723b0c41ad163f88dbc28346084e407480023aa9172fe4e104d70b4c75",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.36283185840707965,
+          "source": "math"
+        },
+        {
+          "digest": "9b7509774fcd98407404bea2eeb16430b5a496dcbbd8865da9296c938d6077a5",
+          "eval_item": "openai___gsm8k/main/0.0.0/740312add88f781978c0658806c59bc2815b9866/gsm8k-test.arrow",
+          "jaccard": 0.2857142857142857,
+          "source": "gsm8k"
+        },
+        {
+          "digest": "50d90c25b4fae60527e1442c8dd300c024c46a17d6460b6ea7ad255c03b09fd3",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.24468085106382978,
+          "source": "math"
+        },
+        {
+          "digest": "ff96084280605179a999caa1ff62e43d0bc84f6c5c803735fa17b18f920060ab",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.36257309941520466,
+          "source": "math"
+        },
+        {
+          "digest": "51dbbb7a0da63b82b1d912aa180f07f26ce281f435422fc1519cc6517edd366b",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.208955223880597,
+          "source": "math"
+        },
+        {
+          "digest": "e1917e4b2d2119bc35fa3cf939d7fa0096349639ed339d7fa0d71ed9a35794dd",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.46551724137931033,
+          "source": "math"
+        },
+        {
+          "digest": "79a96a4464335764fe12451a5ce62f8356b3f7a7308717263625d491b6982997",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2608695652173913,
+          "source": "math"
+        },
+        {
+          "digest": "88485a59dda0c3fdc0189f94752bf9dc1e7136b8252e70dfea8f5c002bfbdad4",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.22,
+          "source": "math"
+        },
+        {
+          "digest": "dd7fa6f4de7bf4db2dbdf7393d872f4070ad9e488dc7a9b3a729848cb5d93ea4",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.23055555555555557,
+          "source": "math"
+        },
+        {
+          "digest": "d742072733037d977b31dd0e09f7fb80667f2cc1b08c12e8116f6e6a087c081f",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.23076923076923078,
+          "source": "math"
+        },
+        {
+          "digest": "d7815572f1e6049fc2c1d6be35a01a2e4865f16bd80046cfbc0f0cf0f04076a7",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2706422018348624,
+          "source": "math"
+        },
+        {
+          "digest": "d7f78e344c1a3386bb2d793dff5388aad913e78e9a6f91970cd3796d7e094eeb",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.2682926829268293,
+          "source": "math"
+        },
+        {
+          "digest": "38c4776e93ed63318769e28b1a7a67243c9e25867b558e8e02650146789f7778",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.4124087591240876,
+          "source": "math"
+        },
+        {
+          "digest": "a0593a6622c7f726384b95432f8e4490fe900f2bb44c5b08a23e45abbc07020f",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.21686746987951808,
+          "source": "math"
+        },
+        {
+          "digest": "46950c7ba9f1a4732c8a1045b2913f3a042381f0701597bfcf24bfea5a1ab557",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.20353982300884957,
+          "source": "math"
+        },
+        {
+          "digest": "a43319c78e4c79fa7861cf33f7e361bac7ab812d7db73b7a38203e96082fcf49",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.31640625,
+          "source": "math"
+        },
+        {
+          "digest": "7dfa458d19200ef068030fe907c7d84e1af8c414dbb6ad529668f9daed38134c",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3358208955223881,
+          "source": "math"
+        },
+        {
+          "digest": "30fe32cadcb52dbd34d0cbeb8eab08ceb38be3110106ff5862d8e509042560af",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3,
+          "source": "math"
+        },
+        {
+          "digest": "780c1ec8c414556ddbcb5f1d76aeaa7d09f33f336cfbe01f7517add8862d573e",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.23232323232323232,
+          "source": "math"
+        },
+        {
+          "digest": "c55e12cb42e59e3573bf421643cf98d2490d9c0d7235d6440187206f2d21088d",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.25757575757575757,
+          "source": "math"
+        },
+        {
+          "digest": "7968f64a3fc384ff5c6a2de1ab21d02be1676b9ba2b3a7a586c277b1b9845b91",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.41530054644808745,
+          "source": "math"
+        },
+        {
+          "digest": "ad748c270706e009d3064af940bbc878c788931666e8facba3a146e92c332352",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.2653061224489796,
+          "source": "math"
+        },
+        {
+          "digest": "5a6dc6108fbdb42ee8b9a7c78bfe56ac4b0c365c6304d606ab63dc4a0667c2c2",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3426395939086294,
+          "source": "numina"
+        },
+        {
+          "digest": "d7da91c23dfe1d477c703041a674c8468520167b4d38b1f1cc50671b0c589a53",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3586387434554974,
+          "source": "math"
+        },
+        {
+          "digest": "9212de23fa94ada5686a3069f3cdef65c098eb48a2ed7c87af568ca605fbab0c",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.26881720430107525,
+          "source": "math"
+        },
+        {
+          "digest": "25f9d87a91fab7d58199d1a8ca4656335641b7f761a255cb23d87b3aed612928",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.4788732394366197,
+          "source": "math"
+        },
+        {
+          "digest": "9d22b82ba34d9b4437f84272607df68a145e3c730a9734af1fb3b3110bdff74f",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.3225806451612903,
+          "source": "math"
+        }
+      ],
+      "documents_rejected_contamination": 102,
+      "evaluation_items": 51902,
+      "hard_contamination": [
+        {
+          "digest": "f05d23f3325a055fb16af3d2fca160b33f38eadae1fa7f053850c5adf73dd318",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.5952380952380952,
+          "source": "math"
+        },
+        {
+          "digest": "ef019927f67a7eac3b85e0c633fc036da40e93948e6ba773228892785f5c448a",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.5066666666666667,
+          "source": "math"
+        },
+        {
+          "digest": "2a5ab2eb22a98c0f548cceb5ac326c73279d070e3ce7433b63f01733658d5a52",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.6258064516129033,
+          "source": "math"
+        },
+        {
+          "digest": "87e54aebfaa0f4a177ed249fabea55c00dea053172d67e07dc00dcad6b4e01bd",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.5416666666666666,
+          "source": "math"
+        },
+        {
+          "digest": "aa9ef9efe3531499d2d59137983b131978aa86952539266ccd1058220b0ead24",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.5393258426966292,
+          "source": "math"
+        },
+        {
+          "digest": "8627c3efd362f5c01da3d72b0266ff2727010e19ace8e14c6f8142ce0e02a829",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.5217391304347826,
+          "source": "math"
+        },
+        {
+          "digest": "7a139f001d30127d651115c7bf4a79f080f64cb4257b9d977757b8e0fd49aa5e",
+          "eval_item": "cais___mmlu/high_school_mathematics/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+          "jaccard": 0.5166666666666667,
+          "source": "math"
+        },
+        {
+          "digest": "2d0f11664435d6bc61bdbdf5f10be15f4413c0e8336aee74aa19b1c374830172",
+          "eval_item": "HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+          "jaccard": 0.5523809523809524,
+          "source": "math"
+        }
+      ],
+      "index": {
+        "distinct_shingles": 1922185,
+        "items": 51902,
+        "width_words": 5
+      },
+      "max_shingle_jaccard_discarded": 0.6258064516129033,
+      "max_shingle_jaccard_retained": 0.1935483870967742,
+      "sets": {
+        "cached_test_splits": "every cached arrow whose basename contains 'test'",
+        "sealed": "fixtures/capability/sealed/** plus fixtures/capability/SEALED.json"
+      },
+      "shingle_width_words": 5,
+      "threshold_discard": 0.2,
+      "threshold_fail_closed": 0.5,
+      "verdict": "PASS: every token in the final stream comes from a document below 0.2 Jaccard against every evaluation test split and the sealed holdback. Overlapping documents are excluded and listed above by digest only; a document at or above 0.5 is also flagged as a source-split defect. The build fails closed if clean data cannot fill a budget or if any retained document reaches the discard threshold."
+    },
+    "graft_split_held_out_from_training": false,
+    "graft_split_note": "the math-weighted stream declares no graft split, so the fit tokens are also training tokens for every arm on this stream; the fit is an unsupervised ridge/PCA initialisation, and no evaluation item is involved",
+    "graft_tokens": 250000,
+    "graft_tokens_source": "command line",
+    "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "skipped_train_tokens": 19750000,
+    "tokenizer_sha256": "fe000e3ed39ed12b8d2481d527d44f93c65d37e87645d2dcc80d1bf9d50d2927"
+  },
+  "variant": "corrective",
+  "vram": {
+    "device_total_gib": 15.61370849609375,
+    "free_at_start_gib": 13.9921875,
+    "limit_gib": 12.5,
+    "source": "torch.cuda.max_memory_allocated",
+    "student_capture_peak_gib": 1.6491470336914062,
+    "teacher_capture_peak_gib": 3.755807876586914
+  },
+  "wall_seconds": 43.64
+}

@@ -1,0 +1,91 @@
+graft: gpu free=13.99GiB total=15.61GiB
+graft: 250000 tokens from results/artifacts/stage2/stage2-math-stream-20261117T071120Z.u32
+graft: loading teacher /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+graft: captured 512/250000 peak=3.75GiB
+graft: captured 26112/250000 peak=3.76GiB
+graft: captured 51712/250000 peak=3.76GiB
+graft: captured 77312/250000 peak=3.76GiB
+graft: captured 102912/250000 peak=3.76GiB
+graft: captured 128512/250000 peak=3.76GiB
+graft: captured 154112/250000 peak=3.76GiB
+graft: captured 179712/250000 peak=3.76GiB
+graft: captured 205312/250000 peak=3.76GiB
+graft: captured 230912/250000 peak=3.76GiB
+graft: teacher hidden (250000, 2048) peak=3.76GiB
+graft: loading student /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+graft: captured 512/250000 peak=1.65GiB
+graft: captured 26112/250000 peak=1.65GiB
+graft: captured 51712/250000 peak=1.65GiB
+graft: captured 77312/250000 peak=1.65GiB
+graft: captured 102912/250000 peak=1.65GiB
+graft: captured 128512/250000 peak=1.65GiB
+graft: captured 154112/250000 peak=1.65GiB
+graft: captured 179712/250000 peak=1.65GiB
+graft: captured 205312/250000 peak=1.65GiB
+graft: captured 230912/250000 peak=1.65GiB
+graft: student hidden (250000, 1024) peak=1.65GiB
+{
+  "projection": {
+    "method": "ridge least squares teacher->student",
+    "W": {
+      "fit_tokens": 200000,
+      "heldout_tokens": 50000,
+      "teacher_width": 2048,
+      "student_width": 1024,
+      "ridge_lambda": 1.13910595703125,
+      "ridge_fraction": 0.001,
+      "heldout_relative_frobenius_error": 0.4417476889908695,
+      "solver": "normal equations, torch.linalg.solve, float32",
+      "mapped_state_relative_error": 0.42700174185813594
+    }
+  },
+  "pca": {
+    "value_dim": 256,
+    "explained_variance": 0.8127501968613019,
+    "total_variance": 1.748042237498807,
+    "mean_norm": 0.8336655497550964,
+    "basis_shape": [
+      1024,
+      256
+    ],
+    "eigensolver": "torch.linalg.eigh on the float64 covariance"
+  },
+  "rows": {
+    "rows": 65536,
+    "rows_with_at_least_one_token": 65536,
+    "empty_rows": 0,
+    "occupancy_fraction": 1.0,
+    "max_count": 2096,
+    "mean_count_nonempty": 30.517578125,
+    "median_count_nonempty": 22.0,
+    "read_identities": 2000000,
+    "collision_ratio": 0.967232,
+    "row_dtype": "float32 for training; bf16 is the deployment size"
+  },
+  "reconstruction": {
+    "sample_tokens": 4096,
+    "gate_parameters_per_site": 2049,
+    "gate_summary": {
+      "tokens": 4096,
+      "mean": 0.0,
+      "mean_abs": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "identity_at_init": true,
+    "residual_norm": 0.0,
+    "residual_max_abs": 0.0,
+    "hidden_norm_mean": 1.8139564990997314,
+    "read_norm_mean": 1.0835731029510498,
+    "read_to_hidden_norm_ratio": 0.5973533987998962,
+    "gate_tokens": 4096,
+    "note": "the residual is alpha_t * read with alpha_t = tanh(0) = 0 for every token, so it is exactly zero and the untrained model is the base bit for bit; the read ratio is the magnitude the gate opens onto once trained",
+    "pca_state_relative_error": 0.6468876318326551,
+    "supervision": "learned by corrective_objective (advantage-weighted KL + base preservation + gate interference); the rows are only initialised from the representation fit",
+    "identity_check": "gate alpha = tanh(0) = 0 exactly, so the untrained residual is zero and the model reproduces the base bit for bit (see the S42 test)"
+  }
+}
+graft: checkpoint results/stage2/graft/corrective/20261117T120852Z/memory-init.pt
+graft: receipt results/stage2/stage2-graft-20261117T120852Z.json

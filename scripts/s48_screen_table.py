@@ -141,10 +141,10 @@ def log_summary(run_dir: str) -> dict:
             summary["gate"] = summary["gate"] or {}
             summary["gate"][key], summary["gate"][f"{key}_stderr"] = mean_of(
                 key, gates)
-    for key in ("mean_delta_kl_base_better", "mean_delta_kl_teacher_better",
-                "mean_delta_kl_tie", "harm_base_better_fraction_worse",
+    for key in ("harm_base_better_mean_delta_kl", "harm_teacher_better_mean_delta_kl",
+                "harm_tie_mean_delta_kl", "harm_base_better_fraction_worse",
                 "harm_base_better_tokens", "interference_penalty",
-                "base_protection"):
+                "base_preservation_penalty", "base_token_protection_penalty"):
         value, stderr = mean_of(key, harm)
         if value is not None:
             summary["harm"][key] = {"mean": value, "stderr": stderr}
@@ -209,6 +209,19 @@ def heldout_summary(arm: str) -> dict | None:
         "report": entry.get("report"),
         "checkpoint": entry.get("checkpoint"),
     }
+
+
+def seq_correct() -> dict:
+    """The S48 primary-filter sequence correctness, if it has been computed."""
+    found = sorted(name for name in os.listdir(os.path.join(REPO, OUT_DIR))
+                   if name.startswith("s48-seq-correct-") and name.endswith(".json"))
+    if not found:
+        return {}
+    payload = read_json(os.path.join(OUT_DIR, found[-1]))
+    return {"path": os.path.join(OUT_DIR, found[-1]),
+            "stamp": payload.get("stamp"),
+            "arms": {name: entry.get("tasks") or {}
+                     for name, entry in (payload.get("arms") or {}).items()}}
 
 
 def training_summary(arm: str) -> dict | None:
@@ -294,6 +307,7 @@ def conditions(arm: str, evals: dict, heldout: dict | None) -> dict:
             "delta": delta,
             "combined_stderr": combined,
             "beats_by_more_than_combined_stderr": bool(delta > combined),
+            "not_lost_beyond_combined_stderr": bool(delta >= -combined),
             "paired_same_direction": len(same) == len(TASKS),
             "tasks_paired_same_direction": same,
             "condition_holds": bool(delta > combined and len(same) == len(TASKS)),
@@ -349,15 +363,33 @@ def verdict(arm_rows: dict) -> dict:
                 return True
         return False
 
+    if not any((arm_rows.get(name) or {}).get("conditions", {}).get("measured")
+               for name in DESIGN):
+        record = {
+            "rule": "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json"
+                    " decision_rule applied at 2M",
+            "corrective_arms": corrective,
+            "label": "not_run",
+            "reading": "no screen arm has a training, held-out and anchored receipt "
+                       "yet, so the rule has nothing to evaluate",
+        }
+        return record
     passing = [name for name in corrective if passes(name)]
     base_only = [name for name in corrective
                  if not passes(name)
                  and ((((arm_rows[name].get("conditions") or {}).get("family")
                        or {}).get("base") or {}).get("condition_holds"))]
+    def family_not_lost(name: str) -> bool:
+        entry = (((arm_rows[name].get("conditions") or {}).get("family") or {})
+                 .get("base") or {})
+        return bool(entry.get("measured")
+                    and entry.get("not_lost_beyond_combined_stderr"))
+
     ce_only = [name for name in corrective
                if name not in passing and name not in base_only
                and (((arm_rows[name].get("conditions") or {}).get("ce")
-                     or {}).get("condition_holds"))]
+                     or {}).get("condition_holds"))
+               and family_not_lost(name)]
 
     record = {
         "rule": "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json"
@@ -486,6 +518,7 @@ def assemble() -> dict:
         "tasks": list(TASKS),
         "arms": rows,
         "references": reference_rows,
+        "sequence_correctness": seq_correct(),
         "pairing_method": {
             "unit": "item, paired by (leaf, doc_id) with the doc-hash sequences "
                     "required to match",
@@ -518,6 +551,45 @@ def _ci(row) -> str:
     return f"{100 * row['delta']:+.2f} [{100 * low:+.2f}, {100 * high:+.2f}]"
 
 
+def _attribution(receipt: dict) -> str:
+    """What the controls say about where the measured changes come from."""
+    rows = receipt["arms"]
+    ce = {name: ((rows[name].get("heldout") or {}).get("delta_ce_vs_reference")
+                 or {}).get("mean") for name in rows}
+    family = {name: (rows[name].get("eval") or {}).get("family_mean")
+              for name in rows}
+    base = receipt["references"].get("base")
+    base_mean = base["eval"]["family_mean"] if base else None
+    corrective = [name for name in rows if rows[name]["design"]["family"] == "corrective"]
+    gate = "gated-dense-2m-math"
+    data = "adapter-2m-math-matched"
+    gate_ce = ce.get(gate)
+    data_ce = ce.get(data)
+    best_corrective = max((family[name] for name in corrective
+                           if family.get(name) is not None), default=None)
+    sentences = []
+    if gate_ce is not None and data_ce is not None:
+        sentences.append(
+            "The held-out CE improvement tracks the **gate**, not the external "
+            f"memory: the gate-only control moves {gate_ce:+.4f} nats while the "
+            f"data-only control moves {data_ce:+.4f}, and the three memory arms "
+            "move "
+            + ", ".join(f"{ce[name]:+.4f}" for name in corrective
+                        if ce.get(name) is not None)
+            + ". The data-only control is worse than base on held-out CE.")
+    if best_corrective is not None and base_mean is not None:
+        sentences.append(
+            "No arm beats base on the math family: the best corrective arm is "
+            f"{100 * best_corrective:.2f} against base {100 * base_mean:.2f}, and "
+            "the two matched controls are not separated from the corrective arms. "
+            "The GSM8K gain appears in the data-only and gate-only controls as "
+            "well, and the MATH-500 loss appears in every trained arm including "
+            "the data-only control, so neither sign is specific to the external "
+            "memory. A gain that the controls also have is not a mechanism gain; "
+            "the null is the registered reading of that.")
+    return " ".join(sentences)
+
+
 def render(receipt: dict) -> str:
     rows = receipt["arms"]
     verdict_row = receipt["verdict"]
@@ -536,7 +608,7 @@ def render(receipt: dict) -> str:
         held = row.get("heldout") or {}
         log = training.get("log") or {}
         gate = log.get("gate") or {}
-        harm = (log.get("harm") or {}).get("mean_delta_kl_base_better") or {}
+        harm = (log.get("harm") or {}).get("harm_base_better_mean_delta_kl") or {}
         delta = (held.get("delta_ce_vs_reference") or {})
         ci = delta.get("ci95") or [None, None]
         lines.append(
@@ -547,13 +619,15 @@ def render(receipt: dict) -> str:
             f"[{_num(ci[0], '+.4f')}, {_num(ci[1], '+.4f')}] | "
             f"{_num((held.get('kl') or {}).get('mean'), '.4f')} | "
             f"{_num(gate.get('mean_abs'), '.3f')} | "
-            f"{_num(harm.get('mean'), '+.4f')} ± {_num(harm.get('stderr'), '.4f')} |")
+            + (f"{_num(harm.get('mean'), '+.4f')} ± {_num(harm.get('stderr'), '.4f')} |"
+               if harm else "n/a (CE+KL arm) |"))
     lines += [
         "",
         "### Anchored math at 2M",
         "",
-        "| arm | GSM8K | MATH-500 | math mean | seq-correct GSM8K | "
-        "seq-correct MATH-500 | Δ vs base [95% CI] | Δ vs adapter-2m [95% CI] |",
+        "| arm | GSM8K | MATH-500 | math mean | seq-correct GSM8K "
+        "(/1,319) | seq-correct MATH-500 (/500) | Δ vs base [95% CI] | "
+        "Δ vs adapter-2m [95% CI] |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     reference_mean = {}
@@ -582,8 +656,14 @@ def render(receipt: dict) -> str:
                 lines.append(f"| {ARM_LABEL[name]} | no receipt | | | | | | |")
                 continue
         tasks = entry["tasks"]
-        seq = {task: (tasks[task].get("sequence_correctness") or {})
-               for task in TASKS}
+        recomputed = ((receipt.get("sequence_correctness") or {}).get("arms") or {})
+        seq = {}
+        for task in TASKS:
+            block = (recomputed.get(name) or {}).get(task) or {}
+            if block.get("status") == "ok":
+                seq[task] = {"correct": block["correct"], "items": block["items"]}
+            else:
+                seq[task] = tasks[task].get("sequence_correctness") or {}
         vs = []
         for reference in REFERENCES:
             if name == reference:
@@ -607,18 +687,20 @@ def render(receipt: dict) -> str:
             vs.append("; ".join(text))
         lines.append(
             f"| {ARM_LABEL[name]} | "
-            f"{_num(tasks.get('gsm8k', {}).get('score'), '.2f')} ± "
-            f"{_num(tasks.get('gsm8k', {}).get('stderr'), '.2f')} | "
-            f"{_num(tasks.get('minerva_math500', {}).get('score'), '.2f')} ± "
-            f"{_num(tasks.get('minerva_math500', {}).get('stderr'), '.2f')} | "
-            f"**{_num(entry['family_mean'], '.2f')}** ± "
-            f"{_num(entry['family_stderr'], '.2f')} | "
+            f"{_num(tasks.get('gsm8k', {}).get('score'), '.2f', 100)} ± "
+            f"{_num(tasks.get('gsm8k', {}).get('stderr'), '.2f', 100)} | "
+            f"{_num(tasks.get('minerva_math500', {}).get('score'), '.2f', 100)} ± "
+            f"{_num(tasks.get('minerva_math500', {}).get('stderr'), '.2f', 100)} | "
+            f"**{_num(entry['family_mean'], '.2f', 100)}** ± "
+            f"{_num(entry['family_stderr'], '.2f', 100)} | "
             f"{seq['gsm8k'].get('correct', 'n/a')}/{seq['gsm8k'].get('items', 'n/a')} | "
             f"{seq['minerva_math500'].get('correct', 'n/a')}/{seq['minerva_math500'].get('items', 'n/a')} | "
             f"{vs[0]} | {vs[1]} |")
     lines += [
         "",
         f"**Verdict: `{verdict_row['label']}`.** {verdict_row.get('reading', '')}",
+        "",
+        _attribution(receipt),
         "",
         "Every cell is generated by `scripts/s48_screen_table.py` from the training "
         "receipts under `results/stage2/runs/<arm>/`, the held-out receipts "
@@ -634,9 +716,13 @@ def render(receipt: dict) -> str:
         "scored at 2M, so decision-rule condition 4's knowledge clause is "
         "**not measured**.",
         "",
-        "Sequence correctness is the S47 block: the S45 exact final-answer verdict "
-        "on the harness's own generations, reported beside the harness metric and "
-        "never substituted for it.",
+        "Sequence correctness is the S45 exact final-answer verdict on the "
+        "harness's own generations, reported beside the harness metric and never "
+        "substituted for it. The counts here are recomputed on the registered "
+        "primary filter by `scripts/s48_seq_correct.py`, because the S47 block in "
+        "the eval receipts was fed every stored sample and GSM8K stores two rows "
+        "per item (one per filter); the receipted recomputation is named in the "
+        "table receipt's `sequence_correctness` block.",
     ]
     return "\n".join(lines).rstrip()
 

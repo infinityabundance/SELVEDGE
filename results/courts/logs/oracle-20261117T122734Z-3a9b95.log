@@ -1,0 +1,17 @@
+train: loading student /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+train: loading teacher /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+train: step 1/976 loss=1.0908 ce=0.6017 kl=0.2312 1537 tok/s peak=9.32GiB
+train: step 101/976 loss=2.3682 ce=1.7695 kl=0.2671 1888 tok/s peak=9.45GiB
+train: step 201/976 loss=1.8895 ce=1.3426 kl=0.2418 1890 tok/s peak=9.45GiB
+train: step 301/976 loss=2.4061 ce=1.8359 kl=0.2623 1888 tok/s peak=9.45GiB
+train: step 401/976 loss=2.0962 ce=1.6253 kl=0.2235 1890 tok/s peak=9.45GiB
+train: checkpoint results/stage2/runs/corrective-signed-exp-2m-math/ckpt-000488.pt
+train: step 501/976 loss=2.0707 ce=1.4968 kl=0.2624 1889 tok/s peak=9.45GiB
+train: step 601/976 loss=2.9848 ce=2.3609 kl=0.2549 1892 tok/s peak=9.45GiB
+train: step 701/976 loss=1.6450 ce=1.1260 kl=0.2400 1890 tok/s peak=9.45GiB
+train: step 801/976 loss=3.0573 ce=2.4163 kl=0.2769 1892 tok/s peak=9.45GiB
+train: step 901/976 loss=1.6166 ce=1.0626 kl=0.2573 1886 tok/s peak=9.45GiB
+train: checkpoint results/stage2/runs/corrective-signed-exp-2m-math/ckpt-000976.pt
+train: receipt results/stage2/runs/corrective-signed-exp-2m-math/receipt.json

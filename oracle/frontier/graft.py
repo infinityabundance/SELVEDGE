@@ -365,13 +365,26 @@ def run(args) -> int:
         raise SystemExit("graft: vram limit exceeds the device")
 
     manifest = json.load(open(args.stream_manifest))
-    if manifest.get("schema") != "selvedge/stage2-stream/v1":
+    # The math-weighted stream (S43) is the same object with a different schema
+    # label and the same fields the graft reads. It is built for exactly this
+    # consumer, so accepting it is not a relaxation of the hash or field checks
+    # below: the stream SHA-256, the token count and the tokenizer are verified
+    # the same way for both manifests.
+    if manifest.get("schema") not in ("selvedge/stage2-stream/v1",
+                                      "selvedge/stage2-math-stream/v1"):
         raise SystemExit("graft: unexpected stream schema")
     got = sha256_file(manifest["stream_path"])
     if got != manifest["sha256"]:
         raise SystemExit(f"graft: stream sha mismatch {got} != {manifest['sha256']}")
     stream = load_stream(manifest["stream_path"])
-    graft_tokens = int(manifest["graft_tokens"])
+    declared_graft = int(manifest["graft_tokens"])
+    graft_tokens = (int(args.graft_tokens) if args.graft_tokens is not None
+                    else declared_graft)
+    if graft_tokens <= 0:
+        raise SystemExit(
+            "graft: the manifest declares no graft split (graft_tokens = 0); "
+            "pass --graft-tokens N to fit on a declared prefix of the "
+            "training stream, and record that it is not held out")
     tokens_np = stream[:graft_tokens]
     tokens = torch.from_numpy(tokens_np.astype(np.int64))
     tokenizer_sha = manifest["tokenizer"]["tokenizer_sha256"]
@@ -525,6 +538,16 @@ def run(args) -> int:
             "manifest": args.stream_manifest,
             "sha256": manifest["sha256"],
             "graft_tokens": int(tokens.numel()),
+            "graft_tokens_source": ("command line" if args.graft_tokens is not None
+                                    else "manifest"),
+            "graft_split_held_out_from_training": bool(declared_graft > 0),
+            "graft_split_note": (
+                "the stream reserves a graft split that training skips"
+                if declared_graft > 0 else
+                "the math-weighted stream declares no graft split, so the fit "
+                "tokens are also training tokens for every arm on this stream; "
+                "the fit is an unsupervised ridge/PCA initialisation, and no "
+                "evaluation item is involved"),
             "skipped_train_tokens": int(stream.size - tokens.numel()),
             "tokenizer_sha256": tokenizer_sha,
             "contamination": manifest["contamination"],
@@ -590,6 +613,10 @@ def main(argv: list[str]) -> int:
                         help="build a P19.2b corrective graft (zero gate, "
                              "advantage supervision, no constant offset)")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--graft-tokens", type=int, default=None,
+                        help="fit on this many leading stream tokens; default is "
+                             "the manifest's graft_tokens, which is 0 for the "
+                             "math-weighted stream")
     parser.add_argument("--recon-sample", type=int, default=4096)
     parser.add_argument("--vram-limit-gib", type=float, default=12.0)
     parser.add_argument("--out-dir", default="results/stage2/graft")

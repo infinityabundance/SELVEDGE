@@ -1,0 +1,20 @@
+graft: gpu free=13.99GiB total=15.61GiB
+graft: 0 tokens from results/artifacts/stage2/stage2-math-stream-20261117T071120Z.u32
+graft: loading teacher /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+Traceback (most recent call last):
+  File "/work/oracle/frontier/graft.py", line 609, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier/graft.py", line 605, in main
+    return run(args)
+           ^^^^^^^^^
+  File "/work/oracle/frontier/graft.py", line 400, in run
+    teacher_hidden = capture(teacher, tokens_np, args.site, args.batch, device,
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 158, in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier/graft.py", line 155, in capture
+    return torch.cat(rows, dim=0)
+           ^^^^^^^^^^^^^^^^^^^^^^
+ValueError: torch.cat(): expected a non-empty list of Tensors

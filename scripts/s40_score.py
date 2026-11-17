@@ -126,6 +126,27 @@ def receipt_base(args, prereg, prereg_digest, commit, version, arm_report,
     }
 
 
+def primary_filter_samples(samples: list[dict], task: dict) -> list[dict]:
+    """Keep one row per item: the registered primary metric's filter only.
+
+    lm-eval stores one sample per (item, filter) pair; GSM8K has two filters
+    (`strict-match` and `flexible-extract`), so an unfiltered list double-counts
+    every item and reports an accuracy over 2,638 verdicts for 1,319 items. The
+    receipt's primary metric names its filter, and the correctness block must use
+    the same rows the primary metric uses.
+    """
+    if not samples:
+        return samples
+    primary = task.get("primary_metric") or ""
+    parts = ([primary] if isinstance(primary, (list, tuple))
+             else str(primary).split(","))
+    filter_name = parts[1].strip() if len(parts) > 1 and parts[1].strip() else None
+    if not filter_name:
+        return samples
+    kept = [sample for sample in samples if sample.get("filter") == filter_name]
+    return kept or samples
+
+
 def run(args) -> int:
     import lm_eval
     import torch
@@ -221,7 +242,8 @@ def run(args) -> int:
         if peak / (1 << 30) > args.vram_limit_gib:
             raise RuntimeError(f"{name}: VRAM peak {peak / (1 << 30):.2f} GiB "
                                f"over limit {args.vram_limit_gib}")
-        samples = (result.get("samples") or {}).get(name) or []
+        samples = primary_filter_samples(
+            (result.get("samples") or {}).get(name) or [], task)
         sequence_correctness = (
             correctness_check.harness_samples(samples, name)
             if name in correctness_check.VERIFIABLE_TASKS and samples else None)

@@ -5577,7 +5577,11 @@ representation graft at equal tokens and active union, and draws no verdict
 against the 20M full bar from 2M numbers. **Next route if it misses.** gate
 conditioning on the base advantage at inference instead of a penalty; and if both
 lose to base, P19.4 rather than another 2M variant. **Effort.** M. **Tier.**
-ACTIVE. **Status at S42.** implemented and tested; registered; not yet scored.
+ACTIVE. **Status at S48.** trained and scored at 2M by the registered screen
+(`docs/ws19-stage2b-screen-preregistration-v1.json`): the corrective weightings
+improve held-out CE and lower the `base_better` harm mask, but lose the anchored
+math family, chiefly MATH-500, and the verdict is the registered null. The
+generated table and the attribution are in `results/REPORT.md` S48.
 
 ### P19.7 — bf16 weight-update numerics for the bar arm (implemented 2026-11-17, S42)
 
@@ -5658,7 +5662,12 @@ reported separately from the mean delta so a gain elsewhere cannot hide it.
 paired per-chunk deltas and standard errors, and the interference-cost split.
 **Win.** see the decision rule; the registered order of preference is correction,
 then CE+KL. **Next route.** the registered grid or P19.4, as above. **Effort.**
-M. **Tier.** CANDIDATE. **Status at S42.** registered; not run.
+M. **Tier.** CANDIDATE. **Status at S48.** the registered pair (the same memory,
+CE+KL against correction) is still unrun. The S48 screen's data-only control is a
+CE+KL residual at the same active union, and the corrective arms beat it on
+held-out CE beyond the combined standard error, but not on the anchored family;
+that is a partial answer to this rule from a different comparison, not a
+substitute for the registered arm.
 
 ### Risks, each with its route (registered)
 

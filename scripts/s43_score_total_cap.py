@@ -46,7 +46,8 @@ sys.path.insert(0, os.path.join(REPO, "oracle"))
 import s36_anchor as anchor  # noqa: E402
 import s40_compare as comparison  # noqa: E402
 from frontier import correctness as correctness_check  # noqa: E402
-from s40_score import FAMILY_TASKS, SCHEMA, cgroup_peak  # noqa: E402
+from s40_score import (FAMILY_TASKS, SCHEMA, cgroup_peak,  # noqa: E402
+                       primary_filter_samples)
 
 
 def utcnow() -> str:
@@ -258,7 +259,9 @@ def run(args) -> int:
             "cgroup": cgroup_peak(),
             "sequence_correctness": (
                 correctness_check.harness_samples(
-                    (result.get("samples") or {}).get(name) or [], name)
+                    primary_filter_samples(
+                        (result.get("samples") or {}).get(name) or [], task),
+                    name)
                 if name in correctness_check.VERIFIABLE_TASKS
                 and (result.get("samples") or {}).get(name) else None),
         }
