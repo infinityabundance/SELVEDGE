@@ -36,7 +36,8 @@
       "trainable_elements": 498113344,
       "deployed_active_union_elements": 752393024,
       "basis": "finetuning changes values, not identities; the deployed model reads the whole text tower",
-      "check": "752393024 - 254279680 = 498113344"
+      "check": "752393024 - 254279680 = 498113344",
+      "runtime_partition_receipt": "results/stage2/s40-full-partition-20261117T024945Z.json"
     },
     "why_not_a_lora_control": "a wide LoRA is a low-rank constraint on the update and is not the full-backbone bar. The published comparison at matched continued-pretraining tokens finds that LoRA in standard ranks substantially underperforms full fine-tuning on code and mathematics (arXiv:2405.09673, TMLR 2024), and that the learned perturbations differ in rank by 10-100x. If the control is low-rank, a mechanism that beats it has not been shown to beat full distillation. The full arm is therefore the bar; the adapter receipt remains the equal-active control.",
     "why_freeze_the_embedding": "the vocabulary is unchanged and the student and teacher share the tokenizer byte-for-byte, so the embedding has no new identities to learn from this stream. Freezing it removes 254,279,680 fp32-moment-bearing elements from the optimizer at no change in the deployed active union (the tied output projection is frozen with it). This is an engineering choice, not a published result: no located paper studies freezing only the tied embedding during full-backbone distillation; QLoRA (arXiv:2305.14314) is the nearest precedent for a frozen embedding space with the remaining weights adapted."

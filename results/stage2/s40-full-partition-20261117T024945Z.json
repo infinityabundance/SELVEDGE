@@ -1,0 +1,46 @@
+{
+  "checks": {
+    "frozen_embedding_elements": 254279680,
+    "frozen_is_exactly_the_tied_parameter": true,
+    "param_dtype": "torch.bfloat16",
+    "sum_is_text_tower": true,
+    "text_tower_elements": 752393024,
+    "tied_output_projection_has_no_separate_weight": true,
+    "trainable_elements": 498113344,
+    "trainable_state_carries_embedding": false,
+    "trainable_state_extra_keys": [],
+    "trainable_state_missing_keys": [],
+    "trainable_tensor_count": 319
+  },
+  "command": [
+    "scripts/s40_full_arm_partition.py"
+  ],
+  "created_utc": "2026-11-17T02:49:48Z",
+  "expected": {
+    "deployed_active_union_elements": 752393024,
+    "frozen_embedding_elements": 254279680,
+    "text_tower_elements": 752393024,
+    "trainable_elements": 498113344
+  },
+  "kind": "full-arm-runtime-partition",
+  "model_class": "Qwen3_5ForCausalLM",
+  "report": {
+    "active_union_basis": "finetuning changes values, not identities",
+    "deployed_active_union_elements": 752393024,
+    "embedding_elements": 254279680,
+    "frozen_embedding_elements": 254279680,
+    "frozen_identities": [
+      "embed_tokens.weight"
+    ],
+    "kind": "stage2_full_backbone",
+    "reading": "the tied embedding is frozen, so the output projection is frozen with it; every other text-tower identity is trained, and the deployed model reads the full text tower",
+    "text_tower_elements": 752393024,
+    "tied_output_projection": true,
+    "trainable_elements": 498113344
+  },
+  "revision": "9d72e62ec26ce044881aa570e666825cb3c906b3",
+  "schema": "selvedge/stage2-full-partition/v1",
+  "stamp": "20261117T024948Z",
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "text_model_class": "Qwen3_5TextModel"
+}

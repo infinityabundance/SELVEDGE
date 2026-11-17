@@ -3833,6 +3833,16 @@ EOS at or beyond that offset, so no held-out token was trained on and the
 straddling document is dropped. The CPU self-test builds fake checkpoints for all
 six arms and passes (`scripts/s40_compare.py --self-test`).
 
+### The runtime partition, checked on the real model
+
+`s40_full_arm_arithmetic.py` derives the counts from the safetensors header.
+`scripts/s40_full_arm_partition.py` loads the pinned checkpoint through
+`AutoModelForCausalLM` and checks the object the trainer sees: the text tower,
+the frozen tied embedding, the trainable remainder, that the tied output
+projection is the same parameter, and that the exported trainable state does not
+carry the embedding. Receipt:
+`results/stage2/s40-full-partition-20261117T024945Z.json`.
+
 ### What this entry does not claim
 
 - **No new arm score.** No held-out CE/KL or harness receipt for the full arm
