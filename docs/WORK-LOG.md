@@ -4235,3 +4235,146 @@ in flight and has no final receipt or score at the time of this entry.
   evidence.
 - **No score for any new arm.** The 20M full-distill arm has no checkpoint to
   score yet, and the corrective arms have not been trained.
+
+## 2026-11-17 — S44: the complete arm table, the direct answers, and the corrective arms made ready
+
+### Plan
+
+Three jobs, no GPU work: (1) build the actual ranking from the six anchored
+receipts, with paired item-level comparisons rather than family means alone;
+(2) make the three stage-2b corrective arms launch-ready and registered; (3)
+prepare — not run — the bar scoring and the sequential corrective launches. The
+20M math-weighted full-distillation run is training throughout and was not
+touched.
+
+### The arm table is generated, and the item level changes the reading
+
+`scripts/s44_arm_table.py` owns two generated regions in `results/REPORT.md`
+(`report-s44-arm-table`, `report-s44-answers`) and one receipt,
+`results/stage2/s44-arm-table-20261117T081002Z.json` (stamp
+`20261117T081002Z`, revision `35b34f72cf513bd7f97e744fe299f5c18fde63e7`). It
+re-reads every raw lm-evaluation-harness sample file, pairs two arms by
+`(subject, doc_id)` only when their doc-hash sequences match, and reports a
+paired percentile bootstrap on the item-level difference plus a McNemar test on
+the discordant items.
+
+Two things this found that the family means alone hid:
+
+- **the adapter's knowledge "gain" is a trade inside the family.** `adapter-2m`
+  gains on MMLU and loses on MMLU-Pro by amounts of the same size; the family
+  means are a tie. The paired intervals separate the two members cleanly, which
+  the family mean cannot.
+- **the memory arm's held-out CE cost is tiny relative to its anchored math
+  loss.** Its held-out CE penalty is a small fraction of a nat while its GSM8K
+  and MATH-500 losses are several points. The mechanism is not degrading the
+  local next-token distribution much; it is losing the tokens that decide an
+  answer.
+
+Item extraction is streaming. A whole-file `json.load` of one MMLU raw receipt
+measured 11.7 GiB resident — not a workload-sized limit for reading four fields
+per item — so the extractor decodes one sample at a time over a buffered string.
+The whole script measured a 0.45 GiB cgroup peak and now runs at a 2 GiB limit
+(measured + 1 GiB, rounded). The earlier 4 GiB run was over-provisioned; both
+receipts are kept.
+
+A defect this exposed and fixed: `results/stage2/eval/probe-base/eval.json`
+declares `arm = base`, and `probe-memory-graft` declares `arm = memory`. Keying
+arms by the payload field silently overwrote the real `base` scores with a probe
+run. The table keys arms by the receipt directory and excludes `probe-*`.
+
+### The direct answers
+
+The generated block in `results/REPORT.md` carries the numbers and intervals.
+In words: no trained arm beats the frozen base on math; the only real gains are
+`adapter-2m` on MMLU (and the matching MMLU-Pro loss) and `adapter-20m` losing
+less knowledge than `adapter-2m` while also losing less MMLU; the memory arm is
+below base on both families with its worst losses on GSM8K and MATH-500; and
+`memory-ungrafted` is bit-identical to base on all four tasks, which is the
+harness-level confirmation of the gate's zero initialisation. `memory-grafted`
+(the S40 reconstruction init) is a collapse, not a regression — the representation
+graft's measured hidden-state perturbation predicted exactly that.
+
+### Corrective arms: entry points, registration, tests
+
+The training entry points already existed in `oracle/frontier/train.py`
+(`--arm corrective --objective correction --advantage-weighting kl|signed|both`);
+what was missing was everything around them:
+
+- `scripts/s44_corrective_math.sh` launches one weighting on the S43 math stream.
+  It reads the arm, stream hash, budget, seed and objective weights **from the
+  registration**, fails closed if the stream hash drifts, requires the corrective
+  init (with the exact `graft.py --corrective` command if it is missing), requires
+  an explicit `SELVEDGE_MEM`, and refuses to start while the bar run is active.
+  `--dry-run` prints the exact command without launching.
+- `scripts/s40_compare.py` now scores the three corrective arms, so the finished
+  checkpoints go through the same anchored instrument as every other arm; without
+  that, a stage-2b win could not be measured on the basis the bar is measured on.
+- `docs/ws19-stage2b-corrective-advantage-preregistration-v1.json` registers the
+  three 20M arms on the bar's stream and teacher, one seed each, the S43 optimiser
+  verbatim, the win bar (beat the full arm **and** `adapter-2m` on the target
+  family without buying it with a held-out or knowledge regression), a four-branch
+  decision rule, the next route per branch, and the VRAM/container arithmetic.
+- `oracle/tests/test_s44_stage2b.py` (12 tests) covers: the 539,649 active union
+  against the 537,600 memory union (a 2,049 per-site gate), zero-init bit
+  identity, three-step training for each weighting with a non-zero gate and
+  gradients on the gate, rows, key and value projections, the signed advantage's
+  sign, bit-identical determinism for a fixed seed, the `--objective correction`
+  fail-closed wiring, the launcher's printed command against the registration,
+  and the scoring entry point covering every registered arm.
+
+The first step of a corrective run has a gate of exactly zero, so only the gate's
+own parameters receive gradient on that step; the rows, key and value
+projections move from the second step. The test asserts this explicitly rather
+than pretending all parameters move immediately.
+
+Court: `oracle` with the S42/S43/S40 suites — **85 passed** (S44 + S42 corrective
++ S43 token gate + S40 compare/full arm + stage-2 memory/graft).
+
+### Launch preparation (nothing launched)
+
+`scripts/s44_stage2b_queue.sh --plan` prints the exact sequence; `--execute`
+will refuse unless the bar unit is inactive. The sizing arithmetic is written in
+the registration: the corrective arm has the memory arm's shape (student +
+teacher + frozen backbone residual), measured at 9.211 GiB allocated / 9.363 GiB
+reserved, against the full backbone arm's 11.429 / 11.672 GiB under a 12.5 GiB
+limit; the gate adds 2,049 parameters and one (B, T) float per site, so the
+limit is not expected to bind. The ladder if the smoke says otherwise is
+sequence 512→384 with accumulation 4→5 under a new amendment — not a silent
+change. The container limit comes from the corrective arm's own 20-step smoke
+(1.5x the cgroup peak), never from the bar's 10 GiB.
+
+### The bar's progress
+
+Reading `results/stage2/runs/full-20m-math/log.jsonl` at 08:16Z: the run had
+logged step 784, 1,605,632 tokens, at 1,846.7 tok/s with a peak of 11.429 GiB
+allocated under the 12.5 GiB limit. That is about 8% of the 9,765 steps and an
+ETA near 11:00Z at the steady rate. The bar has no anchored receipt, so its row
+is absent from the table rather than estimated.
+
+### Literature
+
+`docs/S44-LITERATURE.md` records four focused questions with URL, fetch date,
+stated claim and verdict. The strongest new finding: the 2026 on-policy
+distillation line (AOPD `2610.31563`, asymmetric OPD `2605.06387`, SKALD
+`2608.09826`) has converged on advantage-weighted supervision **plus** a
+region-conditioned divergence/preservation term, which is the two-part design
+S43 registered from a different starting point. The exact statistic — a signed
+log-probability advantage on a supervised token, off-policy, into a frozen-base
+residual — remains **UNSUPPORTED** as a published construction, and the
+math-mixture setting (57% math, 20M distillation tokens) remains **PARTIAL**.
+
+### Courts
+
+`commit_identity`, `perf_numbers` (1,008 blocks), `status_consistency` (3 blocks,
+9 contradiction rules) and `prereg_provenance` (19 registrations) passed; the new
+registration is ordered before any score of it.
+
+### What this entry does not claim
+
+- **No bar verdict.** The 20M run is in flight and unscoreable.
+- **No mechanism win.** Every arm in the table predates the token gate and the
+  signed advantage; the corrective arms are registered and untrained.
+- **No seed-variance claim.** The item-level intervals are sampling intervals
+  over items, not over training seeds; each arm is one seed.
+- **No claim that the corrective arms will fit in VRAM.** The arithmetic says
+  they should; the smoke is what decides, and the ladder is registered.

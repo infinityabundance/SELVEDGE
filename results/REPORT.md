@@ -1263,3 +1263,27 @@ cleanest budget measurement available here, but it is still one seed per arm.
 - `adapter-20m` vs `adapter-2m` on `gsm8k`: -0.30 points, 95% CI [-2.65, +1.90], items 112 vs 116 discordant, McNemar p 0.843 — CI includes zero.
 - `adapter-20m` vs `adapter-2m` on `minerva_math500`: -1.20 points, 95% CI [-4.40, +2.00], items 30 vs 36 discordant, McNemar p 0.538 — CI includes zero.
 <!-- END GENERATED: report-s44-answers -->
+
+### Corrective arms: registered and launch-ready, not trained (S44)
+
+The table above is the ranking of the mechanisms that exist today, and none of
+them carries the token gate, the signed advantage or the preservation penalty.
+Those are registered in
+`docs/ws19-stage2b-corrective-advantage-preregistration-v1.json`: three 20M arms
+on the bar's own math-weighted stream and teacher, one seed each, the S43
+optimiser verbatim, scored through the same anchored instrument and the same
+total-cap basis, with a win bar that requires beating the full-distillation arm
+**and** `adapter-2m` on the math family without buying it with a held-out or
+knowledge regression. The launcher (`scripts/s44_corrective_math.sh`) reads its
+arguments from that file and refuses to run on a drifted stream hash; the queue
+(`scripts/s44_stage2b_queue.sh`) scores the bar first and then runs the three
+arms one at a time under systemd. Nothing has been launched: the bar run still
+holds the GPU, and the corrective arms have no checkpoint.
+
+The deterministic-CPU evidence for the implementation is
+`oracle/tests/test_s44_stage2b.py`: the registered active union, zero-init
+bit-identity, a three-step training path for each weighting with gradients on
+the gate, rows and projections, the signed advantage's sign, bit-identical
+repeat runs at a fixed seed, and the launcher's printed command against the
+registration. The literature reading and its verdicts are in
+`docs/S44-LITERATURE.md`.
