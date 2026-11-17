@@ -1,0 +1,99 @@
+{
+  "schema": "selvedge/ws19-onpolicy-rft-amendment/v1",
+  "registering_session": "S53",
+  "registered_utc": "2026-11-17T23:36:00Z",
+  "registered_revision": "d98c84c",
+  "registration_time_note": "Registered after the accounting fix commit and before any corrected RFT run or score. The original registration is not edited.",
+  "amends": {
+    "path": "docs/ws19-onpolicy-rft-preregistration-v1.json",
+    "sha256": "0cb1688d233cacc1d20649b9ab2cc10a67eb82a30595b20f49265b1995903253",
+    "rule": "This amendment changes three implementation inputs and no scientific target: (1) the data selection is stratified rather than a prefix; (2) the SFT arm is packed from complete examples with a completion-only mask instead of chunking an untyped stream; (3) the original lr 1e-4 recipe is invalid after S50 and is replaced by the corrected optimiser at the KL-validated rate 1e-5. The teacher, student, data sources, objectives, token budget, active union, and evaluation basis are unchanged from the original registration."
+  },
+  "reason": {
+    "optimizer_invalidation": {
+      "receipt": "results/stage2/s50-invalidation-20261117T205855Z.json",
+      "sha256": "775bb083cb989c6b9d13e071d5891b17c60c77ace4c24f32b1ccdddbf74149be",
+      "statement": "S50 invalidated every 20M run produced by the defective linear-absmax int8 second moment. The original RFT stage-B common recipe inherits that optimiser and its lr 1e-4, so it cannot be rerun as written."
+    },
+    "rate_selection": {
+      "receipt": "results/stage2/s50-revalidation-20261117T210326Z.json",
+      "sha256": "1a2334458c88829774a3bd765302d8cfe298af9146a6846c7c71e310aa0ac519",
+      "fixed_batch_receipt": "results/stage2/s50-fixed-batch-kl-math-lr1e-5-20261117T205600Z.json",
+      "fixed_batch_sha256": "b53968bf151026c7cf3dcef69dd75e11f73a7de053edd1b6c394fc1fcf3eaf78",
+      "statement": "200 optimiser steps at lr 1e-4 did not satisfy the fixed-batch KL-fall gate; lr 1e-5 did (KL 0.2529 -> 0.2145 over the measured checkpoints). The corrected optimiser at 1e-5 is the registered rate for the RFT arms. A higher rate needs its own KL-gate receipt before launch."
+    },
+    "data_selection_defect": {
+      "statement": "The original sampler took items[start:start+limit]. On a pooled GSM8K+MATH pool that is a prefix over sources and difficulty, not a sample. The corrected mode is seeded stratified selection over (source, difficulty, reasoning-length quartile)."
+    },
+    "sft_boundary_defect": {
+      "statement": "The stage-2 trainer cuts an untyped uint32 stream into 512-token chunks. That can begin a training row in the middle of an unrelated solution and gives the loss no way to ignore the prompt. The corrected SFT path uses complete examples, one per row, padded, with prompt and padding targets set to -100."
+    }
+  },
+  "data_selection": {
+    "mode": "stratified",
+    "implementation": "rft.stratified_select; rft.select_items",
+    "strata": [
+      "source: gsm8k or math",
+      "difficulty: MATH level 1-5; GSM8K calculator-annotation count in the reference solution, bucketed 0/1/2/3+ as the registered proxy",
+      "reasoning length: word-count quartiles of the pool"
+    ],
+    "seed": 451,
+    "algorithm": "shuffle inside each stratum with a seeded RNG, then consume strata round-robin until the requested count is reached; report the pool and selected count for every stratum",
+    "prefix_mode": "retained only for reproducing earlier runs; it is not the corrected default and --start is refused in stratified mode",
+    "determinism": "the selected id list is a deterministic function of (pool, count, seed)"
+  },
+  "example_packing": {
+    "implementation": "oracle/frontier/sft_data.py; scripts/s45_rft_stream.py writes the companion examples JSONL",
+    "unit": "one complete example (prompt + solution + EOS)",
+    "layout": "one example per row, padded to sequence_length with the tokenizer pad token; no example is split across rows",
+    "completion_mask": "prompt tokens and padding have label -100; every solution token and the trailing EOS are supervised",
+    "sequence_length": 512,
+    "overflow": "error; an example longer than 512 tokens is not silently truncated or split. An explicit drop mode is available and counted, but is not the registered first run",
+    "loss_normalisation": "cross-entropy over supervised positions only, not over padded positions",
+    "legacy_stream": "the uint32 stream remains in the manifest for compatibility and for the KD arms; the SFT arm reads the examples file instead",
+    "boundary_safe_later_option": "packing several complete examples per row with a per-example attention reset (document/varlen mask) is registered as a later change; it needs its own parity test against one-example-per-row and is not used here"
+  },
+  "recipe": {
+    "arm": "full text tower, tied embedding frozen",
+    "trainable_elements": 498113344,
+    "unique_active_elements": 752393024,
+    "optimizer": "adam8bit, block 256, stochastic rounding, corrected second moment",
+    "lr": 1e-05,
+    "lr_basis": "the S50 KL-validated rate; not a retune",
+    "schedule": "cosine to 0.1",
+    "warmup_steps": 200,
+    "grad_clip": 1.0,
+    "weight_decay": 0.0,
+    "objective_sft": "completion-only cross-entropy on verified solutions; no teacher",
+    "objective_kd": "CE + 0.5*T^2*KL(teacher_T || student_T), T=2.0, on student rollouts; the collection stream remains the pinned untyped stream",
+    "tokens": 20000000,
+    "realised_tokens_at_512": 19998720,
+    "steps": 9765,
+    "seed": 0,
+    "smoke_required": "each arm runs its own 20-step smoke; the container limit is 1.5x its measured cgroup peak, never below measured + 1 GiB"
+  },
+  "sequencing": {
+    "before_any_run": [
+      "this amendment is committed",
+      "the bar's milestone scoring exists (task 7 of the session)",
+      "the corrected optimiser is the only optimiser in the launch command"
+    ],
+    "order": [
+      "rft-sft-2m-corrective (completion-masked examples)",
+      "rft-kd-2m-corrective",
+      "rft-kd-signed-2m-corrective",
+      "rft-both-2m-corrective",
+      "rft-sft-20m-full",
+      "rft-kd-20m-full",
+      "rft-both-20m-full"
+    ],
+    "changed_from_original": "the data-order and loss-definition defects are fixed before the first arm; no earlier RFT score exists or is reused"
+  },
+  "what_this_file_does_not_establish": [
+    "that any RFT arm wins: no corrected arm has run",
+    "that the SFT example packing improves over the stream: it is the registered corrected implementation, not a measured effect",
+    "that the boundary-safe multi-example packing is implemented: it is named as a later registered option",
+    "that the stratified selection is sufficient for a capability claim: it changes which prompts are sampled, and the sampling receipt reports the actual strata",
+    "that a higher learning rate is forbidden: it is not registered without its own fixed-batch KL-gate receipt"
+  ]
+}

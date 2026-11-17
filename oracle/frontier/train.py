@@ -54,6 +54,7 @@ ORACLE = os.path.dirname(HERE)
 sys.path.insert(0, ORACLE)
 
 from frontier import arms, corrective, full, matched_controls, memory, optim8bit  # noqa: E402
+from frontier import sft_data  # noqa: E402
 from frontier.stream import load_stream, sha256_file  # noqa: E402
 
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -134,7 +135,9 @@ def token_loss(student_logits: torch.Tensor, teacher_logits: torch.Tensor | None
         s = flat_student[start:start + vocab_chunk].float()
         t = flat_targets[start:start + vocab_chunk]
         ce_total = ce_total + F.cross_entropy(s, t, reduction="sum")
-        positions += s.shape[0]
+        # Completion-only SFT: prompt and padding positions are -100 and are
+        # neither a loss nor part of the normalising count.
+        positions += int((t != -100).sum())
     ce = ce_total / max(1, positions)
     if teacher_logits is None or kl_weight == 0.0:
         zero = torch.zeros((), device=student_logits.device)
@@ -364,17 +367,55 @@ def run(args) -> int:
     if args.micro_batch * args.seq_len * args.grad_accum > args.tokens:
         raise SystemExit("train: token budget smaller than one optimiser step")
 
-    manifest = json.load(open(args.stream_manifest))
-    got = sha256_file(manifest["stream_path"])
-    if got != manifest["sha256"]:
-        raise SystemExit("train: stream sha mismatch")
-    stream_np = load_stream(manifest["stream_path"])
-    stream = torch.from_numpy(stream_np.astype(np.int64))
-    train_offset = int(manifest["graft_tokens"])
-    train_end = int(stream.numel())
-    available = train_end - train_offset
-    if args.tokens > available:
-        raise SystemExit(f"train: asked {args.tokens} tokens, stream has {available}")
+    manifest = None
+    stream = None
+    packed = None
+    example_source = None
+    data_report = None
+    train_offset = 0
+    if args.sft_examples:
+        if args.objective != "sft":
+            raise SystemExit(
+                "train: --sft-examples is the completion-masked SFT path; it "
+                "requires --objective sft")
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained(
+            args.student_dir, local_files_only=True, trust_remote_code=False)
+        eos_id = int(tokenizer.eos_token_id)
+        pad_id = int(tokenizer.pad_token_id if tokenizer.pad_token_id is not None
+                     else eos_id)
+        examples = sft_data.load_examples(args.sft_examples,
+                                         vocab_size=len(tokenizer))
+        packed = sft_data.pack_examples(
+            examples, args.seq_len, pad_id, eos_id,
+            examples_per_row=args.sft_examples_per_row,
+            overflow=args.sft_overflow)
+        example_source = sft_data.describe_source(args.sft_examples)
+        data_report = {"kind": "sft_examples", **example_source,
+                       **packed.report}
+        print(f"train: packed {packed.report['packed_examples']} examples into "
+              f"{packed.report['rows']} rows of {args.seq_len}; "
+              f"supervised_tokens={packed.report['supervised_tokens']}",
+              flush=True)
+    else:
+        if not args.stream_manifest:
+            raise SystemExit("train: --stream-manifest is required unless "
+                             "--sft-examples is given")
+        manifest = json.load(open(args.stream_manifest))
+        got = sha256_file(manifest["stream_path"])
+        if got != manifest["sha256"]:
+            raise SystemExit("train: stream sha mismatch")
+        stream_np = load_stream(manifest["stream_path"])
+        stream = torch.from_numpy(stream_np.astype(np.int64))
+        train_offset = int(manifest["graft_tokens"])
+        train_end = int(stream.numel())
+        available = train_end - train_offset
+        if args.tokens > available:
+            raise SystemExit(f"train: asked {args.tokens} tokens, stream has {available}")
+        data_report = {"kind": "token_stream",
+                       "manifest": args.stream_manifest,
+                       "stream_sha256": manifest["sha256"],
+                       "tokens": int(stream.numel())}
 
     print(f"train: loading student {args.student_dir}", flush=True)
     model = arms.load_model(args.student_dir, dtype=torch.bfloat16, device=device)
@@ -458,12 +499,16 @@ def run(args) -> int:
         "kl_weight": args.kl_weight,
         "grad_clip": args.grad_clip,
         "site": args.site,
-        "stream_sha256": manifest["sha256"],
+        "stream_sha256": (manifest["sha256"] if manifest is not None else None),
+        "data": data_report,
         "student_dir": args.student_dir,
         "teacher_dir": args.teacher_dir if teacher is not None else None,
         "teacher_parameters": teacher_params,
         "deterministic_algorithms": True,
-        "data_order": "pinned stream order; no shuffling",
+        "data_order": ("packed examples, deterministic row order, cycled; no "
+                       "shuffling" if packed is not None else
+                       "pinned stream order; no shuffling"),
+        "completion_only_loss": bool(packed is not None),
         "memory_table_in_active_union": False,
     }
     if args.arm == "full":
@@ -528,6 +573,7 @@ def run(args) -> int:
 
     start_step = 0
     offset = train_offset
+    row_cursor = 0
     if args.resume:
         path = args.resume
         if path == "latest":
@@ -535,7 +581,8 @@ def run(args) -> int:
         payload = torch.load(path, map_location="cpu", weights_only=False)
         if payload["config_sha256"] != config["config_sha256"]:
             raise SystemExit("train: resume config hash mismatch")
-        if payload["stream_sha256"] != manifest["sha256"]:
+        recorded_stream = payload.get("stream_sha256")
+        if recorded_stream != (manifest["sha256"] if manifest is not None else None):
             raise SystemExit("train: resume stream hash mismatch")
         arm.load_state_dict(payload["arm_state"])
         arm.to(device)
@@ -546,6 +593,9 @@ def run(args) -> int:
         np.random.set_state(payload["numpy_rng"])
         start_step = int(payload["step"])
         offset = int(payload["offset"])
+        if packed is not None:
+            row_cursor = (start_step * args.grad_accum * args.micro_batch
+                          % packed.input_ids.shape[0])
         print(f"train: resumed step={start_step} offset={offset}", flush=True)
 
     log_path = os.path.join(args.run_dir, "log.jsonl")
@@ -580,10 +630,18 @@ def run(args) -> int:
         objective_sum: dict[str, float] = {}
         step_started = time.time()
         for micro in range(args.grad_accum):
-            batch, _ = next_batch(stream, offset + micro * args.seq_len, args.seq_len)
-            batch = batch.to(device)
-            inputs = batch[:, :-1]
-            targets = batch[:, 1:]
+            if packed is None:
+                batch, _ = next_batch(stream, offset + micro * args.seq_len,
+                                      args.seq_len)
+                batch = batch.to(device)
+                inputs = batch[:, :-1]
+                targets = batch[:, 1:]
+            else:
+                rows = packed.input_ids.shape[0]
+                indices = torch.arange(row_cursor, row_cursor + args.micro_batch) % rows
+                row_cursor += args.micro_batch
+                inputs = packed.input_ids[indices, :-1].to(device)
+                targets = packed.labels[indices, 1:].to(device)
             student = model(input_ids=inputs, use_cache=False).logits
             teacher_logits = None
             if teacher is not None:
@@ -625,7 +683,10 @@ def run(args) -> int:
             loss_sum += float(loss.detach())
             ce_sum += float(ce)
             kl_sum += float(kl)
-        offset = offset + tokens_per_step
+        if packed is not None:
+            offset = row_cursor
+        else:
+            offset = offset + tokens_per_step
         torch.nn.utils.clip_grad_norm_(trainable, args.grad_clip)
         measure = args.optimizer == "adam8bit" and step in measure_at
         if measure:
@@ -679,7 +740,7 @@ def run(args) -> int:
                 "min": float(gate_tensor.min()),
                 "max": float(gate_tensor.max()),
             }
-        if step % args.collision_every == 0 and args.arm == "memory":
+        if packed is None and step % args.collision_every == 0 and args.arm == "memory":
             sample = stream[offset - args.seq_len:offset]
             collision = arm.collision_report(sample[None, :])
             entry["distinct_rows_in_batch"] = collision["distinct_rows_total"]
@@ -764,7 +825,8 @@ def run(args) -> int:
                 "offset": offset,
                 "tokens_seen": run_tokens,
                 "config_sha256": config["config_sha256"],
-                "stream_sha256": manifest["sha256"],
+                "stream_sha256": (manifest["sha256"]
+                                   if manifest is not None else None),
                 "arm": args.arm,
                 "arm_state": arm.state_dict(),
                 "optimizer": optimizer.state_dict(),
@@ -856,7 +918,17 @@ def main(argv: list[str]) -> int:
                         choices=["memory", "corrective", "adapter", "full",
                                  *matched_controls.CONTROL_KINDS],
                         required=True)
-    parser.add_argument("--stream-manifest", required=True)
+    parser.add_argument("--stream-manifest", default=None)
+    parser.add_argument("--sft-examples", default=None,
+                        help="JSONL of prompt_ids/solution_ids; enables the "
+                             "completion-masked SFT path (no stream chunking)")
+    parser.add_argument("--sft-examples-per-row", type=int, default=1,
+                        help="complete examples packed per row; >1 is not "
+                             "boundary-safe without a per-example attention reset")
+    parser.add_argument("--sft-overflow", choices=["error", "drop"],
+                        default="error",
+                        help="what to do when an example exceeds seq_len; "
+                             "error never splits a solution")
     parser.add_argument("--student-dir", default=STUDENT_DIR)
     parser.add_argument("--teacher-dir", default=TEACHER_DIR)
     parser.add_argument("--memory-init", default=None)

@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.dirname(HERE))
 
-from frontier import corrective, rft, rft_objective  # noqa: E402
+from frontier import corrective, rft, rft_objective, sft_data  # noqa: E402
 from frontier import train as train_module  # noqa: E402
 from types import SimpleNamespace  # noqa: E402
 
@@ -236,3 +236,124 @@ def test_full_backbone_sft_wiring():
     with pytest.raises(SystemExit):
         train_module.validate_objective_args(SimpleNamespace(
             objective="correction", arm="full", kl_weight=0.5))
+
+
+def test_sft_loss_masks_prompt_and_padding_positions():
+    logits = _logits(21, (2, 3, 7))
+    targets = torch.tensor([[-100, 2, 3], [-100, -100, 5]])
+    loss, ce = rft_objective.sft_loss(logits, targets)
+    flat_logits = logits.reshape(-1, 7)
+    flat_targets = targets.reshape(-1)
+    valid = flat_targets != -100
+    expected = torch.nn.functional.cross_entropy(
+        flat_logits[valid], flat_targets[valid])
+    assert torch.allclose(loss, expected)
+    assert torch.allclose(ce, expected)
+    # the denominator is the supervised count, not the padded token count
+    unpadded = torch.nn.functional.cross_entropy(
+        flat_logits.reshape(-1, 7), flat_targets, ignore_index=-100,
+        reduction="sum") / int(valid.sum())
+    assert torch.allclose(loss, unpadded)
+
+
+def test_sft_loss_all_ignored_is_a_zero_with_a_graph():
+    logits = _logits(22, (1, 2, 7)).requires_grad_(True)
+    targets = torch.full((1, 2), -100, dtype=torch.long)
+    loss, ce = rft_objective.sft_loss(logits, targets)
+    assert float(loss.detach()) == 0.0
+    assert float(ce.detach()) == 0.0
+    loss.backward()
+    assert logits.grad is not None
+    assert float(logits.grad.abs().sum()) == 0.0
+
+
+def test_pack_examples_masks_prompt_and_pads_without_splitting():
+    examples = [
+        {"id": "a", "prompt_ids": [1, 2], "solution_ids": [3, 4]},
+        {"id": "b", "prompt_ids": [5], "solution_ids": [6, 7, 8]},
+    ]
+    packed = sft_data.pack_examples(examples, seq_len=8, pad_id=0, eos_id=9)
+    assert packed.report["rows"] == 2
+    assert packed.report["boundary_safe"] is True
+    assert packed.report["completion_only_loss"] is True
+    assert packed.report["padding_tokens"] == 3 + 3
+    assert packed.report["supervised_tokens"] == 3 + 4
+    assert packed.input_ids[0].tolist() == [1, 2, 3, 4, 9, 0, 0, 0]
+    assert packed.labels[0].tolist() == [-100, -100, 3, 4, 9, -100, -100, -100]
+    assert packed.input_ids[1].tolist() == [5, 6, 7, 8, 9, 0, 0, 0]
+    assert packed.labels[1].tolist() == [-100, 6, 7, 8, 9, -100, -100, -100]
+
+
+def test_pack_examples_overflow_fails_closed_and_drop_is_counted():
+    examples = [{"id": "long", "prompt_ids": [1], "solution_ids": [2, 3, 4, 5]}]
+    with pytest.raises(ValueError):
+        sft_data.pack_examples(examples, seq_len=5, pad_id=0, eos_id=9)
+    with pytest.raises(ValueError):
+        sft_data.pack_examples(examples, seq_len=5, pad_id=0, eos_id=9,
+                               overflow="drop")
+    good = examples + [{"id": "short", "prompt_ids": [1], "solution_ids": [2]}]
+    packed = sft_data.pack_examples(good, seq_len=5, pad_id=0, eos_id=9,
+                                    overflow="drop")
+    assert packed.report["dropped_overflow"] == 1
+    assert packed.report["packed_examples"] == 1
+
+
+def test_pack_examples_multiple_per_row_marks_itself_unsafe():
+    examples = [
+        {"id": "a", "prompt_ids": [1], "solution_ids": [2]},
+        {"id": "b", "prompt_ids": [3], "solution_ids": [4]},
+    ]
+    packed = sft_data.pack_examples(examples, seq_len=8, pad_id=0, eos_id=9,
+                                    examples_per_row=2)
+    assert packed.report["rows"] == 1
+    assert packed.report["boundary_safe"] is False
+    assert "attention" in packed.report["boundary_safe_note"]
+
+
+def test_example_batches_shift_labels_and_cycle_rows():
+    packed = sft_data.pack_examples(
+        [{"id": "a", "prompt_ids": [1, 2], "solution_ids": [3, 4]}],
+        seq_len=6, pad_id=0, eos_id=9)
+    batches = list(sft_data.example_batches(packed, micro_batch=1,
+                                            grad_accum=2, steps=2))
+    assert len(batches) == 2
+    inputs, targets = batches[0][0]
+    assert inputs.tolist() == [[1, 2, 3, 4, 9]]
+    assert targets.tolist() == [[-100, 3, 4, 9, -100]]
+    # the second optimiser step has cycled back to the only row
+    assert batches[1][0][0].tolist() == [[1, 2, 3, 4, 9]]
+
+
+def _stratified_items():
+    items = []
+    for source, difficulty, length in (
+            ("gsm8k", 0, 10), ("gsm8k", 0, 10),
+            ("gsm8k", 2, 100), ("gsm8k", 2, 100),
+            ("math", 1, 20), ("math", 1, 20),
+            ("math", 5, 200), ("math", 5, 200)):
+        items.append({"id": f"{source}-{difficulty}-{length}-{len(items)}",
+                      "dataset": source, "difficulty": difficulty,
+                      "reasoning_length": length})
+    return items
+
+
+def test_stratified_selection_is_seeded_balanced_and_not_a_prefix():
+    items = _stratified_items()
+    selected, report = rft.stratified_select(items, 6, seed=451)
+    assert len(selected) == 6
+    assert report["pool"] == 8 and report["selected"] == 6
+    again, _ = rft.stratified_select(items, 6, seed=451)
+    assert [item["id"] for item in selected] == [item["id"] for item in again]
+    assert {item["dataset"] for item in selected} == {"gsm8k", "math"}
+    assert [item["id"] for item in selected] != [item["id"] for item in items[:6]]
+    assert all(entry["selected"] >= 1 for entry in report["strata"]
+               if entry["pool"] > 0)
+
+
+def test_select_items_refuses_prefix_start_and_unknown_modes():
+    # `prefix` stays available for reproducing earlier runs; no dataset load is
+    # needed for the refusal checks.
+    with pytest.raises(SystemExit):
+        rft.select_items(["gsm8k-train"], 3, 1, "stratified", 451)
+    with pytest.raises(SystemExit):
+        rft.select_items(["gsm8k-train"], 3, 0, "unknown", 451)

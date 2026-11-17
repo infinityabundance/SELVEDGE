@@ -276,6 +276,12 @@ def load_items(dataset: str, limit: int | None = None,
                 "prompt": f"Question: {row['question']}\nAnswer:",
                 "target": target.value,
                 "reference_solution": row["answer"],
+                # GSM8K has no level field; the calculator annotations `<<...>>`
+                # are the reference solution's own operation steps and are the
+                # registered difficulty proxy.
+                "difficulty": row["answer"].count("<<"),
+                "difficulty_source": "calculator annotations in the reference solution",
+                "reasoning_length": len(_words(row["answer"])),
             })
     elif dataset == "math-train":
         import pyarrow.parquet as pq
@@ -299,6 +305,10 @@ def load_items(dataset: str, limit: int | None = None,
                     "prompt": f"Problem:\n{row['problem']}\n\nSolution:",
                     "target": target.value,
                     "reference_solution": row["solution"],
+                    # Hendrycks MATH carries an explicit level 1-5.
+                    "difficulty": row.get("level"),
+                    "difficulty_source": "Hendrycks MATH level field",
+                    "reasoning_length": len(_words(row["solution"])),
                 })
     else:
         raise SystemExit(f"unknown dataset {dataset!r}")
@@ -309,6 +319,121 @@ def load_items(dataset: str, limit: int | None = None,
     for item in items:
         item["skipped_reference_items"] = skipped
     return items
+
+
+def load_pool(datasets: list[str]) -> list[dict]:
+    """Load every requested train split, keeping each item's own source."""
+    pool: list[dict] = []
+    for dataset in datasets:
+        pool.extend(load_items(dataset))
+    return pool
+
+
+def _difficulty_bucket(item: dict) -> str:
+    value = item.get("difficulty")
+    if item.get("dataset") == "math" and value is not None:
+        return f"level{int(value)}"
+    steps = int(value or 0)
+    return f"steps{min(steps, 3)}"
+
+
+def _length_bucket(length: int, boundaries: list[int]) -> int:
+    index = 0
+    for boundary in boundaries:
+        if length >= boundary:
+            index += 1
+    return min(index, len(boundaries))
+
+
+def stratified_select(items: list[dict], count: int | None, seed: int
+                      ) -> tuple[list[dict], dict]:
+    """Seeded stratified selection instead of a prefix truncation.
+
+    Strata are `(source, difficulty bucket, reasoning-length quartile)`. The
+    pool is shuffled inside each stratum with a seeded RNG, then strata are
+    consumed round-robin so every represented stratum appears before any one
+    stratum contributes twice. This is what replaces `items[:limit]`, which
+    would take only the first GSM8K questions (all easy) when both sources are
+    pooled.
+    """
+    import random
+
+    if not items:
+        raise SystemExit("stratified_select received no items")
+    lengths = sorted(int(item.get("reasoning_length") or 0) for item in items)
+    if len(lengths) >= 4:
+        boundaries = [lengths[len(lengths) * numerator // 4]
+                      for numerator in (1, 2, 3)]
+    else:
+        boundaries = []
+    strata: dict[str, list[dict]] = {}
+    for item in items:
+        key = "|".join((str(item.get("dataset") or "unknown"),
+                        _difficulty_bucket(item),
+                        str(_length_bucket(int(item.get("reasoning_length") or 0),
+                                           boundaries))))
+        strata.setdefault(key, []).append(item)
+    rng = random.Random(seed)
+    for key in sorted(strata):
+        rng.shuffle(strata[key])
+    keys = sorted(strata)
+    target = len(items) if count is None else min(int(count), len(items))
+    selected: list[dict] = []
+    cursor = {key: 0 for key in keys}
+    while len(selected) < target:
+        progressed = False
+        for key in keys:
+            if cursor[key] >= len(strata[key]):
+                continue
+            selected.append(strata[key][cursor[key]])
+            cursor[key] += 1
+            progressed = True
+            if len(selected) >= target:
+                break
+        if not progressed:
+            break
+    report = {
+        "kind": "stratified_selection",
+        "seed": int(seed),
+        "requested": None if count is None else int(count),
+        "pool": len(items),
+        "selected": len(selected),
+        "length_boundaries_words": boundaries,
+        "strata": [
+            {"key": key, "pool": len(strata[key]), "selected": cursor[key]}
+            for key in keys
+        ],
+        "replaces": "prefix truncation (items[start:start+limit])",
+    }
+    return selected, report
+
+
+def select_items(datasets: list[str], limit: int | None, start: int,
+                 sampling: str, seed: int) -> tuple[list[dict], dict]:
+    """The registered selection modes.
+
+    `prefix` is the old behaviour and is retained only for reproducing earlier
+    runs. `stratified` is the corrected mode; it refuses `--start` because a
+    start offset is meaningless once the pool is shuffled by stratum.
+    """
+    if sampling == "prefix":
+        if len(datasets) != 1:
+            raise SystemExit("prefix selection is single-source; use --sampling "
+                             "stratified for a pooled run")
+        items = load_items(datasets[0], limit, start)
+        return items, {"kind": "prefix", "requested": limit, "start": start,
+                       "selected": len(items),
+                       "replaces": "nothing; this is the old mode"}
+    if sampling != "stratified":
+        raise SystemExit(f"unknown sampling mode {sampling!r}")
+    if start:
+        raise SystemExit("--start is prefix-only; stratified selection is seeded")
+    pool = load_pool(datasets)
+    selected, report = stratified_select(pool, limit, seed)
+    for item in selected:
+        item["skipped_reference_items"] = 0
+    report["sources"] = datasets
+    return selected, report
 
 
 def format_curriculum(solution: str, mode: str) -> str:
@@ -590,7 +715,10 @@ def sample(args) -> int:
     else:
         started = time.time()
         torch, tokenizer, model, device = _load_generator(args.model_dir, args.device)
-        items = load_items(args.dataset, args.limit, args.start)
+        datasets = (["gsm8k-train", "math-train"]
+                    if args.dataset == "all-train" else [args.dataset])
+        items, selection = select_items(
+            datasets, args.limit, args.start, args.sampling, args.select_seed)
         rows = []
         for index, item in enumerate(items):
             samples = _generate(
@@ -628,6 +756,8 @@ def sample(args) -> int:
             dataset = datasets[0]
         else:
             dataset = "mixed:" + ",".join(datasets)
+        selection = {"kind": "file", "requested": args.limit,
+                     "selected": len(rows)}
 
     accepted, summary = _rejection(rows, dataset, args.curriculum)
     contamination = contamination_check(accepted)
@@ -647,6 +777,7 @@ def sample(args) -> int:
             "numeric_tolerance": NUMERIC_TOLERANCE,
         },
         "source": source,
+        "selection": selection,
         "tokenizer_vocab_sha256": tokenizer_sha,
         "model_dir": model_dir,
         "elapsed_seconds": elapsed,
@@ -706,10 +837,17 @@ def main(argv: list[str]) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     sample_parser = sub.add_parser("sample")
-    sample_parser.add_argument("--dataset", choices=["gsm8k-train", "math-train"],
+    sample_parser.add_argument("--dataset",
+                               choices=["gsm8k-train", "math-train", "all-train"],
                                default="gsm8k-train")
     sample_parser.add_argument("--limit", type=int, default=None)
     sample_parser.add_argument("--start", type=int, default=0)
+    sample_parser.add_argument("--sampling", choices=["prefix", "stratified"],
+                               default="stratified",
+                               help="corrected default: seeded stratified selection "
+                                    "over source, difficulty and reasoning-length "
+                                    "quartile; prefix is the old behaviour")
+    sample_parser.add_argument("--select-seed", type=int, default=451)
     sample_parser.add_argument("--samples", type=int, default=8)
     sample_parser.add_argument("--policy", choices=["teacher", "student"],
                                default="teacher")

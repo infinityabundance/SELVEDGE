@@ -42,16 +42,28 @@ MODES = ("sft", "kd", "kd_correction", "both")
 def sft_loss(student_logits: torch.Tensor, targets: torch.Tensor,
              sample_weight: torch.Tensor | None = None,
              label_smoothing: float = 0.0) -> tuple[torch.Tensor, torch.Tensor]:
-    """Token cross-entropy, optionally weighted per position."""
+    """Completion-only token cross-entropy, optionally weighted per position.
+
+    Positions whose target is `IGNORE_INDEX` (-100) are prompt or padding and
+    contribute neither to the loss nor to the normalising count. A batch with no
+    supervised position returns a zero loss that still carries the graph.
+    """
     flat_logits = student_logits.reshape(-1, student_logits.shape[-1]).float()
     flat_targets = targets.reshape(-1)
-    positions = F.cross_entropy(flat_logits, flat_targets, reduction="none",
+    valid = flat_targets != -100
+    if not bool(valid.any()):
+        zero = flat_logits.sum() * 0.0
+        return zero, zero.detach()
+    supervised_logits = flat_logits[valid]
+    supervised_targets = flat_targets[valid]
+    positions = F.cross_entropy(supervised_logits, supervised_targets,
+                                reduction="none",
                                 label_smoothing=label_smoothing)
     if sample_weight is not None:
-        weight = sample_weight.reshape(-1).float()
+        weight = sample_weight.reshape(-1).float()[valid]
         if weight.numel() != positions.numel():
             raise ValueError(
-                f"sample_weight has {weight.numel()} elements, loss has "
+                f"sample_weight has {weight.numel()} supervised elements, loss has "
                 f"{positions.numel()}")
         loss = (positions * weight).sum() / weight.sum().clamp_min(1e-6)
     else:

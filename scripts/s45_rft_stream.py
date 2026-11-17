@@ -134,13 +134,18 @@ def main(argv: list[str]) -> int:
         for row in rows:
             text = row["prompt"] + "\n" + row["solution"]
             documents.append((input_index, row["id"], int(row.get("sample_index", 0)),
+                              row.get("dataset"), row["prompt"], row["solution"],
                               text))
     if not documents:
         raise SystemExit("no accepted documents")
 
     cycle_arrays = []
+    example_rows = []
     corpus_tokens = 0
-    for input_index, doc_id, sample_index, text in documents:
+    prompt_tokens_total = 0
+    solution_tokens_total = 0
+    for (input_index, doc_id, sample_index, dataset, prompt, solution,
+         text) in documents:
         ids = tokenizer(text, add_special_tokens=False)["input_ids"]
         if not ids:
             continue
@@ -149,6 +154,26 @@ def main(argv: list[str]) -> int:
             raise SystemExit("token id outside the anchor vocabulary")
         cycle_arrays.append(array)
         corpus_tokens += int(array.size)
+        # The SFT path supervises the solution and the EOS only. Prompt and
+        # solution are tokenised separately (the separator is part of the
+        # solution) so `train.py --sft-examples` can set the prompt labels to
+        # -100 without guessing a boundary.
+        prompt_ids = tokenizer(prompt, add_special_tokens=False)["input_ids"]
+        solution_ids = tokenizer("\n" + solution, add_special_tokens=False)["input_ids"]
+        if not solution_ids:
+            raise SystemExit(f"{doc_id}: solution tokenises to zero tokens")
+        if max(prompt_ids + solution_ids) >= max(vocab, 248_320):
+            raise SystemExit("token id outside the anchor vocabulary")
+        prompt_tokens_total += len(prompt_ids)
+        solution_tokens_total += len(solution_ids)
+        example_rows.append({
+            "id": doc_id,
+            "dataset": dataset,
+            "source_index": input_index,
+            "sample_index": sample_index,
+            "prompt_ids": prompt_ids,
+            "solution_ids": solution_ids,
+        })
     if corpus_tokens == 0:
         raise SystemExit("accepted corpus tokenises to zero tokens")
     if corpus_tokens > args.tokens:
@@ -169,6 +194,10 @@ def main(argv: list[str]) -> int:
     out_stamp = stamp()
     stream_path = os.path.join(out_dir, f"{args.label}-stream-{out_stamp}.u32")
     stream.tofile(stream_path)
+    examples_path = os.path.join(out_dir, f"{args.label}-examples-{out_stamp}.jsonl")
+    with open(examples_path, "w", encoding="utf-8") as handle:
+        for entry in example_rows:
+            handle.write(json.dumps(entry, sort_keys=True) + "\n")
     manifest = {
         "schema": "selvedge/stage2-stream/v1",
         "kind": "s45-rft-build",
@@ -204,6 +233,16 @@ def main(argv: list[str]) -> int:
             "separator": "eos_token",
             "eos_token_id": eos,
         },
+        "examples": {
+            "path": os.path.relpath(examples_path, REPO),
+            "sha256": sha256_file(examples_path),
+            "rows": len(example_rows),
+            "prompt_tokens": prompt_tokens_total,
+            "solution_tokens": solution_tokens_total,
+            "note": ("prompt_ids and solution_ids are separate so "
+                     "train.py --sft-examples can mask the prompt with -100; "
+                     "the stream above remains an untyped legacy input"),
+        },
         "contamination": [
             {"input": entry["dir"],
              "sampling_receipt": (entry["receipt"] or {}).get("contamination")}
@@ -216,6 +255,9 @@ def main(argv: list[str]) -> int:
     write_json(manifest_path, manifest)
     print(f"stream: {stream.size} tokens sha256={manifest['sha256']} "
           f"corpus={corpus_tokens} epochs={epochs} -> {stream_path}")
+    print(f"examples: {len(example_rows)} rows "
+          f"prompt={prompt_tokens_total} solution={solution_tokens_total} -> "
+          f"{examples_path}")
     print(f"manifest: {manifest_path}")
     return 0
 
