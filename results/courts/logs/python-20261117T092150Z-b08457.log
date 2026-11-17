@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/scripts/s46_headroom_summary.py", line 625, in <module>
+s46: receipt results/stage2/s46-headroom-summary-20261117T092157Z.json
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 618, in main
+    write_region(summary)
+  File "/work/scripts/s46_headroom_summary.py", line 486, in write_region
+    body = render(receipt)
+           ^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 402, in render
+    f"positions, against {_num(ce['policies']['class']['folds']['B']['all_on'])} "
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'all_on'

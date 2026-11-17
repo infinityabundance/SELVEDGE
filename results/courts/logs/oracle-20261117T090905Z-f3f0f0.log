@@ -1,0 +1,92 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+doc 18 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 18 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 18 policy=class          new= 96 gate_on=0.08333333333333333 verdict=wrong
+doc 18 policy=entropy        new= 96 gate_on=0.020833333333333332 verdict=wrong
+doc 18 policy=residual_norm  new= 96 gate_on=0.0625 verdict=wrong
+doc 27 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 27 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 27 policy=class          new= 96 gate_on=0.3125 verdict=wrong
+doc 27 policy=entropy        new= 96 gate_on=0.010416666666666666 verdict=wrong
+doc 27 policy=residual_norm  new= 96 gate_on=0.3020833333333333 verdict=wrong
+doc 120 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 120 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 120 policy=class          new= 96 gate_on=0.041666666666666664 verdict=wrong
+doc 120 policy=entropy        new= 96 gate_on=0.09375 verdict=wrong
+doc 120 policy=residual_norm  new= 96 gate_on=0.11458333333333333 verdict=wrong
+doc 126 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 126 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 126 policy=class          new= 96 gate_on=0.3229166666666667 verdict=correct
+doc 126 policy=entropy        new= 96 gate_on=0.09375 verdict=wrong
+doc 126 policy=residual_norm  new= 96 gate_on=0.3229166666666667 verdict=wrong
+doc 360 policy=base           new= 96 gate_on=0.0 verdict=correct
+doc 360 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 360 policy=class          new= 96 gate_on=0.020833333333333332 verdict=correct
+doc 360 policy=entropy        new= 96 gate_on=0.0 verdict=correct
+doc 360 policy=residual_norm  new= 96 gate_on=0.09375 verdict=correct
+doc 442 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 442 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 442 policy=class          new= 96 gate_on=0.375 verdict=correct
+doc 442 policy=entropy        new= 96 gate_on=0.22916666666666666 verdict=correct
+doc 442 policy=residual_norm  new= 96 gate_on=0.28125 verdict=wrong
+doc 477 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 477 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 477 policy=class          new= 96 gate_on=0.11458333333333333 verdict=wrong
+doc 477 policy=entropy        new= 96 gate_on=0.010416666666666666 verdict=wrong
+doc 477 policy=residual_norm  new= 96 gate_on=0.09375 verdict=wrong
+doc 616 policy=base           new= 96 gate_on=0.0 verdict=correct
+doc 616 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 616 policy=class          new= 96 gate_on=0.17708333333333334 verdict=correct
+doc 616 policy=entropy        new= 96 gate_on=0.041666666666666664 verdict=correct
+doc 616 policy=residual_norm  new= 96 gate_on=0.23958333333333334 verdict=wrong
+doc 659 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 659 policy=memory         new= 96 gate_on=1.0 verdict=correct
+doc 659 policy=class          new= 96 gate_on=0.16666666666666666 verdict=wrong
+doc 659 policy=entropy        new= 96 gate_on=0.052083333333333336 verdict=wrong
+doc 659 policy=residual_norm  new= 96 gate_on=0.10416666666666667 verdict=wrong
+doc 820 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 820 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 820 policy=class          new= 96 gate_on=0.3854166666666667 verdict=wrong
+doc 820 policy=entropy        new= 96 gate_on=0.09375 verdict=wrong
+doc 820 policy=residual_norm  new= 96 gate_on=0.3541666666666667 verdict=wrong
+doc 889 policy=base           new= 96 gate_on=0.0 verdict=correct
+doc 889 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 889 policy=class          new= 96 gate_on=0.1875 verdict=correct
+doc 889 policy=entropy        new= 96 gate_on=0.041666666666666664 verdict=correct
+doc 889 policy=residual_norm  new= 96 gate_on=0.052083333333333336 verdict=correct
+doc 940 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 940 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 940 policy=class          new= 96 gate_on=0.2916666666666667 verdict=ambiguous
+doc 940 policy=entropy        new= 96 gate_on=0.041666666666666664 verdict=ambiguous
+doc 940 policy=residual_norm  new= 96 gate_on=0.28125 verdict=wrong
+doc 984 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 984 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 984 policy=class          new= 96 gate_on=0.03125 verdict=wrong
+doc 984 policy=entropy        new= 96 gate_on=0.0 verdict=wrong
+doc 984 policy=residual_norm  new= 96 gate_on=0.10416666666666667 verdict=wrong
+doc 988 policy=base           new= 96 gate_on=0.0 verdict=wrong
+doc 988 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 988 policy=class          new= 96 gate_on=0.5 verdict=wrong
+doc 988 policy=entropy        new= 96 gate_on=0.13541666666666666 verdict=wrong
+doc 988 policy=residual_norm  new= 96 gate_on=0.28125 verdict=wrong
+doc 1098 policy=base           new= 96 gate_on=0.0 verdict=ambiguous
+doc 1098 policy=memory         new= 96 gate_on=1.0 verdict=wrong
+doc 1098 policy=class          new= 96 gate_on=0.0 verdict=ambiguous
+doc 1098 policy=entropy        new= 96 gate_on=0.03125 verdict=correct
+doc 1098 policy=residual_norm  new= 96 gate_on=0.21875 verdict=correct
+doc 1286 policy=base           new= 96 gate_on=0.0 verdict=correct
+doc 1286 policy=memory         new= 96 gate_on=1.0 verdict=correct
+doc 1286 policy=class          new= 96 gate_on=0.3958333333333333 verdict=correct
+doc 1286 policy=entropy        new= 96 gate_on=0.13541666666666666 verdict=correct
+doc 1286 policy=residual_norm  new= 96 gate_on=0.34375 verdict=correct
+
+base           correct=4/16 accuracy=0.25 gate_on=0.0
+memory         correct=2/16 accuracy=0.125 gate_on=1.0
+class          correct=6/16 accuracy=0.375 gate_on=0.212890625
+entropy        correct=6/16 accuracy=0.375 gate_on=0.064453125
+residual_norm  correct=4/16 accuracy=0.25 gate_on=0.203125
+receipt: results/stage2/s46-oracle-generation-20261117T090913Z.json
+seconds=675.188 decode_tokens=7680 ms_per_token=87.91510416666667

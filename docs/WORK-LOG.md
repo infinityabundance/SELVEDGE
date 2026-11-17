@@ -4533,3 +4533,97 @@ existing S40/S42/S43/S44 suites; the diagnostic and budget scripts ran in the
 - **No seed variance.** Five prompt/sequence pairs on one checkpoint per arm.
 - **No symbolic verifier.** The extractor is deliberately conservative; equal
   but differently written MATH answers are rejected.
+
+## 2026-11-17 — S46: the gate headroom is bounded, and a cheap gate does not reach it
+
+S45 measured a persistent, near-uniform damage sign. The question that decides
+the next mechanism is different: *could any gate recover it*, and does a gate
+that is cheap at generation time recover any of it. This continuation answers
+that with one CPU forward receipt and three derived upper bounds, then checks the
+answer level with bounded greedy decoding.
+
+### The probe crash, and what was actually wrong
+
+`s46_oracle_gate.py --forward` crashed with `KeyError: 'target'` at the receipt
+append. The cause was an input-schema mismatch, not a model bug: `s45._select_items`
+returns records with `prompt`, `base_response`, `memory_response`, `base_ok`,
+`memory_ok` and `prompt_tokens`, and never a `target`; the forward receipt asked
+for `item["target"]`. The committed fix joins the target from the same GSM8K raw
+sample by `doc_id` in `_sample` before the forward loop, so the receipt carries
+the reference answer the answer-level verifier needs. The earlier court log
+(`results/courts/logs/oracle-20261117T084221Z-9a4cbe.log`) keeps the traceback.
+
+Two further defects were found while running the probe, both in the generation
+path that had never executed:
+
+- the causal class policy read `all_ids[absolute - 1]`, i.e. the token *before*
+  the gated hidden position. The residual at position `t` shapes the prediction
+  of token `t+1`, so the causal class is the class of token `t`. Fixed in
+  `_gate_tensor` and pinned by
+  `test_class_gate_reads_the_token_at_the_gated_position`.
+- the forward receipt stores both response sources for each prompt, and the
+  generation loop decoded every item, so each prompt was decoded twice for no
+  reason. The loop now deduplicates by `doc_id` and accepts `--max-prompts`; a
+  `decode.prompts` / `decode.prompt_cap` pair is recorded in the receipt.
+
+The point values did not change for the bounds: `--bounds` reads the stored
+per-position arrays.
+
+### The bounds
+
+Sample: 16 GSM8K prompts where the base is correct and `memory-2m` is wrong, plus
+4 controls excluded from the bounds; 2,176 completion positions; CPU forwards of
+the base and memory branches plus the 2B teacher. Receipt
+`results/stage2/s46-oracle-bounds-20261117T090710Z.json` (stamp
+`20261117T090710Z`), summarised with prompt-clustered intervals by
+`scripts/s46_headroom_summary.py` into
+`results/stage2/s46-headroom-summary-20261117T092225Z.json`.
+
+- CE: all-off 0.26616, all-on 0.28499, net damage +0.01883 nats/token.
+- Per-token oracle (non-causal): 0.23773, i.e. +0.02843 nats/token better than
+  disabling the memory, 2.51x the net damage, prompt-clustered 95% CI
+  [+0.02128, +0.03599].
+- KL: damage +0.01718, oracle gain +0.01455 [+0.00937, +0.02162].
+- Class gate, held out: 0.2666 pooled; on both folds it lands within 0.0008 nats
+  of memory-off (0.2468 vs 0.2468; 0.2868 vs 0.2860), and the fitted class set
+  is `digit` in one fold and `operator` in the other.
+- Cheap one-threshold gates, held out: entropy 0.2662, residual norm 0.2683,
+  position 0.2657, i.e. gains of -0.40 [-2.02, +1.17], -0.01, -2.12 [-4.39,
+  -0.07] and +0.51 [-1.45, +2.88] millinats per token. None lies above zero.
+
+The reading: headroom exists and is worth about 28 millinats of CE per token on
+this sample, but it lives in the per-position choice. A single threshold on any
+cheap feature measured here recovers the damage by turning the memory off and
+captures none of the oracle's gain. A learned gate must therefore beat
+memory-off on held-out prompts, not merely reproduce it.
+
+### The answer level
+
+`results/stage2/s46-oracle-generation-20261117T090913Z.json` (stamp
+`20261117T090913Z`) decodes the same 16 prompts greedily
+under five policies, 96 new tokens at most, out-of-fold gate parameters, graded
+by the RFT GSM8K verifier: base 4/16, memory 2/16, class 6/16, entropy 6/16,
+residual norm 4/16. Paired against base: class +2/-0, entropy +2/-0, memory
++1/-3, residual norm +1/-1. With 16 selected prompts this is a direction, not a
+result; the exact p-values are 0.5 or larger. The decoding budget (96 tokens,
+320-token prompt window) is not the anchored protocol, so these accuracies do not
+reproduce the stored `base_ok` labels; they are comparable to each other and to
+nothing else.
+
+### Cost of the probe
+
+The forward pass is CPU-only (131.8 s, 2,668 tokens, 8.1 GiB process RSS peak,
+3.02 GiB cgroup peak, 12 GiB court limit). The generation pass is also CPU-only
+(675.2 s, 7,680 decode tokens, 87.9 ms/token) and ran detached at 6 CPUs while
+the 20M bar held the GPU. It cost the bar throughput: the bar's own log fell from
+about 1,840 to 1,550-1,700 tok/s for the 11 minutes the two jobs overlapped, i.e.
+roughly 2-3 minutes of bar wall time. The generation could not use the GPU while
+the bar ran and was needed for the report, so the contention was accepted and is
+recorded here rather than hidden.
+
+### Courts
+
+`oracle` ran the S46 suite plus the S43 total-cap and S47 matched-control and
+correctness suites; `python` ran the summary self-test and every regeneration.
+The four S43/S46/S47 failing test logs from the first attempt are kept in
+`results/courts/logs/` with their fixes.

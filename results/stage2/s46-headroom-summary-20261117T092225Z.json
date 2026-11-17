@@ -1,0 +1,639 @@
+{
+  "answer_level": {
+    "decode_tokens": 7680,
+    "max_new_tokens": 96,
+    "ms_per_decode_token": 87.91510416666667,
+    "policies": {
+      "base": {
+        "correct": 4,
+        "gate_on_fraction_mean": 0.0,
+        "losses_vs_base": 0,
+        "n": 16,
+        "p_value": 1.0,
+        "wins_vs_base": 0
+      },
+      "class": {
+        "correct": 6,
+        "gate_on_fraction_mean": 0.212890625,
+        "losses_vs_base": 0,
+        "n": 16,
+        "p_value": 0.5,
+        "wins_vs_base": 2
+      },
+      "entropy": {
+        "correct": 6,
+        "gate_on_fraction_mean": 0.064453125,
+        "losses_vs_base": 0,
+        "n": 16,
+        "p_value": 0.5,
+        "wins_vs_base": 2
+      },
+      "memory": {
+        "correct": 2,
+        "gate_on_fraction_mean": 1.0,
+        "losses_vs_base": 3,
+        "n": 16,
+        "p_value": 0.625,
+        "wins_vs_base": 1
+      },
+      "residual_norm": {
+        "correct": 4,
+        "gate_on_fraction_mean": 0.203125,
+        "losses_vs_base": 1,
+        "n": 16,
+        "p_value": 1.0,
+        "wins_vs_base": 1
+      }
+    },
+    "prompts": 16
+  },
+  "created_utc": "2026-11-17T09:22:18Z",
+  "generation": {
+    "answer_level": {
+      "decode_tokens": 7680,
+      "max_new_tokens": 96,
+      "ms_per_decode_token": 87.91510416666667,
+      "policies": {
+        "base": {
+          "correct": 4,
+          "gate_on_fraction_mean": 0.0,
+          "losses_vs_base": 0,
+          "n": 16,
+          "p_value": 1.0,
+          "wins_vs_base": 0
+        },
+        "class": {
+          "correct": 6,
+          "gate_on_fraction_mean": 0.212890625,
+          "losses_vs_base": 0,
+          "n": 16,
+          "p_value": 0.5,
+          "wins_vs_base": 2
+        },
+        "entropy": {
+          "correct": 6,
+          "gate_on_fraction_mean": 0.064453125,
+          "losses_vs_base": 0,
+          "n": 16,
+          "p_value": 0.5,
+          "wins_vs_base": 2
+        },
+        "memory": {
+          "correct": 2,
+          "gate_on_fraction_mean": 1.0,
+          "losses_vs_base": 3,
+          "n": 16,
+          "p_value": 0.625,
+          "wins_vs_base": 1
+        },
+        "residual_norm": {
+          "correct": 4,
+          "gate_on_fraction_mean": 0.203125,
+          "losses_vs_base": 1,
+          "n": 16,
+          "p_value": 1.0,
+          "wins_vs_base": 1
+        }
+      },
+      "prompts": 16
+    },
+    "path": "results/stage2/s46-oracle-generation-20261117T090913Z.json",
+    "stamp": "20261117T090913Z"
+  },
+  "inputs": {
+    "bounds": {
+      "path": "results/stage2/s46-oracle-bounds-20261117T090710Z.json",
+      "sha256": "a5e21530b0296e3bb46979f3d9908c76a8fc11e62880552d5dcd03d4f56f6a00",
+      "stamp": "20261117T090710Z"
+    },
+    "forward": {
+      "path": "results/stage2/s46-oracle-forwards-20261117T084501Z.json",
+      "sha256": "e029f9ea4d46e7d4c766f009095f157dfbe427a717c32c71e999e1c5a57fea93",
+      "stamp": "20261117T084501Z"
+    }
+  },
+  "kind": "oracle_gate_headroom_summary",
+  "method": {
+    "class_oracle_is_non_causal": "the class labels are those of the token being predicted, so the class bound is looser than any causal class gate; the generation receipt's class policy is the causal one",
+    "conditional_on": "the gate threshold/direction and class set are held at the values fitted on the complementary fold; the interval does not include refit variance",
+    "gain": "all_off - value, so a positive number is a real improvement over memory-always-off",
+    "interval": "prompt-clustered percentile bootstrap over documents",
+    "not_the_benchmark": "selected damage sample (base correct, memory-2m wrong); not an anchored score",
+    "per_token_is_non_causal": "the per-token oracle chooses the branch with the target token visible; it is an upper bound, not a usable gate",
+    "resamples": 4000,
+    "seed": 46
+  },
+  "positions": 2176,
+  "prompts": 16,
+  "results": {
+    "ce": {
+      "level": {
+        "all_off": 0.26616023103158365,
+        "all_on": 0.2849937671325319,
+        "damage": 0.018833536100948234,
+        "positions": 2176,
+        "positions_memory_helps": 579
+      },
+      "per_fold_level": {
+        "A": {
+          "all_off": 0.24678376950152156,
+          "all_on": 0.267925815025425,
+          "positions": 1101
+        },
+        "B": {
+          "all_off": 0.28600533256144256,
+          "all_on": 0.30247452552315945,
+          "positions": 1075
+        }
+      },
+      "policies": {
+        "base_entropy": {
+          "bootstrap": {
+            "ci95": [
+              -1.2360295906843621e-05,
+              -3.4509352996869858e-06
+            ],
+            "clusters": 16,
+            "point": -7.724143682386053e-06,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.24678376950152156,
+              "all_on": 0.267925815025425,
+              "direction": "low",
+              "gain_vs_all_off": -3.953391437522269e-06,
+              "gate_on_fraction": 0.029064486830154404,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": 0.0015045976033434272,
+              "value": 0.24678772289295908
+            },
+            "B": {
+              "all_off": 0.28600533256144256,
+              "all_on": 0.30247452552315945,
+              "direction": "low",
+              "gain_vs_all_off": -1.158609551649148e-05,
+              "gate_on_fraction": 0.07534883720930233,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": 0.0022857740987092257,
+              "value": 0.28601691865695905
+            }
+          },
+          "gain_vs_all_off": -7.724143682386053e-06,
+          "recovered_nats_vs_all_on": 0.018825811957265848,
+          "recovery_fraction": 0.999589872892643,
+          "value": 0.26616795517526604
+        },
+        "class": {
+          "bootstrap": {
+            "ci95": [
+              -0.0020207159992525203,
+              0.0011682161826308546
+            ],
+            "clusters": 16,
+            "point": -0.00039540264583359797,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.24678376950152156,
+              "all_on": 0.267925815025425,
+              "direction": null,
+              "gain_vs_all_off": -4.2289887920488045e-05,
+              "gate_on_fraction": 0.08991825613079019,
+              "on_classes": [
+                "operator"
+              ],
+              "positions": 1101,
+              "threshold": null,
+              "value": 0.24682605938944205
+            },
+            "B": {
+              "all_off": 0.28600533256144256,
+              "all_on": 0.30247452552315945,
+              "direction": null,
+              "gain_vs_all_off": -0.0007570558053335286,
+              "gate_on_fraction": 0.3730232558139535,
+              "on_classes": [
+                "digit"
+              ],
+              "positions": 1075,
+              "threshold": null,
+              "value": 0.2867623883667761
+            }
+          },
+          "gain_vs_all_off": -0.00039540264583359797,
+          "recovered_nats_vs_all_on": 0.018438133455114636,
+          "recovery_fraction": 0.9790053952845483,
+          "value": 0.26655563367741725
+        },
+        "memory_residual_norm": {
+          "bootstrap": {
+            "ci95": [
+              -0.004391014015814543,
+              -6.979842749560428e-05
+            ],
+            "clusters": 16,
+            "point": -0.0021191466537870407,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.24678376950152156,
+              "all_on": 0.267925815025425,
+              "direction": "high",
+              "gain_vs_all_off": -0.0023762682337757357,
+              "gate_on_fraction": 0.08719346049046321,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": 1.0393997430801392,
+              "value": 0.2491600377352973
+            },
+            "B": {
+              "all_off": 0.28600533256144256,
+              "all_on": 0.30247452552315945,
+              "direction": "low",
+              "gain_vs_all_off": -0.0018558063193056529,
+              "gate_on_fraction": 0.0641860465116279,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": 0.5700932145118713,
+              "value": 0.2878611388807482
+            }
+          },
+          "gain_vs_all_off": -0.0021191466537870407,
+          "recovered_nats_vs_all_on": 0.016714389447161193,
+          "recovery_fraction": 0.8874801501731613,
+          "value": 0.2682793776853707
+        },
+        "per_token": {
+          "bootstrap": {
+            "ci95": [
+              0.02128373744654033,
+              0.03598887190536626
+            ],
+            "clusters": 16,
+            "point": 0.028425664985148313,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.24678376950152156,
+              "all_on": 0.267925815025425,
+              "direction": null,
+              "gain_vs_all_off": 0.02376953539426571,
+              "gate_on_fraction": null,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": null,
+              "value": 0.22301423410725585
+            },
+            "B": {
+              "all_off": 0.28600533256144256,
+              "all_on": 0.30247452552315945,
+              "direction": null,
+              "gain_vs_all_off": 0.0331944079428802,
+              "gate_on_fraction": null,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": null,
+              "value": 0.25281092461856236
+            }
+          },
+          "gain_vs_all_off": 0.028425664985148313,
+          "recovered_nats_vs_all_on": 0.04725920108609655,
+          "recovery_fraction": 2.5093110944639405,
+          "value": 0.23773456604643534
+        },
+        "position": {
+          "bootstrap": {
+            "ci95": [
+              -0.0014472197080124538,
+              0.002878778579804564
+            ],
+            "clusters": 16,
+            "point": 0.0005086091001877957,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.24678376950152156,
+              "all_on": 0.267925815025425,
+              "direction": "high",
+              "gain_vs_all_off": -0.001502982400721914,
+              "gate_on_fraction": 0.09445958219800181,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": 69,
+              "value": 0.24828675190224347
+            },
+            "B": {
+              "all_off": 0.28600533256144256,
+              "all_on": 0.30247452552315945,
+              "direction": "high",
+              "gain_vs_all_off": 0.0025688530467008475,
+              "gate_on_fraction": 0.06511627906976744,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": 73,
+              "value": 0.2834364795147417
+            }
+          },
+          "gain_vs_all_off": 0.0005086091001877957,
+          "recovered_nats_vs_all_on": 0.01934214520113603,
+          "recovery_fraction": 1.0270055021776918,
+          "value": 0.26565162193139585
+        }
+      }
+    },
+    "kl": {
+      "level": {
+        "all_off": 0.10513784756220869,
+        "all_on": 0.12231437960525682,
+        "damage": 0.01717653204304813,
+        "positions": 2176,
+        "positions_memory_helps": 802
+      },
+      "per_fold_level": {
+        "A": {
+          "all_off": 0.09144864007615738,
+          "all_on": 0.11133844764833663,
+          "positions": 1101
+        },
+        "B": {
+          "all_off": 0.11915814285722495,
+          "all_on": 0.13355577596299553,
+          "positions": 1075
+        }
+      },
+      "policies": {
+        "base_entropy": {
+          "bootstrap": {
+            "ci95": [
+              -0.00020629737155011818,
+              0.0002496987147920515
+            ],
+            "clusters": 16,
+            "point": 2.951919864650765e-05,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.09144864007615738,
+              "all_on": 0.11133844764833663,
+              "direction": "low",
+              "gain_vs_all_off": 4.253065310932946e-06,
+              "gate_on_fraction": 0.24432334241598547,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": 0.027453863993287086,
+              "value": 0.09144438701084645
+            },
+            "B": {
+              "all_off": 0.11915814285722495,
+              "all_on": 0.13355577596299553,
+              "direction": "low",
+              "gain_vs_all_off": 5.5396419858119716e-05,
+              "gate_on_fraction": 0.30883720930232555,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": 0.04700519144535065,
+              "value": 0.11910274643736683
+            }
+          },
+          "gain_vs_all_off": 2.951919864650765e-05,
+          "recovered_nats_vs_all_on": 0.017206051241694637,
+          "recovery_fraction": 1.001718577334035,
+          "value": 0.10510832836356218
+        },
+        "class": {
+          "bootstrap": {
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "clusters": 16,
+            "point": 0.0,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.09144864007615738,
+              "all_on": 0.11133844764833663,
+              "direction": null,
+              "gain_vs_all_off": 0.0,
+              "gate_on_fraction": 0.0,
+              "on_classes": [],
+              "positions": 1101,
+              "threshold": null,
+              "value": 0.09144864007615738
+            },
+            "B": {
+              "all_off": 0.11915814285722495,
+              "all_on": 0.13355577596299553,
+              "direction": null,
+              "gain_vs_all_off": 0.0,
+              "gate_on_fraction": 0.0,
+              "on_classes": [],
+              "positions": 1075,
+              "threshold": null,
+              "value": 0.11915814285722495
+            }
+          },
+          "gain_vs_all_off": 0.0,
+          "recovered_nats_vs_all_on": 0.01717653204304813,
+          "recovery_fraction": 1.0,
+          "value": 0.10513784756220869
+        },
+        "memory_residual_norm": {
+          "bootstrap": {
+            "ci95": [
+              -0.0039014829223586733,
+              0.0001559033595226328
+            ],
+            "clusters": 16,
+            "point": -0.0016188653314827967,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.09144864007615738,
+              "all_on": 0.11133844764833663,
+              "direction": "low",
+              "gain_vs_all_off": -0.0024393788469834754,
+              "gate_on_fraction": 0.27338782924613986,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": 0.6121025681495667,
+              "value": 0.09388801892314086
+            },
+            "B": {
+              "all_off": 0.11915814285722495,
+              "all_on": 0.13355577596299553,
+              "direction": "low",
+              "gain_vs_all_off": -0.0007785068379327909,
+              "gate_on_fraction": 0.13674418604651162,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": 0.5845516920089722,
+              "value": 0.11993664969515774
+            }
+          },
+          "gain_vs_all_off": -0.0016188653314827967,
+          "recovered_nats_vs_all_on": 0.015557666711565332,
+          "recovery_fraction": 0.9057513281828039,
+          "value": 0.10675671289369149
+        },
+        "per_token": {
+          "bootstrap": {
+            "ci95": [
+              0.009368935037733755,
+              0.02161991688420717
+            ],
+            "clusters": 16,
+            "point": 0.014549229926905716,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.09144864007615738,
+              "all_on": 0.11133844764833663,
+              "direction": null,
+              "gain_vs_all_off": 0.009806081009761533,
+              "gate_on_fraction": null,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": null,
+              "value": 0.08164255906639585
+            },
+            "B": {
+              "all_off": 0.11915814285722495,
+              "all_on": 0.13355577596299553,
+              "direction": null,
+              "gain_vs_all_off": 0.019407096864371504,
+              "gate_on_fraction": null,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": null,
+              "value": 0.09975104599285345
+            }
+          },
+          "gain_vs_all_off": 0.014549229926905716,
+          "recovered_nats_vs_all_on": 0.031725761969953845,
+          "recovery_fraction": 1.8470411774881086,
+          "value": 0.09058861763530297
+        },
+        "position": {
+          "bootstrap": {
+            "ci95": [
+              -0.008588942638960512,
+              -0.0013867818905330676
+            ],
+            "clusters": 16,
+            "point": -0.00472221185197487,
+            "reading": "all_off - value; positive means the gate beats simply disabling the memory",
+            "resamples": 4000
+          },
+          "folds": {
+            "A": {
+              "all_off": 0.09144864007615738,
+              "all_on": 0.11133844764833663,
+              "direction": "high",
+              "gain_vs_all_off": -0.007492987615481644,
+              "gate_on_fraction": 0.4014532243415077,
+              "on_classes": null,
+              "positions": 1101,
+              "threshold": 42,
+              "value": 0.09894162769163903
+            },
+            "B": {
+              "all_off": 0.11915814285722495,
+              "all_on": 0.13355577596299553,
+              "direction": "high",
+              "gain_vs_all_off": -0.001884421976978648,
+              "gate_on_fraction": 0.06511627906976744,
+              "on_classes": null,
+              "positions": 1075,
+              "threshold": 73,
+              "value": 0.1210425648342036
+            }
+          },
+          "gain_vs_all_off": -0.00472221185197487,
+          "recovered_nats_vs_all_on": 0.01245432019107326,
+          "recovery_fraction": 0.7250776908784626,
+          "value": 0.10986005941418356
+        }
+      }
+    }
+  },
+  "revision": "82f603001341f411f343c935fc003b6c4993b3d2",
+  "sample": {
+    "control_prompts": [
+      312,
+      619,
+      791,
+      1273
+    ],
+    "damage_prompts": [
+      18,
+      27,
+      120,
+      126,
+      360,
+      442,
+      477,
+      616,
+      659,
+      820,
+      889,
+      940,
+      984,
+      988,
+      1098,
+      1286
+    ],
+    "folds": {
+      "A": [
+        18,
+        120,
+        360,
+        477,
+        659,
+        889,
+        984,
+        1098
+      ],
+      "B": [
+        27,
+        126,
+        442,
+        616,
+        820,
+        940,
+        988,
+        1286
+      ]
+    },
+    "not_the_benchmark": "selected damage sample; its accuracy is not an anchored benchmark score",
+    "selection_rule": "shortest GSM8K prompts (>= 64 tokens) where base is correct and memory-2m is wrong, then the shortest prompts where both are correct (controls); the scored text is the memory-2m arm's own stored generation"
+  },
+  "sample_size": {
+    "controls": 4,
+    "damage": 16,
+    "prompts": 20,
+    "sequences": 40
+  },
+  "schema": "selvedge/s46-headroom-summary/v1",
+  "stamp": "20261117T092218Z"
+}

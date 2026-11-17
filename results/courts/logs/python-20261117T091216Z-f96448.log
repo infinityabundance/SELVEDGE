@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/scripts/s46_headroom_summary.py", line 591, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 560, in main
+    return self_test()
+           ^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 532, in self_test
+    values = policy_values(rows, "ce", "per_token", {})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 102, in policy_values
+    fold = folds[row["split"]]
+           ~~~~~^^^^^^^^^^^^^^
+KeyError: 'A'

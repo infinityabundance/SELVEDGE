@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/work/scripts/s46_headroom_summary.py", line 600, in <module>
+s46: receipt results/stage2/s46-headroom-summary-smoke.json
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 590, in main
+    print(render(summary))
+          ^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 331, in render
+    f"| {name} | {_num(block['level']['all_off'])} | "
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 298, in _num
+    return "n/a" if value is None else format(scale * value, spec)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Invalid format specifier '{:.4f}' for object of type 'float'

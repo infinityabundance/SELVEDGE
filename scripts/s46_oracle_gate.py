@@ -629,11 +629,11 @@ def _gate_tensor(torch, policy: str, params: dict, tok, all_ids: list[int],
         if policy == "memory":
             values.append(1.0)
         elif policy == "class":
-            if absolute == 0:
-                values.append(0.0)
-            else:
-                name = _class_of_id(tok, all_ids[absolute - 1])
-                values.append(1.0 if name in params["on_classes"] else 0.0)
+            # The residual at hidden position t shapes the prediction of token
+            # t+1, so the causal class is the class of the token *at* t -- the
+            # one the decoder has already read, never the token being predicted.
+            name = _class_of_id(tok, all_ids[absolute])
+            values.append(1.0 if name in params["on_classes"] else 0.0)
         elif policy == "entropy":
             entropy = entropies[offset]
             on = (entropy >= params["threshold"]
@@ -756,7 +756,17 @@ def run_generate(args) -> int:
 
     bounds = read_json(args.bounds_input)
     forward = read_json(bounds["input"]["path"])
-    items = [item for item in forward["items"] if not item.get("control")]
+    # One entry per prompt: the forward receipt stores both response sources
+    # for each prompt, and generation does not depend on the source.
+    items: list[dict] = []
+    for item in forward["items"]:
+        if item.get("control"):
+            continue
+        if any(seen["doc_id"] == item["doc_id"] for seen in items):
+            continue
+        items.append(item)
+    if args.max_prompts:
+        items = items[:args.max_prompts]
     if not items:
         raise SystemExit("no damage items in the forward receipt")
 
@@ -785,7 +795,8 @@ def run_generate(args) -> int:
         "sample": forward.get("sample"),
         "sample_size": forward.get("sample_size"),
         "decode": {"strategy": "greedy", "max_new_tokens": args.max_new_tokens,
-                   "stop": "eos",
+                   "stop": "eos", "prompts": len(items),
+                   "prompt_cap": args.max_prompts,
                    "prompt": "the selected sample's own stored few-shot prompt",
                    "not_the_benchmark": "selected damage sample; not an "
                                         "anchored benchmark score"},
@@ -898,6 +909,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--prompt-tokens", type=int, default=320)
     parser.add_argument("--completion-tokens", type=int, default=80)
     parser.add_argument("--max-new-tokens", type=int, default=96)
+    parser.add_argument("--max-prompts", type=int, default=0,
+                        help="--generate: cap the number of distinct damage "
+                             "prompts decoded (0 = all)")
     parser.add_argument("--source", action="append", default=None,
                         help="response source(s): base and/or memory (default "
                              "both, so the gate sees both trajectories)")

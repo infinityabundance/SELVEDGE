@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/work/scripts/s46_headroom_summary.py", line 600, in <module>
+s46: receipt results/stage2/s46-headroom-summary-smoke.json
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 590, in main
+    print(render(summary))
+          ^^^^^^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 409, in render
+    + "; ".join(
+      ^^^^^^^^^^
+  File "/work/scripts/s46_headroom_summary.py", line 410, in <genexpr>
+    f"`{name}` +{entry['wins']} wins / {entry['losses']} losses "
+                 ~~~~~^^^^^^^^
+KeyError: 'wins'

@@ -1,0 +1,17 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+doc 18 policy=base           new= 32 gate_on=0.0 verdict=wrong
+doc 18 policy=memory         new= 32 gate_on=1.0 verdict=wrong
+doc 18 policy=class          new= 32 gate_on=0.125 verdict=wrong
+doc 18 policy=entropy        new= 32 gate_on=0.0 verdict=wrong
+doc 18 policy=residual_norm  new= 32 gate_on=0.0 verdict=wrong
+
+base           correct=0/1 accuracy=0.0 gate_on=0.0
+memory         correct=0/1 accuracy=0.0 gate_on=1.0
+class          correct=0/1 accuracy=0.0 gate_on=0.125
+entropy        correct=0/1 accuracy=0.0 gate_on=0.0
+residual_norm  correct=0/1 accuracy=0.0 gate_on=0.0
+receipt: results/stage2/s46-oracle-generation-smoke.json
+seconds=11.369 decode_tokens=160 ms_per_token=71.05625

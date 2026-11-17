@@ -45,6 +45,7 @@ sys.path.insert(0, os.path.join(REPO, "oracle"))
 
 import s36_anchor as anchor  # noqa: E402
 import s40_compare as comparison  # noqa: E402
+from frontier import correctness as correctness_check  # noqa: E402
 from s40_score import FAMILY_TASKS, SCHEMA, cgroup_peak  # noqa: E402
 
 
@@ -255,6 +256,11 @@ def run(args) -> int:
             "wall_clock_s": round(elapsed, 1),
             "peak_memory_allocated_bytes": int(peak),
             "cgroup": cgroup_peak(),
+            "sequence_correctness": (
+                correctness_check.harness_samples(
+                    (result.get("samples") or {}).get(name) or [], name)
+                if name in correctness_check.VERIFIABLE_TASKS
+                and (result.get("samples") or {}).get(name) else None),
         }
         partial = receipt_base(args, prereg, prereg_digest, commit, version,
                                arm_report, free_bytes, total_bytes, entries,
@@ -277,6 +283,14 @@ def run(args) -> int:
     receipt["complete"] = len(entries) == len(tasks)
     receipt["framework"] = {"lm_eval": getattr(lm_eval, "__version__", "unknown"),
                             "transformers": transformers.__version__}
+    receipt["correctness_and_likelihood"] = {
+        "heldout": "mean next-token CE and KL(teacher_T || student_T) on the "
+                   "held-out slice are reported by the companion held-out receipt",
+        "sequence": "the exact final-answer verdict from the S45 extractor on "
+                    "this task's own generations (gsm8k and minerva_math500)",
+        "why_both": "a lower mean CE can coexist with a lower exact-answer rate; "
+                    "neither quantity is substituted for the other",
+    }
     anchor.write_json(args.out, receipt)
     print(f"s43_score_total_cap: receipt {args.out}", flush=True)
     from frontier import arms

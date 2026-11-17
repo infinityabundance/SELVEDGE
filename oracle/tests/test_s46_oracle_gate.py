@@ -189,3 +189,30 @@ def test_flatten_drops_controls_and_keeps_alignment():
     all_rows = gate._flatten(items, damage_only=False)
     assert len(all_rows) == 3
     assert all_rows[2]["memory_residual_norm"] is None
+
+
+def test_class_gate_reads_the_token_at_the_gated_position():
+    """The gate on hidden position t must use token t, not token t-1.
+
+    A one-token lag puts the gate on the wrong token class, which is the exact
+    difference between "apply the memory while writing a number" and "apply it
+    one token too early".
+    """
+
+    torch = pytest.importorskip("torch")
+
+    class _Tok:
+        table = {1: "5", 2: "x"}
+
+        def decode(self, ids):
+            return self.table[ids[0]]
+
+    tok = _Tok()
+    # The call covers the last position only; that token is the digit.
+    on = gate._gate_tensor(torch, "class", {"on_classes": ["digit"]}, tok,
+                           [2, 1], [0.0])
+    assert float(on.reshape(-1)[0]) == 1.0
+    # Same call, last token is a letter -> off.
+    off = gate._gate_tensor(torch, "class", {"on_classes": ["digit"]}, tok,
+                            [1, 2], [0.0])
+    assert float(off.reshape(-1)[0]) == 0.0

@@ -1,0 +1,627 @@
+{
+  "created_utc": "2026-11-17T09:07:10Z",
+  "folds": {
+    "A": {
+      "base_entropy": {
+        "direction": "low",
+        "fit_value": 0.246794004276784,
+        "threshold": 0.0022857740987092257
+      },
+      "class_table": {
+        "digit": {
+          "apply_memory": true,
+          "base": 0.07653482820994648,
+          "delta": -0.006474366522320521,
+          "memory": 0.07006046168762595,
+          "positions": 329
+        },
+        "letter": {
+          "apply_memory": false,
+          "base": 0.6565238447964116,
+          "delta": 0.01565160598879312,
+          "memory": 0.6721754507852047,
+          "positions": 43
+        },
+        "operator": {
+          "apply_memory": false,
+          "base": 0.0876549990147157,
+          "delta": 0.0004703148141458649,
+          "memory": 0.08812531382886157,
+          "positions": 99
+        },
+        "other": {
+          "apply_memory": false,
+          "base": 0.31613009760294003,
+          "delta": 0.04873643515952929,
+          "memory": 0.36486653276246933,
+          "positions": 71
+        },
+        "space": {
+          "apply_memory": false,
+          "base": 0.3348396504142962,
+          "delta": 0.037974224664071576,
+          "memory": 0.3728138750783678,
+          "positions": 559
+        }
+      },
+      "fitted_on": "A",
+      "memory_residual_norm": {
+        "direction": "low",
+        "fit_value": 0.24704084330197548,
+        "threshold": 0.5700932145118713
+      },
+      "on_classes": [
+        "digit"
+      ],
+      "position": {
+        "direction": "high",
+        "fit_value": 0.2473816817983771,
+        "threshold": 73
+      }
+    },
+    "B": {
+      "base_entropy": {
+        "direction": "low",
+        "fit_value": 0.28601120214105913,
+        "threshold": 0.0015045976033434272
+      },
+      "class_table": {
+        "digit": {
+          "apply_memory": false,
+          "base": 0.08887041983296926,
+          "delta": 0.0020295136926023432,
+          "memory": 0.0908999335255716,
+          "positions": 401
+        },
+        "letter": {
+          "apply_memory": false,
+          "base": 0.8822344056631752,
+          "delta": 0.10423707098297816,
+          "memory": 0.9864714766461533,
+          "positions": 31
+        },
+        "operator": {
+          "apply_memory": true,
+          "base": 0.14863027077297084,
+          "delta": -0.02232811810998997,
+          "memory": 0.12630215266298087,
+          "positions": 138
+        },
+        "other": {
+          "apply_memory": false,
+          "base": 0.4643760307328449,
+          "delta": 0.004957343335263431,
+          "memory": 0.4693333740681083,
+          "positions": 57
+        },
+        "space": {
+          "apply_memory": false,
+          "base": 0.44082369744761046,
+          "delta": 0.03673640618684918,
+          "memory": 0.47756010363445967,
+          "positions": 448
+        }
+      },
+      "fitted_on": "B",
+      "memory_residual_norm": {
+        "direction": "high",
+        "fit_value": 0.2805625167072034,
+        "threshold": 1.0393997430801392
+      },
+      "on_classes": [
+        "operator"
+      ],
+      "position": {
+        "direction": "high",
+        "fit_value": 0.282823251260088,
+        "threshold": 69
+      }
+    }
+  },
+  "headroom": {
+    "ce_all_on_minus_all_off_nats_per_token": 0.018833536100948234,
+    "ce_recovered_by_class_oracle_cross_fitted_nats_per_token": 0.0181995432544228,
+    "ce_recovered_by_entropy_oracle_cross_fitted_nats_per_token": 0.018591446357572816,
+    "ce_recovered_by_per_token_oracle_nats_per_token": 0.04725920108609655,
+    "reading": "recovered_nats is how much CE the gate removes relative to memory-always-on; the fraction is against the full damage of memory-always-on over memory-always-off"
+  },
+  "input": {
+    "path": "results/stage2/s46-oracle-forwards-20261117T084501Z.json",
+    "revision": "cb50b20dbaa4b4ac991cbdd21e3d19838f72a112",
+    "sha256": "e029f9ea4d46e7d4c766f009095f157dfbe427a717c32c71e999e1c5a57fea93",
+    "stamp": "20261117T084501Z"
+  },
+  "kind": "oracle_gate_bounds",
+  "notes": {
+    "ce": "CE of the arm's own stored generation token, in nats",
+    "controls_excluded": "control prompts (base and memory both correct) are in the forward receipt but not in these bounds",
+    "cross_fitted": "the class/feature gate is fitted on one half of the damage prompts and evaluated on the other; folds are assigned by doc_id order, not by score",
+    "kl": "KL(teacher_T || arm) at T=1, in nats",
+    "per_token_is_an_upper_bound": "the two branches are teacher-forced independently, so the per-token oracle ignores the effect of the gate on later hidden states; every real gate is below it"
+  },
+  "positions": 2176,
+  "results": {
+    "ce": {
+      "by_source": {
+        "base": {
+          "gate_on_fraction": 0.23004291845493563,
+          "level": {
+            "all_off": 0.23880561990738783,
+            "all_on": 0.2804407747640887,
+            "delta_all_on_minus_all_off": 0.04163515485670086,
+            "fraction_memory_helps": 0.23004291845493563,
+            "positions": 1165,
+            "positions_memory_helps": 268
+          },
+          "recovered_nats": 0.057090864773397476,
+          "recovery_defined": true,
+          "recovery_fraction": 1.3712177838629833,
+          "value": 0.2233499099906912
+        },
+        "memory": {
+          "gate_on_fraction": 0.3076162215628091,
+          "level": {
+            "all_off": 0.29768161773750657,
+            "all_on": 0.29024029147401187,
+            "delta_all_on_minus_all_off": -0.007441326263494696,
+            "fraction_memory_helps": 0.3076162215628091,
+            "positions": 1011,
+            "positions_memory_helps": 311
+          },
+          "recovered_nats": 0.03592993481932544,
+          "recovery_defined": false,
+          "recovery_fraction": null,
+          "value": 0.25431035665468643
+        }
+      },
+      "class_oracle": {
+        "cross_fitted": {
+          "folds": {
+            "A->B": {
+              "evaluated_on": "B",
+              "fitted_on": "A",
+              "gate_on_fraction": 0.3730232558139535,
+              "on_classes": [
+                "digit"
+              ],
+              "value": 0.2867623883667761
+            },
+            "B->A": {
+              "evaluated_on": "A",
+              "fitted_on": "B",
+              "gate_on_fraction": 0.08991825613079019,
+              "on_classes": [
+                "operator"
+              ],
+              "value": 0.24682605938944205
+            }
+          },
+          "recovered_nats": 0.0181995432544228,
+          "recovery_defined": true,
+          "recovery_fraction": 0.9663370254461395,
+          "value": 0.2667942238781091
+        },
+        "in_sample": {
+          "on_classes": [
+            "digit",
+            "operator"
+          ],
+          "recovered_nats": 0.02083305389859902,
+          "recovery_defined": true,
+          "recovery_fraction": 1.1061679435520402,
+          "table": {
+            "digit": {
+              "apply_memory": true,
+              "base": 0.08331095456725077,
+              "delta": -0.0018030569796026188,
+              "memory": 0.08150789758764815,
+              "positions": 730
+            },
+            "letter": {
+              "apply_memory": false,
+              "base": 0.751078268943299,
+              "delta": 0.052761733216086855,
+              "memory": 0.8038400021593859,
+              "positions": 74
+            },
+            "operator": {
+              "apply_memory": true,
+              "base": 0.12315958763344655,
+              "delta": -0.012804722078388925,
+              "memory": 0.11035486555505762,
+              "positions": 237
+            },
+            "other": {
+              "apply_memory": false,
+              "base": 0.3821458646998508,
+              "delta": 0.029241058331535896,
+              "memory": 0.4113869230313867,
+              "positions": 128
+            },
+            "space": {
+              "apply_memory": false,
+              "base": 0.38199044790280146,
+              "delta": 0.03742353680131524,
+              "memory": 0.41941398470411667,
+              "positions": 1007
+            }
+          },
+          "value": 0.26416071323393286
+        },
+        "level": {
+          "all_off": 0.26616023103158365,
+          "all_on": 0.2849937671325319,
+          "delta_all_on_minus_all_off": 0.018833536100948234,
+          "fraction_memory_helps": 0.26608455882352944,
+          "positions": 2176,
+          "positions_memory_helps": 579
+        }
+      },
+      "feature_oracle": {
+        "base_entropy": {
+          "feature": "base_entropy",
+          "folds": {
+            "A->B": {
+              "direction": "low",
+              "evaluated_on": "B",
+              "fit_value": 0.246794004276784,
+              "fitted_on": "A",
+              "gate_on_fraction": 0.07534883720930233,
+              "threshold": 0.0022857740987092257,
+              "value": 0.28601691865695905
+            },
+            "B->A": {
+              "direction": "low",
+              "evaluated_on": "A",
+              "fit_value": 0.28601120214105913,
+              "fitted_on": "B",
+              "gate_on_fraction": 0.029064486830154404,
+              "threshold": 0.0015045976033434272,
+              "value": 0.24678772289295908
+            }
+          },
+          "recovered_nats": 0.018591446357572816,
+          "recovery_defined": true,
+          "recovery_fraction": 0.9871458157364709,
+          "value": 0.26640232077495907
+        },
+        "memory_residual_norm": {
+          "feature": "memory_residual_norm",
+          "folds": {
+            "A->B": {
+              "direction": "low",
+              "evaluated_on": "B",
+              "fit_value": 0.24704084330197548,
+              "fitted_on": "A",
+              "gate_on_fraction": 0.0641860465116279,
+              "threshold": 0.5700932145118713,
+              "value": 0.2878611388807482
+            },
+            "B->A": {
+              "direction": "high",
+              "evaluated_on": "A",
+              "fit_value": 0.2805625167072034,
+              "fitted_on": "B",
+              "gate_on_fraction": 0.08719346049046321,
+              "threshold": 1.0393997430801392,
+              "value": 0.2491600377352973
+            }
+          },
+          "recovered_nats": 0.016483178824509115,
+          "recovery_defined": true,
+          "recovery_fraction": 0.8752036121182372,
+          "value": 0.26851058830802277
+        },
+        "position": {
+          "feature": "position",
+          "folds": {
+            "A->B": {
+              "direction": "high",
+              "evaluated_on": "B",
+              "fit_value": 0.2473816817983771,
+              "fitted_on": "A",
+              "gate_on_fraction": 0.06511627906976744,
+              "threshold": 73,
+              "value": 0.2834364795147417
+            },
+            "B->A": {
+              "direction": "high",
+              "evaluated_on": "A",
+              "fit_value": 0.282823251260088,
+              "fitted_on": "B",
+              "gate_on_fraction": 0.09445958219800181,
+              "threshold": 69,
+              "value": 0.24828675190224347
+            }
+          },
+          "recovered_nats": 0.01913215142403929,
+          "recovery_defined": true,
+          "recovery_fraction": 1.0158555101649775,
+          "value": 0.2658616157084926
+        }
+      },
+      "per_token_oracle": {
+        "gate_on_fraction": 0.26608455882352944,
+        "level": {
+          "all_off": 0.26616023103158365,
+          "all_on": 0.2849937671325319,
+          "delta_all_on_minus_all_off": 0.018833536100948234,
+          "fraction_memory_helps": 0.26608455882352944,
+          "positions": 2176,
+          "positions_memory_helps": 579
+        },
+        "recovered_nats": 0.04725920108609655,
+        "recovery_defined": true,
+        "recovery_fraction": 2.5093110944639405,
+        "value": 0.23773456604643534
+      }
+    },
+    "kl": {
+      "by_source": {
+        "base": {
+          "gate_on_fraction": 0.36909871244635195,
+          "level": {
+            "all_off": 0.09920279823230253,
+            "all_on": 0.1113058550344815,
+            "delta_all_on_minus_all_off": 0.012103056802178963,
+            "fraction_memory_helps": 0.36909871244635195,
+            "positions": 1165,
+            "positions_memory_helps": 430
+          },
+          "recovered_nats": 0.02731307923324977,
+          "recovery_defined": true,
+          "recovery_fraction": 2.2567091669215733,
+          "value": 0.08399277580123173
+        },
+        "memory": {
+          "gate_on_fraction": 0.36795252225519287,
+          "level": {
+            "all_off": 0.11197694990577019,
+            "all_on": 0.1349997714202452,
+            "delta_all_on_minus_all_off": 0.023022821514475003,
+            "fraction_memory_helps": 0.36795252225519287,
+            "positions": 1011,
+            "positions_memory_helps": 372
+          },
+          "recovered_nats": 0.03681060409484033,
+          "recovery_defined": true,
+          "recovery_fraction": 1.5988745806719047,
+          "value": 0.09818916732540486
+        }
+      },
+      "class_oracle": {
+        "cross_fitted": {
+          "folds": {
+            "A->B": {
+              "evaluated_on": "B",
+              "fitted_on": "A",
+              "gate_on_fraction": 0.0,
+              "on_classes": [],
+              "value": 0.11915814285722495
+            },
+            "B->A": {
+              "evaluated_on": "A",
+              "fitted_on": "B",
+              "gate_on_fraction": 0.0,
+              "on_classes": [],
+              "value": 0.09144864007615738
+            }
+          },
+          "recovered_nats": 0.01701098813856565,
+          "recovery_defined": true,
+          "recovery_fraction": 0.9903622044270874,
+          "value": 0.10530339146669117
+        },
+        "in_sample": {
+          "on_classes": [],
+          "recovered_nats": 0.01717653204304813,
+          "recovery_defined": true,
+          "recovery_fraction": 1.0,
+          "table": {
+            "digit": {
+              "apply_memory": false,
+              "base": 0.060728924610007916,
+              "delta": 0.010948884966717287,
+              "memory": 0.0716778095767252,
+              "positions": 730
+            },
+            "letter": {
+              "apply_memory": false,
+              "base": 0.16555465879571638,
+              "delta": 0.009853669979870697,
+              "memory": 0.17540832877558707,
+              "positions": 74
+            },
+            "operator": {
+              "apply_memory": false,
+              "base": 0.05892389857020246,
+              "delta": 0.020181166534531884,
+              "memory": 0.07910506510473433,
+              "positions": 237
+            },
+            "other": {
+              "apply_memory": false,
+              "base": 0.14269163801463947,
+              "delta": 0.014211620707555994,
+              "memory": 0.15690325872219546,
+              "positions": 128
+            },
+            "space": {
+              "apply_memory": false,
+              "base": 0.13899434255428547,
+              "delta": 0.021898959485806807,
+              "memory": 0.16089330204009228,
+              "positions": 1007
+            }
+          },
+          "value": 0.10513784756220869
+        },
+        "level": {
+          "all_off": 0.10513784756220869,
+          "all_on": 0.12231437960525682,
+          "delta_all_on_minus_all_off": 0.01717653204304813,
+          "fraction_memory_helps": 0.36856617647058826,
+          "positions": 2176,
+          "positions_memory_helps": 802
+        }
+      },
+      "feature_oracle": {
+        "base_entropy": {
+          "feature": "base_entropy",
+          "folds": {
+            "A->B": {
+              "direction": "low",
+              "evaluated_on": "B",
+              "fit_value": 0.09137562702091284,
+              "fitted_on": "A",
+              "gate_on_fraction": 0.30883720930232555,
+              "threshold": 0.04700519144535065,
+              "value": 0.11910274643736683
+            },
+            "B->A": {
+              "direction": "low",
+              "evaluated_on": "A",
+              "fit_value": 0.11904921535003289,
+              "fitted_on": "B",
+              "gate_on_fraction": 0.24432334241598547,
+              "threshold": 0.027453863993287086,
+              "value": 0.09144438701084645
+            }
+          },
+          "recovered_nats": 0.01704081288115017,
+          "recovery_defined": true,
+          "recovery_fraction": 0.992098570214417,
+          "value": 0.10527356672410665
+        },
+        "memory_residual_norm": {
+          "feature": "memory_residual_norm",
+          "folds": {
+            "A->B": {
+              "direction": "low",
+              "evaluated_on": "B",
+              "fit_value": 0.09088633817751778,
+              "fitted_on": "A",
+              "gate_on_fraction": 0.13674418604651162,
+              "threshold": 0.5845516920089722,
+              "value": 0.11993664969515774
+            },
+            "B->A": {
+              "direction": "low",
+              "evaluated_on": "A",
+              "fit_value": 0.11820546437588132,
+              "fitted_on": "B",
+              "gate_on_fraction": 0.27338782924613986,
+              "threshold": 0.6121025681495667,
+              "value": 0.09388801892314086
+            }
+          },
+          "recovered_nats": 0.015402045296107517,
+          "recovery_defined": true,
+          "recovery_fraction": 0.8966912096985956,
+          "value": 0.1069123343091493
+        },
+        "position": {
+          "feature": "position",
+          "folds": {
+            "A->B": {
+              "direction": "high",
+              "evaluated_on": "B",
+              "fit_value": 0.09179227465692733,
+              "fitted_on": "A",
+              "gate_on_fraction": 0.06511627906976744,
+              "threshold": 73,
+              "value": 0.1210425648342036
+            },
+            "B->A": {
+              "direction": "high",
+              "evaluated_on": "A",
+              "fit_value": 0.11834535481381418,
+              "fitted_on": "B",
+              "gate_on_fraction": 0.4014532243415077,
+              "threshold": 42,
+              "value": 0.09894162769163903
+            }
+          },
+          "recovered_nats": 0.01232228334233551,
+          "recovery_defined": true,
+          "recovery_fraction": 0.7173906415714876,
+          "value": 0.10999209626292131
+        }
+      },
+      "per_token_oracle": {
+        "gate_on_fraction": 0.36856617647058826,
+        "level": {
+          "all_off": 0.10513784756220869,
+          "all_on": 0.12231437960525682,
+          "delta_all_on_minus_all_off": 0.01717653204304813,
+          "fraction_memory_helps": 0.36856617647058826,
+          "positions": 2176,
+          "positions_memory_helps": 802
+        },
+        "recovered_nats": 0.031725761969953845,
+        "recovery_defined": true,
+        "recovery_fraction": 1.8470411774881086,
+        "value": 0.09058861763530297
+      }
+    }
+  },
+  "revision": "82f603001341f411f343c935fc003b6c4993b3d2",
+  "sample": {
+    "control_prompts": [
+      312,
+      619,
+      791,
+      1273
+    ],
+    "damage_prompts": [
+      18,
+      27,
+      120,
+      126,
+      360,
+      442,
+      477,
+      616,
+      659,
+      820,
+      889,
+      940,
+      984,
+      988,
+      1098,
+      1286
+    ],
+    "folds": {
+      "A": [
+        18,
+        120,
+        360,
+        477,
+        659,
+        889,
+        984,
+        1098
+      ],
+      "B": [
+        27,
+        126,
+        442,
+        616,
+        820,
+        940,
+        988,
+        1286
+      ]
+    },
+    "not_the_benchmark": "selected damage sample; its accuracy is not an anchored benchmark score",
+    "selection_rule": "shortest GSM8K prompts (>= 64 tokens) where base is correct and memory-2m is wrong, then the shortest prompts where both are correct (controls); the scored text is the memory-2m arm's own stored generation"
+  },
+  "sample_size": {
+    "controls": 4,
+    "damage": 16,
+    "prompts": 20,
+    "sequences": 40
+  },
+  "schema": "selvedge/s46-oracle-gate/v1",
+  "stamp": "20261117T090710Z"
+}
