@@ -37,6 +37,7 @@ sys.path.insert(0, os.path.join(REPO, "oracle"))
 
 import s36_anchor as anchor  # noqa: E402
 import s40_compare as comparison  # noqa: E402
+from frontier import correctness as correctness_check  # noqa: E402
 
 DEFAULT_PREREG = "docs/anchor-preregistration-v1.json"
 FAMILY_TASKS = ("mmlu_pro", "mmlu", "gsm8k", "minerva_math500")
@@ -220,6 +221,10 @@ def run(args) -> int:
         if peak / (1 << 30) > args.vram_limit_gib:
             raise RuntimeError(f"{name}: VRAM peak {peak / (1 << 30):.2f} GiB "
                                f"over limit {args.vram_limit_gib}")
+        samples = (result.get("samples") or {}).get(name) or []
+        sequence_correctness = (
+            correctness_check.harness_samples(samples, name)
+            if name in correctness_check.VERIFIABLE_TASKS and samples else None)
         entries[name] = {
             "task": name,
             "family": task["family"],
@@ -244,6 +249,7 @@ def run(args) -> int:
             "wall_clock_s": round(elapsed, 1),
             "peak_memory_allocated_bytes": int(peak),
             "cgroup": cgroup_peak(),
+            "sequence_correctness": sequence_correctness,
         }
         partial = receipt_base(args, prereg, prereg_digest, commit, version,
                                arm_report, free_bytes, total_bytes, entries)
@@ -262,6 +268,16 @@ def run(args) -> int:
                            arm_report, free_bytes, total_bytes, entries)
     receipt["finished_utc"] = utcnow()
     receipt["complete"] = len(entries) == len(tasks)
+    receipt["correctness_and_likelihood"] = {
+        "heldout": "mean next-token CE and KL(teacher_T || student_T) on the "
+                   "held-out slice are reported by the companion held-out receipt",
+        "sequence": "the exact final-answer verdict from the S45 extractor on "
+                    "this task's own generations (gsm8k and minerva_math500)",
+        "why_both": "a lower mean CE can coexist with a lower exact-answer rate; "
+                    "the S45 collapse diagnosis and the S44 arm table measured "
+                    "that divergence, so neither quantity is substituted for "
+                    "the other",
+    }
     receipt["framework"] = {"lm_eval": getattr(lm_eval, "__version__", "unknown"),
                             "transformers": transformers.__version__}
     anchor.write_json(args.out, receipt)
@@ -285,6 +301,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--memory-checkpoint", default=None)
     parser.add_argument("--adapter-checkpoint", default=None)
     parser.add_argument("--control-checkpoint", default=None)
+    parser.add_argument("--matched-adapter-checkpoint", default=None)
+    parser.add_argument("--gated-dense-checkpoint", default=None)
     parser.add_argument("--full-checkpoint", default=None)
     parser.add_argument("--heldout-manifest", default=None)
     parser.add_argument("--hidden", type=int, default=1024)

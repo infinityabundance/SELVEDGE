@@ -54,7 +54,11 @@ import torch.nn.functional as F
 from .memory import ConditionalMemory, HEADS
 
 OBJECTIVES = ("ce_kl", "correction")
-WEIGHTINGS = ("kl", "signed", "both")
+# `signed` is retained as the original registered name and is an alias of
+# `signed-exp`; `signed-true` is the sign-split variant added by S47.
+WEIGHTINGS = ("kl", "signed", "signed-exp", "signed-true", "both")
+SIGNED_ALIASES = {"signed": "signed-exp"}
+SIGNED_TAU = 1.0
 GATE_STD = 0.02
 
 
@@ -270,27 +274,80 @@ def signed_teacher_advantage(base_logits: torch.Tensor, teacher_logits: torch.Te
     return torch.cat(pieces)
 
 
+def canonical_weighting(weighting: str) -> str:
+    """The registered name behind an accepted alias.
+
+    `signed` was the S43/S44 name and remains accepted; it denotes the
+    exponential weight (`signed-exp`). `signed-true` is a different objective,
+    not an alias.
+    """
+    value = SIGNED_ALIASES.get(weighting, weighting)
+    if value not in WEIGHTINGS:
+        raise ValueError(f"unknown weighting {weighting!r}")
+    return value
+
+
+def sign_masks(signed: torch.Tensor) -> dict[str, torch.Tensor]:
+    """Split tokens by the sign of `A_t = log p_T(y_t) - log p_B(y_t)`.
+
+    `teacher_better` (A > 0) is where the teacher puts more probability on the
+    true next token than the base; `base_better` (A < 0) is where the base is
+    already better; `tie` is the exact-zero set. The old `signed >= 0` mask
+    conflated the last two and its label was reversed. The split below is the
+    corrected diagnostic.
+    """
+    return {
+        "teacher_better": signed > 0,
+        "base_better": signed < 0,
+        "tie": signed == 0,
+    }
+
+
 def _weigh(advantage: torch.Tensor, signed: torch.Tensor,
-           weighting: str) -> tuple[torch.Tensor, dict]:
-    """Normalised per-position supervision weight for the registered mode."""
+           weighting: str, tau_signed: float = SIGNED_TAU
+           ) -> tuple[torch.Tensor, dict]:
+    """Per-position supervision weight for the registered mode.
+
+    * `kl`: `u_t = a_t / mean(a)`, the KL-disagreement weight.
+    * `signed-exp` (alias `signed`): `u_t = exp(clamp(A_t, -4, 4))` normalised
+      to mean one. Monotone and strictly positive: it suppresses imitation where
+      `A_t < 0` but never changes the sign of the teacher-directed KL.
+    * `signed-true`: `u_t = sigmoid(A_t / tau)`. At `A = 0` the weight is exactly
+      0.5; `sigmoid(-x) = 1 - sigmoid(x)`, so a token where the base is better
+      by the same margin receives exactly the complementary weight. The
+      negative-advantage region is additionally protected by the separate token
+      loss term in `corrective_objective`, which is what makes the sign split
+      act as a reversal rather than a suppression.
+    * `both`: the geometric mean of the `kl` and `signed-exp` weights.
+    """
+    canonical = canonical_weighting(weighting)
     mean_advantage = advantage.mean().clamp_min(1e-6)
     kl_weight = advantage / mean_advantage
     bounded = torch.exp(torch.clamp(signed, -4.0, 4.0))
-    signed_weight = bounded / bounded.mean().clamp_min(1e-6)
-    if weighting == "kl":
+    exp_weight = bounded / bounded.mean().clamp_min(1e-6)
+    tau = max(float(tau_signed), 1e-6)
+    true_weight = torch.sigmoid(signed / tau)
+    if canonical == "kl":
         weight = kl_weight
-    elif weighting == "signed":
-        weight = signed_weight
-    elif weighting == "both":
-        weight = torch.sqrt(kl_weight * signed_weight)
+    elif canonical == "signed-exp":
+        weight = exp_weight
+    elif canonical == "signed-true":
+        weight = true_weight
+    elif canonical == "both":
+        weight = torch.sqrt(kl_weight * exp_weight)
         weight = weight / weight.mean().clamp_min(1e-6)
-    else:
+    else:  # pragma: no cover - canonical_weighting already rejects it
         raise ValueError(f"unknown weighting {weighting!r}")
     diagnostics = {
         "weighting": weighting,
+        "weighting_canonical": canonical,
+        "weighting_requested": weighting,
         "mean_advantage_kl": float(mean_advantage),
         "mean_signed_advantage": float(signed.mean()),
-        "signed_positive_fraction": float((signed >= 0).float().mean()),
+        "signed_positive_fraction": float((signed > 0).float().mean()),
+        "signed_negative_fraction": float((signed < 0).float().mean()),
+        "signed_tie_fraction": float((signed == 0).float().mean()),
+        "signed_tau": tau,
         "advantage_weight_max": float(weight.max().detach()),
         "advantage_weight_min": float(weight.min().detach()),
     }
@@ -299,18 +356,19 @@ def _weigh(advantage: torch.Tensor, signed: torch.Tensor,
 
 def _harm_report(kl_positions: torch.Tensor, advantage: torch.Tensor,
                  signed: torch.Tensor) -> dict:
-    """Harm where the base already matches the teacher.
+    """Harm split by the corrected sign of the teacher advantage.
 
-    Two masks are registered: the lowest advantage quartile (the P19.8
-    interference-cost definition) and the signed `A_t >= 0` set (the teacher is
-    no more probable than the base on the supervised token).
+    `A_t = log p_T(y_t) - log p_B(y_t)` is positive where the teacher is better.
+    The masks are `teacher_better` (A > 0), `base_better` (A < 0) and `tie`
+    (A == 0), plus the registered lowest-advantage quartile. `delta` is the
+    student's own KL minus the base's own KL, so a positive value means the
+    correction made that token worse.
     """
     delta = (kl_positions - advantage).detach()
+    masks = sign_masks(signed)
+    masks["lowest_quartile"] = advantage <= torch.quantile(advantage, 0.25)
     report = {}
-    for name, mask in (
-        ("lowest_quartile", advantage <= torch.quantile(advantage, 0.25)),
-        ("signed_base_better", signed >= 0),
-    ):
+    for name, mask in masks.items():
         count = int(mask.sum())
         if count:
             report[f"harm_{name}_tokens"] = count
@@ -321,7 +379,41 @@ def _harm_report(kl_positions: torch.Tensor, advantage: torch.Tensor,
             report[f"harm_{name}_tokens"] = 0
             report[f"harm_{name}_mean_delta_kl"] = 0.0
             report[f"harm_{name}_fraction_worse"] = 0.0
+    report["harm_sign_counts"] = {
+        name: int(mask.sum()) for name, mask in masks.items()}
     return report
+
+
+def _interference(preservation: torch.Tensor, gate: torch.Tensor) -> torch.Tensor:
+    """Token-aligned interference: `mean(p_t * alpha_t^2)`.
+
+    This is the S47 replacement for the factorised product. It is high only
+    when a large gate and a high preservation weight occur on the *same* token.
+    Two configurations with identical means but different alignment therefore
+    receive different penalties; the factorised product cannot distinguish them.
+    """
+    return (preservation.reshape(-1) * gate.reshape(-1).square()).mean()
+
+
+def _interference_factorised(preservation: torch.Tensor,
+                             gate: torch.Tensor) -> torch.Tensor:
+    """The old `mean(p) * mean(alpha^2)`; retained as a labelled diagnostic."""
+    return preservation.mean() * gate.reshape(-1).square().mean()
+
+
+def _base_protection(signed: torch.Tensor, ce_positions: torch.Tensor,
+                     base_ce_positions: torch.Tensor) -> torch.Tensor:
+    """Per-token token-loss protection, active exactly where `A_t < 0`.
+
+    `A_t < 0` means the base assigns more probability than the teacher to the
+    true next token. There the correction should not make the student worse than
+    the base on that token, so the term is
+    `1[A_t < 0] * max(CE_student,t - CE_base,t, 0)`. The mask is detached; the
+    gradient flows only through `CE_student`. This is separate from the
+    teacher-KL preservation term, which is about `KL_student - KL_base`.
+    """
+    mask = (signed < 0).to(ce_positions.dtype)
+    return mask * (ce_positions - base_ce_positions).clamp_min(0.0)
 
 
 def corrective_objective(student_logits: torch.Tensor, base_logits: torch.Tensor,
@@ -331,7 +423,9 @@ def corrective_objective(student_logits: torch.Tensor, base_logits: torch.Tensor
                           weighting: str = "kl",
                           gate: torch.Tensor | None = None,
                           preserve_weight: float = 0.5,
-                          interference_weight: float = 0.05) -> tuple:
+                          interference_weight: float = 0.05,
+                          base_protection_weight: float | None = None,
+                          tau_signed: float = SIGNED_TAU) -> tuple:
     """The registered objective for the corrective arm.
 
     ``ce_kl`` is the control objective used by every other arm,
@@ -341,24 +435,37 @@ def corrective_objective(student_logits: torch.Tensor, base_logits: torch.Tensor
         CE
         + w * T^2 * sum(u_i * KL_i) / sum(u_i)          # weighted distillation
         + w * preserve_weight * T^2 * mean(p_i * max(KL_i - a_i, 0))
-        + interference_weight * mean(p_i) * mean(alpha_t^2)
+        + interference_weight * mean(p_i * alpha_i^2)    # token-aligned
+        + base_protection_weight * mean(1[A_i < 0] *
+                                        max(CE_i - CE_base,i, 0))
 
     with ``a_i = KL(teacher_T || base_T)_i`` (detached), ``p_i =
     sigmoid(-(a_i - mean a)/mean a)`` high where the base is already close, and
     ``u_i`` from ``weighting``:
 
     * ``kl``: ``a_i / mean(a)`` — the registered S42 weight;
-    * ``signed``: ``exp(clamp(A_i, -4, 4)) / mean(exp(...))`` with
-      ``A_i = log p_T(y_i) - log p_B(y_i)``;
-    * ``both``: the geometric mean of the two normalised weights, renormalised.
+    * ``signed-exp`` (alias ``signed``): ``exp(clamp(A_i, -4, 4))`` normalised —
+      monotone, always positive, so it suppresses but never reverses imitation;
+    * ``signed-true``: ``sigmoid(A_i / tau)`` — ``0.5`` at a tie and complementary
+      weights for equal-magnitude positive and negative advantages, paired with
+      the base-protection term above so the negative-advantage region is
+      actively protected rather than merely down-weighted;
+    * ``both``: the geometric mean of the ``kl`` and ``signed-exp`` weights.
 
     ``gate`` is the per-token alpha actually used in the student forward
     (shape ``[B, T]`` or flattened); its square is the interference magnitude.
+    For ``signed-true`` the base-protection weight defaults to ``preserve_weight``;
+    for every other weighting it defaults to zero, so the three arms registered
+    before S47 keep their original objective exactly.
     """
     if objective not in OBJECTIVES:
         raise ValueError(f"unknown objective {objective!r}")
-    if weighting not in WEIGHTINGS:
-        raise ValueError(f"unknown weighting {weighting!r}")
+    canonical = canonical_weighting(weighting)
+    if base_protection_weight is None:
+        base_protection_weight = (
+            float(preserve_weight) if canonical == "signed-true" else 0.0)
+    if base_protection_weight < 0.0:
+        raise ValueError("base_protection_weight must be non-negative")
     ce_positions = _per_position_ce(student_logits, targets)
     kl_positions = _per_position_kl(student_logits, teacher_logits, temperature)
     ce = ce_positions.mean()
@@ -378,12 +485,17 @@ def corrective_objective(student_logits: torch.Tensor, base_logits: torch.Tensor
     advantage = _per_position_kl(base_logits, teacher_logits, temperature).detach()
     signed = signed_teacher_advantage(base_logits, teacher_logits, targets,
                                       temperature=1.0)
-    weight, weight_diagnostics = _weigh(advantage, signed, weighting)
+    weight, weight_diagnostics = _weigh(advantage, signed, weighting,
+                                        tau_signed=tau_signed)
     mean_advantage = advantage.mean().clamp_min(1e-6)
     preservation = torch.sigmoid(-(advantage - mean_advantage) / mean_advantage)
     weighted = (weight * kl_positions).sum() / weight.sum().clamp_min(1e-6)
     increase = (kl_positions - advantage).clamp_min(0.0)
     preservation_penalty = (preservation * increase).mean()
+    base_ce = _per_position_ce(base_logits, targets).detach()
+    protected = _base_protection(signed, ce_positions, base_ce)
+    base_protection_penalty = protected.mean()
+    base_protection_tokens = int((signed < 0).sum())
     gate_flat = None
     if gate is not None:
         gate_flat = gate.reshape(-1)
@@ -395,31 +507,50 @@ def corrective_objective(student_logits: torch.Tensor, base_logits: torch.Tensor
                 f"{kl_positions.numel()}")
     gate_mean_abs = (gate_flat.detach().abs().mean() if gate_flat is not None
                      else torch.zeros((), device=kl_positions.device))
-    interference = (preservation.mean() * (gate_flat ** 2).mean()
-                    if gate_flat is not None else
-                    torch.zeros((), device=kl_positions.device))
+    if gate_flat is not None:
+        interference = _interference(preservation, gate_flat)
+        interference_factorised = _interference_factorised(preservation, gate_flat)
+    else:
+        interference = torch.zeros((), device=kl_positions.device)
+        interference_factorised = torch.zeros((), device=kl_positions.device)
     loss = (ce + scale * weighted
             + scale * preserve_weight * preservation_penalty
-            + interference_weight * interference)
+            + interference_weight * interference
+            + float(base_protection_weight) * base_protection_penalty)
     diagnostics = {
         "objective": "correction",
         "mean_kl": float(kl_positions.mean().detach()),
         "mean_advantage": float(mean_advantage),
         "preserved_fraction": float((preservation > 0.5).float().mean()),
         "base_preservation_penalty": float(preservation_penalty.detach()),
+        "base_token_protection_penalty": float(base_protection_penalty.detach()),
+        "base_token_protection_weight": float(base_protection_weight),
+        "base_token_protection_tokens": base_protection_tokens,
+        "base_token_protection_fraction": (
+            float((signed < 0).float().mean())),
         "gate_mean_abs": float(gate_mean_abs),
         "interference_penalty": float(interference.detach()),
+        "interference_penalty_aligned": True,
+        "interference_penalty_factorised_diagnostic": float(
+            interference_factorised.detach()),
         **weight_diagnostics,
         **_harm_report(kl_positions, advantage, signed),
     }
     interpretation = {
         "lowest_quartile": "the P19.8 interference cost: delta KL where the "
                            "base's own advantage is in the lowest quartile",
-        "signed_base_better": "delta KL where the teacher assigns no more "
-                              "probability to the true token than the base",
+        "teacher_better": "A > 0: the teacher assigns more probability to the "
+                          "true token than the base; a positive delta means the "
+                          "correction moved away from the better teacher",
+        "base_better": "A < 0: the base is already better than the teacher on "
+                       "the true token; a positive delta is harm to a token the "
+                       "base already handles better, and the base-protection "
+                       "term is active exactly here",
+        "tie": "A == 0: the two models agree on the true token's log-probability",
         "reading": "positive mean_delta_kl and a fraction_worse above zero mean "
-                   "the student is worse than the base exactly where the base "
-                   "already matched the teacher",
+                   "the student is worse than the base on that mask; CE/KL can "
+                   "improve on the mean while base_better worsens, so both are "
+                   "reported even when mean CE improves",
     }
     diagnostics["harm_interpretation"] = interpretation
     return loss, ce.detach(), kl_positions.mean().detach(), diagnostics

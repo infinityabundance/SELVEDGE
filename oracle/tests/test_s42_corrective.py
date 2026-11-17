@@ -278,6 +278,125 @@ def test_preservation_penalty_suppresses_harmful_correction():
     assert 0.0 < with_preservation[1]["preserved_fraction"] < 1.0
 
 
+# ---------------------------------------------------------------------------
+# S47: corrected sign diagnostics, true signed weighting, aligned interference,
+# and base-relative token protection
+
+
+def test_sign_masks_split_positive_negative_and_zero_explicitly():
+    signed = torch.tensor([2.0, 0.0, -2.0, 0.5, -0.5])
+    masks = corrective.sign_masks(signed)
+    assert masks["teacher_better"].tolist() == [True, False, False, True, False]
+    assert masks["base_better"].tolist() == [False, False, True, False, True]
+    assert masks["tie"].tolist() == [False, True, False, False, False]
+    # the masks partition every token exactly once
+    total = masks["teacher_better"] | masks["base_better"] | masks["tie"]
+    assert total.all()
+    assert int(total.sum()) == signed.numel()
+
+
+def test_harm_report_uses_the_corrected_sign_labels():
+    signed = torch.tensor([2.0, 0.0, -2.0, 3.0, -1.0])
+    advantage = torch.zeros(5)
+    kl_positions = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
+    report = corrective._harm_report(kl_positions, advantage, signed)
+    assert report["harm_sign_counts"]["teacher_better"] == 2
+    assert report["harm_sign_counts"]["base_better"] == 2
+    assert report["harm_sign_counts"]["tie"] == 1
+    # teacher_better indices 0 and 3 -> delta 1 and 4 -> mean 2.5
+    assert report["harm_teacher_better_mean_delta_kl"] == pytest.approx(2.5)
+    # base_better indices 2 and 4 -> delta 3 and 5 -> mean 4.0
+    assert report["harm_base_better_mean_delta_kl"] == pytest.approx(4.0)
+    assert report["harm_tie_mean_delta_kl"] == pytest.approx(2.0)
+    assert "harm_signed_base_better_tokens" not in report
+
+
+def test_signed_exp_and_signed_true_have_the_registered_sign_behaviour():
+    signed = torch.tensor([2.0, 0.0, -2.0])
+    advantage = torch.zeros(3)
+    exp_weight, exp_diag = corrective._weigh(advantage, signed, "signed-exp")
+    true_weight, true_diag = corrective._weigh(advantage, signed, "signed-true")
+    # both are monotone in A; neither is negative
+    assert exp_weight[0] > exp_weight[1] > exp_weight[2] > 0
+    assert true_weight[0] > true_weight[1] > true_weight[2] > 0
+    # the exponential weight is unbounded and never zero: it only suppresses
+    assert float(exp_weight[2]) > 0.0
+    # the sigmoid weight is bounded, exactly 0.5 at a tie, and symmetric:
+    # w(+x) + w(-x) = 1, so the negative region receives the complement of the
+    # positive region's pressure (the base-protection term supplies the
+    # reversal; the weight supplies the sign split).
+    assert float(true_weight[1]) == pytest.approx(0.5)
+    assert float(true_weight[0] + true_weight[2]) == pytest.approx(1.0)
+    assert true_diag["signed_tie_fraction"] == pytest.approx(1 / 3)
+    assert true_diag["signed_positive_fraction"] == pytest.approx(1 / 3)
+    assert true_diag["signed_negative_fraction"] == pytest.approx(1 / 3)
+    # `signed` remains an accepted alias of `signed-exp`
+    alias_weight, alias_diag = corrective._weigh(advantage, signed, "signed")
+    assert torch.equal(alias_weight, exp_weight)
+    assert alias_diag["weighting"] == "signed"
+    assert alias_diag["weighting_canonical"] == "signed-exp"
+
+
+def test_token_aligned_interference_distinguishes_alignment_where_the_old_one_cannot():
+    # Two configurations with identical means: p = [1, 0] and alpha^2 = [0, 1]
+    # (anti-aligned) versus p = [1, 0] and alpha^2 = [1, 0] (aligned).
+    preservation = torch.tensor([1.0, 0.0])
+    anti_aligned = torch.tensor([0.0, 1.0]).sqrt()
+    aligned = torch.tensor([1.0, 0.0]).sqrt()
+    assert preservation.mean() == preservation.mean()
+    assert anti_aligned.square().mean() == aligned.square().mean()
+    old_anti = corrective._interference_factorised(preservation, anti_aligned)
+    old_aligned = corrective._interference_factorised(preservation, aligned)
+    new_anti = corrective._interference(preservation, anti_aligned)
+    new_aligned = corrective._interference(preservation, aligned)
+    assert float(old_anti) == pytest.approx(float(old_aligned))
+    assert float(new_anti) < float(new_aligned)
+    assert float(new_anti) == pytest.approx(0.0)
+    assert float(new_aligned) == pytest.approx(0.5)
+
+
+def test_base_protection_is_active_only_where_the_base_is_better():
+    signed = torch.tensor([2.0, 0.0, -2.0, -1.0])
+    ce = torch.tensor([2.0, 2.0, 2.0, 1.0])
+    base_ce = torch.tensor([1.0, 1.0, 1.0, 1.0])
+    protected = corrective._base_protection(signed, ce, base_ce)
+    # A > 0 and A == 0 contribute nothing; A < 0 contributes only the increase
+    assert protected.tolist() == pytest.approx([0.0, 0.0, 1.0, 0.0])
+    # improving on the base in the A < 0 region is not penalised
+    better = corrective._base_protection(signed, 0.5 * base_ce, base_ce)
+    assert float(better.abs().sum()) == 0.0
+
+
+def test_signed_true_objective_carries_the_base_protection_term():
+    torch.manual_seed(123)
+    vocab, positions = 8, 4
+    targets = torch.tensor([[1, 2, 3, 4]])
+    teacher = torch.zeros(1, positions, vocab)
+    base = torch.zeros(1, positions, vocab)
+    # position 0 and 1: teacher better; position 2 and 3: base better
+    teacher[0, 0, 1] = 3.0
+    teacher[0, 1, 2] = 3.0
+    base[0, 2, 3] = 3.0
+    base[0, 3, 4] = 3.0
+    student = base + 0.1 * torch.randn_like(base)
+    loss_off, _, _, diag_off = corrective.corrective_objective(
+        student, base, teacher, targets, temperature=2.0, kl_weight=0.5,
+        objective="correction", weighting="signed-true",
+        base_protection_weight=0.0)
+    loss_on, _, _, diag_on = corrective.corrective_objective(
+        student, base, teacher, targets, temperature=2.0, kl_weight=0.5,
+        objective="correction", weighting="signed-true")
+    assert diag_off["base_token_protection_weight"] == 0.0
+    assert diag_on["base_token_protection_weight"] == 0.5
+    assert diag_on["base_token_protection_tokens"] == 2
+    assert float(loss_on) >= float(loss_off)
+    # a different weighting does not inherit the term by default
+    _, _, _, diag_exp = corrective.corrective_objective(
+        student, base, teacher, targets, temperature=2.0, kl_weight=0.5,
+        objective="correction", weighting="signed-exp")
+    assert diag_exp["base_token_protection_weight"] == 0.0
+
+
 def test_ce_kl_objective_is_the_control():
     teacher, base = _synthetic_problem()
     student = base + 0.1 * torch.randn_like(base)

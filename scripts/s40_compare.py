@@ -64,7 +64,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(REPO, "oracle"))
 
-from frontier import arms, compare, corrective, full, memory  # noqa: E402
+from frontier import arms, compare, corrective, full, matched_controls, memory  # noqa: E402
 
 ARMS = ("base", "adapter-2m", "memory-2m", "memory-ungrafted",
         "memory-grafted", "full-distill")
@@ -72,8 +72,12 @@ CONTROL_ARM = "adapter-20m"
 #: Stage-2b corrective arms. They are scored through the corrective module with
 #: the trained gate, on the same anchored instrument as the other arms.
 CORRECTIVE_ARMS = ("corrective-kl-20m-math", "corrective-signed-20m-math",
+                   "corrective-signed-true-20m-math",
                    "corrective-both-20m-math")
-SCORED_ARMS = ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS
+#: S47 mandatory matched controls: the same data without the external memory,
+#: and the same gate over a dense residual instead of the memory.
+MATCHED_CONTROLS = ("adapter-20m-math-matched", "gated-dense-20m-math")
+SCORED_ARMS = ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
 REFERENCE_ARM = "full-distill"
 FAMILIES = {"knowledge": ["mmlu_pro", "mmlu"],
             "math": ["gsm8k", "minerva_math500"]}
@@ -212,6 +216,34 @@ def _build_named_arm(name: str, model, args, device: str):
         report.update(module.active_parameter_report())
         report["extension"] = report.pop("kind", "stage2_memory")
         report["kind"] = "stage2_memory_arm"
+        return model, handles, report
+    if name in MATCHED_CONTROLS:
+        if name == "adapter-20m-math-matched":
+            checkpoint = getattr(args, "matched_adapter_checkpoint", None)
+            if not checkpoint:
+                raise SystemExit(
+                    "--matched-adapter-checkpoint is required for "
+                    "adapter-20m-math-matched")
+            module = matched_controls.MatchedDenseAdapter(
+                hidden=args.hidden).to(device)
+        else:
+            checkpoint = getattr(args, "gated_dense_checkpoint", None)
+            if not checkpoint:
+                raise SystemExit(
+                    "--gated-dense-checkpoint is required for gated-dense-20m-math")
+            module = matched_controls.IdentityGatedDenseResidual(
+                hidden=args.hidden).to(device)
+        payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
+        module.load_state_dict(payload["arm_state"], strict=True)
+        handles = arms.install_adapter(model, module, (args.site,))
+        report = module.active_parameter_report()
+        report.update({
+            "checkpoint": checkpoint,
+            "checkpoint_sha256": sha256_file(checkpoint),
+            "checkpoint_step": payload.get("step"),
+            "checkpoint_tokens_seen": payload.get("tokens_seen"),
+            "arm_family": name,
+        })
         return model, handles, report
     if name in CORRECTIVE_ARMS:
         if not args.memory_init:
@@ -537,6 +569,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--adapter-checkpoint", default=None)
     parser.add_argument("--control-checkpoint", default=None,
                         help="S39 20M-token adapter checkpoint for adapter-20m")
+    parser.add_argument("--matched-adapter-checkpoint", default=None,
+                        help="S47 matched dense adapter on the 20M math stream")
+    parser.add_argument("--gated-dense-checkpoint", default=None,
+                        help="S47 identity-gated dense residual on the 20M math stream")
     parser.add_argument("--memory-init", default=None)
     parser.add_argument("--memory-checkpoint", default=None)
     parser.add_argument("--full-checkpoint", default=None)

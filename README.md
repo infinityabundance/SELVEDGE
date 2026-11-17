@@ -80,6 +80,8 @@ hand.
 
 - **T2 pilot `done`** — started `2026-11-15T13:26:56Z`, finished `2026-11-16T09:18:31Z`, receipt stamp `2026-11-16T09:18:32Z` (`results/t2/pilot-state.json`).
 - **Arms evaluated: 5 of 5** (`D`, `H`, `H*`, `M`, `X`); **0 training**, **0 neither trained-and-scored nor training**.
+- **T2 branch: complete** — the pilot is terminal and every arm is evaluated; this is the closed branch, not the live work.
+- **WS19 stage-2b: `running`** — the 20M math-weighted full-distillation bar (`selvedge-fulldistill-math-20261117T080200Z.service`) was launched `2026-11-17T08:02:59Z` at `20000000` tokens / `9765` steps on stream `9c5fb53b20a8f916…`; no anchored score exists yet.
 - **Registered T2 outcome: `error_direction_not_supported`** — K15–K19: K15 FAIL, K16 FAIL, K17 PASS, K18 FAIL, K19 FAIL; verdict receipt stamp `20261116T134706Z`, revision `afe554692985…` (`results/t2-verdict.json`).
 - **Verified-task comparison: `conditional_capacity_not_supported_on_verified_tasks`** — receipt stamp `20261116T134342Z`, revision `afe554692985…` (`results/capability/runs/t2-comparison.json`). A floor on the instrument is not a ranking of arms; the diagnosis is in `docs/CAPABILITY-COURT.md` §12.
 <!-- END GENERATED: readme-status -->
@@ -90,12 +92,13 @@ as negatives, not as the program's result.
 
 ## 3. Current activity
 
-Nothing. The status block above is derived from `results/t2/pilot-state.json` and
-is the authority: every arm's state is `evaluated`, the pilot receipt is terminal,
-and the GPU is idle by that fact rather than by assertion. The next work is the
-registered frontier program (`docs/PROGRAM-PLAN.md` §24) and the K18 trade
-pre-registration; both are paperwork-plus-CPU until a stage's launch record names
-its measured memory limit.
+The status block above is derived from the receipts and is the authority. It now
+separates the two branches explicitly: **T2 is complete** (every arm evaluated,
+the verdict terminal), while **WS19 stage-2b is the live program**. The 20M
+math-weighted full-distillation bar (`full-20m-math`) is in flight on the single
+GPU; the block publishes its launch and state, not a hand-typed claim. No
+corrective arm has trained, so the stage-2b registration and its S47 amendment
+are paperwork and CPU tests until the bar exits and is scored.
 
 Read-only monitoring, for when a run exists again:
 

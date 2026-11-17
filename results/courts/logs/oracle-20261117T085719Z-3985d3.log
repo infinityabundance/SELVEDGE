@@ -1,0 +1,30 @@
+........................................................F....            [100%]
+=================================== FAILURES ===================================
+______________ test_math_and_minerva_use_the_same_boxed_extractor ______________
+
+    def test_math_and_minerva_use_the_same_boxed_extractor():
+        completion = r"The value is \boxed{\frac{1}{2}}."
+        math = correctness.verify_completion(completion, "\\frac{1}{2}", "math")
+        minerva = correctness.verify_completion(
+            completion, "\\frac{1}{2}", "minerva_math500")
+        assert math["verdict"] == "correct"
+        assert minerva["verdict"] == "correct"
+        # the numeric forms are compared as numbers, not as strings
+>       assert correctness.verify_completion(
+            r"\boxed{0.5}", "1/2", "minerva_math500")["verdict"] == "correct"
+E       AssertionError: assert 'wrong' == 'correct'
+E         
+E         - correct
+E         + wrong
+
+oracle/tests/test_s47_correctness.py:44: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s47_matched_controls.py::test_matched_dense_adapter_forward_is_finite_and_zero_initialised
+  /work/oracle/tests/test_s47_matched_controls.py:172: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(output.abs().max()) == 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s47_correctness.py::test_math_and_minerva_use_the_same_boxed_extractor
+1 failed, 60 passed, 1 warning in 6.29s

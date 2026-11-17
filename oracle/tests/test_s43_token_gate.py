@@ -254,12 +254,16 @@ def test_harm_is_reported_where_the_base_already_matches():
     assert diagnostics["harm_lowest_quartile_tokens"] > 0
     assert diagnostics["harm_lowest_quartile_mean_delta_kl"] > 0.0
     assert diagnostics["harm_lowest_quartile_fraction_worse"] > 0.0
-    assert diagnostics["harm_signed_base_better_tokens"] > 0
+    # S47: the old `signed >= 0` bucket is split and the labels are corrected.
+    assert diagnostics["harm_teacher_better_tokens"] > 0
+    assert diagnostics["harm_base_better_tokens"] > 0
+    assert "harm_signed_base_better_tokens" not in diagnostics
     assert diagnostics["weighting"] == "both"
 
 
 def test_weighting_modes_are_registered_and_unknown_modes_fail():
-    assert set(corrective.WEIGHTINGS) == {"kl", "signed", "both"}
+    assert set(corrective.WEIGHTINGS) == {
+        "kl", "signed", "signed-exp", "signed-true", "both"}
     teacher = torch.randn(1, 4, 8)
     base = teacher + 0.5 * torch.randn_like(teacher)
     student = base + 0.1 * torch.randn_like(base)
@@ -270,6 +274,8 @@ def test_weighting_modes_are_registered_and_unknown_modes_fail():
             objective="correction", weighting=weighting)
         assert torch.isfinite(loss)
         assert diagnostics["weighting"] == weighting
+        assert diagnostics["weighting_canonical"] == corrective.canonical_weighting(
+            weighting)
     with pytest.raises(ValueError):
         corrective.corrective_objective(
             student, base, teacher, targets, temperature=2.0, kl_weight=0.5,

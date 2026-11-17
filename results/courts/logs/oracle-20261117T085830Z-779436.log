@@ -1,0 +1,36 @@
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+........................................................................ [ 32%]
+........................................................................ [ 43%]
+........................................................................ [ 54%]
+........................................................................ [ 65%]
+........................................................................ [ 76%]
+.........F.............................................................. [ 87%]
+........................................................................ [ 98%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________ test_kd_correction_zero_preservation_when_student_is_base ___________
+
+    def test_kd_correction_zero_preservation_when_student_is_base():
+        base = _logits(5)
+        teacher = _logits(6)
+        targets = torch.tensor([[0, 1, 2, 3]])
+        gate = torch.zeros(1, 4)
+        _loss, _ce, _kl, diagnostics = rft_objective.distill_loss(
+            base, base, teacher, targets, mode="kd_correction",
+            temperature=2.0, kl_weight=0.5, weighting="signed",
+            preserve_weight=0.5, interference_weight=0.05, gate=gate)
+        assert diagnostics["base_preservation_penalty"] == pytest.approx(0.0)
+        assert diagnostics["gate_mean_abs"] == pytest.approx(0.0)
+        assert diagnostics["interference_penalty"] == pytest.approx(0.0)
+>       assert diagnostics["weighting"] == "signed"
+E       AssertionError: assert 'signed-exp' == 'signed'
+E         
+E         - signed
+E         + signed-exp
+E         ?       ++++
+
+oracle/tests/test_s45_rft.py:172: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s45_rft.py::test_kd_correction_zero_preservation_when_student_is_base
+1 failed, 658 passed in 111.12s (0:01:51)

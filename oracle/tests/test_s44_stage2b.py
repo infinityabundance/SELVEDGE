@@ -215,7 +215,7 @@ def test_untrained_corrective_arm_is_the_base_bit_for_bit():
 # the three entry points
 
 
-@pytest.mark.parametrize("weighting", ["kl", "signed", "both"])
+@pytest.mark.parametrize("weighting", ["kl", "signed", "signed-true", "both"])
 def test_each_weighting_runs_registered_training_steps(weighting):
     result = _step(weighting)
     assert all(torch.isfinite(torch.tensor(value)) for value in result["losses"])
@@ -224,6 +224,14 @@ def test_each_weighting_runs_registered_training_steps(weighting):
     diagnostics = result["diagnostics"]
     assert diagnostics["objective"] == "correction"
     assert diagnostics["weighting"] == weighting
+    assert diagnostics["weighting_canonical"] == corrective.canonical_weighting(
+        weighting)
+    if weighting == "signed-true":
+        # the S47 sign split: the token-loss protection is active only here
+        assert diagnostics["base_token_protection_weight"] == 0.5
+        assert diagnostics["base_token_protection_tokens"] >= 0
+    else:
+        assert diagnostics["base_token_protection_weight"] == 0.0
     # step 1's gate is exactly zero by registration; the gate's own gradient is
     # therefore the only path on that step, which is what makes zero-init safe
     assert float(result["gates"][0].abs().max()) == 0.0
@@ -259,7 +267,7 @@ def test_the_signed_advantage_has_the_registered_sign():
 
 
 def test_steps_are_deterministic_for_each_weighting():
-    for weighting in ("kl", "signed", "both"):
+    for weighting in ("kl", "signed", "signed-true", "both"):
         first = _step(weighting, seed=5)
         second = _step(weighting, seed=5)
         assert first["losses"] == second["losses"], weighting
@@ -291,7 +299,7 @@ def test_the_correction_objective_is_refused_on_a_non_corrective_arm():
 
 
 @pytest.mark.skipif(shutil.which("bash") is None, reason="bash is not installed")
-@pytest.mark.parametrize("weighting", ["kl", "signed", "both"])
+@pytest.mark.parametrize("weighting", ["kl", "signed", "signed-true", "both"])
 def test_the_launcher_matches_the_registration(weighting):
     registration = json.load(open(REGISTRATION, encoding="utf-8"))
     arm = f"corrective-{weighting}-20m-math"
@@ -303,7 +311,7 @@ def test_the_launcher_matches_the_registration(weighting):
         cwd=ROOT, capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr
     command = proc.stdout
-    assert f"--advantage-weighting {weighting}" in command
+    assert f"--advantage-weighting {registered['weighting']}" in command
     assert f"--stream-manifest {registration['stream']['manifest']}" in command
     assert registration["stream"]["sha256"] in command
     assert f"--tokens {registration['common']['tokens']}" in command

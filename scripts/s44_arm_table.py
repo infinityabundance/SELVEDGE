@@ -70,6 +70,12 @@ ARM_ORDER = [
     "adapter-2m",
     "adapter-20m",
     "full-20m-math",
+    "corrective-kl-20m-math",
+    "corrective-signed-20m-math",
+    "corrective-signed-true-20m-math",
+    "corrective-both-20m-math",
+    "adapter-20m-math-matched",
+    "gated-dense-20m-math",
 ]
 ARM_LABEL = {
     "base": "`base` (frozen Qwen3.5-0.8B-Base)",
@@ -79,6 +85,12 @@ ARM_LABEL = {
     "adapter-2m": "`adapter-2m` (2M CE+KL)",
     "adapter-20m": "`adapter-20m` (20M CE+KL)",
     "full-20m-math": "`full-20m-math` (20M, backbone, math stream)",
+    "corrective-kl-20m-math": "`corrective-kl-20m-math` (20M corrective, KL weight)",
+    "corrective-signed-20m-math": "`corrective-signed-20m-math` (20M corrective, signed-exp)",
+    "corrective-signed-true-20m-math": "`corrective-signed-true-20m-math` (20M corrective, signed-true + A<0 protection)",
+    "corrective-both-20m-math": "`corrective-both-20m-math` (20M corrective, both)",
+    "adapter-20m-math-matched": "`adapter-20m-math-matched` (matched-data dense control)",
+    "gated-dense-20m-math": "`gated-dense-20m-math` (gate-only dense control)",
 }
 
 #: task -> (raw leaf test, sample field, filter). `primary` is the field the

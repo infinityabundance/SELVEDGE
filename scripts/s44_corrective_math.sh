@@ -7,6 +7,7 @@
 #
 #   SELVEDGE_MEM=10g scripts/s44_corrective_math.sh --weighting kl
 #   SELVEDGE_MEM=10g scripts/s44_corrective_math.sh --weighting signed
+#   SELVEDGE_MEM=10g scripts/s44_corrective_math.sh --weighting signed-true
 #   SELVEDGE_MEM=10g scripts/s44_corrective_math.sh --weighting both
 #   scripts/s44_corrective_math.sh --weighting kl --dry-run      # print, do not run
 #
@@ -34,8 +35,8 @@ while (($#)); do
 done
 
 case "$weighting" in
-  kl | signed | both) ;;
-  *) printf 's44-corrective: --weighting must be kl|signed|both\n' >&2; exit 64 ;;
+  kl | signed | signed-exp | signed-true | both) ;;
+  *) printf 's44-corrective: --weighting must be kl|signed|signed-exp|signed-true|both\n' >&2; exit 64 ;;
 esac
 
 if [[ ! -f "$registration" ]]; then

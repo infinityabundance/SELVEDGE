@@ -23,13 +23,23 @@ repo_root=$(cd -- "$script_dir/../.." && pwd -P)
 work=$(mktemp -d /tmp/selvedge-status-negative.XXXXXX)
 trap 'rm -rf "$work"' EXIT
 
-mkdir -p "$work/results/t2" "$work/results/capability/runs"
+mkdir -p "$work/results/t2" "$work/results/capability/runs" \
+  "$work/results/stage2/runs/full-20m-math"
 cp "$repo_root/README.md" "$work/README.md"
 cp "$repo_root/results/REPORT.md" "$work/results/REPORT.md"
 cp "$repo_root/results/t2/pilot-state.json" "$work/results/t2/pilot-state.json"
 cp "$repo_root/results/t2-verdict.json" "$work/results/t2-verdict.json"
 cp "$repo_root/results/capability/runs/t2-comparison.json" \
   "$work/results/capability/runs/t2-comparison.json"
+copy_ws19() {
+  for name in launch.json manifest.json log.jsonl; do
+    if [[ -f "$repo_root/results/stage2/runs/full-20m-math/$name" ]]; then
+      cp "$repo_root/results/stage2/runs/full-20m-math/$name" \
+        "$work/results/stage2/runs/full-20m-math/$name"
+    fi
+  done
+}
+copy_ws19
 
 failures=0
 
@@ -40,6 +50,7 @@ reset_copy() {
   cp "$repo_root/results/t2-verdict.json" "$work/results/t2-verdict.json"
   cp "$repo_root/results/capability/runs/t2-comparison.json" \
     "$work/results/capability/runs/t2-comparison.json"
+  copy_ws19
 }
 
 check_case() {

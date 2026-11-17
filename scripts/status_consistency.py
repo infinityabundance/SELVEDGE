@@ -50,6 +50,11 @@ import perf_numbers as pn  # noqa: E402  (sentinel parsing is shared, never copi
 PILOT_REL = "results/t2/pilot-state.json"
 VERDICT_REL = "results/t2-verdict.json"
 CAPABILITY_REL = "results/capability/runs/t2-comparison.json"
+WS19_RUN_REL = "results/stage2/runs/full-20m-math"
+WS19_LAUNCH = WS19_RUN_REL + "/launch.json"
+WS19_MANIFEST = WS19_RUN_REL + "/manifest.json"
+WS19_LOG = WS19_RUN_REL + "/log.jsonl"
+WS19_EVAL = "results/stage2/eval/full-20m-math/eval.json"
 
 REGIONS = (
     ("readme-status", "README.md"),
@@ -72,6 +77,58 @@ def read_json(path: str) -> dict | None:
         return json.load(handle)
 
 
+def _last_json_line(path: str) -> dict | None:
+    if not os.path.exists(path):
+        return None
+    last = None
+    with open(path, "r", encoding="utf-8") as handle:
+        for line in handle:
+            if line.strip():
+                last = line
+    if last is None:
+        return None
+    try:
+        value = json.loads(last)
+    except ValueError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def load_ws19(root: str) -> dict | None:
+    """Derive the WS19 stage-2 bar's state without reading a live step count.
+
+    The block must stay stable while the bar runs, so it publishes the launch
+    stamp, unit, budget and stream hash and a state word, not the current step.
+    A step number would make the generated block stale after every line the run
+    writes, which would make the court fail for a reason that is not a status
+    contradiction. The state moves to `complete` when the recorded step reaches
+    the manifest's last step, and to `scored` when an anchored receipt exists.
+    """
+    launch = read_json(os.path.join(root, WS19_LAUNCH))
+    manifest = read_json(os.path.join(root, WS19_MANIFEST))
+    if launch is None and manifest is None:
+        return None
+    log_tail = _last_json_line(os.path.join(root, WS19_LOG))
+    receipt = read_json(os.path.join(root, WS19_EVAL))
+    steps = int((manifest or {}).get("steps") or 0)
+    last_step = int((log_tail or {}).get("step") or -1)
+    if receipt is not None:
+        state = "scored"
+    elif steps and last_step >= steps - 1:
+        state = "complete"
+    elif log_tail is not None:
+        state = "running"
+    else:
+        state = "launched"
+    return {
+        "state": state,
+        "launch": launch,
+        "manifest": manifest,
+        "eval_present": receipt is not None,
+        "eval_stamp": (receipt or {}).get("stamp"),
+    }
+
+
 def load_facts(root: str) -> dict:
     pilot = read_json(os.path.join(root, PILOT_REL))
     verdict = read_json(os.path.join(root, VERDICT_REL))
@@ -92,6 +149,7 @@ def load_facts(root: str) -> dict:
         "pilot": pilot,
         "verdict": verdict,
         "capability": capability,
+        "ws19": load_ws19(root),
         "arms": arms,
         "states": states,
         "training_arms": training,
@@ -142,6 +200,36 @@ def render_readme_status(facts: dict) -> str:
         f"**{len(facts['arms']) - len(facts['evaluated_arms']) - len(facts['training_arms'])} "
         "neither trained-and-scored nor training**.",
     ]
+    terminal = (facts["pilot_status"] in {"done", "failed"}
+                and not facts["training_arms"]
+                and len(facts["evaluated_arms"]) == len(facts["arms"]))
+    lines.append(
+        "- **T2 branch: complete** — the pilot is terminal and every arm is "
+        "evaluated; this is the closed branch, not the live work."
+        if terminal else
+        "- **T2 branch: not complete** — the pilot or an arm is still open."
+    )
+    ws19 = facts.get("ws19")
+    if ws19 is None:
+        lines.append(
+            "- **WS19 stage-2b: no run receipt** — "
+            f"`{WS19_LAUNCH}` is absent at this revision, so no bar run is claimed."
+        )
+    else:
+        launch = ws19["launch"] or {}
+        manifest = ws19["manifest"] or {}
+        stream = launch.get("stream") or {}
+        sha = stream.get("sha256") or (manifest.get("stream_sha256") or "")
+        lines.append(
+            f"- **WS19 stage-2b: `{ws19['state']}`** — the 20M math-weighted "
+            f"full-distillation bar (`{launch.get('unit', WS19_RUN_REL)}`) was "
+            f"launched `{launch.get('created_utc')}` at "
+            f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
+            f"steps on stream `{sha[:16]}…`; "
+            + (f"anchored receipt stamp `{ws19['eval_stamp']}` "
+               f"(`{WS19_EVAL}`)." if ws19["eval_present"] else
+               "no anchored score exists yet.")
+        )
     verdict = facts["verdict"]
     if verdict is None:
         lines.append(

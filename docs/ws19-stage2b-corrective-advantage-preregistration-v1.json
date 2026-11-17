@@ -2,6 +2,14 @@
   "schema": "selvedge/ws19-stage2b-corrective-advantage-preregistration/v1",
   "registering_session": "S44",
   "registered_utc": "2026-11-17T08:12:00Z",
+  "amendment_history": [
+    {
+      "session": "S47",
+      "path": "docs/ws19-stage2b-corrective-amendment-s47-preregistration-v1.json",
+      "registered_utc": "2026-11-17T08:55:00Z",
+      "what_changed": "the harm sign labels are corrected and split; `signed-true` with a base-protection term is registered beside `signed-exp`; the interference penalty becomes token-aligned; two matched controls become mandatory comparison rows. No win-bar threshold moves."
+    }
+  ],
   "purpose": "Register, before any stage-2b arm is trained, the three corrective supervision weightings (KL-disagreement, signed teacher advantage, both) on the S43 math-weighted 20M stream at the stage-2 budget, with the win bar that decides whether a corrective mechanism replaces the full-distillation bar, the decision rule, and the next route. This file changes no S42 or S43 registration; it instantiates the S43 mechanism at the bar's budget on the bar's stream.",
   "relation_to_existing_registrations": {
     "s43_gate_mechanism": {
@@ -47,13 +55,46 @@
     },
     "corrective-signed-20m-math": {
       "weighting": "signed",
+      "weighting_registered_as": "signed-exp",
       "run_dir": "results/stage2/runs/corrective-signed-20m-math",
-      "role": "the signed teacher advantage A_t = log p_T(y_t) - log p_B(y_t) replaces the KL-disagreement weight"
+      "role": "the signed teacher advantage A_t = log p_T(y_t) - log p_B(y_t) replaces the KL-disagreement weight; the weight is exp(clamp(A_t, -4, 4)), monotone and always positive, so it suppresses imitation but never reverses it"
+    },
+    "corrective-signed-true-20m-math": {
+      "weighting": "signed-true",
+      "run_dir": "results/stage2/runs/corrective-signed-true-20m-math",
+      "role": "the genuinely sign-split variant added by S47: u_t = sigmoid(A_t / tau) with tau = 1.0, plus a token-loss protection term active exactly where A_t < 0. It is a different objective from signed-exp, not an alias",
+      "signed_tau": 1.0,
+      "base_protection_weight": 0.5,
+      "base_protection_term": "mean(1[A_t < 0] * max(CE_student,t - CE_base,t, 0))"
     },
     "corrective-both-20m-math": {
       "weighting": "both",
       "run_dir": "results/stage2/runs/corrective-both-20m-math",
       "role": "the registered geometric-mean combination; run only if neither single weighting wins outright"
+    },
+    "adapter-20m-math-matched": {
+      "kind": "matched-dense-adapter",
+      "implementation": "oracle/frontier/matched_controls.py::MatchedDenseAdapter",
+      "run_dir": "results/stage2/runs/adapter-20m-math-matched",
+      "active_added_parameters": 539649,
+      "same_stream": true,
+      "same_teacher": true,
+      "same_optimizer_budget": true,
+      "mandatory_comparison_row": true,
+      "role": "the decisive matched-data control: the external memory and the token gate are removed and replaced by a dense residual with exactly the corrective active union; a corrective gain that this arm also has is a data gain, not a mechanism gain"
+    },
+    "gated-dense-20m-math": {
+      "kind": "identity-gated-dense-residual",
+      "implementation": "oracle/frontier/matched_controls.py::IdentityGatedDenseResidual",
+      "run_dir": "results/stage2/runs/gated-dense-20m-math",
+      "active_added_parameters": 539649,
+      "same_stream": true,
+      "same_teacher": true,
+      "same_optimizer_budget": true,
+      "mandatory_comparison_row": true,
+      "gate": "the corrective gate: alpha_t = tanh(w . [h_t ; r_t] + b), w = b = 0 at init",
+      "external_memory": false,
+      "role": "the gate-only control: the same token gate over a dense residual, with no external memory; a corrective gain that this arm also has is a gate gain, not a memory gain"
     }
   },
   "common": {
@@ -79,10 +120,12 @@
     "kl_weight": 0.5,
     "preserve_weight": 0.5,
     "interference_weight": 0.05,
-    "form": "CE + w T^2 sum(u_t KL_t)/sum(u_t) + w preserve_weight T^2 mean(p_t max(KL_t - a_t, 0)) + interference_weight mean(p_t) mean(alpha_t^2)",
+    "form": "CE + w T^2 sum(u_t KL_t)/sum(u_t) + w preserve_weight T^2 mean(p_t max(KL_t - a_t, 0)) + interference_weight mean(p_t alpha_t^2) + [signed-true only] base_protection_weight mean(1[A_t<0] max(CE_t - CE_base,t, 0))",
+    "form_amended_by_s47": "the interference penalty is token-aligned, not mean(p_t) mean(alpha_t^2); the base-protection term is added to signed-true only; the three pre-S47 weightings keep their original objective exactly",
     "weights": {
       "kl": "u_t = a_t / mean(a), a_t = KL(teacher_T || base_T)",
-      "signed": "u_t = exp(clamp(A_t, -4, 4)) / mean(exp(clamp(A_t, -4, 4)))",
+      "signed": "u_t = exp(clamp(A_t, -4, 4)) / mean(exp(clamp(A_t, -4, 4))) (the registered name `signed-exp`)",
+      "signed-true": "u_t = sigmoid(A_t / tau), tau = 1.0; 0.5 at a tie, complementary weights for equal-magnitude positive and negative advantages, plus the A_t < 0 token-loss protection term",
       "both": "u_t = sqrt(u_kl,t u_signed,t), renormalised to mean 1"
     }
   },
@@ -96,7 +139,8 @@
     "heldout": {
       "manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
       "metrics": "mean next-token CE and mean KL(teacher_T || student_T) at T=2.0 over 3,906 non-overlapping 512-token chunks, paired per chunk against base and against each other",
-      "harm": "the two registered masks (lowest-advantage quartile, signed A_t >= 0), with the token count, mean delta KL and fraction worse; reported even when mean CE improves"
+      "harm": "the corrected three sign masks (teacher_better A>0, base_better A<0, tie A==0) plus the lowest-advantage quartile, with the token count, mean delta KL and fraction worse; reported even when mean CE improves. The pre-S47 label `signed_base_better` was reversed and is not used",
+      "harm_amendment": "docs/ws19-stage2b-corrective-amendment-s47-preregistration-v1.json"
     },
     "anchored_harness": {
       "driver": "scripts/s40_score.py with --adapter-checkpoint/--memory-checkpoint omitted and --memory-init <corrective init>; the arm is scored through the corrective module, whose gate is trained",
@@ -135,7 +179,7 @@
     "no_unregistered_retune": "lr, schedule, temperature, the three objective weights, the feature map and the stream are fixed by this file; a change is a new registration with its own decision rule"
   },
   "sequencing": {
-    "order": ["corrective-kl-20m-math", "corrective-signed-20m-math", "corrective-both-20m-math"],
+    "order": ["corrective-kl-20m-math", "corrective-signed-20m-math", "corrective-signed-true-20m-math", "corrective-both-20m-math", "adapter-20m-math-matched", "gated-dense-20m-math"],
     "why_sequential": "one GPU; the memory accounting forbids two memory-heavy jobs at once",
     "early_stop": "if branch 1 or branch 4 of the decision rule fires after the first arm's held-out and anchored score, the remaining arms are not launched and the reason is receipted",
     "bar_first": "the full-20m-math arm is scored before any stage-2b arm is launched, so the bar is a measured number and not an expectation"
@@ -171,6 +215,10 @@
       "the corrective active union is 539,649 and the memory union is 537,600, a difference of 2,049 per site",
       "the untrained corrective arm reproduces the base logits bit for bit",
       "the signed advantage is positive where the teacher is better on the target and negative where the base is",
+      "the sign masks split positive, negative and zero exactly and the old reversed label is gone",
+      "signed-true weights A>0 above 0.5, A<0 below 0.5 and A==0 at exactly 0.5, and the base-protection term is active only where A<0",
+      "the token-aligned interference penalty distinguishes two gate/preservation configurations with identical means",
+      "the matched controls have exactly 539,649 active added parameters and the gated dense residual is the base bit for bit at init",
       "the launcher's registered arguments match this file (weighting, tokens, seed, stream hash, run dir)"
     ],
     "receipt": "recorded with the S44 court run"

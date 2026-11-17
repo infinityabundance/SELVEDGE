@@ -51,7 +51,7 @@ print(value)
 PY
 }
 
-weightings=(kl signed both)
+weightings=(kl signed signed-true both)
 init_command=$(read_field init command)
 
 bar_checkpoint="$bar_run/latest.pt"

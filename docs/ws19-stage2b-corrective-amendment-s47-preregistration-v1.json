@@ -1,0 +1,171 @@
+{
+  "schema": "selvedge/ws19-stage2b-corrective-amendment-s47-preregistration/v1",
+  "registering_session": "S47",
+  "registered_utc": "2026-11-17T08:55:00Z",
+  "purpose": "Amend the stage-2b corrective registration before any corrective arm trains. This file corrects the harm diagnostic's reversed sign label, registers a genuinely sign-split weighting (`signed-true`) beside the existing exponential weighting (`signed-exp`), makes the interference penalty token-aligned, adds a base-relative token-loss protection term, makes two matched controls mandatory comparison rows, and registers P19.9 counterfactual utility routing as the next-route skeleton. It moves no win-bar threshold and edits no historical receipt.",
+  "relation_to_existing_registrations": {
+    "stage2b_v1": {
+      "path": "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json",
+      "role": "the amended registration. Its arms table, objective form, harm masks and sequencing are extended here; its win-bar conditions and thresholds are unchanged"
+    },
+    "s43_gate": {
+      "path": "docs/ws19-corrective-gate-advantage-preregistration-v1.json",
+      "role": "the historical mechanism registration. Its `signed_base_better` mask is superseded by the sign split here; the file is not edited"
+    },
+    "rft": {
+      "path": "docs/ws19-onpolicy-rft-preregistration-v1.json",
+      "role": "the outcome-supervised route whose verified-outcome label P19.9 reuses; its arms and thresholds are unchanged"
+    },
+    "literature": {
+      "path": "docs/S47-LITERATURE.md",
+      "role": "the focused verification for the changes below"
+    }
+  },
+  "correction_1_harm_sign": {
+    "defect": "`A_t = log p_T(y_t) - log p_B(y_t)` is positive where the teacher is better. The S43/S44 diagnostic labelled the mask `signed >= 0` as `signed_base_better`, which is reversed and also conflates a tie with a teacher-better token.",
+    "replacement": {
+      "teacher_better": "A_t > 0, the teacher assigns more probability to the true next token than the base",
+      "base_better": "A_t < 0, the base is already better than the teacher on the true next token",
+      "tie": "A_t == 0, the two models agree on the true token's log-probability"
+    },
+    "unchanged": "the lowest-advantage-quartile mask and the delta-KL / fraction-worse quantities",
+    "reading": "a positive mean delta KL on `base_better` is harm to tokens the base already handles better; it is reported even when mean CE improves",
+    "tests": [
+      "oracle/tests/test_s42_corrective.py::test_sign_masks_split_positive_negative_and_zero_explicitly asserts exact membership for positive, negative and zero tensors",
+      "oracle/tests/test_s42_corrective.py::test_harm_report_uses_the_corrected_sign_labels asserts the mask means, not only counts"
+    ]
+  },
+  "correction_2_weightings": {
+    "signed-exp": {
+      "registered_name": "signed-exp",
+      "accepted_alias": "signed",
+      "weight": "u_t = exp(clamp(A_t, -4, 4)) / mean(exp(clamp(A_t, -4, 4)))",
+      "objective": "CE + w T^2 sum(u_t KL_t)/sum(u_t) + w preserve_weight T^2 mean(p_t max(KL_t - a_t, 0)) + interference_weight mean(p_t alpha_t^2)",
+      "what_it_optimises": "teacher-directed KL reweighted by an unbounded positive exponential of the advantage. It raises pressure where the teacher is better and lowers it where the base is better, but the KL coefficient is never negative, so it cannot actively move the student toward the base.",
+      "why_prefer": "it is the registered S43/S44 control, has no new hyperparameter, and preserves the exact objective of the arms already in the table"
+    },
+    "signed-true": {
+      "registered_name": "signed-true",
+      "weight": "u_t = sigmoid(A_t / tau), tau = 1.0",
+      "base_protection": "base_protection_weight * mean(1[A_t < 0] * max(CE_student,t - CE_base,t, 0)), weight 0.5",
+      "objective": "CE + w T^2 sum(u_t KL_t)/sum(u_t) + w preserve_weight T^2 mean(p_t max(KL_t - a_t, 0)) + interference_weight mean(p_t alpha_t^2) + base_protection_weight mean(1[A_t<0] max(CE_t - CE_base,t, 0))",
+      "what_it_optimises": "a bounded, tie-centred weight (0.5 at A=0, above 0.5 where the teacher is better, below 0.5 where the base is better) plus a separate token-loss term that is active exactly on A_t < 0. The two terms together make the negative-advantage region a protected region rather than a merely down-weighted one.",
+      "why_prefer": "the weight is bounded and has the symmetry w(+x) + w(-x) = 1, so a single large advantage cannot dominate the batch; and the A<0 region receives an explicit gradient that points toward the base, which the exponential form cannot supply. The cost is one new hyperparameter (tau) and one new term weight; both are fixed here at 1.0 and 0.5 before any run",
+      "tests": [
+        "test_signed_exp_and_signed_true_have_the_registered_sign_behaviour: A>0, A<0 and A==0 for both weights",
+        "test_signed_true_objective_carries_the_base_protection_term: the term is on only for signed-true and its count is the A<0 count"
+      ]
+    },
+    "both": {
+      "weight": "u_t = sqrt(u_kl,t u_signed-exp,t), renormalised to mean 1",
+      "status": "unchanged"
+    }
+  },
+  "correction_3_interference": {
+    "old": "interference_weight * mean(p_t) * mean(alpha_t^2)",
+    "new": "interference_weight * mean(p_t * alpha_t^2)",
+    "why": "the old product is invariant to whether the large gate and the high preservation weight occur on the same token. The aligned mean charges a gate exactly where protection matters. The old quantity is retained only as `interference_penalty_factorised_diagnostic`.",
+    "test": "test_token_aligned_interference_distinguishes_alignment_where_the_old_one_cannot: two configurations with identical means (0.5, 0.5) give old 0.25 both and new 0.0 versus 0.5"
+  },
+  "correction_4_base_protection": {
+    "term": "mean(1[A_t < 0] * max(CE_student,t - CE_base,t, 0))",
+    "separation": "this is a token-loss term. It is separate from the teacher-KL preservation term `p_t max(KL_student,t - KL_base,t, 0)` and from the teacher-directed KL itself",
+    "weight": 0.5,
+    "applies_to": "signed-true only at registration; the pre-S47 weightings keep base_protection_weight = 0.0 exactly",
+    "test": "test_base_protection_is_active_only_where_the_base_is_better asserts the per-token membership for A>0, A==0, A<0 and an improvement on the base"
+  },
+  "correction_5_matched_controls": {
+    "why": "the decisive control is not the 20M full-backbone bar alone. A dense adapter on the exact same 20M math stream with the same teacher and optimizer budget, at the same active union, separates a data gain from a mechanism gain. An identity-gated dense residual with the same gate and no external memory separates a gate gain from a memory gain.",
+    "rows": {
+      "adapter-20m-math-matched": {
+        "implementation": "oracle/frontier/matched_controls.py::MatchedDenseAdapter",
+        "active_added_parameters": 539649,
+        "same_stream": true,
+        "same_teacher": true,
+        "same_optimizer_budget": true,
+        "mandatory_comparison_row": true
+      },
+      "gated-dense-20m-math": {
+        "implementation": "oracle/frontier/matched_controls.py::IdentityGatedDenseResidual",
+        "active_added_parameters": 539649,
+        "gate": "alpha_t = tanh(w . [h_t ; r_t] + b), w = b = 0 at init",
+        "external_memory": false,
+        "same_stream": true,
+        "same_teacher": true,
+        "same_optimizer_budget": true,
+        "mandatory_comparison_row": true
+      }
+    },
+    "accounting": "537,600 dense elements + 2,049 gate elements = 539,649; the corrective arm's union is 537,600 memory elements + 2,049 gate elements",
+    "tests": "oracle/tests/test_s47_matched_controls.py checks exact counts, zero-init bit identity and that the gated dense gate is the corrective gate",
+    "training_wiring": "the control classes are implemented and CPU-tested. The train.py arm wiring is deferred until the 20M bar process exits, because that process is executing train.py and the operator's no-edit rule applies; the scoring path already names both arms"
+  },
+  "p19_9_counterfactual_utility_routing": {
+    "identifier": "P19.9",
+    "status": "registered skeleton; not run",
+    "mechanism": "predict per-token improvement Delta_t = l_base(t) - l_{base+mem}(t) from causally available features (h_t, r_t), gate the residual by g_t = sigmoid((Delta_hat_t - c_t)/tau), and optionally supervise Delta with verified math outcomes rather than teacher-forced likelihood",
+    "arms": {
+      "p19-9-utility-counterfactual-2m": {
+        "supervision": "counterfactual-token-loss: two forward passes give l_base and l_{base+mem} on the same token",
+        "role": "the primary utility route"
+      },
+      "p19-9-utility-outcome-2m": {
+        "supervision": "verified-outcome: the S45 exact final-answer verdict is the label, broadcast to the sequence's tokens",
+        "role": "tests whether a correctness label routes better than a likelihood label"
+      },
+      "p19-9-gate-control-2m": {
+        "supervision": "none; the current corrective gate",
+        "role": "the attribution control"
+      }
+    },
+    "supervision_sources": ["counterfactual-token-loss", "verified-outcome"],
+    "leakage_rules": [
+      "features may contain only the causal allow-list h_t, r_t, read_norm, hidden_norm, gate_t, position",
+      "target, target_id, y_t, answer, gold, label, delta, base_loss, memory_loss and teacher_logprob are forbidden as features",
+      "splitting is by prompt_id; a prompt id may not appear in both fit and holdout",
+      "verified-outcome records may not carry a teacher-forced likelihood; the label must be a bool",
+      "the outcome label is sequence-level and is broadcast; it is never a token-level likelihood"
+    ],
+    "cost_term": "c_t = price_per_element * |r_t|_1 + latency, with both prices fixed from the runtime receipt before the arm runs; the implementation only defines the arithmetic",
+    "kill_route": "if neither supervision source beats the current gate on the math family at equal tokens, P19.9 is a null and the next route is P19.4 (the anchored scoreboard route), not another routing variant without a new registration",
+    "implementation": "oracle/frontier/utility_routing.py (router, label generation, leakage guards) and oracle/tests/test_s47_utility_routing.py (CPU tests)",
+    "not_run": "no training, sampling or GPU job is started by this registration"
+  },
+  "evaluation_correctness": {
+    "addition": "the anchored evaluation receipt now carries a `sequence_correctness` block for gsm8k and minerva_math500: the S45 exact final-answer verdict computed on the harness's own generations, beside the harness metric",
+    "likelihood_reporting": "held-out mean next-token CE and teacher KL remain unchanged and are reported in the companion held-out receipt",
+    "why_both": "CE/KL and exact-answer accuracy can diverge. The S45 collapse diagnosis measured a persistent reasoning-path bias that changed the extracted final answer on 203 of 208 newly-wrong GSM8K items, and the S44 arm table has arms whose held-out CE is indistinguishable from base while their math family mean is lower. Neither measurement substitutes for the other",
+    "implementation": "oracle/frontier/correctness.py, wired into scripts/s40_score.py",
+    "tests": "oracle/tests/test_s47_correctness.py"
+  },
+  "thresholds": {
+    "moved": false,
+    "statement": "every win-bar condition, token budget, optimizer setting, seed and evaluation basis in the stage-2b v1 registration is unchanged. This amendment adds rows and corrects the diagnostics; it does not re-threshold"
+  },
+  "literature": {
+    "path": "docs/S47-LITERATURE.md",
+    "topics": ["signed/advantage weighting", "harm/tie diagnostics", "token-specific regularisation", "matched-data controls", "counterfactual utility routing", "outcome-supervised gating"]
+  },
+  "tests": {
+    "files": [
+      "oracle/tests/test_s42_corrective.py",
+      "oracle/tests/test_s43_token_gate.py",
+      "oracle/tests/test_s44_stage2b.py",
+      "oracle/tests/test_s47_matched_controls.py",
+      "oracle/tests/test_s47_utility_routing.py",
+      "oracle/tests/test_s47_correctness.py"
+    ]
+  },
+  "limits_derived_from": [
+    "results/stage2/s44-arm-table-20261117T081002Z.json",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "docs/ws19-stage2b-corrective-advantage-preregistration-v1.json"
+  ],
+  "what_this_file_does_not_establish": [
+    "that signed-true beats signed-exp: that is the registered experiment",
+    "that the token-aligned interference penalty improves the arm: it is a corrected diagnostic and objective term, not a measured gain",
+    "that the matched controls will run before the bar exits: their train.py wiring is deferred by the no-edit rule",
+    "that P19.9 improves routing: it is a skeleton with CPU tests and no run",
+    "that CE/KL and exact-answer accuracy agree: they are both reported because they can disagree"
+  ]
+}
