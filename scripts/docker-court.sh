@@ -4,7 +4,7 @@
 # Usage:
 #   scripts/docker-court.sh <court> [flags] [-- argv...]
 #
-#   courts: rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | wait
+#   courts: rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait
 #   flags:  --net            enable network (default: --network none)
 #           --gpu            pass the NVIDIA GPU (fails closed if unavailable)
 #           --host-root-ro   expose the host root read-only at /hostroot
@@ -60,7 +60,7 @@ usage() {
   cat <<'EOF'
 usage: scripts/docker-court.sh <court> [flags] [-- argv...]
 
-  courts : rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | wait
+  courts : rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait
            (or start with -- for a generic Python-court passthrough)
   flags  : --net            enable network (default: --network none)
            --gpu            pass the NVIDIA GPU (fails closed if unavailable)
@@ -136,7 +136,7 @@ else
 fi
 
 case "$court" in
-  rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | wait) ;;
+  rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait) ;;
   *) die "unknown court '$court' (expected rust|python|oracle|io|commit_identity|perf_numbers|status_consistency|wait, or -- <argv>)" 64 ;;
 
 esac
@@ -392,6 +392,7 @@ if ((${#argv[@]} == 0)); then
     commit_identity) argv=(scripts/check-commit-identity.sh) ;;
     perf_numbers) argv=(python3 scripts/perf_numbers.py --check) ;;
     status_consistency) argv=(python3 scripts/status_consistency.py --check) ;;
+    prereg_provenance) argv=(python3 scripts/prereg_provenance.py --check) ;;
   esac
 fi
 
@@ -506,7 +507,7 @@ host_gid=$(id -g)
 declare -a mounts=("$repo_root:/work" "$cargo_cache:/cargo" "$repo_root/target:/work/target")
 declare -a extra_mounts=()
 declare -a recorded_mounts=()
-if [[ "$court" == "python" || "$court" == "io" || "$court" == "perf_numbers" || "$court" == "status_consistency" || "$court" == "eval" ]]; then
+if [[ "$court" == "python" || "$court" == "io" || "$court" == "perf_numbers" || "$court" == "status_consistency" || "$court" == "prereg_provenance" || "$court" == "eval" ]]; then
   mounts+=("$pycache:/pycache")
 fi
 if [[ "$court" == "oracle" || "$court" == "eval" ]]; then

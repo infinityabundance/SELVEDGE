@@ -1,0 +1,71 @@
+{
+ "bar": {
+  "frozen_anchor_is_not_the_bar": "beating Qwen/Qwen3.5-0.8B-Base on the anchored harness is reported but is not a win for any mechanism stage; the teacher signal alone is expected to move the score",
+  "registered_text": "a mechanism stage wins only if it beats the distill-dense control on the family under test, at equal unique active parameters and equal bytes per token, by more than the combined standard error of the two arms",
+  "why": "every mechanism in stages 2-4 is trained with the same online teacher signal; a mechanism that only beats the frozen anchor has demonstrated distillation, not its own mechanism"
+ },
+ "control_arm": {
+  "active_elements": 537600,
+  "active_union_equals": "the grafted memory arm's active union at one site, by construction (2 * 1024 * 262 + 1024)",
+  "name": "distill-dense",
+  "reason_not_a_frozen_student": "a fully frozen student has no trainable parameter, so 'distillation only' would be a no-op control and could not set a bar; the control therefore trains the parameter-matched dense adapter under the identical objective, stream and schedule, and differs from the memory arm only in that its capacity is dense rather than table-addressed",
+  "relation_to_p192": "this is the same arm P19.2 registers as `dense adapter`; it is run once, here, and P19.2 re-uses the receipt instead of re-running it",
+  "trainable": "the adapter's 262-rank bottleneck, its parameter-free gate, and the site's output bias"
+ },
+ "evaluation": {
+  "harness_preregistration": "docs/anchor-preregistration-v1.json",
+  "note": "the same tasks, few-shot counts, batch sizes, greedy sampling and extraction filters as the S36 scoreboard, so `gap` compares receipts under one pre-registration digest",
+  "primary_metric": "per-task primary metric as registered in the anchor pre-registration",
+  "reporting": "per-task score with the harness standard error, then the two registered family means (knowledge, math), unweighted over members"
+ },
+ "models": {
+  "student": {
+   "id": "Qwen/Qwen3.5-0.8B-Base",
+   "role": "the WS19 anchor; core frozen except for the control arm",
+   "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68"
+  },
+  "teacher": {
+   "id": "Qwen/Qwen3.5-2B-Base",
+   "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+   "tokenizer_note": "the teacher's tokenizer.json is byte-identical to the student's (verified equal by hash in results/stage2/stage2-stream-20261116T230328Z.json and re-measured at docs/FRONTIER-TARGET.md §10); a chat checkpoint may not be substituted"
+  }
+ },
+ "objective": {
+  "form": "CE + 0.5 * T^2 * KL(teacher_T || student_T)",
+  "teacher_logits": "computed online, no logit cache",
+  "temperature": 2.0,
+  "weight": 0.5
+ },
+ "optimizer": {
+  "betas": [0.9, 0.95],
+  "gradient_clip": 1.0,
+  "learning_rate": 0.001,
+  "name": "AdamW",
+  "warmup_steps": 50,
+  "weight_decay": 0.0
+ },
+ "purpose": "Establish the score that the 2B teacher's signal alone buys at the memory arm's trainable budget, before any mechanism is credited. Every later stage is measured against this arm, not against the frozen anchor.",
+ "registering_session": "S38",
+ "schedule": {
+  "gradient_accumulation": 4,
+  "micro_batch": 1,
+  "sequence_length": 512,
+  "tokens_per_arm": 20000000,
+  "tokens_per_optimizer_step": 2048
+ },
+ "schema": "selvedge/ws19-distillation-control-preregistration/v1",
+ "seeds": {
+  "arm_seed": 0,
+  "note": "one seed at this stage, as P19.2 registers; three seeds are registered for the claim stage only",
+  "torch": 1234
+ },
+ "stream": {
+  "builder": "oracle/frontier/stream.py",
+  "builder_version": "the pinned builder at the registering commit; the run receipt carries the manifest sha256",
+  "leakage_guard": "the 5-word-shingle guard against every cached evaluation test split, discard at 0.2 and fail closed at 0.5, as in results/stage2/stage2-stream-20261116T230328Z.json",
+  "note": "the same builder, the same guard and the same token count as the memory arm; only the length differs from the 2.25M-token smoke stream, and the manifest hash is recorded per run",
+  "tokens_train": 20000000,
+  "tokenizer": "the student's own tokenizer (byte-identical to the teacher's)"
+ },
+ "registered_utc": "2026-11-17T00:45:00Z"
+}

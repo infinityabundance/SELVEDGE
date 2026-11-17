@@ -1,0 +1,103 @@
+{
+  "schema": "selvedge/sparse-memory-training/v1",
+  "stamp": "20261117T004000Z",
+  "revision": "532d415",
+  "generated_by": "scripts/s38_sparse_training.py",
+  "inputs": {
+    "accounting": {
+      "path": "results/accounting/20261117T001252Z-qwen35-08b-base-text-only.json",
+      "stamp": "20261117T001252Z"
+    },
+    "state_contract": {
+      "path": "results/reference/20261117T003300Z-qwen35-base-state-contract.json",
+      "stamp": "20261117T003300Z"
+    },
+    "hidden": 1024,
+    "layers": 24,
+    "linear_layers": 18,
+    "attention_layers": 6
+  },
+  "design": {
+    "rows_registered": [
+      65536,
+      1048576,
+      8388608
+    ],
+    "rows_primary": 8388608,
+    "reads_per_token": 8,
+    "passes_for_training": 1,
+    "sequence_length": 512,
+    "grad_accumulation": 4,
+    "bf16_bytes": 2,
+    "fp32_bytes": 4,
+    "optimizer_fp32_vectors": 3,
+    "host_optimizer_rows": 1048576,
+    "update_bucket_steps": 16,
+    "lr_correction": "per-row step count, not the global step"
+  },
+  "scales": [
+    {
+      "rows": 65536,
+      "elements": 67108864,
+      "table_bf16_gib": 0.125,
+      "dense_optimizer_state_gib": 0.75,
+      "dense_total_gib": 0.875,
+      "table_fits_device": true,
+      "dense_optimizer_fits_device": true
+    },
+    {
+      "rows": 1048576,
+      "elements": 1073741824,
+      "table_bf16_gib": 2.0,
+      "dense_optimizer_state_gib": 12.0,
+      "dense_total_gib": 14.0,
+      "table_fits_device": true,
+      "dense_optimizer_fits_device": true
+    },
+    {
+      "rows": 8388608,
+      "elements": 8589934592,
+      "table_bf16_gib": 16.0,
+      "dense_optimizer_state_gib": 96.0,
+      "dense_total_gib": 112.0,
+      "table_fits_device": false,
+      "dense_optimizer_fits_device": false
+    }
+  ],
+  "primary": {
+    "rows": 8388608,
+    "elements": 8589934592,
+    "table_bf16_gib": 16.0,
+    "dense_optimizer_state_gib": 96.0,
+    "dense_total_gib": 112.0,
+    "table_fits_device": false,
+    "dense_optimizer_fits_device": false
+  },
+  "sparse": {
+    "tokens_per_optimizer_step": 2048,
+    "row_reads_per_step": 16384,
+    "distinct_rows_per_step_upper_bound": 16384,
+    "device_row_bytes_bf16_value_and_grad": 4096,
+    "device_working_set_mib": 64.0,
+    "host_optimizer_row_bytes_fp32": 12288,
+    "host_optimizer_cap_rows": 1048576,
+    "host_optimizer_cap_gib": 12.0,
+    "optimizer_steps_to_cover_table_once": 512,
+    "staleness_bound_steps": 16,
+    "staleness_bound_tokens": 32768,
+    "nvme_write_bytes_per_optimizer_step": 201326592,
+    "nvme_write_mib_per_optimizer_step": 192.0,
+    "nvme_write_amortised_mib_per_step": 12.0
+  },
+  "peak": {
+    "backbone_bf16_gib": 1.4014460444450378,
+    "table_on_device_gib": 0.0,
+    "optimizer_state_on_device_gib": 0.0,
+    "sparse_working_set_mib": 64.0,
+    "per_pass_state_mib": 18.6328125,
+    "activation_term": "measured by the throughput job, not assumed here",
+    "rule": "peak VRAM = backbone + measured activation peak + sparse working set + per-pass state; the table and its optimiser state contribute zero accelerator bytes by construction",
+    "dense_alternative_shortfall_gib": 96.0
+  },
+  "statement": "the 8,388,608-row table is untrainable with a dense optimizer on a 16 GiB device; the sparse-row, offloaded-optimizer design is the registered route, and its acceptance evidence is a measured peak and a sparse-equals-dense equivalence at 65,536 rows"
+}

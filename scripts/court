@@ -15,6 +15,7 @@
 #   scripts/court commit_identity
 #   scripts/court perf_numbers
 #   scripts/court status_consistency
+#   scripts/court prereg_provenance
 #   scripts/court --gpu --detach oracle -- python3 oracle/train/loop.py ...
 #   scripts/court wait results/courts/pending/<container>.json
 set -Eeuo pipefail
@@ -137,6 +138,12 @@ case "$court" in
       exec "$court_runner" status_consistency "${flags[@]}"
     fi
     exec "$court_runner" status_consistency "${flags[@]}" -- python3 scripts/status_consistency.py "$@"
+    ;;
+  prereg_provenance)
+    if (($# == 0)); then
+      exec "$court_runner" prereg_provenance "${flags[@]}"
+    fi
+    exec "$court_runner" prereg_provenance "${flags[@]}" -- python3 scripts/prereg_provenance.py "$@"
     ;;
   *)
     printf 'court: unknown court %q\n' "$court" >&2

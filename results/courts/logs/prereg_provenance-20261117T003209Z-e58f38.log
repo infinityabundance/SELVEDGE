@@ -1,0 +1,21 @@
+prereg_provenance: a registration is not demonstrably earlier than its first score; fix the ordering or record a dated exception
+prereg_provenance: OK docs/anchor-preregistration-v1.json (declared 2026-11-16T19:40:00Z, added 2026-11-16T21:31:57Z, first score 2026-11-16T19:59:53+00:00)
+  history committed_before_first_score: first add 2026-11-16T21:31:57Z vs first score 2026-11-16T19:59:53+00:00 (results/frontier/anchor-0.8b-20261116T195953Z.json) (declared exception)
+  history declared_before_its_inputs: declared 2026-11-16T19:40:00Z vs its own input results/frontier/anchor-smoke5-20261116T200500Z.json (2026-11-16T20:05:00+00:00) (declared exception)
+prereg_provenance: OK docs/capability-calibration-preregistration-v1.json (declared 2026-11-16T14:20:00Z, added 2026-11-16T14:21:53Z, first score 2026-11-16T14:24:38+00:00)
+prereg_provenance: OK docs/capability-calibration-preregistration-v2.json (declared 2026-11-16T16:45:00Z, added 2026-11-16T16:47:48Z, first score no score yet)
+prereg_provenance: OK docs/capability-preregistration-v2.json (declared 2026-11-16T06:12:36Z, added 2026-11-16T06:16:24Z, first score 2026-11-16T06:15:07+00:00)
+  history committed_before_first_score: first add 2026-11-16T06:16:24Z vs first score 2026-11-16T06:15:07+00:00 (results/capability/instrument-smoke-20261116T070500Z/generations.json) (declared exception)
+prereg_provenance: OK docs/capability-preregistration-v3.json (declared 2026-11-16T06:23:56Z, added 2026-11-16T06:25:48Z, first score 2026-11-16T06:24:00+00:00)
+  history committed_before_first_score: first add 2026-11-16T06:25:48Z vs first score 2026-11-16T06:24:00+00:00 (results/capability/instrument-smoke-20261116T080500Z/generations.json) (declared exception)
+prereg_provenance: OK docs/capability-preregistration-v4.json (declared 2026-11-16T08:30:00Z, added 2026-11-16T08:23:52Z, first score 2026-11-16T13:43:42+00:00)
+  history declared_not_after_commit: declared 2026-11-16T08:30:00Z vs first add 2026-11-16T08:23:52Z (declared exception)
+prereg_provenance: OK docs/capability-preregistration-v5.json (declared 2026-11-16T19:14:11Z, added 2026-11-16T19:16:32Z, first score no score yet)
+prereg_provenance: OK docs/capability-preregistration.json (declared 2026-11-16T02:26:14Z, added 2026-11-16T02:26:31Z, first score 2026-11-16T02:32:55+00:00)
+prereg_provenance: FAIL docs/ws19-distillation-control-preregistration-v1.json (declared 2026-11-17T00:45:00Z, added untracked, first score no score yet)
+  FAIL tracked: not tracked by git, so it is not a registration
+  FAIL declared_not_after_commit: no commit to compare against
+prereg_provenance: historical exception docs/anchor-preregistration-v1.json: committed_before_first_score; declared_before_its_inputs — no tuning occurred: the task list, few-shot counts, sample limits, seeds, family membership and win-condition text were fixed in 67ea47d and the file has not been modified since (one commit touches it), and the thresholds are derived mechanically from measured scores by scripts/s36_scoreboard.py
+prereg_provenance: historical exception docs/capability-preregistration-v2.json: committed_before_first_score — the receipt that precedes the commit is an instrument-generation receipt (`results/capability/instrument-smoke-20261116T070500Z/generations.json`), not an arm score; the registration is append-only and superseded by v5
+prereg_provenance: historical exception docs/capability-preregistration-v3.json: committed_before_first_score — as v2: the preceding receipt is an instrument-generation receipt, not an arm score, and v5 supersedes the file
+prereg_provenance: historical exception docs/capability-preregistration-v4.json: declared_not_after_commit — the declared time is later than the commit by six minutes, which cannot be a tuning advantage; the file is append-only and superseded by v5, and no threshold in it was changed after a score
