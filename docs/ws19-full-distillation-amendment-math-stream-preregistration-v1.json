@@ -1,0 +1,127 @@
+{
+  "schema": "selvedge/ws19-full-distillation-amendment/v1",
+  "registering_session": "S43",
+  "registered_utc": "2026-11-17T07:12:00Z",
+  "amends": {
+    "path": "docs/ws19-full-distillation-preregistration-v1.json",
+    "sha256": "167f5d5c82f8a7a6217ce6b242f62dc84b53384a4aa2787d7def63885410ad0c",
+    "registered_utc": "2026-11-17T02:46:00Z",
+    "rule": "the pre-registration is not edited. This amendment replaces one input, the training stream, before the full arm is trained on it, and records exactly what changed and why."
+  },
+  "finding": {
+    "what_was_registered": "the full-distillation bar trained on results/stage2/stage2-stream-20261117T004849Z.json, a stream built only from the FineWeb-Edu sample. Its math content is incidental web text, not worked mathematics.",
+    "why_it_matters": "the bar is read on two families, knowledge and math. A general-only stream gives the full arm no worked solutions in either scored math format, so a math-family result would measure transfer from incidental math prose rather than from the math distillation that is the point of WS19. The stream is the largest controllable lever on that family.",
+    "change": "replace the training stream with the registered math-weighted mixture below. Every other registered setting is unchanged.",
+    "label_of_the_previous_stream": "general-only",
+    "previous_stream": {
+      "manifest": "results/stage2/stage2-stream-20261117T004849Z.json",
+      "sha256": "58bbed620fa8f80edd578c300038cb3507b8cb002d22fd5bb79506eff296336f",
+      "composition": "100% FineWeb-Edu (ODC-By 1.0)",
+      "status": "retained and labelled general-only; it remains the stream of the base control, the adapter-2m arm and the memory-2m arm, and is not re-described as math-weighted"
+    }
+  },
+  "stream": {
+    "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "manifest_sha256": "d20781d0957f80940e4e7281452f5ddc3e2bb6b0975026968fde758b41e629a9",
+    "path": "results/artifacts/stage2/stage2-math-stream-20261117T071120Z.u32",
+    "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "tokens": 20000000,
+    "graft_tokens": 0,
+    "train_tokens": 20000000,
+    "builder": "oracle/frontier/math_stream.py",
+    "determinism": "pinned source revisions and SHA-256s; deterministic row order; a fixed 10,000-token cycle of the four sources repeated 20 times per 200,000-token shard; 100 shards; every shard carries its own SHA-256 and exact per-source counts; rebuilding the same sources reproduces the same stream SHA-256",
+    "composition": {
+      "math_tokens": 11400000,
+      "math_fraction": 0.57,
+      "general_tokens": 8600000,
+      "general_fraction": 0.43,
+      "per_source_tokens": {
+        "numina": 8000000,
+        "math": 2200000,
+        "gsm8k": 1200000,
+        "fineweb": 8600000
+      },
+      "cycle": [
+        {"source": "numina", "tokens": 4000},
+        {"source": "math", "tokens": 1100},
+        {"source": "gsm8k", "tokens": 600},
+        {"source": "fineweb", "tokens": 4300}
+      ],
+      "note": "57.0% math (40.0% NuminaMath-CoT, 11.0% MATH-train, 6.0% GSM8K-train) and 43.0% general (FineWeb-Edu); every one of the 100 shards has this exact composition"
+    },
+    "sources": {
+      "gsm8k": {
+        "repo_id": "openai/gsm8k",
+        "revision": "740312add88f781978c0658806c59bc2815b9866",
+        "license": "MIT",
+        "format": "Question: {question}\\nAnswer: {answer}, the scored 5-shot answer format",
+        "documents_used": 6349
+      },
+      "math": {
+        "repo_id": "EleutherAI/hendrycks_math",
+        "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+        "license": "MIT",
+        "format": "Problem:\\n{problem}\\n\\nSolution:\\n{solution}, the scored Minerva MATH-500 format",
+        "documents_used": 6635
+      },
+      "numina": {
+        "repo_id": "project-numina/NuminaMath-CoT",
+        "revision": "9d8d210c9f6a36c8f3cd84045668c9b7800ef517",
+        "license": "Apache-2.0",
+        "shard": "data/train-00000-of-00005.parquet",
+        "shard_sha256": "25c0fa2ca96dd8078470ad1bbc439d0d211fd8b7d22e04abf7f61e9be9bf9ec3",
+        "documents_used": 15058,
+        "format": "GSM8K-format for the gsm8k source rows, MATH-format for the math source rows, Problem/Solution otherwise"
+      },
+      "fineweb": {
+        "repo_id": "HuggingFaceFW/fineweb-edu",
+        "revision": "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9",
+        "license": "ODC-By-1.0",
+        "file": "sample/10BT/013_00000.parquet",
+        "documents_used": 8484
+      }
+    },
+    "nemotron_cc_math": {
+      "repo_id": "nvidia/Nemotron-CC-Math-v1",
+      "revision": "397a2502f2028c659ba411a6c4935b464a7f03aa",
+      "attempted_utc": "2026-11-17T07:03:00Z",
+      "result": "HTTP 401 GatedRepo for 3/part_000000.parquet; the dataset is gated and no authentication token is available, so no byte of it was used",
+      "substitute": "project-numina/NuminaMath-CoT",
+      "substitution_discipline": "the substitute is named explicitly with its own revision, license and SHA-256; this is a declared substitution, not a silent dependency change"
+    },
+    "contamination": {
+      "guard": "5-word-shingle Jaccard against every cached evaluation test split and against the sealed capability fixtures (fixtures/capability/sealed/** plus fixtures/capability/SEALED.json)",
+      "evaluation_items": 51902,
+      "threshold_discard": 0.2,
+      "threshold_fail_closed": 0.5,
+      "documents_excluded": 102,
+      "documents_excluded_at_or_above_0_5": 8,
+      "max_jaccard_retained": 0.1935483870967742,
+      "max_jaccard_discarded": 0.6258064516129033,
+      "verdict": "PASS: no retained document is at or above 0.2; every excluded document is recorded by digest and eval item in the stream manifest, never by text",
+      "by_eval_set": "GSM8K test, MATH-500, MMLU, MMLU-Pro, HumanEval, IFEval, ARC-Challenge, TriviaQA and the sealed capability holdback were all in the index; the largest retained overlap is 0.1935 against MATH-500"
+    },
+    "teacher_visibility": "the teacher sees exactly the token ids the student sees, on the same batch, in the same order; there is no pre-generated teacher corpus and no logit cache. The supervised targets follow 'Answer:' or 'Solution:', so the teacher's distribution covers the worked-solution tokens in the scored formats."
+  },
+  "unchanged": {
+    "models": "Qwen/Qwen3.5-0.8B-Base (student) and Qwen/Qwen3.5-2B-Base (teacher), same revisions",
+    "adaptation": "full text tower, tied embedding frozen",
+    "optimizer": "Adam8bit, block 256, lr 1e-4, betas 0.9/0.95, cosine to 10%, warmup 200, clip 1.0",
+    "schedule": "20,000,000 tokens, seq 512, micro-batch 1, grad-accum 4, 9,765 optimiser steps, 19,998,720 realised tokens",
+    "objective": "CE + 0.5 * T^2 * KL(teacher_T || student_T), temperature 2.0",
+    "checkpoints": "every 1,000 steps, keep two newest plus latest, resumable with hash checks",
+    "vram_projection": "unchanged projection 11.07-11.33 GiB under the 12.5 GiB limit; the smoke must replace it. The stream changes text, not shapes."
+  },
+  "what_this_amendment_does_not_establish": [
+    "that the math mixture improves the math family: that is the experiment",
+    "that NuminaMath-CoT is equivalent to Nemotron-CC-Math: it is a declared substitute for an unavailable gated dataset, with a different distribution",
+    "that 57% math is the optimum: it is a registered value chosen before the run, inside the requested 55-60% band",
+    "that any excluded document was harmful had it been kept: exclusion is the registered contamination rule, not a measured effect"
+  ],
+  "limits_derived_from": [
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "results/stage2/s43-math-source-count-20261117T070844Z.json"
+  ],
+  "scoring_receipts": [],
+  "registration_note": "registered before any full-arm training on this stream. No smoke and no training receipt names this registration at registration time; the smoke run that follows is the first."
+}
