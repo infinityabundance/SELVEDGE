@@ -1,0 +1,39 @@
+..F..........................................                            [100%]
+=================================== FAILURES ===================================
+_______________ test_execute_requests_only_selected_indices_once _______________
+
+    def test_execute_requests_only_selected_indices_once():
+        router = _router()
+        hidden = torch.randn(1, 4, 4)
+        mask = torch.tensor([[True, False, True, False]])
+        calls: list[torch.Tensor] = []
+    
+        def read_path(indices):
+            calls.append(indices.clone())
+            return torch.arange(indices.numel() * 4, dtype=torch.float32).reshape(
+                indices.numel(), 4)
+    
+        # Pin the selection so the spy's expectations are exact.
+        router.select = lambda *args, **kwargs: (
+            mask, torch.zeros(1, 4), torch.ones(1, 4))
+    
+        execution = router.execute(hidden, _metadata(), read_path, cost=0.0,
+                                   row_bytes_by_tier={"hot": 64},
+                                   row_ids=torch.tensor([0, 0, 1, 1]))
+        assert len(calls) == 1
+        assert calls[0].tolist() == [0, 2]
+        assert execution.requested_indices.tolist() == [0, 2]
+        # only the requested rows were scattered in; unselected reads are zero
+        assert torch.equal(execution.contribution[0, 1], torch.zeros(4))
+        assert torch.equal(execution.contribution[0, 3], torch.zeros(4))
+        assert execution.accounting.requests == 2
+>       assert execution.accounting.unique_rows_requested == 1  # rows 0 and 1 -> {0}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert 2 == 1
+E        +  where 2 = ReadAccounting(tokens=4, requests=2, unique_rows_requested=2, bytes_by_tier={'hot': 128}, cache_hits=0, cache_misses=2...upplied; measured_cost(read) remains a surrogate until the store path is wired and reports real bytes and cache state').unique_rows_requested
+E        +    where ReadAccounting(tokens=4, requests=2, unique_rows_requested=2, bytes_by_tier={'hot': 128}, cache_hits=0, cache_misses=2...upplied; measured_cost(read) remains a surrogate until the store path is wired and reports real bytes and cache state') = ReadExecution(contribution=tensor([[[0.0000, 0.5000, 1.0000, 1.5000],\n         [0.0000, 0.0000, 0.0000, 0.0000],\n     ...pplied; measured_cost(read) remains a surrogate until the store path is wired and reports real bytes and cache state')).accounting
+
+oracle/tests/test_s50_preread_mask.py:100: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s50_preread_mask.py::test_execute_requests_only_selected_indices_once
+1 failed, 44 passed in 3.79s
