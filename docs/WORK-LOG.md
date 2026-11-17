@@ -4848,3 +4848,60 @@ run in the `oracle` court with the same hard limits. GPU time: 43 s for the init
 serialised with no other GPU job. Every court ran with an explicit `SELVEDGE_MEM`
 sized from the measured peak of the same workload, and the host had at least
 64 GiB available before each launch.
+
+## S51 — first-moment validation, pre-read mask enforcement, result eligibility
+
+**Context.** The corrected-optimiser 20M bar (`s50-bar-20m-lr1e-5`, lr 1e-5) is
+training; no GPU job was started or touched. The S50 attribution
+(`results/stage2/s50-parity-components-20261117T203840Z.json`) leaves the int8
+first moment as the residual error: 0.2789 worst relative update L2 and 0.008828
+final parameter error on the synthetic sigma=1.0 fixture. That is a synthetic
+result, and Schaul et al. (arXiv:1312.6055) and Choi et al. (arXiv:1910.05446)
+are the reasons it cannot be the last word.
+
+**First-moment harness.** `scripts/s50_real_gradient_validation.py` consumes a
+fixture of real post-clip gradients and runs 50 steps of the shipped int8
+first-moment `Adam8bit`, the bf16-first-moment variant and fp32 AdamW on the same
+tensors, CPU-side. `scripts/s50_capture_real_gradients.py` is the GPU half: two
+forward/backward probes on the registered math stream, six tensors across
+early/mid/late depth (MLP down/gate and a full-attention q projection), capped to
+whole leading rows so every 256-element block is a real block. The model is not
+updated between probes. `optim8bit.Adam8bit` now takes
+`first_moment_storage="int8"|"bfloat16"`; the receipt records the storage, bytes
+per element, and refuses to resume a checkpoint across a storage change. The
+decision thresholds are 0.40 worst relative update L2, 3.0 max `|update|` ratio,
+0.02 final parameter error. If int8 fails and bf16 passes, the switch is
+mandatory for the next launch (4.000 B/element, projected 12.34 GiB against the
+12.5 GiB limit); if both fail, storage is not the cause. The exact queued capture
+and CPU commands, with their memory limits, are in `docs/S50-GPU-QUEUE.md` §(d).
+
+**Pre-read mask.** `TwoStageUtilityRouter.forward` now requires the boolean
+`selection_mask` returned by `select`; it zeroes the read at unselected tokens
+before the post-read predictor, multiplies the final contribution by the mask,
+and therefore cannot resurrect a rejected token. `execute(read_path)` calls the
+store path once with exactly the selected flat indices and scatters the returned
+rows into a zero tensor. `physical_read_accounting` reports unique rows (via
+optional `row_ids`), bytes per named tier and store-reported cache hits/misses,
+and states that `measured_cost(read)` remains a surrogate until the store path is
+wired. The tests are `oracle/tests/test_s50_preread_mask.py`.
+
+**Eligibility.** `scripts/status_consistency.py` now loads the invalidation
+master record and the `INVALIDATED.json` markers and classifies results as
+`currently_eligible`, `historically_scored` or `invalidated`. The generated
+README/REPORT status names the corrected bar as the live run, states that no
+anchored score is currently eligible, and lists the two invalidated anchored
+scores as historical evidence. A court rule (`invalidated-not-current`) fails
+closed if prose cites an invalidated artefact as the current bar or baseline
+unless the line labels it historical. The tests are
+`oracle/tests/test_s50_status_eligibility.py`.
+
+**Queue and literature.** `docs/S50-GPU-QUEUE.md` orders (a) milestone scoring,
+(b) 200-step KL at 3e-5/5e-5, (c) the conditional 3e-5 20M bar, (d) the
+real-gradient validation and (e) the P19.9 2M screen, which is marked BLOCKED
+because the GPU router runner is not implemented; writing a fake command for it
+would be fabricated evidence. `docs/S51-LITERATURE.md` and
+`results/stage2/s50-literature-s51-20261117T224516Z.json` record the sources,
+URLs, dates and VERIFIED/PARTIAL/UNSUPPORTED status.
+
+**Courts.** The targeted S50/S51 tests pass in the `oracle` court; the
+`status_consistency` court passes after regeneration. No GPU command was run.

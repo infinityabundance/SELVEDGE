@@ -1,0 +1,207 @@
+{
+  "schema": "selvedge/s50-literature/v1",
+  "kind": "s50-literature",
+  "created_utc": "2026-11-17T22:45:16Z",
+  "stamp": "20261117T224516Z",
+  "accessed": "2026-11-17",
+  "revision": "71ecf9b",
+  "agent": "S51",
+  "question": "int8/dynamic quantisation of the first Adam moment; real-gradient versus synthetic optimiser validation; sparse-gather memory execution and byte accounting; eligibility/provenance of invalidated results in experiment tracking",
+  "sources": [
+    {
+      "id": "dettmers-2022-8bit",
+      "topic": "first-moment int8 / dynamic quantisation",
+      "citation": "Tim Dettmers, Mike Lewis, Sam Shleifer, Luke Zettlemoyer. 8-bit Optimizers via Block-wise Quantization. ICLR 2022 (spotlight). arXiv:2110.02861v2.",
+      "url": "https://arxiv.org/abs/2110.02861",
+      "dates": {"submitted": "2021-10-06", "v2": "2022-06-20"},
+      "claims": [
+        "8-bit optimizer states use block-wise dynamic quantisation: a non-linear code that is precise at both large and small magnitudes.",
+        "The second Adam state varies by about 3-5 orders of magnitude, so one linear block scale is insufficient.",
+        "Table 3 ablation (209M-parameter LM): 8-bit Adam with linear quantisation and block-wise quantisation had 50% unstable runs (median perplexity 194.4); dynamic quantisation with block-wise had 0% unstable (17.7).",
+        "Appendix F Table 6: block-wise dynamic absolute quantisation error for the first state is 3.5e-10 +/- 1.1e-10 versus 41.2e-10 +/- 3.1e-10 for linear."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "primary source read in the S50 literature pass (results/stage2/s50-literature-20261117T210432Z.json) and carried forward",
+      "relevance": "direct: the shipped int8 first moment is a linear absmax code, which the paper reports as an order of magnitude less accurate and unstable for the second state; the paper's dynamic code is the bf16-first-moment alternative's published precedent"
+    },
+    {
+      "id": "tang-2021-1bit-adam",
+      "topic": "low-bit moment precision",
+      "citation": "Hanlin Tang, Shaoduo Gan, Ammar Ahmad Awan, Samyam Rajbhandari, Conglong Li, Xiangru Lian, Ji Liu, Ce Zhang, Yuxiong He. 1-bit Adam. arXiv:2102.02888v2.",
+      "url": "https://arxiv.org/abs/2102.02888",
+      "dates": {"submitted": "2021-02-04", "v2": "2021-06-29"},
+      "claims": [
+        "Adam's variance is the non-linear term; error-compensated compression including the variance cannot cancel its history error (Section 4.2).",
+        "Supplementary Figure 12: compressing the variance to n bits and the momentum to 1 bit does not converge when n <= 8."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "primary source read in the S50 literature pass; Section 4.2 and supplementary Figure 12",
+      "relevance": "direct: a published failure of low-bit variance quantisation; S50 gives the second moment bf16 rather than int8 for the same reason"
+    },
+    {
+      "id": "schaul-2014-unit-tests",
+      "topic": "real-gradient versus synthetic optimiser validation",
+      "citation": "Tom Schaul, Ioannis Antonoglou, David Silver. Unit Tests for Stochastic Optimization. ICLR 2014. arXiv:1312.6055v3.",
+      "url": "https://arxiv.org/abs/1312.6055",
+      "dates": {"submitted": "2013-12-20", "v3": "2014-02-25"},
+      "claims": [
+        "A collection of small, isolated, well-understood synthetic unit tests can evaluate an optimiser quickly.",
+        "Passing these unit tests is not sufficient, but absolutely necessary, for a claim of generality or robustness.",
+        "Real-world scenarios entangle many issues that the isolated tests separate."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from https://arxiv.org/abs/1312.6055",
+      "relevance": "exactly the S51 design: the synthetic lognormal fixture is a necessary unit test, not sufficient evidence; a real-gradient fixture is added as the sufficiency check"
+    },
+    {
+      "id": "choi-2020-optimizer-comparisons",
+      "topic": "real-gradient versus synthetic optimiser validation",
+      "citation": "Dami Choi, Christopher J. Shallue, Zachary Nado, Jaehoon Lee, Chris J. Maddison, George E. Dahl. On Empirical Comparisons of Optimizers for Deep Learning. arXiv:1910.05446v3.",
+      "url": "https://arxiv.org/abs/1910.05446",
+      "dates": {"submitted": "2019-10-11", "v3": "2020-06-16"},
+      "claims": [
+        "Optimizer rankings are highly sensitive to the hyperparameter tuning protocol; changing the search space can contradict published rankings.",
+        "Inclusion relationships between optimizers predict comparisons in practice, and adaptive methods did not underperform momentum or SGD in their experiments.",
+        "The paper raises concerns about fairly benchmarking optimizers for neural-network training."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract read on 2026-11-17 from https://arxiv.org/abs/1910.05446",
+      "relevance": "supports validating on the actual training gradient distribution and the actual lr/step protocol rather than a synthetic spectrum alone"
+    },
+    {
+      "id": "kwon-2023-pagedattention",
+      "topic": "sparse-gather memory execution and byte accounting",
+      "citation": "Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph E. Gonzalez, Hao Zhang, Ion Stoica. Efficient Memory Management for Large Language Model Serving with PagedAttention. SOSP 2023. arXiv:2309.06180v1.",
+      "url": "https://arxiv.org/abs/2309.06180",
+      "dates": {"submitted": "2023-09-12"},
+      "claims": [
+        "PagedAttention stores the KV cache in fixed-size blocks/pages, so memory is allocated on demand and fragmentation is near zero.",
+        "Pages can be shared within and across requests, so a logical token request can map to fewer unique physical rows/pages than requested tokens.",
+        "The system reports throughput gains at equal latency, and the accounting is per physical block, not per logical request."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and submission metadata read on 2026-11-17 from https://arxiv.org/abs/2309.06180",
+      "relevance": "direct analogue for the S51 read-accounting interface: count unique rows/pages, not logical token requests, and separate cache hits from fetches"
+    },
+    {
+      "id": "rajbhandari-2021-zero-infinity",
+      "topic": "sparse-gather memory execution and byte accounting",
+      "citation": "Samyam Rajbhandari, Olatunji Ruwase, Jeff Rasley, Shaden Smith, Yuxiong He. ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning. arXiv:2104.07857v1.",
+      "url": "https://arxiv.org/abs/2104.07857",
+      "dates": {"submitted": "2021-04-16"},
+      "claims": [
+        "Training state can be partitioned across GPU, CPU and NVMe tiers in a heterogeneous memory system.",
+        "The system reasons explicitly about which tier holds which bytes and moves them on demand, rather than treating memory as one flat pool."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and submission metadata read on 2026-11-17 from https://arxiv.org/abs/2104.07857",
+      "relevance": "supports per-tier byte accounting in ReadAccounting.bytes_by_tier rather than a single aggregate cost"
+    },
+    {
+      "id": "pytorch-embeddingbag",
+      "topic": "sparse-gather memory execution and byte accounting",
+      "citation": "PyTorch documentation, torch.nn.EmbeddingBag.",
+      "url": "https://pytorch.org/docs/2.15/generated/torch.nn.EmbeddingBag.html",
+      "dates": {"accessed": "2026-11-17"},
+      "claims": [
+        "EmbeddingBag computes sums/means/max of bags without materialising the intermediate per-token embedding rows.",
+        "With sparse=True the gradient with respect to the weight matrix is a sparse tensor.",
+        "Empty bags return zero vectors and padding indices are excluded from the reduction."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "documentation page read on 2026-11-17",
+      "relevance": "the sparse-gather primitive the read path must use: gather only requested rows, and zero (not a dense gather) for unselected tokens"
+    },
+    {
+      "id": "openlineage-object-model",
+      "topic": "eligibility/provenance of invalidated results",
+      "citation": "OpenLineage specification, Object Model, version 1.55.0.",
+      "url": "https://openlineage.io/docs/spec/object-model",
+      "dates": {"accessed": "2026-11-17"},
+      "claims": [
+        "Lineage is modelled as Jobs, Runs and Datasets, with runtime RunEvent and design-time JobEvent/DatasetEvent.",
+        "Dataset facets include lifecycleStateChange and version, so a dataset's invalidation/supersession is recorded as metadata rather than by deleting history.",
+        "Input/output dataset facets carry row counts and byte sizes, i.e. physical accounting is part of the provenance model."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "specification page read on 2026-11-17",
+      "relevance": "the invalidation marker + retained receipt design mirrors lifecycle metadata: history is kept, eligibility is a derived property"
+    },
+    {
+      "id": "mitchell-2019-model-cards",
+      "topic": "eligibility/provenance of invalidated results",
+      "citation": "Margaret Mitchell, Simone Wu, Andrew Zaldivar, Parker Barnes, Lucy Vasserman, Ben Hutchinson, Elena Spitzer, Inioluwa Deborah Raji, Timnit Gebru. Model Cards for Model Reporting. FAT* 2019. arXiv:1810.03993v2.",
+      "url": "https://arxiv.org/abs/1810.03993",
+      "dates": {"submitted": "2018-10-05", "v2": "2019-01-14"},
+      "claims": [
+        "Released models should be accompanied by documentation of benchmarked evaluation conditions and intended use.",
+        "The card discloses the evaluation procedure and the context in which results are valid, not only headline numbers."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and journal reference read on 2026-11-17 from https://arxiv.org/abs/1810.03993",
+      "relevance": "a number without its eligibility/provenance is not a reportable result; the S50 invalidation record supplies the missing context"
+    },
+    {
+      "id": "pineau-2021-reproducibility",
+      "topic": "eligibility/provenance of invalidated results",
+      "citation": "Joelle Pineau, Philippe Vincent-Lamarre, Koustuv Sinha, Vincent Lariviere, Alina Beygelzimer, Florence d'Alche-Buc, Emily Fox, Hugo Larochelle. Improving Reproducibility in Machine Learning Research. JMLR 2021. arXiv:2003.12206v4.",
+      "url": "https://arxiv.org/abs/2003.12206",
+      "dates": {"submitted": "2020-03-27", "v4": "2020-12-30"},
+      "claims": [
+        "The NeurIPS reproducibility program introduced a machine-learning reproducibility checklist as part of submission.",
+        "Reproducibility requires reporting the code, data and experimental workflow, not only the final metric."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "abstract and JMLR comment read on 2026-11-17 from https://arxiv.org/abs/2003.12206",
+      "relevance": "supports the requirement that an invalidated result keep its receipt, revision and stamp so the claim can be audited"
+    },
+    {
+      "id": "mlflow-model-registry",
+      "topic": "eligibility/provenance of invalidated results",
+      "citation": "MLflow documentation, Model Registry.",
+      "url": "https://mlflow.org/docs/latest/model-registry.html",
+      "dates": {"accessed": "2026-11-17"},
+      "claims": [
+        "A model registry records versions and aliases/stages so consumers can distinguish the current deployment candidate from historical versions.",
+        "MLflow has deprecated the Stage concept in favour of aliases and tags, which are mutable labels over immutable versions."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "the page was requested on 2026-11-17 but the documentation site returned no machine-readable text in this session; the claim is from the MLflow registry design and is not quoted from the page",
+      "relevance": "the eligibility label is an alias/tag over an immutable receipt, not a rewrite of the receipt"
+    },
+    {
+      "id": "dettmers-2022-llmint8",
+      "topic": "linear absmax quantisation failure",
+      "citation": "Tim Dettmers, Mike Lewis, Younes Belkada, Luke Zettlemoyer. LLM.int8(). NeurIPS 2022. arXiv:2208.07339v2.",
+      "url": "https://arxiv.org/abs/2208.07339",
+      "dates": {"submitted": "2022-08-15", "v2": "2022-11-10"},
+      "claims": [
+        "Per-tensor linear absmax quantisation fails when systematic outlier features are present.",
+        "The published fix is vector-wise quantisation plus a mixed-precision decomposition that keeps outliers in 16 bits."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "carried forward from the S50 literature pass; the full text was not re-read in S51",
+      "relevance": "same failure family: a linear absmax code with one scale cannot represent a heavy-tailed within-block distribution"
+    },
+    {
+      "id": "no-published-real-gradient-first-moment-int8-256",
+      "topic": "first-moment int8 / dynamic quantisation",
+      "citation": "No primary source found that measures a per-256-element linear absmax int8 first moment on real Qwen3.5-0.8B gradients over 50 optimiser steps against fp32 AdamW.",
+      "url": null,
+      "dates": {"searched": "2026-11-17"},
+      "claims": [
+        "The shipped layout combines a linear absmax int8 first moment (Dettmers' less accurate code) with a bf16 second moment (Dettmers' dynamic precision); no paper measures that exact hybrid on real transformer gradients.",
+        "The S50 synthetic receipt measures the hybrid (0.88% final parameter error at sigma=1.0), but synthetic gradients are not the training distribution."
+      ],
+      "status": "UNSUPPORTED",
+      "how_verified": "absence of evidence, not evidence of absence; the S51 harness exists to produce the missing measurement",
+      "relevance": "this is the gap the real-gradient harness fills"
+    }
+  ],
+  "conclusion": {
+    "first_moment": "Published 8-bit optimizers use block-wise dynamic quantisation for the moments; a linear absmax int8 first moment is the paper's less accurate code. The shipped hybrid is defensible only for its byte cost, and the real-gradient harness decides whether it stays.",
+    "real_gradient_validation": "Synthetic unit tests are necessary but not sufficient (Schaul et al.); optimizer rankings are protocol-sensitive (Choi et al.). A real-gradient fixture at the bar's own lr is the right sufficiency check.",
+    "sparse_gather": "Row/page-oriented systems (PagedAttention) and sparse embedding bags count physical rows and support shared/zero rows. ReadAccounting therefore reports unique rows, bytes per tier and cache hits; measured_cost(read) remains a surrogate until the store path is wired.",
+    "eligibility": "Model cards, reproducibility checklists and lineage lifecycle metadata all keep history and make eligibility a derived label. The S50 invalidation record plus the status generator implement the same pattern."
+  }
+}

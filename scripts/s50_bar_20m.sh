@@ -2,14 +2,18 @@
 # S50: rerun the 20M full-backbone distillation bar with the corrected optimiser.
 #
 #   SELVEDGE_MEM=20g scripts/s50_bar_20m.sh [--detach] [--dry-run]
+#   SELVEDGE_MEM=20g scripts/s50_bar_20m.sh --lr 3e-5 \
+#     --run-dir results/stage2/runs/s50-bar-20m-lr3e-5 \
+#     --kl-receipt results/stage2/s50-fixed-batch-kl-math-lr3e-5-<stamp>.json
 #
 # The recipe is the registered 20M bar (math stream, full text tower with the
 # tied embedding frozen, CE + 0.5*T^2*KL, Adam8bit block 256, stochastic weight
 # rounding, cosine to 10%, warmup 200, grad-clip 1.0, seed 0, 19,998,720 tokens)
-# with one replacement: lr = 1e-5 and the corrected bf16 second moment. The
-# rate is the one whose 200-step revalidation shows a falling fixed-batch teacher
-# KL (0.2529 -> 0.2145); 1e-4 did not (0.2529 -> 0.5473), and neither run
-# tripped the update tripwire.
+# with one replacement: the corrected bf16 second moment. The default lr = 1e-5
+# is the rate whose 200-step revalidation shows a falling fixed-batch teacher KL
+# (0.2529 -> 0.2145); 1e-4 did not (0.2529 -> 0.5473), and neither run tripped the
+# update tripwire. A non-default --lr is refused unless --kl-receipt names the
+# 200-step fixed-batch KL gate that passed at that rate.
 #
 # SELVEDGE_MEM sizing: the previous 20M bar's cgroup peak was 8.76 GB, so the
 # floor is max(1.5 x 8.76, 8.76 + 1) = 13.1 GB; 20g was the registered S49 value
@@ -25,16 +29,37 @@ run_dir="results/stage2/runs/s50-bar-20m-lr1e-5"
 stream="results/stage2/stage2-math-stream-20261117T071120Z.json"
 stream_sha="9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56"
 lr="1e-5"
+run_dir_set=0
+kl_receipt=""
 detach=0
 dry_run=0
 while (($#)); do
   case "$1" in
+    --lr) lr="${2-}"; shift 2 ;;
+    --lr=*) lr="${1#*=}"; shift ;;
+    --run-dir) run_dir="${2-}"; run_dir_set=1; shift 2 ;;
+    --run-dir=*) run_dir="${1#*=}"; run_dir_set=1; shift ;;
+    --kl-receipt) kl_receipt="${2-}"; shift 2 ;;
+    --kl-receipt=*) kl_receipt="${1#*=}"; shift ;;
     --detach) detach=1; shift ;;
     --dry-run) dry_run=1; shift ;;
-    -h | --help) sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,24p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) printf 's50-bar: unknown argument %s\n' "$1" >&2; exit 64 ;;
   esac
 done
+if ((run_dir_set == 0)); then
+  run_dir="results/stage2/runs/s50-bar-20m-lr${lr}"
+fi
+[[ "$lr" =~ ^[0-9]+e-[0-9]+$ ]] || {
+  printf 's50-bar: --lr must look like 1e-5 or 3e-5, got %s\n' "$lr" >&2
+  exit 64
+}
+if [[ "$lr" != "1e-5" ]]; then
+  [[ -f "$kl_receipt" ]] || {
+    printf 's50-bar: a non-default rate requires --kl-receipt naming the 200-step fixed-batch KL gate receipt; %s is missing\n' "$kl_receipt" >&2
+    exit 78
+  }
+fi
 
 [[ -f "$stream" ]] || { printf 's50-bar: missing stream manifest %s\n' "$stream" >&2; exit 78; }
 recorded=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["sha256"])' "$stream")
@@ -103,13 +128,28 @@ if pgrep -f 'scripts/s43_score_total_cap.py' >/dev/null 2>&1; then
   exit 75
 fi
 
-python3 - "$run_dir" "$lr" "$SELVEDGE_MEM" "$stream" "$stream_sha" <<'PY'
+python3 - "$run_dir" "$lr" "$SELVEDGE_MEM" "$stream" "$stream_sha" "$kl_receipt" <<'PY'
 import json, os, re, sys
 from datetime import datetime, timezone
-(run_dir, lr, mem, stream, sha) = sys.argv[1:6]
+(run_dir, lr, mem, stream, sha, kl_receipt) = sys.argv[1:7]
 n = int(re.match(r"([0-9]+)", mem).group(1))
 unit = mem[-1].lower()
 mem_bytes = n * {"k": 1024, "m": 1048576, "g": 1073741824}[unit]
+if float(lr) == 1e-5:
+    rate_selection = (
+        "200-step revalidation: at 1e-4 the fixed-batch training KL rose "
+        "0.2529 -> 0.5473 (results/stage2/s50-fixed-batch-kl-math-"
+        "20261117T205500Z.json); at 1e-5 it fell 0.2529 -> 0.2145 "
+        "(results/stage2/s50-fixed-batch-kl-math-lr1e-5-"
+        "20261117T205600Z.json). Neither run tripped the update tripwire.")
+else:
+    import hashlib
+    with open(kl_receipt, "rb") as handle:
+        digest = hashlib.sha256(handle.read()).hexdigest()
+    rate_selection = (
+        f"the 200-step fixed-batch KL gate at lr {float(lr):g} must fall "
+        f"(receipt {kl_receipt}, sha256 {digest}); this rate is 3x the "
+        "revalidated 1e-5 rate, adopted only if the gate passes")
 os.makedirs(run_dir, exist_ok=True)
 record = {
     "schema": "selvedge/s50-bar-launch/v1",
@@ -124,12 +164,7 @@ record = {
         "optimizer": "Adam8bit block 256, stochastic weight rounding, bf16 second moment (S50 fix)",
         "second_moment": "bfloat16, unquantised",
         "first_moment": "int8, block-wise absmax",
-        "rate_selection": (
-            "200-step revalidation: at 1e-4 the fixed-batch training KL rose "
-            "0.2529 -> 0.5473 (results/stage2/s50-fixed-batch-kl-math-"
-            "20261117T205500Z.json); at 1e-5 it fell 0.2529 -> 0.2145 "
-            "(results/stage2/s50-fixed-batch-kl-math-lr1e-5-20261117T205600Z.json). "
-            "Neither run tripped the update tripwire."),
+        "rate_selection": rate_selection,
     },
     "limits": {
         "container_memory_bytes": mem_bytes,

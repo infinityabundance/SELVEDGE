@@ -3,6 +3,9 @@
 #
 #   SELVEDGE_MEM=6g scripts/s50_bar_milestones.sh --milestone m5
 #   SELVEDGE_MEM=6g scripts/s50_bar_milestones.sh
+#   SELVEDGE_MEM=6g scripts/s50_bar_milestones.sh \
+#     --run-dir results/stage2/runs/s50-bar-20m-lr3e-5 \
+#     --eval-root results/stage2/eval/s50-bar-20m-lr3e-5
 #   scripts/s50_bar_milestones.sh --dry-run
 #
 # Milestones are the S50 ones: m5 = ckpt-002441 (4,999,168 tokens),
@@ -28,8 +31,12 @@ while (($#)); do
   case "$1" in
     --milestone) milestone="${2-}"; shift 2 ;;
     --milestone=*) milestone="${1#*=}"; shift ;;
+    --run-dir) run_dir="${2-}"; shift 2 ;;
+    --run-dir=*) run_dir="${1#*=}"; shift ;;
+    --eval-root) eval_root="${2-}"; shift 2 ;;
+    --eval-root=*) eval_root="${1#*=}"; shift ;;
     --dry-run) dry_run=1; shift ;;
-    -h | --help) sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) printf 's50-milestones: unknown argument %s\n' "$1" >&2; exit 64 ;;
   esac
 done

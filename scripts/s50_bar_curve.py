@@ -115,14 +115,20 @@ def _slope(points: list[tuple[float, float]]) -> float | None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default=None)
+    parser.add_argument("--run-dir", default=RUN_DIR,
+                        help="training run whose log is read (for a rate rerun)")
+    parser.add_argument("--eval-root", default=EVAL_ROOT,
+                        help="milestone receipt root matching --run-dir")
     args = parser.parse_args()
+    run_dir = args.run_dir
+    eval_root = args.eval_root
 
     base_payload = json.load(open(os.path.join(ROOT, BASE_RECEIPT), encoding="utf-8"))
     base_rows = _tasks(base_payload)
     points = []
     milestones = []
     for name, step, tokens in MILESTONES:
-        path = os.path.join(ROOT, EVAL_ROOT, name, "eval.json")
+        path = os.path.join(ROOT, eval_root, name, "eval.json")
         if not os.path.isfile(path):
             raise SystemExit(f"s50-bar-curve: missing milestone receipt {path}")
         payload = json.load(open(path, encoding="utf-8"))
@@ -134,7 +140,7 @@ def main() -> int:
             "name": name,
             "step": step,
             "tokens_seen": tokens,
-            "receipt": os.path.join(EVAL_ROOT, name, "eval.json"),
+            "receipt": os.path.join(eval_root, name, "eval.json"),
             "receipt_sha256": _sha256(path),
             "checkpoint_sha256": (payload.get("arm_report") or {}
                                   ).get("checkpoint_sha256"),
@@ -161,7 +167,7 @@ def main() -> int:
     justified = bool(math_slope is not None and math_slope > 0.0
                      and increment_10_20 > 0.0)
 
-    log_path = os.path.join(ROOT, RUN_DIR, "log.jsonl")
+    log_path = os.path.join(ROOT, run_dir, "log.jsonl")
     log_rows = [json.loads(line) for line in open(log_path, encoding="utf-8")]
     update_values = [row["max_update_over_lr"] for row in log_rows
                      if "max_update_over_lr" in row]
@@ -170,7 +176,7 @@ def main() -> int:
         "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "stamp": time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()),
         "revision": _revision(),
-        "run_dir": RUN_DIR,
+        "run_dir": run_dir,
         "base_receipt": BASE_RECEIPT,
         "base_receipt_sha256": _sha256(os.path.join(ROOT, BASE_RECEIPT)),
         "base": {"tasks": base_rows,
@@ -196,7 +202,7 @@ def main() -> int:
                         "measured slope and increment are reported instead"),
         },
         "training_log": {
-            "path": os.path.join(RUN_DIR, "log.jsonl"),
+            "path": os.path.join(run_dir, "log.jsonl"),
             "sha256": _sha256(log_path),
             "steps": len(log_rows),
             "max_update_over_lr": max(update_values) if update_values else None,
