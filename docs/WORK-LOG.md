@@ -3851,3 +3851,143 @@ carry the embedding. Receipt:
   replace it.
 - **No retraining was performed and none is required** for `memory-2m`, for the
   reason measured above.
+
+## 2026-11-17 — S42: the update was below the grid, the graft was supervised on the wrong quantity
+
+### Plan
+
+Three blocking defects, in dependency order: (1) the bar arm updates bf16 weights
+in place with no fp32 master copy, so an update below half an ulp is discarded;
+(2) the representation graft is supervised on reconstruction and was measured to
+cost CE; (3) the objective that all arms use may be the wrong objective for a
+corrective memory. The session implements and tests the fixes on CPU, registers
+the new arms before any of them is scored, and only touches the GPU after the
+running anchored-harness court exits.
+
+### The optimizer numerics
+
+A bf16 weight stores 7 mantissa bits. At the registered 1e-4 learning rate the
+whole update is below half an ulp of a weight of order 0.01–1, so nearest-even
+rounds every step to zero and the weight never moves — the run would train the
+8-bit moments and nothing else. `oracle/frontier/optim8bit.py` now applies the
+exact fp32 result to the bf16 grid with one of three registered numerics:
+
+- `stochastic` (default): bracket the exact value between adjacent bf16 grid
+  points and take the upper one with probability `(x-lo)/(hi-lo)`. Expected value
+  is the exact update, no extra state, and a `q`-ulp update changes the weight
+  with probability `q` instead of never. Exact grid values are returned exactly.
+- `nearest`: the pre-S42 behaviour, kept as a control.
+- `compensated`: nearest plus a bf16 residual carry (error feedback in the
+  weight-update domain), one bf16 element per trainable element, with its bytes
+  reported by the optimiser rather than estimated.
+
+The update is applied in bounded chunks of `2**22` elements, so the transient is
+tens of MB and does not compete with the registration headroom. The rounding
+generator is seeded and its state is written into the checkpoint beside the torch
+and numpy states, so `--resume` replays the same sequence exactly.
+
+**Evidence, measured not asserted.** `oracle/tests/test_s42_optim_numerics.py`
+(12 tests) shows, on a synthetic weight at 1.5 whose update is 0.49 ulp: about
+half the elements change under stochastic rounding and exactly none under
+nearest; the measured unchanged fraction agrees with the arithmetic prediction to
+within 0.02; at 0.01 ulp the measured unchanged fraction is high, is not 1.0, and
+still agrees with the prediction; the seed replays the bit pattern exactly; 1000
+steps of 0.1-ulp updates leave the nearest-even weight exactly where it started
+while the compensation buffer tracks the exact total inside about one ulp; the
+buffer's measured bytes fit the registered headroom. On real steps the optimiser
+reports the bitwise unchanged fraction, the round-to-nearest fraction, the
+sub-half-ulp fraction and the mean rounding error, element by element, and
+`train.py` measures the first step, the first full-LR step and the final
+(minimum-LR) step and summarises peak-LR and minimum-LR into the run receipt.
+The smoke receipt is the first real-arm evidence; it is recorded in the S42
+continuation entry, not assumed here.
+
+**Why stochastic rounding is the default.** It is unbiased and free; the
+compensation buffer is the published error-feedback idea but costs a bf16 element
+per trainable element, and at the registered full arm that is the whole headroom
+margin. The buffer remains registered and implemented, and the smoke's measured
+unchanged fraction decides whether the default is enough. Literature and verdicts:
+`docs/S42-LITERATURE.md` §1–§2.
+
+### The corrective graft (P19.2b)
+
+The representation graft reconstructs the teacher's mapped hidden state and adds
+it to the frozen student. Measured on the 2M-token held-out slice, the step-0
+teacher graft costs +0.57475 nats of CE against base while the ungrafted step-0
+module is bit-identical to base (quoted from
+`results/stage2/s41-heldout-comparison.json`, stamp `20261117T035128Z`, revision
+`73f9574fc7ec23e8cc82a5a971a8423509e6d086`). The residual is the harm; the
+injection machinery is not.
+
+`oracle/frontier/corrective.py` keeps the reads, projections, convolution, table
+and accounting and changes the mechanism: a correction gate `tanh(gate_raw)` with
+`gate_raw = 0` exactly, so an untrained graft reproduces the base bit for bit; an
+objective supervised by the teacher's advantage (`KL(teacher_T || base_T)` per
+position, detached) rather than by mapped teacher states; and a preservation
+weight, high where the base already matches the teacher, that penalises a KL
+increase and the gate magnitude there. The memory's constant offset is
+structurally excluded from the additive residual by splitting
+`ConditionalMemory.site_mixed` out of `site_forward` (the registered arms are
+numerically unchanged and their tests still pass).
+
+The gradient ordering is stated rather than hidden: a multiplicative gate at
+exactly zero blocks the pathway's gradient, so the gate opens on the first step
+(`dL/dalpha != 0` at zero) and the rows receive gradient from then on. The tests
+assert that ordering, the bit-exact parity with grafted rows and a non-zero
+offset, the preservation weight's ordering by base advantage, and that the
+preservation term strictly increases the gate derivative when the correction is
+harmful where the base is right (`oracle/tests/test_s42_corrective.py`, 11
+tests). `train.py` gains `--arm corrective` and `--objective correction|ce_kl`;
+`graft.py --corrective` writes the init checkpoint.
+
+Registered before scoring: `docs/ws19-corrective-graft-preregistration-v1.json`
+(P19.2b + P19.8). Arms: grafted-corrective, grafted-representation (quoted, not
+rerun), adapter and the gate-zero control; 2M tokens, same teacher and stream;
+active union 537,601 for the corrective arms against 537,600, stated as +1 gate
+scalar per site. No verdict on the mechanism is drawn from 2M numbers against the
+20M bar.
+
+### The objective question (P19.8)
+
+Registered in the same file, before scoring: CE+KL against advantage-weighted
+correction with the base-preservation term, at equal tokens and active
+parameters, with a four-branch decision rule and the next route for each branch.
+The *interference cost* — delta KL on held-out positions where the base's own
+advantage is in the lowest quartile — is a primary quantity, so a gain elsewhere
+cannot hide harm where the base is already right.
+
+### Literature
+
+`docs/S42-LITERATURE.md` records four focused passes with URL, fetch date, the
+claim as stated and a verdict: stochastic rounding for low-precision training
+(Gupta et al. 2015, Wang et al. 2018 — VERIFIED; Dettmers et al. 2022 PARTIAL for
+this question), error feedback (Karimireddy et al. 2019 VERIFIED; De Sa et al.
+2018 PARTIAL), gated residual memory (kNN-LM 2020 VERIFIED for the mechanism,
+PARTIAL for our construction) and base preservation (L²-SP 2018 VERIFIED in
+weight space, PARTIAL for output space; RLAD 2026 VERIFIED for selective
+imitation). The exact combination registered here is **UNSUPPORTED** in the
+checked sources and is registered as a local construction with a decision rule.
+
+### Courts
+
+`commit_identity`, `perf_numbers`, `status_consistency` and `prereg_provenance`
+pass on the S42 commits; receipts are under `results/courts/`. The oracle test
+court runs the new files with the existing stage-2 suites: 75 passing.
+
+### What this entry does not claim
+
+- **No new arm score.** The anchored-harness pass was still running when this
+  entry was written; the scores it produced are recorded in the continuation
+  entry, with their receipts.
+- **No smoke and no full-arm VRAM.** The 20-step smoke has not run yet, so the
+  modelled activation term in the pre-registration is still modelled.
+- **No verdict on the corrective graft or on the objective.** Both are registered
+  and tested; neither has been trained for a score.
+
+**Registration timestamp correction (2026-11-17, S42).** The corrective-graft
+registration declared `registered_utc` four minutes after its own first commit,
+which the `prereg_provenance` court rejects: a declaration cannot be later than
+the file's commit. It was corrected to `04:52:00Z`, inside the writing window and
+before the commit, at a time when no arm of that registration had been scored.
+The correction is recorded in the file itself (`registration_timestamp_note`) and
+in the commit message.

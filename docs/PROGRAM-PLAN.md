@@ -157,6 +157,11 @@ now gates **only** stages 5–6, so the quality stage that needs no Rust executo
 `ACTIVE` and is the next measurement. WS20 (§25) registers **no** new experiments
 — it is a stop/keep register over existing P-numbers.
 
+Tier index — S42 addition: WS19 now has **10** items. P19.2b (the corrective
+graft) is added beside P19.2 without renumbering it; P19.7 (bf16 weight-update
+numerics for the bar arm) and P19.8 (the objective question) are new numbered
+items. No existing P-number was renumbered or reused.
+
 **Parked at S38 (2026-11-17).** Two registered lines are **deferred, not
 withdrawn**, with their registrations kept intact: **T4** (`docs/EXPERIMENT-CONTRACT.md`,
 the K18 trade question) and the **capability-court discrimination endpoint**
@@ -169,8 +174,8 @@ amendment naming the session and the GPU hours.
 
 | tier | items | count |
 | --- | --- | ---: |
-| **ACTIVE** | P19.1 (stage 1: the anchor scoreboard — **executed at S36**, receipts in `docs/FRONTIER-TARGET.md` §9) and P19.2 (stage 2: the next measurement, registration in `docs/WS19-EXECUTION-REGISTRATION.md`) | 2 |
-| **CANDIDATE** | P19.0 (accounting half done at S33; kernel half gates stages 5–6 only) · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass state-conditioned memory (the one narrow novelty) · P19.5 NVMe serving (needs the kernel half) · P19.6 spend headroom and claim (needs the kernel half) | 5 |
+| **ACTIVE** | P19.1 (stage 1: the anchor scoreboard — **executed at S36**, receipts in `docs/FRONTIER-TARGET.md` §9) · P19.2 (stage 2: the next measurement, registration in `docs/WS19-EXECUTION-REGISTRATION.md`) · P19.2b (the corrective graft, registered at S42 in `docs/ws19-corrective-graft-preregistration-v1.json`) | 3 |
+| **CANDIDATE** | P19.0 (accounting half done at S33; kernel half gates stages 5–6 only) · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass state-conditioned memory (the one narrow novelty) · P19.5 NVMe serving (needs the kernel half) · P19.6 spend headroom and claim (needs the kernel half) · P19.7 bf16 weight-update numerics (implemented at S42; the smoke receipt is the evidence) · P19.8 CE+KL vs corrective objective (registered at S42, not run) | 7 |
 | **HYPOTHESIS** | — | 0 |
 | **PARKED** (outside the tiers) | T4 · the capability-court discrimination endpoint — registrations intact, GPU focus is WS19; see the note above | 2 |
 
@@ -5517,6 +5522,143 @@ teacher is funded (`docs/PRIOR-ART-AND-NOVELTY.md` §17 finding 6).
 4. **Stretch:** pass the 1.2B model (`LiquidAI/LFM2.5-1.2B-Instruct`, the verified
    id) on the same harness.
 5. **Three seeds at the claim stage only.**
+
+### P19.2b — The corrective graft (registered 2026-11-17, S42)
+
+**What.** Replace the representation graft's objective with a **corrective** one.
+The registered representation graft (`oracle/frontier/graft.py`) reconstructs the
+teacher's mapped hidden state from a PCA basis, writes it into the token-addressed
+rows, and adds the read to the frozen student's hidden state at the site. It has
+no identity guarantee: the ungrafted step-0 module is bit-identical to base
+(`memory-ungrafted`), while the teacher-grafted step-0 module costs +0.57475 nats
+of next-token CE against base on the 2M-token held-out slice (quoted from
+`results/stage2/s41-heldout-comparison.json`, stamp `20261117T035128Z`, revision
+`73f9574fc7ec23e8cc82a5a971a8423509e6d086`). It is supervised on reconstruction,
+which is not the quantity the scoreboard measures.
+
+The correction (`oracle/frontier/corrective.py`) keeps the reads, key/value
+projections, convolution, table and active-parameter accounting, and changes
+exactly three things:
+
+1. **near-identity initialisation.** The residual is `alpha(site) * read` with
+   `alpha = tanh(gate_raw)` and `gate_raw = 0`. The untrained graft therefore
+   returns exactly zero and reproduces the base bit for bit. The value projection
+   is deliberately *not* zero: a zero multiplicand would also zero the gate's own
+gradient. At zero, `dL/dalpha` is non-zero, the gate opens on the first step, and
+   gradient reaches the rows from then on. That ordering is a test, not a claim.
+2. **supervision from the teacher's advantage.** The distillation term is weighted
+   per position by `KL(teacher_T || base_T)` computed on the same batch: the
+   correction is asked to explain where the base is wrong, not to reproduce the
+   teacher's state. The frozen base logits come from a bypassed forward of the
+   same student, not from a second model.
+3. **interference protection.** A preservation weight `sigmoid(-(a - mean a)/mean
+a)` is high where the base already matches the teacher. It multiplies a penalty
+   on any *increase* in KL over the base's own KL and a penalty on the gate
+   magnitude, so opening the correction where the base is already right is what
+   costs loss. The memory's constant offset is structurally excluded from the
+   residual (`ConditionalMemory.site_mixed`), so a learned mean cannot
+   reintroduce the representation graft's perturbation.
+
+**Arms, at the same tokens, teacher and active parameters.** `grafted-corrective`
+(trained, objective `correction`), `grafted-representation` (the existing arm,
+quoted not rerun), `adapter` (the registered equal-active control) and the
+**gate-zero control** (the corrective init, untrained, which must be bit-identical
+to base). Active union is 537,601 for the corrective arms against 537,600 for the
+memory/adapter arms: one correction-gate scalar per site, stated rather than
+rounded away. Every trained arm gets 2M tokens on the registered stream.
+
+**Registration.** `docs/ws19-corrective-graft-preregistration-v1.json`, written
+before either variant is scored. **Depends.** P19.2, the frozen anchor, the
+online teacher. **Acceptance evidence.** the gate-zero parity test (bit-exact),
+the interference-suppression test, the row-gradient test, the held-out paired
+deltas against base and against the representation arm, and the anchored harness
+scores for the trained corrective arm. **Win.** the corrective arm beats the
+representation graft at equal tokens and active union, and draws no verdict
+against the 20M full bar from 2M numbers. **Next route if it misses.** gate
+conditioning on the base advantage at inference instead of a penalty; and if both
+lose to base, P19.4 rather than another 2M variant. **Effort.** M. **Tier.**
+ACTIVE. **Status at S42.** implemented and tested; registered; not yet scored.
+
+### P19.7 — bf16 weight-update numerics for the bar arm (implemented 2026-11-17, S42)
+
+**What.** The full-backbone arm holds its weights in bf16 with no fp32 master
+copy. bf16 stores 7 mantissa bits, so an update below half an ulp of the weight
+rounds to zero under nearest-even — at a 1e-4 learning rate that is the whole
+update regime. `oracle/frontier/optim8bit.py` now applies the fp32 update to the
+bf16 grid with **unbiased stochastic rounding** by default. Two variants are
+registered beside it: `nearest` (the pre-S42 behaviour, kept as a control) and
+`compensated` (nearest plus a bf16 residual carry, one bf16 element per trainable
+element). The update is computed in bounded chunks, so the transient working set
+is tens of MB rather than a second copy of the model.
+
+**Why.** The published finding is that the *rounding scheme* decides whether a
+low-precision update trains (`docs/S42-LITERATURE.md` §1). The local evidence is
+that the two are not equivalent at this learning rate: the S42 tests show a
+0.49-ulp update changing about half of the elements under stochastic rounding and
+exactly none under nearest-even, and 1000 steps of 0.1-ulp updates moving the
+weight by nothing under nearest-even while the compensation buffer tracks the
+exact total inside about one ulp.
+
+**Evidence, not assertion.** On measured steps the optimiser reports, element by
+-element and bitwise, the fraction left unchanged after the applied update,
+the fraction the same exact fp32 result would have left unchanged under
+nearest-even, the sub-half-ulp fraction and the mean absolute rounding error.
+`train.py` measures at the first step, the first full-LR step and the final
+(minimum-LR) step, logs each, and summarises peak-LR and minimum-LR into the run
+receipt. The smoke receipt is the first receipt from a real arm. **If the
+measured unchanged fraction is large beside a large sub-half-ulp fraction, the
+reading is that the update is below the grid; the round-to-nearest column is
+there so the fix can be shown to be working rather than assumed.**
+
+**Why stochastic rounding is the default rather than the buffer.** SR is
+unbiased, adds no state and fixes exactly the measured regime; the compensation
+buffer is the published error-feedback idea but it costs a bf16 element per
+trainable element, which the registration must weigh against the headroom (the
+bytes are reported by the optimiser, not computed here). **Depends.** the
+registered full-arm arithmetic and the 12.5 GiB limit. **Next route.** if the
+smoke shows the compensation buffer is needed, its measured bytes and its
+unchanged-fraction comparison are the evidence, and the launch amendment names
+the variant. **Effort.** S. **Tier.** CANDIDATE. **Status at S42.** implemented,
+tests passing, smoke pending at the time of writing.
+
+### P19.8 — Objective question: CE+KL against advantage-weighted correction (registered 2026-11-17, S42)
+
+**What.** At equal tokens and equal active parameters, compare the objective every
+arm uses, `CE + w*T^2*KL(teacher_T || student_T)`, against the corrective
+objective of P19.2b: advantage-weighted KL plus a base-preservation penalty plus
+a gate-interference penalty. The two arms are `corrective-cekl-2m` and
+`corrective-2m` on the same stream, teacher, init and active union.
+
+**Why.** The representation graft's harm is evidence that the *supervision
+signal*, not only the injection, was wrong. The literature supports both halves
+separately — selective imitation where teacher supervision competes with what the
+student already does (`docs/S42-LITERATURE.md` §4), and error feedback for
+low-precision updates (§2) — but not this objective at this budget.
+
+**Decision rule, registered before scoring** (also in
+`docs/ws19-corrective-graft-preregistration-v1.json`):
+
+1. correction beats CE+KL on held-out CE beyond the combined standard error and
+does not lose KL → adopt correction, carry it to the 20M bar comparison;
+2. CE ties within the combined standard error and correction lowers the
+interference cost beyond its standard error → adopt correction with the
+preservation term, and record the CE tie;
+3. correction loses CE beyond the combined standard error → keep CE+KL, record the
+preservation weight as too strong at this budget, and the next route is a
+*registered* preservation-weight grid at 2M, not an unregistered retune;
+4. both lose to base on CE → the 2M screen is a null for both, and the next route
+is the 20M full-arm bar and then P19.4.
+
+The *interference cost* is the delta KL on held-out positions where the base's own
+advantage is in the lowest quartile: the place the base already predicts the
+teacher well. Minimising harm there is the point of the preservation term; it is
+reported separately from the mean delta so a gain elsewhere cannot hide it.
+
+**Depends.** P19.2b. **Acceptance evidence.** the two held-out comparisons with
+paired per-chunk deltas and standard errors, and the interference-cost split.
+**Win.** see the decision rule; the registered order of preference is correction,
+then CE+KL. **Next route.** the registered grid or P19.4, as above. **Effort.**
+M. **Tier.** CANDIDATE. **Status at S42.** registered; not run.
 
 ### Risks, each with its route (registered)
 

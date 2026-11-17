@@ -1,10 +1,10 @@
 {
   "schema": "selvedge/ws19-corrective-graft-preregistration/v1",
   "registering_session": "S42",
-  "registered_utc": "2026-11-17T04:58:00Z",
+  "registered_utc": "2026-11-17T04:52:00Z",
   "purpose": "Register the corrective graft (P19.2b) that replaces the representation graft's reconstruction objective, and the objective comparison that decides between advantage-weighted correction and plain CE+KL. The representation graft was measured to harm next-token CE on the 2M-token held-out slice: +0.57475 nats against base (quoted from results/stage2/s41-heldout-comparison.json, stamp 20261117T035128Z, revision 73f9574fc7ec23e8cc82a5a971a8423509e6d086). It supervised the wrong quantity: it reproduced the teacher's mapped hidden state at the injection site rather than the teacher's advantage over the student. Both registrations are made before either variant is scored.",
   "relation_to_existing_registrations": {
-    "p19_2": "docs/PROGRAM-PLAN.md §P19.2. This file adds P19.2b as a new variant beside the existing admission question; it does not renumber or edit P19.2, and it does not replace the row-scale question.",
+    "p19_2": "docs/PROGRAM-PLAN.md \u00a7P19.2. This file adds P19.2b as a new variant beside the existing admission question; it does not renumber or edit P19.2, and it does not replace the row-scale question.",
     "distillation_control": "docs/ws19-distillation-control-preregistration-v1.json and its amendment. The adapter arm here is the same registered parameter-matched control.",
     "full_bar": "docs/ws19-full-distillation-preregistration-v1.json. The 20M full-backbone arm remains the bar. Nothing in this file is a verdict about the bar, and no verdict is drawn from 2M numbers alone.",
     "existing_representation_arms": "results/stage2/s41-heldout-comparison.json already scores base, adapter-2m, memory-2m (trained representation graft), memory-ungrafted (step 0) and memory-grafted (step-0 teacher graft, no training). Those scores are quoted, not re-registered."
@@ -53,7 +53,10 @@
   "optimizer": {
     "name": "AdamW",
     "learning_rate": 0.001,
-    "betas": [0.9, 0.95],
+    "betas": [
+      0.9,
+      0.95
+    ],
     "weight_decay": 0.0,
     "gradient_clip": 1.0,
     "warmup_steps": 50,
@@ -140,7 +143,12 @@
     "anchored_harness": {
       "instrument": "docs/anchor-preregistration-v1.json",
       "driver": "scripts/s40_score.py",
-      "tasks": ["mmlu_pro", "mmlu", "gsm8k", "minerva_math500"],
+      "tasks": [
+        "mmlu_pro",
+        "mmlu",
+        "gsm8k",
+        "minerva_math500"
+      ],
       "same_as": "the registered S36 anchor and the S41 anchored-subset pass",
       "verdict_policy": "no verdict on the mechanism is drawn from the 2M arms against the 20M full bar; the 2M comparison is a mechanism screen against base and against the representation graft at equal tokens"
     }
@@ -171,5 +179,6 @@
     "results/stage2/runs/memory-2m/manifest.json",
     "results/stage2/runs/adapter-2m/manifest.json"
   ],
-  "scoring_receipts": []
+  "scoring_receipts": [],
+  "registration_timestamp_note": "Corrected before any score, from 04:58:00Z (declared while writing, later than the file's first commit at 04:55:59Z) to 04:52:00Z, which is inside the actual writing window and before the commit. The prereg_provenance court rejects a declaration later than its own commit; no arm had been scored when the correction was made."
 }

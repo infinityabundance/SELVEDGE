@@ -1088,3 +1088,52 @@ subsampled tasks, whose standard errors are printed beside them. And not a
 significance test — the family means inherit the sampling error of both members,
 and no confidence interval is claimed on the gap beyond the per-task standard
 errors that the harness itself reports.
+
+## M9 — the update was below the grid, and the graft was supervised on the wrong quantity (S42)
+
+This section records what S42 established before its GPU runs finished; the
+measured scores and the run state are appended below it as `M9.1`, from their
+receipts.
+
+**The bar arm's weight update was numerically inert.** The full-backbone arm
+holds bf16 weights with no fp32 master copy. bf16 stores 7 mantissa bits, so at
+the registered 1e-4 learning rate an update is below half an ulp of the weight
+and nearest-even rounds every step to zero. `Adam8bit` now applies the exact fp32
+update to the bf16 grid with unbiased stochastic rounding by default, in bounded
+chunks so the transient stays tens of MB. Two variants are registered beside it:
+`nearest` (the old behaviour, as a control) and `compensated` (nearest plus a bf16
+residual carry, one bf16 element per trainable element, bytes reported by the
+optimiser). The registered synthetic tests show a 0.49-ulp update changing about
+half of the elements under stochastic rounding and exactly none under
+nearest-even, and 1000 steps of 0.1-ulp updates moving the nearest-even weight by
+nothing while the compensation buffer tracks the exact total inside about one
+ulp. On real steps the optimiser reports the bitwise unchanged fraction, the
+round-to-nearest fraction and the sub-half-ulp fraction, so "the fix is working"
+is a measurement in the run receipt rather than a claim in this document.
+
+**The representation graft was supervised on reconstruction, and the measurement
+says so.** On the 2M-token held-out slice the step-0 teacher graft costs +0.57475
+nats of CE against base, while the ungrafted step-0 module is bit-identical to
+base (quoted from `results/stage2/s41-heldout-comparison.json`, stamp
+`20261117T035128Z`, revision `73f9574fc7ec23e8cc82a5a971a8423509e6d086`). P19.2b
+replaces it with a corrective graft: a correction gate initialised to exactly
+zero so an untrained graft reproduces the base bit for bit, supervision from the
+teacher's advantage over the base rather than from mapped teacher states, and a
+preservation weight that penalises a KL increase where the base already predicts
+the teacher well. The gate's gradient ordering (non-zero at zero, rows learn
+after it opens) is tested rather than assumed, as are the bit-exact parity and
+the interference ordering.
+
+**What is registered, not proven.** `docs/ws19-corrective-graft-preregistration-v1.json`
+registers P19.2b's four arms (grafted-corrective, grafted-representation,
+adapter, gate-zero control) at 2M tokens with the same teacher, stream and
+active union (537,601 against 537,600: +1 gate scalar per site), and P19.8's
+objective comparison (CE+KL against advantage-weighted correction) with a
+four-branch decision rule and a next route per branch. Neither has been trained
+for a score.
+
+**What this does not establish.** Not that the corrective graft beats the
+representation graft; not that stochastic rounding beats the compensation buffer
+at this budget; not that the corrective objective beats CE+KL; and nothing about
+the 20M-token bar, which is a separate registered run. The literature verdicts
+and their limits are in `docs/S42-LITERATURE.md`.
