@@ -4627,3 +4627,96 @@ recorded here rather than hidden.
 correctness suites; `python` ran the summary self-test and every regeneration.
 The four S43/S46/S47 failing test logs from the first attempt are kept in
 `results/courts/logs/` with their fixes.
+
+## 2026-11-17 — S48: the bar exits, is verified, is scored, and had diverged
+
+The 20M full-distillation bar finished at 11:10Z. This entry records what the
+receipt says, what the verification found, what the anchored score is, and the
+defect the score exposed. The 2M screen that follows is a separate entry.
+
+### Verification before the score
+
+`scripts/s48_bar_check.py` re-derives every claim a reader can check without
+trusting the process that wrote the receipt
+(`results/stage2/s48-bar-verify-20261117T111105Z.json`, 25 checks, all pass):
+
+- the config body hashes to the recorded `config_sha256` `9293b78e...` under the
+  same canonicalisation `train.py` uses (the digest is excluded from its own
+  body, which the first version of the checker got wrong and the run caught);
+- the final checkpoint `ckpt-009765.pt` has SHA-256 `b888f311...`, matching the
+  receipt; `latest.pt` is byte-different but carries the same payload digest,
+  because torch's zip container names its root after the file — the checker now
+  compares payloads, not bytes;
+- the payload's own `step` (9,765), `tokens_seen` (19,998,720), config hash and
+  stream hash agree with the receipt and the manifest;
+- 9,765 steps x 2,048 tokens = 19,998,720 tokens of the 20,000,000 budget, which
+  is the registered "never above" arithmetic;
+- the stream tensor's SHA-256 `9c5fb53b...` matches the manifest, the config and
+  the launch receipt;
+- the objective is `ce_kl`, the run is `full`, the schedule is cosine, the
+  optimiser is `adam8bit`.
+
+### The score
+
+The anchored receipt is
+`results/stage2/eval/full-20m-math/eval.json` (stamp `20261117T120059Z`), scored
+by `scripts/s43_score_total_cap.py` at the full amended basis
+(`mmlu=14042` enforced by exact per-leaf indices), with the anchor instrument's
+default SDPA attention recorded in the arm report. MMLU 22.95 ± 0.35, MMLU-Pro
+0.00, GSM8K 0.00, MATH-500 2.40 ± 0.69; family means knowledge 11.47 ± 0.18,
+math 1.20 ± 0.34. Against base (37.47/31.98) that is -26.00 and -30.78 points,
+and against the registered targets (42.01/39.27) it closes -572.6% and -422.5% of
+the respective gaps. **The bar closes no part of the math gap; it is a
+collapse.**
+
+The generation is degenerate, not merely wrong: MMLU-Pro continuations are
+`, the the the the ...`, and the S45 extractor finds no final answer in any of
+the 500 MATH-500 completions while the harness's `math_verify` still accepts 12
+of them (2.40%). That disagreement is reported rather than resolved: the two
+instruments measure different things and neither is the other's tiebreaker.
+
+### The defect the score exposed, which the training log already knew
+
+The log's own CE trajectory says the run left the base during the warmup. Median
+CE over the first 50 steps is 2.7678 nats (the initialised model, consistent with
+the frozen base); median CE over the last 50 is 6.1120, a factor of 2.21. The
+nine-step running median first exceeds twice the initial value at step 88, and
+individual steps reach 8-20 nats after the warmup completes at step 200. The
+checkpoint was scored exactly as delivered, at the registered recipe (lr 1e-4,
+200-step warmup, cosine to 10%, clip 1.0, Adam8bit with stochastic rounding,
+bf16 weights). No recipe was changed after the fact and the registered
+win-bar text is untouched.
+
+What this means for the program, stated plainly: the comparison arm that every
+stage-2 win condition names is a diverged run, so those conditions currently
+compare against a collapse. That does not make the mechanism results better or
+worse; it makes "beats the bar" uninformative until a bar exists. The next route
+is a registered amendment with a full-backbone learning rate the arm survives
+and an early-loss tripwire that stops the run instead of spending three hours on
+a diverged model — not a reinterpretation of this score and not a silent rerun
+with a different recipe.
+
+### The matched-control wiring, and the dead control it caught
+
+`train.py` now wires `adapter-matched` and `gated-dense` through
+`matched_controls.build_control`, records the control role and the equal active
+union in the config, and logs the gate tensor for any arm that has one. The CPU
+test (`oracle/tests/test_s47_train_controls.py`) drives both arms end to end.
+
+The test failed on its first run, correctly. `IdentityGatedDenseResidual` had a
+zero gate **and** a zero dense up-projection, so `d(delta)/d(alpha) = read = 0`
+and `d(delta)/d(read) = alpha = 0`: the module could never leave the identity,
+would have trained nothing, and would have been reported as a measured control
+showing that the gate is not the mechanism. `DenseAdapter` gained an explicit
+`zero_init` flag (default unchanged, so no existing arm moves) and the gated
+control now builds a non-zero read; the residual is still exactly zero because
+the gate is zero. Both properties are pinned by tests, and the full oracle suite
+passes: 670 tests.
+
+### Cost and contention
+
+The bar ran alone; the verification and all CPU tests ran at 4-8 GiB on an idle
+GPU, and the anchored score held the GPU for its 2,972 s of task time (MMLU-Pro
+1,568 s, MMLU 619 s, GSM8K 566 s, MATH-500 219 s) in a 6 GiB container, 1.83x the
+3.27 GiB cgroup peak measured for the same harness and model. No second GPU job
+ran while it held the device.

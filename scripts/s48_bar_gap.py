@@ -142,6 +142,52 @@ def paired(arm: str, reference: str, task: str) -> dict | None:
     return table.bootstrap_delta_paired(values_a, values_b)
 
 
+def divergence(run_dir: str) -> dict | None:
+    """The training log's own CE trajectory, for a bar that did not converge.
+
+    A collapsed checkpoint is a score, but a reader needs to know whether the
+    collapse is in training or in the scoring path. The log settles it: the
+    first fifty steps' median CE is the initialised model, the last fifty is the
+    delivered model, and the first step whose running median exceeds twice the
+    initial median is where the run left the base.
+    """
+    path = os.path.join(REPO, run_dir, "log.jsonl")
+    if not os.path.exists(path):
+        return None
+    ces, steps = [], []
+    with open(path, encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            ces.append(float(row["ce"]))
+            steps.append(int(row["step"]))
+    if len(ces) < 100:
+        return None
+    initial = statistics.median(ces[:50])
+    final = statistics.median(ces[-50:])
+    crossed = None
+    window = []
+    for index, value in enumerate(ces):
+        window.append(value)
+        if len(window) > 9:
+            window.pop(0)
+        if len(window) == 9 and statistics.median(window) > 2 * initial:
+            crossed = steps[index]
+            break
+    return {
+        "log": os.path.join(run_dir, "log.jsonl"),
+        "steps": len(ces),
+        "initial_median_ce": initial,
+        "final_median_ce": final,
+        "ratio": final / initial if initial else None,
+        "first_step_above_twice_initial": crossed,
+        "reading": "a final median CE above the initial one is a diverged run, "
+                   "not a converged one; the checkpoint is scored as delivered",
+    }
+
+
 def gap_block(bar: dict, base: dict, targets: dict) -> dict:
     result = {"tasks": {}, "families": {}}
     for task in TASKS:
@@ -228,6 +274,7 @@ def assemble() -> dict:
         "targets": targets,
         "verification": (read_json(verify_path) if verify_path else None),
         "result": gap_block(bar, base, targets),
+        "divergence": divergence("results/stage2/runs/full-20m-math"),
         "pairing_method": {
             "unit": "item, paired by (leaf, doc_id) with the doc-hash sequences "
                     "required to match",
@@ -281,8 +328,8 @@ def render(receipt: dict) -> str:
         items = ((bar["tasks"][task].get("n_samples") or {}).get("sample_len"))
         lines.append(
             f"| `{task}` | {items if items is not None else 'n/a'} | "
-            f"{_pct(row['bar'])} ± {_pct(row['bar_stderr'], plain=True)} | "
-            f"{_pct(row['base'])} ± {_pct(row['base_stderr'], plain=True)} | "
+            f"{_pct(row['bar'], plain=True)} ± {_pct(row['bar_stderr'], plain=True)} | "
+            f"{_pct(row['base'], plain=True)} ± {_pct(row['base_stderr'], plain=True)} | "
             f"{_pct(row['delta'])} | {_ci(row['paired'])} |")
     lines += [
         "",
@@ -294,9 +341,9 @@ def render(receipt: dict) -> str:
         entry = families[family]
         lines.append(
             f"| {family} | {', '.join('`' + m + '`' for m in members)} | "
-            f"{_pct(entry['base']['mean'])} ± {_pct(entry['base']['stderr'], plain=True)} | "
-            f"**{_pct(entry['bar']['mean'])}** ± {_pct(entry['bar']['stderr'], plain=True)} | "
-            f"{_pct(entry['delta_vs_base'])} | {_pct(entry['target'])} | "
+            f"{_pct(entry['base']['mean'], plain=True)} ± {_pct(entry['base']['stderr'], plain=True)} | "
+            f"**{_pct(entry['bar']['mean'], plain=True)}** ± {_pct(entry['bar']['stderr'], plain=True)} | "
+            f"{_pct(entry['delta_vs_base'])} | {_pct(entry['target'], plain=True)} | "
             f"{_pct(entry['delta_vs_target'])} | "
             f"{'n/a' if entry['gap_closed_fraction'] is None else format(100 * entry['gap_closed_fraction'], '+.1f') + '%'} |")
     lines += [
@@ -326,6 +373,25 @@ def render(receipt: dict) -> str:
         "gap-closure fraction is computed on the point estimates and carries the "
         "same interval as the delta it divides; it is not separately tested.",
     ]
+    drift = receipt.get("divergence")
+    if drift:
+        lines += [
+            "",
+            "**The bar diverged in training, and the log says so.** Median CE over "
+            f"the first 50 steps is {drift['initial_median_ce']:.4f} nats (the "
+            "initialised model); median CE over the last 50 is "
+            f"{drift['final_median_ce']:.4f}, a factor of "
+            f"{drift['ratio']:.2f}. The nine-step running median first exceeds "
+            f"twice the initial value at step "
+            f"{drift['first_step_above_twice_initial']}. The delivered checkpoint "
+            "is scored exactly as delivered, at the registered recipe (lr 1e-4, "
+            "200-step warmup, cosine to 10%, clip 1.0, Adam8bit with stochastic "
+            "rounding); no recipe was changed after the fact. A collapsed bar is "
+            "not a ceiling for the mechanisms, and the next route is a registered "
+            "amendment with a full-backbone learning rate the arm can survive and "
+            "an early-loss tripwire, not a re-interpretation of this score.",
+        ]
+    return "\n".join(lines).rstrip()
     verification = receipt.get("verification")
     if verification:
         lines += [

@@ -1163,9 +1163,11 @@ cancels the item-level sampling error the family SE keeps.
 **Ranking.** `base` and `memory-ungrafted` are the same model to the last bit
 and score identically on all four tasks, which is the harness-level confirmation
 of the gate's zero initialisation. Every trained arm ranks below both of them on
-math. `adapter-2m` leads the trained arms on knowledge, and it does so by
-trading one member of that family for the other: the MMLU gain and the
-MMLU-Pro loss are both real at the item level.
+math, and the 20M full-backbone bar now has a row — the lowest of them, because
+it diverged in training (§S48); a collapsed bar is not a ceiling and the ranking
+above base and the adapters is unchanged by it. `adapter-2m` leads the trained
+arms on knowledge, and it does so by trading one member of that family for the
+other: the MMLU gain and the MMLU-Pro loss are both real at the item level.
 
 
 <!-- BEGIN GENERATED: report-s44-arm-table -->
@@ -1177,8 +1179,7 @@ MMLU-Pro loss are both real at the item level.
 | `memory-2m` (2M CE+KL) | 1,998,848 | 537,600 | 17,312,768 | 48.47 ± 0.41 | 22.22 ± 1.85 | 29.42 ± 1.26 | 18.80 ± 1.75 | **35.35** ± 0.95 | **24.11** ± 1.08 | 2.8296 | 0.2727 |
 | `adapter-2m` (2M CE+KL) | 1,998,848 | 537,600 | 537,600 | 51.01 ± 0.41 | 23.81 ± 1.90 | 36.09 ± 1.32 | 21.00 ± 1.82 | **37.41** ± 0.97 | **28.54** ± 1.13 | 2.8093 | 0.2673 |
 | `adapter-20m` (20M CE+KL) | 19,998,720 | 537,600 | 537,600 | 48.70 ± 0.41 | 23.81 ± 1.88 | 35.78 ± 1.32 | 19.80 ± 1.78 | **36.26** ± 0.96 | **27.79** ± 1.11 | 2.8189 | 0.2677 |
-
-`full-20m-math` has no anchored receipt yet; the row is absent rather than estimated. Total-cap basis: MMLU is all 14,042 items, MMLU-Pro 504, GSM8K 1,319, MATH-500 500 (amendment v2). Cells are `score ± the harness's standard error`; the family column is the unweighted member mean and its independent combined SE. Held-out CE/KL are the 3,906-chunk means from `results/stage2/s41-heldout-comparison.json`.
+| `full-20m-math` (20M, backbone, math stream) | 19,998,720 | 0 | 0 | 22.95 ± 0.35 | 0.00 ± 0.00 | 0.00 ± 0.00 | 2.40 ± 0.69 | **11.47** ± 0.18 | **1.20** ± 0.34 | — | — |
 <!-- END GENERATED: report-s44-arm-table -->
 
 The comparisons are paired by `(subject, doc_id)`, require the doc-hash sequence
@@ -1196,16 +1197,20 @@ generated boxed answer — and it is present in the harder multiple-choice membe
 as well. That is the signature a residual would leave if it were right about the
 teacher's local distribution and wrong about the token that decides an answer;
 it is also what the S40 reconstruction graft's measured hidden-state
-perturbation predicted. The full-backbone arm has the same shape, so the
-direction is not specific to the memory residual.
+perturbation predicted. Whether the full backbone shows the same shape is **not
+measured**: the only full-backbone arm scored here diverged in training (§S48),
+so its zeros say nothing about where a healthy fine-tune loses. The direction is
+established for the memory residual and the frozen-backbone adapters, not for the
+full-backbone recipe.
 
 **What this does not establish.** Not that a mechanism cannot win: no arm here
 carries the token-conditioned gate, the signed advantage or the preservation
 penalty, and the corrective arms are registered but untrained. Not a bar
-verdict: `full-20m-math` has no anchored receipt yet, and its row is absent
-rather than estimated. And not that the 20M-versus-2M gap is a pure budget
-effect: the two adapter arms differ in nothing else, which makes their gap the
-cleanest budget measurement available here, but it is still one seed per arm.
+verdict from this table: the bar now has a row, and that row is a diverged run
+(§S48), so it ranks last rather than defining a ceiling. And not that the
+20M-versus-2M gap is a pure budget effect: the two adapter arms differ in nothing
+else, which makes their gap the cleanest budget measurement available here, but
+it is still one seed per arm.
 
 
 <!-- BEGIN GENERATED: report-s44-answers -->
@@ -1239,6 +1244,10 @@ cleanest budget measurement available here, but it is still one seed per arm.
 - `adapter-20m` vs `base` on `mmlu_pro`: -2.98 points, 95% CI [-6.55, +0.79], items 35 vs 50 discordant, McNemar p 0.129 — CI includes zero.
 - `adapter-20m` vs `base` on `gsm8k`: -3.18 points, 95% CI [-5.53, -0.91], items 97 vs 139 discordant, McNemar p 0.00761 — CI excludes zero.
 - `adapter-20m` vs `base` on `minerva_math500`: -5.20 points, 95% CI [-8.60, -2.20], items 21 vs 47 discordant, McNemar p 0.00243 — CI excludes zero.
+- `full-20m-math` vs `base` on `mmlu`: -25.21 points, 95% CI [-26.26, -24.13], items 1699 vs 5239 discordant, McNemar p 0 — CI excludes zero.
+- `full-20m-math` vs `base` on `mmlu_pro`: -26.79 points, 95% CI [-30.75, -23.02], items 0 vs 135 discordant, McNemar p 9.01e-31 — CI excludes zero.
+- `full-20m-math` vs `base` on `gsm8k`: -38.97 points, 95% CI [-41.62, -36.39], items 0 vs 514 discordant, McNemar p 2.33e-113 — CI excludes zero.
+- `full-20m-math` vs `base` on `minerva_math500`: -22.60 points, 95% CI [-26.60, -18.60], items 6 vs 119 discordant, McNemar p 1.28e-23 — CI excludes zero.
 
 **Paired per-item comparisons against `adapter-2m`** (paired bootstrap by item, seed 44, 4000 resamples):
 
@@ -1262,6 +1271,10 @@ cleanest budget measurement available here, but it is still one seed per arm.
 - `adapter-20m` vs `adapter-2m` on `mmlu_pro`: +0.00 points, 95% CI [-3.38, +3.37], items 39 vs 39 discordant, McNemar p 1 — CI includes zero.
 - `adapter-20m` vs `adapter-2m` on `gsm8k`: -0.30 points, 95% CI [-2.65, +1.90], items 112 vs 116 discordant, McNemar p 0.843 — CI includes zero.
 - `adapter-20m` vs `adapter-2m` on `minerva_math500`: -1.20 points, 95% CI [-4.40, +2.00], items 30 vs 36 discordant, McNemar p 0.538 — CI includes zero.
+- `full-20m-math` vs `adapter-2m` on `mmlu`: -28.07 points, 95% CI [-29.13, -27.00], items 1637 vs 5578 discordant, McNemar p 0 — CI excludes zero.
+- `full-20m-math` vs `adapter-2m` on `mmlu_pro`: -23.81 points, 95% CI [-27.58, -20.24], items 0 vs 120 discordant, McNemar p 1.73e-27 — CI excludes zero.
+- `full-20m-math` vs `adapter-2m` on `gsm8k`: -36.09 points, 95% CI [-38.67, -33.51], items 0 vs 476 discordant, McNemar p 4.31e-105 — CI excludes zero.
+- `full-20m-math` vs `adapter-2m` on `minerva_math500`: -18.60 points, 95% CI [-22.40, -14.80], items 8 vs 101 discordant, McNemar p 1.23e-18 — CI excludes zero.
 <!-- END GENERATED: report-s44-answers -->
 
 ### Corrective arms: registered and launch-ready, not trained (S44)
@@ -1502,4 +1515,25 @@ anchor attention kernel. `scripts/s48_bar_gap.py` renders the score, the paired
 per-item deltas against base, and the gap closure against the registered targets.
 
 <!-- BEGIN GENERATED: report-s48-bar-gap -->
+### The bar's anchored score
+
+Receipt `results/stage2/eval/full-20m-math/eval.json` (stamp `20261117T120059Z`), scored with the corrected total-cap driver at the full amended basis and the anchor attention kernel. Cells are `score ± the harness's standard error`.
+
+| task | items | bar | base | Δ (pp) | paired per-item 95% CI (pp) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `mmlu` | 14042 | 22.95 ± 0.35 | 48.16 ± 0.41 | -25.21 | -25.21 [-26.26, -24.13] |
+| `mmlu_pro` | 504 | 0.00 ± 0.00 | 26.79 ± 1.96 | -26.79 | -26.79 [-30.75, -23.02] |
+| `gsm8k` | 1319 | 0.00 ± 0.00 | 38.97 ± 1.34 | -38.97 | -38.97 [-41.62, -36.39] |
+| `minerva_math500` | 500 | 2.40 ± 0.69 | 25.00 ± 1.94 | -22.60 | -22.60 [-26.60, -18.60] |
+
+| family | members | base | bar | Δ vs base (pp) | registered target | Δ vs target (pp) | base-to-target gap closed |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| knowledge | `mmlu`, `mmlu_pro` | 37.47 ± 1.00 | **11.47** ± 0.18 | -26.00 | 42.01 | -30.54 | -572.6% |
+| math | `gsm8k`, `minerva_math500` | 31.98 ± 1.18 | **1.20** ± 0.34 | -30.78 | 39.27 | -38.07 | -422.5% |
+
+**Does the bar close part of the math gap?** The base-to-target math gap is 7.29 points (+31.98 to +39.27). The bar scores +1.20 ± 0.34, which is -30.78 against base (-25.07 combined standard errors) and closes -422.5% of the gap. The knowledge family moves -26.00 against base and closes -572.6% of its gap. A closure fraction is reported only because it is the arithmetic the registration asks for; the interval on the delta is what decides whether any part of it is real.
+
+The paired per-item intervals are narrower than the family delta's combined standard error because pairing cancels item-sampling error. The gap-closure fraction is computed on the point estimates and carries the same interval as the delta it divides; it is not separately tested.
+
+**The bar diverged in training, and the log says so.** Median CE over the first 50 steps is 2.7678 nats (the initialised model); median CE over the last 50 is 6.1120, a factor of 2.21. The nine-step running median first exceeds twice the initial value at step 88. The delivered checkpoint is scored exactly as delivered, at the registered recipe (lr 1e-4, 200-step warmup, cosine to 10%, clip 1.0, Adam8bit with stochastic rounding); no recipe was changed after the fact. A collapsed bar is not a ceiling for the mechanisms, and the next route is a registered amendment with a full-backbone learning rate the arm can survive and an early-loss tripwire, not a re-interpretation of this score.
 <!-- END GENERATED: report-s48-bar-gap -->
