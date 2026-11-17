@@ -36,7 +36,7 @@ while (($#)); do
     --eval-root) eval_root="${2-}"; shift 2 ;;
     --eval-root=*) eval_root="${1#*=}"; shift ;;
     --dry-run) dry_run=1; shift ;;
-    -h | --help) sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) printf 's50-milestones: unknown argument %s\n' "$1" >&2; exit 64 ;;
   esac
 done

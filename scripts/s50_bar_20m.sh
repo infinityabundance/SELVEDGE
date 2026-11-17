@@ -43,7 +43,7 @@ while (($#)); do
     --kl-receipt=*) kl_receipt="${1#*=}"; shift ;;
     --detach) detach=1; shift ;;
     --dry-run) dry_run=1; shift ;;
-    -h | --help) sed -n '2,24p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) printf 's50-bar: unknown argument %s\n' "$1" >&2; exit 64 ;;
   esac
 done
