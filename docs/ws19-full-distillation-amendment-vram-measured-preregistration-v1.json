@@ -1,0 +1,136 @@
+{
+  "schema": "selvedge/ws19-full-distillation-amendment/v1",
+  "registering_session": "S43",
+  "registered_utc": "2026-11-17T08:02:00Z",
+  "amends": {
+    "path": "docs/ws19-full-distillation-preregistration-v1.json",
+    "sha256": "167f5d5c82f8a7a6217ce6b242f62dc84b53384a4aa2787d7def63885410ad0c",
+    "stream_amendment": {
+      "path": "docs/ws19-full-distillation-amendment-math-stream-preregistration-v1.json",
+      "sha256": "b507f897d498be422c92d5dcf8480ad48eaa903e60e1a0caaaf7c7bfcfd8a31c"
+    },
+    "rule": "the pre-registration and the stream amendment are not edited. This amendment replaces the modelled activation term and the projected peak with the smoke measurement, states the memory limit derived from the measured CPU peak, and records the launch."
+  },
+  "smoke": {
+    "purpose": "measure the full arm's VRAM peak and CPU-side peak on the math-weighted stream before the 20M-token launch, and measure the bitwise weight-update outcome at peak and minimum LR",
+    "command": "SELVEDGE_MEM=<bound> SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g scripts/court --gpu oracle -- python3 oracle/frontier/train.py --arm full --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json --tokens 40960 --seq-len 512 --micro-batch 1 --grad-accum 4 --lr 0.0001 --temperature 2.0 --kl-weight 0.5 --optimizer adam8bit --optim-block 256 --optim-numerics stochastic --schedule cosine --min-lr-ratio 0.1 --warmup 5 --grad-clip 1.0 --seed 0 --ckpt-every 20 --keep-checkpoints 2 --log-every 1 --run-dir <run> --vram-limit-gib 12.5",
+    "steps": 20,
+    "tokens": 40960,
+    "attempts": [
+      {
+        "run_dir": "results/stage2/runs/full-smoke-math",
+        "container_memory_bytes": 8589934592,
+        "court_receipt": "results/courts/oracle-20261117T075917Z-fd1d2c.json",
+        "gpu_peak_allocated_gib": 11.42885684967041,
+        "cgroup_memory_peak_bytes": 8589934592,
+        "cgroup_memory_events": {"max": 3794, "oom": 0, "oom_kill": 0},
+        "reading": "the GPU peak is the measurement, but the 8 GiB container bound was hit 3,794 times (reclaim, not an OOM kill), so the CPU-side peak is not measurable from this run; a launch must not inherit 8 GiB"
+      },
+      {
+        "run_dir": "results/stage2/runs/full-smoke-math-mem12",
+        "container_memory_bytes": 12884901888,
+        "court_receipt": "results/courts/oracle-20261117T080011Z-110c4e.json",
+        "gpu_peak_allocated_gib": 11.42885684967041,
+        "gpu_peak_reserved_gib": 11.671875,
+        "cgroup_memory_peak_bytes": 6924623872,
+        "cgroup_memory_peak_gib": 6.449,
+        "cgroup_memory_events": {"max": 0, "oom": 0, "oom_kill": 0},
+        "tokens_per_second_loop": 1518.7,
+        "tokens_per_second_steady": "1,844-1,853 measured on steps 2-19",
+        "confirmed": "the true CPU-side peak is 6.449 GiB; the 8 GiB attempt was reclaiming page cache, not approaching an anonymous-memory OOM"
+      }
+    ],
+    "gpu_fit": {
+      "measured_peak_allocated_gib": 11.42885684967041,
+      "measured_peak_reserved_gib": 11.671875,
+      "registered_vram_limit_gib": 12.5,
+      "headroom_allocated_gib": 1.0711,
+      "headroom_reserved_gib": 0.8281,
+      "verdict": "FIT: the measured peak is below 12.5 GiB; no change to micro-batch, gradient accumulation or sequence length is required"
+    },
+    "activation_term": {
+      "previous_model": "MODELLED 0.264-0.527 GiB (saved linear inputs, lower; doubled intermediates, upper)",
+      "resident_and_training_gib": 6.7768,
+      "measured_non_weight_envelope_gib": 4.6521,
+      "reference_non_weight_envelope_gib": 4.0294,
+      "measured_activation_term_gib": 0.6227,
+      "arithmetic": "11.4289 - (student 1.4015 + teacher 3.5052 + gradients 0.9278 + optimizer 0.9423) - reference envelope 4.0294 = 0.6227 GiB",
+      "status": "MEASURED; replaces the modelled term. It is 0.096 GiB above the modelled upper bound, so the projection was low but the limit absorbed it."
+    },
+    "cpu_memory_sizing": {
+      "measured_peak_bytes": 6924623872,
+      "measured_peak_gib": 6.449,
+      "launch_limit_gib": 10.0,
+      "launch_limit_bytes": 10737418240,
+      "factor": 1.55,
+      "headroom_gib": 3.551,
+      "rule": "size from the measured peak at a bound that was not reached (12 GiB), then add 1.5x headroom, never below +1 GiB; 10 GiB is 1.55x and +3.551 GiB",
+      "swap_limit": "equal to memory (the court forces MemorySwapMax=MemoryMax)",
+      "why_not_8g": "the 8 GiB attempt recorded memory.events.max = 3,794; a launch at 8 GiB would repeat that reclaim pressure, and the rule forbids rerunning an undersized limit"
+    },
+    "bitwise_update_outcome": {
+      "peak_lr": {
+        "step": 2,
+        "lr": 0.0001,
+        "unchanged_fraction_stochastic": 0.17259717097641136,
+        "unchanged_fraction_round_to_nearest": 0.16860680608468104,
+        "sub_half_ulp_fraction": 0.1685133273602885,
+        "reading": "at 1e-4, 82.74% of the 498,113,344 trainable elements changed under stochastic rounding against 83.14% under nearest-even; the difference is small at peak LR, as expected"
+      },
+      "minimum_lr": {
+        "step": 20,
+        "lr": 1.0683651114450641e-05,
+        "unchanged_fraction_stochastic": 0.8299025793615358,
+        "unchanged_fraction_round_to_nearest": 0.8863062700845854,
+        "sub_half_ulp_fraction": 0.8862452116922208,
+        "reading": "at the cosine floor, nearest-even would leave 88.63% of elements unchanged and stochastic rounding leaves 82.99%, i.e. it moves 17.01% of the model where nearest-even would move 11.37%; the sub-half-ulp fraction is 88.62%, so the low-LR update is mostly below the grid and SR is doing the work it was registered for"
+      }
+    },
+    "loss_observation": {
+      "what": "CE rose from 0.6017 at step 1 to a maximum 17.3522 at step 6, then settled around 9-13 over steps 10-20",
+      "why_it_is_not_a_convergence_claim": "the smoke truncates warmup to 2 steps (`warmup = min(5, steps // 10)`), so full LR is reached at step 2; the registered 20M run warms up over 200 steps. The 8-bit Adam moments also start at zero. A 20-step loss curve is not a convergence measurement and no reduction is derived from it.",
+      "what_is_recorded": "the numbers above are in the log at results/stage2/runs/full-smoke-math-mem12/log.jsonl; the 20M run's first 1,000-step log is the evidence that will say whether the warmup removes the spike"
+    }
+  },
+  "eta": {
+    "tokens": 20000000,
+    "measured_tokens_per_second_steady": 1850,
+    "eta_seconds_at_steady_rate": 10811,
+    "eta_hours_at_steady_rate": 3.0,
+    "eta_seconds_at_smoke_average": 13169,
+    "eta_hours_at_smoke_average": 3.66,
+    "reported_eta": "3.0-3.7 hours from launch, before checkpoint-write overhead; 10 checkpoint writes of about 2 GiB each are included in the smoke's step 20 timing",
+    "caveat": "the smoke is 20 steps; the steady rate is the best estimate and the first 1,000-step log will refine it"
+  },
+  "launch": {
+    "run_dir": "results/stage2/runs/full-20m-math",
+    "stream_manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "stream_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "container_memory": "SELVEDGE_MEM=10g",
+    "container_cpus": 8,
+    "container_pids": 1024,
+    "container_tmp": "2g",
+    "vram_limit_gib": 12.5,
+    "steps": 9765,
+    "realised_tokens": 19998720,
+    "resumable": "the launcher adds --resume latest when latest.pt exists; train.py verifies the config and stream hashes before loading",
+    "checkpoints": "every 1,000 steps, two newest plus latest",
+    "unit": "selvedge-fulldistill-math-<launch stamp> under systemd-run --user --collect",
+    "command": "SELVEDGE_MEM=10g scripts/s43_fulldistill_math.sh (wrapped by systemd-run --user --collect --unit=selvedge-fulldistill-math-<stamp> --setenv=SELVEDGE_MEM=10g --property=MemoryMax=10G --property=MemorySwapMax=10G --property=TasksMax=1024 --property=CPUQuota=800%)",
+    "unchanged_from_registration": "student, teacher, full text-tower adaptation with the tied embedding frozen, Adam8bit block 256, lr 1e-4, cosine to 10%, warmup 200, clip 1.0, seed 0, objective CE + 0.5*T^2*KL, 20,000,000 tokens, micro-batch 1, grad-accum 4, sequence 512"
+  },
+  "what_this_amendment_does_not_establish": [
+    "that the 20M run converges or that the loss spike disappears: the first 1,000-step log is the evidence",
+    "that 10 GiB is the minimum safe CPU bound: it is 1.55x the measured peak at a bound that was not reached, with the smoke's checkpoint write included",
+    "that the measured 11.43 GiB GPU peak is the long-run peak: it is the peak after 20 steps; train.py fails closed if any later step exceeds 12.5 GiB",
+    "that stochastic rounding is sufficient for the whole schedule: the min-LR measurement covers the registered cosine floor, not every intermediate LR"
+  ],
+  "limits_derived_from": [
+    "results/stage2/runs/full-smoke-math-mem12/receipt.json",
+    "results/stage2/runs/full-smoke-math/receipt.json",
+    "results/courts/oracle-20261117T080011Z-110c4e.json",
+    "results/courts/oracle-20261117T075917Z-fd1d2c.json",
+    "results/stage2/s40-full-arithmetic-20261117T024151Z.json"
+  ],
+  "scoring_receipts": []
+}
