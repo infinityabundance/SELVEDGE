@@ -1,0 +1,61 @@
+{
+  "checkpoint": {
+    "path": "results/stage2/runs/memory-2m/latest.pt",
+    "run": "results/stage2/runs/memory-2m",
+    "sha256": "a22a2726a06e11f97bdb8e89b05d82ef98846aaf7fdd2334f060d05f2238d410",
+    "step": 976
+  },
+  "command": [
+    "scripts/s40_memory_checkpoint_compat.py",
+    "--run",
+    "results/stage2/runs/memory-2m",
+    "--init",
+    "results/stage2/graft/20261116T231451Z/memory-init.pt"
+  ],
+  "created_utc": "2026-11-17T02:38:57Z",
+  "evaluations_of_this_arm": [
+    "results/stage2/eval/probe-memory-graft/eval.json"
+  ],
+  "fixture": {
+    "conv_is_identity": false,
+    "conv_kernel": 4,
+    "conv_l1_distance_from_identity": 631.6355590820312,
+    "hidden": 1024,
+    "hidden_states": "standard normal; the memory output depends on them through the parameter-free gate",
+    "prefill": 32,
+    "seed": 20261117,
+    "tokens": 64
+  },
+  "kind": "memory-cached-decoding-compatibility",
+  "memory_init": {
+    "path": "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "sha256": "2f8ba344d0525908e055ef5d62ac01af0b22fcc953ec512efbedd607f282d31f"
+  },
+  "results": {
+    "cached_fixed_vs_full_fixed_max_abs": 5.960464477539063e-08,
+    "cached_legacy_positions_over_1e-4": 32,
+    "cached_legacy_positions_total": 32,
+    "cached_legacy_vs_full_fixed_max_abs": 0.41920924186706543,
+    "full_fixed_vs_full_legacy_max_abs": 0.0
+  },
+  "revision": "d6e41865cf77ace6f77b05c38ba10d0465200234",
+  "schema": "selvedge/stage2-memory-compat/v1",
+  "stamp": "20261117T023857Z",
+  "stream": {
+    "manifest": "results/stage2/stage2-stream-20261116T230328Z.json",
+    "manifest_sha256": "5d6d1b5fcd14593d0ba02510a8073e76e8bdc13d19df6528e656bb07262027c2",
+    "offset": 250000,
+    "stream_sha256": "32a9a9dcf40e8e414fc8f94f57366b4a71d8354c1f5b362d9e615aae2be91ce8",
+    "tokens_used": 64
+  },
+  "verdict": {
+    "checkpoint_valid_for_cached_scoring_under_fixed_code": true,
+    "checkpoint_valid_for_full_sequence_scoring": true,
+    "fixed_cached_decoding_matches_full_sequence": true,
+    "full_sequence_forward_unchanged": true,
+    "legacy_cached_decoding_differed": true,
+    "prior_cached_scores_invalid": true,
+    "reading": "The checkpoint was trained with full-sequence forwards. Under the fix its full-sequence output is bit-identical to the pre-fix output, and cached decoding now reproduces that same function exactly. The learned parameters therefore remain valid and retraining is not required. What becomes invalid is any cached generative score produced by the old code, because that score measured a different function; the evaluations list above says whether any such receipt exists.",
+    "retrain_required": false
+  }
+}

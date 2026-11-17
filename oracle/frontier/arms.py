@@ -21,6 +21,8 @@ arms.
 
 from __future__ import annotations
 
+import inspect
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -123,12 +125,20 @@ class NGMInjector(nn.Module):
         if self.embedding is None or self.context is None:
             raise RuntimeError("NGMInjector.bind must be called before forward")
         length = hidden_states.shape[-2]
-        tokens = self.context.require(length).to(torch.int64)
+        # The causal window is built from the whole prefix, then sliced to this
+        # call. Building it from `require(length)` makes a cached length-1 call
+        # average a zero-padded single token instead of the real n-gram.
+        tokens = self.context.prefix().to(torch.int64)
+        if tokens.shape[-1] < length:
+            raise RuntimeError(
+                f"token context has {tokens.shape[-1]} positions, layer needs {length}")
+        start = tokens.shape[-1] - length
         memories = []
         weight = 0.0
         for order in self.orders:
             window = F.pad(tokens, (order - 1, 0), value=0)
-            chunks = [self.embedding(window[:, position:position + length]).float()
+            chunks = [self.embedding(window[:, start + position:
+                                        start + position + length]).float()
                       for position in range(order)]
             memories.append(torch.stack(chunks, dim=2).mean(dim=2))
             weight += 1.0
@@ -178,12 +188,25 @@ def _layer(model: nn.Module, index: int) -> nn.Module:
 def install_token_context(model: nn.Module, context: TokenContext):
     """Pre-hook that records the causal prefix the layers are about to see."""
     text_model = _text_model(model)
+    parameters = None
+    try:
+        parameters = tuple(inspect.signature(text_model.forward).parameters)
+    except (TypeError, ValueError):
+        parameters = None
 
     def pre_hook(module, args, kwargs):
         ids = kwargs.get("input_ids")
-        if ids is None and args:
-            ids = args[0]
-        context.observe(ids, kwargs.get("past_key_values"))
+        past = kwargs.get("past_key_values")
+        if parameters is not None and (ids is None or past is None):
+            # The inner text model is usually called with keyword arguments by
+            # the outer model, but not always (and tests exercise the
+            # positional form). Bind positionally too; this is once per call.
+            positional = dict(zip(parameters, args))
+            if ids is None:
+                ids = positional.get("input_ids")
+            if past is None:
+                past = positional.get("past_key_values")
+        context.observe(ids, past)
 
     return text_model.register_forward_pre_hook(pre_hook, with_kwargs=True)
 

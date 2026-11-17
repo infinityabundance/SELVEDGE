@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import os
 import sys
+from types import SimpleNamespace
 
 import pytest
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -210,13 +212,27 @@ def test_token_context_resets_on_prefill_and_appends_on_generation():
     prompt = torch.tensor([[5, 6, 7, 8]], dtype=torch.int64)
     context.observe(prompt, past=None)
     assert torch.equal(context.require(4), prompt)
-    for token in (9, 10):
-        context.observe(torch.tensor([[token]], dtype=torch.int64), past=_FakePast(3))
+    for position, token in enumerate((9, 10), start=4):
+        context.observe(torch.tensor([[token]], dtype=torch.int64),
+                        past=_FakePast(position))
     assert context.require(6).tolist() == [[5, 6, 7, 8, 9, 10]]
     assert context.report()["appends"] == 2
     # a fresh full sequence is the new prefix, not an append
     context.observe(torch.tensor([[1, 2]], dtype=torch.int64), past=None)
     assert context.require(2).tolist() == [[1, 2]]
+    assert context.report()["generation"] == 2
+
+
+def test_token_context_appends_a_chunk_between_prefills():
+    context = mem.TokenContext()
+    context.observe(torch.tensor([[1, 2, 3]], dtype=torch.int64), past=None)
+    context.observe(torch.tensor([[4, 5]], dtype=torch.int64), past=_FakePast(3))
+    assert torch.equal(context.prefix(),
+                       torch.tensor([[1, 2, 3, 4, 5]], dtype=torch.int64))
+    # a replayed call that names the same past must not duplicate tokens
+    context.observe(torch.tensor([[4, 5]], dtype=torch.int64), past=_FakePast(3))
+    assert torch.equal(context.prefix(),
+                       torch.tensor([[1, 2, 3, 4, 5]], dtype=torch.int64))
 
 
 class _FakePast:
@@ -225,6 +241,202 @@ class _FakePast:
 
     def get_seq_length(self) -> int:
         return self._length
+
+
+# ---------------------------------------------------------------------------
+# cached decoding must equal the full-sequence forward
+
+
+def _randomise_memory(module, seed: int = 0) -> None:
+    """Non-zero table, gates and a non-identity convolution."""
+    generator = torch.Generator().manual_seed(int(seed))
+    with torch.no_grad():
+        for table in module.tables:
+            table.normal_(generator=generator)
+        for projection in module.key_proj:
+            projection.weight.normal_(generator=generator)
+        for projection in module.value_proj:
+            projection.weight.normal_(generator=generator)
+        for bias in module.out_bias:
+            bias.normal_(generator=generator)
+        for conv in module.conv:
+            conv.weight.normal_(generator=generator)
+            conv.bias.normal_(generator=generator)
+
+
+def test_conv_cached_matches_full_sequence_with_an_arbitrary_filter():
+    torch.manual_seed(11)
+    conv = mem.CausalDepthwiseConv1d(channels=5, kernel=3)
+    with torch.no_grad():
+        conv.weight.normal_()
+        conv.bias.normal_()
+    x = torch.randn(2, 10, 5)
+    full = conv(x)
+    first, state = conv.forward_cached(x[:, :4], None)
+    second, state = conv.forward_cached(x[:, 4:5], state)
+    third, state = conv.forward_cached(x[:, 5:], state)
+    cached = torch.cat([first, second, third], dim=1)
+    assert torch.allclose(cached, full, atol=1e-6, rtol=0)
+
+
+def test_cached_address_slice_equals_the_full_sequence_address():
+    tokens = torch.randint(0, 100, (1, 9), dtype=torch.int64)
+    for site in (0, 2):
+        full = mem.support(tokens, site, 1_048_576)
+        for position in range(tokens.shape[1]):
+            sliced = mem.support(tokens[:, :position + 1], site, 1_048_576)[:, -1:]
+            assert torch.equal(sliced, full[:, position:position + 1])
+        # the old cached form (address only the call's own tokens) differs once
+        # the n-gram has context, which is why the slice matters
+        single = mem.support(tokens[:, 5:6], site, 1_048_576)
+        assert not torch.equal(single, full[:, 5:6])
+
+
+def test_cached_memory_output_equals_full_sequence():
+    torch.manual_seed(3)
+    tokens = torch.randint(0, 100, (1, 12), dtype=torch.int64)
+    hidden = torch.randn(1, 12, 32)
+
+    full_module, full_context = _small_memory()
+    _randomise_memory(full_module, seed=7)
+    full_context.observe(tokens)
+    full = full_module(hidden)
+    assert not torch.equal(full, torch.zeros_like(full))
+
+    cached_module, cached_context = _small_memory()
+    cached_module.load_state_dict(full_module.state_dict())
+    prefill = 4
+    cached_context.observe(tokens[:, :prefill])
+    pieces = [cached_module(hidden[:, :prefill])]
+    for position in range(prefill, tokens.shape[1]):
+        cached_context.observe(tokens[:, position:position + 1],
+                               past=_FakePast(position))
+        pieces.append(cached_module(hidden[:, position:position + 1]))
+    cached = torch.cat(pieces, dim=1)
+    # Float32 conv accumulation differs in the last few bits; the maximum
+    # observed deviation over this fixture is 5.7e-6 on values of order 20.
+    assert torch.allclose(cached, full, atol=1e-5, rtol=0)
+
+
+def test_cached_state_does_not_leak_between_sequences():
+    torch.manual_seed(13)
+    first = torch.randint(0, 100, (1, 9), dtype=torch.int64)
+    second = torch.randint(0, 100, (1, 7), dtype=torch.int64)
+    hidden_first = torch.randn(1, 9, 32)
+    hidden_second = torch.randn(1, 7, 32)
+
+    module, context = _small_memory()
+    _randomise_memory(module, seed=17)
+    # Run the first sequence token by token so a non-zero conv state is carried.
+    context.observe(first[:, :3])
+    module(hidden_first[:, :3])
+    for position in range(3, first.shape[1]):
+        context.observe(first[:, position:position + 1], past=_FakePast(position))
+        module(hidden_first[:, position:position + 1])
+    # A new full sequence resets the context generation and the conv state.
+    context.observe(second)
+    after = module(hidden_second)
+
+    fresh, fresh_context = _small_memory()
+    fresh.load_state_dict(module.state_dict())
+    fresh_context.observe(second)
+    expected = fresh(hidden_second)
+    assert torch.allclose(after, expected, atol=1e-6, rtol=0)
+
+
+# ---------------------------------------------------------------------------
+# NGM shares the token-context interface and must pass the same check
+
+
+def test_ngm_cached_history_matches_full_sequence():
+    torch.manual_seed(0)
+    embedding = nn.Embedding(50, 8)
+    with torch.no_grad():
+        embedding.weight.normal_()
+    tokens = torch.randint(0, 50, (1, 10), dtype=torch.int64)
+    hidden = torch.randn(1, 10, 8)
+
+    full_context = mem.TokenContext()
+    full_injector = arms.NGMInjector(hidden=8, orders=(2, 3))
+    full_injector.bind(embedding, full_context)
+    full_context.observe(tokens)
+    full = full_injector(hidden)
+
+    cached_context = mem.TokenContext()
+    cached_injector = arms.NGMInjector(hidden=8, orders=(2, 3))
+    cached_injector.bind(embedding, cached_context)
+    prefill = 3
+    cached_context.observe(tokens[:, :prefill])
+    pieces = [cached_injector(hidden[:, :prefill])]
+    for position in range(prefill, tokens.shape[1]):
+        cached_context.observe(tokens[:, position:position + 1],
+                               past=_FakePast(position))
+        pieces.append(cached_injector(hidden[:, position:position + 1]))
+    cached = torch.cat(pieces, dim=1)
+    assert torch.allclose(cached, full, atol=1e-7, rtol=0)
+
+
+class _TinyBlock(nn.Module):
+    def __init__(self, hidden: int):
+        super().__init__()
+        self.linear = nn.Linear(hidden, hidden)
+
+    def forward(self, hidden: torch.Tensor):
+        return (hidden + torch.tanh(self.linear(hidden)),)
+
+
+class _TinyText(nn.Module):
+    def __init__(self, vocab: int, hidden: int, layers: int):
+        super().__init__()
+        self.embed = nn.Embedding(vocab, hidden)
+        self.layers = nn.ModuleList([_TinyBlock(hidden) for _ in range(layers)])
+
+    def forward(self, input_ids: torch.Tensor, past_key_values=None,
+                use_cache: bool = False):
+        hidden = self.embed(input_ids)
+        for layer in self.layers:
+            hidden = layer(hidden)[0]
+        return hidden
+
+
+class _TinyLM(nn.Module):
+    def __init__(self, vocab: int, hidden: int, layers: int):
+        super().__init__()
+        self.model = _TinyText(vocab, hidden, layers)
+        self.lm_head = nn.Linear(hidden, vocab, bias=False)
+
+    def forward(self, input_ids: torch.Tensor, past_key_values=None,
+                use_cache: bool = False):
+        hidden = self.model(input_ids, past_key_values, use_cache)
+        return SimpleNamespace(logits=self.lm_head(hidden))
+
+
+def test_full_sequence_logits_equal_cached_continuation_logits():
+    torch.manual_seed(5)
+    vocab, hidden, layers = 64, 32, 4
+    lm = _TinyLM(vocab, hidden, layers)
+    context = mem.TokenContext()
+    module = mem.ConditionalMemory(hidden=hidden, value_dim=8, rows=64,
+                                   sites=(0, 2), conv_kernel=3, context=context,
+                                   table_dtype=torch.float32)
+    _randomise_memory(module, seed=9)
+    handles = arms.install_memory(lm, module)
+    try:
+        tokens = torch.randint(0, vocab, (1, 10), dtype=torch.int64)
+        full = lm(tokens, use_cache=False).logits
+        prefill = 4
+        lm(tokens[:, :prefill], use_cache=False)
+        pieces = []
+        for position in range(prefill, tokens.shape[1]):
+            step = lm(tokens[:, position:position + 1],
+                      past_key_values=_FakePast(position), use_cache=True)
+            pieces.append(step.logits[:, -1:])
+        cached = torch.cat(pieces, dim=1)
+        # Two injected sites and a 32x64 output projection accumulate a few
+        # float32 ulps; the maximum observed deviation is 3.4e-5 logits.
+        assert torch.allclose(cached, full[:, prefill:], atol=1e-4, rtol=0)
+    finally:
+        arms.uninstall(handles)
 
 
 def test_collision_report_counts_reads_and_occupancy():

@@ -119,18 +119,25 @@ class TokenContext:
     """Causal token history seen by an arm.
 
     Installed as a forward pre-hook on the text model. A full-sequence call
-    resets the history; a cache-carrying single-token call appends to it, so a
-    generation step still sees the true prefix. `require` returns the last
-    `length` tokens, which is exactly what the layer being executed needs.
+    resets the history; a cache-carrying call appends to it, so a generation
+    step still sees the true prefix. A cached call may carry one token or a
+    chunk: the history is defined by `past_key_values.get_seq_length()`, not by
+    the width of the call. `prefix` returns the whole recorded prefix and
+    `require` returns only the last `length` tokens; arms that address n-grams
+    must use `prefix` (see `ConditionalMemory.site_forward`).
+
+    `generation` increments on every reset so a stateful arm (the convolution
+    cache) can drop its carried state when a new sequence starts.
     """
 
-    __slots__ = ("ids", "resets", "appends", "fallbacks")
+    __slots__ = ("ids", "resets", "appends", "fallbacks", "generation")
 
     def __init__(self) -> None:
         self.ids: torch.Tensor | None = None
         self.resets = 0
         self.appends = 0
         self.fallbacks = 0
+        self.generation = 0
 
     def observe(self, ids: torch.Tensor | None, past=None) -> None:
         if ids is None:
@@ -142,20 +149,40 @@ class TokenContext:
                 past_length = int(past.get_seq_length())
             except Exception:
                 past_length = 0
-        if self.ids is None or past_length == 0 or ids.shape[-1] != 1:
+        if self.ids is None or past_length == 0:
             # Prefill, or a fresh full-sequence call: this *is* the prefix.
             self.ids = ids
             self.resets += 1
+            self.generation += 1
             return
         if self.ids.shape[0] != ids.shape[0]:
             self.ids = ids
             self.fallbacks += 1
+            self.generation += 1
             return
-        self.ids = torch.cat([self.ids, ids], dim=-1)
+        if self.ids.shape[-1] < past_length:
+            # The cache names more positions than the context recorded, so the
+            # true prefix cannot be reconstructed. Fail loudly in the counters
+            # rather than address a shorter history as if it were complete.
+            self.ids = ids
+            self.fallbacks += 1
+            self.generation += 1
+            return
+        # The cache defines the prefix: keep exactly `past_length` positions and
+        # append this call's tokens. This is correct for a one-token step, a
+        # multi-token chunk, and a replayed call that would otherwise duplicate.
+        self.ids = torch.cat([self.ids[:, :past_length], ids], dim=-1)
         self.appends += 1
 
     def reset(self) -> None:
         self.ids = None
+        self.generation += 1
+
+    def prefix(self) -> torch.Tensor:
+        """The whole recorded causal prefix, `[B, S]`."""
+        if self.ids is None:
+            raise RuntimeError("token context is empty: install the arm pre-hook")
+        return self.ids
 
     def require(self, length: int) -> torch.Tensor:
         if self.ids is None:
@@ -167,7 +194,7 @@ class TokenContext:
 
     def report(self) -> dict:
         return {"resets": self.resets, "appends": self.appends,
-                "fallbacks": self.fallbacks,
+                "fallbacks": self.fallbacks, "generation": self.generation,
                 "history": None if self.ids is None else int(self.ids.shape[-1])}
 
 
@@ -302,6 +329,14 @@ class CausalDepthwiseConv1d(nn.Module):
     Initialised to the identity at lag 0 (kernel position `kernel-1`), so a
     freshly grafted table injects the retrieved row unchanged until training
     moves the filter.
+
+    The convolution has memory: position `t` sees inputs `t-kernel+1 .. t`.
+    A call that is not the start of a sequence must therefore be given the last
+    `kernel-1` *input* vectors from the previous call; otherwise each cached
+    call would be padded independently and the result would not equal the
+    full-sequence convolution. `forward` is the stateless full-sequence path;
+    `forward_cached(values, state)` returns `(output, new_state)` and is what
+    the memory uses so that token-by-token decoding is exact.
     """
 
     def __init__(self, channels: int, kernel: int = DEFAULT_CONV_KERNEL):
@@ -316,14 +351,38 @@ class CausalDepthwiseConv1d(nn.Module):
             self.weight[:, 0, kernel - 1] = 1.0
 
     def forward(self, values: torch.Tensor) -> torch.Tensor:
-        """`[B, T, channels]` -> `[B, T, channels]`, causal."""
+        """`[B, T, channels]` -> `[B, T, channels]`, causal, from a fresh start."""
+        output, _ = self.forward_cached(values, None)
+        return output
+
+    def forward_cached(self, values: torch.Tensor,
+                       state: torch.Tensor | None):
+        """One causal step of the same convolution, carrying its history.
+
+        `state` is the last `kernel-1` *inputs* of the previous call, shaped
+        `[B, kernel-1, channels]` (or `None` at the start of a sequence). The
+        returned new state is detached: it belongs to a completed call and must
+        not extend an autograd graph across steps.
+        """
         batch, length, channels = values.shape
         if channels != self.channels:
             raise ValueError(f"expected {self.channels} channels, got {channels}")
-        x = values.transpose(1, 2).float()
-        x = F.pad(x, (self.kernel - 1, 0))
-        y = F.conv1d(x, self.weight, self.bias, groups=self.channels)
-        return y.transpose(1, 2).to(values.dtype)
+        x = values.transpose(1, 2).float()                      # [B, C, T]
+        lag = self.kernel - 1
+        if lag == 0:
+            history = x.new_zeros((batch, channels, 0))
+        elif state is None:
+            history = x.new_zeros((batch, channels, lag))
+        else:
+            if tuple(state.shape) != (batch, lag, channels):
+                raise ValueError(
+                    f"conv state {tuple(state.shape)} != {(batch, lag, channels)}")
+            history = state.to(device=x.device, dtype=x.dtype).transpose(1, 2)
+        padded = torch.cat([history, x], dim=-1)
+        y = F.conv1d(padded, self.weight, self.bias, groups=self.channels)
+        new_state = (padded[:, :, -lag:].detach().transpose(1, 2).to(values.dtype)
+                     if lag else values.new_zeros((batch, 0, channels)))
+        return y.transpose(1, 2).to(values.dtype), new_state
 
 
 class ConditionalMemory(nn.Module):
@@ -360,6 +419,12 @@ class ConditionalMemory(nn.Module):
         self.conv = nn.ModuleList(
             [CausalDepthwiseConv1d(HEADS * self.value_dim, self.conv_kernel)
              for _ in self.sites])
+        # Carried convolution inputs, one entry per site. Not a buffer: it is
+        # inference state, it is reset by the context generation, and it must
+        # never enter a checkpoint or a state dict.
+        self._conv_state: list[torch.Tensor | None] = [None] * len(self.sites)
+        self._conv_generation: int | None = None
+        self._conv_context: int | None = None
         generator = torch.Generator(device="cpu").manual_seed(int(seed))
         with torch.no_grad():
             for table in self.tables:
@@ -425,14 +490,43 @@ class ConditionalMemory(nn.Module):
         }
 
     # -- forward --------------------------------------------------------------
+    def reset_state(self) -> None:
+        """Drop carried convolution history between sequences."""
+        self._conv_state = [None] * len(self.sites)
+        self._conv_generation = None
+        self._conv_context = None
+
+    def _state_for(self, site_index: int, batch: int) -> torch.Tensor | None:
+        """Carried conv state for this sequence, or `None` on a new sequence."""
+        generation = self.context.generation
+        identity = id(self.context)
+        if self._conv_generation != generation or self._conv_context != identity:
+            self._conv_state = [None] * len(self.sites)
+            self._conv_generation = generation
+            self._conv_context = identity
+        state = self._conv_state[site_index]
+        if state is not None and state.shape[0] != batch:
+            self._conv_state[site_index] = None
+            return None
+        return state
+
     def site_forward(self, site_index: int, hidden_states: torch.Tensor) -> torch.Tensor:
         length = hidden_states.shape[-2]
-        tokens = self.context.require(length)
-        addresses = support(tokens, self.sites[site_index], self.rows)
+        # Address the n-gram from the whole recorded prefix, then keep the
+        # positions this call executes. Addressing `require(length)` directly
+        # would turn a cached length-1 call into a zero-padded unigram-like
+        # address and change what the table reads during decoding.
+        tokens = self.context.prefix()
+        if tokens.shape[-1] < length:
+            raise RuntimeError(
+                f"token context has {tokens.shape[-1]} positions, layer needs {length}")
+        addresses = support(tokens, self.sites[site_index], self.rows)[:, -length:]
         table = self.tables[site_index]
         values = table[addresses].float()                      # [B,T,8,VD]
         flat = values.reshape(*values.shape[:-2], HEADS * self.value_dim)
-        flat = self.conv[site_index](flat)                      # causal, depthwise
+        state = self._state_for(site_index, hidden_states.shape[0])
+        flat, new_state = self.conv[site_index].forward_cached(flat, state)
+        self._conv_state[site_index] = new_state
         values = flat.reshape(*values.shape)
         key = self.key_proj[site_index](hidden_states.float())  # [B,T,VD]
         score = (values * key[:, :, None, :]).sum(-1) / (self.value_dim ** 0.5)
