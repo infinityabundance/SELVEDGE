@@ -211,7 +211,8 @@ def candidate_documents(root: str, limit: int = 6000):
 
 def build_stream(tokens_wanted: int, graft_tokens: int, out_dir: str,
                  receipt_dir: str, corpus_root: str = CORPUS_ROOT,
-                 dataset_root: str = DATASET_ROOT, vocabulary_check: bool = True):
+                 dataset_root: str = DATASET_ROOT, vocabulary_check: bool = True,
+                 candidates_limit: int = 6000):
     from transformers import AutoTokenizer
 
     started = time.time()
@@ -223,7 +224,10 @@ def build_stream(tokens_wanted: int, graft_tokens: int, out_dir: str,
     print(f"stream: eval items={len(items)} shingles={len(index.inverted)}", flush=True)
 
     # 2000 tokenizer-token carry margin: subword counts are not known up front.
-    candidates = list(candidate_documents(corpus_root))
+    # The candidate cap is a length parameter, not a change of order or guard:
+    # the 6000-document default yields ~6M tokens, so a 20M-token stream needs a
+    # larger cap. It is recorded in the manifest.
+    candidates = list(candidate_documents(corpus_root, limit=candidates_limit))
     candidates.sort(key=lambda item: item[0])
     print(f"stream: {len(candidates)} candidate documents", flush=True)
 
@@ -296,6 +300,7 @@ def build_stream(tokens_wanted: int, graft_tokens: int, out_dir: str,
             "root": corpus_root,
             "documents_accepted": accepted,
             "documents_discarded_contamination": discarded,
+            "candidate_limit": int(candidates_limit),
             "document_order": "sha256 of normalised text, ascending",
             "separator": "eos_token",
             "per_path_tokens": per_source,
@@ -311,6 +316,7 @@ def build_stream(tokens_wanted: int, graft_tokens: int, out_dir: str,
             "index": index.report(),
         },
         "wall_seconds": round(time.time() - started, 3),
+        "container_memory": _cgroup_memory(),
     }
     manifest_path = os.path.join(receipt_dir, f"stage2-stream-{start_stamp}.json")
     _write_json(manifest_path, manifest)
@@ -339,6 +345,18 @@ def _write_json(path: str, payload: dict) -> None:
     os.replace(tmp, path)
 
 
+def _cgroup_memory() -> dict:
+    """cgroup v2 peak/limit inside the court, so the builder's limit is measured."""
+    report = {}
+    for name in ("memory.peak", "memory.max"):
+        try:
+            with open(os.path.join("/sys/fs/cgroup", name), encoding="utf-8") as handle:
+                report[name.replace(".", "_")] = handle.read().strip()
+        except OSError:
+            report[name.replace(".", "_")] = None
+    return report
+
+
 def load_stream(path: str) -> np.ndarray:
     return np.fromfile(path, dtype=np.uint32)
 
@@ -349,6 +367,7 @@ def main(argv: list[str]) -> int:
     build = sub.add_parser("build")
     build.add_argument("--tokens", type=int, default=2_250_000)
     build.add_argument("--graft-tokens", type=int, default=250_000)
+    build.add_argument("--candidates", type=int, default=6000)
     build.add_argument("--out-dir", default="results/artifacts/stage2")
     build.add_argument("--receipt-dir", default="results/stage2")
     build.add_argument("--corpus-root", default=CORPUS_ROOT)
@@ -360,7 +379,8 @@ def main(argv: list[str]) -> int:
         if args.graft_tokens >= args.tokens:
             raise SystemExit("--graft-tokens must be smaller than --tokens")
         build_stream(args.tokens, args.graft_tokens, args.out_dir,
-                     args.receipt_dir, args.corpus_root, args.dataset_root)
+                     args.receipt_dir, args.corpus_root, args.dataset_root,
+                     candidates_limit=args.candidates)
         return 0
     manifest = json.load(open(args.manifest))
     got = sha256_file(manifest["stream_path"])

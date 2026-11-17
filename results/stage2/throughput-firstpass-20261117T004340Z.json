@@ -1,0 +1,228 @@
+{
+  "command": [
+    "oracle/frontier/throughput.py",
+    "--arm",
+    "memory",
+    "--memory-init",
+    "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "--stream-manifest",
+    "results/stage2/stage2-stream-20261116T230328Z.json",
+    "--warmup",
+    "20",
+    "--measure",
+    "50",
+    "--label",
+    "firstpass",
+    "--out",
+    "results/stage2/throughput-firstpass-20261117T004340Z.json",
+    "--vram-limit-gib",
+    "13"
+  ],
+  "container_memory": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": "10737418240",
+    "memory_peak": "1604268032",
+    "memory_swap_peak": "0"
+  },
+  "created_utc": "2026-11-17T00:44:54Z",
+  "geometry": {
+    "arm": "memory",
+    "grad_accum": 4,
+    "grad_clip": 1.0,
+    "kl_weight": 0.5,
+    "lr": 0.001,
+    "micro_batch": 1,
+    "reads_per_token": 8,
+    "seed": 0,
+    "seq_len": 512,
+    "site": 2,
+    "table_rows": 65536,
+    "temperature": 2.0,
+    "tokens_per_optimiser_step": 2048,
+    "weight_decay": 0.0
+  },
+  "kind": "throughput",
+  "label": "firstpass",
+  "load": {
+    "arm_report": {
+      "accessible_added_total": 17312768,
+      "accessible_per_site": 17312768,
+      "active_per_token": 537600,
+      "active_per_token_per_site": 537600,
+      "conv_elements_per_site": 10240,
+      "conv_kernel": 4,
+      "gate_elements_per_site": 0,
+      "graft": {
+        "graft_tokens": 250000,
+        "site": 2,
+        "stream_sha256": "32a9a9dcf40e8e414fc8f94f57366b4a71d8354c1f5b362d9e615aae2be91ce8",
+        "student": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+        "teacher": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c"
+      },
+      "hidden": 1024,
+      "init_checkpoint": "results/stage2/graft/20261116T231451Z/memory-init.pt",
+      "init_checkpoint_sha256": "2f8ba344d0525908e055ef5d62ac01af0b22fcc953ec512efbedd607f282d31f",
+      "key_projection_elements_per_site": 262144,
+      "kind": "stage2_memory_geometry",
+      "orders": [
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3
+      ],
+      "read_bytes_per_token_basis": "modelled distinct-identity lower bound",
+      "read_bytes_per_token_bf16": 1075200,
+      "reads_per_token_per_site": 8,
+      "resident_table_bytes_bf16": 33554432,
+      "resident_table_bytes_fp32": 67108864,
+      "rows_per_site": 65536,
+      "rows_read_elements_per_token_per_site": 2048,
+      "sites": 1,
+      "table_charged_to_active": false,
+      "table_elements_per_site": 16777216,
+      "table_elements_total": 16777216,
+      "trainable_per_site": 535552,
+      "value_dim": 256,
+      "value_projection_elements_per_site": 263168
+    },
+    "cuda_device": "NVIDIA GeForce RTX 4080 SUPER",
+    "cuda_runtime": "13.2",
+    "deterministic_algorithms": true,
+    "dtype": "bfloat16",
+    "frozen_backbone_elements": 752393024,
+    "memory_init": "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "memory_init_sha256": "2f8ba344d0525908e055ef5d62ac01af0b22fcc953ec512efbedd607f282d31f",
+    "student_config_sha256": "b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204",
+    "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "teacher_config_sha256": "ed1c1723241f23f7f4e23430759cbd7dcfb4103cbdfe052bfe7626b57c2615b4",
+    "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+    "teacher_parameters": 1881825088,
+    "torch": "2.15.0+cu132",
+    "trainable_arm_elements": 17312768
+  },
+  "phase_breakdown_seconds": {
+    "backward": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.580620823812035,
+      "fraction_of_step": 0.5800936358510508,
+      "max": 0.5218563690185547,
+      "mean": 0.5186332528686524,
+      "median": 0.518383544921875,
+      "min": 0.5147789916992187,
+      "p95": 0.5209606323242187
+    },
+    "data_transfer": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.0003693152444657087,
+      "fraction_of_step": 0.0003689799162399452,
+      "max": 0.000746496006846428,
+      "mean": 0.0003464422399550676,
+      "median": 0.00032972800452262164,
+      "min": 9.257599897682668e-05,
+      "p95": 0.0007090880051255226
+    },
+    "loss": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.07075945922677919,
+      "fraction_of_step": 0.07069521155687099,
+      "max": 0.06433395195007324,
+      "mean": 0.06327094091415406,
+      "median": 0.06317468786239624,
+      "min": 0.0624939832687378,
+      "p95": 0.0642700490951538
+    },
+    "optimizer": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.0025588270058625427,
+      "fraction_of_step": 0.002556503660339254,
+      "max": 0.0028989439010620116,
+      "mean": 0.0024017119836807254,
+      "median": 0.002284543991088867,
+      "min": 0.0022027199268341065,
+      "p95": 0.002871295928955078
+    },
+    "student_forward": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.14901387953798698,
+      "fraction_of_step": 0.148878578976777,
+      "max": 0.2147399024963379,
+      "mean": 0.13508735343933106,
+      "median": 0.1330409450531006,
+      "min": 0.13141997146606446,
+      "p95": 0.1378303337097168
+    },
+    "teacher_forward": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.19667769517287065,
+      "fraction_of_step": 0.19649911715975618,
+      "max": 0.17758621215820314,
+      "mean": 0.17558480934143067,
+      "median": 0.17559563255310057,
+      "min": 0.17341846466064453,
+      "p95": 0.1770808296203613
+    }
+  },
+  "phase_method": "CUDA events recorded at phase boundaries on the single default stream; one stream synchronisation per measured step; fractions are of the median wall step and of the summed median phase times",
+  "protocol": {
+    "description": "one full teacher+student optimiser step at the smoke geometry",
+    "measured_steps": 50,
+    "median_not_best": true,
+    "registration": "docs/WS19-EXECUTION-REGISTRATION.md section 4",
+    "teacher_no_grad": true,
+    "torch_compile": false,
+    "warmup_steps_discarded": 20
+  },
+  "revision": "9d2564830e412584082d8dd6a13c91a3a7e29cd6",
+  "schema": "selvedge/stage2-throughput/v1",
+  "stamp": "20261117T004454Z",
+  "stream": {
+    "graft_tokens": 250000,
+    "manifest": "results/stage2/stage2-stream-20261116T230328Z.json",
+    "sha256": "32a9a9dcf40e8e414fc8f94f57366b4a71d8354c1f5b362d9e615aae2be91ce8",
+    "tokens": 2250000
+  },
+  "throughput": {
+    "micro_batch_seconds": {
+      "count": 50,
+      "max": 0.2443227972544264,
+      "mean": 0.22384361498989164,
+      "median": 0.22340511638321914,
+      "min": 0.22134409923455678,
+      "p95": 0.22516994251054712
+    },
+    "micro_batch_tokens_per_second": 2291.8006905523957,
+    "optimiser_step_seconds": {
+      "count": 50,
+      "max": 0.9772911890177056,
+      "mean": 0.8953744599595665,
+      "median": 0.8936204655328766,
+      "min": 0.8853763969382271,
+      "p95": 0.9006797700421885
+    },
+    "optimiser_step_tokens_per_second": 2291.8006905523957,
+    "tokens_per_optimiser_step": 2048
+  },
+  "vram": {
+    "device_total_bytes": 16765091840,
+    "device_total_gib": 15.61370849609375,
+    "free_at_start_gib": 13.5386962890625,
+    "limit_gib": 13.0,
+    "peak_allocated_bytes": 9889823744,
+    "peak_allocated_gib": 9.210616111755371,
+    "peak_reserved_bytes": 10032775168,
+    "peak_reserved_gib": 9.34375,
+    "source": "torch.cuda.max_memory_allocated after the last measured step"
+  }
+}

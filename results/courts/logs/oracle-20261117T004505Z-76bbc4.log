@@ -1,0 +1,12 @@
+throughput: loading student /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+throughput: loading teacher /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+throughput: 20 warmup steps discarded
+throughput: measure 1/50 2294 tok/s step=893ms peak=9.21GiB
+throughput: measure 11/50 2278 tok/s step=899ms peak=9.21GiB
+throughput: measure 21/50 2288 tok/s step=895ms peak=9.21GiB
+throughput: measure 31/50 2278 tok/s step=899ms peak=9.21GiB
+throughput: measure 41/50 2281 tok/s step=898ms peak=9.21GiB
+throughput: memory 2285.0 tok/s median_step=896.3ms p95=902.6ms peak_alloc=9.21GiB peak_reserved=9.34GiB
+throughput: receipt results/stage2/throughput-20261117T004502Z.json

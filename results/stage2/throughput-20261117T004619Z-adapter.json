@@ -1,0 +1,192 @@
+{
+  "command": [
+    "oracle/frontier/throughput.py",
+    "--arm",
+    "adapter",
+    "--stream-manifest",
+    "results/stage2/stage2-stream-20261116T230328Z.json",
+    "--warmup",
+    "20",
+    "--measure",
+    "50",
+    "--label",
+    "measured",
+    "--out",
+    "results/stage2/throughput-20261117T004619Z-adapter.json",
+    "--vram-limit-gib",
+    "11"
+  ],
+  "container_memory": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": "4294967296",
+    "memory_peak": "1526456320",
+    "memory_swap_peak": "0"
+  },
+  "created_utc": "2026-11-17T00:47:33Z",
+  "geometry": {
+    "arm": "adapter",
+    "grad_accum": 4,
+    "grad_clip": 1.0,
+    "kl_weight": 0.5,
+    "lr": 0.001,
+    "micro_batch": 1,
+    "reads_per_token": null,
+    "seed": 0,
+    "seq_len": 512,
+    "site": 2,
+    "table_rows": null,
+    "temperature": 2.0,
+    "tokens_per_optimiser_step": 2048,
+    "weight_decay": 0.0
+  },
+  "kind": "throughput",
+  "label": "measured",
+  "load": {
+    "arm_report": {
+      "active_per_token": 537600,
+      "bias_elements": 1024,
+      "gate_elements": 0,
+      "hidden": 1024,
+      "kind": "stage2_dense_adapter_active",
+      "match_delta": 0,
+      "matched_memory_active": 537600,
+      "projection_elements": 536576,
+      "rank": 262
+    },
+    "cuda_device": "NVIDIA GeForce RTX 4080 SUPER",
+    "cuda_runtime": "13.2",
+    "deterministic_algorithms": true,
+    "dtype": "bfloat16",
+    "frozen_backbone_elements": 752393024,
+    "memory_init": null,
+    "memory_init_sha256": null,
+    "student_config_sha256": "b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204",
+    "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "teacher_config_sha256": "ed1c1723241f23f7f4e23430759cbd7dcfb4103cbdfe052bfe7626b57c2615b4",
+    "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+    "teacher_parameters": 1881825088,
+    "torch": "2.15.0+cu132",
+    "trainable_arm_elements": 537600
+  },
+  "phase_breakdown_seconds": {
+    "backward": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.5830145240736712,
+      "fraction_of_step": 0.5829191226432124,
+      "max": 0.5198194274902344,
+      "mean": 0.514790414428711,
+      "median": 0.5143628883361817,
+      "min": 0.5089631423950195,
+      "p95": 0.5194147796630859
+    },
+    "data_transfer": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.0003180061310635033,
+      "fraction_of_step": 0.00031795409421271246,
+      "max": 0.0008437759764492512,
+      "mean": 0.00030803263898938893,
+      "median": 0.00028055999521166085,
+      "min": 8.102399855852127e-05,
+      "p95": 0.0007522879969328642
+    },
+    "loss": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.07157492016517593,
+      "fraction_of_step": 0.07156320802167561,
+      "max": 0.0641331195831299,
+      "mean": 0.06307677057266235,
+      "median": 0.06314676761627197,
+      "min": 0.06181974411010742,
+      "p95": 0.063801344871521
+    },
+    "optimizer": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.0001392806995467947,
+      "fraction_of_step": 0.00013925790838564283,
+      "max": 0.00060726398229599,
+      "mean": 0.0001376044800877571,
+      "median": 0.0001228799968957901,
+      "min": 0.00011395200341939927,
+      "p95": 0.0001488640010356903
+    },
+    "student_forward": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.14643726396406198,
+      "fraction_of_step": 0.14641330174034756,
+      "max": 0.21321180534362794,
+      "mean": 0.1311153708267212,
+      "median": 0.12919385528564453,
+      "min": 0.12770819282531737,
+      "p95": 0.13277248191833496
+    },
+    "teacher_forward": {
+      "count": 50,
+      "fraction_of_phase_sum": 0.19851600496648072,
+      "fraction_of_step": 0.1984835208514875,
+      "max": 0.17729964828491213,
+      "mean": 0.1750326427459717,
+      "median": 0.17514017486572264,
+      "min": 0.17250407028198242,
+      "p95": 0.17626419067382812
+    }
+  },
+  "phase_method": "CUDA events recorded at phase boundaries on the single default stream; one stream synchronisation per measured step; fractions are of the median wall step and of the summed median phase times",
+  "protocol": {
+    "description": "one full teacher+student optimiser step at the smoke geometry",
+    "measured_steps": 50,
+    "median_not_best": true,
+    "registration": "docs/WS19-EXECUTION-REGISTRATION.md section 4",
+    "teacher_no_grad": true,
+    "torch_compile": false,
+    "warmup_steps_discarded": 20
+  },
+  "revision": "9d2564830e412584082d8dd6a13c91a3a7e29cd6",
+  "schema": "selvedge/stage2-throughput/v1",
+  "stamp": "20261117T004733Z",
+  "stream": {
+    "graft_tokens": 250000,
+    "manifest": "results/stage2/stage2-stream-20261116T230328Z.json",
+    "sha256": "32a9a9dcf40e8e414fc8f94f57366b4a71d8354c1f5b362d9e615aae2be91ce8",
+    "tokens": 2250000
+  },
+  "throughput": {
+    "micro_batch_seconds": {
+      "count": 50,
+      "max": 0.2424290299823042,
+      "mean": 0.2211296204937389,
+      "median": 0.2205978790007066,
+      "min": 0.21818720901501365,
+      "p95": 0.22257457950036041
+    },
+    "micro_batch_tokens_per_second": 2320.9651983932267,
+    "optimiser_step_seconds": {
+      "count": 50,
+      "max": 0.9697161199292168,
+      "mean": 0.8845184819749556,
+      "median": 0.8823915160028264,
+      "min": 0.8727488360600546,
+      "p95": 0.8902983180014417
+    },
+    "optimiser_step_tokens_per_second": 2320.9651983932267,
+    "tokens_per_optimiser_step": 2048
+  },
+  "vram": {
+    "device_total_bytes": 16765091840,
+    "device_total_gib": 15.61370849609375,
+    "free_at_start_gib": 13.5245361328125,
+    "limit_gib": 11.0,
+    "peak_allocated_bytes": 9594635264,
+    "peak_allocated_gib": 8.935700416564941,
+    "peak_reserved_bytes": 9730785280,
+    "peak_reserved_gib": 9.0625,
+    "source": "torch.cuda.max_memory_allocated after the last measured step"
+  }
+}

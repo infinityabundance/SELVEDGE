@@ -1,0 +1,169 @@
+{
+  "schema": "selvedge/ws19-distillation-control-amendment/v1",
+  "registering_session": "S39",
+  "registered_utc": "2026-11-17T00:53:00Z",
+  "amends": {
+    "path": "docs/ws19-distillation-control-preregistration-v1.json",
+    "registered_utc": "2026-11-17T00:32:00Z",
+    "committed_in": "8be9ca2",
+    "rule": "the registered file is not edited; this amendment records only what the S38 registration left to the run: the built stream, the measured budget arithmetic, the adaptation choice with its active-union arithmetic, and the exact training and evaluation commands"
+  },
+  "unchanged_by_this_amendment": [
+    "the student and teacher checkpoints and revisions",
+    "the objective: CE + 0.5 * T^2 * KL(teacher_T || student_T), T = 2.0",
+    "AdamW, lr 1e-3, betas (0.9, 0.95), weight_decay 0, grad_clip 1.0",
+    "seq_len 512, micro_batch 1, grad_accum 4, 2025 optimizer steps worth 2048 tokens",
+    "the 20,000,000-token budget",
+    "one seed (arm_seed 0, torch 1234)",
+    "the evaluation instrument: docs/anchor-preregistration-v1.json"
+  ],
+  "throughput_measurement": {
+    "registration": "docs/WS19-EXECUTION-REGISTRATION.md section 4",
+    "memory_arm_receipt": "results/stage2/throughput-20261117T004502Z.json",
+    "adapter_arm_receipt": "results/stage2/throughput-20261117T004619Z-adapter.json",
+    "protocol": "20 discarded warmup + 50 measured optimizer steps; median reported; no torch.compile",
+    "memory_arm": {
+      "tokens_per_second": 2284.9878,
+      "median_step_seconds": 0.896285,
+      "p95_step_seconds": 0.902566,
+      "peak_allocated_gib": 9.210616,
+      "peak_reserved_gib": 9.34375,
+      "container_memory_peak_bytes": 1603399680,
+      "court_memory_limit": "4g",
+      "vram_limit_gib": 11.0
+    },
+    "adapter_arm": {
+      "tokens_per_second": 2320.9652,
+      "median_step_seconds": 0.882392,
+      "p95_step_seconds": 0.890298,
+      "peak_allocated_gib": 8.9357,
+      "peak_reserved_gib": 9.0625,
+      "container_memory_peak_bytes": 1526456320,
+      "court_memory_limit": "4g",
+      "vram_limit_gib": 11.0
+    },
+    "phase_fractions_adapter": {
+      "backward": 0.583,
+      "teacher_forward": 0.198,
+      "student_forward": 0.146,
+      "loss": 0.072,
+      "optimizer": 0.0,
+      "data_transfer": 0.0,
+      "note": "fractions of the median wall step, from CUDA events at phase boundaries"
+    }
+  },
+  "budget_arithmetic": {
+    "target_wall_clock_hours": 6,
+    "measured_adapter_tokens_per_second": 2320.9652,
+    "registered_tokens": 20000000,
+    "expected_seconds": 8616.9754,
+    "expected_hours": 2.3936,
+    "six_hour_capacity_tokens": 50133600,
+    "decision": "keep the registered 20,000,000 tokens: it costs 2.39 h of the 6 h window at the measured adapter rate, so no amendment to the token budget is needed. Raising it to the 6 h capacity would be a post-measurement change to a registered budget and is not done.",
+    "realised_steps": 9765,
+    "realised_tokens": 19998720,
+    "rounding_note": "20,000,000 / 2,048 is not an integer; the loop runs whole optimizer steps, so 9,765 steps cover 19,998,720 tokens — 1,280 tokens (0.0064%) below the registered budget, never above it"
+  },
+  "stream": {
+    "manifest": "results/stage2/stage2-stream-20261117T004849Z.json",
+    "path": "results/artifacts/stage2/stage2-stream-20261117T004849Z.u32",
+    "sha256": "58bbed620fa8f80edd578c300038cb3507b8cb002d22fd5bb79506eff296336f",
+    "tokens": 20250000,
+    "graft_tokens": 250000,
+    "train_tokens": 20000000,
+    "tokenizer_sha256": "fe000e3ed39ed12b8d2481d527d44f93c65d37e87645d2dcc80d1bf9d50d2927",
+    "source": "results/artifacts/train-corpus/fineweb-edu-sample-10bt/sample/10BT/013_00000.parquet (HuggingFaceFW/fineweb-edu @ 87f09149ef4734204d70ed1d046ddc9ca3f2b8f9, ODC-By-1.0)",
+    "builder_change": {
+      "file": "oracle/frontier/stream.py",
+      "change": "the candidate-document cap became an explicit --candidates parameter (default 6000, unchanged); the 20.25M build passes 30000",
+      "what_did_not_change": "document order (sha256 of normalised text, ascending), the 5-word shingle guard, the discard 0.2 / fail-closed 0.5 thresholds, the tokenizer, the graft/train split, the eos separator",
+      "recorded_in_manifest": "sources.candidate_limit"
+    },
+    "contamination": {
+      "evaluation_items": 51769,
+      "distinct_shingles": 1917192,
+      "shingle_width_words": 5,
+      "threshold_discard": 0.2,
+      "threshold_fail_closed": 0.5,
+      "max_shingle_jaccard_seen": 0.07613168724279835,
+      "documents_discarded": 0
+    },
+    "limitation": "the deterministic order exhausts the 20M budget inside fineweb-edu, so this stream is educational web text only — no code and no math — as the 2.25M smoke stream also was. This is the registered builder's behaviour, not a choice made after seeing a score."
+  },
+  "adaptation_choice": {
+    "chosen": "the registered parameter-matched dense adapter (rank-262 bottleneck at decoder layer 2, parameter-free gate, output bias)",
+    "active_union_arithmetic": "2 * 1024 * 262 + 1024 = 537,600 active elements per token, exactly the memory arm's active union at one site; frozen core 752,393,024; match_delta = 0",
+    "why_not_full_finetune": "full fine-tuning is not the equal-active control: it activates 752,393,024 elements against the memory arm's 537,600, so a win or loss could not be attributed to the mechanism. It also does not fit beside the 1.88B teacher: bf16 weights 1.51 GB + bf16 gradients 1.51 GB + two fp32 AdamW moments 6.02 GB = 9.03 GB for the core alone, plus the teacher's 3.76 GB bf16 and activations, against 15.61 GiB of device memory (14.1 GiB free at run time).",
+    "why_not_lora_on_the_core": "a rank-262 LoRA on one 1024x1024 projection has the same 536,576 projection elements plus a 1024 bias, but it updates a different functional site and is not P19.2's registered control arm; P19.2 re-uses this receipt as its dense-adapter arm, so the control must be the same object P19.2 compares against. The dense adapter is the strongest dense adaptation at the registered active budget that preserves that comparison.",
+    "trainable": "the adapter's down/up projections (536,576) and its 1024-element output bias; the core stays frozen",
+    "bytes_per_token_note": "the adapter reads 537,600 elements per token from weights resident on the device; the memory arm reads 537,600 active elements per token, 2,048 of them from table rows. The equality the stage registers is on active unique elements, not on memory traffic, and the table is not charged to active."
+  },
+  "optimizer_and_schedule": {
+    "name": "AdamW",
+    "learning_rate": 0.001,
+    "betas": [0.9, 0.95],
+    "weight_decay": 0.0,
+    "gradient_clip": 1.0,
+    "warmup_steps": 50,
+    "after_warmup": "constant 1e-3; train.py applies linear warmup and no decay, and no decay is registered",
+    "gradient_accumulation": 4,
+    "micro_batch": 1,
+    "sequence_length": 512,
+    "tokens_per_optimizer_step": 2048,
+    "steps": 9765,
+    "data_order": "pinned stream order, no shuffling; resume continues at the recorded token offset",
+    "seeds": {"arm_seed": 0, "torch": 1234, "numpy": "derived from arm_seed"},
+    "seed_consequence": "one seed gives a point estimate with no seed variance. The bar is therefore provisional by one seed standard error, which is not measured here. The claim stage registers three seeds; a mechanism that beats this control by less than that unmeasured seed error has not been shown to beat it."
+  },
+  "checkpoints": {
+    "every_steps": 200,
+    "final": "results/stage2/runs/control-20m/ckpt-009765.pt",
+    "resume": "--resume latest verifies the config and stream hashes before loading",
+    "evaluated": "the final checkpoint only; intermediate checkpoints are kept for a resumable run and for a later learning-curve check, not for checkpoint selection"
+  },
+  "training_command": "SELVEDGE_MEM=4g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=1g scripts/court --gpu oracle -- python3 oracle/frontier/train.py --arm adapter --stream-manifest results/stage2/stage2-stream-20261117T004849Z.json --tokens 20000000 --seq-len 512 --micro-batch 1 --grad-accum 4 --lr 0.001 --temperature 2.0 --kl-weight 0.5 --warmup 50 --grad-clip 1.0 --seed 0 --ckpt-every 200 --log-every 100 --run-dir results/stage2/runs/control-20m --vram-limit-gib 11",
+  "evaluation": {
+    "instrument": "docs/anchor-preregistration-v1.json",
+    "instrument_sha256": "49181e669d18e90dc10788471b762166e5286b740ba39cb6109bba5320d131c7",
+    "harness_commit": "d6de81643928d653435c431bae19945d41d32520",
+    "driver": "scripts/s39_control_eval.py",
+    "scored_tasks": {
+      "mmlu_pro": {"family": "knowledge", "num_fewshot": 5, "limit": 36, "limit_kind": "per subject (504 items)", "batch_size": 8, "primary_metric": "exact_match,custom-extract"},
+      "mmlu": {"family": "knowledge", "num_fewshot": 5, "limit": null, "limit_kind": "full 14042 items", "batch_size": 2, "primary_metric": "acc"},
+      "gsm8k": {"family": "math", "num_fewshot": 5, "limit": null, "limit_kind": "full 1319 items", "batch_size": 8, "primary_metric": "exact_match,strict-match"},
+      "minerva_math500": {"family": "math", "num_fewshot": 4, "limit": null, "limit_kind": "full 500 items", "batch_size": 8, "primary_metric": "math_verify"}
+    },
+    "unscored_registered_tasks": {
+      "humaneval": "code family, not in the win bar and requires unsafe code execution",
+      "ifeval": "instruction family, not in the win bar",
+      "arc_challenge": "registered in the anchor task list but in neither family",
+      "triviaqa": "registered in the anchor task list but in neither family"
+    },
+    "config": {
+      "dtype": "bfloat16",
+      "do_sample": false,
+      "temperature": 0.0,
+      "bootstrap_iters": 100000,
+      "apply_chat_template": false,
+      "fewshot_as_multiturn": false,
+      "gen_kwargs": null,
+      "seeds": {"random": 0, "numpy": 1234, "torch": 1234, "fewshot": 1234},
+      "model_handoff": "pre-initialised transformers model + adapter handed to HFLM(pretrained=<model>), so the harness, tokenizer, prompts and extraction are unchanged"
+    },
+    "eval_command": "SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g NLTK_DATA=/hf-cache/nltk_data scripts/court --gpu eval -- python3 scripts/s39_control_eval.py --checkpoint results/stage2/runs/control-20m/ckpt-009765.pt --tasks mmlu_pro,mmlu,gsm8k,minerva_math500 --out results/stage2/eval/control-20m/eval.json --vram-limit-gib 13",
+    "comparison_reference": "results/frontier/anchor-gap-20261116T225500Z.json (anchor and 2B scores under the same instrument)",
+    "win_bar": {
+      "knowledge_mean_threshold": 0.4201126778394974,
+      "math_mean_threshold": 0.3927092494313874,
+      "reading": "the distilled control reaches the registered half-gap win if either family mean reaches its threshold; a mechanism stage must then beat the control, not the anchor"
+    }
+  },
+  "scoring_receipts": [
+    "results/stage2/eval/control-20m/eval.json"
+  ],
+  "limits_derived_from": [
+    "results/stage2/throughput-20261117T004502Z.json",
+    "results/stage2/throughput-20261117T004619Z-adapter.json",
+    "results/stage2/stage2-stream-20261117T004849Z.json"
+  ]
+}

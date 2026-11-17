@@ -1,0 +1,50 @@
+{
+  "bytes": 81000000,
+  "container_memory": {
+    "memory_max": "8589934592",
+    "memory_peak": "5248393216"
+  },
+  "contamination": {
+    "eval_split_filter": "cached arrow files whose basename contains 'test'",
+    "evaluation_items": 51769,
+    "index": {
+      "distinct_shingles": 1917192,
+      "items": 51769,
+      "width_words": 5
+    },
+    "max_shingle_jaccard_eval_set": "cais___mmlu/high_school_us_history/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+    "max_shingle_jaccard_seen": 0.07613168724279835,
+    "shingle_width_words": 5,
+    "threshold_discard": 0.2,
+    "threshold_fail_closed": 0.5
+  },
+  "created_utc": "2026-11-17T00:48:49Z",
+  "dtype": "uint32-le",
+  "graft_tokens": 250000,
+  "kind": "build",
+  "revision": "9d2564830e412584082d8dd6a13c91a3a7e29cd6",
+  "schema": "selvedge/stage2-stream/v1",
+  "sha256": "58bbed620fa8f80edd578c300038cb3507b8cb002d22fd5bb79506eff296336f",
+  "sources": {
+    "candidate_limit": 30000,
+    "document_order": "sha256 of normalised text, ascending",
+    "documents_accepted": 19515,
+    "documents_discarded_contamination": 0,
+    "per_path_tokens": {
+      "fineweb-edu-sample-10bt/sample/10BT/013_00000.parquet": 20252106
+    },
+    "root": "results/artifacts/train-corpus",
+    "separator": "eos_token"
+  },
+  "split": "first graft_tokens for teacher grafting, remainder for training",
+  "stamp": "20261117T004849Z",
+  "stream_path": "results/artifacts/stage2/stage2-stream-20261117T004849Z.u32",
+  "tokenizer": {
+    "note": "the anchor's own Qwen3.5 tokenizer (same file in 0.8B-Base and 2B-Base; hashes verified equal)",
+    "path": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "tokenizer_sha256": "fe000e3ed39ed12b8d2481d527d44f93c65d37e87645d2dcc80d1bf9d50d2927"
+  },
+  "tokens": 20250000,
+  "train_tokens": 20000000,
+  "wall_seconds": 46.462
+}
