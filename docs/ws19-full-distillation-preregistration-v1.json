@@ -1,0 +1,183 @@
+{
+  "schema": "selvedge/ws19-full-distillation-preregistration/v1",
+  "registering_session": "S40",
+  "registered_utc": "2026-11-17T02:46:00Z",
+  "purpose": "Register the full-backbone distillation arm that is the WS19 bar. The frozen-backbone parameter-matched adapter is not the bar: it activates 537,600 elements against the full arm's 752,393,024 deployed text-tower identities. A mechanism stage must beat this arm, not the frozen anchor and not the adapter, at equal tokens and equal deployed active union.",
+  "relation_to_existing_registrations": {
+    "base_control": "docs/ws19-distillation-control-preregistration-v1.json",
+    "base_control_amendment": "docs/ws19-distillation-control-amendment-preregistration-v1.json",
+    "rule": "this file does not edit either. The base control remains the frozen-backbone adapter arm; this file adds the full-backbone arm beside it so the two bars are both registered before either is scored. The adapter receipt remains useful as a parameter-matched control and is not replaced.",
+    "why_a_second_bar": "the base registration's own amendment records that full fine-tuning is not the equal-active control for the memory arm, because it activates 752,393,024 elements against 537,600. That argument is about the memory comparison. It is not an argument that the full-backbone distillation arm is unnecessary: the full arm is the ceiling a mechanism must beat to show that the mechanism buys anything the teacher signal does not."
+  },
+  "models": {
+    "student": {
+      "id": "Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "role": "the WS19 anchor, trained end to end except for the tied token embedding",
+      "text_tower_elements": 752393024,
+      "tied_embedding_elements": 254279680,
+      "trainable_elements": 498113344
+    },
+    "teacher": {
+      "id": "Qwen/Qwen3.5-2B-Base",
+      "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "parameters": 1881825088,
+      "role": "online teacher, no gradient, no logit cache",
+      "tokenizer_note": "byte-identical to the student's tokenizer (measured in the base control registration and receipts)"
+    }
+  },
+  "adaptation": {
+    "chosen": "full text-tower distillation with the tied token embedding frozen",
+    "frozen": "model.language_model.embed_tokens.weight, which is also the output projection because tie_word_embeddings is true and no lm_head.weight tensor exists",
+    "trained": "every other text-tower parameter: 24 decoder layers, the final norm, and the DeltaNet/attention/MLP weights",
+    "active_union_arithmetic": {
+      "text_tower_elements": 752393024,
+      "frozen_embedding_elements": 254279680,
+      "trainable_elements": 498113344,
+      "deployed_active_union_elements": 752393024,
+      "basis": "finetuning changes values, not identities; the deployed model reads the whole text tower",
+      "check": "752393024 - 254279680 = 498113344"
+    },
+    "why_not_a_lora_control": "a wide LoRA is a low-rank constraint on the update and is not the full-backbone bar. The published comparison at matched continued-pretraining tokens finds that LoRA in standard ranks substantially underperforms full fine-tuning on code and mathematics (arXiv:2405.09673, TMLR 2024), and that the learned perturbations differ in rank by 10-100x. If the control is low-rank, a mechanism that beats it has not been shown to beat full distillation. The full arm is therefore the bar; the adapter receipt remains the equal-active control.",
+    "why_freeze_the_embedding": "the vocabulary is unchanged and the student and teacher share the tokenizer byte-for-byte, so the embedding has no new identities to learn from this stream. Freezing it removes 254,279,680 fp32-moment-bearing elements from the optimizer at no change in the deployed active union (the tied output projection is frozen with it). This is an engineering choice, not a published result: no located paper studies freezing only the tied embedding during full-backbone distillation; QLoRA (arXiv:2305.14314) is the nearest precedent for a frozen embedding space with the remaining weights adapted."
+  },
+  "optimizer": {
+    "name": "Adam8bit",
+    "implementation": "oracle/frontier/optim8bit.py",
+    "basis": "block-wise quantized Adam moments, Dettmers et al., arXiv:2110.02861, ICLR 2022",
+    "block_elements": 256,
+    "quantization": "symmetric int8, nearest-even, per-block float32 absmax; two moments and two scales; no fp32 master copy",
+    "learning_rate": 0.0001,
+    "betas": [0.9, 0.95],
+    "epsilon": 1e-8,
+    "weight_decay": 0.0,
+    "gradient_clip": 1.0,
+    "schedule": "linear warmup to 1e-4 over 200 optimizer steps, then cosine decay to 10% of peak over the remaining steps",
+    "why_adam8bit": "fp32 AdamW moments for 498,113,344 elements are 3.73 GiB, which does not fit beside the 3.50 GiB teacher and the activations in 14.1 GiB of free device memory. Block-wise 8-bit moments are 0.94 GiB, measured by the optimizer itself. bitsandbytes is absent from the pinned oracle image, so the in-repo implementation is used and named in every receipt; it is not a silent substitution."
+  },
+  "schedule": {
+    "tokens_per_arm": 20000000,
+    "sequence_length": 512,
+    "micro_batch": 1,
+    "gradient_accumulation": 4,
+    "tokens_per_optimizer_step": 2048,
+    "steps": 9765,
+    "realised_tokens": 19998720,
+    "rounding_note": "20,000,000 / 2,048 is not an integer; whole steps cover 19,998,720 tokens, 1,280 below the registered budget and never above it",
+    "data_order": "the pinned stream in order, no shuffling; resume continues at the recorded token offset",
+    "equal_tokens_with": "the frozen-backbone control (docs/ws19-distillation-control-amendment-preregistration-v1.json) and every memory/adapter arm"
+  },
+  "seeds": {
+    "arm_seed": 0,
+    "torch": 1234,
+    "numpy": "derived from arm_seed",
+    "note": "one seed at this stage, as the base control registers. The bar is provisional by one unmeasured seed standard error; the claim stage registers three seeds."
+  },
+  "stream": {
+    "manifest": "results/stage2/stage2-stream-20261117T004849Z.json",
+    "path": "results/artifacts/stage2/stage2-stream-20261117T004849Z.u32",
+    "sha256": "58bbed620fa8f80edd578c300038cb3507b8cb002d22fd5bb79506eff296336f",
+    "tokens": 20250000,
+    "graft_tokens": 250000,
+    "train_tokens": 20000000,
+    "builder": "oracle/frontier/stream.py",
+    "leakage_guard": "5-word-shingle Jaccard against every cached evaluation test split, discard at 0.2, fail closed at 0.5, as in the manifest's contamination block",
+    "note": "the same stream, tokenizer, guard and token count as the base control and the memory arm; the config hash of this arm is distinct because the arm and optimizer differ"
+  },
+  "objective": {
+    "form": "CE + 0.5 * T^2 * KL(teacher_T || student_T)",
+    "teacher_logits": "computed online on the same batch, no logit cache",
+    "temperature": 2.0,
+    "weight": 0.5,
+    "same_as": "the base control and every mechanism arm"
+  },
+  "vram": {
+    "arithmetic_receipt": "results/stage2/s40-full-arithmetic-20261117T024151Z.json",
+    "student_text_bytes": 1504786048,
+    "frozen_embedding_bytes": 508559360,
+    "trainable_weights_bytes": 996226688,
+    "gradients_bytes": 996226688,
+    "optimizer_bytes": 1011814960,
+    "optimizer_bytes_per_parameter": 2.0313,
+    "teacher_bytes": 3763650176,
+    "reference_measured_peak_gib": 8.936,
+    "reference_run": "results/stage2/runs/control-20m",
+    "derived_non_weight_envelope_gib": 4.029,
+    "projected_peak_gib_low": 11.07,
+    "projected_peak_gib_high": 11.33,
+    "vram_limit_gib": 12.5,
+    "headroom_gib": 1.17,
+    "status": "PROJECTED from the measured frozen-core peak plus exact gradient and optimizer bytes and a modelled retained-activation bound",
+    "smoke_requirement": "the first launch is a 20-step smoke under the 12.5 GiB limit; its measured peak replaces this projection and the 20M-token launch states the measured limit in its manifest. No long run may inherit the 8 GiB court default.",
+    "container_memory": "SELVEDGE_MEM is sized from the arm's own measured CPU-side peak at the smoke, not from this file; the reference arm measured about 1.6 GB of container memory at 4g.",
+    "gradient_checkpointing": false
+  },
+  "checkpoints": {
+    "every_steps": 1000,
+    "keep_newest": 2,
+    "payload": "trainable-parameter state only (the frozen embedding is not saved), optimizer state including int8 moments, step, token offset, torch and numpy RNG states, config hash, stream hash",
+    "final": "results/stage2/runs/full-20m/ckpt-009765.pt",
+    "resume": "--resume latest verifies the config and stream hashes before loading",
+    "evaluated": "the final checkpoint only; intermediate checkpoints exist for resume and a later learning-curve check, not for checkpoint selection",
+    "storage_note": "a payload is about 2 GiB, so only two newest checkpoints plus latest.pt are retained; checkpoints are matched by *.pt and are gitignored"
+  },
+  "evaluation": {
+    "harness_preregistration": "docs/anchor-preregistration-v1.json",
+    "heldout_stream": {
+      "tokens": 2000000,
+      "protocol": "rebuild a superset with the same builder and the training manifest's own candidate cap; verify the first 20,250,000 tokens hash equals the registered training stream; start the held-out slice at the first EOS at or after that offset; take 2,000,000 tokens; record both hashes and the number of straddling-document tokens dropped",
+      "manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+      "manifest_sha256": "901c0a3fd5b7f5661b6ba3abcf27e25cc980ca45e8ae43118ea42a9a0c782fd5",
+      "stream_sha256": "468e36903cf3bbbea2eacd38dfd726a8542a11bf368f73b8a8fd492c1da1c43e",
+      "start_offset": 20250162,
+      "straddling_tokens_dropped": 162,
+      "prefix_verified": true,
+      "disjointness": "held-out tokens are positions never trained on and never used for grafting; the EOS boundary removes the 162-token tail of the document that straddles the cut",
+      "guard": "the same evaluation-set shingle guard ran on the superset build and the maximum observed Jaccard is recorded in its manifest"
+    },
+    "heldout_metrics": "mean next-token CE and mean KL(teacher_T || student_T) at T=2.0 over the held-out tokens, reported with the standard error across non-overlapping 512-token chunks and paired per-chunk deltas against this arm",
+    "anchored_harness": {
+      "instrument": "docs/anchor-preregistration-v1.json",
+      "instrument_sha256": "49181e669d18e90dc10788471b762166e5286b740ba39cb6109bba5320d131c7",
+      "driver": "scripts/s40_score.py",
+      "tasks": {
+        "mmlu_pro": {"family": "knowledge", "num_fewshot": 5, "limit": 36, "limit_kind": "per subject (504 items)", "batch_size": 8, "primary_metric": "exact_match,custom-extract"},
+        "mmlu": {"family": "knowledge", "num_fewshot": 5, "limit": null, "limit_kind": "full 14042 items", "batch_size": 2, "primary_metric": "acc"},
+        "gsm8k": {"family": "math", "num_fewshot": 5, "limit": null, "limit_kind": "full 1319 items", "batch_size": 8, "primary_metric": "exact_match,strict-match"},
+        "minerva_math500": {"family": "math", "num_fewshot": 4, "limit": null, "limit_kind": "full 500 items", "batch_size": 8, "primary_metric": "math_verify"}
+      },
+      "config": "bfloat16, do_sample false, temperature 0.0, bootstrap_iters 100000, no chat template, no fewshot-as-multiturn, seeds random 0 / numpy 1234 / torch 1234 / fewshot 1234, pre-initialised transformers model handed to HFLM",
+      "same_as": "the base control and the S36 anchor scoreboard"
+    },
+    "comparison_arms": [
+      "base (frozen, no hook)",
+      "adapter-2m (frozen core + parameter-matched dense adapter)",
+      "memory-2m (trained grafted table, evaluated after the S40 cached-decoding fix)",
+      "memory-ungrafted (step-0 module at its deterministic init, zero value projection)",
+      "memory-grafted (step-0 teacher graft, no training)",
+      "full-20m (this arm)"
+    ],
+    "comparison_driver": "scripts/s40_compare.py emits one table with per-arm held-out CE/KL, their standard errors, paired deltas against this arm, and the anchored-harness family means from the per-arm receipts"
+  },
+  "win_bar": {
+    "registered_text": "the full arm is the bar, not a mechanism stage: a mechanism wins only if it beats this arm on the family under test by more than the combined standard error, at equal tokens and equal deployed active union. Beating the frozen anchor or the frozen-backbone adapter is not a win.",
+    "reading": "if this arm does not move the anchored families above the frozen anchor, the token budget is too small for the teacher signal and no mechanism comparison at this budget is interpretable; that is a budget finding, recorded, not silently rescaled."
+  },
+  "training_command": "SELVEDGE_MEM=REPLACE_AFTER_SMOKE SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g scripts/court --gpu --detach oracle -- python3 oracle/frontier/train.py --arm full --stream-manifest results/stage2/stage2-stream-20261117T004849Z.json --tokens 20000000 --seq-len 512 --micro-batch 1 --grad-accum 4 --lr 0.0001 --temperature 2.0 --kl-weight 0.5 --optimizer adam8bit --optim-block 256 --schedule cosine --min-lr-ratio 0.1 --warmup 200 --grad-clip 1.0 --seed 0 --ckpt-every 1000 --keep-checkpoints 2 --log-every 100 --run-dir results/stage2/runs/full-20m --vram-limit-gib 12.5",
+  "smoke_command": "SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=1g scripts/court --gpu oracle -- python3 oracle/frontier/train.py --arm full --stream-manifest results/stage2/stage2-stream-20261117T004849Z.json --tokens 40960 --seq-len 512 --micro-batch 1 --grad-accum 4 --lr 0.0001 --temperature 2.0 --kl-weight 0.5 --optimizer adam8bit --optim-block 256 --schedule cosine --min-lr-ratio 0.1 --warmup 5 --grad-clip 1.0 --seed 0 --ckpt-every 20 --keep-checkpoints 2 --log-every 1 --run-dir results/stage2/runs/full-smoke --vram-limit-gib 12.5",
+  "scoring_receipts": [
+    "results/stage2/eval/full-20m/eval.json",
+    "results/stage2/compare-*.json"
+  ],
+  "limits_derived_from": [
+    "results/stage2/s40-full-arithmetic-20261117T024151Z.json",
+    "results/stage2/runs/control-20m/manifest.json",
+    "results/stage2/throughput-20261117T004619Z-adapter.json"
+  ],
+  "what_this_file_does_not_establish": [
+    "that the arm fits: the peak is projected from the frozen-core reference and a modelled activation bound; the smoke must measure it",
+    "that 20,000,000 tokens is enough to move the anchored families: that is the experiment",
+    "that the in-repo 8-bit Adam matches bitsandbytes numerically: it matches the published construction and its CPU tests, not a bitwise comparison against a library that is absent from the image",
+    "that freezing the tied embedding is harmless at this budget: it is a registered design choice with no direct published precedent"
+  ]
+}

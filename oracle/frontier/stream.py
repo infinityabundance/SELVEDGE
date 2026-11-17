@@ -326,6 +326,103 @@ def build_stream(tokens_wanted: int, graft_tokens: int, out_dir: str,
     return stream_path, manifest_path
 
 
+def build_holdout(train_manifest_path: str, tokens_wanted: int, out_dir: str,
+                  receipt_dir: str, corpus_root: str = CORPUS_ROOT,
+                  dataset_root: str = DATASET_ROOT) -> tuple[str, str]:
+    """A held-out slice of the *same* stream, proven disjoint by prefix hash.
+
+    The training build stopped as soon as it had its budget, so the same
+    deterministic document order still has tokens left. This function rebuilds a
+    superset with the training manifest's own candidate cap, verifies that its
+    first `train.tokens` bytes hash to the training stream, then starts the
+    held-out slice at the first EOS at or after that offset so the cut does not
+    share a document with training.
+    """
+    from transformers import AutoTokenizer
+
+    train = json.load(open(train_manifest_path, encoding="utf-8"))
+    got = sha256_file(train["stream_path"])
+    if got != train["sha256"]:
+        raise SystemExit(f"holdout: training stream sha {got} != {train['sha256']}")
+    train_tokens = int(train["tokens"])
+    candidates_limit = int(train.get("sources", {}).get("candidate_limit", 6000))
+    superset_wanted = train_tokens + int(tokens_wanted) + 2000
+    print(f"holdout: rebuilding {superset_wanted} tokens with the training "
+          f"candidate cap {candidates_limit}", flush=True)
+    superset_path, superset_manifest_path = build_stream(
+        superset_wanted, 0, out_dir, receipt_dir, corpus_root, dataset_root,
+        candidates_limit=candidates_limit)
+    superset_manifest = json.load(open(superset_manifest_path, encoding="utf-8"))
+    superset = np.fromfile(superset_path, dtype=np.uint32)
+    prefix = superset[:train_tokens].tobytes()
+    prefix_sha = hashlib.sha256(prefix).hexdigest()
+    if prefix_sha != train["sha256"]:
+        raise SystemExit(
+            "holdout: the rebuilt prefix does not equal the training stream; "
+            "the candidate order or tokenizer changed, so disjointness cannot "
+            "be proven")
+
+    tok = AutoTokenizer.from_pretrained(MODEL_DIR, local_files_only=True,
+                                        trust_remote_code=False)
+    eos = tok.eos_token_id
+    start = train_tokens
+    while start < superset.size and superset[start - 1] != eos:
+        start += 1
+    dropped = start - train_tokens
+    if start + tokens_wanted > superset.size:
+        raise SystemExit(
+            f"holdout: only {superset.size - start} tokens after the cut, wanted "
+            f"{tokens_wanted}; raise the candidate cap as an amendment")
+    heldout = superset[start:start + tokens_wanted]
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(receipt_dir, exist_ok=True)
+    start_stamp = stamp()
+    heldout_path = os.path.join(out_dir, f"stage2-heldout-{start_stamp}.u32")
+    heldout.tofile(heldout_path)
+    manifest = {
+        "schema": "selvedge/stage2-stream/v1",
+        "kind": "holdout",
+        "created_utc": utcnow(),
+        "stamp": start_stamp,
+        "revision": _revision(),
+        "tokens": int(heldout.size),
+        "bytes": int(heldout.size * 4),
+        "dtype": "uint32-le",
+        "sha256": sha256_file(heldout_path),
+        "stream_path": heldout_path,
+        "graft_tokens": 0,
+        "train_tokens": 0,
+        "derived_from": {
+            "train_manifest": train_manifest_path,
+            "train_manifest_sha256": sha256_file(train_manifest_path),
+            "train_stream_sha256": train["sha256"],
+            "train_tokens": train_tokens,
+            "superset_manifest": superset_manifest_path,
+            "superset_sha256": superset_manifest["sha256"],
+            "superset_tokens": int(superset.size),
+            "candidate_limit": candidates_limit,
+            "prefix_verified": True,
+            "start_offset": int(start),
+            "straddling_tokens_dropped": int(dropped),
+            "eos_token_id": int(eos),
+        },
+        "contamination": superset_manifest.get("contamination"),
+        "disjointness": (
+            "every held-out position is >= the training stream's length, so no "
+            "held-out token was trained on or used for grafting; the EOS cut "
+            "drops the document that straddles the boundary"
+        ),
+        "leakage_guard": "the superset build ran the same 5-word shingle guard",
+        "command": sys.argv,
+    }
+    manifest_path = os.path.join(receipt_dir, f"stage2-heldout-{start_stamp}.json")
+    _write_json(manifest_path, manifest)
+    print(f"holdout: {heldout.size} tokens start={start} dropped={dropped} "
+          f"sha256={manifest['sha256']} -> {heldout_path}", flush=True)
+    print(f"holdout: receipt {manifest_path}", flush=True)
+    return heldout_path, manifest_path
+
+
 def _revision() -> str:
     import subprocess
     try:
@@ -372,6 +469,13 @@ def main(argv: list[str]) -> int:
     build.add_argument("--receipt-dir", default="results/stage2")
     build.add_argument("--corpus-root", default=CORPUS_ROOT)
     build.add_argument("--dataset-root", default=DATASET_ROOT)
+    holdout = sub.add_parser("holdout")
+    holdout.add_argument("--train-manifest", required=True)
+    holdout.add_argument("--tokens", type=int, default=2_000_000)
+    holdout.add_argument("--out-dir", default="results/artifacts/stage2")
+    holdout.add_argument("--receipt-dir", default="results/stage2")
+    holdout.add_argument("--corpus-root", default=CORPUS_ROOT)
+    holdout.add_argument("--dataset-root", default=DATASET_ROOT)
     check = sub.add_parser("verify")
     check.add_argument("manifest")
     args = parser.parse_args(argv)
@@ -381,6 +485,10 @@ def main(argv: list[str]) -> int:
         build_stream(args.tokens, args.graft_tokens, args.out_dir,
                      args.receipt_dir, args.corpus_root, args.dataset_root,
                      candidates_limit=args.candidates)
+        return 0
+    if args.command == "holdout":
+        build_holdout(args.train_manifest, args.tokens, args.out_dir,
+                      args.receipt_dir, args.corpus_root, args.dataset_root)
         return 0
     manifest = json.load(open(args.manifest))
     got = sha256_file(manifest["stream_path"])

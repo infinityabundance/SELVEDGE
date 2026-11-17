@@ -28,7 +28,9 @@ Discipline recorded per run:
 from __future__ import annotations
 
 import argparse
+import glob
 import json
+import math
 import os
 import sys
 import time
@@ -42,7 +44,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ORACLE = os.path.dirname(HERE)
 sys.path.insert(0, ORACLE)
 
-from frontier import arms, memory  # noqa: E402
+from frontier import arms, full, memory, optim8bit  # noqa: E402
 from frontier.stream import load_stream, sha256_file  # noqa: E402
 
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -147,6 +149,14 @@ def token_loss(student_logits: torch.Tensor, teacher_logits: torch.Tensor | None
 
 
 def build_arm(kind: str, model, args, device: str):
+    if kind == "full":
+        arm = full.FullBackboneArm(model, freeze_embedding=args.freeze_embedding)
+        if args.gradient_checkpointing:
+            model.gradient_checkpointing_enable()
+        report = arm.active_parameter_report()
+        report["gradient_checkpointing"] = bool(args.gradient_checkpointing)
+        report["optimizer"] = args.optimizer
+        return arm, [], report
     if kind == "memory":
         checkpoint = torch.load(args.memory_init, map_location="cpu",
                                 weights_only=False)
@@ -181,6 +191,31 @@ def build_arm(kind: str, model, args, device: str):
 
 # ---------------------------------------------------------------------------
 # batch and loop
+
+
+def learning_rate(step: int, args, steps: int, warmup: int) -> float:
+    """Linear warmup, then the registered schedule."""
+    if step < warmup:
+        return args.lr * (min(1.0, (step + 1) / warmup))
+    if args.schedule == "constant":
+        return args.lr
+    if args.schedule == "cosine":
+        span = max(1, steps - warmup)
+        progress = min(1.0, (step - warmup) / span)
+        floor = args.min_lr_ratio
+        return args.lr * (floor + (1.0 - floor) * 0.5 * (1.0 + math.cos(math.pi * progress)))
+    raise SystemExit(f"unknown schedule {args.schedule!r}")
+
+
+def prune_checkpoints(run_dir: str, keep: int) -> None:
+    if keep <= 0:
+        return
+    paths = sorted(glob.glob(os.path.join(run_dir, "ckpt-*.pt")))
+    for old in paths[:-keep]:
+        try:
+            os.remove(old)
+        except OSError:
+            pass
 
 
 def next_batch(stream: torch.Tensor, offset: int, seq_len: int) -> tuple[torch.Tensor, int]:
@@ -220,10 +255,18 @@ def run(args) -> int:
 
     print(f"train: loading student {args.student_dir}", flush=True)
     model = arms.load_model(args.student_dir, dtype=torch.bfloat16, device=device)
-    frozen = arms.freeze_backbone(model)
+    if args.arm == "full":
+        # The full arm decides its own frozen/trainable partition (tied
+        # embedding frozen, every other text-tower identity trained).
+        frozen = 0
+        frozen_semantics = "set by the full arm: tied embedding only"
+    else:
+        frozen = arms.freeze_backbone(model)
+        frozen_semantics = "whole core"
     model.eval()
-    for parameter in model.parameters():
-        parameter.requires_grad_(False)
+    if args.arm != "full":
+        for parameter in model.parameters():
+            parameter.requires_grad_(False)
     arm, handles, arm_report = build_arm(args.arm, model, args, device)
     if args.arm == "memory":
         for parameter in arm.parameters():
@@ -238,10 +281,28 @@ def run(args) -> int:
         teacher_params = sum(parameter.numel() for parameter in teacher.parameters())
         for parameter in teacher.parameters():
             parameter.requires_grad_(False)
+    if args.arm == "full" and (teacher is None or args.kl_weight <= 0.0):
+        raise SystemExit("train: the full-backbone control requires the online "
+                         "teacher and kl_weight > 0")
 
     trainable = [parameter for parameter in arm.parameters() if parameter.requires_grad]
-    optimizer = torch.optim.AdamW(trainable, lr=args.lr, betas=(0.9, 0.95),
-                                  weight_decay=args.weight_decay)
+    if args.optimizer == "adamw":
+        if args.arm == "full" and not args.allow_dense_optimizer:
+            raise SystemExit(
+                "train: the full arm does not fit with fp32 AdamW moments; use "
+                "--optimizer adam8bit (or pass --allow-dense-optimizer deliberately)")
+        optimizer = torch.optim.AdamW(trainable, lr=args.lr, betas=(0.9, 0.95),
+                                      weight_decay=args.weight_decay)
+        optimizer_report = {"kind": "stage2_adamw", "name": "AdamW",
+                            "betas": [0.9, 0.95]}
+    elif args.optimizer == "adam8bit":
+        optimizer = optim8bit.Adam8bit(trainable, lr=args.lr, betas=(0.9, 0.95),
+                                       weight_decay=args.weight_decay,
+                                       block=args.optim_block)
+        optimizer_report = optimizer.receipt()
+    else:
+        raise SystemExit(f"train: unknown optimizer {args.optimizer!r}")
+    arm_report["optimizer"] = optimizer_report
     tokens_per_step = args.micro_batch * args.seq_len * args.grad_accum
     steps = args.tokens // tokens_per_step
     warmup = min(args.warmup, max(1, steps // 10))
@@ -271,11 +332,25 @@ def run(args) -> int:
         "data_order": "pinned stream order; no shuffling",
         "memory_table_in_active_union": False,
     }
+    if args.arm == "full":
+        # Added only for the full arm so existing adapter/memory config hashes
+        # (and therefore their resumes) are unchanged by this arm's arrival.
+        config.update({
+            "optimizer": args.optimizer,
+            "optim_block_elements": args.optim_block,
+            "schedule": args.schedule,
+            "min_lr_ratio": args.min_lr_ratio,
+            "freeze_embedding": bool(args.freeze_embedding),
+            "gradient_checkpointing": bool(args.gradient_checkpointing),
+        })
     config["config_sha256"] = config_hash(config)
     os.makedirs(args.run_dir, exist_ok=True)
     write_json(os.path.join(args.run_dir, "manifest.json"), {
         **config, "created_utc": utcnow(), "revision": revision(),
-        "frozen_backbone_elements": int(frozen),
+        "frozen_backbone_elements": int(
+            arm_report.get("frozen_embedding_elements", frozen)
+            if args.arm == "full" else frozen),
+        "frozen_backbone_elements_semantics": frozen_semantics,
         "trainable_arm_elements": int(sum(p.numel() for p in arm.parameters())),
         "arm_accounting": arm_report,
         "gpu_free_gib": free_bytes / GIB,
@@ -310,7 +385,7 @@ def run(args) -> int:
     run_tokens = start_step * tokens_per_step
     global_started = time.time()
     for step in range(start_step, steps):
-        lr = args.lr * (min(1.0, (step + 1) / warmup))
+        lr = learning_rate(step, args, steps, warmup)
         for group in optimizer.param_groups:
             group["lr"] = lr
         optimizer.zero_grad(set_to_none=True)
@@ -387,6 +462,7 @@ def run(args) -> int:
             ckpt = os.path.join(args.run_dir, f"ckpt-{step + 1:06d}.pt")
             torch.save(payload, ckpt)
             torch.save(payload, os.path.join(args.run_dir, "latest.pt"))
+            prune_checkpoints(args.run_dir, args.keep_checkpoints)
             print(f"train: checkpoint {ckpt}", flush=True)
 
     log.close()
@@ -408,9 +484,13 @@ def run(args) -> int:
         "peak_allocated_gib": torch.cuda.max_memory_allocated() / GIB,
         "peak_reserved_gib": torch.cuda.max_memory_reserved() / GIB,
         "vram_limit_gib": args.vram_limit_gib,
-        "frozen_backbone_elements": int(frozen),
+        "frozen_backbone_elements": int(
+            arm_report.get("frozen_embedding_elements", frozen)
+            if args.arm == "full" else frozen),
+        "frozen_backbone_elements_semantics": frozen_semantics,
         "trainable_arm_elements": int(sum(p.numel() for p in arm.parameters())),
         "arm_accounting": arm_report,
+        "optimizer_state": optimizer_report,
         "final_checkpoint": os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt"),
         "final_checkpoint_sha256": sha256_file(
             os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt")),
@@ -427,7 +507,7 @@ def run(args) -> int:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--arm", choices=["memory", "adapter"], required=True)
+    parser.add_argument("--arm", choices=["memory", "adapter", "full"], required=True)
     parser.add_argument("--stream-manifest", required=True)
     parser.add_argument("--student-dir", default=STUDENT_DIR)
     parser.add_argument("--teacher-dir", default=TEACHER_DIR)
@@ -444,6 +524,18 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--temperature", type=float, default=2.0)
     parser.add_argument("--kl-weight", type=float, default=0.5)
     parser.add_argument("--grad-clip", type=float, default=1.0)
+    parser.add_argument("--optimizer", choices=["adamw", "adam8bit"], default="adamw")
+    parser.add_argument("--optim-block", type=int, default=256)
+    parser.add_argument("--allow-dense-optimizer", action="store_true")
+    parser.add_argument("--schedule", choices=["constant", "cosine"], default="constant")
+    parser.add_argument("--min-lr-ratio", type=float, default=0.1)
+    parser.add_argument("--freeze-embedding", dest="freeze_embedding",
+                        action="store_true", default=True)
+    parser.add_argument("--no-freeze-embedding", dest="freeze_embedding",
+                        action="store_false")
+    parser.add_argument("--gradient-checkpointing", action="store_true")
+    parser.add_argument("--keep-checkpoints", type=int, default=0,
+                        help="keep only the newest N ckpt-*.pt files (0 keeps all)")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--collision-every", type=int, default=50)
@@ -454,6 +546,9 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     if args.arm == "memory" and not args.memory_init:
         raise SystemExit("--memory-init is required for --arm memory")
+    if args.arm != "full" and (args.optimizer != "adamw" or args.schedule != "constant"):
+        raise SystemExit("the registered adapter/memory arms are AdamW + constant LR; "
+                         "do not change them retroactively")
     return run(args)
 
 

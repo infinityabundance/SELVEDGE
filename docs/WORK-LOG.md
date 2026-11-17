@@ -3766,3 +3766,78 @@ it had existed then.
   reference arithmetic is re-exercised; its capability score is the S36
   scoreboard's, and the reference *vendor-parity* comparison has not been re-run on
   `-Base` (`docs/FRONTIER-TARGET.md` §10.3).
+
+## 2026-11-17 — S40: the train/inference memory defect, the full-distillation bar, the comparison instrument
+
+### The defect
+
+A cached decoding call reached the memory layer with a length-1 hidden state, so
+the n-gram address was computed from that single token plus zero padding: the
+bigram and trigram heads read a different row during generation than during
+training. The causal depthwise convolution had the same shape of bug — it padded
+each call independently, so it lost its kernel-1 history on every cached step.
+The memory output during decoding was therefore not the function the checkpoint
+was trained with. This is a correctness defect, not a performance one.
+
+The fix computes the address from the whole recorded token prefix and slices the
+positions the current call executes, and the convolution carries its last
+`kernel-1` input vectors in per-site state that is dropped when `TokenContext`
+generation changes. The NGM control uses the same prefix/slice rule. The
+learning-free addressing property is unchanged: the address is still an exact
+integer function of the token ids with no learned index.
+
+Evidence: `oracle/tests/test_stage2_memory.py` (full-sequence memory equals
+token-by-token cached output, full-sequence logits equal cached continuation
+logits, NGM passes the same history check, state does not leak between
+sequences; non-identity convolution and non-zero gates), and
+`results/stage2/memory-2m-compat-20261117T023857Z.json`.
+
+### The checkpoint question, answered by measurement
+
+The full-sequence forward of the registered `memory-2m` checkpoint is
+bit-identical under the fix (the compat receipt records a maximum absolute
+difference of zero), because at the start of a sequence the convolution history
+is zeros and the address slice is the whole prefix. Fixed cached decoding
+matches that forward. Pre-fix cached decoding did not, at every tested
+continuation position. The checkpoint was trained with full-sequence forwards,
+so its learned function is unchanged and **retraining is not required**. What
+would be invalid is a cached generative score produced by the old code; the
+compat receipt lists this arm's evaluation receipts and none exists.
+
+### The bar
+
+The frozen-backbone parameter-matched adapter is not the WS19 bar: it activates
+the memory arm's active union, not the text tower's. S40 registers a
+full-backbone distillation arm — `docs/ws19-full-distillation-preregistration-v1.json`,
+committed before any score — that distils the whole text tower from the online 2B
+teacher on the same stream and the same token budget, with the tied token
+embedding frozen. The exact active-union arithmetic, per-component bytes, the
+projected peak, the limit and the smoke requirement are in
+`results/stage2/s40-full-arithmetic-20261117T024151Z.json`. The 8-bit optimizer
+is `oracle/frontier/optim8bit.py`; bitsandbytes is absent from the pinned image,
+and the in-repo construction is named in every receipt rather than silently
+substituted. The peak is a projection from the measured frozen-core reference
+plus exact gradient/optimizer bytes and a modelled activation bound, and the
+registration requires a measured smoke before the long run.
+
+### The instrument
+
+`scripts/s40_compare.py` scores six arms — frozen base, adapter-2m, memory-2m
+after the fix, the ungrafted module, the step-0 graft and full-distill — with one
+held-out CE/KL path and merges anchored-harness receipts. It emits per-arm means,
+standard errors and paired per-chunk deltas against full-distill.
+`scripts/s40_score.py` is its anchored-harness half. The held-out stream is
+`results/stage2/stage2-heldout-20261117T024542Z.json`: a superset build whose
+first 20,250,000 tokens hash-equal the training stream, sliced after the first
+EOS at or beyond that offset, so no held-out token was trained on and the
+straddling document is dropped. The CPU self-test builds fake checkpoints for all
+six arms and passes (`scripts/s40_compare.py --self-test`).
+
+### What this entry does not claim
+
+- **No new arm score.** No held-out CE/KL or harness receipt for the full arm
+  exists; the registration and the instrument are the product of this session.
+- **No measured full-arm VRAM.** The limit is projected and the smoke must
+  replace it.
+- **No retraining was performed and none is required** for `memory-2m`, for the
+  reason measured above.

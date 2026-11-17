@@ -1,0 +1,81 @@
+{
+  "activation_retention_model": {
+    "basis": "every 2-D linear weight saves its input [T, in_features] at bf16; the upper bound doubles that for elementwise intermediates",
+    "linear_in_features_per_token": 276480,
+    "saved_linear_inputs_bytes_lower": 283115520,
+    "saved_plus_intermediates_bytes_upper": 566231040,
+    "seq_len": 512,
+    "status": "MODELLED \u2014 replace with the smoke measurement before the run"
+  },
+  "byte_arithmetic": {
+    "dtype_bytes": 2,
+    "frozen_embedding_bytes": 508559360,
+    "gradients_bytes": 996226688,
+    "optimizer": {
+      "basis": "two int8 moments plus two float32 scales per 256-element block",
+      "block_elements": 256,
+      "bytes": 1011814960,
+      "bytes_per_parameter": 2.0312946283968656,
+      "moment_bytes": 996248576,
+      "padded_elements": 498124288,
+      "parameters": 498113344,
+      "scale_bytes": 15566384
+    },
+    "student_text_bytes": 1504786048,
+    "total_resident_and_training_bytes": 7276477872,
+    "trainable_weights_bytes": 996226688
+  },
+  "command": [
+    "scripts/s40_full_arm_arithmetic.py"
+  ],
+  "created_utc": "2026-11-17T02:41:51Z",
+  "kind": "full-backbone-distillation-arithmetic",
+  "projection": {
+    "device_total_gib": 15.61370849609375,
+    "free_at_reference_start_gib": 13.44073486328125,
+    "headroom_gib": 1.1665217324495316,
+    "projected_peak_gib_high": 11.333478267550468,
+    "projected_peak_gib_low": 11.069806392550468,
+    "smoke_requirement": "launch 20 optimizer steps under the limit, record the measured peak, and re-derive the limit from it before the 20M-token run",
+    "status": "PROJECTED from the measured reference envelope + exact weights",
+    "vram_limit_gib": 12.5
+  },
+  "reference_measurement": {
+    "arm": "adapter",
+    "derived_non_weight_envelope_bytes": 4326520715,
+    "derived_non_weight_envelope_gib": 4.029386411421001,
+    "log": "results/stage2/runs/control-20m/log.jsonl",
+    "measured_peak_allocated_gib": 8.936,
+    "measured_peak_reserved_gib": 9.062,
+    "reading": "the reference arm freezes the core, so this envelope is forward logits, the teacher forward, the KL/CE buffers and workspace; it does not include gradient or retained-activation memory",
+    "reference_student_bytes": 1504786048,
+    "reference_teacher_bytes": 3763650176,
+    "run": "results/stage2/runs/control-20m",
+    "step": 7269,
+    "tokens_seen": 14886912
+  },
+  "revision": "7485dd634ce6622c107d7cd89c74aa2dd7e8cd7a",
+  "schema": "selvedge/stage2-full-arm-arithmetic/v1",
+  "stamp": "20261117T024151Z",
+  "student": {
+    "checkpoint": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68/model.safetensors-00001-of-00001.safetensors",
+    "checkpoint_sha256": "c2b1e5a17d9c1e27685d92ed9b382911ebb99955ecd89052d1721241adfbab6c",
+    "deployed_active_union_basis": "finetuning changes values, not identities",
+    "deployed_active_union_elements": 752393024,
+    "dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "frozen_embedding_elements": 254279680,
+    "frozen_identities": [
+      "model.language_model.embed_tokens.weight",
+      "the tied output projection (no lm_head.weight exists)"
+    ],
+    "text_tensors": 320,
+    "text_tower_elements": 752393024,
+    "trainable_elements": 498113344,
+    "trainable_tensors": 319
+  },
+  "teacher": {
+    "bf16_bytes": 3763650176,
+    "parameters": 1881825088,
+    "source": "results/stage2/runs/control-20m/manifest.json:teacher_parameters"
+  }
+}

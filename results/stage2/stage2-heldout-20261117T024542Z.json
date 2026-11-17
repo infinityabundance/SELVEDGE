@@ -1,0 +1,52 @@
+{
+  "bytes": 8000000,
+  "command": [
+    "oracle/frontier/stream.py",
+    "holdout",
+    "--train-manifest",
+    "results/stage2/stage2-stream-20261117T004849Z.json",
+    "--tokens",
+    "2000000"
+  ],
+  "contamination": {
+    "eval_split_filter": "cached arrow files whose basename contains 'test'",
+    "evaluation_items": 51769,
+    "index": {
+      "distinct_shingles": 1917192,
+      "items": 51769,
+      "width_words": 5
+    },
+    "max_shingle_jaccard_eval_set": "cais___mmlu/high_school_us_history/0.0.0/c30699e8356da336a370243923dbaf21066bb9fe/mmlu-test.arrow",
+    "max_shingle_jaccard_seen": 0.07613168724279835,
+    "shingle_width_words": 5,
+    "threshold_discard": 0.2,
+    "threshold_fail_closed": 0.5
+  },
+  "created_utc": "2026-11-17T02:45:42Z",
+  "derived_from": {
+    "candidate_limit": 30000,
+    "eos_token_id": 248044,
+    "prefix_verified": true,
+    "start_offset": 20250162,
+    "straddling_tokens_dropped": 162,
+    "superset_manifest": "results/stage2/stage2-stream-20261117T024542Z.json",
+    "superset_sha256": "c73cc154a40a2ce2de63d22913dfa6e8c5ec79eaa7f033333f8eab6d31347dee",
+    "superset_tokens": 22252000,
+    "train_manifest": "results/stage2/stage2-stream-20261117T004849Z.json",
+    "train_manifest_sha256": "58c04b2523d35ffb492fd597c3ed62c295f3f51cc41517cbabb888047e8cd462",
+    "train_stream_sha256": "58bbed620fa8f80edd578c300038cb3507b8cb002d22fd5bb79506eff296336f",
+    "train_tokens": 20250000
+  },
+  "disjointness": "every held-out position is >= the training stream's length, so no held-out token was trained on or used for grafting; the EOS cut drops the document that straddles the boundary",
+  "dtype": "uint32-le",
+  "graft_tokens": 0,
+  "kind": "holdout",
+  "leakage_guard": "the superset build ran the same 5-word shingle guard",
+  "revision": "7485dd634ce6622c107d7cd89c74aa2dd7e8cd7a",
+  "schema": "selvedge/stage2-stream/v1",
+  "sha256": "468e36903cf3bbbea2eacd38dfd726a8542a11bf368f73b8a8fd492c1da1c43e",
+  "stamp": "20261117T024542Z",
+  "stream_path": "results/artifacts/stage2/stage2-heldout-20261117T024542Z.u32",
+  "tokens": 2000000,
+  "train_tokens": 0
+}
