@@ -297,6 +297,9 @@ def load_items(dataset: str, limit: int | None = None,
                 if not target.ok:
                     skipped += 1
                     continue
+                level_text = str(row.get("level") or "")
+                level_match = re.search(r"(\d+)", level_text)
+                level = int(level_match.group(1)) if level_match else 0
                 items.append({
                     "id": f"math-train:{subject}:{index}",
                     "dataset": "math",
@@ -305,8 +308,9 @@ def load_items(dataset: str, limit: int | None = None,
                     "prompt": f"Problem:\n{row['problem']}\n\nSolution:",
                     "target": target.value,
                     "reference_solution": row["solution"],
-                    # Hendrycks MATH carries an explicit level 1-5.
-                    "difficulty": row.get("level"),
+                    # Hendrycks MATH carries an explicit level 1-5 as text
+                    # ("Level 5"); the integer is what the stratum uses.
+                    "difficulty": level,
                     "difficulty_source": "Hendrycks MATH level field",
                     "reasoning_length": len(_words(row["solution"])),
                 })
@@ -331,10 +335,14 @@ def load_pool(datasets: list[str]) -> list[dict]:
 
 def _difficulty_bucket(item: dict) -> str:
     value = item.get("difficulty")
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        match = re.search(r"\d+", str(value))
+        number = int(match.group(0)) if match else 0
     if item.get("dataset") == "math" and value is not None:
-        return f"level{int(value)}"
-    steps = int(value or 0)
-    return f"steps{min(steps, 3)}"
+        return f"level{number}"
+    return f"steps{min(number, 3)}"
 
 
 def _length_bucket(length: int, boundaries: list[int]) -> int:
@@ -350,10 +358,12 @@ def stratified_select(items: list[dict], count: int | None, seed: int
     """Seeded stratified selection instead of a prefix truncation.
 
     Strata are `(source, difficulty bucket, reasoning-length quartile)`. The
-    pool is shuffled inside each stratum with a seeded RNG, then strata are
-    consumed round-robin so every represented stratum appears before any one
-    stratum contributes twice. This is what replaces `items[:limit]`, which
-    would take only the first GSM8K questions (all easy) when both sources are
+    pool is shuffled inside each stratum with a seeded RNG. Selection is
+    proportionate water-filling: at every step the stratum with the smallest
+    `selected / pool` ratio contributes one item (ties are broken by the sorted
+    stratum key), so no stratum is exhausted before the others and the source
+    mix tracks the pooled source mix. This is what replaces `items[:limit]`,
+    which would take only the first GSM8K questions when both sources are
     pooled.
     """
     import random
@@ -377,21 +387,35 @@ def stratified_select(items: list[dict], count: int | None, seed: int
     for key in sorted(strata):
         rng.shuffle(strata[key])
     keys = sorted(strata)
+    source_keys: dict[str, list[str]] = {}
+    for key in keys:
+        source_keys.setdefault(key.split("|", 1)[0], []).append(key)
+    for source in source_keys:
+        rng.shuffle(source_keys[source])
+    source_pool = {source: sum(len(strata[key]) for key in group)
+                   for source, group in source_keys.items()}
+    source_cursor = {source: 0 for source in source_keys}
     target = len(items) if count is None else min(int(count), len(items))
     selected: list[dict] = []
     cursor = {key: 0 for key in keys}
     while len(selected) < target:
-        progressed = False
-        for key in keys:
-            if cursor[key] >= len(strata[key]):
-                continue
-            selected.append(strata[key][cursor[key]])
-            cursor[key] += 1
-            progressed = True
-            if len(selected) >= target:
-                break
-        if not progressed:
+        available_sources = [
+            source for source, group in source_keys.items()
+            if source_cursor[source] < source_pool[source]]
+        if not available_sources:
             break
+        source = min(available_sources,
+                     key=lambda name: (source_cursor[name] / source_pool[name],
+                                       name))
+        available = [key for key in source_keys[source]
+                     if cursor[key] < len(strata[key])]
+        if not available:
+            break
+        key = min(available,
+                  key=lambda name: (cursor[name] / len(strata[name]), name))
+        selected.append(strata[key][cursor[key]])
+        cursor[key] += 1
+        source_cursor[source] += 1
     report = {
         "kind": "stratified_selection",
         "seed": int(seed),
@@ -430,8 +454,6 @@ def select_items(datasets: list[str], limit: int | None, start: int,
         raise SystemExit("--start is prefix-only; stratified selection is seeded")
     pool = load_pool(datasets)
     selected, report = stratified_select(pool, limit, seed)
-    for item in selected:
-        item["skipped_reference_items"] = 0
     report["sources"] = datasets
     return selected, report
 

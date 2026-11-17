@@ -337,6 +337,22 @@ def _stratified_items():
     return items
 
 
+def test_stratified_selection_covers_sources_at_small_counts():
+    items = _stratified_items()
+    selected, _ = rft.stratified_select(items, 2, seed=451)
+    assert {item["dataset"] for item in selected} == {"gsm8k", "math"}
+    selected4, _ = rft.stratified_select(items, 4, seed=451)
+    assert {item["dataset"] for item in selected4} == {"gsm8k", "math"}
+
+
+def test_difficulty_bucket_accepts_the_math_level_text():
+    # The Hendrycks parquet stores "Level 5", not 5.
+    assert rft._difficulty_bucket(
+        {"dataset": "math", "difficulty": "Level 5"}) == "level5"
+    assert rft._difficulty_bucket(
+        {"dataset": "gsm8k", "difficulty": 2}) == "steps2"
+
+
 def test_stratified_selection_is_seeded_balanced_and_not_a_prefix():
     items = _stratified_items()
     selected, report = rft.stratified_select(items, 6, seed=451)
