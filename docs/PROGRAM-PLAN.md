@@ -5150,15 +5150,18 @@ A stage-2 null is informative only if it is a null **against those**, and the
 report must name which one it failed to beat.
 **Depends.** P19.0 accounting half, P19.1.
 **Acceptance evidence.** audited ≤ 1e9 unique active on every token (the union,
-not the total), bytes per token, scoreboard delta against the stage-1 anchor, a
-parameter-matched dense-adapter control at equal union, and — the new part —
+not the total), bytes per token, scoreboard delta against the stage-1 anchor **and
+against the distillation-only control** (`docs/WS19-EXECUTION-REGISTRATION.md` §2.1),
+a parameter-matched dense-adapter control at equal union, and — the new part —
 **quality and memory traffic measured at each of the three row scales**, with the
 measured traffic reported separately from the modelled read bytes. A scale that
 was not run is reported as not run, never interpolated.
-**Win.** any family gain with the ceiling satisfied, at a measured byte cost, and
-a monotone-in-rows quality signal (or an explicit flat signal) across the three
-scales. The *scale* answer is the stage's product: "more rows help / saturate at
-N / do not help" is a result in every one of those three forms.
+**Win.** any family gain **over the distilled control** with the ceiling satisfied,
+at a measured byte cost, and a monotone-in-rows quality signal (or an explicit
+flat signal) across the three scales. The *scale* answer is the stage's product:
+"more rows help / saturate at N / do not help" is a result in every one of those
+three forms. A gain over the frozen anchor alone is **not** a win: every arm here
+is trained with the same teacher signal, so that gain is distillation.
 **Next route if miss.** (1) **memory placement**: keep the table but move
 read/write residency (host RAM, then NVMe) and re-measure, because a null may be
 an access-latency artefact rather than an information one; (2) **a different

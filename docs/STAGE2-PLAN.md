@@ -11,8 +11,11 @@ design (8 reads per token, 4 bigram + 4 trigram heads, one site after decoder
 layer 2) is a declared structural fact, not a measurement.
 
 The contract this serves is `docs/PROGRAM-PLAN.md` §24 P19.2 and the WS19 win
-condition registered there: the grafted memory must beat the frozen 0.8B-Base
-score on the knowledge family with no task more than one point lower, and it
+condition registered there: the grafted memory must beat **the distillation-only
+control** — `Qwen/Qwen3.5-0.8B-Base` distilled online from the 2B teacher under the
+same objective, stream and schedule, registered in
+`docs/ws19-distillation-control-preregistration-v1.json` and run before any
+mechanism — on the knowledge family, and it
 must beat both a training-free NGM baseline and a parameter-matched dense
 adapter at equal unique active.
 
