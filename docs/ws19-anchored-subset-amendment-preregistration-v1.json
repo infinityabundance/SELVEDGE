@@ -1,0 +1,53 @@
+{
+  "schema": "selvedge/ws19-anchored-subset-amendment/v1",
+  "registering_session": "S41",
+  "registered_utc": "2026-11-17T04:35:49Z",
+  "amends": {
+    "path": "docs/ws19-anchored-subset-preregistration-v1.json",
+    "sha256": "e7aa099f0dfa56329869e107bd55429bf61829ad5944d0edf7a4f64150835f5c",
+    "registered_utc": "2026-11-17T02:58:29Z",
+    "committed_utc": "2026-11-17T02:59:14Z",
+    "rule": "the pre-registration is not edited. This amendment records one measured fact about how the harness applies a limit, and what that fact means for the sample the pass actually scored."
+  },
+  "finding": {
+    "what_was_registered": "the subset registration says the intermediate pass caps MMLU at 2,000 items and that this makes the knowledge mean an estimate on 2,000 of 14,042 items.",
+    "what_the_harness_did": "MMLU is a 57-subject group task and the harness applies `limit` per subtask, not per group. Passing `mmlu=2000` therefore selected min(2000, n_subject) for every subject. Every subject has fewer than 2,000 items, so the effective sample is all 14,042 items.",
+    "measured_evidence": {
+      "base_receipt": "results/stage2/eval/base/eval.json",
+      "base_mmlu_sample_len": 14042,
+      "base_mmlu_sample_count": 14042,
+      "base_mmlu_wall_seconds": 654.0,
+      "anchor_full_mmlu_wall_seconds": 638.8,
+      "reading": "a true 2,000-item run would be about one seventh of the anchor's full-MMLU wall time; 654 s against 639 s is the full set"
+    },
+    "correction": "the pre-registration's `limits_derived_from`-style statement that MMLU is capped at 2,000 is wrong in effect. The pass scored the full 14,042-item MMLU, exactly as the anchor pre-registration does. The receipt's `pre_registered.limit = 2000` and `limit_from_limit_map = true` record the command that was issued; `n_samples.sample_len = 14042` records what was actually scored, and the receipt is read that way."
+  },
+  "what_changes_and_what_does_not": {
+    "unchanged": [
+      "MMLU-Pro limit 36 per subject (504 items)",
+      "GSM8K full 1,319 items",
+      "MATH-500 full 500 items",
+      "every few-shot count, batch size, seed, bootstrap iteration and greedy-decoding setting",
+      "the arms, checkpoints and held-out comparison"
+    ],
+    "changed_in_reading_only": "the knowledge family mean is on the full MMLU, not a 2,000-item subset. It is therefore on the same basis as the anchor's 37.90 knowledge mean and the registered 42.01 knowledge threshold. The 42.01 / 39.27 thresholds are still not evaluated as a win by this intermediate pass, because the mechanism arms are at 2,000,000 tokens and there is no full-distillation arm.",
+    "no_rerun": "no arm is re-run. The effective sample was already the full set for every arm, and every arm uses the same command."
+  },
+  "limits_derived_from": [
+    "results/courts/logs/eval-20261117T035458Z-dddda6.log"
+  ],
+  "scoring_receipts": [
+    "results/stage2/eval/base/eval.json",
+    "results/stage2/eval/adapter-2m/eval.json",
+    "results/stage2/eval/memory-2m/eval.json",
+    "results/stage2/eval/memory-ungrafted/eval.json",
+    "results/stage2/eval/memory-grafted/eval.json",
+    "results/stage2/eval/adapter-20m/eval.json",
+    "results/stage2/s41-heldout-comparison.json"
+  ],
+  "what_this_amendment_does_not_establish": [
+    "that the 2M-token arms reach the WS19 thresholds: the family means are reported as an intermediate signal, not a win",
+    "that a limit passed to a group task is a total limit: the measured fact is the opposite for this harness",
+    "that the pre-registration was wrong about anything except the effective MMLU sample"
+  ]
+}
