@@ -1,0 +1,50 @@
+.....FF..                                                                [100%]
+=================================== FAILURES ===================================
+______ test_one_ce_kl_step_produces_finite_nonzero_gradients[gated-dense] ______
+
+kind = 'gated-dense'
+
+    @pytest.mark.parametrize("kind", ["adapter-matched", "gated-dense"])
+    def test_one_ce_kl_step_produces_finite_nonzero_gradients(kind):
+        model = _tiny()
+        module, handles, _report = train.build_arm(kind, model, _args(model), "cpu")
+        try:
+            ids = torch.randint(0, VOCAB, (2, 8),
+                                generator=torch.Generator().manual_seed(2))
+            inputs, targets = ids[:, :-1], ids[:, 1:]
+            student = model(input_ids=inputs).logits
+            with torch.no_grad():
+                teacher = model(input_ids=inputs).logits + 0.1
+            loss, ce, _kl = train.token_loss(student, teacher, targets, 2.0, 0.5,
+                                             vocab_chunk=64)
+            loss.backward()
+            grads = [parameter.grad for parameter in module.parameters()
+                     if parameter.grad is not None]
+            assert grads, kind
+            total = sum(float(grad.abs().sum()) for grad in grads)
+>           assert total > 0.0, f"{kind}: no gradient reached the control"
+E           AssertionError: gated-dense: no gradient reached the control
+E           assert 0.0 > 0.0
+
+oracle/tests/test_s47_train_controls.py:137: AssertionError
+______________ test_the_gated_dense_gate_opens_on_the_first_step _______________
+
+    def test_the_gated_dense_gate_opens_on_the_first_step():
+        model = _tiny()
+        module, handles, _report = train.build_arm("gated-dense", model, _args(model), "cpu")
+        try:
+            ids = torch.randint(0, VOCAB, (2, 8),
+                                generator=torch.Generator().manual_seed(3))
+            student = model(input_ids=ids[:, :-1]).logits
+            student.sum().backward()
+            # d alpha / d w at w = 0 is [h ; r] / 1, so the gate weight must move.
+            gate_grad = float(module.gate_w.grad.abs().sum())
+>           assert gate_grad > 0.0, "the gate received no gradient"
+E           AssertionError: the gate received no gradient
+E           assert 0.0 > 0.0
+
+oracle/tests/test_s47_train_controls.py:155: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s47_train_controls.py::test_one_ce_kl_step_produces_finite_nonzero_gradients[gated-dense]
+FAILED oracle/tests/test_s47_train_controls.py::test_the_gated_dense_gate_opens_on_the_first_step
+2 failed, 7 passed in 1.60s

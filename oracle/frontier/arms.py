@@ -22,6 +22,7 @@ arms.
 from __future__ import annotations
 
 import inspect
+import math
 
 import torch
 import torch.nn as nn
@@ -44,7 +45,7 @@ class DenseAdapter(nn.Module):
     """
 
     def __init__(self, hidden: int = 1024, rank: int | None = None,
-                 target_active: int | None = None):
+                 target_active: int | None = None, zero_init: bool = True):
         super().__init__()
         self.hidden = int(hidden)
         if rank is None:
@@ -52,11 +53,19 @@ class DenseAdapter(nn.Module):
                 target_active = MemoryGeometry(hidden=hidden).active_per_token_per_site
             rank = max(1, round((target_active - hidden) / (2 * hidden)))
         self.rank = int(rank)
+        self.zero_init = bool(zero_init)
         self.down = nn.Linear(self.hidden, self.rank, bias=False, dtype=torch.float32)
         self.up = nn.Linear(self.rank, self.hidden, bias=False, dtype=torch.float32)
         self.bias = nn.Parameter(torch.zeros(self.hidden, dtype=torch.float32))
         with torch.no_grad():
-            nn.init.zeros_(self.up.weight)
+            if self.zero_init:
+                nn.init.zeros_(self.up.weight)
+            else:
+                # A non-zero read is required when something else supplies the
+                # zero: a caller whose gate is exactly zero at init would
+                # otherwise multiply two zeros, and both gradient paths
+                # (`d/dalpha = read`, `d/dread = alpha`) would vanish.
+                nn.init.kaiming_uniform_(self.up.weight, a=math.sqrt(5))
         self._scale = self.rank ** 0.5
 
     @property
@@ -72,6 +81,7 @@ class DenseAdapter(nn.Module):
             "projection_elements": 2 * self.hidden * self.rank,
             "bias_elements": self.hidden,
             "gate_elements": 0,
+            "up_projection_init": "zero" if self.zero_init else "kaiming-uniform",
         }
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:

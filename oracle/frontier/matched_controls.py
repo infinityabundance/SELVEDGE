@@ -111,6 +111,13 @@ class IdentityGatedDenseResidual(nn.Module):
     `phi(h, r) = [h ; r]`, the same `2 * hidden + 1` elements, and the same
     zero initialisation. The read is a 537,600-element dense adapter. At init
     `alpha_t = tanh(0) = 0`, so the injected model is the base bit for bit.
+
+    The dense read is **not** zero-initialised here, and that is deliberate. A
+    zero gate times a zero read makes both gradient paths vanish
+    (`d(delta)/d(alpha) = read = 0`, `d(delta)/d(read) = alpha = 0`), which
+    leaves the whole control frozen at the identity — a control that trains
+    nothing and then reports "the gate is not the mechanism". A non-zero read
+    costs nothing: `alpha = 0` already makes the residual exactly zero at init.
     """
 
     def __init__(self, hidden: int = 1024, dense_rank: int | None = None):
@@ -119,7 +126,8 @@ class IdentityGatedDenseResidual(nn.Module):
         if dense_rank is None:
             dense_rank = (MemoryGeometry(hidden=hidden).active_per_token_per_site
                           - hidden) // (2 * hidden)
-        self.dense = DenseAdapter(hidden=hidden, rank=int(dense_rank))
+        self.dense = DenseAdapter(hidden=hidden, rank=int(dense_rank),
+                                  zero_init=False)
         self.gate_w = nn.Parameter(torch.zeros(2 * self.hidden))
         self.gate_b = nn.Parameter(torch.zeros(1))
         self.last_gate: torch.Tensor | None = None
@@ -158,6 +166,8 @@ class IdentityGatedDenseResidual(nn.Module):
             "hidden": self.hidden,
             "dense_rank": self.dense.rank,
             "dense_elements": self.dense.active_elements,
+            "dense_read_init": "kaiming-uniform (non-zero so the zero gate can "
+                               "learn; the residual is still exactly zero)",
             "gate_elements": self.gate_parameters,
             "gate_feature_map": "phi(h_t, r_t) = [h_t ; r_t] (parameter-free)",
             "gate_init": "w = 0 and b = 0, so alpha_t = tanh(0) = 0 exactly",

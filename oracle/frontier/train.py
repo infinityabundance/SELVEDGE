@@ -42,6 +42,7 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import numpy as np
 import torch
@@ -51,7 +52,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ORACLE = os.path.dirname(HERE)
 sys.path.insert(0, ORACLE)
 
-from frontier import arms, corrective, full, memory, optim8bit  # noqa: E402
+from frontier import arms, corrective, full, matched_controls, memory, optim8bit  # noqa: E402
 from frontier.stream import load_stream, sha256_file  # noqa: E402
 
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -212,6 +213,21 @@ def build_arm(kind: str, model, args, device: str):
             hidden=args.hidden).active_per_token_per_site
         report["match_delta"] = (module.active_elements
                                  - report["matched_memory_active"])
+        return module, handles, report
+    if kind in matched_controls.CONTROL_KINDS:
+        # S47 matched controls: the same data and budget without the external
+        # memory (`adapter-matched`) and the same gate over a dense residual
+        # (`gated-dense`). Both are installed through the adapter hook the
+        # scoring path already uses, so a trained control and a scored control
+        # are the same module. Fail closed if the accounting is not the
+        # registered union: the whole point of the control is the equal count.
+        module, handles, report = matched_controls.build_control(
+            kind, SimpleNamespace(model=model, hidden=args.hidden,
+                                  site=args.site), device)
+        if report["active_per_token"] != matched_controls.CORRECTIVE_ACTIVE:
+            raise SystemExit(
+                f"{kind}: active union {report['active_per_token']} != registered "
+                f"{matched_controls.CORRECTIVE_ACTIVE}")
         return module, handles, report
     raise SystemExit(f"unknown trainable arm {kind!r}")
 
@@ -422,6 +438,18 @@ def run(args) -> int:
             "objective_signed_advantage": (
                 "log p_T(y_t) - log p_B(y_t) on the supervised target at T=1.0"),
         })
+    if args.arm in matched_controls.CONTROL_KINDS:
+        # Added only for the S47 controls, so no existing arm's config hash (and
+        # therefore no resume) changes. `control_role` is the attribution the
+        # registration reads: the data, or the gate.
+        config.update({
+            "control": args.arm,
+            "control_role": ("matched-data: no external memory, no gate"
+                             if args.arm == "adapter-matched" else
+                             "gate-only: the corrective gate over a dense residual"),
+            "control_active_union": int(arm_report["active_per_token"]),
+            "control_identity_at_init": bool(arm_report.get("identity_at_init")),
+        })
     config["config_sha256"] = config_hash(config)
     os.makedirs(args.run_dir, exist_ok=True)
     write_json(os.path.join(args.run_dir, "manifest.json"), {
@@ -563,6 +591,17 @@ def run(args) -> int:
                 for key, value in objective_sum.items()
                 if key != "objective"}
             entry["gate"] = corrective_module.gate_summary()
+        if "gate" not in entry and getattr(arm, "last_gate", None) is not None:
+            # The matched gated-dense control records the same gate tensor; a
+            # module with no gate (the dense adapter) records nothing.
+            gate_tensor = arm.last_gate.detach().float()
+            entry["gate"] = {
+                "tokens": int(gate_tensor.numel()),
+                "mean": float(gate_tensor.mean()),
+                "mean_abs": float(gate_tensor.abs().mean()),
+                "min": float(gate_tensor.min()),
+                "max": float(gate_tensor.max()),
+            }
         if step % args.collision_every == 0 and args.arm == "memory":
             sample = stream[offset - args.seq_len:offset]
             collision = arm.collision_report(sample[None, :])
@@ -661,7 +700,8 @@ def validate_objective_args(args) -> None:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm",
-                        choices=["memory", "corrective", "adapter", "full"],
+                        choices=["memory", "corrective", "adapter", "full",
+                                 *matched_controls.CONTROL_KINDS],
                         required=True)
     parser.add_argument("--stream-manifest", required=True)
     parser.add_argument("--student-dir", default=STUDENT_DIR)
