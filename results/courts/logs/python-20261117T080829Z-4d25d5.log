@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/work/scripts/s44_arm_table.py", line 848, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 836, in main
+    receipt = build(verify_items=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 508, in build
+    receipt["item_verification"] = verify_receipt_items(receipt, arms)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 525, in verify_receipt_items
+    _keys, values = item_vector(path, task, metric, flt)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 195, in item_vector
+    for leaf, sample in iter_samples(path):
+                        ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 173, in iter_samples
+    raise ValueError(f"{path}: expected an array for leaf {leaf!r}")
+ValueError: /work/results/stage2/eval/base/raw/20261117T041926Z-mmlu.json: expected an array for leaf 'config_source'

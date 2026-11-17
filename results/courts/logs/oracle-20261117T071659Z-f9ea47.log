@@ -1,0 +1,43 @@
+..........F.........                                                     [100%]
+=================================== FAILURES ===================================
+________ test_train_builds_the_corrective_arm_from_its_init_checkpoint _________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_train_builds_the_correcti0')
+
+    def test_train_builds_the_corrective_arm_from_its_init_checkpoint(tmp_path):
+        from types import SimpleNamespace
+        from frontier import train
+    
+        lm = _LM(vocab=64, hidden=32, layers=4)
+        _freeze(lm)
+        module = _module(sites=(0,))
+        checkpoint = {
+            "state_dict": module.state_dict(),
+            "config": {
+                "hidden": 32, "value_dim": 8, "rows": 64, "sites": [0],
+                "conv_kernel": 3, "orders": list(mem.ORDERS),
+                "table_dtype": "float32", "seed": 0, "variant": "corrective",
+            },
+            "graft": {"site": 0, "variant": "corrective"},
+        }
+        path = tmp_path / "memory-init.pt"
+        torch.save(checkpoint, path)
+        args = SimpleNamespace(memory_init=str(path), site=0, hidden=32)
+        arm, handles, report = train.build_arm("corrective", lm, args, "cpu")
+        try:
+            assert report["kind"] == "stage2_corrective_token_gate_active"
+            assert report["identity_at_init"] is True
+>           assert report["active_per_token"] == report["active_per_token_before_gate"] + 1
+E           assert 929 == (864 + 1)
+
+oracle/tests/test_s42_corrective.py:353: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s43_token_gate.py::test_rows_receive_gradient_once_the_gate_is_open_and_the_path_is_deterministic
+  /work/oracle/tests/test_s43_token_gate.py:217: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    losses.append(float(loss))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s42_corrective.py::test_train_builds_the_corrective_arm_from_its_init_checkpoint
+1 failed, 19 passed, 1 warning in 1.64s

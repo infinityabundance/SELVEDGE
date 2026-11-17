@@ -1,0 +1,138 @@
+{
+  "argv": [
+    "python3",
+    "-c",
+    "\nimport logging\nlogging.disable(logging.WARNING)\nfrom lm_eval.tasks import TaskManager\ntm=TaskManager()\nd=tm.load(['mmlu'])\ng=d['groups']['mmlu']\ntasks=g.get_all_tasks()\nprint('leaves',len(tasks))\nprint('total',sum(len(t.eval_docs) for t in tasks))\nprint('first',tasks[0].task_name, len(tasks[0].eval_docs))\nprint('dkeys', list(d.keys()))\nprint('groupchild', [c.task_name if hasattr(c,'task_name') else c.name for c in g][:3])\n"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "ef7589be7939b45654641be81c41c573337dc6d9e6c7ca3f1df683f579ddb83e",
+  "container_name": "selvedge-eval-court-20261117T071247Z-001ca6",
+  "court": "eval",
+  "duration_ms": 8425,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "memory_swap_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "nano_cpus": {
+        "actual": 4000000000,
+        "expected": 4000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 256,
+        "expected": 256
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 1073741824,
+        "expected": 1073741824
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-17T07:12:55Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:42a0ddab626440636219289e4612d1c48a4c4bf4fe6f2826e7f1628fc68ae5a8",
+  "image_ref": "selvedge/eval-court:20261116-3.12-slim-eval-5c2514f58e78",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "4",
+    "init": true,
+    "memory": "6g",
+    "memory_bytes": 6442450944,
+    "memory_swap": "6g",
+    "memory_swap_bytes": 6442450944,
+    "nano_cpus": 4000000000,
+    "nofile": 65536,
+    "pids": 256,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 1073741824,
+    "tmpfs_size": "1g"
+  },
+  "log_path": "results/courts/logs/eval-20261117T071247Z-001ca6.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache",
+    "/home/one/.cache/selvedge/hf/datasets:/datasets-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "913ed0684b1fa252dbcf34ecb137d1643545d6e5",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261117T071247Z",
+  "started_utc": "2026-11-17T07:12:47Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/scripts/s44_arm_table.py", line 848, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 836, in main
+    receipt = build(verify_items=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 459, in build
+    "math": rank("math"),
+            ^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 452, in rank
+    rows = [{"arm": arm, "value": table[arm][key]["mean"],
+                                  ~~~~~~~~~~^^^^^
+KeyError: 'math'

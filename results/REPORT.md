@@ -1137,3 +1137,129 @@ representation graft; not that stochastic rounding beats the compensation buffer
 at this budget; not that the corrective objective beats CE+KL; and nothing about
 the 20M-token bar, which is a separate registered run. The literature verdicts
 and their limits are in `docs/S42-LITERATURE.md`.
+
+## M10 — the complete stage-2 arm table, and where the mechanisms actually lose (S44)
+
+All six scored arms now have anchored receipts, so this section is the ranking,
+not a progress note. It is generated from the receipts by
+`scripts/s44_arm_table.py` (receipt
+`results/stage2/s44-arm-table-20261117T081002Z.json`); the cell values, the
+family means, the paired intervals and the ranking order are the script's
+output, not typed here. The held-out columns come from
+`results/stage2/s41-heldout-comparison.json`, and the item-level comparisons
+re-read the raw lm-evaluation-harness sample files under
+`results/stage2/eval/<arm>/raw/`.
+
+**The basis.** MMLU is all 14,042 items in every arm, MMLU-Pro all 504, GSM8K
+all 1,319, MATH-500 all 500. The receipts passed `--limit-map mmlu=2000`, which
+the harness applies per subject, and every subject is below 2,000 items;
+`docs/ws19-anchored-subset-amendment-preregistration-v2.json` records that the
+effective basis is therefore the full set. A family mean is the unweighted mean
+of its two member tasks; its standard error is the independent combination
+`sqrt(sum se_i^2) / n` used by `oracle/frontier/compare.py`. The paired
+per-item intervals below are narrower than that, because a paired interval
+cancels the item-level sampling error the family SE keeps.
+
+**Ranking.** `base` and `memory-ungrafted` are the same model to the last bit
+and score identically on all four tasks, which is the harness-level confirmation
+of the gate's zero initialisation. Every trained arm ranks below both of them on
+math. `adapter-2m` leads the trained arms on knowledge, and it does so by
+trading one member of that family for the other: the MMLU gain and the
+MMLU-Pro loss are both real at the item level.
+
+
+<!-- BEGIN GENERATED: report-s44-arm-table -->
+| arm | tokens | added active/token | accessible added | MMLU | MMLU-Pro | GSM8K | MATH-500 | knowledge | math | held-out CE | held-out KL |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `base` (frozen Qwen3.5-0.8B-Base) | 0 | 0 | 0 | 48.16 ± 0.41 | 26.79 ± 1.96 | 38.97 ± 1.34 | 25.00 ± 1.94 | **37.47** ± 1.00 | **31.98** ± 1.18 | 2.8093 | 0.2747 |
+| `memory-ungrafted` (init, no training) | 0 | 537,600 | 17,312,768 | 48.16 ± 0.41 | 26.79 ± 1.96 | 38.97 ± 1.34 | 25.00 ± 1.94 | **37.47** ± 1.00 | **31.98** ± 1.18 | 2.8093 | 0.2747 |
+| `memory-grafted` (S40 reconstruction init) | 0 | 537,600 | 17,312,768 | 30.20 ± 0.39 | 9.72 ± 1.30 | 1.90 ± 0.38 | 3.40 ± 0.81 | **19.96** ± 0.68 | **2.65** ± 0.45 | 3.3840 | 0.4387 |
+| `memory-2m` (2M CE+KL) | 1,998,848 | 537,600 | 17,312,768 | 48.47 ± 0.41 | 22.22 ± 1.85 | 29.42 ± 1.26 | 18.80 ± 1.75 | **35.35** ± 0.95 | **24.11** ± 1.08 | 2.8296 | 0.2727 |
+| `adapter-2m` (2M CE+KL) | 1,998,848 | 537,600 | 537,600 | 51.01 ± 0.41 | 23.81 ± 1.90 | 36.09 ± 1.32 | 21.00 ± 1.82 | **37.41** ± 0.97 | **28.54** ± 1.13 | 2.8093 | 0.2673 |
+| `adapter-20m` (20M CE+KL) | 19,998,720 | 537,600 | 537,600 | 48.70 ± 0.41 | 23.81 ± 1.88 | 35.78 ± 1.32 | 19.80 ± 1.78 | **36.26** ± 0.96 | **27.79** ± 1.11 | 2.8189 | 0.2677 |
+
+`full-20m-math` has no anchored receipt yet; the row is absent rather than estimated. Total-cap basis: MMLU is all 14,042 items, MMLU-Pro 504, GSM8K 1,319, MATH-500 500 (amendment v2). Cells are `score ± the harness's standard error`; the family column is the unweighted member mean and its independent combined SE. Held-out CE/KL are the 3,906-chunk means from `results/stage2/s41-heldout-comparison.json`.
+<!-- END GENERATED: report-s44-arm-table -->
+
+The comparisons are paired by `(subject, doc_id)`, require the doc-hash sequence
+to match between the two arms, and report a percentile bootstrap interval on the
+paired difference plus a McNemar test on the discordant items. An arm whose raw
+samples are missing or ordered differently would be marked unpaired rather than
+given a pseudo-replicate; no row below is in that state.
+
+**Where the memory arm loses.** Not uniformly in multiple-choice knowledge, and
+not visibly in held-out next-token CE: the memory arm's held-out CE cost is a
+small fraction of a nat per token, while its anchored math loss is several
+points. The loss is concentrated in the generative tasks — GSM8K, whose metric
+matches a generated chain of thought, and MATH-500, whose metric verifies a
+generated boxed answer — and it is present in the harder multiple-choice member
+as well. That is the signature a residual would leave if it were right about the
+teacher's local distribution and wrong about the token that decides an answer;
+it is also what the S40 reconstruction graft's measured hidden-state
+perturbation predicted. The full-backbone arm has the same shape, so the
+direction is not specific to the memory residual.
+
+**What this does not establish.** Not that a mechanism cannot win: no arm here
+carries the token-conditioned gate, the signed advantage or the preservation
+penalty, and the corrective arms are registered but untrained. Not a bar
+verdict: `full-20m-math` has no anchored receipt yet, and its row is absent
+rather than estimated. And not that the 20M-versus-2M gap is a pure budget
+effect: the two adapter arms differ in nothing else, which makes their gap the
+cleanest budget measurement available here, but it is still one seed per arm.
+
+
+<!-- BEGIN GENERATED: report-s44-answers -->
+**Family deltas against the frozen base** (percentage points, combined independent SE):
+
+- `memory-ungrafted`: knowledge +0.00 ± 1.42 points vs base; math +0.00 ± 1.67 points vs base.
+- `memory-grafted`: knowledge -17.51 ± 1.21 points vs base; math -29.34 ± 1.26 points vs base.
+- `memory-2m`: knowledge -2.13 ± 1.38 points vs base; math -7.88 ± 1.60 points vs base.
+- `adapter-2m`: knowledge -0.06 ± 1.39 points vs base; math -3.44 ± 1.63 points vs base.
+- `adapter-20m`: knowledge -1.21 ± 1.39 points vs base; math -4.19 ± 1.62 points vs base.
+
+**Paired per-item comparisons against `base`** (paired bootstrap by item, seed 44, 4000 resamples):
+
+- `memory-ungrafted` vs `base` on `mmlu`: +0.00 points, 95% CI [+0.00, +0.00], items 0 vs 0 discordant, McNemar p 1 — CI includes zero.
+- `memory-ungrafted` vs `base` on `mmlu_pro`: +0.00 points, 95% CI [+0.00, +0.00], items 0 vs 0 discordant, McNemar p 1 — CI includes zero.
+- `memory-ungrafted` vs `base` on `gsm8k`: +0.00 points, 95% CI [+0.00, +0.00], items 0 vs 0 discordant, McNemar p 1 — CI includes zero.
+- `memory-ungrafted` vs `base` on `minerva_math500`: +0.00 points, 95% CI [+0.00, +0.00], items 0 vs 0 discordant, McNemar p 1 — CI includes zero.
+- `memory-grafted` vs `base` on `mmlu`: -17.95 points, 95% CI [-19.02, -16.90], items 2000 vs 4521 discordant, McNemar p 8.73e-214 — CI excludes zero.
+- `memory-grafted` vs `base` on `mmlu_pro`: -17.06 points, 95% CI [-21.83, -12.50], items 37 vs 123 discordant, McNemar p 1.82e-11 — CI excludes zero.
+- `memory-grafted` vs `base` on `gsm8k`: -37.07 points, 95% CI [-39.88, -34.42], items 12 vs 501 discordant, McNemar p 5.81e-103 — CI excludes zero.
+- `memory-grafted` vs `base` on `minerva_math500`: -21.60 points, 95% CI [-25.60, -17.80], items 8 vs 116 discordant, McNemar p 7.33e-22 — CI excludes zero.
+- `memory-2m` vs `base` on `mmlu`: +0.31 points, 95% CI [-0.36, +1.01], items 1238 vs 1194 discordant, McNemar p 0.383 — CI includes zero.
+- `memory-2m` vs `base` on `mmlu_pro`: -4.56 points, 95% CI [-8.53, -0.60], items 40 vs 63 discordant, McNemar p 0.0302 — CI excludes zero.
+- `memory-2m` vs `base` on `gsm8k`: -9.55 points, 95% CI [-12.05, -7.05], items 82 vs 208 discordant, McNemar p 2.13e-13 — CI excludes zero.
+- `memory-2m` vs `base` on `minerva_math500`: -6.20 points, 95% CI [-9.60, -3.00], items 22 vs 53 discordant, McNemar p 0.000532 — CI excludes zero.
+- `adapter-2m` vs `base` on `mmlu`: +2.86 points, 95% CI [+2.25, +3.48], items 1210 vs 809 discordant, McNemar p 5.48e-19 — CI excludes zero.
+- `adapter-2m` vs `base` on `mmlu_pro`: -2.98 points, 95% CI [-6.35, +0.40], items 30 vs 45 discordant, McNemar p 0.106 — CI includes zero.
+- `adapter-2m` vs `base` on `gsm8k`: -2.88 points, 95% CI [-5.00, -0.68], items 88 vs 126 discordant, McNemar p 0.0114 — CI excludes zero.
+- `adapter-2m` vs `base` on `minerva_math500`: -4.00 points, 95% CI [-7.40, -0.60], items 26 vs 46 discordant, McNemar p 0.0251 — CI excludes zero.
+- `adapter-20m` vs `base` on `mmlu`: +0.55 points, 95% CI [-0.05, +1.17], items 1007 vs 930 discordant, McNemar p 0.0842 — CI includes zero.
+- `adapter-20m` vs `base` on `mmlu_pro`: -2.98 points, 95% CI [-6.55, +0.79], items 35 vs 50 discordant, McNemar p 0.129 — CI includes zero.
+- `adapter-20m` vs `base` on `gsm8k`: -3.18 points, 95% CI [-5.53, -0.91], items 97 vs 139 discordant, McNemar p 0.00761 — CI excludes zero.
+- `adapter-20m` vs `base` on `minerva_math500`: -5.20 points, 95% CI [-8.60, -2.20], items 21 vs 47 discordant, McNemar p 0.00243 — CI excludes zero.
+
+**Paired per-item comparisons against `adapter-2m`** (paired bootstrap by item, seed 44, 4000 resamples):
+
+- `base` vs `adapter-2m` on `mmlu`: -2.86 points, 95% CI [-3.48, -2.25], items 809 vs 1210 discordant, McNemar p 5.48e-19 — CI excludes zero.
+- `base` vs `adapter-2m` on `mmlu_pro`: +2.98 points, 95% CI [-0.40, +6.35], items 45 vs 30 discordant, McNemar p 0.106 — CI includes zero.
+- `base` vs `adapter-2m` on `gsm8k`: +2.88 points, 95% CI [+0.68, +5.00], items 126 vs 88 discordant, McNemar p 0.0114 — CI excludes zero.
+- `base` vs `adapter-2m` on `minerva_math500`: +4.00 points, 95% CI [+0.60, +7.40], items 46 vs 26 discordant, McNemar p 0.0251 — CI excludes zero.
+- `memory-ungrafted` vs `adapter-2m` on `mmlu`: -2.86 points, 95% CI [-3.48, -2.25], items 809 vs 1210 discordant, McNemar p 5.48e-19 — CI excludes zero.
+- `memory-ungrafted` vs `adapter-2m` on `mmlu_pro`: +2.98 points, 95% CI [-0.40, +6.35], items 45 vs 30 discordant, McNemar p 0.106 — CI includes zero.
+- `memory-ungrafted` vs `adapter-2m` on `gsm8k`: +2.88 points, 95% CI [+0.68, +5.00], items 126 vs 88 discordant, McNemar p 0.0114 — CI excludes zero.
+- `memory-ungrafted` vs `adapter-2m` on `minerva_math500`: +4.00 points, 95% CI [+0.60, +7.40], items 46 vs 26 discordant, McNemar p 0.0251 — CI excludes zero.
+- `memory-grafted` vs `adapter-2m` on `mmlu`: -20.81 points, 95% CI [-21.89, -19.73], items 1798 vs 4720 discordant, McNemar p 1.23e-286 — CI excludes zero.
+- `memory-grafted` vs `adapter-2m` on `mmlu_pro`: -14.09 points, 95% CI [-18.65, -9.52], items 38 vs 109 discordant, McNemar p 7.76e-09 — CI excludes zero.
+- `memory-grafted` vs `adapter-2m` on `gsm8k`: -34.19 points, 95% CI [-36.92, -31.54], items 12 vs 463 discordant, McNemar p 1.03e-94 — CI excludes zero.
+- `memory-grafted` vs `adapter-2m` on `minerva_math500`: -17.60 points, 95% CI [-21.40, -13.80], items 9 vs 97 discordant, McNemar p 2.91e-17 — CI excludes zero.
+- `memory-2m` vs `adapter-2m` on `mmlu`: -2.54 points, 95% CI [-3.16, -1.92], items 811 vs 1168 discordant, McNemar p 1.22e-15 — CI excludes zero.
+- `memory-2m` vs `adapter-2m` on `mmlu_pro`: -1.59 points, 95% CI [-5.16, +1.98], items 39 vs 47 discordant, McNemar p 0.45 — CI includes zero.
+- `memory-2m` vs `adapter-2m` on `gsm8k`: -6.67 points, 95% CI [-9.10, -4.40], items 81 vs 169 discordant, McNemar p 3.75e-08 — CI excludes zero.
+- `memory-2m` vs `adapter-2m` on `minerva_math500`: -2.20 points, 95% CI [-5.40, +0.80], items 26 vs 37 discordant, McNemar p 0.208 — CI includes zero.
+- `adapter-20m` vs `adapter-2m` on `mmlu`: -2.31 points, 95% CI [-2.90, -1.74], items 728 vs 1052 discordant, McNemar p 1.92e-14 — CI excludes zero.
+- `adapter-20m` vs `adapter-2m` on `mmlu_pro`: +0.00 points, 95% CI [-3.38, +3.37], items 39 vs 39 discordant, McNemar p 1 — CI includes zero.
+- `adapter-20m` vs `adapter-2m` on `gsm8k`: -0.30 points, 95% CI [-2.65, +1.90], items 112 vs 116 discordant, McNemar p 0.843 — CI includes zero.
+- `adapter-20m` vs `adapter-2m` on `minerva_math500`: -1.20 points, 95% CI [-4.40, +2.00], items 30 vs 36 discordant, McNemar p 0.538 — CI includes zero.
+<!-- END GENERATED: report-s44-answers -->

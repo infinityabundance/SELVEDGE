@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/work/scripts/s44_arm_table.py", line 842, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 830, in main
+    receipt = build(verify_items=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 418, in build
+    "families": family_means(scores),
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 336, in family_means
+    se = math.sqrt(sum((row["stderr"] or 0.0) ** 2 for row in present)) / len(present)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 336, in <genexpr>
+    se = math.sqrt(sum((row["stderr"] or 0.0) ** 2 for row in present)) / len(present)
+                       ~~~~~~~~~~~~~~~~~~~~~~~^^~~
+TypeError: unsupported operand type(s) for ** or pow(): 'str' and 'int'

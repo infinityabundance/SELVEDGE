@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/work/scripts/s44_arm_table.py", line 850, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 838, in main
+    receipt = build(verify_items=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 510, in build
+    receipt["item_verification"] = verify_receipt_items(receipt, arms)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 527, in verify_receipt_items
+    _keys, values = item_vector(path, task, metric, flt)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s44_arm_table.py", line 212, in item_vector
+    raise ValueError(f"{path}: no samples matched task {task} metric {metric}")
+ValueError: /work/results/stage2/eval/base/raw/20261117T041926Z-mmlu.json: no samples matched task mmlu metric acc

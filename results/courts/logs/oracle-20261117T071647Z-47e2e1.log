@@ -1,0 +1,96 @@
+...FF.....F.........                                                     [100%]
+=================================== FAILURES ===================================
+____________ test_gate_gradient_is_nonzero_at_zero_and_rows_follow _____________
+
+    def test_gate_gradient_is_nonzero_at_zero_and_rows_follow():
+        torch.manual_seed(8)
+        lm = _LM(vocab=64, hidden=32, layers=4)
+        _freeze(lm)
+        module = _module()
+        handles = arms.install_memory(lm, module)
+        tokens = torch.randint(0, 64, (1, 10), dtype=torch.int64)
+        try:
+            logits = lm(tokens, use_cache=False).logits
+            logits.pow(2).sum().backward()
+            # at alpha = 0 the gate itself has a non-zero gradient ...
+            assert module.gate_w[0].grad is not None
+>           assert float(module.gate_w[0].grad.abs()) > 0.0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: only one element tensors can be converted to Python scalars
+
+oracle/tests/test_s42_corrective.py:172: ValueError
+___________________ test_gate_can_open_on_the_real_objective ___________________
+
+    def test_gate_can_open_on_the_real_objective():
+        torch.manual_seed(9)
+        lm = _LM(vocab=32, hidden=32, layers=3)
+        _freeze(lm)
+        module = _module(sites=(0,))
+        handles = arms.install_memory(lm, module)
+        tokens = torch.randint(0, 32, (1, 8), dtype=torch.int64)
+        try:
+            inputs = tokens[:, :-1]
+            targets = tokens[:, 1:]
+            student = lm(inputs, use_cache=False).logits
+            with torch.no_grad():
+                module.bypass = True
+                base = lm(inputs, use_cache=False).logits
+                module.bypass = False
+                teacher = base + 0.25 * torch.randn_like(base)
+            loss, ce, kl, diagnostics = corrective.corrective_objective(
+                student, base, teacher, targets, temperature=2.0, kl_weight=0.5,
+                objective="correction", gate=module.last_gate,
+                preserve_weight=0.5, interference_weight=0.05)
+            loss.backward()
+            assert diagnostics["objective"] == "correction"
+            assert module.gate_w[0].grad is not None
+>           assert float(module.gate_w[0].grad.abs()) > 0.0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: only one element tensors can be converted to Python scalars
+
+oracle/tests/test_s42_corrective.py:221: ValueError
+________ test_train_builds_the_corrective_arm_from_its_init_checkpoint _________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_train_builds_the_correcti0')
+
+    def test_train_builds_the_corrective_arm_from_its_init_checkpoint(tmp_path):
+        from types import SimpleNamespace
+        from frontier import train
+    
+        lm = _LM(vocab=64, hidden=32, layers=4)
+        _freeze(lm)
+        module = _module(sites=(0,))
+        checkpoint = {
+            "state_dict": module.state_dict(),
+            "config": {
+                "hidden": 32, "value_dim": 8, "rows": 64, "sites": [0],
+                "conv_kernel": 3, "orders": list(mem.ORDERS),
+                "table_dtype": "float32", "seed": 0, "variant": "corrective",
+            },
+            "graft": {"site": 0, "variant": "corrective"},
+        }
+        path = tmp_path / "memory-init.pt"
+        torch.save(checkpoint, path)
+        args = SimpleNamespace(memory_init=str(path), site=0, hidden=32)
+        arm, handles, report = train.build_arm("corrective", lm, args, "cpu")
+        try:
+>           assert report["kind"] == "stage2_corrective_active"
+E           AssertionError: assert 'stage2_corre...n_gate_active' == 'stage2_corrective_active'
+E             
+E             - stage2_corrective_active
+E             + stage2_corrective_token_gate_active
+E             ?                   +++++++++++
+
+oracle/tests/test_s42_corrective.py:351: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s42_corrective.py::test_untrained_graft_reproduces_the_base_bit_for_bit
+  /work/oracle/frontier/corrective.py:150: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    return all(float(weight.abs().sum()) == 0.0 for weight in self.gate_w) \
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s42_corrective.py::test_gate_gradient_is_nonzero_at_zero_and_rows_follow
+FAILED oracle/tests/test_s42_corrective.py::test_gate_can_open_on_the_real_objective
+FAILED oracle/tests/test_s42_corrective.py::test_train_builds_the_corrective_arm_from_its_init_checkpoint
+3 failed, 17 passed, 1 warning in 1.68s
