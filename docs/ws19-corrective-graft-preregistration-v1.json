@@ -1,0 +1,175 @@
+{
+  "schema": "selvedge/ws19-corrective-graft-preregistration/v1",
+  "registering_session": "S42",
+  "registered_utc": "2026-11-17T04:58:00Z",
+  "purpose": "Register the corrective graft (P19.2b) that replaces the representation graft's reconstruction objective, and the objective comparison that decides between advantage-weighted correction and plain CE+KL. The representation graft was measured to harm next-token CE on the 2M-token held-out slice: +0.57475 nats against base (quoted from results/stage2/s41-heldout-comparison.json, stamp 20261117T035128Z, revision 73f9574fc7ec23e8cc82a5a971a8423509e6d086). It supervised the wrong quantity: it reproduced the teacher's mapped hidden state at the injection site rather than the teacher's advantage over the student. Both registrations are made before either variant is scored.",
+  "relation_to_existing_registrations": {
+    "p19_2": "docs/PROGRAM-PLAN.md §P19.2. This file adds P19.2b as a new variant beside the existing admission question; it does not renumber or edit P19.2, and it does not replace the row-scale question.",
+    "distillation_control": "docs/ws19-distillation-control-preregistration-v1.json and its amendment. The adapter arm here is the same registered parameter-matched control.",
+    "full_bar": "docs/ws19-full-distillation-preregistration-v1.json. The 20M full-backbone arm remains the bar. Nothing in this file is a verdict about the bar, and no verdict is drawn from 2M numbers alone.",
+    "existing_representation_arms": "results/stage2/s41-heldout-comparison.json already scores base, adapter-2m, memory-2m (trained representation graft), memory-ungrafted (step 0) and memory-grafted (step-0 teacher graft, no training). Those scores are quoted, not re-registered."
+  },
+  "diagnosis": {
+    "measured_harm": "+0.57475 nats CE against base for the untrained teacher graft on the 2M held-out slice (receipt named above)",
+    "mechanism_hypothesis": "the representation graft adds a mapped-teacher hidden state whose norm is a large fraction of the student's own hidden norm at the site, so it perturbs a frozen computation it was never trained to preserve; the disturbance is largest exactly where the base was already correct",
+    "supporting_evidence": "memory-ungrafted is bit-identical to base on the same slice (delta CE exactly 0.00000 in the quoted table), so the harm is the grafted residual, not the injection machinery",
+    "fix_design": [
+      "a correction gate alpha(site) = tanh(gate_raw) with gate_raw initialised to exactly 0, so an untrained corrective graft reproduces the base bit for bit",
+      "supervision from the teacher's advantage: per-position KL(teacher_T || base_T) weights the distillation term, so the correction is asked to explain where the base is wrong",
+      "interference protection: a per-position preservation weight sigmoid(-(a - mean a)/mean a) multiplies a penalty on any KL increase over the base's own KL and a penalty on the gate magnitude, so opening the correction where the base is already close is what costs loss",
+      "no constant offset in the residual: the memory's out_bias is structurally excluded from the corrective forward"
+    ]
+  },
+  "models": {
+    "student": {
+      "id": "Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68"
+    },
+    "teacher": {
+      "id": "Qwen/Qwen3.5-2B-Base",
+      "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "role": "online teacher; the advantage is computed on the same batch, no logit cache"
+    },
+    "backbone": "frozen for every arm in this registration; only the arm is trainable"
+  },
+  "stream": {
+    "manifest": "results/stage2/stage2-stream-20261117T004849Z.json",
+    "sha256": "58bbed620fa8f80edd578c300038cb3507b8cb002d22fd5bb79506eff296336f",
+    "graft_tokens": 250000,
+    "train_tokens": 2000000,
+    "same_as": "the registered memory-2m and adapter-2m arms; no new stream and no new token budget"
+  },
+  "tokens": {
+    "per_arm": 2000000,
+    "sequence_length": 512,
+    "micro_batch": 1,
+    "gradient_accumulation": 4,
+    "tokens_per_optimizer_step": 2048,
+    "steps": 976,
+    "realised_tokens": 1998848,
+    "rounding_note": "2,000,000 / 2,048 is not an integer; 976 whole steps cover 1,998,848 tokens, 1,152 below the registered budget and never above it. This is the same realised budget as memory-2m and adapter-2m.",
+    "data_order": "pinned stream in order; no shuffling"
+  },
+  "optimizer": {
+    "name": "AdamW",
+    "learning_rate": 0.001,
+    "betas": [0.9, 0.95],
+    "weight_decay": 0.0,
+    "gradient_clip": 1.0,
+    "warmup_steps": 50,
+    "schedule": "constant",
+    "numerics_note": "these arms hold float32 parameters, so the S42 bf16 weight-update numerics (stochastic rounding) do not apply and are not used; train.py refuses to change the registered AdamW + constant-LR configuration retroactively"
+  },
+  "arms": {
+    "gate-zero-control": {
+      "kind": "corrective init checkpoint, not trained",
+      "init": "corrective graft rows and projections from the representation fit, gate_raw = 0",
+      "active_per_token": 537601,
+      "expected": "bit-identical to base logits; the arm is the parity control for the gate mechanism",
+      "evaluation": "results/stage2/eval/corrective-gate-zero/eval.json"
+    },
+    "grafted-corrective": {
+      "kind": "trained corrective graft",
+      "init": "results/stage2/graft/corrective/<stamp>/memory-init.pt (graft.py --corrective)",
+      "objective": "correction (advantage-weighted KL + base preservation + gate interference)",
+      "active_per_token": 537601,
+      "trainable_per_token": 535553,
+      "trainable_parameter_note": "the memory's 535,552 trainable elements per site plus one correction-gate scalar",
+      "evaluation": "results/stage2/eval/corrective-2m/eval.json"
+    },
+    "grafted-representation": {
+      "kind": "existing registered representation graft",
+      "receipt": "results/stage2/runs/memory-2m and results/stage2/s41-heldout-comparison.json",
+      "active_per_token": 537600,
+      "role": "the arm this registration was designed to replace; quoted, not rerun"
+    },
+    "adapter": {
+      "kind": "existing registered parameter-matched dense adapter",
+      "receipt": "results/stage2/runs/adapter-2m",
+      "active_per_token": 537600,
+      "role": "the equal-active control"
+    }
+  },
+  "active_parameter_discipline": {
+    "gate_zero_and_corrective": 537601,
+    "memory_and_adapter": 537600,
+    "difference": "one scalar per site for the correction gate; the reads, key projection, value projection, convolution and table are the registered memory construction",
+    "table_in_active_union": false,
+    "reading": "the corrective arm is matched to the memory arm to within one scalar; the report must state the +1 explicitly rather than rounding it away"
+  },
+  "objective_experiment": {
+    "question": "does an advantage-weighted correction objective with a base-preservation term beat plain CE+KL on the quantity the evaluation scores, at the same tokens and active parameters?",
+    "arms": {
+      "corrective-obj": {
+        "run_dir": "results/stage2/runs/corrective-2m",
+        "objective": "correction",
+        "form": "CE + w*T^2*sum(a_i KL_i)/sum(a_i) + w*preserve_weight*T^2*mean(p_i*max(KL_i - a_i, 0)) + interference_weight*mean(p_i)*mean(alpha^2)",
+        "preserve_weight": 0.5,
+        "interference_weight": 0.05,
+        "a_i": "KL(teacher_T || base_T) at position i, detached",
+        "p_i": "sigmoid(-(a_i - mean a)/mean a), high where the base already matches the teacher"
+      },
+      "corrective-cekl": {
+        "run_dir": "results/stage2/runs/corrective-cekl-2m",
+        "objective": "ce_kl",
+        "form": "CE + w*T^2*mean KL(teacher_T || student_T), exactly the objective of every other arm"
+      }
+    },
+    "primary_quantities": [
+      "paired per-chunk delta CE against base on the 2M held-out slice",
+      "paired per-chunk delta KL(teacher_T || student_T) against base",
+      "interference cost: the delta KL on held-out positions where the base's own advantage is in the lowest quartile, i.e. where the base already predicts the teacher well"
+    ],
+    "decision_rule": [
+      "1. If correction beats ce_kl on CE by more than the combined standard error and does not lose KL beyond its standard error, adopt correction and carry it to the 20M bar comparison.",
+      "2. If CE ties within the combined standard error and correction lowers the interference cost by more than its standard error, adopt correction with the preservation term and record the tie on CE.",
+      "3. If correction loses CE beyond the combined standard error, keep CE+KL and record the preservation weight as too strong at this budget; the next route is a registered preserve_weight grid at 2M, not an unregistered retune.",
+      "4. If both lose to base on CE, the 2M mechanism screen is a null for both and the next route is the 20M full-arm bar and then P19.4, not another 2M variant."
+    ],
+    "next_route_if_correction_wins": "the corrective arm is scored on the anchored harness beside the 20M full arm; only a gain over the full arm at equal tokens and equal deployed active union is a mechanism win",
+    "next_route_if_correction_loses": "gate conditioning instead of a penalty: condition alpha on the base advantage at inference (no new parameters beyond the gate), then re-register before scoring"
+  },
+  "evaluation": {
+    "heldout": {
+      "manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+      "manifest_sha256": "901c0a3fd5b7f5661b6ba3abcf27e25cc980ca45e8ae43118ea42a9a0c782fd5",
+      "stream_sha256": "468e36903cf3bbbea2eacd38dfd726a8542a11bf368f73b8a8fd492c1da1c43e",
+      "tokens": 2000000,
+      "metrics": "mean next-token CE and mean KL(teacher_T || student_T) at T=2.0 with the standard error across non-overlapping 512-token chunks, paired per-chunk against base"
+    },
+    "anchored_harness": {
+      "instrument": "docs/anchor-preregistration-v1.json",
+      "driver": "scripts/s40_score.py",
+      "tasks": ["mmlu_pro", "mmlu", "gsm8k", "minerva_math500"],
+      "same_as": "the registered S36 anchor and the S41 anchored-subset pass",
+      "verdict_policy": "no verdict on the mechanism is drawn from the 2M arms against the 20M full bar; the 2M comparison is a mechanism screen against base and against the representation graft at equal tokens"
+    }
+  },
+  "training_commands": {
+    "build_corrective_init": "SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=1g scripts/court --gpu oracle -- python3 oracle/frontier/graft.py --stream-manifest results/stage2/stage2-stream-20261117T004849Z.json --rows 65536 --value-dim 256 --site 2 --corrective --vram-limit-gib 12",
+    "corrective_obj": "SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=1g scripts/court --gpu oracle -- python3 oracle/frontier/train.py --arm corrective --objective correction --memory-init results/stage2/graft/corrective/<stamp>/memory-init.pt --stream-manifest results/stage2/stage2-stream-20261117T004849Z.json --tokens 2000000 --seq-len 512 --micro-batch 1 --grad-accum 4 --lr 0.001 --temperature 2.0 --kl-weight 0.5 --preserve-weight 0.5 --interference-weight 0.05 --optimizer adamw --schedule constant --warmup 50 --grad-clip 1.0 --seed 0 --ckpt-every 200 --keep-checkpoints 2 --log-every 20 --run-dir results/stage2/runs/corrective-2m --vram-limit-gib 12",
+    "corrective_cekl": "same command with --objective ce_kl --run-dir results/stage2/runs/corrective-cekl-2m",
+    "gate_zero_control": "SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=1g scripts/court --gpu eval -- python3 scripts/s40_score.py --arm corrective-gate-zero --memory-init results/stage2/graft/corrective/<stamp>/memory-init.pt --registration docs/ws19-anchored-subset-preregistration-v1.json --tasks mmlu_pro,mmlu,gsm8k,minerva_math500 --limit-map mmlu=2000 --vram-limit-gib 12.5 --out results/stage2/eval/corrective-gate-zero/eval.json"
+  },
+  "tests": {
+    "file": "oracle/tests/test_s42_corrective.py",
+    "claims": [
+      "an untrained corrective graft with grafted rows and a non-zero out_bias reproduces the base logits bit for bit",
+      "the correction gate's gradient at zero is non-zero, so the gate can open, and after it opens gradient reaches every table, key projection and value projection",
+      "the preservation weight is higher where the base's advantage is smaller, and the preservation term strictly increases the gate's derivative when the correction is harmful on those positions",
+      "the active union is the memory union plus one gate scalar per site and the residual has no constant offset"
+    ]
+  },
+  "what_this_file_does_not_establish": [
+    "that the corrective arm beats the representation graft: that is the experiment",
+    "that the preservation weight 0.5 and interference weight 0.05 are optimal: they are registered values chosen before scoring, and the decision rule says what a loss means",
+    "that a 2M-token screen transfers to 20M tokens or to the anchored families",
+    "that any arm here beats the 20M full-backbone bar: the bar is registered separately and is not implied by a 2M result"
+  ],
+  "limits_derived_from": [
+    "results/stage2/s41-heldout-comparison.json",
+    "results/stage2/runs/memory-2m/manifest.json",
+    "results/stage2/runs/adapter-2m/manifest.json"
+  ],
+  "scoring_receipts": []
+}

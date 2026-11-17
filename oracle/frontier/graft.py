@@ -48,7 +48,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ORACLE = os.path.dirname(HERE)
 sys.path.insert(0, ORACLE)
 
-from frontier import arms, memory  # noqa: E402
+from frontier import arms, corrective, memory  # noqa: E402
 from frontier.stream import sha256_file, load_stream  # noqa: E402
 
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -447,21 +447,47 @@ def run(args) -> int:
     }
 
     # -- install -------------------------------------------------------------
-    module = memory.ConditionalMemory(
-        hidden=student_width, value_dim=args.value_dim, rows=args.rows,
-        sites=(args.site,), conv_kernel=args.conv_kernel,
-        table_dtype=torch.float32, seed=args.seed)
-    with torch.no_grad():
-        module.set_grafted_rows(0, rows, counts)
-        module.key_proj[0].weight.copy_(basis.T)
-        module.value_proj[0].weight.copy_(basis)
-        module.out_bias[0].copy_(mean)
+    if args.corrective:
+        # P19.2b: the representation fit is only an initialisation for the
+        # rows and projections. The gate is exactly zero, no constant offset is
+        # installed, and the training objective in oracle/frontier/corrective.py
+        # supervises the teacher's advantage, not the mapped hidden state.
+        module = corrective.CorrectiveMemory(
+            hidden=student_width, value_dim=args.value_dim, rows=args.rows,
+            sites=(args.site,), conv_kernel=args.conv_kernel,
+            table_dtype=torch.float32, seed=args.seed)
+        with torch.no_grad():
+            module.set_grafted_rows(0, rows, counts)
+            module.key_proj[0].weight.copy_(basis.T)
+            module.value_proj[0].weight.copy_(basis)
+            module.out_bias[0].zero_()
+        recon = corrective.corrective_init_report(
+            module, student_hidden, tokens, sample=args.recon_sample)
+        recon["pca_state_relative_error"] = pca_relative_error(
+            module.core, coefficients, basis, mapped)
+        recon["supervision"] = (
+            "learned by corrective_objective (advantage-weighted KL + base "
+            "preservation + gate interference); the rows are only initialised "
+            "from the representation fit")
+        recon["identity_check"] = (
+            "gate alpha = tanh(0) = 0 exactly, so the untrained residual is zero "
+            "and the model reproduces the base bit for bit (see the S42 test)")
+    else:
+        module = memory.ConditionalMemory(
+            hidden=student_width, value_dim=args.value_dim, rows=args.rows,
+            sites=(args.site,), conv_kernel=args.conv_kernel,
+            table_dtype=torch.float32, seed=args.seed)
+        with torch.no_grad():
+            module.set_grafted_rows(0, rows, counts)
+            module.key_proj[0].weight.copy_(basis.T)
+            module.value_proj[0].weight.copy_(basis)
+            module.out_bias[0].copy_(mean)
 
-    recon = reconstruction_report(module, mapped, student_hidden, tokens, device,
-                                  args.recon_sample)
-    recon["pca_state_relative_error"] = pca_relative_error(
-        module, coefficients, basis, mapped)
-    recon["coefficient_relative_error"] = recon["pca_state_relative_error"]
+        recon = reconstruction_report(module, mapped, student_hidden, tokens,
+                                      device, args.recon_sample)
+        recon["pca_state_relative_error"] = pca_relative_error(
+            module, coefficients, basis, mapped)
+        recon["coefficient_relative_error"] = recon["pca_state_relative_error"]
 
     out_dir = os.path.join(args.out_dir, args.stamp)
     os.makedirs(out_dir, exist_ok=True)
@@ -477,6 +503,7 @@ def run(args) -> int:
             "orders": list(memory.ORDERS),
             "table_dtype": "float32",
             "seed": args.seed,
+            "variant": "corrective" if args.corrective else "representation",
         },
         "graft": {
             "stream_sha256": manifest["sha256"],
@@ -511,6 +538,7 @@ def run(args) -> int:
                         "hidden_at_site": int(student_width)},
         },
         "site": args.site,
+        "variant": "corrective" if args.corrective else "representation",
         "geometry": module.active_parameter_report(),
         "projection": {"method": "ridge least squares teacher->student",
                        "W": ls_report},
@@ -558,6 +586,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--conv-kernel", type=int, default=memory.DEFAULT_CONV_KERNEL)
     parser.add_argument("--batch", type=int, default=512)
     parser.add_argument("--ridge", type=float, default=1e-3)
+    parser.add_argument("--corrective", action="store_true",
+                        help="build a P19.2b corrective graft (zero gate, "
+                             "advantage supervision, no constant offset)")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--recon-sample", type=int, default=4096)
     parser.add_argument("--vram-limit-gib", type=float, default=12.0)

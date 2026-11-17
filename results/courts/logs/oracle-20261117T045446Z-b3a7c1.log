@@ -1,0 +1,54 @@
+.F...........................................                            [100%]
+=================================== FAILURES ===================================
+_____ test_gate_zero_is_exact_even_with_grafted_rows_and_a_nonzero_offset ______
+
+    def test_gate_zero_is_exact_even_with_grafted_rows_and_a_nonzero_offset():
+        torch.manual_seed(6)
+        lm = _LM(vocab=64, hidden=32, layers=4)
+        _freeze(lm)
+        tokens = torch.randint(0, 64, (1, 10), dtype=torch.int64)
+        with torch.no_grad():
+            base = lm(tokens, use_cache=False).logits
+    
+        module = _module()
+        with torch.no_grad():
+            module.set_grafted_rows(0, torch.randn(module.rows, module.value_dim),
+                                    torch.ones(module.rows, dtype=torch.int64))
+>           module.set_grafted_rows(2, torch.randn(module.rows, module.value_dim),
+                                    torch.ones(module.rows, dtype=torch.int64))
+
+oracle/tests/test_s42_corrective.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+oracle/frontier/corrective.py:153: in set_grafted_rows
+    self.core.set_grafted_rows(site_index, rows, counts)
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+oracle/frontier/memory.py:554: in set_grafted_rows
+    table = self.tables[site_index]
+            ^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/container.py:712: in __getitem__
+    idx = self._get_abs_string_index(idx)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ParameterList(
+    (0): Parameter containing: [torch.float32 of size 64x8]
+    (1): Parameter containing: [torch.float32 of size 64x8]
+)
+idx = 2
+
+    def _get_abs_string_index(self, idx):
+        """Get the absolute index for the list of modules."""
+        idx = operator.index(idx)
+        if not (-len(self) <= idx < len(self)):
+>           raise IndexError(f"index {idx} is out of range")
+E           IndexError: index 2 is out of range
+
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/container.py:692: IndexError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s42_corrective.py::test_gate_zero_is_exact_even_with_grafted_rows_and_a_nonzero_offset
+1 failed, 44 passed in 2.05s

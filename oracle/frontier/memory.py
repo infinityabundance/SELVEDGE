@@ -510,7 +510,13 @@ class ConditionalMemory(nn.Module):
             return None
         return state
 
-    def site_forward(self, site_index: int, hidden_states: torch.Tensor) -> torch.Tensor:
+    def site_mixed(self, site_index: int, hidden_states: torch.Tensor) -> torch.Tensor:
+        """The gated 8-row read as float32, without the constant offset.
+
+        Split out so a corrective arm can take the read without the learned
+        per-token mean; `site_forward` adds it exactly as before, so the
+        registered memory arms are numerically unchanged.
+        """
         length = hidden_states.shape[-2]
         # Address the n-gram from the whole recorded prefix, then keep the
         # positions this call executes. Addressing `require(length)` directly
@@ -532,7 +538,10 @@ class ConditionalMemory(nn.Module):
         score = (values * key[:, :, None, :]).sum(-1) / (self.value_dim ** 0.5)
         gate = torch.sigmoid(score)                             # [B,T,8]
         projected = self.value_proj[site_index](values)         # [B,T,8,H]
-        mixed = (gate[..., None] * projected).sum(dim=2)        # [B,T,H]
+        return (gate[..., None] * projected).sum(dim=2)         # [B,T,H]
+
+    def site_forward(self, site_index: int, hidden_states: torch.Tensor) -> torch.Tensor:
+        mixed = self.site_mixed(site_index, hidden_states)
         return (mixed + self.out_bias[site_index]).to(hidden_states.dtype)
 
     def forward(self, hidden_states: torch.Tensor, site_index: int = 0) -> torch.Tensor:

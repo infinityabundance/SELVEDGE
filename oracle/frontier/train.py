@@ -51,7 +51,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ORACLE = os.path.dirname(HERE)
 sys.path.insert(0, ORACLE)
 
-from frontier import arms, full, memory, optim8bit  # noqa: E402
+from frontier import arms, corrective, full, memory, optim8bit  # noqa: E402
 from frontier.stream import load_stream, sha256_file  # noqa: E402
 
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -184,6 +184,26 @@ def build_arm(kind: str, model, args, device: str):
         report["init_checkpoint"] = args.memory_init
         report["init_checkpoint_sha256"] = sha256_file(args.memory_init)
         return module, handles, report
+    if kind == "corrective":
+        checkpoint = torch.load(args.memory_init, map_location="cpu",
+                                weights_only=False)
+        config = checkpoint["config"]
+        if config["sites"] != [args.site]:
+            raise SystemExit(f"memory-init site {config['sites']} != --site {args.site}")
+        module = corrective.CorrectiveMemory(
+            hidden=config["hidden"], value_dim=config["value_dim"],
+            rows=config["rows"], sites=tuple(config["sites"]),
+            conv_kernel=config["conv_kernel"], table_dtype=torch.float32,
+            seed=config["seed"])
+        module.load_state_dict(checkpoint["state_dict"], strict=True)
+        module = module.to(device)
+        handles = arms.install_memory(model, module)
+        report = module.active_parameter_report()
+        report["graft"] = checkpoint["graft"]
+        report["init_checkpoint"] = args.memory_init
+        report["init_checkpoint_sha256"] = sha256_file(args.memory_init)
+        report["identity_at_init"] = module.identity_at_init()
+        return module, handles, report
     if kind == "adapter":
         module = arms.DenseAdapter(hidden=args.hidden).to(device)
         handles = arms.install_adapter(model, module, (args.site,))
@@ -304,9 +324,14 @@ def run(args) -> int:
         for parameter in model.parameters():
             parameter.requires_grad_(False)
     arm, handles, arm_report = build_arm(args.arm, model, args, device)
-    if args.arm == "memory":
+    if args.arm in ("memory", "corrective"):
         for parameter in arm.parameters():
             parameter.requires_grad_(True)
+    corrective_module = arm if args.arm == "corrective" else None
+    objective = args.objective or (
+        "correction" if args.arm == "corrective" else "ce_kl")
+    if objective == "correction" and corrective_module is None:
+        raise SystemExit("train: the correction objective requires --arm corrective")
     torch.cuda.reset_peak_memory_stats()
 
     teacher = None
@@ -385,6 +410,13 @@ def run(args) -> int:
             "optimizer_numerics": args.optim_numerics,
             "optimizer_measure_every": int(args.optim_measure_every),
         })
+    if args.arm == "corrective":
+        config.update({
+            "objective": objective,
+            "objective_preserve_weight": args.preserve_weight,
+            "objective_interference_weight": args.interference_weight,
+            "objective_advantage": "KL(teacher_T || base_T) per position, detached",
+        })
     config["config_sha256"] = config_hash(config)
     os.makedirs(args.run_dir, exist_ok=True)
     write_json(os.path.join(args.run_dir, "manifest.json"), {
@@ -442,6 +474,7 @@ def run(args) -> int:
         ce_sum = 0.0
         kl_sum = 0.0
         loss_sum = 0.0
+        objective_sum: dict[str, float] = {}
         step_started = time.time()
         for micro in range(args.grad_accum):
             batch, _ = next_batch(stream, offset + micro * args.seq_len, args.seq_len)
@@ -453,8 +486,27 @@ def run(args) -> int:
             if teacher is not None:
                 with torch.no_grad():
                     teacher_logits = teacher(input_ids=inputs, use_cache=False).logits
-            loss, ce, kl = token_loss(student, teacher_logits, targets,
-                                      args.temperature, args.kl_weight)
+            if (corrective_module is not None and objective == "correction"
+                    and teacher_logits is not None):
+                # The frozen base logits are needed for the advantage and the
+                # preservation term. `bypass` returns exactly zero and does not
+                # advance the convolution state, so this is a clean base pass.
+                with torch.no_grad():
+                    corrective_module.bypass = True
+                    base_logits = model(input_ids=inputs, use_cache=False).logits
+                    corrective_module.bypass = False
+                loss, ce, kl, diagnostics = corrective.corrective_objective(
+                    student, base_logits, teacher_logits, targets,
+                    args.temperature, args.kl_weight, objective=objective,
+                    gate=corrective_module.gate(0),
+                    preserve_weight=args.preserve_weight,
+                    interference_weight=args.interference_weight)
+                for key, value in diagnostics.items():
+                    if isinstance(value, (int, float)):
+                        objective_sum[key] = objective_sum.get(key, 0.0) + float(value)
+            else:
+                loss, ce, kl = token_loss(student, teacher_logits, targets,
+                                          args.temperature, args.kl_weight)
             (loss / args.grad_accum).backward()
             loss_sum += float(loss.detach())
             ce_sum += float(ce)
@@ -489,6 +541,12 @@ def run(args) -> int:
         }
         if measure:
             entry["numerics"] = optimizer.last_numerics
+        if objective_sum and corrective_module is not None:
+            entry["objective"] = {
+                key: value / args.grad_accum
+                for key, value in objective_sum.items()
+                if key != "objective"}
+            entry["gate"] = corrective_module.gate_values()
         if step % args.collision_every == 0 and args.arm == "memory":
             sample = stream[offset - args.seq_len:offset]
             collision = arm.collision_report(sample[None, :])
@@ -556,6 +614,10 @@ def run(args) -> int:
         "arm_accounting": arm_report,
         "optimizer_state": optimizer_report,
         "optimizer_numerics": numerics_summary,
+        "objective": objective,
+        "correction_gate_final": (
+            corrective_module.gate_values() if corrective_module is not None
+            else None),
         "final_checkpoint": os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt"),
         "final_checkpoint_sha256": sha256_file(
             os.path.join(args.run_dir, f"ckpt-{steps:06d}.pt")),
@@ -572,7 +634,9 @@ def run(args) -> int:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--arm", choices=["memory", "adapter", "full"], required=True)
+    parser.add_argument("--arm",
+                        choices=["memory", "corrective", "adapter", "full"],
+                        required=True)
     parser.add_argument("--stream-manifest", required=True)
     parser.add_argument("--student-dir", default=STUDENT_DIR)
     parser.add_argument("--teacher-dir", default=TEACHER_DIR)
@@ -597,6 +661,11 @@ def main(argv: list[str]) -> int:
                         help="weight-update rounding for the 8-bit optimizer")
     parser.add_argument("--optim-measure-every", type=int, default=0,
                         help="also measure unchanged-element fractions every N steps")
+    parser.add_argument("--objective", choices=list(corrective.OBJECTIVES),
+                        default=None,
+                        help="correction (default for --arm corrective) or ce_kl")
+    parser.add_argument("--preserve-weight", type=float, default=0.5)
+    parser.add_argument("--interference-weight", type=float, default=0.05)
     parser.add_argument("--allow-dense-optimizer", action="store_true")
     parser.add_argument("--schedule", choices=["constant", "cosine"], default="constant")
     parser.add_argument("--min-lr-ratio", type=float, default=0.1)
@@ -615,11 +684,13 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--vram-limit-gib", type=float, default=12.0)
     args = parser.parse_args(argv)
-    if args.arm == "memory" and not args.memory_init:
-        raise SystemExit("--memory-init is required for --arm memory")
+    if args.arm in ("memory", "corrective") and not args.memory_init:
+        raise SystemExit(f"--memory-init is required for --arm {args.arm}")
+    if args.objective == "correction" and args.arm != "corrective":
+        raise SystemExit("--objective correction requires --arm corrective")
     if args.arm != "full" and (args.optimizer != "adamw" or args.schedule != "constant"):
-        raise SystemExit("the registered adapter/memory arms are AdamW + constant LR; "
-                         "do not change them retroactively")
+        raise SystemExit("the registered adapter/memory/corrective arms are AdamW + "
+                         "constant LR; do not change them retroactively")
     return run(args)
 
 
