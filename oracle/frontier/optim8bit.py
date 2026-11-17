@@ -11,18 +11,25 @@ second-moment storage is a correction registered in S50.
 
 What is stored per trainable element (S50 onward):
 
-* first moment: 1 byte (int8, block-wise absmax scale)
+* first moment: 1 byte (int8, block-wise absmax scale) by default, or 2 bytes
+  (bfloat16) when `first_moment_storage="bfloat16"` is selected
 * second moment: 2 bytes (bfloat16, one exponent and eight mantissa bits)
-* one float32 scale per 256-element block: 0.015625 bytes
+* one float32 scale per 256-element block: 0.015625 bytes (int8 first moment
+  only; the bf16 first moment needs no per-block scale)
 * the parameter itself stays in its model dtype (bf16 for this arm), so there is
   no fp32 master copy
 
-Total ~3.02 bytes per trainable element, against 8 bytes for fp32 AdamW. For the
-498,113,344 trainable elements of the full arm that is 3.016 B/element =
-1.399 GiB of moment state, 0.456 GiB more than the pre-S50 2.031 B/element
-(0.943 GiB). The measured full-arm peak was 11.4289 GiB allocated against the
-12.5 GiB limit, so the corrected projection is 11.885 GiB and stays under the
-limit; fp32 second moments (add 1.392 GiB, projecting 12.821 GiB) would not.
+Total ~3.02 bytes per trainable element for the shipped int8 first moment,
+against 8 bytes for fp32 AdamW. For the 498,113,344 trainable elements of the
+full arm that is 3.016 B/element = 1.399 GiB of moment state, 0.456 GiB more
+than the pre-S50 2.031 B/element (0.943 GiB). The measured full-arm peak was
+11.4289 GiB allocated against the 12.5 GiB limit, so the corrected projection is
+11.885 GiB and stays under the limit; fp32 second moments (add 1.392 GiB,
+projecting 12.821 GiB) would not. A bf16 first moment costs 2 B/element (0.928
+GiB of state on its own); replacing the int8 first moment adds 0.984 B/element
+(4.000 B/element total, +0.457 GiB) and projects 12.34 GiB, inside the limit by
+0.16 GiB. It is kept behind the `first_moment_storage` flag so the real-gradient
+validation can make the switch a one-line change rather than a rewrite.
 
 Why the second moment cannot be linear int8 (S50 defect). A linear absmax code
 has spacing `absmax / 127` inside each block, so every squared gradient below
@@ -39,11 +46,15 @@ halves it to 0.2% in the denominator), so it cannot zero a small moment.
 The int8 first moment is retained because its error is absolute within a block
 (`absmax_m / 254`) rather than a relative collapse, and an update direction of
 order one arises only where `m` is comparable to its block's scale. It costs one
-byte per element; a bf16 first moment would add another 0.928 GiB and push the
-projected peak to 12.35 GiB, inside the limit by only 0.15 GiB, so it is not
-used. The quantization is nearest-even (deterministic), symmetric in
-[-127, 127], and per-block so a single large value cannot flatten a whole tensor.
-The reported bytes come from the allocated state tensors, not from arithmetic.
+byte per element, and that is the default; a bf16 first moment costs a second
+byte and 0 B/element for the block scale, replacing 1.016 B/element with 2.000
+B/element and pushing the projected peak to 12.34 GiB, inside the limit by 0.16
+GiB. `first_moment_storage` selects the layout, and the real-gradient harness
+(`scripts/s50_real_gradient_validation.py`) decides whether the default must
+move to bfloat16. The int8 quantization is nearest-even (deterministic),
+symmetric in [-127, 127], and per-block so a single large value cannot flatten a
+whole tensor. The reported bytes come from the allocated state tensors, not from
+arithmetic.
 
 Weight-update numerics (S42). A bf16 parameter has 8 mantissa bits; an update
 whose magnitude is below half an ulp of the weight rounds to zero under
@@ -82,6 +93,12 @@ import torch
 DEFAULT_BLOCK = 256
 DEFAULT_NUMERICS = "stochastic"
 NUMERICS = ("stochastic", "nearest", "compensated")
+# S51: the int8 first moment leaves a bounded absolute error inside each block.
+# The switch is kept explicit so a real-gradient validation can move it to
+# bfloat16 without touching the step arithmetic.
+DEFAULT_FIRST_MOMENT_STORAGE = "int8"
+FIRST_MOMENT_STORAGES = ("int8", "bfloat16")
+FIRST_MOMENT_BYTES = {"int8": 1, "bfloat16": 2}
 # S50: the second moment is stored in bfloat16, not linear int8. bfloat16 has a
 # fixed relative precision at every magnitude, so a small squared gradient
 # cannot quantise to zero (see the module docstring for the defect and bytes).
@@ -237,6 +254,7 @@ class Adam8bit(torch.optim.Optimizer):
                  eps: float = 1e-8, weight_decay: float = 0.0,
                  block: int = DEFAULT_BLOCK,
                  weight_rounding: str = DEFAULT_NUMERICS,
+                 first_moment_storage: str = DEFAULT_FIRST_MOMENT_STORAGE,
                  generator: torch.Generator | None = None,
                  chunk: int = SR_CHUNK):
         if lr < 0.0:
@@ -250,11 +268,16 @@ class Adam8bit(torch.optim.Optimizer):
         if weight_rounding not in NUMERICS:
             raise ValueError(f"unknown weight_rounding {weight_rounding!r}; "
                              f"expected one of {NUMERICS}")
+        if first_moment_storage not in FIRST_MOMENT_STORAGES:
+            raise ValueError(
+                f"unknown first_moment_storage {first_moment_storage!r}; "
+                f"expected one of {FIRST_MOMENT_STORAGES}")
         if chunk < 1:
             raise ValueError(f"invalid chunk size: {chunk}")
         super().__init__(params, dict(
             lr=lr, betas=tuple(betas), eps=eps, weight_decay=weight_decay,
-            block=int(block), weight_rounding=weight_rounding, chunk=int(chunk)))
+            block=int(block), weight_rounding=weight_rounding,
+            first_moment_storage=first_moment_storage, chunk=int(chunk)))
         self.generator = generator
         self.last_numerics: dict | None = None
         self.numerics_steps_measured = 0
@@ -349,6 +372,8 @@ class Adam8bit(torch.optim.Optimizer):
             eps = group["eps"]
             weight_decay = group["weight_decay"]
             block = group["block"]
+            first_moment_storage = group.get(
+                "first_moment_storage", DEFAULT_FIRST_MOMENT_STORAGE)
             for parameter in group["params"]:
                 if parameter.grad is None:
                     continue
@@ -366,7 +391,14 @@ class Adam8bit(torch.optim.Optimizer):
                     state["padded"] = _padded(numel, block)
                     zeros = torch.zeros(state["padded"], dtype=torch.float32,
                                         device=parameter.device)
-                    state["q_m"], state["absmax_m"] = quantize(zeros, block)
+                    if first_moment_storage == "bfloat16":
+                        # Unquantised first moment: fixed relative precision at
+                        # every magnitude, no per-block absolute code.
+                        state["m"] = torch.zeros(
+                            state["padded"], dtype=torch.bfloat16,
+                            device=parameter.device)
+                    else:
+                        state["q_m"], state["absmax_m"] = quantize(zeros, block)
                     # Unquantised bf16 second moment: no linear absmax code, so
                     # no squared gradient can round to zero.
                     state["v"] = torch.zeros(state["padded"],
@@ -374,8 +406,11 @@ class Adam8bit(torch.optim.Optimizer):
                                              device=parameter.device)
                 state["step"] += 1
                 step = state["step"]
-                moment = dequantize(state["q_m"], state["absmax_m"],
-                                    state["padded"], block)
+                if first_moment_storage == "bfloat16":
+                    moment = state["m"].to(torch.float32)
+                else:
+                    moment = dequantize(state["q_m"], state["absmax_m"],
+                                        state["padded"], block)
                 variance = state["v"].to(torch.float32)
                 if weight_decay != 0.0:
                     # Decoupled AdamW decay, not an L2 term in the gradient.
@@ -401,7 +436,10 @@ class Adam8bit(torch.optim.Optimizer):
                         max_direction,
                         torch.maximum(update.amax(), -update.amin()))
                 self._apply_update(parameter, update, lr, state, stats)
-                state["q_m"], state["absmax_m"] = quantize(moment, block)
+                if first_moment_storage == "bfloat16":
+                    state["m"].copy_(moment.to(torch.bfloat16))
+                else:
+                    state["q_m"], state["absmax_m"] = quantize(moment, block)
                 state["v"].copy_(variance.to(SECOND_MOMENT_DTYPE))
                 measured_lr = lr
         if max_direction is not None:
@@ -427,6 +465,8 @@ class Adam8bit(torch.optim.Optimizer):
         """
         params = [parameter for group in self.param_groups
                   for parameter in group["params"]]
+        storage = self.param_groups[0].get(
+            "first_moment_storage", DEFAULT_FIRST_MOMENT_STORAGE)
         preserved = {}
         for index, state in (state_dict.get("state") or {}).items():
             if "q_v" in state or "absmax_v" in state:
@@ -435,9 +475,21 @@ class Adam8bit(torch.optim.Optimizer):
                     "int8 absmax code; that state is invalidated by the S50 "
                     "optimiser defect and cannot be resumed. Rerun from the "
                     "arm's initialisation with the corrected optimizer.")
+            has_int8_first = "q_m" in state or "absmax_m" in state
+            has_bf16_first = "m" in state
+            if storage == "bfloat16" and has_int8_first:
+                raise ValueError(
+                    "checkpoint stores the first moment as int8 but the optimizer "
+                    "is configured for bfloat16; the first-moment storage is part "
+                    "of the recipe and cannot be converted on resume")
+            if storage == "int8" and has_bf16_first:
+                raise ValueError(
+                    "checkpoint stores the first moment as bfloat16 but the "
+                    "optimizer is configured for int8; select the same "
+                    "first_moment_storage on resume")
             preserved[index] = {
                 key: value.detach().clone() for key, value in state.items()
-                if key in ("q_m", "absmax_m", "v", "compensation")}
+                if key in ("q_m", "absmax_m", "m", "v", "compensation")}
         result = super().load_state_dict(state_dict)
         for index, tensors in preserved.items():
             parameter = params[index]
@@ -449,7 +501,7 @@ class Adam8bit(torch.optim.Optimizer):
         """Bytes actually allocated for optimizer moments and scales."""
         total = 0
         for state in self.state.values():
-            for key in ("q_m", "absmax_m", "v"):
+            for key in ("q_m", "absmax_m", "m", "v"):
                 value = state.get(key)
                 if isinstance(value, torch.Tensor):
                     total += value.numel() * value.element_size()
@@ -476,13 +528,25 @@ class Adam8bit(torch.optim.Optimizer):
     def receipt(self) -> dict:
         group = self.param_groups[0] if self.param_groups else {}
         block = int(group.get("block", DEFAULT_BLOCK))
+        storage = group.get("first_moment_storage",
+                            DEFAULT_FIRST_MOMENT_STORAGE)
         numel = sum(int(state.get("numel", 0)) for state in self.state.values())
         return {
             "kind": "stage2_adam8bit",
             "implementation": "oracle/frontier/optim8bit.py",
             "basis": "block-wise quantized Adam moments, Dettmers et al. arXiv:2110.02861",
             "block_elements": block,
-            "quantization": "symmetric int8, nearest-even, per-block float32 absmax",
+            "first_moment_storage": storage,
+            "first_moment_bytes_per_element": float(FIRST_MOMENT_BYTES[storage]),
+            "first_moment_basis": {
+                "int8": ("symmetric int8, nearest-even, per-block float32 "
+                         "absmax; bounded absolute block error"),
+                "bfloat16": ("unquantised bfloat16; fixed 0.4% relative "
+                             "precision at every magnitude, no per-block scale"),
+            }[storage],
+            "quantization": ("symmetric int8, nearest-even, per-block float32 "
+                             "absmax" if storage == "int8" else
+                             "none for the first moment (bfloat16 storage)"),
             "second_moment_storage": "bfloat16 (unquantised; S50 correction)",
             "second_moment_basis": (
                 "linear absmax int8 zeroes any squared gradient below "
