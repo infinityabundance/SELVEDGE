@@ -223,11 +223,59 @@ declared a winner, a null **or** a loss.)*
 
 ## 7. Registered full-budget plan
 
-The budget is **not** derived from a smoke throughput, because no smoke
-throughput has been measured. The first GPU job of the next session is the
-teacher+student step measurement registered in
-`docs/WS19-EXECUTION-REGISTRATION.md` §4; the phase budgets below are stated in
-tokens and the GPU-hour conversion is filled in from that receipt, not typed.
+The token-to-GPU-hour conversion is now **measured, not estimated**. Job 0 of
+`docs/WS19-EXECUTION-REGISTRATION.md` §4 ran at the smoke geometry (sequence
+length 512, micro-batch 1, accumulation 4, one site after decoder layer 2,
+65,536 rows, 8 reads per token), with 20 discarded warmup and 50 measured
+optimiser steps and no `torch.compile`. The receipts are
+`results/stage2/throughput-20261117T004502Z.json` (memory arm) and
+`results/stage2/throughput-20261117T004619Z-adapter.json` (the
+parameter-matched dense adapter, which is the arm the distillation control
+trains); `results/stage2/throughput-summary-20261117T005345Z.json` derives the
+budget from them.
+
+| quantity | memory arm | adapter arm |
+| --- | ---: | ---: |
+| tokens/s at a 2,048-token optimiser step (median) | <!-- BEGIN GENERATED: s2-throughput-memory-tok-s -->
+2,285.0
+<!-- END GENERATED: s2-throughput-memory-tok-s --> | <!-- BEGIN GENERATED: s2-throughput-adapter-tok-s -->
+2,321.0
+<!-- END GENERATED: s2-throughput-adapter-tok-s --> |
+| median optimiser step (ms) | <!-- BEGIN GENERATED: s2-throughput-memory-median-ms -->
+896.3
+<!-- END GENERATED: s2-throughput-memory-median-ms --> | <!-- BEGIN GENERATED: s2-throughput-adapter-median-ms -->
+882.4
+<!-- END GENERATED: s2-throughput-adapter-median-ms --> |
+| p95 optimiser step (ms) | — | <!-- BEGIN GENERATED: s2-throughput-adapter-p95-ms -->
+890.3
+<!-- END GENERATED: s2-throughput-adapter-p95-ms --> |
+| peak allocated VRAM (GiB) | <!-- BEGIN GENERATED: s2-throughput-memory-peak-gib -->
+9.21
+<!-- END GENERATED: s2-throughput-memory-peak-gib --> | <!-- BEGIN GENERATED: s2-throughput-adapter-peak-gib -->
+8.94
+<!-- END GENERATED: s2-throughput-adapter-peak-gib --> |
+
+At the measured adapter rate the registered 20,000,000-token control costs
+<!-- BEGIN GENERATED: s2-control-hours -->
+2.39
+<!-- END GENERATED: s2-control-hours --> hours, inside the 6 h window; a full 6 h
+window would fund <!-- BEGIN GENERATED: s2-six-hour-capacity-tokens -->
+50,132,848
+<!-- END GENERATED: s2-six-hour-capacity-tokens --> tokens. The budget is
+deliberately **not** raised to that capacity: it was registered before the
+measurement, and changing it afterwards would be a post-measurement budget
+change. The loop runs whole 2,048-token steps, so the budget is realised as
+<!-- BEGIN GENERATED: s2-control-realised-tokens -->
+19,998,720
+<!-- END GENERATED: s2-control-realised-tokens --> tokens in 9,765 steps —
+1,280 tokens (0.0064%) below the registered budget, never above it.
+
+The phase breakdown attributed the median adapter step as 58.3% backward, 19.8%
+teacher forward, 14.6% student forward, 7.2% loss and 0.0% optimiser, from CUDA
+events at phase boundaries. The fallback `causal_conv1d` and
+`flash-linear-attention` reference kernels are the measured path (neither is
+installed in the court), so these rates are the reference-kernel rates, not an
+optimised-kernel lower bound on step time.
 
 - phase A (development scale, 65,536 rows): three seeds, memory and adapter,
   20,000,000 tokens per arm per seed;
@@ -242,7 +290,11 @@ tokens and the GPU-hour conversion is filled in from that receipt, not typed.
   A and B have produced their receipts.
 
 Evaluation cadence: every 5,000,000 tokens on the fixed smoke subsets, plus the
-full registered anchor task list at the end of each run.
+full registered anchor task list at the end of each run. The distillation-only
+control (Job 1) registers one deviation: **only its final checkpoint is
+scored**, because choosing a checkpoint by subset score would turn the control
+into a tuned arm. Its intermediate checkpoints exist for resume and for a
+diagnostic curve, not for selection.
 
 Next route if the first configuration misses, in order:
 
