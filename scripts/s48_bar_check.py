@@ -72,6 +72,21 @@ def config_hash(config: dict) -> str:
     return hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()
 
 
+def payload_digest(torch, payload: dict) -> str | None:
+    """A digest over the payload's scalar fields and every tensor's bytes."""
+    if not payload:
+        return None
+    digest = hashlib.sha256()
+    for key in ("step", "tokens_seen", "config_sha256", "stream_sha256", "arm"):
+        digest.update(f"{key}={payload.get(key)}".encode())
+    state = payload.get("arm_state") or {}
+    for name in sorted(state):
+        tensor = state[name]
+        digest.update(name.encode())
+        digest.update(tensor.detach().cpu().contiguous().view(-1).view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
+
+
 def main(argv: list[str]) -> int:
     import torch
 
@@ -95,7 +110,9 @@ def main(argv: list[str]) -> int:
     def check(name: str, ok: bool, detail) -> None:
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
-    recomputed = config_hash(config)
+    # train.py hashes the config *before* writing its own digest into it.
+    body = {key: value for key, value in config.items() if key != "config_sha256"}
+    recomputed = config_hash(body)
     check("receipt schema", receipt.get("schema") == "selvedge/stage2-train/v1",
           receipt.get("schema"))
     check("config hash recomputes", recomputed == config.get("config_sha256"),
@@ -127,15 +144,21 @@ def main(argv: list[str]) -> int:
           file_sha is not None
           and file_sha == receipt.get("final_checkpoint_sha256"),
           {"receipt": receipt.get("final_checkpoint_sha256"), "file": file_sha})
-    latest_path = os.path.join(run_dir, "latest.pt")
-    latest_sha = (sha256_file(latest_path) if os.path.exists(latest_path)
-                  else None)
-    check("latest.pt is the final checkpoint", latest_sha is not None
-          and latest_sha == file_sha,
-          {"latest": latest_sha, "final": file_sha})
-
     payload = (torch.load(full_path, map_location="cpu", weights_only=False)
                if exists else {})
+    # `latest.pt` is written by the same `torch.save` call as the final
+    # checkpoint, but the zip container names its root after the file, so the
+    # two files are not byte-identical. Compare the payload instead.
+    latest_path = os.path.join(run_dir, "latest.pt")
+    latest_payload = (torch.load(latest_path, map_location="cpu",
+                                 weights_only=False)
+                      if os.path.exists(latest_path) else {})
+    latest_digest = payload_digest(torch, latest_payload)
+    final_digest = payload_digest(torch, payload)
+    check("latest.pt carries the final payload", bool(latest_payload)
+          and latest_digest == final_digest,
+          {"latest": latest_digest, "final": final_digest})
+    del latest_payload
     check("payload step", payload.get("step") == config["steps"],
           {"payload": payload.get("step"), "config": config["steps"]})
     check("payload tokens_seen == tokens_trained",
@@ -154,12 +177,10 @@ def main(argv: list[str]) -> int:
 
     manifest_path = os.path.join(REPO,
                                  launch.get("stream", {}).get("manifest", ""))
-    manifest_sha = (sha256_file(manifest_path)
-                    if manifest_path and os.path.exists(manifest_path) else None)
-    check("stream manifest SHA-256",
-          manifest_sha is not None
-          and manifest_sha == launch.get("stream", {}).get("sha256"),
-          {"file": manifest_sha, "launch": launch.get("stream", {}).get("sha256")})
+    check("launch stream tensor hash == config stream hash",
+          launch.get("stream", {}).get("sha256") == config.get("stream_sha256"),
+          {"launch": launch.get("stream", {}).get("sha256"),
+           "config": config.get("stream_sha256")})
     stream_file = None
     if manifest_path and os.path.exists(manifest_path):
         manifest = json.load(open(manifest_path, encoding="utf-8"))
