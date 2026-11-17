@@ -148,9 +148,19 @@ if ((available < need + 4)); then
   printf 's49-bar: host MemAvailable %s GiB < limit %s GiB + 4 GiB reserve\n' "$available" "$need" >&2
   exit 75
 fi
-if systemctl --user --quiet is-active selvedge-s49-*.service 2>/dev/null; then
-  printf 's49-bar: an S49 unit is still active; one job at a time\n' >&2
-  exit 75
+self_unit="${SELVEDGE_UNIT:-}"
+if [[ -n "$self_unit" ]]; then
+  while IFS= read -r unit; do
+    [[ -z "$unit" ]] && continue
+    [[ "$unit" == "${self_unit%.service}.service" ]] && continue
+    printf 's49-bar: unit %s is still active; one job at a time\n' "$unit" >&2
+    exit 75
+  done < <(systemctl --user list-units --state=active --no-legend --plain 'selvedge-s49-*.service' 2>/dev/null | awk '{print $1}')
+else
+  if systemctl --user --quiet is-active selvedge-s49-*.service 2>/dev/null; then
+    printf 's49-bar: an S49 unit is still active; one job at a time\n' >&2
+    exit 75
+  fi
 fi
 if pgrep -f 'oracle/frontier/train.py' >/dev/null 2>&1; then
   printf 's49-bar: a training process is already running; refusing to compete\n' >&2
