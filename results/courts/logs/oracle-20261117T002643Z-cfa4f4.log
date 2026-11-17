@@ -1,0 +1,33 @@
+F..F                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_state_is_carried_across_tokens_reset_between_sequences_and_pass_isolated _
+
+    def test_state_is_carried_across_tokens_reset_between_sequences_and_pass_isolated():
+        model = tiny_model(tiny_config())
+        result = ref.multi_pass_state_test(model, passes=2, times=8, reset_after=4)
+        assert result["carry"]["argmax_equal"], result["carry"]
+>       assert result["carry"]["ok"], result["carry"]
+E       AssertionError: {'max_abs': 9.894371032714844e-06, 'mean_abs': 7.554101557616377e-07, 'cosine': 0.9999999403953552, 'argmax_equal': True, ...}
+E       assert False
+
+oracle/tests/test_reference_state.py:93: AssertionError
+___________________ test_state_contract_holds_on_the_anchor ____________________
+
+    @pytest.mark.skipif(
+        not os.path.isdir(ref.DEFAULT_CHECKPOINT),
+        reason="the anchor checkpoint is not cached on this machine",
+    )
+    def test_state_contract_holds_on_the_anchor():
+        model, _config = ref.load_reference(
+            ref.DEFAULT_CHECKPOINT, torch.bfloat16, "cpu"
+        )
+        result = ref.multi_pass_state_test(model, passes=2, times=4, reset_after=2)
+>       assert result["all_ok"], result
+E       AssertionError: {'passes': 2, 'times': 4, 'reset_after': 2, 'seed': 20261117, ...}
+E       assert False
+
+oracle/tests/test_reference_state.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_reference_state.py::test_state_is_carried_across_tokens_reset_between_sequences_and_pass_isolated
+FAILED oracle/tests/test_reference_state.py::test_state_contract_holds_on_the_anchor
+2 failed, 2 passed in 3.90s

@@ -1,0 +1,21 @@
+...F                                                                     [100%]
+=================================== FAILURES ===================================
+___________________ test_state_contract_holds_on_the_anchor ____________________
+
+    @pytest.mark.skipif(
+        not os.path.isdir(ref.DEFAULT_CHECKPOINT),
+        reason="the anchor checkpoint is not cached on this machine",
+    )
+    def test_state_contract_holds_on_the_anchor():
+        model, _config = ref.load_reference(
+            ref.DEFAULT_CHECKPOINT, torch.bfloat16, "cpu"
+        )
+        result = ref.multi_pass_state_test(model, passes=2, times=4, reset_after=2)
+>       assert result["all_ok"], result
+E       AssertionError: {'passes': 2, 'times': 4, 'reset_after': 2, 'seed': 20261117, ...}
+E       assert False
+
+oracle/tests/test_reference_state.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_reference_state.py::test_state_contract_holds_on_the_anchor
+1 failed, 3 passed in 3.82s

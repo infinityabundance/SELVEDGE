@@ -1,0 +1,40 @@
+F..F                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_state_is_carried_across_tokens_reset_between_sequences_and_pass_isolated _
+
+    def test_state_is_carried_across_tokens_reset_between_sequences_and_pass_isolated():
+        model = tiny_model(tiny_config())
+        result = ref.multi_pass_state_test(model, passes=2, times=8, reset_after=4)
+        assert result["carry"]["argmax_equal"], result["carry"]
+        assert result["carry"]["ok"], result["carry"]
+        assert result["chunk"]["bit_identical"], result["chunk"]
+        assert result["reset"]["reset_equals_fresh"], result["reset"]
+        assert result["reset"]["not_reset_differs"], result["reset"]
+        assert result["isolation"]["pass0_state_bit_identical"], result["isolation"]
+        assert result["isolation"]["last_pass_state_differs"], result["isolation"]
+        assert result["isolation"]["distinct_storage"], result["isolation"]
+>       assert result["all_ok"], result
+E       AssertionError: {'passes': 2, 'times': 8, 'reset_after': 4, 'seed': 20261117, ...}
+E       assert False
+
+oracle/tests/test_reference_state.py:97: AssertionError
+___________________ test_state_contract_holds_on_the_anchor ____________________
+
+    @pytest.mark.skipif(
+        not os.path.isdir(ref.DEFAULT_CHECKPOINT),
+        reason="the anchor checkpoint is not cached on this machine",
+    )
+    def test_state_contract_holds_on_the_anchor():
+        model, _config = ref.load_reference(
+            ref.DEFAULT_CHECKPOINT, torch.bfloat16, "cpu"
+        )
+        result = ref.multi_pass_state_test(model, passes=2, times=4, reset_after=2)
+>       assert result["all_ok"], result
+E       AssertionError: {'passes': 2, 'times': 4, 'reset_after': 2, 'seed': 20261117, ...}
+E       assert False
+
+oracle/tests/test_reference_state.py:142: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_reference_state.py::test_state_is_carried_across_tokens_reset_between_sequences_and_pass_isolated
+FAILED oracle/tests/test_reference_state.py::test_state_contract_holds_on_the_anchor
+2 failed, 2 passed in 3.93s

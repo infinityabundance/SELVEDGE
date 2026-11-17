@@ -1,0 +1,314 @@
+{
+  "schema": "selvedge/recurrent-state-contract/v1",
+  "stamp": "20261117T003300Z",
+  "revision": "532d415",
+  "generated_by": "scripts/s38_state_receipt.py",
+  "checkpoint": {
+    "path": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "config_sha256": "b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204",
+    "dtype": "bfloat16",
+    "device": "cpu",
+    "layers": 24,
+    "linear_layers": 18,
+    "attention_layers": 6
+  },
+  "test": {
+    "passes": 2,
+    "times": 8,
+    "reset_after": 4,
+    "seed": 20261117,
+    "carry": {
+      "max_abs": 0.22265625,
+      "mean_abs": 0.02607312798500061,
+      "cosine": 0.9997768402099609,
+      "argmax_equal": true,
+      "max_abs_logit": 17.25,
+      "dtype_eps": 0.0078125,
+      "one_ulp": 0.134765625,
+      "max_abs_in_ulps": 1.6521739130434783,
+      "relative_max_abs": 0.012907608695652174,
+      "ok": true
+    },
+    "chunk": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "split": 4,
+      "ok": true
+    },
+    "reset": {
+      "reset_equals_fresh": true,
+      "not_reset_differs_from_fresh": 9.4609375,
+      "not_reset_differs": true,
+      "ok": true
+    },
+    "isolation": {
+      "passes": 2,
+      "pass0_state_bit_identical": true,
+      "last_pass_state_differs": true,
+      "output_max_abs": 17.53125,
+      "output_changed": true,
+      "distinct_storage": true,
+      "ok": true
+    },
+    "all_ok": true,
+    "state_elements_per_pass": 5050368,
+    "state_shapes": {
+      "conv": [
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ],
+        [
+          3,
+          6144
+        ]
+      ],
+      "recurrent": [
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ],
+        [
+          16,
+          128,
+          128
+        ]
+      ],
+      "kv": [
+        [
+          [
+            2,
+            0,
+            256
+          ],
+          [
+            2,
+            0,
+            256
+          ]
+        ],
+        [
+          [
+            2,
+            0,
+            256
+          ],
+          [
+            2,
+            0,
+            256
+          ]
+        ],
+        [
+          [
+            2,
+            0,
+            256
+          ],
+          [
+            2,
+            0,
+            256
+          ]
+        ],
+        [
+          [
+            2,
+            0,
+            256
+          ],
+          [
+            2,
+            0,
+            256
+          ]
+        ],
+        [
+          [
+            2,
+            0,
+            256
+          ],
+          [
+            2,
+            0,
+            256
+          ]
+        ],
+        [
+          [
+            2,
+            0,
+            256
+          ],
+          [
+            2,
+            0,
+            256
+          ]
+        ]
+      ]
+    },
+    "state_rule": "state is carried across tokens within a sequence, reset only between independent sequences, and never shared between passes",
+    "state_breakdown": {
+      "delta_state_elements": 4718592,
+      "conv_state_elements": 331776,
+      "kv_state_elements_per_token": 6144,
+      "note": "per pass, at zero context. The DeltaNet state is the P19.4 figure; the convolution windows are a fixed extra the plan's table omits, and the attention KV grows with context at the per-token rate here."
+    }
+  },
+  "state_rule": "a pass's recurrent state is carried across tokens within a sequence, reset only between independent sequences, and never shared between passes",
+  "spec_correction": {
+    "wrong_sentence": "P19.4 previously said a pass's state must be reset between tokens",
+    "correct_sentence": "S_{k,t} -> S_{k,t+1} across tokens; reset only between independent sequences; no cross-pass reads",
+    "why_it_matters": "resetting between tokens would make every pass a one-token function and would make the chunking-equivalence claim in P19.4 false"
+  },
+  "wall_seconds": 2.601,
+  "peak_rss_kib": 3419448,
+  "memory_sizing": "the court limit for this job is measured peak RSS times 1.5 plus a 1 GiB floor margin, rounded up to a whole GiB; the peak is the field above"
+}

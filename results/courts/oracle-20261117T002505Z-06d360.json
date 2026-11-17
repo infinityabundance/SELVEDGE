@@ -1,0 +1,137 @@
+{
+  "argv": [
+    "python3",
+    "-c",
+    "\nimport sys,torch\nsys.path.insert(0,'oracle')\nfrom tests.test_reference_state import tiny_model, tiny_config\nfrom reference import qwen35 as ref\nm=tiny_model(tiny_config())\ncfg=m.config\nb=ref.initial_state(cfg,passes=2,device='cpu',dtype=torch.float32)\np=b.clone_detached()\nlayer=list(p[1].recurrent)[0]\nprint('recurrent elements', p[1].recurrent[layer].numel(), 'norm', float(p[1].recurrent[layer].norm()))\np[1].recurrent[layer].add_(torch.randn_like(p[1].recurrent[layer])*0.05)\nprint('after perturb norm', float(p[1].recurrent[layer].norm()))\ntok=torch.tensor([5])\nwith torch.no_grad():\n    lb,b=m.step_token(5,b); lp,p=m.step_token(5,p)\nprint('logit max abs diff token0', float((lb.float()-lp.float()).abs().max()))\nprint('pass0 state equal', torch.equal(b[0].recurrent[layer],p[0].recurrent[layer]))\nprint('pass1 state equal', torch.equal(b[1].recurrent[layer],p[1].recurrent[layer]))\nprint('hidden?')\n"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "f12ca6e5d7132da44e5236b68ea57cb1b257f72f687c109f4e5e9d3f3b7e758d",
+  "container_name": "selvedge-oracle-court-20261117T002505Z-06d360",
+  "court": "oracle",
+  "duration_ms": 4872,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "memory_swap_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "nano_cpus": {
+        "actual": 4000000000,
+        "expected": 4000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 256,
+        "expected": 256
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 1073741824,
+        "expected": 1073741824
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-17T00:25:10Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_ref": "selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "4",
+    "init": true,
+    "memory": "6g",
+    "memory_bytes": 6442450944,
+    "memory_swap": "6g",
+    "memory_swap_bytes": 6442450944,
+    "nano_cpus": 4000000000,
+    "nofile": 65536,
+    "pids": 256,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 1073741824,
+    "tmpfs_size": "1g"
+  },
+  "log_path": "results/courts/logs/oracle-20261117T002505Z-06d360.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "cc7e2f4df8ff67db7b5a95295b6ba96395201e27",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261117T002505Z",
+  "started_utc": "2026-11-17T00:25:05Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}
