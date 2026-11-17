@@ -1,0 +1,94 @@
+{
+  "schema": "selvedge/s50-literature/v1",
+  "kind": "s50-literature",
+  "created_utc": "2026-11-17T21:04:32Z",
+  "stamp": "20261117T210432Z",
+  "accessed": "2026-11-17",
+  "question": "8-bit Adam dynamic vs linear quantisation, second-moment precision requirements, optimizer-state precision ablations, and any published failure of linear absmax applied to the second moment",
+  "sources": [
+    {
+      "id": "dettmers-2022-8bit",
+      "citation": "Tim Dettmers, Mike Lewis, Sam Shleifer, Luke Zettlemoyer. 8-bit Optimizers via Block-wise Quantization. ICLR 2022 (spotlight). arXiv:2110.02861v2.",
+      "url": "https://arxiv.org/abs/2110.02861",
+      "dates": {"submitted": "2021-10-06", "v2": "2022-06-20"},
+      "claims": [
+        "8-bit optimizer states require block-wise dynamic quantisation; dynamic quantisation is a non-linear code precise for both large and small magnitudes.",
+        "The second Adam state varies by about 3-5 orders of magnitude during language-model training, which is why a linear code with one block scale is not sufficient.",
+        "Ablation (Table 3, 209M-parameter LM): 8-bit Adam with linear quantisation and block-wise quantisation had 50% unstable runs and median perplexity 194.4; without block-wise quantisation 90% unstable and 253.0. With dynamic quantisation: 10% unstable without block-wise (perplexity 18.6) and 0% with it (17.7). The 32-bit baseline had 0% unstable and 16.7.",
+        "Appendix F Table 6: block-wise dynamic absolute quantisation error for the first state is 3.5e-10 +/- 1.1e-10 against 41.2e-10 +/- 3.1e-10 for linear, about an order of magnitude lower.",
+        "Appendix C: low-precision optimizers amplify update noise; embedding layers are a major instability source and are kept in 32-bit in their recipe."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "primary source text read (ar5iv HTML) on 2026-11-17; Table 3 and Appendix F Table 6 quoted above",
+      "relevance": "direct: the pre-S50 optimizer used a linear absmax code for both moments, the configuration the paper's linear ablation reports as unstable; the paper's second-moment range argument is the same failure mode"
+    },
+    {
+      "id": "tang-2021-1bit-adam",
+      "citation": "Hanlin Tang, Shaoduo Gan, Ammar Ahmad Awan, Samyam Rajbhandari, Conglong Li, Xiangru Lian, Ji Liu, Ce Zhang, Yuxiong He. 1-bit Adam: Communication Efficient Large-Scale Training with Adam's Convergence Speed. arXiv:2102.02888v2.",
+      "url": "https://arxiv.org/abs/2102.02888",
+      "dates": {"submitted": "2021-02-04", "v2": "2021-06-29"},
+      "claims": [
+        "Adam's variance is the non-linear term; error-compensated compression that includes the variance cannot cancel its history error (Section 4.2).",
+        "1-bit Adam freezes the variance after a warmup and uses it as a fixed precondition; only the momentum is 1-bit compressed.",
+        "Supplementary Figure 12: compressing the variance to n bits and the momentum to 1 bit does not converge when n <= 8; lazily averaged variance also fails to match Adam."
+      ],
+      "status": "VERIFIED",
+      "how_verified": "primary source text read (ar5iv HTML) on 2026-11-17; Section 4.2, Section 7.2 and supplementary Figure 12",
+      "relevance": "direct: a published failure of low-bit variance quantisation; the variance receives 32 bits in the published recipe, which is the same choice S50 makes (bf16 here because the VRAM budget allows exactly that, and bf16 has full exponent range)"
+    },
+    {
+      "id": "dettmers-2022-llmint8",
+      "citation": "Tim Dettmers, Mike Lewis, Younes Belkada, Luke Zettlemoyer. LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale. NeurIPS 2022. arXiv:2208.07339v2.",
+      "url": "https://arxiv.org/abs/2208.07339",
+      "dates": {"submitted": "2022-08-15", "v2": "2022-11-10"},
+      "claims": [
+        "Per-tensor linear absmax quantisation fails when systematic outlier features are present; the published fix is vector-wise quantisation plus a mixed-precision decomposition that keeps outliers in 16 bits.",
+        "This is published evidence that linear absmax collapses the small-magnitude majority when a block/tensor contains a large outlier."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "abstract and method summary read on 2026-11-17; the failure is demonstrated for activations, not optimizer moments",
+      "relevance": "supporting: the same linear-absmax failure mode, but on a different quantity; it does not by itself establish the optimizer-state result"
+    },
+    {
+      "id": "ramesh-2021-dalle",
+      "citation": "Aditya Ramesh, Mikhail Pavlov, Gabriel Goh, Scott Gray, Chelsea Voss, Alec Radford, Mark Chen, Ilya Sutskever. Zero-Shot Text-to-Image Generation. arXiv:2102.12092.",
+      "url": "https://arxiv.org/abs/2102.12092",
+      "dates": {"submitted": "2021-02-24"},
+      "claims": [
+        "16-bit Adam optimizer states were reported unstable for a large text-to-image model; stable embedding, tensor-wise scaling constants for both Adam states and loss scaling were required."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "quoted from Dettmers et al. Section 5 (secondary source) on 2026-11-17; the primary appendix was not read in this session",
+      "relevance": "supporting: optimizer-state precision is an independently reported stability axis, not only a memory trick"
+    },
+    {
+      "id": "shazeer-2018-adafactor",
+      "citation": "Noam Shazeer, Mitchell Stern. Adafactor: Adaptive Learning Rates with Sublinear Memory Cost. ICML 2018. arXiv:1804.04235.",
+      "url": "https://arxiv.org/abs/1804.04235",
+      "dates": {"submitted": "2018-04-11"},
+      "claims": [
+        "Adafactor reduces the second-moment memory by factorising it as a row-column outer product; the reduced object is still a 32-bit statistic, i.e. the published memory saving does not come from lowering the second moment's precision."
+      ],
+      "status": "PARTIAL",
+      "how_verified": "described in Dettmers et al. Section 5 on 2026-11-17; the primary paper was not read in this session",
+      "relevance": "supporting: the standard memory-efficient alternative changes the second moment's rank, not its numeric precision, which is consistent with keeping it high-precision"
+    },
+    {
+      "id": "no-published-linear-v-per-block-reproduction",
+      "citation": "no primary source found that measures a per-256-element linear absmax int8 code on the second moment specifically",
+      "url": null,
+      "claims": [
+        "The exact construction used before S50 (block 256, linear absmax int8, no dynamic code, no stable embedding, bf16 weights) is not the construction any cited paper evaluates; the published linear ablations are block-wise linear with block 2048 and 32-bit embedding states."
+      ],
+      "status": "UNSUPPORTED",
+      "how_verified": "searched the cited primary sources; their linear ablation differs in block size and embedding precision",
+      "relevance": "the reproduction in scripts/s50_optim_defect_sim.py is therefore our own measurement, not a citation; it confirms the published direction but the exact percentages are ours"
+    }
+  ],
+  "conclusion": {
+    "dynamic_vs_linear": "VERIFIED: published 8-bit Adam uses a non-linear dynamic code and its linear-quantisation ablation is unstable; linear absmax is not the published construction.",
+    "second_moment_precision": "VERIFIED: the variance term is the non-linear term and is kept high precision (32-bit in 1-bit Adam; frozen after warmup) because low-bit variance compression fails to converge.",
+    "optimizer_state_ablation": "VERIFIED via Dettmers Table 3 and 1-bit Adam supplementary Figure 12; PARTIAL for the DALL-E 16-bit report.",
+    "linear_absmax_failure": "VERIFIED for 8-bit Adam's linear ablation and for LLM.int8 activations; UNSUPPORTED for the exact per-256 block-256 int8-v construction, which this session reproduced itself."
+  }
+}
