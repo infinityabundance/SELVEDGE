@@ -17,20 +17,34 @@ pgrep -af 'oracle/frontier/train.py'   # must print nothing
 ## (a) Score the 1e-5 bar's 5/10/20M milestones
 
 The milestones are `ckpt-002441` (4,999,168 tokens), `ckpt-004882`
-(9,998,336) and `ckpt-009765` (19,998,720). The 6 GiB eval limit is the
-registered one and carries headroom over the cgroup peak measured for this
-harness and model.
+(9,998,336), `ckpt-007323` (14,997,504) and `ckpt-009765` (19,998,720). The
+6 GiB eval limit is the registered one and carries headroom over the cgroup peak
+measured for this harness and model. The S53 decision rule also needs the same
+fixed held-out batches measured for **every saved checkpoint**, not only the
+milestones; that is the fixed-batch receipt the curve script consumes.
 
 ```bash
 SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
   scripts/s50_bar_milestones.sh
 
+# the S53 rule's input: every saved checkpoint on the same fixed batches
+SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/court --gpu oracle -- python3 scripts/s50_fixed_batch_kl.py \
+    --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json \
+    --start-token 2000000 \
+    --run-dir results/stage2/runs/s50-bar-20m-lr1e-5 \
+    --out results/stage2/s50-bar-20m-lr1e-5-fixed-batch-<stamp>.json
+
 SELVEDGE_MEM=2g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
-  scripts/court python -- python3 scripts/s50_bar_curve.py
+  scripts/court python -- python3 scripts/s50_bar_curve.py \
+    --fixed-batch-receipt results/stage2/s50-bar-20m-lr1e-5-fixed-batch-<stamp>.json
 ```
 
-`scripts/s50_bar_curve.py` writes the curve receipt, the OLS math-family slope
-and the registered 100M-extension decision. Nothing is typed by hand.
+`scripts/s50_bar_curve.py` refuses to decide without the fixed-batch receipt. It
+writes the curve receipt, the fixed-batch CE/KL trend over every saved
+checkpoint, the registered "still paying off" thresholds, the harness endpoint
+confirmation and the resulting 100M-extension decision. Nothing is typed by
+hand. The old harness-points OLS slope is still reported, labelled superseded.
 
 ## (b) 200-step fixed-batch KL gate at lr 3e-5 and 5e-5
 

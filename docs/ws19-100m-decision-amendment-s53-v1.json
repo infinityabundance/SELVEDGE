@@ -1,0 +1,47 @@
+{
+  "schema": "selvedge/ws19-100m-decision-amendment/v1",
+  "registering_session": "S53",
+  "registered_utc": "2026-11-17T23:40:00Z",
+  "registered_revision": "7b08cb9",
+  "registration_time_note": "Registered while the corrected 20M bar was still training and before any 1e-5 milestone score or fixed-batch receipt existed.",
+  "amends": {
+    "rule": "the 100M extension decision in scripts/s50_bar_curve.py",
+    "superseded_rule": "extension justified iff the ordinary-least-squares slope of the three harness math-family means over tokens is positive AND the 10M-to-20M math-family increment is positive",
+    "why_superseded": "three harness points are a coarse, high-variance endpoint read. They cannot distinguish 'the model is still improving' from 'the 20M endpoint happened to land above the 10M endpoint'. The fixed-batch CE/KL curve is measured on the same batches for every saved checkpoint, so its slope is not confounded by a different batch at every step or by a different item set at every milestone."
+  },
+  "new_rule": {
+    "estimand": "the trend of fixed-batch CE (T=1.0) and fixed-batch teacher KL (T=2.0) on the same held-out batches, measured for every checkpoint the run saved",
+    "implementation": "scripts/s50_fixed_batch_kl.py produces the receipt; scripts/s50_bar_curve.py consumes it via --fixed-batch-receipt",
+    "point_set": "every ckpt-*.pt saved by the run, sorted by step. The init checkpoint is reported for context but is not part of the fitted trend, because the extension question is about the training curve after it started.",
+    "tokens_per_point": "step x tokens_per_step from the run's own manifest; no step count is typed into the curve script",
+    "verification": "each checkpoint label in the fixed-batch receipt is matched to a file in the run directory by SHA-256; a missing checkpoint, an extra checkpoint, or a hash mismatch fails closed",
+    "ce_slope": "ordinary-least-squares slope of fixed-batch CE against tokens_seen, reported per 1,000,000 tokens",
+    "ce_last_interval": "CE at the second-to-last saved checkpoint minus CE at the last saved checkpoint; positive means CE is still falling",
+    "ce_last_share": "ce_last_interval divided by (first saved checkpoint CE - last saved checkpoint CE)",
+    "kl_last_interval": "KL at the second-to-last saved checkpoint minus KL at the last saved checkpoint; non-negative means teacher KL is not rising",
+    "thresholds": {
+      "ce_slope_per_million_tokens": "< 0.0",
+      "ce_last_interval": "> 0.0",
+      "ce_last_share": ">= 0.10",
+      "kl_last_interval": ">= 0.0"
+    },
+    "threshold_basis": "0.10 is the registered 'still paying off' bar: the final quarter of the saved-token interval must still produce at least a tenth of the total CE drop the run achieved after its first saved checkpoint. A curve that has flattened below that share is not a reason to spend 100M tokens. The CE slope and the last-interval sign are directional; the KL interval is a preservation check, not a second capability metric.",
+    "harness_confirmation": {
+      "role": "the anchored harness endpoints confirm or contradict the fixed-batch reading; they do not select the recipe",
+      "condition": "final 20M math-family mean is at least the previous milestone's math-family mean minus that milestone's combined standard error, AND the final math-family mean is above base",
+      "interpretation": "if the fixed-batch curve says the run is still paying off but the harness final endpoint is below the previous endpoint by more than its standard error, the two instruments disagree; the receipt records the disagreement and the extension is not justified in this session"
+    },
+    "decision": "the 100M extension is justified only if every threshold holds AND the harness endpoints do not contradict the fixed-batch reading"
+  },
+  "what_is_not_changed": {
+    "run": "the 20M corrected bar at lr 1e-5, Adam8bit block 256 stochastic rounding, cosine to 0.1, warmup 200, grad clip 1.0, 19,998,720 realised tokens",
+    "scoring": "the anchored layout, total-cap denominator, SDPA attention and item-level sequence-correctness counts",
+    "superseded_numbers": "the harness-only OLS slope and the 10M-to-20M increment are still reported in the receipt, labelled superseded, so the change is auditable"
+  },
+  "what_this_file_does_not_establish": [
+    "that the fixed-batch CE curve is monotone: it is not assumed to be; the rule reads its slope, its last interval and its last-interval share",
+    "that a positive fixed-batch trend implies a capability gain: the anchored harness endpoints are the capability check",
+    "that the extension is justified: the bar's fixed-batch receipt and milestone scores do not exist at registration",
+    "that 100M is the right budget if the rule passes: it is the registered next horizon, not a measured optimum"
+  ]
+}

@@ -21,9 +21,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import glob
 import hashlib
 import json
 import os
+import re
 import subprocess
 import time
 
@@ -41,6 +43,16 @@ MILESTONES = (
     ("m10", 4882, 9_998_336),
     ("m20", 9765, 19_998_720),
 )
+
+# S53 registered thresholds for "still paying off". The receipt prints them, so a
+# reader cannot mistake a measured curve for a chosen conclusion.
+FIXED_BATCH_THRESHOLDS = {
+    "ce_slope_per_million_tokens": "< 0.0",
+    "ce_last_interval": "> 0.0",
+    "ce_last_share": ">= 0.10",
+    "kl_last_interval": ">= 0.0",
+}
+CE_LAST_SHARE_MIN = 0.10
 
 
 def _sha256(path: str) -> str:
@@ -112,6 +124,112 @@ def _slope(points: list[tuple[float, float]]) -> float | None:
     return sum((x - mean_x) * (y - mean_y) for x, y in points) / denominator
 
 
+def _resolve(path: str) -> str:
+    return path if os.path.isabs(path) else os.path.join(ROOT, path)
+
+
+def _checkpoint_step(label: str) -> int | None:
+    if label == "init":
+        return None
+    match = re.fullmatch(r"ckpt-(\d+)\.pt", label)
+    if match is None:
+        raise SystemExit(
+            f"s50-bar-curve: unexpected checkpoint label {label!r} in the "
+            "fixed-batch receipt")
+    return int(match.group(1))
+
+
+def _fixed_batch_trend(receipt_path: str, run_dir: str,
+                       tokens_per_step: int) -> dict:
+    """Validate and fit the fixed-batch curve over every saved checkpoint."""
+    payload = json.load(open(receipt_path, encoding="utf-8"))
+    if payload.get("schema") != "selvedge/s50-fixed-batch-kl/v1":
+        raise SystemExit("s50-bar-curve: not a fixed-batch KL receipt")
+    if payload.get("seq_len") is None or payload.get("batch_count") is None:
+        raise SystemExit("s50-bar-curve: fixed-batch receipt is missing its basis")
+    results = {entry["checkpoint"]: entry for entry in payload["results"]}
+    if "init" not in results:
+        raise SystemExit("s50-bar-curve: fixed-batch receipt has no init point")
+    directory = run_dir if os.path.isabs(run_dir) else os.path.join(ROOT, run_dir)
+    checkpoint_paths = sorted(glob.glob(os.path.join(directory, "ckpt-*.pt")))
+    if len(checkpoint_paths) < 2:
+        raise SystemExit(
+            "s50-bar-curve: the fixed-batch rule needs at least two saved "
+            f"checkpoints, found {len(checkpoint_paths)} in {run_dir}")
+    points = []
+    for path in checkpoint_paths:
+        label = os.path.basename(path)
+        if label not in results:
+            raise SystemExit(
+                f"s50-bar-curve: {label} has no fixed-batch measurement")
+        entry = results[label]
+        if entry.get("sha256") != _sha256(path):
+            raise SystemExit(
+                f"s50-bar-curve: {label} sha256 does not match the measurement")
+        step = _checkpoint_step(label)
+        points.append({
+            "checkpoint": label,
+            "step": step,
+            "tokens_seen": step * tokens_per_step,
+            "sha256": entry["sha256"],
+            "ce": float(entry["ce"]),
+            "kl": float(entry["kl"]),
+            "batches": int(entry["batches"]),
+        })
+    unexpected = set(results) - {"init"} - {point["checkpoint"] for point in points}
+    if unexpected:
+        raise SystemExit(
+            "s50-bar-curve: fixed-batch receipt measures checkpoints that are no "
+            f"longer in the run directory: {sorted(unexpected)}")
+    ce_slope = _slope([(point["tokens_seen"], point["ce"]) for point in points])
+    kl_slope = _slope([(point["tokens_seen"], point["kl"]) for point in points])
+    first, last = points[0], points[-1]
+    previous = points[-2]
+    total_drop = first["ce"] - last["ce"]
+    last_drop = previous["ce"] - last["ce"]
+    last_share = (last_drop / total_drop
+                  if total_drop > 0.0 else None)
+    return {
+        "receipt": receipt_path,
+        "receipt_sha256": _sha256(receipt_path),
+        "run_dir": run_dir,
+        "batch_count": int(payload["batch_count"]),
+        "seq_len": int(payload["seq_len"]),
+        "temperature": payload.get("temperature"),
+        "start_token": payload.get("start_token"),
+        "init": {"ce": float(results["init"]["ce"]),
+                 "kl": float(results["init"]["kl"]),
+                 "sha256": results["init"].get("sha256")},
+        "checkpoints": points,
+        "ce_slope_per_million_tokens": (ce_slope * 1_000_000
+                                        if ce_slope is not None else None),
+        "kl_slope_per_million_tokens": (kl_slope * 1_000_000
+                                        if kl_slope is not None else None),
+        "ce_last_interval": last_drop,
+        "kl_last_interval": previous["kl"] - last["kl"],
+        "ce_total_drop_after_first_checkpoint": total_drop,
+        "ce_last_share": last_share,
+    }
+
+
+def _extension_decision(fixed: dict, final_math: float,
+                        previous_math: float, previous_error: float,
+                        base_math: float) -> dict:
+    """The registered S53 rule, factored so a CPU test can exercise it."""
+    still_paying = bool(
+        fixed["ce_slope_per_million_tokens"] is not None
+        and fixed["ce_slope_per_million_tokens"] < 0.0
+        and fixed["ce_last_interval"] > 0.0
+        and fixed["ce_last_share"] is not None
+        and fixed["ce_last_share"] >= CE_LAST_SHARE_MIN
+        and fixed["kl_last_interval"] >= 0.0)
+    harness_confirms = bool(final_math >= previous_math - previous_error
+                            and final_math > base_math)
+    return {"still_paying_off": still_paying,
+            "harness_confirms": harness_confirms,
+            "justified": still_paying and harness_confirms}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default=None)
@@ -119,6 +237,9 @@ def main() -> int:
                         help="training run whose log is read (for a rate rerun)")
     parser.add_argument("--eval-root", default=EVAL_ROOT,
                         help="milestone receipt root matching --run-dir")
+    parser.add_argument("--fixed-batch-receipt", default=None,
+                        help="selvedge/s50-fixed-batch-kl/v1 receipt over "
+                             "every saved checkpoint; required by the S53 rule")
     args = parser.parse_args()
     run_dir = args.run_dir
     eval_root = args.eval_root
@@ -164,8 +285,28 @@ def main() -> int:
     knowledge_slope = _slope([(milestone["tokens_seen"],
                                milestone["knowledge"]["mean"])
                               for milestone in milestones])
-    justified = bool(math_slope is not None and math_slope > 0.0
-                     and increment_10_20 > 0.0)
+    if not args.fixed_batch_receipt:
+        raise SystemExit(
+            "s50-bar-curve: --fixed-batch-receipt is required by the S53 "
+            "decision rule. Produce it with scripts/s50_fixed_batch_kl.py "
+            "over this run directory first; the harness-only OLS rule is "
+            "superseded and is not used for the decision.")
+    run_manifest = json.load(open(os.path.join(ROOT, run_dir, "manifest.json"),
+                                  encoding="utf-8"))
+    tokens_per_step = run_manifest.get("tokens_per_step")
+    if tokens_per_step is None:
+        tokens_per_step = run_manifest["config"]["tokens_per_step"]
+    fixed = _fixed_batch_trend(_resolve(args.fixed_batch_receipt), run_dir,
+                               int(tokens_per_step))
+    base_math_mean = _family(base_rows, MATH)["mean"]
+    final_math = milestones[-1]["math"]["mean"]
+    previous_math = milestones[-2]["math"]["mean"]
+    previous_error = milestones[-2]["math"]["combined_stderr"]
+    decision = _extension_decision(fixed, final_math, previous_math,
+                                   previous_error, base_math_mean)
+    still_paying = decision["still_paying_off"]
+    harness_confirms = decision["harness_confirms"]
+    justified = decision["justified"]
 
     log_path = os.path.join(ROOT, run_dir, "log.jsonl")
     log_rows = [json.loads(line) for line in open(log_path, encoding="utf-8")]
@@ -190,16 +331,40 @@ def main() -> int:
                   "knowledge_family_slope_per_million_tokens": (
                       knowledge_slope * 1_000_000
                       if knowledge_slope is not None else None),
-                  "math_10m_to_20m_increment": increment_10_20},
+                  "math_10m_to_20m_increment": increment_10_20,
+                  "fixed_batch": fixed},
         "extension": {
-            "rule": ("100M extension justified iff the math-family slope over "
-                     "tokens is positive and the 10M-to-20M math-family "
-                     "increment is positive"),
+            "rule": ("100M extension justified iff the fixed-batch CE slope "
+                     "over every saved checkpoint is negative, the last "
+                     "interval still falls, the last interval carries at "
+                     "least 10% of the total CE drop, the teacher KL does not "
+                     "rise, and the harness endpoints do not contradict the "
+                     "fixed-batch reading"),
+            "thresholds": FIXED_BATCH_THRESHOLDS,
+            "still_paying_off": still_paying,
+            "harness_confirms": harness_confirms,
+            "harness_condition": (
+                "final math family >= previous milestone math family - its "
+                "combined standard error AND final math family > base"),
+            "harness_endpoints": {
+                "final_math_family": final_math,
+                "previous_math_family": previous_math,
+                "previous_combined_stderr": previous_error,
+                "base_math_family": base_math_mean,
+            },
             "justified": justified,
+            "superseded_harness_points_rule": {
+                "math_family_slope_per_million_tokens": (
+                    math_slope * 1_000_000 if math_slope is not None else None),
+                "math_10m_to_20m_increment": increment_10_20,
+                "role": "reported for audit only; it does not decide the "
+                        "extension",
+            },
             "reading": ("the 100M extension is justified by this bar"
                         if justified else
                         "the 100M extension is not justified by this bar; the "
-                        "measured slope and increment are reported instead"),
+                        "fixed-batch trend and the harness endpoints are "
+                        "reported instead"),
         },
         "training_log": {
             "path": os.path.join(run_dir, "log.jsonl"),
@@ -238,11 +403,18 @@ def main() -> int:
               f"{milestone['knowledge']['mean']:>10.4f} "
               f"{milestone['math']['mean']:>7.4f} "
               f"{seq('gsm8k'):>10} {seq('minerva_math500'):>10}")
-    print(f"s50-bar-curve: math slope per 1M tokens "
-          f"{receipt['curve']['math_family_slope_per_million_tokens']:+.6f}; "
+    share = fixed["ce_last_share"]
+    share_text = f"{share:.4f}" if share is not None else "no total drop"
+    print(f"s50-bar-curve: fixed-batch CE slope per 1M tokens "
+          f"{fixed['ce_slope_per_million_tokens']:+.6f}; KL slope "
+          f"{fixed['kl_slope_per_million_tokens']:+.6f}; last CE interval "
+          f"{fixed['ce_last_interval']:+.6f} (share {share_text}); "
+          f"still_paying_off={still_paying}; harness_confirms="
+          f"{harness_confirms}; extension justified={justified}")
+    print(f"s50-bar-curve (superseded harness-only rule): math slope per 1M "
+          f"tokens {receipt['curve']['math_family_slope_per_million_tokens']:+.6f}; "
           f"10M->20M increment "
-          f"{receipt['curve']['math_10m_to_20m_increment']:+.6f}; "
-          f"extension justified={justified}")
+          f"{receipt['curve']['math_10m_to_20m_increment']:+.6f}")
     return 0
 
 
