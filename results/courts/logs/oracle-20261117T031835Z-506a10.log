@@ -1,0 +1,19 @@
+compare: device free 13.42 GiB
+compare: base
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+compare: adapter-2m
+compare: memory-2m
+compare: memory-ungrafted
+compare: memory-grafted
+compare: adapter-20m
+arm                           CE       SE        KL       SE       dCE       SE
+-------------------------------------------------------------------------------
+base                     2.80930  0.00652   0.27466  0.00067  +0.00000  0.00000
+adapter-2m               2.80934  0.00651   0.26728  0.00068  +0.00004  0.00031
+memory-2m                2.82963  0.00652   0.27269  0.00069  +0.02033  0.00037
+memory-ungrafted         2.80930  0.00652   0.27466  0.00067  +0.00000  0.00000
+memory-grafted           3.38404  0.00708   0.43873  0.00121  +0.57475  0.00212
+adapter-20m              2.81886  0.00651   0.26774  0.00068  +0.00957  0.00038
+delta columns are paired per-chunk differences against base
+compare: receipt results/stage2/s41-heldout-comparison.json
