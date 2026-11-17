@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-11-17T20:58:55Z",
+  "invalidated": true,
+  "kind": "s50-invalidation-marker",
+  "master_record": "results/stage2/s50-invalidation-20261117T205855Z.json",
+  "path": "results/stage2/runs/stability-lr1e-5-2m-smoke",
+  "reason": "Adam8bit stored the second moment as a per-256-element linear absmax int8 code. Any squared gradient below about absmax/254 rounded to zero, and Adam then divided by eps whenever the current gradient was also small. The reproduction measures 57.7% of elements with a zeroed stored second moment and a nonzero first moment, a maximum update 3.2e4 times fp32 AdamW's, and a 313% parameter error after 50 steps. Every number produced by these runs is therefore a property of the defective optimiser; the learning-rate sweep reduced the damage but did not remove it, and the selected 3e-5 rate is not used. Receipts and checkpoints are retained verbatim and may not be used as a bar, baseline or selection input.",
+  "revision": "547953f4d1a75f3d0cdc1d93d76d54a618d70929",
+  "schema": "selvedge/s50-invalidation-marker/v1",
+  "superseded_by": {
+    "fixed_batch_kl_training_1e-4": "results/stage2/s50-fixed-batch-kl-math-20261117T205500Z.json",
+    "fixed_batch_kl_training_1e-5": "results/stage2/s50-fixed-batch-kl-math-lr1e-5-20261117T205600Z.json",
+    "lr": 1e-05,
+    "revalidation": "results/stage2/runs/s50-revalidate-200-lr1e-5",
+    "run": "results/stage2/runs/s50-bar-20m-lr1e-5"
+  }
+}

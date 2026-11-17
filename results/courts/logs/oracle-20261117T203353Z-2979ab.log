@@ -1,0 +1,41 @@
+F.......F.........................                                       [100%]
+=================================== FAILURES ===================================
+___________ test_heterogeneous_scale_parity_with_adamw_over_50_steps ___________
+
+    def test_heterogeneous_scale_parity_with_adamw_over_50_steps():
+        result = _parity()
+        worst = max(result["relative_errors"])
+        # step 1 is exact in both arms; the comparison is about steps 2..50
+        assert result["relative_errors"][0] < 1e-6
+>       assert worst < PARITY_TOLERANCE, (
+            f"worst relative update error {worst:.4f} exceeds "
+            f"{PARITY_TOLERANCE}; per-step {result['relative_errors']}")
+E       AssertionError: worst relative update error 0.2789 exceeds 0.08; per-step [1.6891353027403966e-07, 0.12792804837226868, 0.16239459812641144, 0.1863308846950531, 0.20498009026050568, 0.2122456431388855, 0.2196541130542755, 0.22876685857772827, 0.25098907947540283, 0.2703835368156433, 0.2786172032356262, 0.2769797146320343, 0.2789030969142914, 0.268437922000885, 0.2659587264060974, 0.25730499625205994, 0.26480838656425476, 0.25412845611572266, 0.2476033866405487, 0.2599753737449646, 0.2622843384742737, 0.2666529417037964, 0.2656167447566986, 0.2607583701610565, 0.25063633918762207, 0.24293005466461182, 0.2307652235031128, 0.22519409656524658, 0.21301451325416565, 0.2060769647359848, 0.20792722702026367, 0.22131218016147614, 0.22182375192642212, 0.23078618943691254, 0.2377273142337799, 0.236323282122612, 0.2254558652639389, 0.23299002647399902, 0.2253035455942154, 0.2151826173067093, 0.21853308379650116, 0.225984126329422, 0.23277094960212708, 0.24270527064800262, 0.2442084103822708, 0.24865838885307312, 0.23634135723114014, 0.22660741209983826, 0.22439144551753998, 0.22857841849327087]
+E       assert 0.2789030969142914 < 0.08
+
+oracle/tests/test_s50_optim_second_moment.py:96: AssertionError
+________ test_adam8bit_stores_int8_first_moment_and_bf16_second_moment _________
+
+    def test_adam8bit_stores_int8_first_moment_and_bf16_second_moment():
+        parameter = nn.Parameter(torch.randn(1000))
+        parameter.grad = torch.randn(1000)
+        optimizer = optim8bit.Adam8bit([parameter], block=BLOCK)
+        optimizer.step()
+        state = optimizer.state[parameter]
+        assert state["q_m"].dtype == torch.int8
+        assert state["v"].dtype == torch.bfloat16
+        assert state["q_m"].numel() == state["padded"] == 1024
+        reported = optimizer.state_bytes()
+        # int8 first moment + bf16 second moment + one float32 scale per block
+        expected = 1024 + 2 * 1024 + (1024 // BLOCK) * 4
+        assert reported == expected
+>       assert 3.0 < optimizer.moment_bytes_per_element() < 3.1
+E       assert 3.136 < 3.1
+E        +  where 3.136 = moment_bytes_per_element()
+E        +    where moment_bytes_per_element = Adam8bit (\nParameter Group 0\n    betas: (0.9, 0.999)\n    block: 64\n    chunk: 4194304\n    eps: 1e-08\n    lr: 0.001\n    weight_decay: 0.0\n    weight_rounding: stochastic\n).moment_bytes_per_element
+
+oracle/tests/test_s40_full_arm.py:82: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s50_optim_second_moment.py::test_heterogeneous_scale_parity_with_adamw_over_50_steps
+FAILED oracle/tests/test_s40_full_arm.py::test_adam8bit_stores_int8_first_moment_and_bf16_second_moment
+2 failed, 32 passed in 3.77s

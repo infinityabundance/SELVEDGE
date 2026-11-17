@@ -1,0 +1,228 @@
+{
+  "affected": {
+    "amendments": [
+      {
+        "edited": false,
+        "invalidated_as_evidence": true,
+        "label": "the stability-sweep amendment (registration retained verbatim)",
+        "path": "docs/ws19-full-distillation-amendment-stability-s49-preregistration-v1.json",
+        "sha256": "8febde1ca08a426e47b7afdc83a36bf46afb9ea5c1bfcee6e52db28f66917e9f"
+      },
+      {
+        "edited": false,
+        "invalidated_as_evidence": true,
+        "label": "the bar-selection amendment (registration retained verbatim)",
+        "path": "docs/ws19-full-distillation-amendment-stability-s49b-preregistration-v1.json",
+        "sha256": "87e8b60154eec41d6f80eb21069bd39eded0969a50545804a63867741d5beb87"
+      }
+    ],
+    "evaluations": [
+      {
+        "invalidated": true,
+        "kept": true,
+        "label": "anchored score of the original 20M bar",
+        "path": "results/stage2/eval/full-20m-math"
+      },
+      {
+        "invalidated": true,
+        "kept": true,
+        "label": "anchored score of the S49 20M bar (the m5 pass was stopped incomplete)",
+        "path": "results/stage2/eval/full-20m-math-s49"
+      }
+    ],
+    "evidence": [
+      {
+        "label": "reproduction of the linear-absmax second-moment defect",
+        "path": "results/stage2/s50-optim-defect-sim-20261117T203840Z.json",
+        "sha256": "7615f42514e230e4906f4c233130c7764f3f10e7ee39e1792dac2f8fb06f291e"
+      },
+      {
+        "label": "attribution of the remaining parity error to the int8 first moment",
+        "path": "results/stage2/s50-parity-components-20261117T203840Z.json",
+        "sha256": "4de0458320ed5a7f3aa74d029d1c9b879dae22db34546713f689c264c51e846e"
+      }
+    ],
+    "runs": [
+      {
+        "invalidated": true,
+        "kept": [
+          "ckpt-009765.pt",
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "the original 20M bar at lr 1e-4",
+        "path": "results/stage2/runs/full-20m-math",
+        "receipt_sha256": "e256676c257fc3c723024a41a564eccc680fcd45d6ffc4b0099918f42dd6ae4e"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "ckpt-001000.pt",
+          "ckpt-002000.pt",
+          "ckpt-003000.pt",
+          "ckpt-004000.pt",
+          "ckpt-005000.pt",
+          "ckpt-006000.pt",
+          "ckpt-007000.pt",
+          "ckpt-008000.pt",
+          "ckpt-009000.pt",
+          "ckpt-009765.pt",
+          "latest.pt",
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "the S49 20M bar at the swept lr 3e-5",
+        "path": "results/stage2/runs/full-20m-math-s49",
+        "receipt_sha256": "554051b5e6989208f5e2d5e18ec2ae577e1b280a5a1f15760a8232cc1d66b42a"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "stability sweep, lr 3e-5, 2M",
+        "path": "results/stage2/runs/stability-lr3e-5-2m",
+        "receipt_sha256": "0190cf4c9bf21f4eed42182b3bc5b4af7f2843faf36f774ac1a136bb788d7edd"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "stability smoke, lr 3e-5",
+        "path": "results/stage2/runs/stability-lr3e-5-2m-smoke",
+        "receipt_sha256": "07db62e4d6c90f7a51b521b4495116cd6a84d78e6585a40352ed1bbec119d83a"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "stability sweep, lr 1e-5, 2M",
+        "path": "results/stage2/runs/stability-lr1e-5-2m",
+        "receipt_sha256": "76043d0469a94b514c451eff79ac249847ada3b55d25e68704fe97be1d4399ba"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "stability smoke, lr 1e-5",
+        "path": "results/stage2/runs/stability-lr1e-5-2m-smoke",
+        "receipt_sha256": "0f64f014bd9cc613a2bea614b0084b3d609e5723d738bbd620107d64204d5d4e"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "stability sweep, lr 5e-6, 2M",
+        "path": "results/stage2/runs/stability-lr5e-6-2m",
+        "receipt_sha256": "4031a7fe20aae6ec49a09527648353dbe4ddec2ac18d3ba3cfd1e5d7bb7314c8"
+      },
+      {
+        "invalidated": true,
+        "kept": [
+          "launch.json",
+          "log.jsonl",
+          "manifest.json",
+          "receipt.json"
+        ],
+        "label": "stability smoke, lr 5e-6",
+        "path": "results/stage2/runs/stability-lr5e-6-2m-smoke",
+        "receipt_sha256": "a0eeb030ce1be2fa465130efce7d2d181adb618bfac2b1044b43538841e3fcf6"
+      }
+    ],
+    "selections": [
+      {
+        "invalidated": true,
+        "label": "S49 stability decision",
+        "path": "results/stage2/s49-stability-decision-20261117T172316Z.json",
+        "sha256": "f6bef803ef5d08ef830d5d36d0ee1dc786a98af1b76bf1555ab8806052313568"
+      },
+      {
+        "invalidated": true,
+        "label": "S49 stability decision",
+        "path": "results/stage2/s49-stability-decision-20261117T172328Z.json",
+        "sha256": "dbe53e35b2cf674ada9fa5fc8f2c9a521a857212764ac47043dd188ba30a8912"
+      },
+      {
+        "invalidated": true,
+        "label": "S49 bar selection (lr 3e-5)",
+        "path": "results/stage2/runs/full-20m-math-s49-selected.json",
+        "sha256": "d850f0260de04745a5a2f88735caaf043ca22b6a2f9a960c9abc42e5e33a2f7f"
+      },
+      {
+        "invalidated": true,
+        "label": "S49 held-out comparison, lr 3e-5",
+        "path": "results/stage2/s49-heldout-stability-lr3e-5-2m.json",
+        "sha256": "ed86947f8a2e99f681dbd14d492f74cafca5e7d0fac4e3a83e4d20ca85a81849"
+      },
+      {
+        "invalidated": true,
+        "label": "S49 held-out comparison, lr 1e-5",
+        "path": "results/stage2/s49-heldout-stability-lr1e-5-2m.json",
+        "sha256": "5649057653da5146832f8d36a5ba54ca255290be39894c8d1ccadf39e42b179e"
+      },
+      {
+        "invalidated": true,
+        "label": "S49 held-out comparison, lr 5e-6",
+        "path": "results/stage2/s49-heldout-stability-lr5e-6-2m.json",
+        "sha256": "393167a5507c3e76045010124bf105045526eaa36f8d8557a7d4a0dae6275005"
+      }
+    ]
+  },
+  "created_utc": "2026-11-17T20:58:55Z",
+  "defect": {
+    "defective_revision": "e57df2f",
+    "first_moment_post_fix": "linear absmax int8 per 256-element block",
+    "module": "oracle/frontier/optim8bit.py",
+    "second_moment_post_fix": "bfloat16, unquantised",
+    "second_moment_pre_fix": "linear absmax int8 per 256-element block"
+  },
+  "disposition": "retained verbatim; no number from these runs may be used as a bar, baseline, selection input or comparison; they are not scored as the bar in any S50 or later report",
+  "kind": "s50-invalidation",
+  "markers_written": [
+    "results/stage2/runs/full-20m-math",
+    "results/stage2/runs/full-20m-math-s49",
+    "results/stage2/runs/stability-lr3e-5-2m",
+    "results/stage2/runs/stability-lr3e-5-2m-smoke",
+    "results/stage2/runs/stability-lr1e-5-2m",
+    "results/stage2/runs/stability-lr1e-5-2m-smoke",
+    "results/stage2/runs/stability-lr5e-6-2m",
+    "results/stage2/runs/stability-lr5e-6-2m-smoke",
+    "results/stage2/eval/full-20m-math",
+    "results/stage2/eval/full-20m-math-s49"
+  ],
+  "master_record": "results/stage2/s50-invalidation-20261117T205855Z.json",
+  "reason": "Adam8bit stored the second moment as a per-256-element linear absmax int8 code. Any squared gradient below about absmax/254 rounded to zero, and Adam then divided by eps whenever the current gradient was also small. The reproduction measures 57.7% of elements with a zeroed stored second moment and a nonzero first moment, a maximum update 3.2e4 times fp32 AdamW's, and a 313% parameter error after 50 steps. Every number produced by these runs is therefore a property of the defective optimiser; the learning-rate sweep reduced the damage but did not remove it, and the selected 3e-5 rate is not used. Receipts and checkpoints are retained verbatim and may not be used as a bar, baseline or selection input.",
+  "revision": "547953f4d1a75f3d0cdc1d93d76d54a618d70929",
+  "schema": "selvedge/s50-invalidation/v1",
+  "stamp": "20261117T205855Z",
+  "superseded_by": {
+    "fixed_batch_kl_training_1e-4": "results/stage2/s50-fixed-batch-kl-math-20261117T205500Z.json",
+    "fixed_batch_kl_training_1e-5": "results/stage2/s50-fixed-batch-kl-math-lr1e-5-20261117T205600Z.json",
+    "lr": 1e-05,
+    "revalidation": "results/stage2/runs/s50-revalidate-200-lr1e-5",
+    "run": "results/stage2/runs/s50-bar-20m-lr1e-5"
+  }
+}

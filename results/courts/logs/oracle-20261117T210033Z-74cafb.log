@@ -1,0 +1,30 @@
+...F............                                                         [100%]
+=================================== FAILURES ===================================
+_______ test_post_read_gate_is_optional_and_cannot_run_without_the_read ________
+
+    def test_post_read_gate_is_optional_and_cannot_run_without_the_read():
+        hidden = torch.randn(1, 4, 6)
+        read = torch.randn(1, 4, 6)
+        metadata = _metadata(batch=1, positions=4)
+    
+        pre_only = routing.TwoStageUtilityRouter(hidden=6, use_post_read=False)
+        gated_a = pre_only(hidden, metadata, read, cost=0.0)
+        assert torch.equal(pre_only.last_gate, pre_only.last_pre_gate)
+        # changing the read cannot change a pre-read-only gate
+        gated_b = pre_only(hidden, metadata, read * 1000.0, cost=0.0)
+>       assert torch.equal(gated_a, gated_b)
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7fa269d572e0>(tensor([[[-0.1443,  0.4670, -0.9571, -0.2169,  0.6175,  0.1205],\n         [ 1.0316,  0.5378,  0.8871, -0.1307,  0.2526...5,  0.3316, -0.1955],\n         [-0.0747, -0.5611, -0.0318, -0.9981,  0.0968, -0.0014]]],\n       grad_fn=<MulBackward0>), tensor([[[-144.3067,  467.0124, -957.1165, -216.9238,  617.4671,  120.4690],\n         [1031.5560,  537.7761,  887.0797...95.5418],\n         [ -74.6584, -561.1324,  -31.8125, -998.0532,   96.7631,   -1.4427]]],\n       grad_fn=<MulBackward0>))
+E        +    where <built-in method equal of type object at 0x7fa269d572e0> = torch.equal
+
+oracle/tests/test_s50_p19_9_corrections.py:101: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s50_p19_9_corrections.py::test_decision_precedes_the_fetch_and_can_refuse_every_read
+  /work/oracle/tests/test_s50_p19_9_corrections.py:79: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(gate.max()) < 0.5
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s50_p19_9_corrections.py::test_post_read_gate_is_optional_and_cannot_run_without_the_read
+1 failed, 15 passed, 1 warning in 1.60s

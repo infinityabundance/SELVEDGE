@@ -1,0 +1,64 @@
+{
+  "batch_count": 8,
+  "command": [
+    "scripts/s50_fixed_batch_kl.py",
+    "--out",
+    "results/stage2/s50-fixed-batch-kl-20261117T204500Z.json"
+  ],
+  "created_utc": "2026-11-17T20:49:28Z",
+  "heldout_manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+  "heldout_sha256": "468e36903cf3bbbea2eacd38dfd726a8542a11bf368f73b8a8fd492c1da1c43e",
+  "metric": "KL(teacher_T || student_T) per position at T=2.0, fixed held-out batches; CE at T=1.0",
+  "peak_allocated_gib": 6.475625991821289,
+  "peak_reserved_gib": 6.51171875,
+  "results": [
+    {
+      "batches": 8,
+      "ce": 2.7420907826162875,
+      "checkpoint": "init",
+      "kl": 0.29055077012162656,
+      "positions": 4096,
+      "sha256": null
+    },
+    {
+      "batches": 8,
+      "ce": 3.792943274602294,
+      "checkpoint": "ckpt-000050.pt",
+      "kl": 0.5393451077397913,
+      "positions": 4096,
+      "sha256": "85bba64aa0d371a6276b4c83a20c00af900783b91cff955e472d9b4e23aa8577"
+    },
+    {
+      "batches": 8,
+      "ce": 3.9828506307676435,
+      "checkpoint": "ckpt-000100.pt",
+      "kl": 0.5821459130384028,
+      "positions": 4096,
+      "sha256": "258c69db9669c359d82e57b6526b98a11da926c9754663fdfce926e9f6a29686"
+    },
+    {
+      "batches": 8,
+      "ce": 4.088220736011863,
+      "checkpoint": "ckpt-000150.pt",
+      "kl": 0.5788657071534544,
+      "positions": 4096,
+      "sha256": "18a8a7335bb038713a50842b078004762f88fca79ad4da193241a48ba17f55eb"
+    },
+    {
+      "batches": 8,
+      "ce": 3.935223165899515,
+      "checkpoint": "ckpt-000200.pt",
+      "kl": 0.5501984278671443,
+      "positions": 4096,
+      "sha256": "a0de5b74f9f129ac968bc8c570d343e69bdc761d2faeadd50642bf1b8888cb24"
+    }
+  ],
+  "revision": "547953f4d1a75f3d0cdc1d93d76d54a618d70929",
+  "run_dir": "results/stage2/runs/s50-revalidate-200-lr1e-4-curve",
+  "schema": "selvedge/s50-fixed-batch-kl/v1",
+  "seq_len": 512,
+  "stamp": "20261117T204928Z",
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+  "temperature": 2.0
+}

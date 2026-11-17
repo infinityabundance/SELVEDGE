@@ -1,0 +1,75 @@
+{
+  "schema": "selvedge/p19.9-corrections/v1",
+  "identifier": "P19.9-S50",
+  "registering_session": "S50",
+  "registered_utc": "2026-11-17T21:10:00Z",
+  "amends": {
+    "path": "docs/ws19-stage2b-corrective-amendment-s47-preregistration-v1.json",
+    "sha256": "f3c6057013355fc2d4df6bd0522b1d97dee4c8bad24d6693b296b0c8cbd54cfd",
+    "rule": "the S47 amendment is not edited. This registration corrects two P19.9 implementation defects before any P19.9 arm is trained: the router's decision ordering and the outcome supervision label."
+  },
+  "status": "implemented and CPU-tested; not trained, not sampled, no GPU job started",
+  "correction_1_pre_read_decision": {
+    "defect": "the registered feature list encouraged a router that consumes r_t, so the gate could only be computed after the memory read had already been fetched; a compute-saving route whose decision follows the compute is not a route",
+    "mechanism": "PreReadUtilityRouter predicts Delta_t from h_t and compact metadata (position_fraction, budget_fraction) plus a bounded hidden-norm scalar. It has no r_t, read_norm or gate_t input. `select` returns a boolean mask and the caller fetches memory only for masked tokens.",
+    "api": {
+      "class": "oracle/frontier/utility_routing.py:PreReadUtilityRouter",
+      "predict": "predict(hidden_states, metadata) -> Delta_hat",
+      "select": "select(hidden_states, metadata, cost, threshold) -> (mask, Delta_hat, gate)",
+      "init": "the predictor's last layer is zero, so the untrained gate is sigmoid(-cost/tau), reported rather than assumed to be identity"
+    },
+    "post_read_gate": {
+      "class": "oracle/frontier/utility_routing.py:TwoStageUtilityRouter",
+      "optional": true,
+      "rule": "the pre-read prediction is always formed first; when enabled, the post-read prediction is added in logit space so a fetched read can close the gate but the post stage cannot cause a fetch the pre stage rejected",
+      "disabled_contract": "with use_post_read=false the read cannot change the gate"
+    },
+    "leakage_rules": [
+      "pre-read metadata may contain only position_fraction and budget_fraction",
+      "r_t, read_norm and gate_t are post-read-only and raise when passed to the pre-read predictor",
+      "target, target_id, y_t, answer, gold, label, delta, base_loss, memory_loss and teacher_logprob remain forbidden",
+      "metadata fractions must be finite and in [0, 1]"
+    ]
+  },
+  "correction_2_counterfactual_outcome_supervision": {
+    "defect": "the registered verified-outcome label was an absolute correctness bit broadcast to a sequence's tokens; it cannot distinguish a token that helps from a token in a sequence that happened to be correct",
+    "label": "Delta_outcome = P(correct | memory) - P(correct | base)",
+    "estimator": "over paired rollouts for the same prompt, each side separately verified; the label is the memory success frequency minus the base success frequency",
+    "api": {
+      "function": "oracle/frontier/utility_routing.py:outcome_delta",
+      "record_field": "paired_rollouts: [{rollout_id, base: {verified: bool}, memory: {verified: bool}}, ...]",
+      "source": "counterfactual-outcome"
+    },
+    "controls": {
+      "verified-outcome": "retained as the absolute-label control; it is a registered source but not the outcome route",
+      "counterfactual-token-loss": "retained unchanged"
+    },
+    "rejections": [
+      "a non-bool verified value raises",
+      "a top-level absolute verified field is rejected for counterfactual-outcome",
+      "teacher-forced likelihood fields are rejected",
+      "duplicate rollout ids raise",
+      "an empty pair list raises"
+    ]
+  },
+  "split_and_leakage": {
+    "split_unit": "prompt_id",
+    "overlap": "a prompt id may not appear in both fit and holdout"
+  },
+  "implementation": {
+    "module": "oracle/frontier/utility_routing.py",
+    "module_sha256": "8fc0d7a8d9e76542a923e25aa02676610ab0f5e4ca065a12349aabff88388961",
+    "tests": "oracle/tests/test_s50_p19_9_corrections.py",
+    "tests_sha256": "97c9ef0f96eafcad3a9bc0f68422c832cb6991cc6b1f258fdb307ad9bbf3b5f6"
+  },
+  "what_this_registration_does_not_establish": [
+    "that the pre-read router improves routing: it is implemented and CPU-tested, not trained",
+    "that the paired counterfactual outcome label beats the absolute control: that is the registered experiment",
+    "that the cost term is calibrated: price_per_element and latency come from a runtime receipt before any arm runs",
+    "that P19.9 beats the current gate at equal tokens: no arm has run"
+  ],
+  "literature": {
+    "advantage_based_on_policy_distillation": "Sabbaghi, Pappas, Hassani, Javanmard, arXiv:2610.31563 (2026-10-22): counterfactual advantage under the student as a teacher-action weight. PARTIAL for this implementation: paired verified rollouts estimate a prompt-level outcome difference, not a token-level action advantage.",
+    "verified_rollout_gating": "Jiang, Xie, Jiang, Zhang, SKALD, arXiv:2608.09826 (2026-08-10): gating distillation on verified rollout advantage. PARTIAL: the gate here is a learned function of causal features, not an empirical threshold on rollout groups."
+  }
+}

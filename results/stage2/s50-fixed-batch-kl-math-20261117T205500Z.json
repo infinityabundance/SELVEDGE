@@ -1,0 +1,69 @@
+{
+  "batch_count": 8,
+  "command": [
+    "scripts/s50_fixed_batch_kl.py",
+    "--stream-manifest",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "--start-token",
+    "2000000",
+    "--out",
+    "results/stage2/s50-fixed-batch-kl-math-20261117T205500Z.json"
+  ],
+  "created_utc": "2026-11-17T20:50:13Z",
+  "heldout_manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+  "heldout_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+  "metric": "KL(teacher_T || student_T) per position at T=2.0, fixed held-out batches; CE at T=1.0",
+  "peak_allocated_gib": 6.475625991821289,
+  "peak_reserved_gib": 6.51171875,
+  "results": [
+    {
+      "batches": 8,
+      "ce": 0.919470345346781,
+      "checkpoint": "init",
+      "kl": 0.2528676241636276,
+      "positions": 4096,
+      "sha256": null
+    },
+    {
+      "batches": 8,
+      "ce": 1.670157601358369,
+      "checkpoint": "ckpt-000050.pt",
+      "kl": 0.6452911871019751,
+      "positions": 4096,
+      "sha256": "85bba64aa0d371a6276b4c83a20c00af900783b91cff955e472d9b4e23aa8577"
+    },
+    {
+      "batches": 8,
+      "ce": 1.4780761759611778,
+      "checkpoint": "ckpt-000100.pt",
+      "kl": 0.5773635583464056,
+      "positions": 4096,
+      "sha256": "258c69db9669c359d82e57b6526b98a11da926c9754663fdfce926e9f6a29686"
+    },
+    {
+      "batches": 8,
+      "ce": 1.4887083932408132,
+      "checkpoint": "ckpt-000150.pt",
+      "kl": 0.5484894667752087,
+      "positions": 4096,
+      "sha256": "18a8a7335bb038713a50842b078004762f88fca79ad4da193241a48ba17f55eb"
+    },
+    {
+      "batches": 8,
+      "ce": 1.4667861140333116,
+      "checkpoint": "ckpt-000200.pt",
+      "kl": 0.5472924439236522,
+      "positions": 4096,
+      "sha256": "a0de5b74f9f129ac968bc8c570d343e69bdc761d2faeadd50642bf1b8888cb24"
+    }
+  ],
+  "revision": "547953f4d1a75f3d0cdc1d93d76d54a618d70929",
+  "run_dir": "results/stage2/runs/s50-revalidate-200-lr1e-4-curve",
+  "schema": "selvedge/s50-fixed-batch-kl/v1",
+  "seq_len": 512,
+  "stamp": "20261117T205013Z",
+  "start_token": 2000000,
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+  "temperature": 2.0
+}
