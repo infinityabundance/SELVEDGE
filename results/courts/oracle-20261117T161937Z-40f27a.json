@@ -1,0 +1,186 @@
+{
+  "argv": [
+    "python3",
+    "oracle/frontier/train.py",
+    "--arm",
+    "full",
+    "--stream-manifest",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "--tokens",
+    "2000000",
+    "--seq-len",
+    "512",
+    "--micro-batch",
+    "1",
+    "--grad-accum",
+    "4",
+    "--lr",
+    "1e-05",
+    "--temperature",
+    "2.0",
+    "--kl-weight",
+    "0.5",
+    "--optimizer",
+    "adam8bit",
+    "--optim-block",
+    "256",
+    "--optim-numerics",
+    "stochastic",
+    "--schedule",
+    "cosine",
+    "--min-lr-ratio",
+    "0.1",
+    "--warmup",
+    "200",
+    "--grad-clip",
+    "1.0",
+    "--seed",
+    "0",
+    "--ckpt-every",
+    "488",
+    "--keep-checkpoints",
+    "2",
+    "--log-every",
+    "50",
+    "--run-dir",
+    "results/stage2/runs/stability-lr1e-5-2m",
+    "--vram-limit-gib",
+    "12.5",
+    "--abort-ce-factor",
+    "1.5",
+    "--abort-ce-baseline-steps",
+    "100",
+    "--abort-ce-window",
+    "50"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "87d0206629d9d13c04b712604cc01752566be9838fb0b7babb3340a6d30a0325",
+  "container_name": "selvedge-oracle-court-20261117T161937Z-40f27a",
+  "court": "oracle",
+  "duration_ms": 1119086,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 17179869184,
+        "expected": 17179869184
+      },
+      "memory_swap_bytes": {
+        "actual": 17179869184,
+        "expected": 17179869184
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-17T16:38:16Z",
+  "gpu": {
+    "detail": "--gpus all unavailable: docker: Error response from daemon: failed to discover GPU vendor from CDI: no known GPU vendor found  Run 'docker run --help' for more information",
+    "mode": "device-passthrough"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.3-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:a754d3e18b6b545956899b41673bd2c1ed1d46e771b0c9fae82ed5737d826c07",
+  "image_ref": "selvedge/oracle-court:20261114-3.12-slim-cu132-9ed5f06e7d60",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "16g",
+    "memory_bytes": 17179869184,
+    "memory_swap": "16g",
+    "memory_swap_bytes": 17179869184,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/oracle-20261117T161937Z-40f27a.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "87b0e074a82b2ae649fccbfd9f2c978e6e2e6192",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261117T161937Z",
+  "started_utc": "2026-11-17T16:19:37Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.3-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

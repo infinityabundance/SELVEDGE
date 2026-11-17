@@ -50,6 +50,7 @@ REGISTRATION = "docs/ws19-full-distillation-amendment-stability-s49-preregistrat
 REPORT = "results/REPORT.md"
 SENTINEL = "report-s49-bar-curve"
 RUN_DIR = "results/stage2/runs/full-20m-math-s49"
+MARKER = "results/stage2/runs/full-20m-math-s49-selected.json"
 EVAL_ROOT = "results/stage2/eval/full-20m-math-s49"
 BASE_ARM = "base"
 DIVERGED_ARM = "full-20m-math"
@@ -164,6 +165,12 @@ def slope(points: list[tuple[int, float]]) -> dict | None:
 
 def collect() -> dict:
     registration = load_json(os.path.join(REPO, REGISTRATION))
+    marker_path = os.path.join(REPO, MARKER)
+    if not os.path.exists(marker_path):
+        raise SystemExit(f"s49-curve: missing selection marker {MARKER}; run scripts/s49_select_bar.py")
+    marker = load_json(marker_path)
+    selected = marker["selected"]
+    run_dir = selected["run_dir"]
     base_payload = load_json(os.path.join(REPO, "results/stage2/eval/base/eval.json"))
     base_rows = task_rows(base_payload)
     base_dir = "results/stage2/eval/base"
@@ -220,7 +227,7 @@ def collect() -> dict:
         increment_10_20 = m20["math"]["mean"] - m10["math"]["mean"]
     positive = bool(trend and trend["slope_per_million_tokens"] > 0
                     and increment_10_20 is not None and increment_10_20 > 0)
-    stable = not os.path.exists(os.path.join(REPO, RUN_DIR, "abort.json"))
+    stable = not os.path.exists(os.path.join(REPO, run_dir, "abort.json"))
     improves = bool(m20 and base_rows and m20["math"].get("measured")
                     and family_mean(base_rows, MATH).get("measured")
                     and m20["math"]["mean"] > family_mean(base_rows, MATH)["mean"])
@@ -258,7 +265,9 @@ def collect() -> dict:
             "sha256": hashlib.sha256(
                 open(os.path.join(REPO, REGISTRATION), "rb").read()).hexdigest(),
         },
-        "run_dir": RUN_DIR,
+        "run_dir": run_dir,
+        "attempts": marker.get("attempts"),
+        "selected": selected,
         "stable": stable,
         "improves_base_math": improves,
         "base": {"receipt": "results/stage2/eval/base/eval.json",
@@ -335,10 +344,27 @@ def render(payload: dict) -> str:
 
     trend = payload.get("slope") or {}
     increment = payload.get("increment_10m_to_20m_math")
+    attempt_text = []
+    for attempt in payload.get("attempts") or []:
+        if attempt.get("aborted"):
+            abort = attempt.get("abort") or {}
+            attempt_text.append(
+                f"`{attempt['arm']}` (lr {attempt['lr']:.0e}) tripped at step "
+                f"{abort.get('step')} with ratio {fmt(abort.get('ratio'), 3)}")
+        elif attempt.get("completed"):
+            attempt_text.append(
+                f"`{attempt['arm']}` (lr {attempt['lr']:.0e}) completed "
+                f"19,998,720 tokens")
+        else:
+            attempt_text.append(f"`{attempt['arm']}` (lr {attempt['lr']:.0e}) not run")
     lines += [
         "",
         "### The registered slope reading",
         "",
+        f"- Attempts in the registered escalation order: {'; '.join(attempt_text)}.",
+        f"- The bar is `{payload['selected']['arm']}` at lr "
+        f"{payload['selected']['lr']:.0e}, chosen by "
+        f"`scripts/s49_select_bar.py` as the first completed attempt.",
         f"- Math-family slope: **{fmt(trend.get('slope_per_million_tokens'), 4)} points per "
         f"million tokens** (OLS over m5, m10, m20 on the unweighted family mean).",
         f"- 10M-to-20M math increment: **{fmt(increment, 4)} points**.",

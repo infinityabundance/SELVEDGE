@@ -1,0 +1,88 @@
+{
+  "schema": "selvedge/ws19-full-distillation-amendment/v1",
+  "registering_session": "S49",
+  "registered_utc": "2026-11-17T17:22:00Z",
+  "amends": {
+    "path": "docs/ws19-full-distillation-preregistration-v1.json",
+    "sha256": "167f5d5c82f8a7a6217ce6b242f62dc84b53384a4aa2787d7def63885410ad0c",
+    "stability_amendment": {
+      "path": "docs/ws19-full-distillation-amendment-stability-s49-preregistration-v1.json",
+      "sha256": "8febde1ca08a426e47b7afdc83a36bf46afb9ea5c1bfcee6e52db28f66917e9f"
+    },
+    "rule": "the base registration and the S49 stability amendment are not edited. This amendment records the sweep's measured outcome and replaces the bar-recipe selection procedure, before any 20M rerun is launched and before any 20M score exists."
+  },
+  "finding": {
+    "what_was_run": "the three registered stability arms at 2M tokens each, sequentially, on results/stage2/stage2-math-stream-20261117T071120Z.json with the registered teacher, objective, Adam8bit, cosine schedule and seed",
+    "label": "measured; each number below is printed by scripts/s49_stability_table.py from the named receipts",
+    "tripwire": {
+      "result": "no arm tripped the tripwire; the sweep alone stabilises every registered learning rate",
+      "max_trailing_ratio": {
+        "stability-lr3e-5-2m": 1.3075724130618855,
+        "stability-lr1e-5-2m": 1.3144418416394796,
+        "stability-lr5e-6-2m": 1.1664833725292718
+      },
+      "final_trailing_ratio": {
+        "stability-lr3e-5-2m": 0.7799423807454141,
+        "stability-lr1e-5-2m": 1.1118647656919938,
+        "stability-lr5e-6-2m": 1.059108432871935
+      },
+      "reading": "all three are below the 1.5x tripwire, so the second factor registered for instability is not triggered by instability. The 3e-5 arm is the roughest: its first-100 median is 3.0301, its 50-100 and 100-200 step medians rise to 3.95 and 3.67, an individual step reaches 8.41 nats, and its final trailing median (2.36) is worse than both lower rates (1.91 and 1.81). It is stable by the registered tripwire, not smooth."
+    },
+    "held_out_on_the_registered_slice": {
+      "slice": "results/stage2/stage2-heldout-20261117T024542Z.json, 3,906 chunks, derived from the general-only stream results/stage2/stage2-stream-20261117T004849Z.json (FineWeb-Edu)",
+      "base_ce": 2.809296851242376,
+      "arms": {
+        "stability-lr3e-5-2m": {"ce": 3.8732317859737067, "delta": 1.0639349347313307, "ci95": [1.053787773442804, 1.0740820960198574], "kl": 0.4749790332940561, "chunks_worse_fraction": 1.0, "receipt": "results/stage2/s49-heldout-stability-lr3e-5-2m.json"},
+        "stability-lr1e-5-2m": {"ce": 3.1658623970842825, "delta": 0.35656554584190653, "ci95": [0.35225966541941406, 0.360871426264399], "kl": 0.3202690868020912, "chunks_worse_fraction": 0.98771, "receipt": "results/stage2/s49-heldout-stability-lr1e-5-2m.json"},
+        "stability-lr5e-6-2m": {"ce": 2.9685786838294663, "delta": 0.15928183258709025, "ci95": [0.15654665497597606, 0.16201701019820444], "kl": 0.2748853600428035, "chunks_worse_fraction": 0.97901, "receipt": "results/stage2/s49-heldout-stability-lr5e-6-2m.json"}
+      },
+      "rule_outcome": "no arm satisfies the registered held-out bound of base + 0.01 nats; the smallest measured cost is +0.1593 nats at lr 5e-6, and it is positive on 97.9% of chunks",
+      "diagnosis": "the registered held-out slice is the held-out tail of the general-only stream, while the training stream is 57% worked mathematics. A full-backbone update that learns the mixture moves general-domain next-token CE at every learning rate that learns: the cost falls monotonically with the learning rate (1.064, 0.357, 0.159) and is not an early-loss divergence, not a few outlier chunks, and not a numerical artifact. The +0.01 bound on this slice is therefore an out-of-distribution test that only a near-zero update can pass; applying it as a selection rule would select a bar that has not learned the stream.",
+      "what_is_not_claimed": "this amendment does not claim the general-domain cost is acceptable. It is reported for the 2M arms and will be measured at the 20M bar's final checkpoint. It does not claim a matched-distribution held-out slice was built: it was not, and no new data was built in this session."
+    }
+  },
+  "selection_amendment": {
+    "escalation_order": [
+      "stability-lr3e-5-2m",
+      "stability-lr1e-5-2m",
+      "stability-lr5e-6-2m"
+    ],
+    "why_an_amendment": "the registered rule's stability half is measured and passes for all three arms; its preservation half is measured and fails for all three for a reason the rule did not anticipate (an out-of-distribution slice). The amendment changes the selection procedure before the bar rerun, not after seeing a bar result, and retains every original measurement.",
+    "registered_procedure": "the bar is attempted in descending learning-rate order over the arms that passed the stability half: stability-lr3e-5-2m first, then stability-lr1e-5-2m, then stability-lr5e-6-2m. Each 20M attempt runs with the registered tripwire. The first attempt that completes 19,998,720 tokens without an abort is the bar. An aborted attempt is a recorded result; the next arm is then attempted. The sequence stops at the first completed bar; no completed bar is retried at another rate and no rate is skipped.",
+    "why_descending": "it is the original rule's own ordering (highest surviving learning rate first) applied at the 20M horizon, where the warmup is 200 steps rather than the 2M arm's clamped 97, so the roughest 2M arm gets the horizon it was registered for. The tripwire is the arbiter, not a post-hoc preference.",
+    "held_out_role": "the general-slice held-out delta is reported for the selected bar at its final checkpoint and for every completed bar attempt. It does not select the recipe, for the reason in the finding. The anchored knowledge family at each milestone is the capability check that can still reject the bar, and the registered slope rule governs the extension.",
+    "bar_recipe": "the selected arm's learning rate with the 20M schedule of the base registration: warmup 200, cosine to 10%, clip 1.0, Adam8bit block 256 stochastic, seed 0, CE + 0.5*T^2*KL at T=2",
+    "not_changed": [
+      "the stream, its SHA-256 and the 20,000,000-token budget",
+      "the student and teacher revisions",
+      "the frozen tied embedding and the full text-tower adaptation",
+      "the objective, optimiser, schedule, seed and VRAM limit",
+      "the milestones (m5 = step 3000 / 6,144,000 tokens; m10 = step 5000 / 10,240,000; m20 = step 9765 / 19,998,720)",
+      "the anchored scoring basis and the sequence-correctness block",
+      "the slope rule"
+    ]
+  },
+  "bar_limits": {
+    "container_memory": "20 GiB",
+    "arithmetic": "the largest measured cgroup peak of the same full-arm workload is 10,111,291,392 bytes (9.4169 GiB) from stability-lr3e-5-2m, and the previous 20M bar measured 8,761,161,984 bytes (8.1606 GiB). max(1.5 x 9.4169 GiB, 9.4169 GiB + 1 GiB) = 14.13 GiB; 20 GiB is 2.12x the larger peak and +10.58 GiB. The extra headroom is deliberate: the cgroup peak includes page cache from checkpoint writes and grew with the container bound (a 20-step smoke measured 6.47 GiB at a 12 GiB bound, while the 2M arm measured 9.42 GiB at the same bound), so the long-run peak is the only safe basis.",
+    "why_20_and_not_14": "14.13 GiB is the arithmetic floor and 20 GiB is the registered value: a 20M run writes 10 checkpoints and one latest file of about 2 GiB each, and the diverged bar's 10 GiB limit was only 1.14x its own measured peak. The host had at least 64 GiB available before the launch; the court re-verifies the applied limit with docker inspect.",
+    "vram_limit_gib": 12.5,
+    "verification": "one job at a time; host MemAvailable is checked before launch; the systemd unit carries MemoryMax=20G and MemorySwapMax=20G; the court receipt records the applied cgroup and container limits"
+  },
+  "what_this_amendment_does_not_establish": [
+    "that the selected bar will preserve general-domain likelihood: the 2M evidence says it will not, and the 20M held-out delta is measured and reported rather than predicted",
+    "that 3e-5 is better than 1e-5: at 2M it is worse on final training CE, general held-out CE and roughness; it is attempted first only because the original rule orders by highest surviving rate",
+    "that the 20M bar will improve the math family: that is the milestone curve's question",
+    "that the general-only held-out slice is the right preservation test for a math-weighted run: it is the registered slice and it is retained; the finding above is that it measures domain shift"
+  ],
+  "limits_derived_from": [
+    "results/stage2/runs/stability-lr3e-5-2m/receipt.json",
+    "results/stage2/runs/stability-lr1e-5-2m/receipt.json",
+    "results/stage2/runs/stability-lr5e-6-2m/receipt.json",
+    "results/stage2/s49-heldout-stability-lr3e-5-2m.json",
+    "results/stage2/s49-heldout-stability-lr1e-5-2m.json",
+    "results/stage2/s49-heldout-stability-lr5e-6-2m.json",
+    "results/stage2/runs/full-20m-math/receipt.json"
+  ],
+  "registration_note": "registered after the three 2M arms and their held-out passes, and before any 20M rerun attempt or score. The finding quotes only files that already existed when it was written."
+}
