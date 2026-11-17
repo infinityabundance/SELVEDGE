@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/scripts/s45_collapse_diagnosis.py", line 833, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s45_collapse_diagnosis.py", line 825, in main
+    return run_artifacts(args)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s45_collapse_diagnosis.py", line 456, in run_artifacts
+    result["tasks"][task] = analyse_task(task, arms)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s45_collapse_diagnosis.py", line 301, in analyse_task
+    arm = loaded[arm][doc_id]
+          ~~~~~~^^^^^
+TypeError: unhashable type: 'dict'
