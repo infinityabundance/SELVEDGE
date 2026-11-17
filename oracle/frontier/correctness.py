@@ -137,6 +137,26 @@ def sequence_correctness(items: list[dict], dataset: str) -> dict:
     return summary
 
 
+def combined_report(sequence: dict, heldout: dict) -> dict:
+    """Report exact-answer correctness and likelihood side by side.
+
+    `heldout` is the companion receipt's CE/KL block; `sequence` is this
+    module's output. Neither is substituted for the other: the result keeps
+    both objects and the measured reason they can disagree.
+    """
+    return {
+        "sequence_correctness": sequence,
+        "heldout_likelihood": heldout,
+        "both_reported": True,
+        "why_both": (
+            "next-token CE/KL and exact final-answer accuracy are different "
+            "measurements; the S45 collapse diagnosis measured a reasoning-path "
+            "bias that changed the extracted answer on most newly-wrong GSM8K "
+            "items, and the S44 arm table has arms whose held-out CE is "
+            "indistinguishable from base while their math family mean is lower"),
+    }
+
+
 def harness_samples(samples: list[dict], dataset: str) -> dict:
     """Verify lm-evaluation-harness samples without trusting its accuracy filter.
 

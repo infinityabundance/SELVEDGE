@@ -91,6 +91,18 @@ def test_harness_samples_reports_its_own_verdict():
     assert "harness metric" in result["note"]
 
 
+def test_combined_report_keeps_both_measurements():
+    sequence = correctness.sequence_correctness(
+        [{"completion": "#### 5", "target": "5", "ce": 1.0, "kl": 0.1}],
+        "gsm8k")
+    heldout = {"ce": 1.0, "kl": 0.1, "chunks": 3906}
+    combined = correctness.combined_report(sequence, heldout)
+    assert combined["both_reported"] is True
+    assert combined["sequence_correctness"]["correct"] == 1
+    assert combined["heldout_likelihood"]["ce"] == 1.0
+    assert "different measurements" in combined["why_both"]
+
+
 def test_unverifiable_task_is_rejected():
     with pytest.raises(ValueError):
         correctness.verify_completion("#### 1", "1", "mmlu")
