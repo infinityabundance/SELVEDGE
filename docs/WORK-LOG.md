@@ -3324,7 +3324,11 @@ accounting call, and no change to any registered T2 or verdict receipt.
   its tensor names agree with the vendor page on every checkable fact: 24 text
   layers, Gated DeltaNet on eighteen of them, gated attention on the other six at
   the stated interval, hidden 1024, vocab 248320, tied embeddings (no
-  `lm_head.weight` exists), and one MTP layer. The vendor's "sparse
+  `lm_head.weight` exists), and one MTP layer. **Correction (S38, 2026-11-17):**
+  this entry audited the **chat** revision; the WS19 anchor is the `-Base`
+  revision, which is the same graph over different weights and four fewer added
+  tokens (`docs/FRONTIER-TARGET.md` §10). Every architecture fact above holds for
+  both, because the safetensors header is byte-identical.  The vendor's "sparse
   Mixture-of-Experts" sentence is **contradicted** by the 0.8B checkpoint: every
   layer is a dense SwiGLU MLP.
 - **The "~752M" claim is right about the text tower and wrong about the model.**
