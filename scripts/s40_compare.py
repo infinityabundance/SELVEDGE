@@ -229,6 +229,18 @@ def load_teacher(args, device: str):
     return arms.load_model(args.teacher_dir, dtype=torch.bfloat16, device=device)
 
 
+def registration_block(args) -> dict | None:
+    """Name the registration this comparison acts under, if one was given.
+
+    `prereg_provenance` reads this key to order a registration against its first
+    score; the anchor instrument stays under `harness`.
+    """
+    path = getattr(args, "registration", None)
+    if not path:
+        return None
+    return {"path": path, "sha256": sha256_file(path)}
+
+
 def selected_arms(args) -> list[str]:
     names = [name.strip() for name in args.arms.split(",") if name.strip()]
     if not names:
@@ -372,6 +384,7 @@ def run(args) -> int:
         "temperature": args.temperature,
         "reference_arm": args.reference_arm,
         "selected_arms": names,
+        "preregistration": registration_block(args),
         "arms": {
             name: {
                 **compare.arm_summary(scored[name], scored[args.reference_arm]),
@@ -406,7 +419,7 @@ def self_test() -> int:
         heldout_manifest=paths["stream_manifest"],
         seq_len=paths["seq_len"], temperature=2.0, vocab_chunk=4,
         site=2, harness_dir=None, arms=",".join(ARMS),
-        reference_arm=REFERENCE_ARM,
+        reference_arm=REFERENCE_ARM, registration=None,
         out=os.path.join(root, "compare.json"),
         vram_limit_gib=12.0)
     code = run(args)
@@ -468,6 +481,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--memory-checkpoint", default=None)
     parser.add_argument("--full-checkpoint", default=None)
     parser.add_argument("--harness-dir", default=None)
+    parser.add_argument("--registration", default=None,
+                        help="registration this comparison acts under; "
+                             "recorded as `preregistration` for provenance")
     parser.add_argument("--hidden", type=int, default=1024)
     parser.add_argument("--site", type=int, default=memory.DEFAULT_SITE)
     parser.add_argument("--layers", type=int, default=4)

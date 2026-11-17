@@ -1,0 +1,85 @@
+{
+  "schema": "selvedge/ws19-anchored-subset-preregistration/v1",
+  "registering_session": "S41",
+  "registered_utc": "2026-11-17T02:58:29Z",
+  "purpose": "Register, before any score exists, the anchored-harness subset and the held-out comparison that S41 uses to ask whether the memory mechanism or the adapter shows a signal over the frozen base at 2,000,000 tokens. This is an intermediate instrument registration, not the WS19 bar and not a win condition.",
+  "status": "INTERMEDIATE — a 2M-token signal check with an MMLU subset. The bar is docs/ws19-full-distillation-preregistration-v1.json, whose arm does not exist yet at this registration time.",
+  "relation_to_existing_registrations": {
+    "anchor_instrument": {
+      "path": "docs/anchor-preregistration-v1.json",
+      "sha256": "49181e669d18e90dc10788471b762166e5286b740ba39cb6109bba5320d131c7"
+    },
+    "full_distillation_bar": {
+      "path": "docs/ws19-full-distillation-preregistration-v1.json",
+      "sha256": "167f5d5c82f8a7a6217ce6b242f62dc84b53384a4aa2787d7def63885410ad0c"
+    },
+    "base_control": {
+      "path": "docs/ws19-distillation-control-preregistration-v1.json",
+      "sha256": "68ca863828243c8abba5c5b22266ae94f63b44eb23472f991e8a0001d8ef48ef"
+    },
+    "rule": "this file edits none of them. It fixes only the sample limits this intermediate pass is allowed to use, so a short-window table cannot be re-described after the scores as the registered full table.",
+    "anchor_deviation": "the anchor pre-registration runs MMLU over all 14,042 items. This pass caps MMLU at 2,000 items to keep the six-arm window short. MMLU-Pro stays at the anchor's 36 per subject (504 items), GSM8K stays at the full 1,319, and MATH-500 stays at the full 500. Every non-limit setting (5/5/5/4 few-shot, batch 8/2/8/8, greedy decoding, seeds, 100,000 bootstrap iterations, no chat template) is the anchor's."
+  },
+  "heldout_comparison": {
+    "instrument": "scripts/s40_compare.py",
+    "heldout_manifest": "results/stage2/stage2-heldout-20261117T024542Z.json",
+    "heldout_manifest_sha256": "901c0a3fd5b7f5661b6ba3abcf27e25cc980ca45e8ae43118ea42a9a0c782fd5",
+    "heldout_stream_sha256": "468e36903cf3bbbea2eacd38dfd726a8542a11bf368f73b8a8fd492c1da1c43e",
+    "tokens": 2000000,
+    "seq_len": 512,
+    "temperature": 2.0,
+    "reference_arm_for_this_pass": "base",
+    "arms": [
+      "base",
+      "adapter-2m",
+      "memory-2m",
+      "memory-ungrafted",
+      "memory-grafted",
+      "adapter-20m"
+    ],
+    "arm_note": "adapter-20m is the S39 20M-token frozen-backbone adapter control, read from results/stage2/runs/control-20m. It is not one of the registered six arms of the full comparison; it is scored here so 10x more tokens on the same architecture is measured by the same instrument.",
+    "receipt": "results/stage2/s41-heldout-comparison.json",
+    "not_scored": "full-distill, because no full-arm checkpoint exists at this registration time and no smoke or run has been launched."
+  },
+  "anchored_subset": {
+    "instrument": "docs/anchor-preregistration-v1.json",
+    "instrument_sha256": "49181e669d18e90dc10788471b762166e5286b740ba39cb6109bba5320d131c7",
+    "driver": "scripts/s40_score.py",
+    "material_to_score": "2,000,000 tokens of distillation (adapter-2m, memory-2m) and 20,000,000 tokens (adapter-20m); the frozen base and the two memory states are controls, not token-budget arms",
+    "tasks": {
+      "mmlu_pro": {"family": "knowledge", "num_fewshot": 5, "limit": 36, "limit_semantics": "per subject; 504 items", "batch_size": 8, "primary_metric": "exact_match,custom-extract", "changed_from_anchor": false},
+      "mmlu": {"family": "knowledge", "num_fewshot": 5, "limit": 2000, "limit_semantics": "total items; the same stratified first-2000 the harness selects under a fixed seed", "batch_size": 2, "primary_metric": "acc", "changed_from_anchor": true, "anchor_limit": null, "anchor_n_available": 14042},
+      "gsm8k": {"family": "math", "num_fewshot": 5, "limit": null, "limit_semantics": "full 1,319 items", "batch_size": 8, "primary_metric": "exact_match,strict-match", "changed_from_anchor": false},
+      "minerva_math500": {"family": "math", "num_fewshot": 4, "limit": null, "limit_semantics": "full 500 items", "batch_size": 8, "primary_metric": "math_verify", "changed_from_anchor": false}
+    },
+    "receipts": [
+      "results/stage2/eval/base/eval.json",
+      "results/stage2/eval/adapter-2m/eval.json",
+      "results/stage2/eval/memory-2m/eval.json",
+      "results/stage2/eval/memory-ungrafted/eval.json",
+      "results/stage2/eval/memory-grafted/eval.json",
+      "results/stage2/eval/adapter-20m/eval.json"
+    ],
+    "reporting": "per-task score and standard error, and the unweighted family means with the independent combined standard error of compare.family_means. The MMLU subset makes the knowledge mean an estimate on 2,000 of 14,042 items; every table that prints it must say so."
+  },
+  "win_condition": {
+    "registered_text": "none. This pass reports a signal or its absence and does not decide a WS19 win.",
+    "why": "the token budget is 2,000,000 for the mechanism arms and there is no full-distillation arm to beat. The registered win bar is docs/ws19-full-distillation-preregistration-v1.json: knowledge mean >= 42.01 or math mean >= 39.27, and above the full-distillation control. Those thresholds are not evaluated here.",
+    "signal_reading": "a mechanism 'shows a signal' only if its family mean exceeds the frozen base by more than the combined standard error and also exceeds the parameter-matched adapter at the same 2,000,000 tokens. That is a directional observation at this budget, not a win."
+  },
+  "what_this_file_does_not_establish": [
+    "that either mechanism wins: 2,000,000 tokens is a small budget and the bar arm is absent",
+    "that the MMLU subset equals the full MMLU score: it is a 2,000-item estimate and is labelled as one",
+    "that the adapter-20m arm is a mechanism arm: it is the S39 control at 10x tokens",
+    "that any number here should be compared to the registered 42.01 / 39.27 thresholds as if it were the full table: the MMLU basis differs"
+  ],
+  "scoring_receipts": [
+    "results/stage2/s41-heldout-comparison.json",
+    "results/stage2/eval/base/eval.json",
+    "results/stage2/eval/adapter-2m/eval.json",
+    "results/stage2/eval/memory-2m/eval.json",
+    "results/stage2/eval/memory-ungrafted/eval.json",
+    "results/stage2/eval/memory-grafted/eval.json",
+    "results/stage2/eval/adapter-20m/eval.json"
+  ]
+}

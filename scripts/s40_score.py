@@ -98,6 +98,10 @@ def receipt_base(args, prereg, prereg_digest, commit, version, arm_report,
             "directory": args.student_dir,
         },
         "harness_preregistration": {"path": args.prereg, "sha256": prereg_digest},
+        "preregistration": (
+            {"path": args.registration,
+             "sha256": anchor.sha256_file(args.registration)}
+            if args.registration else None),
         "harness": {
             "name": prereg["harness"]["name"],
             "commit": commit,
@@ -271,6 +275,10 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", choices=comparison.SCORED_ARMS, required=True)
     parser.add_argument("--prereg", default=DEFAULT_PREREG)
+    parser.add_argument("--registration", default=None,
+                        help="registration this scoring act is under; recorded "
+                             "as `preregistration` (the anchor instrument stays "
+                             "under `harness_preregistration`)")
     parser.add_argument("--student-dir", default=comparison.DEFAULT_STUDENT)
     parser.add_argument("--teacher-dir", default=comparison.DEFAULT_TEACHER)
     parser.add_argument("--memory-init", default=None)
