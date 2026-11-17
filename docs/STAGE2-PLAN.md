@@ -1,12 +1,14 @@
 # WS19 stage 2 — teacher-grafted conditional memory (S37 registration and smoke)
 
-Status: **implemented and smoke-measured, no full-budget run.** The full-budget
-run is *not* started in this session; this document registers its budget and
-routes from the measured smoke. Every number below that is a performance,
-storage, throughput or resource measurement is generated from a receipt between
-sentinels by `scripts/perf_numbers.py`; editing one by hand is a defect. The
-arithmetic of the design (8 reads per token, 4 bigram + 4 trigram heads, one
-site after decoder layer 2) is a declared structural fact, not a measurement.
+Status: **implemented (stream, graft, accounting) and not smoke-run.** No arm has
+trained and no arm has been evaluated: there is no smoke receipt at this revision,
+which §5 states plainly. The full-budget plan is *not* started in this session;
+this document registers its budget and routes from the measured graft and
+accounting receipts. Every number below that is a performance, storage, throughput
+or resource measurement is generated from a receipt between sentinels by
+`scripts/perf_numbers.py`; editing one by hand is a defect. The arithmetic of the
+design (8 reads per token, 4 bigram + 4 trigram heads, one site after decoder
+layer 2) is a declared structural fact, not a measurement.
 
 The contract this serves is `docs/PROGRAM-PLAN.md` §24 P19.2 and the WS19 win
 condition registered there: the grafted memory must beat the frozen 0.8B-Base
@@ -33,29 +35,45 @@ convolution are. The table is in the *accessible* count and in the optimiser.
 
 ## 2. Geometry and exact accounting
 
-Development table, one site after decoder layer 2:
+Development table, one site after decoder layer 2. Active elements per token:
 
-- active elements per token: <!-- BEGIN GENERATED: s2-active-per-token -->
+<!-- BEGIN GENERATED: s2-active-per-token -->
 537,600
 <!-- END GENERATED: s2-active-per-token -->
-- accessible elements added: <!-- BEGIN GENERATED: s2-accessible-dev -->
+
+Accessible elements added:
+
+<!-- BEGIN GENERATED: s2-accessible-dev -->
 17,312,768
 <!-- END GENERATED: s2-accessible-dev -->
-- table elements at the development row count: <!-- BEGIN GENERATED: s2-table-dev -->
+
+Table elements at the development row count:
+
+<!-- BEGIN GENERATED: s2-table-dev -->
 16,777,216
 <!-- END GENERATED: s2-table-dev -->
 
-The three registered row scales, at one site (the default module):
+The three registered row scales, at one site (the default module). At 65,536
+rows the table has
 
-- 65,536 rows: table elements <!-- BEGIN GENERATED: s2-table-65536 -->
+<!-- BEGIN GENERATED: s2-table-65536 -->
 16,777,216
 <!-- END GENERATED: s2-table-65536 -->
-- 1,048,576 rows: table elements <!-- BEGIN GENERATED: s2-table-1048576 -->
+
+elements; at 1,048,576 rows it has
+
+<!-- BEGIN GENERATED: s2-table-1048576 -->
 268,435,456
 <!-- END GENERATED: s2-table-1048576 -->
-- 8,388,608 rows: table elements <!-- BEGIN GENERATED: s2-table-8388608 -->
+
+and at 8,388,608 rows it has
+
+<!-- BEGIN GENERATED: s2-table-8388608 -->
 2,147,483,648
 <!-- END GENERATED: s2-table-8388608 -->
+
+elements. The last of those is the configuration §5 of
+`docs/WS19-EXECUTION-REGISTRATION.md` registers a training design for.
 
 The parameter-matched dense adapter's active union is exactly the memory's, by
 construction (`2 * 1024 * 262 + 1024`), with a parameter-free gate:
@@ -89,19 +107,27 @@ Method:
    token that hashed to it, and the count is stored;
 5. `key_proj = B^T`, `value_proj = B`, `out_bias = mu`, convolution identity.
 
-Measured interpolation quality:
+Measured interpolation quality. Held-out least-squares relative error:
 
-- held-out least-squares relative error: <!-- BEGIN GENERATED: s2-graft-ls-error -->
+<!-- BEGIN GENERATED: s2-graft-ls-error -->
 0.48559371148189695
 <!-- END GENERATED: s2-graft-ls-error -->
-- PCA explained variance at 256 of 1024 dimensions: <!-- BEGIN GENERATED: s2-graft-pca-variance -->
+
+PCA explained variance at 256 of 1024 dimensions:
+
+<!-- BEGIN GENERATED: s2-graft-pca-variance -->
 0.7959621969138733
 <!-- END GENERATED: s2-graft-pca-variance -->
-- row-table reconstruction error (gated output vs the real student state):
-  <!-- BEGIN GENERATED: s2-graft-reconstruction -->
+
+Row-table reconstruction error (gated output vs the real student state):
+
+<!-- BEGIN GENERATED: s2-graft-reconstruction -->
 0.8154492974281311
 <!-- END GENERATED: s2-graft-reconstruction -->
-- development-table occupancy fraction after grafting: <!-- BEGIN GENERATED: s2-graft-occupancy -->
+
+Development-table occupancy fraction after grafting:
+
+<!-- BEGIN GENERATED: s2-graft-occupancy -->
 1.0
 <!-- END GENERATED: s2-graft-occupancy -->
 
@@ -109,25 +135,37 @@ Two findings are part of the method, not footnotes. First, the linear teacher→
 student map explains roughly three quarters of the variance; the two models are
 not linearly aligned at this site, so a row is a *lossy* summary and the
 reconstruction number says how lossy. Second, at initialisation the gate is
-nearly constant (mean <!-- BEGIN GENERATED: s2-graft-gate-mean -->
+nearly constant. Its mean is
+
+<!-- BEGIN GENERATED: s2-graft-gate-mean -->
 0.5036013126373291
-<!-- END GENERATED: s2-graft-gate-mean -->, range
+<!-- END GENERATED: s2-graft-gate-mean -->
+
+its minimum
+
 <!-- BEGIN GENERATED: s2-graft-gate-min -->
 0.49435365200042725
-<!-- END GENERATED: s2-graft-gate-min --> to
+<!-- END GENERATED: s2-graft-gate-min -->
+
+and its maximum
+
 <!-- BEGIN GENERATED: s2-graft-gate-max -->
 0.538838803768158
-<!-- END GENERATED: s2-graft-gate-max --> in the receipt): the
-conditioning is learned, not supplied by the graft. The row-scale question is
-what happens when the same active read can address more rows.
+<!-- END GENERATED: s2-graft-gate-max -->
+
+in the receipt: the conditioning is learned, not supplied by the graft. The
+row-scale question is what happens when the same active read can address more
+rows.
 
 Leakage guard: the stream builder discards any document whose worst 5-word
 shingle Jaccard against any cached evaluation test item is at least 0.2 and
-fails closed at 0.5. The maximum observed in the smoke stream is
+fails closed at 0.5. The maximum observed in the pinned stream is
+
 <!-- BEGIN GENERATED: s2-stream-max-jaccard -->
 0.016042780748663103
-<!-- END GENERATED: s2-stream-max-jaccard -->, and
-no document was discarded. The guard covers MMLU-Pro, GSM8K, MMLU, ARC,
+<!-- END GENERATED: s2-stream-max-jaccard -->
+
+and no document was discarded. The guard covers MMLU-Pro, GSM8K, MMLU, ARC,
 MATH-500, TriviaQA, HumanEval and IFEval test splits that are cached.
 
 ## 4. Smoke protocol
@@ -159,79 +197,46 @@ The three controls are the same harness and the same evaluation:
 A fourth arm, **memory-graft**, is the step-0 graft with no training. It isolates
 the teacher initialisation from the training.
 
-## 5. Smoke results
+## 5. Smoke results — none, and this section used to imply otherwise
 
-Per-arm knowledge and worst-task deltas against the frozen base:
+**No smoke receipt exists.** There is a pinned stream receipt, two graft receipts
+and an accounting receipt under `results/stage2/`, and there is no
+`stage2-smoke-*` and no per-arm evaluation receipt. The previous revision of this
+section printed generated regions whose bodies were `0.0` and `0` for every arm
+delta, throughput and VRAM figure. Those numbers were not measurements of a null
+result; they were the absence of a receipt rendered as a number, which reads as a
+measured zero and is worse than a blank. The regions and their rows have been
+removed, and the honest statement is the one sentence above.
 
-- memory trained: knowledge mean <!-- BEGIN GENERATED: s2-memory-knowledge-delta -->
-0.0
-<!-- END GENERATED: s2-memory-knowledge-delta --> pp, worst task
-  <!-- BEGIN GENERATED: s2-memory-worst-delta -->
-0.0
-<!-- END GENERATED: s2-memory-worst-delta --> pp
-- memory graft only: knowledge mean <!-- BEGIN GENERATED: s2-graft-knowledge-delta -->
-0.0
-<!-- END GENERATED: s2-graft-knowledge-delta --> pp, worst task
-  <!-- BEGIN GENERATED: s2-graft-worst-delta -->
-0.0
-<!-- END GENERATED: s2-graft-worst-delta --> pp
-- NGM: knowledge mean <!-- BEGIN GENERATED: s2-ngm-knowledge-delta -->
-0.0
-<!-- END GENERATED: s2-ngm-knowledge-delta --> pp, worst task
-  <!-- BEGIN GENERATED: s2-ngm-worst-delta -->
-0.0
-<!-- END GENERATED: s2-ngm-worst-delta --> pp
-- dense adapter: knowledge mean <!-- BEGIN GENERATED: s2-adapter-knowledge-delta -->
-0.0
-<!-- END GENERATED: s2-adapter-knowledge-delta --> pp, worst task
-  <!-- BEGIN GENERATED: s2-adapter-worst-delta -->
-0.0
-<!-- END GENERATED: s2-adapter-worst-delta --> pp
-
-Measured cost:
-
-- memory training throughput: <!-- BEGIN GENERATED: s2-memory-tokens-per-second -->
-0
-<!-- END GENERATED: s2-memory-tokens-per-second --> tokens/s, peak allocated
-  VRAM <!-- BEGIN GENERATED: s2-memory-peak-gib -->
-0
-<!-- END GENERATED: s2-memory-peak-gib --> GiB
-- adapter training throughput: <!-- BEGIN GENERATED: s2-adapter-tokens-per-second -->
-0
-<!-- END GENERATED: s2-adapter-tokens-per-second --> tokens/s, peak allocated
-  VRAM <!-- BEGIN GENERATED: s2-adapter-peak-gib -->
-0
-<!-- END GENERATED: s2-adapter-peak-gib --> GiB
-
-The judgement of whether any arm moved, and whether the memory is
-distinguishable from its controls, is stated in §6 from these numbers and the
-combined standard errors recorded in the smoke receipt. No arm is declared a
-winner here: this is a signal check.
+What does exist is a **measured teacher-gradient signal**, not a quality result:
+the graft receipt's reconstruction numbers in §3 say how much of the teacher's
+information a row carries at initialisation, and they are a reason to run the
+smoke, not a substitute for it.
 
 ## 6. Signal
 
-*(Filled from the smoke receipt; the prose is written after the numbers are
-generated. A null is reported as a null, and the control it failed to beat is
-named.)*
+*(To be filled from a smoke receipt. None exists at this revision; no arm is
+declared a winner, a null **or** a loss.)*
 
 ## 7. Registered full-budget plan
 
-The budget is derived from the measured smoke throughput, not typed:
+The budget is **not** derived from a smoke throughput, because no smoke
+throughput has been measured. The first GPU job of the next session is the
+teacher+student step measurement registered in
+`docs/WS19-EXECUTION-REGISTRATION.md` §4; the phase budgets below are stated in
+tokens and the GPU-hour conversion is filled in from that receipt, not typed.
 
 - phase A (development scale, 65,536 rows): three seeds, memory and adapter,
-  20,000,000 tokens per arm per seed; expected GPU-hours
-  <!-- BEGIN GENERATED: s2-plan-phase-a-hours -->
-0
-<!-- END GENERATED: s2-plan-phase-a-hours -->;
+  20,000,000 tokens per arm per seed;
 - phase B (scale question, 1,048,576 rows): three seeds, memory only, same token
-  budget; expected GPU-hours
-  <!-- BEGIN GENERATED: s2-plan-phase-b-hours -->
-0
-<!-- END GENERATED: s2-plan-phase-b-hours -->. This phase is blocked until the
-  training loop uses sparse row updates, because dense AdamW state for the
-  table is three times the table in float32;
-- phase C (8,388,608 rows): not runnable on this device; it needs the NVMe
-  serving path of P19.5 and is registered as not run.
+  budget. **This phase is blocked until the training loop uses sparse row
+  updates**: dense AdamW state for the table is three times the table in float32,
+  and §5 of `docs/WS19-EXECUTION-REGISTRATION.md` registers the sparse-row design
+  that removes the block, with its memory arithmetic and its validation plan;
+- phase C (8,388,608 rows): the table alone does not fit the device, so it is
+  runnable only with the same sparse/offloaded design at NVMe residency —
+  registered in the same document, and registered as **not run** until stages
+  A and B have produced their receipts.
 
 Evaluation cadence: every 5,000,000 tokens on the fixed smoke subsets, plus the
 full registered anchor task list at the end of each run.
@@ -253,8 +258,19 @@ the training-free NGM at all three row scales with the placement route measured
 
 ## 8. Failures and limitations
 
-*(Filled from the run log and the smoke receipt: any OOM, any failed invocation,
-and the honest residual risks.)*
+- **A missing receipt was rendered as a zero.** The S37 revision printed `0.0`
+  and `0` for every arm delta, throughput and VRAM figure through generated
+  regions with no receipt behind them. That is the failure this revision fixes;
+  the regions are gone and §5 says the smoke has not run.
+- **The generated regions were not registered.** The same revision put
+  `s2-*` sentinels in this file with no manifest block and no external-region
+  owner, and several of them sat mid-line, which the generator refuses. They are
+  now either registered against the receiving receipt (§2, §3) or removed (§5).
+- **No OOM, no failed invocation.** Nothing was launched, so there is no failure
+  of that kind to report — and that is a limitation, not an achievement.
+- **The residual risk is the graft's lossiness.** §3's reconstruction error is a
+  measurement of how much of the teacher a row carries at initialisation; it is
+  not evidence that the reader can use it.
 
 ## 9. Reproduce
 

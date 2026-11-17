@@ -199,6 +199,15 @@ Qwen3.5-0.8B, the frontier anchor, accounted at S33 (schema v2). The counts are
 from `results/accounting/20261116T183609Z-qwen35-08b-text-only.json`; the union is
 from `results/accounting/20261116T184127Z-qwen35-budget-union.json`.
 
+**Correction (S38).** That receipt, and the certificate it belongs to, were
+produced on the **chat** revision `Qwen/Qwen3.5-0.8B`. The anchor is the **`-Base`**
+revision, which is what the scoreboard scores: the same graph and the same
+element counts over different weights, measured file by file
+(`docs/FRONTIER-TARGET.md` §10), with the `-Base` ceiling certificate at
+`results/accounting/20261117T001252Z-qwen35-08b-base-text-only.json`. The chat
+receipt is kept because it is what S33 tested; it is not the anchor's
+certificate.
+
 - Text tower, unique and tie-aware (the declared text-only path):
   <!-- BEGIN GENERATED: report-qwen35-text-unique -->
 752393024

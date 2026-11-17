@@ -399,3 +399,32 @@ same hash for both (`50cbab8a892c5f29...`). The two reference models that cannot
 scored are excluded in `docs/anchor-preregistration-v1.json` with reasons rather
 than omitted: `google/gemma-3-1b-it` is gated and `LiquidAI/LFM2.5-1.2B-Instruct`
 is under the non-OSI LFM Open License v1.0.
+
+### Which revision is the anchor (`-Base`, corrected at S38)
+
+The WS19 anchor is **`Qwen/Qwen3.5-0.8B-Base`** at revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`. `Qwen/Qwen3.5-0.8B` is the **chat**
+revision of the same graph: it is not the anchor, it is not scored, and no anchor
+command may name it.
+
+The difference was measured rather than assumed
+(`results/frontier/20261117T002500Z-revision-compare-08b-chat-vs-base.json`,
+written up in `docs/FRONTIER-TARGET.md` §10):
+
+- **the graph is identical.** The safetensors header is byte-identical, every
+  tensor has the same name, dtype, shape and byte offset, and `config.json` is
+  byte-identical. Any parameter count, ceiling or union arithmetic therefore
+  transfers between the two revisions;
+- **the weights are not.** The two shards hash differently, so a capability score
+  does not transfer;
+- **the tokenizer files are not identical.** The BPE vocabulary and the merge
+  list are byte-identical, but the chat revision adds four control tokens
+  (`<tool_response>`, `</tool_response>`, `<think>`, `</think>`) that Base does
+  not define. Both WS19 checkpoints are Base, and the stage-2 stream receipt
+  records that 0.8B-Base and 2B-Base ship the same `tokenizer.json` by hash, so
+  the teacher/student pairing is unaffected — but a chat checkpoint may not be
+  paired with a Base one as a teacher/student pair, because the chat tokenizer
+  can emit four tokens the Base model never trained.
+
+`docs/FRONTIER-TARGET.md` §5.1 is the ceiling certificate for the `-Base` bytes;
+the earlier chat certificates are kept as the S33 record.

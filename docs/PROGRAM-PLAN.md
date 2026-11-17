@@ -4948,7 +4948,11 @@ from `results/frontier-models/20261116T193500Z-frontier-arithmetic.json`
 (`scripts/s35_frontier_arithmetic.py`, recomputable with `--check`); this section
 never re-types a measurement.
 
-**Target.** `Qwen/Qwen3.5-0.8B` at its pinned revision, **text path only**. The
+**Target.** `Qwen/Qwen3.5-0.8B-Base` at revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68` (the revision the anchored scoreboard
+scores and `models/FRONTIER.lock.json` pins), **text path only**. The *chat*
+revision `Qwen/Qwen3.5-0.8B` is the same graph over different weights and is not
+the anchor (measured at S38: `docs/FRONTIER-TARGET.md` §10). The
 identity, revision, licence, per-tensor accounting, architecture facts and disk
 arithmetic are receipted in `docs/FRONTIER-TARGET.md`. Two findings there bind
 this section: the "752M" figure is the **text tower**, not the checkpoint, and the
@@ -5012,9 +5016,9 @@ kernel test vectors and the E1/E2/E3 order are registered in `docs/RUNTIME.md`
 ### P19.1 — Stage 1: the anchor scoreboard
 
 **What.** One pinned harness, one sealed evaluation, two checkpoints: the anchor
-(0.8B) and the gap reference (2B), both **text path only**, both run through the
-validated reference. Report per capability family, with the gap defined as
-reference-minus-anchor and its interval.
+(`Qwen/Qwen3.5-0.8B-Base`) and the gap reference (`Qwen/Qwen3.5-2B-Base`), both
+**text path only**, both run through the validated reference. Report per capability
+family, with the gap defined as reference-minus-anchor and its interval.
 **Why.** "Close half the gap" is meaningless without a measured gap, and a
 capability family must be chosen before any mechanism is tuned against it.
 **Depends.** the accounting half of P19.0 (for the declared text-only path) and

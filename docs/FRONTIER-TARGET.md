@@ -49,7 +49,12 @@ then pinned to the commit SHA the Hub returned; the tree listing was read at tha
 SHA, not at `main`. Access time is 2026-11-16 UTC and is recorded per model in the
 probe receipt.
 
-**`Qwen/Qwen3.5-0.8B`** — exists; chat/instruct; the proposed anchor.
+**`Qwen/Qwen3.5-0.8B`** — exists; chat/instruct; **the chat revision, not the
+anchor** (S38). The WS19 anchor is `Qwen/Qwen3.5-0.8B-Base`, which is the
+checkpoint the scoreboard scores, the pre-registration names and the lock file
+pins. This revision is retained here because S32's probe, S33's reference parity
+receipt and the first two ceiling certificates were produced on it; §10 measures
+what does and does not transfer between the two.
 
 - revision:
   <!-- BEGIN GENERATED: frontier-qwen35-08b-revision -->
@@ -146,6 +151,11 @@ c202236235762e1c871ad0ccb60c8ee5ba337b9a
 the same element counts as their chat counterpart (verified tensor by tensor in
 the probe receipt; the base checkpoints differ in values, not in shape). Revisions
 are pinned in the receipt; do not reuse the chat SHA for a base checkpoint.
+
+**The `-Base` 0.8B checkpoint is the WS19 anchor.** `Qwen/Qwen3.5-0.8B` is a chat
+revision of the same graph and is **not** the anchor: it has different weight
+bytes and four additional special tokens (§10). Every anchor command in this
+repository names the `-Base` revision.
 
 - 0.8B-Base revision:
   <!-- BEGIN GENERATED: frontier-qwen35-08b-base-revision -->
@@ -337,7 +347,14 @@ checkpoint total alongside it. The vendor page prints neither figure: it says
 "0.8B". Any document that presents the text-tower count as the vendor's stated
 size is inventing a source.
 
-## 5. `selvedge inspect-model` accepts this checkpoint (S33)
+## 5. `selvedge inspect-model` accepts this checkpoint (S33; re-issued for the
+`-Base` anchor at S38)
+
+The certificate below was produced on `Qwen/Qwen3.5-0.8B` (chat) at S33, before
+the scoreboard existed. S38 re-ran the same auditor against the **`-Base`**
+checkpoint that the scoreboard actually scores, and the `-Base` receipt is now
+the anchor certificate; the chat receipts are kept because they are what S33
+tested and because §10 uses them as the comparison.
 
 S32 recorded that the auditor refused the anchor. It no longer does. S33 added
 accounting **schema v2**, which is a second auditor rather than a patch to v1:
@@ -450,13 +467,43 @@ and that its union is under the ceiling; it does not watch a kernel read a
 pointer. That is what Court E is for, and it needs the kernels registered in
 `docs/RUNTIME.md`.
 
+### 5.1 The `-Base` certificate (S38)
+
+The audited checkpoint is now the benchmarked checkpoint. Command, in the rust
+court, offline, with the model cache mounted read-only:
+
+```
+$ scripts/court rust -- cargo run --release -p selvedge-cli -- inspect-model \
+    /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68 \
+    --json --active-path text-only --certify-ceiling 1000000000 \
+    --expect-totals text=752393024,vision=100592896,mtp=20452864,checkpoint=873438784 \
+    --report-out results/accounting/20261117T001252Z-qwen35-08b-base-text-only.json
+schema=selvedge/model-accounting/v2  ok=true  verdict=certified
+```
+
+Receipts: `results/accounting/20261117T001252Z-qwen35-08b-base-text-only.json`
+(certified, `752,393,024` unique active, headroom `247,606,976`),
+`...-base-text-and-mtp.json` (certified at `772,845,888`) and
+`...-base-refused-untied.json` (`ok=false`, refused for declaring an untied head
+that does not exist). Court receipts: `results/courts/rust-20261117T001830Z-37d602.json`,
+`...-20261117T001831Z-594fc0.json` and the text-and-mtp invocation's own.
+
+The four checked expectations match on the `-Base` bytes exactly, and the
+checkpoint's streaming digest is
+`19d0b4b980cfe94f9856f6a767e14b670bbf0844a440607345c58fd2b1d40076` against the
+chat revision's `112580451bc3179cfa4af8d446c442ed377747f2083e9702bdaef601492e3a01`.
+The digests differ because the weights differ; the accounting does not, because
+the graph does not (§10).
+
 ## 6. Ceiling arithmetic for the registered 1e9 rule
 
 The rule is unchanged: a token's audit must show fewer than one billion
 unique-active elements. For a dense model that is the elements the token's
 execution touches, ties counted once.
 
-Qwen3.5-0.8B, text path:
+Qwen3.5-0.8B-Base (the anchor), text path — the counts are identical for the
+chat revision of the same graph (§10), and this section's certificate is the
+`-Base` one:
 
 - text-tower elements:
   <!-- BEGIN GENERATED: ceiling-08b-text -->
@@ -986,3 +1033,135 @@ Three failure modes are checked rather than assumed:
   pre-registration records both exclusions and their reasons.
 - It does not make the vendor's published numbers comparable. Those are the
   vendor's instrument, and no vendor number appears in this document.
+
+## 10. The audited model is the benchmarked model (S38)
+
+The ceiling certificate was produced for `Qwen/Qwen3.5-0.8B` (chat) while the
+scoreboard in §9 scored `Qwen/Qwen3.5-0.8B-Base`. An audit of one revision is not
+an audit of another unless that is *measured*, so it was measured. The tool is
+`scripts/s38_revision_compare.py`; the receipt is
+`results/frontier/20261117T002500Z-revision-compare-08b-chat-vs-base.json`; the
+court receipt is `results/courts/oracle-20261117T001929Z-3c53a9.json`.
+
+Method, in the same shape as §1: the safetensors header of each shard is read
+(the 8-byte little-endian length, then the JSON table of name, dtype, shape and
+`data_offsets`); the raw header bytes are hashed; the tensor table is sorted and
+hashed; each whole shard is hashed by streaming; and the small files that decide
+compatibility (`config.json`, the tokenizer files, `vocab.json`, `merges.txt`,
+`LICENSE`) are hashed individually. The shard's tensor byte total is checked
+against the Hub index's own `total_size` before any comparison is drawn.
+
+### 10.1 The measured answer
+
+Two shards, read header-first. The header size in bytes:
+
+<!-- BEGIN GENERATED: revcmp-header-bytes -->
+59,840 bytes
+<!-- END GENERATED: revcmp-header-bytes -->
+
+and the number of tensors it describes:
+
+<!-- BEGIN GENERATED: revcmp-tensor-count -->
+488
+<!-- END GENERATED: revcmp-tensor-count -->
+
+The chat shard's whole-file sha256 is `04b1c301…fe4696`; the base shard's is
+
+<!-- BEGIN GENERATED: revcmp-base-shard-sha256 -->
+c2b1e5a17d9c1e27685d92ed9b382911ebb99955ecd89052d1721241adfbab6c
+<!-- END GENERATED: revcmp-base-shard-sha256 -->
+
+and the two shards are the same size, the chat one at
+
+<!-- BEGIN GENERATED: revcmp-chat-weight-bytes -->
+1,746,942,600 bytes
+<!-- END GENERATED: revcmp-chat-weight-bytes -->
+
+and the base one at
+
+<!-- BEGIN GENERATED: revcmp-base-weight-bytes -->
+1,746,942,600 bytes
+<!-- END GENERATED: revcmp-base-weight-bytes -->
+
+so a size check cannot tell them apart and only a hash can. `config.json` is
+byte-identical; the base copy hashes to
+
+<!-- BEGIN GENERATED: revcmp-config-sha256 -->
+b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204
+<!-- END GENERATED: revcmp-config-sha256 -->
+
+with the chat copy's `b90b86f3…de9b4204` equal to it. The BPE vocabulary has
+
+<!-- BEGIN GENERATED: revcmp-chat-vocab-entries -->
+248,044
+<!-- END GENERATED: revcmp-chat-vocab-entries -->
+
+entries in both files, and the merge list is byte-identical. The added-token
+tables are not: the chat revision declares
+
+<!-- BEGIN GENERATED: revcmp-chat-added-tokens -->
+26
+<!-- END GENERATED: revcmp-chat-added-tokens -->
+
+added tokens against the base revision's
+
+<!-- BEGIN GENERATED: revcmp-base-added-tokens -->
+22
+<!-- END GENERATED: revcmp-base-added-tokens -->
+
+**Are the text towers identical?** The **graph** is identical and the **weights**
+are not. Every tensor has the same name, dtype, shape and byte offset, the header
+is byte-identical, `config.json` is byte-identical, and the element counts of §5
+and §6 therefore transfer between the revisions exactly. The shard hashes differ,
+so the two checkpoints hold different values: the chat revision is a
+post-trained (chat) version of the same architecture.
+
+**The tokenizer is the one place where "same graph" does not imply "same
+vocabulary object".** The BPE vocabulary and the merge list are byte-identical
+(the `vocab.json` and `merges.txt` files match, and the digests of the
+`tokenizer.json` `model.vocab` and `model.merges` entries match). What differs is
+the added-token table: the chat revision carries four extra control tokens —
+`<tool_response>`, `</tool_response>`, `<think>`, `</think>` — at ids
+248,066–248,069, which the Base revision does not define. Two consequences, both
+recorded rather than fixed by hand:
+
+1. **The distortion this defect could have caused did not happen to the score.**
+   Both scored checkpoints are Base (§9), and the stage-2 teacher/student pair is
+   also Base-on-Base: the pinned stream receipt records the anchor's tokenizer
+   sha256 and states it is the same file in 0.8B-Base and 2B-Base. So the
+   distillation pairing is byte-identical at the tokenizer.
+2. **A chat teacher paired with a Base student would be a different comparison.**
+   The chat tokenizer can emit four tokens the Base student never saw in
+   pretraining. Their ids fall in the embedding rows that the BPE vocabulary does
+   not name (the vocabulary-versus-embedding-row gap recorded in §4), so the rows
+   exist in both graphs but only the chat checkpoint has trained them. Nothing in
+   WS19 pairs a chat checkpoint with a Base one, and this is now the reason it
+   must not.
+
+### 10.2 What moves, and what the fix changed
+
+Nothing numeric moved: the ceiling, the element counts, the headroom and the
+accounting are properties of the graph, and the graph is identical. What moved is
+**identity**, and it moved in four places, all now naming `-Base`:
+
+- the anchor certificate: §5.1 is the `-Base` certificate, and the chat
+  certificates are retained as the S33 record;
+- `docs/MODELS.md`: the frontier section says which revision is the anchor and
+  which is only the same graph;
+- `docs/PROGRAM-PLAN.md` §24: the Target paragraph names the `-Base` revision;
+- `models/FRONTIER.lock.json`: already pinned the `-Base` revisions (S36), which
+  is why the lock did not need re-writing — the defect was in the docs and the
+  certificate, not in the lock.
+
+### 10.3 What this section does not establish
+
+- It does not re-derive the reference parity receipt
+  (`results/reference/20261116T184032Z-qwen35-reference.json`), which was measured
+  on the chat revision. The reference *implementation* is graph-level and is
+  re-exercised on the `-Base` bytes by the state test at S38, but the
+  vendor-parity comparison itself has not been re-run on `-Base`. That is the
+  honest gap, and it is a one-command job (`scripts/s33_reference_parity.py`)
+  when a GPU court is next open.
+- It does not establish that the chat and base revisions score the same. They
+  share a graph and differ in weights, so a capability difference is expected
+  and is not measured here.
