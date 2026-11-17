@@ -1,0 +1,42 @@
+{
+  "checkpoints": {
+    "every_steps": 1000,
+    "keep": 10,
+    "milestones": [
+      3000,
+      5000,
+      9765
+    ]
+  },
+  "created_utc": "2026-11-17T17:23:47Z",
+  "launcher": "scripts/s49_bar_20m.sh",
+  "limits": {
+    "container_cpus": 8,
+    "container_memory_bytes": 21474836480,
+    "container_memory_swap_bytes": 21474836480,
+    "container_pids": 1024,
+    "container_tmp": "2g",
+    "previous_bar_cgroup_peak_bytes": "8762351616",
+    "sizing": "max(1.5 x measured peak, measured peak + 1 GiB) over the previous 20M bar, the chosen recipe's smoke and 2M arm, and every completed stability arm",
+    "vram_limit_gib": 12.5
+  },
+  "recipe": {
+    "authority": "docs/ws19-full-distillation-amendment-stability-s49b-preregistration-v1.json",
+    "authority_sha256": "87e8b60154eec41d6f80eb21069bd39eded0969a50545804a63867741d5beb87",
+    "escalation_index": 0,
+    "lr": 3e-05,
+    "source_arm": "stability-lr3e-5-2m"
+  },
+  "run_dir": "results/stage2/runs/full-20m-math-s49",
+  "schema": "selvedge/s49-bar-launch/v1",
+  "stream": {
+    "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56"
+  },
+  "tripwire": {
+    "baseline_steps": 100,
+    "factor": 1.5,
+    "window_steps": 50
+  },
+  "unit": "selvedge-s49-bar3e5"
+}

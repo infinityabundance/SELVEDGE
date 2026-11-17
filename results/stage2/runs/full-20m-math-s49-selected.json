@@ -1,0 +1,43 @@
+{
+  "amendment": {
+    "path": "docs/ws19-full-distillation-amendment-stability-s49b-preregistration-v1.json",
+    "sha256": "87e8b60154eec41d6f80eb21069bd39eded0969a50545804a63867741d5beb87"
+  },
+  "attempts": [
+    {
+      "aborted": false,
+      "arm": "stability-lr3e-5-2m",
+      "cgroup_peak_bytes": "18318319616",
+      "completed": true,
+      "final_checkpoint_sha256": "f1a1b236ee58cdd821f9b975837283daa98764099c10c926e92bbabf6ed2340c",
+      "lr": 3e-05,
+      "peak_allocated_gib": 11.42885684967041,
+      "position": 0,
+      "receipt": "results/stage2/runs/full-20m-math-s49/receipt.json",
+      "receipt_stamp": "20261117T202629Z",
+      "run_dir": "results/stage2/runs/full-20m-math-s49",
+      "tokens_per_second": 1825.9
+    }
+  ],
+  "created_utc": "2026-11-17T20:27:27Z",
+  "escalation_order": [
+    "stability-lr3e-5-2m",
+    "stability-lr1e-5-2m",
+    "stability-lr5e-6-2m"
+  ],
+  "kind": "s49-bar-selected",
+  "registration": {
+    "path": "docs/ws19-full-distillation-amendment-stability-s49-preregistration-v1.json",
+    "sha256": "8febde1ca08a426e47b7afdc83a36bf46afb9ea5c1bfcee6e52db28f66917e9f"
+  },
+  "revision": "3de57a4fd6769949003e7954b38f72153f7851e4",
+  "schema": "selvedge/s49-bar-selected/v1",
+  "selected": {
+    "arm": "stability-lr3e-5-2m",
+    "lr": 3e-05,
+    "receipt": "results/stage2/runs/full-20m-math-s49/receipt.json",
+    "rule": "first entry of the registered escalation order whose 20M attempt completed without an abort",
+    "run_dir": "results/stage2/runs/full-20m-math-s49"
+  },
+  "stamp": "20261117T202727Z"
+}
