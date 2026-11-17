@@ -20,8 +20,9 @@ page in this session; `UNSUPPORTED` means no primary source was found.
 
 Interpretation: the shipped hybrid (linear int8 first moment + bf16 second
 moment) is a byte-cost compromise, not a published recipe. The 0.88% synthetic
-parameter error is not evidence about real gradients, which is why the S51
-harness captures real ones.
+parameter error (stamp `20261117T203858Z`, revision `547953f`,
+`results/stage2/s50-parity-components-20261117T203840Z.json`) is not evidence
+about real gradients, which is why the S51 harness captures real ones.
 
 ## Real-gradient versus synthetic optimiser validation
 

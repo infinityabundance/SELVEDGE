@@ -17,8 +17,9 @@ pgrep -af 'oracle/frontier/train.py'   # must print nothing
 ## (a) Score the 1e-5 bar's 5/10/20M milestones
 
 The milestones are `ckpt-002441` (4,999,168 tokens), `ckpt-004882`
-(9,998,336) and `ckpt-009765` (19,998,720). The 6 GiB eval limit is 1.83x the
-3.269 GiB cgroup peak measured for this harness and model.
+(9,998,336) and `ckpt-009765` (19,998,720). The 6 GiB eval limit is the
+registered one and carries headroom over the cgroup peak measured for this
+harness and model.
 
 ```bash
 SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
@@ -156,3 +157,22 @@ command is written here. The queue entry is a gate:
 
 Writing a fake invocation for a script that does not exist would be fabricated
 evidence. The command will be added when the runner and its CPU tests pass.
+
+## Numbers in this page and their receipts
+
+These are operational limits and byte projections, not new measurements:
+
+- **8.76 GB** is `container_memory.memory_peak` = 8,762,351,616 bytes in
+  `results/stage2/runs/full-20m-math/receipt.json`. That run is invalidated as a
+  score by S50, but the model and teacher it held are the same, so its resource
+  peak is the sizing precedent it was already used for at the S49 launch.
+- **11.885 GiB** is `peak_allocated_gib` in
+  `results/stage2/s50-revalidation-20261117T210326Z.json` (stamp
+  `20261117T210326Z`, revision `547953f`), the corrected 200-step run.
+- **4.000 B/element** and the **12.34 GiB** bf16-first-moment projection are the
+  byte arithmetic in `oracle/frontier/optim8bit.py` over the measured
+  498,113,344 trainable elements: int8 is 3.015625 B/element, bf16 is 4.000
+  B/element, and the difference is +0.457 GiB over the measured 11.885 GiB peak.
+- The decision thresholds **0.40**, **3.0** and **0.02** are stated in
+  `scripts/s50_real_gradient_validation.py` with their basis; they are not
+  measurements.

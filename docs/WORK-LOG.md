@@ -4853,11 +4853,12 @@ sized from the measured peak of the same workload, and the host had at least
 
 **Context.** The corrected-optimiser 20M bar (`s50-bar-20m-lr1e-5`, lr 1e-5) is
 training; no GPU job was started or touched. The S50 attribution
-(`results/stage2/s50-parity-components-20261117T203840Z.json`) leaves the int8
-first moment as the residual error: 0.2789 worst relative update L2 and 0.008828
-final parameter error on the synthetic sigma=1.0 fixture. That is a synthetic
-result, and Schaul et al. (arXiv:1312.6055) and Choi et al. (arXiv:1910.05446)
-are the reasons it cannot be the last word.
+(`results/stage2/s50-parity-components-20261117T203840Z.json`, stamp
+`20261117T203858Z`, revision `547953f`) leaves the int8 first moment as the
+residual error: 0.2789 worst relative update L2 and 0.008828 final parameter
+error on the synthetic sigma=1.0 fixture. That is a synthetic result, and Schaul
+et al. (arXiv:1312.6055) and Choi et al. (arXiv:1910.05446) are the reasons it
+cannot be the last word.
 
 **First-moment harness.** `scripts/s50_real_gradient_validation.py` consumes a
 fixture of real post-clip gradients and runs 50 steps of the shipped int8
@@ -4872,7 +4873,9 @@ per element, and refuses to resume a checkpoint across a storage change. The
 decision thresholds are 0.40 worst relative update L2, 3.0 max `|update|` ratio,
 0.02 final parameter error. If int8 fails and bf16 passes, the switch is
 mandatory for the next launch (4.000 B/element, projected 12.34 GiB against the
-12.5 GiB limit); if both fail, storage is not the cause. The exact queued capture
+12.5 GiB limit; derived from the 11.885 GiB measured peak in
+`results/stage2/s50-revalidation-20261117T210326Z.json`, stamp
+`20261117T210326Z`, revision `547953f`); if both fail, storage is not the cause. The exact queued capture
 and CPU commands, with their memory limits, are in `docs/S50-GPU-QUEUE.md` §(d).
 
 **Pre-read mask.** `TwoStageUtilityRouter.forward` now requires the boolean
