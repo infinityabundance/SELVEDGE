@@ -5,7 +5,10 @@
 # docs/ws19-anchored-subset-preregistration-v1.json before this script runs.
 # Every arm uses the same task list, few-shot counts, batch sizes, greedy
 # decoding, seeds, bootstrap iterations and extraction filters as the S36
-# anchor; only MMLU is capped at 2,000 items (the registration says so).
+# anchor. `mmlu=2000` is a group-task limit and the harness applies it per
+# subject; every MMLU subject has fewer than 2,000 items, so the effective
+# sample is the full 14,042 items, exactly as the anchor. The measured fact and
+# its reading are in docs/ws19-anchored-subset-amendment-preregistration-v1.json.
 #
 # This script is launched once, under systemd with an explicit memory limit.
 # It runs the arms sequentially: the GPU is not shared with a second job.
