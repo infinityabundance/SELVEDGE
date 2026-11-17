@@ -28,7 +28,7 @@ SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
   scripts/s50_bar_milestones.sh
 
 # the S53 rule's input: every saved checkpoint on the same fixed batches
-SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
   scripts/court --gpu oracle -- python3 scripts/s50_fixed_batch_kl.py \
     --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json \
     --start-token 2000000 \

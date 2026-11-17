@@ -4908,3 +4908,72 @@ URLs, dates and VERIFIED/PARTIAL/UNSUPPORTED status.
 
 **Courts.** The targeted S50/S51 tests pass in the `oracle` court; the
 `status_consistency` court passes after regeneration. No GPU command was run.
+
+## S53 — post-trained route, RFT fixes, eight-head accounting, 100M rule, literature
+
+**No GPU job was started while the corrected 20M bar trained.** The bar
+(`s50-bar-20m-lr1e-5`) was at step 8,491/9,765 (17.4M tokens) when this work
+began. Every change below is CPU-side and is tested in the Docker court.
+
+**Post-trained route registered.** `docs/ws19-post-trained-route-registration-v1.json`
+and `models/FRONTIER-POST-TRAINED.lock.json` move the win target from
+`Qwen3.5-0.8B-Base` to the post-trained `Qwen3.5-0.8B` (`2fc0636`, audited
+752,393,024 text-tower elements) and keep Base as a control. The post-trained
+2B (`15852e8`, 1,881,825,088) is the stage-2 teacher; its weights were fetched
+(`aa33250c…`, receipt `results/frontier/s53-fetch-2b-chat.json`) and audited
+against 2B-Base in the new
+`results/frontier/20261117T233931Z-revision-compare-2b-chat-vs-base.json`
+(header and tensor table identical, weights different, the same four added chat
+tokens). Stage 1 registers the vLLM 0.34.0 pin, chat prompts, greedy/maj@16,
+non-thinking/thinking, the exact extractor and the report table. Stages 2–4
+register reverse-KL on-policy distillation at lr 1e-5, the zero-init looped
+self-distillation at layers 8–15, and the three-seed executed-set confirmation,
+with the thinking-loop, co-residency, per-pass-state, contamination,
+formatting-vs-reasoning and FLOPs risks and mitigations.
+
+**RFT pipeline fixed.** `oracle/frontier/sft_data.py` packs complete examples
+(one per row, padded) and sets prompt and padding labels to `-100` while
+supervising the solution and EOS; `rft_objective.sft_loss` and
+`train.token_loss` normalise over supervised positions only, and `train.py`
+gains `--sft-examples` (the legacy stream remains for compatibility and the KD
+arms). `scripts/s45_rft_stream.py` writes a companion examples JSONL with
+separate prompt/solution ids. `rft.load_items` now carries difficulty and
+reasoning length, and `rft.stratified_select` replaces prefix truncation with
+seeded stratification over source, difficulty and reasoning-length quartile.
+The amendment `docs/ws19-onpolicy-rft-amendment-s53-v1.json` records the
+S50-invalidated lr 1e-4 recipe and replaces it with the corrected optimiser at
+1e-5. Tests: `oracle/tests/test_s45_rft.py` (38).
+
+**Eight-head accounting.** `physical_read_accounting` now takes row addresses
+shaped `[tokens, heads]`, deduplicates them globally, charges fetched bytes per
+tier and cache-hit bytes separately, and fails closed on a multi-tier table with
+no address-to-tier map. The executed memory arm passes the memory's own eight
+addresses per token. Tests cover 8 heads, duplicates and mixed tiers:
+`oracle/tests/test_s50_preread_mask.py`, `test_s52_p19_9_runner.py`.
+
+**Optimiser comparison and the 100M rule.** `oracle/frontier/optim_compare.py`
+is a CPU-testable matched-init harness (one arm at a time) for fixed-batch
+teacher KL and CE; `scripts/s53_optimizer_comparison.py` is queued in
+`docs/S50-GPU-QUEUE.md` §(f) with its limit deliberately absent until its own
+smoke exists. `scripts/s50_bar_curve.py` now refuses to decide without a
+fixed-batch receipt over every saved checkpoint, and applies the registered
+"still paying off" thresholds (negative CE slope, positive last interval,
+last-interval share >= 0.10, non-rising KL) plus the harness endpoint
+confirmation; the old harness-points OLS slope is retained as a labelled
+superseded number. `docs/ws19-100m-decision-amendment-s53-v1.json` registers it.
+Tests: `oracle/tests/test_s53_optimizer_comparison.py`,
+`oracle/tests/test_s53_100m_rule.py`.
+
+**Literature.** `docs/S53-LITERATURE.md` and
+`results/stage2/s53-literature-20261117T235500Z.json` record CANON,
+D-LoopOPD, the small-model learnability gap and MiCoTA, both retrofitted
+recurrence papers, Distilling System 2 into System 1, 1-shot RLVR, GKD and the
+vLLM Qwen3.5 recipe. The mismatches section flags the `46.2 -> 52.0`
+32x-inference-compute trap, the 1-shot RLVR `8.6`-vs-`37.6` reading, the CANON
+`12`/`6`/`1/7` distinction, and the absence of a small-checkpoint vLLM recipe.
+
+**Courts.** The full oracle suite passes (754 tests, `oracle` court, 4 GiB /
+4 CPU / 1,024 pids / 2 GiB tmp); `commit_identity`, `perf_numbers` (1,008
+blocks), `status_consistency` and `prereg_provenance` pass. The bar was still
+training at the end of the CPU work; its milestone and fixed-batch scoring is
+recorded separately below.
