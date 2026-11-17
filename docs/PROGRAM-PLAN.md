@@ -5289,6 +5289,8 @@ proven by `multi_pass_state_test`, whose receipt on the `-Base` anchor is
 17.53125
   <!-- END GENERATED: state-contract-pass0-isolation-abs -->
 
+  either way.
+
 the CPU test (`oracle/tests/test_reference_state.py`) runs the same contract on a
 tiny random model and on the anchor whenever the cache is present.
 
@@ -5299,7 +5301,7 @@ layers, elements per pass:
 4,718,592
 <!-- END GENERATED: w19-state-delta-elements -->
 
-the convolution windows the table above omits, elements per pass:
+the convolution windows that the DeltaNet figure omits, elements per pass:
 
 <!-- BEGIN GENERATED: w19-state-conv-elements -->
 331,776
