@@ -1006,3 +1006,130 @@ record** and is a defect against this ledger.
   rate-limit caveat of the fifth pass does not apply here.
 - It did not search for negative results (works that tried per-pass lookup and
   failed), because preprint APIs index published work, not attempts.
+
+## 19. Seventh pass (S38, 2026-11-17): five claims checked against their own text, and four gap searches
+
+Method. Every claim below was checked against the paper's own abstract page or
+HTML full text, fetched on **2026-11-17 UTC** from `arxiv.org` (the abstract page
+and, where the number is only in a table, the HTML rendering). Semantic Scholar
+was not used this pass. Each row names the URL that was read and the exact figure
+it states, so a later pass can tell a changed reading from a changed paper.
+
+### 19.1 The five claims the plan depends on
+
+| claim as the plan states it | verdict | what the source actually says |
+| --- | --- | --- |
+| Retrofitted recurrence takes GSM8K from `46.2` to `52.0` | **VERIFIED, with a condition the plan must carry** | `arXiv:2511.07384` "Teaching Pretrained Language Models to Think Deeper with Retrofitted Recurrence" (McLeish et al., submitted 2025-11-10, `https://arxiv.org/html/2511.07384v1`). Table 1 / Table 6: the static-depth TinyLlama baseline scores `46.2` (single phase) and the `(4,8,4)` retrofit at **test recurrence 32** scores `52.0`. The same table's two-phase pair is `45.2 -> 51.2`, and the retrofit at test recurrence 1 scores `25.6`. **The gain is at 32× inference compute, not at matched compute**, and the paper's own matched claim is about *training* FLOPs. Our P19.3 must therefore not quote `46.2 -> 52.0` as a compute-matched result |
+| NGM reports HumanEval `+4.26` and GPQA-Diamond `+6.56` on Qwen3 models including 0.6B | **PARTIAL — the numbers are real but they are the 1.7B model's** | `arXiv:2605.16893v2` (submitted 2026-10-26, `https://arxiv.org/html/2605.16893v2`). Table 1: on **Qwen3-0.6B** the deltas are HE `+2.64`, HE+ `+2.24`, GPQA `+1.69`, and the ten-task average moves `30.46 -> 31.88` (`+1.42`). The `+4.26` / `+6.56` figures are **Qwen3-1.7B**'s. Also: NGM's evaluation is sampled (`temperature 0.7`, `top-p 0.8`, `top-k 20`, presence penalty `1.5`) under EvalScope, **not** greedy under our harness — so the number is a published bar for a *re-run*, never a number we may quote as our bar |
+| Engram's U-shaped compute-versus-memory law | **VERIFIED** | `arXiv:2601.07372` "Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models" (Cheng et al.; v1 2026-01-12, v2 2026-07-12, `https://arxiv.org/search/?searchtype=all&query=%22Conditional+Memory+via+Scalable+Lookup%22`), also ACL 2026 long 226. "By formulating the **Sparsity Allocation** problem, we uncover a **U-shaped scaling law** that optimizes the trade-off between neural computation (MoE) and static memory (Engram)", scaled to 27B, with MMLU `+3.4`, CMMLU `+4.0`, BBH `+5.0`, ARC-C `+3.7`, HumanEval `+3.0`, MATH `+2.4`, Multi-Query NIAH `84.2 -> 97.0`. **The law is about allocating one sparsity budget between experts and memory during pretraining** — not about table rows at a frozen, post-hoc backbone |
+| SCONE's fixed-cost scaling | **VERIFIED, and the venue is now verified too** | `arXiv:2502.01637v3` "Scaling Embedding Layers in Language Models" (Yu et al., `https://arxiv.org/abs/2502.01637`), comments field: "**NeurIPS 2025 camera ready**" — the earlier pass recorded the venue as unstated. "a model with **1B accelerator-resident parameters** outperforms a **1.9B-parameter baseline** across diverse corpora, while using only about **half the FLOPS and accelerator memory** during inference", with two scaling strategies: more n-gram embeddings, and a larger model to learn them, both at fixed inference cost |
+| SMELT's loop savings | **VERIFIED** | `arXiv:2609.01343v3` "SMELT: Scaling Laws for Compute-Matched MoE Looped Transformers" (Wang et al., v3 2026-09-11, `https://arxiv.org/abs/2609.01343`). Loops the middle half twice "while closely matching per-token FLOPs, total non-embedding parameters, and KV cache", four sizes to **54B**, "saving **6.8–18.0% of training FLOPs** on the compute-optimal frontier", largest on Code |
+
+**Two further works read because they change what P19.4 may claim.**
+
+| work | verdict | why it matters here |
+| --- | --- | --- |
+| **RecurTrace** — `arXiv:2609.03379v3` "RecurTrace: Adaptive Latent Reasoning with Loop-Time Memory" (v3 2026-10-19, `https://arxiv.org/abs/2609.03379`) | **VERIFIED** | "**Loop Memory Attention** lets each looped layer attend to its own states from previous iterations along the loop-time axis"; `56.9%` on MathQA at an average `2.0` loops, `+2.2` points over the best fixed loop depth **at matched compute**; gains at 0.6B/1.7B/4B/8B growing `0.6 -> 3.4` points. This is the strongest published counter-argument to running memory before the loop, and it is recorded as such in `docs/WS19-EXECUTION-REGISTRATION.md` §2.3 |
+| **SinkRec** — `arXiv:2606.09888` "SinkRec: Mitigating Semantic State Sink in Long Sequence Recommendation with Memory-Conditioned Gated Delta Networks" (2026-06-03, found by the state search below) | **VERIFIED (abstract)** | a **looped** architecture with a learnable conditional memory whose retrieval is **interacted with the recurrent state**: memory "purifies recurrent writing and reading by suppressing memory-covered updates and removing memory-aligned readout responses", on a Gated DeltaNet backbone. It does **not** move the *address*: memory is residual-VQ codes read by the attention block, not a token-addressed table indexed by `(prefix, pass, state)` |
+
+### 19.2 The four gap searches
+
+**(a) Sparse-row or offloaded-optimiser training of very large embedding or memory
+tables — PARTIAL, and the mechanism is standard practice elsewhere.**
+
+Closest matches, all read at their abstract pages on 2026-11-17:
+
+- **Hotline** (`arXiv:2204.05436`, ISCA 2024): popular embeddings in HBM,
+  non-popular in CPU memory, micro-batches split by popularity; `2.2x` faster
+  end-to-end than a CPU–GPU DLRM baseline. The closest thing to our residency
+  tiers.
+- **MTrainS** (`arXiv:2305.01515`): heterogeneous memory (byte- and block-
+  addressable SCM) for DLRM training; `4–8x` fewer nodes for the same throughput.
+- **DQRM** (`arXiv:2410.20046`): embedding gradients sparsified and quantised to
+  INT8 on top of quantisation-aware training. Sparse **gradients** for a huge
+  table, published.
+- **Cocoon** (`arXiv:2510.07304`, OSDI'26): noise history across CPU, GPU and a
+  near-memory device, "optimizations for **sparse embedding tables**".
+- **MuonIO** (`arXiv:2610.02705`): a Muon-style rule for embedding tables and the
+  LM head, "reducing **I/O optimizer state memory by 50%**" relative to Muon for
+  1B pretraining.
+- **Stochastic Communication Avoidance** (`arXiv:2411.01611`): a theoretical
+  framework for lookup-table training under memory, compute and communication
+  constraints; up to `6x` throughput on Criteo.
+- **Monolith** (`arXiv:2209.07663`): a collisionless embedding table with
+  expirable embeddings and frequency filtering for online training.
+
+**Residual gap.** None of these trains a *token-addressed lookup table grafted
+onto a frozen language model* at 8M rows with an offloaded optimiser and a
+registered staleness bound; the machinery is standard in recommendation systems
+and our use of it is an **engineering requirement, not a novelty**. The one thing
+we add is the utilisation-to-admission link (which rows deserve to exist), and the
+ledger already records the hot-feature-tracking precedent (CAFE/HotSketch,
+`arXiv:2312.03256`) that makes even that a reproduction.
+
+**(b) State-conditioned or pass-conditioned retrieval inside recurrent passes —
+PARTIAL, and it narrows the P19.4 sentence further.**
+
+- **SinkRec** (above) conditions the *interaction* on the state inside a loop,
+  and is the nearest neighbour.
+- **RecurTrace** (above) gives each loop access to its own previous states along
+  loop time — memory of the *trajectory*, not of a table.
+
+**Residual gap.** Both let the pass *read* differently by state or by loop time.
+Neither makes the **address into a token-addressed learned table** a function of
+`(pass index, pass state)`. That is still the narrow sentence, and it is now the
+*only* sentence: "state-conditioned interaction with memory inside a loop" is
+published.
+
+**(c) Distillation from a larger same-tokenizer teacher for memory-table
+initialisation — PARTIAL: published, at a different training stage.**
+
+- **Memory Grafting** (`arXiv:2605.20948v1`, 2026-05-20, `https://arxiv.org/abs/2605.20948`):
+  "frozen hidden states from a **grafting model** as conditional n-gram memory …
+  exact longest-match suffix lookup … expected O(1) with respect to memory-bank
+  size", evaluated under "**matched recipient architectures and pre-training
+  budgets**": 2.8B average `51.95` (MoE) and `52.43` (vanilla Engram) to `53.86`;
+  in the 0.92B setting all grafting variants improve, `Qwen3.5-35B-A3B` the
+  strongest grafting model.
+- **SCONE** (above) learns n-gram embeddings "with a separate model during
+  training" — same idea for the *learner*, without calling it distillation.
+
+**Residual gap.** Memory Grafting builds the table **offline from a bigger model's
+hidden states** and its recipient is **pretrained** with the table in place. Our
+stage-2 route is **online** distillation into the table of a **frozen,
+already-trained** backbone. That difference is real but small, and it is a
+difference in *when*, not in *what*, so P19.2 must present the teacher route as a
+reproduction with a stated variation rather than as new.
+
+**(d) Memory-table scaling laws — VERIFIED as a published shape, with a second
+source that says what happens to downstream accuracy.**
+
+- **Engram's sparsity-allocation U-curve** (above) is the law for a fixed sparsity
+  budget between experts and memory.
+- **SCONE's two scaling strategies** (above) are laws at fixed inference cost.
+- **Qwen3.8-Next** (`arXiv:2608.30320`, 2026-08-31): a 125B MoE with "additional
+  **51B parameters of n-gram embedding tables held off the accelerator**",
+  prefetched from host memory — and, decisively for us, "**enlarging the n-gram
+  vocabulary lowers loss monotonically while downstream accuracy saturates**".
+
+**Residual gap.** The row-scale question therefore has **two published answers**
+with opposite signs on different metrics: loss keeps improving, downstream
+accuracy saturates. Our three row counts test that at our anchor and budget; they
+do not test whether memory capacity helps in general, and a flat downstream result
+would be a **reproduction of the published saturation**, not a surprise.
+
+### 19.3 Verdicts, in one line each
+
+- **VERIFIED:** retrofitted recurrence's GSM8K pair (with the 32× compute
+  condition); Engram's U-shaped law; SCONE's fixed-cost result and its NeurIPS
+  2025 venue; SMELT's `6.8–18.0%` training-FLOP saving; RecurTrace's matched-compute
+  loop gain; Memory Grafting's matched-budget numbers; Qwen3.8-Next's
+  off-accelerator n-gram tables and its loss-versus-downstream saturation.
+- **PARTIAL:** NGM's headline deltas (they are the 1.7B model's, and the harness is
+  sampled rather than greedy); sparse-row/offloaded table training (standard in
+  recsys, not applied to a frozen LLM's conditional memory); state-conditioned
+  retrieval inside a loop (SinkRec is the neighbour, the address does not move);
+  distillation into a memory table (published offline, we run it online).
+- **UNSUPPORTED:** none of the four searches returned a work that makes a
+  token-addressed table's address a function of `(pass index, pass state)`. That is
+  the residual novelty, and it is one sentence long.

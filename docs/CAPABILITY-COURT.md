@@ -954,6 +954,16 @@ registered now so it cannot be invented after a run, and it may not be reported
 until a receipt names the pair fixture's sha256, the mutation rule and the scoring
 rule.
 
+**Parked at S38 (2026-11-17).** The work that would make this endpoint scorable —
+authoring the pair fixture, fixing the mutation rule and writing the scoring rule
+— is **deferred, not withdrawn**, with the endpoint registration intact and
+unusable exactly as registered. The reason is that the GPU budget is focused on
+WS19, and this endpoint's remaining work is authoring plus a scoring run that
+would compete with the WS19 stages for the same device. While parked, every
+comparison receipt must keep setting `transfer_permitted` from the per-category
+disclosure alone and must not cite the endpoint; un-parking is a dated amendment
+that names the fixture hash and the session.
+
 **The per-category regression clause changed role, and this is its power
 argument.** In v4 the clause was a conjunct: improvement **and** no category
 regressing beyond 0.05. The power receipt (§7.1) simulates both rules at the same

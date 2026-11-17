@@ -3667,3 +3667,98 @@ receipt pointer.
 - **No novelty.** The literature pass narrowed a claim; it did not clear one.
 - **No claim that the teacher estimate or the state bytes are measured.** They are
   arithmetic over receipted inputs, and the plan says which stage measures them.
+
+## 2026-11-17 — S38: the anchor's identity, the state rule, the table that does not fit, and a provenance court
+
+This session did no training and no evaluation. It corrected four defects in the
+S37 registration, produced the certificate the scoreboard should have had, and
+made one class of process failure checkable.
+
+### What it found
+
+- **The audited model was not the benchmarked model.** The ceiling certificate
+  was for `Qwen/Qwen3.5-0.8B` (chat); the scoreboard scored `-Base`. Measured, not
+  assumed (`docs/FRONTIER-TARGET.md` §10): the safetensors header, tensor table
+  and `config.json` are **identical**, the shard hashes **differ**, the BPE vocab
+  and merges are identical, and the chat tokenizer adds four control tokens
+  (`<tool_response>`, `</tool_response>`, `<think>`, `</think>`) that Base does not
+  define. Element counts and the ceiling transfer; a capability score and a
+  tokenizer pairing do not.
+- **The per-pass state rule was backwards.** P19.4 said a pass's state is reset
+  between tokens. That would make a pass a one-token function and make the
+  chunking-equivalence claim false. Corrected and now measured.
+- **A missing smoke was printed as a zero.** `docs/STAGE2-PLAN.md` §5 rendered
+  `0.0` for every arm delta through generated regions with no receipt behind them.
+- **The 8M-row table is untrainable as registered.** Dense AdamW state for it is
+  three float32 vectors per element, i.e. 96 GiB on top of a 16 GiB bf16 table.
+- **The anchor pre-registration postdates its own first score** by 1 h 32 m.
+
+### What it decided
+
+- **The bar is the distilled control, not the frozen anchor.** Every mechanism is
+  trained with the same teacher signal, so "beats the frozen 0.8B" is a statement
+  about distillation. The registered order is: throughput measurement, then the
+  distillation-only control, then grafted memory with four controls, then the loop
+  retrofit, then the pass-conditioned table. The counter-argument (looping has
+  matched-compute published wins: RecurTrace, SMELT, the retrofitted-recurrence
+  line) is recorded rather than argued away, and the control decides it.
+- **Sparse rows and an offloaded optimiser are the registered route** for the 1M
+  and 8M scales, with a host-resident LRU-bounded optimiser tier, a 16-step flush
+  bucket, a registered staleness bound of 16 steps / 32,768 tokens, per-row step
+  counts in the bias correction, and a utilisation-to-admission loop. The
+  validation plan is 65K dense (sparse must equal dense), 1M with offload, 8M with
+  NVMe.
+- **Provenance is now a court.** `prereg_provenance` fails when a registration's
+  first commit is not earlier than its first scoring receipt (or when its declared
+  time postdates its commit, or predates the inputs it names). Its first run found
+  the anchor's defect and **three older capability registrations** with ordering
+  defects; all four are recorded as **named historical exceptions with evidence**,
+  not silently excused and not repaired by editing history.
+- **T4 and the capability-court discrimination endpoint are parked**, not
+  withdrawn: GPU focus is WS19. Registrations intact, tier index updated.
+
+### Failures and fixes
+
+**F1 — a zero stand-in for an absent receipt.** The S37 stage-2 plan's generated
+regions had no manifest block and no owner, so `perf_numbers` could not see them
+and the doc printed `0.0` as if measured. The regions are now bound to the
+accounting/graft/stream receipts where a receipt exists, and removed where none
+does. The general lesson: a generated region is a *citation*, and a citation with
+no source must fail rather than print.
+**F2 — inline sentinels again.** The same file had `BEGIN GENERATED` mid-line with
+`END` on its own line. The generator refused with `END ... without BEGIN`, and the
+whole court stopped at the first one, hiding F1. Eight regions were moved to
+own-line form. This is the third occurrence of the same mistake (S32 F3, S35 F1);
+it is the writing discipline that fails, not the tool.
+**F3 — a test that proved nothing.** The first version of the tiny state model set
+`linear_attn.norm.weight` to zero through a too-broad `endswith("norm.weight")`
+branch, so the DeltaNet output was multiplied by zero and a perturbed recurrent
+state changed the logits by exactly `0.0`. The isolation check caught it — an
+isolation test that cannot see the state is worthless — and the branch order was
+fixed. The `carry` criterion was then restated on argmax equality and cosine
+rather than on an absolute tolerance, because the full-sequence and incremental
+paths use different BLAS blocking and the absolute error is a dtype property, not
+a state difference.
+**F4 — a provenance court that found more than it was asked to.** Its first run
+returned three capability-registration violations. They are real (a declaration
+six minutes after its commit; two registrations committed after an
+instrument-generation receipt under them) and are now recorded as dated
+exceptions with the evidence rather than by weakening the rule.
+**F5 — the court caught this session's own new registration.** The distillation
+control's pre-registration declared `2026-11-17T00:45:00Z` and was committed at
+`00:32:22Z`; `prereg_provenance` failed it as `declared_not_after_commit` before
+any run existed. The declaration was corrected to the authoring minute, which is
+what the rule is for: a future-dated declaration is a false provenance claim even
+when nothing has been scored, and the same rule would have caught the anchor's if
+it had existed then.
+
+### What this entry does not claim
+
+- **No training, no evaluation, no serving.** The run order, the throughput
+  protocol and the sparse-training design are registrations.
+- **No measured teacher throughput.** The estimate stands, labelled as one, until
+  the first GPU job of the next session runs §4's protocol.
+- **No quality claim about the `-Base` checkpoint.** Its graph is audited and its
+  reference arithmetic is re-exercised; its capability score is the S36
+  scoreboard's, and the reference *vendor-parity* comparison has not been re-run on
+  `-Base` (`docs/FRONTIER-TARGET.md` §10.3).

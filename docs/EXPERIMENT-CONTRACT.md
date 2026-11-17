@@ -3151,6 +3151,18 @@ and `/tmp` limits; the host is never used to execute the analysis.
 
 # Experiment contract — T4: the K18 trade question (dated pre-registration, 2026-11-16, S35)
 
+**Status (2026-11-17, S38): parked, not withdrawn.** T4 is deferred with its
+registration intact — four arms, endpoints, decision rule, compute cap and kill
+condition unchanged below. The reason is scheduling and it is stated plainly:
+**the GPU budget is focused on WS19**, and T4 needs four training arms including a
+KL-matched bisection (`D_kl`) with a 268,435,456-token cap, which is more GPU time
+than every WS19 stage combined. Parking it is not a judgement about the question;
+T4 asks whether K18's task gain is Pareto-useful at matched inference cost, and
+nothing measured since S35 bears on that. Un-parking requires a dated amendment
+naming the session and the GPU hours, and the registration's `registered_utc` is
+unchanged so the `prereg_provenance` court still reads it as a valid
+pre-registration.
+
 **This is a new question, not a re-threshold.** `T3` is already registered
 (latent-geometry court), so this section takes the next free number. K18's
 verdict stands exactly as published: `X` did not clear the T2 conjunctive rule,

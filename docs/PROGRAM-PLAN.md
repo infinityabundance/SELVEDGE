@@ -157,11 +157,22 @@ now gates **only** stages 5–6, so the quality stage that needs no Rust executo
 `ACTIVE` and is the next measurement. WS20 (§25) registers **no** new experiments
 — it is a stop/keep register over existing P-numbers.
 
+**Parked at S38 (2026-11-17).** Two registered lines are **deferred, not
+withdrawn**, with their registrations kept intact: **T4** (`docs/EXPERIMENT-CONTRACT.md`,
+the K18 trade question) and the **capability-court discrimination endpoint**
+(`docs/CAPABILITY-COURT.md` §7.3, `docs/capability-preregistration-v5.json`).
+The reason is the same for both and is scheduling: the GPU budget is focused on
+WS19, and each needs either four training arms (T4) or an authoring pass plus a
+scoring run (the endpoint). They are listed here so a reader does not mistake
+their absence from the schedule for a verdict, and un-parking requires a dated
+amendment naming the session and the GPU hours.
+
 | tier | items | count |
 | --- | --- | ---: |
-| **ACTIVE** | P19.1 (stage 1: the anchor scoreboard, on the validated reference) | 1 |
-| **CANDIDATE** | P19.0 (accounting half done at S33; kernel half gates stages 5–6 only) · P19.2 grafted token-addressed memory with the row-scale question · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass state-conditioned memory (the one narrow novelty) · P19.5 NVMe serving (needs the kernel half) · P19.6 spend headroom and claim (needs the kernel half) | 6 |
+| **ACTIVE** | P19.1 (stage 1: the anchor scoreboard — **executed at S36**, receipts in `docs/FRONTIER-TARGET.md` §9) and P19.2 (stage 2: the next measurement, registration in `docs/WS19-EXECUTION-REGISTRATION.md`) | 2 |
+| **CANDIDATE** | P19.0 (accounting half done at S33; kernel half gates stages 5–6 only) · P19.3 retrofitted loop (a reproduction) · P19.4 per-pass state-conditioned memory (the one narrow novelty) · P19.5 NVMe serving (needs the kernel half) · P19.6 spend headroom and claim (needs the kernel half) | 5 |
 | **HYPOTHESIS** | — | 0 |
+| **PARKED** (outside the tiers) | T4 · the capability-court discrimination endpoint — registrations intact, GPU focus is WS19; see the note above | 2 |
 
 **Assignments that need a reason.**
 
@@ -5037,7 +5048,12 @@ the gap measurement only; (3) if neither shows a gap, the program's premise is
 recorded as unsupported and WS19 stops — that is the kill, and it is reached by
 two receipts, not by one null.
 **Kill.** as route (3), and only then.
-**Effort.** M. **Tier.** ACTIVE (the next measurement).
+**Status at S38.** **Executed at S36.** The scoreboard is `docs/FRONTIER-TARGET.md`
+§9: eight tasks on the `-Base` anchor and the 2B `-Base` reference, a positive gap
+on both registered families. The win condition was met, so the stage's acceptance
+evidence exists and the routes above are not needed.
+**Effort.** M. **Tier.** ACTIVE (measurement complete; the receipts are the stage's
+product).
 
 ### P19.2 — Stage 2: grafted token-addressed memory, and the scale question
 
@@ -5155,7 +5171,9 @@ stronger distribution. A miss on one scale is not a miss on the line.
 dense adapter *and* the training-free NGM at equal unique active, at **all three**
 row scales, with the placement route also measured. Then memory work at this size
 stops and the negative is published with those receipts.
-**Effort.** L per scale. **Tier.** CANDIDATE.
+**Effort.** L per scale. **Tier.** ACTIVE (the next measurement). The run order,
+the control that sets the bar and the sparse-row training design the large table
+needs are registered in `docs/WS19-EXECUTION-REGISTRATION.md`.
 
 ### P19.3 — Stage 3: retrofitted loop (a reproduction, not a novelty)
 
@@ -5450,6 +5468,16 @@ and for the 4B teacher at 8-bit:
 
 This is arithmetic over the measured dense-arm token rate and declared parameter
 ratios, **not a measured teacher throughput**; the first run must measure it.
+
+**The measurement protocol is registered (S38).** The number above stays labelled
+an estimate until the first GPU job of the next session executes
+`docs/WS19-EXECUTION-REGISTRATION.md` §4: one full teacher+student training step
+(teacher forward at 2B bf16, student forward and backward, loss, optimiser step)
+at the smoke's geometry, reporting **tokens/s, median and p95 step time, peak
+allocated and reserved VRAM, and a per-phase breakdown**, as a receipt under
+`results/stage2/throughput-<stamp>.json`. When that receipt exists, this section
+quotes it instead of an arithmetic estimate, and the stage-2 token budgets are
+converted to GPU-hours from it.
 
 **Residency**, 2B bf16 weights, GiB:
 
