@@ -585,10 +585,21 @@ class RoutedMemoryArm(torch.nn.Module):
         else:
             def read_path(indices):
                 return self._token_read(hidden_states, indices)
+        row_addresses = None
+        if self.core.context.ids is not None:
+            prefix = self.core.context.prefix()
+            if prefix.shape[0] == batch and prefix.shape[-1] >= length:
+                addresses = memory_module.support(
+                    prefix[:, -length:], self.core.sites[self.site_index],
+                    self.core.rows)
+                row_addresses = addresses.reshape(batch * length,
+                                                 memory_module.HEADS)
         execution = self.router.execute(
             hidden_states, metadata, read_path, cost=self.cost,
             threshold=self.threshold,
-            row_bytes_by_tier={"table": self.table_bytes})
+            row_addresses=row_addresses,
+            row_bytes_by_tier={"table": self.table_bytes},
+            default_tier="table")
         self.last_execution = execution
         return execution.contribution.to(hidden_states.dtype)
 
@@ -841,17 +852,25 @@ def cost_from_accounting(accounting: routing.ReadAccounting) -> dict:
             "cost must come from physical_read_accounting; the read-magnitude "
             "surrogate measured_cost(read) is not accepted")
     tokens = max(int(accounting.tokens), 1)
-    total_bytes = sum(int(value) for value in accounting.bytes_by_tier.values())
+    fetched_bytes = sum(int(value) for value in accounting.bytes_by_tier.values())
+    total_bytes = fetched_bytes + int(accounting.bytes_from_cache)
     return {
         "source": "physical_read_accounting",
         "tokens": tokens,
+        "selected_tokens": int(accounting.selected_tokens),
+        "heads_per_token": int(accounting.heads),
         "requests": int(accounting.requests),
+        "requests_per_token": accounting.requests / tokens,
         "unique_rows_requested": int(accounting.unique_rows_requested),
         "unique_rows_per_token": accounting.unique_rows_requested / tokens,
         "bytes_by_tier": dict(accounting.bytes_by_tier),
+        "bytes_fetched_total": fetched_bytes,
+        "bytes_fetched_per_token": fetched_bytes / tokens,
+        "bytes_from_cache": int(accounting.bytes_from_cache),
         "bytes_total": total_bytes,
         "bytes_per_token": total_bytes / tokens,
         "cache_hits": int(accounting.cache_hits),
+        "cache_misses": int(accounting.cache_misses),
         "surrogate_used": False,
         "basis": accounting.basis,
     }
@@ -877,6 +896,7 @@ def selection_report(router: routing.PreReadUtilityRouter,
     gate_all = []
     rows_selected = 0
     bytes_by_tier: dict[str, int] = {}
+    bytes_from_cache = 0
     cache_hits = 0
     for example in examples:
         mask, predicted, gate = router.select(
@@ -889,6 +909,7 @@ def selection_report(router: routing.PreReadUtilityRouter,
             mask, row_bytes_by_tier=row_bytes_by_tier)
         rows_selected += accounting.requests
         cache_hits += accounting.cache_hits
+        bytes_from_cache += accounting.bytes_from_cache
         for tier, value in accounting.bytes_by_tier.items():
             bytes_by_tier[tier] = bytes_by_tier.get(tier, 0) + int(value)
         if audit_mask:
@@ -909,12 +930,14 @@ def selection_report(router: routing.PreReadUtilityRouter,
     predicted_cat = torch.cat(predicted_all) if predicted_all else torch.zeros(0)
     gate_cat = torch.cat(gate_all) if gate_all else torch.zeros(0)
     accounting = routing.ReadAccounting(
-        tokens=total_tokens, requests=rows_selected,
+        tokens=total_tokens, selected_tokens=selected_tokens, heads=1,
+        requests=rows_selected,
         unique_rows_requested=rows_selected,
-        bytes_by_tier=bytes_by_tier,
+        bytes_by_tier=bytes_by_tier, bytes_from_cache=bytes_from_cache,
         cache_hits=cache_hits, cache_misses=rows_selected - cache_hits,
         basis="sum over prompts; one row per selected token "
-              "(store row ids not supplied to the selection audit)")
+              "(memory row addresses not supplied to the selection audit; "
+              "the executed path charges the memory's 8 rows per token)")
     return {
         "prompts": len(examples),
         "tokens": total_tokens,
@@ -930,9 +953,12 @@ def selection_report(router: routing.PreReadUtilityRouter,
         "gate_max": float(gate_cat.max()) if gate_cat.numel() else None,
         "accounting": {
             "tokens": accounting.tokens,
+            "selected_tokens": accounting.selected_tokens,
+            "heads": accounting.heads,
             "requests": accounting.requests,
             "unique_rows_requested": accounting.unique_rows_requested,
             "bytes_by_tier": accounting.bytes_by_tier,
+            "bytes_from_cache": accounting.bytes_from_cache,
             "cache_hits": accounting.cache_hits,
             "cache_misses": accounting.cache_misses,
             "basis": accounting.basis,

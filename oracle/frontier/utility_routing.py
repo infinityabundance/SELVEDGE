@@ -236,73 +236,165 @@ def _selection_mask(mask: torch.Tensor, hidden_states: torch.Tensor) -> torch.Te
 class ReadAccounting:
     """Physical-read accounting for one routed batch.
 
-    This is the interface the store path must fill once it is wired; nothing
-    here infers a price or a latency. `measured_cost(read)` is still a surrogate
-    measured on the *dense* read tensor, not a byte count from a real store.
+    The memory reads `HEADS` rows per selected token (four bigram and four
+    trigram addresses), not one. `requests` is therefore
+    `selected_tokens * heads`; `unique_rows_requested` is the number of
+    *distinct* addresses across every selected token and head. Bytes are charged
+    from each row's actual source: a cache hit is counted in
+    `bytes_from_cache`, a fetch is counted in `bytes_by_tier` for the tier the
+    caller assigns to that address. No price per byte and no latency is
+    inferred here; `measured_cost(read)` remains a separate surrogate.
     """
 
     tokens: int
+    selected_tokens: int
+    heads: int
     requests: int
     unique_rows_requested: int
     bytes_by_tier: dict[str, int]
+    bytes_from_cache: int
     cache_hits: int
     cache_misses: int
     basis: str
 
 
+def _address_grid(selection_mask: torch.Tensor,
+                   row_addresses: torch.Tensor | None
+                   ) -> tuple[torch.Tensor, torch.Tensor | None, int]:
+    """Return `(flat_mask, selected_addresses[selected, heads], heads)`.
+
+    `row_addresses` may be `[tokens]`, `[tokens, heads]`, or the token grid plus
+    a trailing head axis (`[..., tokens, heads]`). The memory's own
+    `support()` returns `[B, T, HEADS]`, so the last form is the intended one.
+    """
+    flat = selection_mask.reshape(-1)
+    if row_addresses is None:
+        return flat, None, 1
+    if not isinstance(row_addresses, torch.Tensor):
+        row_addresses = torch.as_tensor(row_addresses)
+    if row_addresses.is_floating_point() or row_addresses.dtype == torch.bool:
+        raise ValueError("row addresses must be integer tensors")
+    if row_addresses.ndim == 1:
+        grid = row_addresses.reshape(-1, 1)
+    else:
+        heads = int(row_addresses.shape[-1])
+        if heads <= 0:
+            raise ValueError("row addresses must have a non-empty head axis")
+        grid = row_addresses.reshape(-1, heads)
+    if grid.shape[0] != flat.numel():
+        raise ValueError(
+            "row addresses must cover every token: "
+            f"{grid.shape[0]} != {flat.numel()}")
+    if grid.numel() and int(grid.min()) < 0:
+        raise ValueError("row addresses must be non-negative")
+    return flat, grid[flat], int(grid.shape[-1])
+
+
 def physical_read_accounting(
         selection_mask: torch.Tensor,
+        row_addresses: torch.Tensor | None = None,
         row_bytes_by_tier: Mapping[str, int] | None = None,
-        cache_hits: int = 0,
-        row_ids: torch.Tensor | None = None) -> ReadAccounting:
-    """Count the rows a sparse read would request and the bytes per tier.
+        row_tier_by_address: Mapping[int, str] | None = None,
+        cached_addresses=None,
+        default_tier: str | None = None) -> ReadAccounting:
+    """Count row requests and charge bytes from each row's actual source.
 
-    `selection_mask` is the boolean mask returned by the pre-read stage. The
-    count is over *unique* memory rows: when `row_ids` maps each selected token
-    to its store row, tokens that share a row are counted once. Without
-    `row_ids` the mapping is unavailable and the conservative assumption is one
-    row per selected token (reported in `basis`).
+    `selection_mask` is the boolean mask returned by the pre-read stage.
+    `row_addresses` is the address of every head read for every token, shaped
+    `[tokens, heads]` (a 1-D tensor means one head). Addresses are deduplicated
+    globally: two heads or two tokens that address the same row fetch it once.
 
-    `cache_hits` must come from the store; it is not derivable from the mask.
-    `bytes_by_tier` is `unique rows * row_bytes` for every tier the caller names
-    (e.g. hot/warm/cold), so a tier with a zero byte size is not hidden.
+    `row_bytes_by_tier` gives the per-row byte size of each named tier.
+    `row_tier_by_address` assigns a tier to an address; when the table is a
+    single tier it can be omitted. `cached_addresses` is the set of addresses
+    the store reports as resident, so a cache hit is charged to
+    `bytes_from_cache` instead of a fetch tier. Nothing here invents a tier or a
+    cache state: a multi-tier table without an address-to-tier mapping, or a
+    requested address with no tier, fails closed.
+
+    Without `row_addresses` the mapping is unavailable and the conservative
+    assumption is one row per selected token (reported in `basis`).
     """
     if not isinstance(selection_mask, torch.Tensor):
         raise ValueError("selection_mask must be a torch.Tensor")
     if selection_mask.dtype != torch.bool:
         raise ValueError("selection_mask must be bool")
-    flat = selection_mask.reshape(-1)
-    requests = int(flat.sum().item())
-    if row_ids is not None:
-        rows = torch.as_tensor(row_ids).reshape(-1).to(flat.device)
-        if rows.numel() != flat.numel():
-            raise ValueError(
-                "row_ids must have one entry per token ("
-                f"{rows.numel()} != {flat.numel()})")
-        unique_rows = int(torch.unique(rows[flat]).numel()) if requests else 0
-        uniqueness = "unique store rows from row_ids"
-    else:
-        unique_rows = requests
-        uniqueness = "one row per selected token (row_ids not supplied)"
-    if not isinstance(cache_hits, int) or cache_hits < 0:
-        raise ValueError("cache_hits must be a non-negative int")
-    if cache_hits > requests:
-        raise ValueError("cache_hits cannot exceed requests")
-    bytes_by_tier: dict[str, int] = {}
+    flat, addresses, heads = _address_grid(selection_mask, row_addresses)
+    selected_tokens = int(flat.sum().item())
+    requests = selected_tokens * heads
+
+    sizes: dict[str, int] = {}
     for tier, size in sorted((row_bytes_by_tier or {}).items()):
         if not isinstance(size, int) or size < 0:
             raise ValueError(f"byte size for tier {tier!r} must be a non-negative int")
-        bytes_by_tier[tier] = unique_rows * size
+        sizes[str(tier)] = size
+
+    if cached_addresses is None:
+        cached: set[int] = set()
+    else:
+        if isinstance(cached_addresses, torch.Tensor):
+            if cached_addresses.is_floating_point() or cached_addresses.dtype == torch.bool:
+                raise ValueError("cached_addresses must be integer addresses")
+            cached = {int(value) for value in cached_addresses.reshape(-1).tolist()}
+        else:
+            cached = {int(value) for value in cached_addresses}
+        if any(value < 0 for value in cached):
+            raise ValueError("cached_addresses must be non-negative")
+
+    if addresses is None:
+        unique = list(range(selected_tokens))
+        uniqueness = "one row per selected token (row addresses not supplied)"
+    else:
+        unique = sorted({int(value) for value in addresses.reshape(-1).tolist()})
+        uniqueness = (f"unique store rows from {heads} row addresses per token")
+
+    if row_tier_by_address is not None:
+        tier_map = {int(key): str(value) for key, value in row_tier_by_address.items()}
+    else:
+        tier_map = None
+
+    def tier_of(address: int) -> str | None:
+        if not sizes:
+            return None
+        if tier_map is not None and address in tier_map:
+            return tier_map[address]
+        if default_tier is not None:
+            return str(default_tier)
+        if len(sizes) == 1:
+            return next(iter(sizes))
+        raise ValueError(
+            "a multi-tier table needs row_tier_by_address or default_tier; "
+            f"address {address} has no assigned tier")
+
+    bytes_by_tier: dict[str, int] = {}
+    bytes_from_cache = 0
+    cache_hits = 0
+    for address in unique:
+        tier = tier_of(address)
+        if tier is None:
+            continue
+        if tier not in sizes:
+            raise ValueError(f"address {address} names tier {tier!r}, which has no byte size")
+        size = sizes[tier]
+        if address in cached:
+            cache_hits += 1
+            bytes_from_cache += size
+        else:
+            bytes_by_tier[tier] = bytes_by_tier.get(tier, 0) + size
+    cache_misses = len(unique) - cache_hits
     basis = (
         f"logical selection; {uniqueness}; "
-        + ("tier byte sizes supplied" if bytes_by_tier
+        + ("tier byte sizes supplied and charged per row source" if sizes
            else "tier byte sizes not supplied")
-        + "; measured_cost(read) remains a surrogate until the store path is "
-          "wired and reports real bytes and cache state")
+        + ("; cache residency from the store" if cached
+           else "; no addresses reported as resident in cache")
+        + "; per-row latency and cache-read cost are not modelled; "
+          "measured_cost(read) remains a surrogate")
     return ReadAccounting(
-        tokens=int(flat.numel()), requests=requests,
-        unique_rows_requested=unique_rows, bytes_by_tier=bytes_by_tier,
-        cache_hits=cache_hits, cache_misses=requests - cache_hits, basis=basis)
+        tokens=int(flat.numel()), selected_tokens=selected_tokens, heads=heads,
+        requests=requests, unique_rows_requested=len(unique),
+        bytes_by_tier=bytes_by_tier, bytes_from_cache=bytes_from_cache,
+        cache_hits=cache_hits, cache_misses=cache_misses, basis=basis)
 
 
 @dataclass(frozen=True)
@@ -393,9 +485,11 @@ class TwoStageUtilityRouter(nn.Module):
                 read_path,
                 cost: torch.Tensor | float = 0.0,
                 threshold: float = DEFAULT_PRE_READ_THRESHOLD,
-                row_ids: torch.Tensor | None = None,
+                row_addresses: torch.Tensor | None = None,
                 row_bytes_by_tier: Mapping[str, int] | None = None,
-                cache_hits: int = 0) -> ReadExecution:
+                row_tier_by_address: Mapping[int, str] | None = None,
+                cached_addresses=None,
+                default_tier: str | None = None) -> ReadExecution:
         """Select, fetch only the selected rows, then apply the two stages.
 
         `read_path(indices)` is the store call: it receives a 1-D `LongTensor` of
@@ -425,8 +519,11 @@ class TwoStageUtilityRouter(nn.Module):
                                            dtype=flat_read.dtype))
         contribution = self.forward(hidden_states, metadata, read, mask, cost)
         accounting = physical_read_accounting(
-            mask, row_bytes_by_tier=row_bytes_by_tier, cache_hits=cache_hits,
-            row_ids=row_ids)
+            mask, row_addresses=row_addresses,
+            row_bytes_by_tier=row_bytes_by_tier,
+            row_tier_by_address=row_tier_by_address,
+            cached_addresses=cached_addresses,
+            default_tier=default_tier)
         self.last_requested_indices = indices.detach().to("cpu")
         return ReadExecution(
             contribution=contribution, selection_mask=mask,

@@ -329,17 +329,21 @@ def test_mask_enforcement_zero_contribution_and_zero_requests():
 
 def test_physical_read_accounting_counts_unique_rows_and_tier_bytes():
     mask = torch.tensor([True, False, True, True])
-    row_ids = torch.tensor([0, 0, 0, 1])
+    addresses = torch.tensor([0, 0, 0, 1])
     accounting = routing.physical_read_accounting(
-        mask, row_bytes_by_tier={"table": 16}, cache_hits=1, row_ids=row_ids)
+        mask, row_addresses=addresses, row_bytes_by_tier={"table": 16},
+        cached_addresses={0})
     assert accounting.tokens == 4
+    assert accounting.selected_tokens == 3
     assert accounting.requests == 3
     assert accounting.unique_rows_requested == 2
-    assert accounting.bytes_by_tier == {"table": 32}
-    assert accounting.cache_misses == 2
+    assert accounting.bytes_by_tier == {"table": 16}  # address 1 was fetched
+    assert accounting.bytes_from_cache == 16           # address 0 hit
+    assert accounting.cache_hits == 1
+    assert accounting.cache_misses == 1
 
     with pytest.raises(ValueError):
-        routing.physical_read_accounting(mask, cache_hits=4)
+        routing.physical_read_accounting(mask, cached_addresses={-1})
     with pytest.raises(ValueError):
         routing.physical_read_accounting(mask, row_bytes_by_tier={"table": -1})
     # a float mask would let a rejected token receive a scaled contribution
@@ -349,6 +353,7 @@ def test_physical_read_accounting_counts_unique_rows_and_tier_bytes():
     cost = runner.cost_from_accounting(accounting)
     assert cost["source"] == "physical_read_accounting"
     assert cost["surrogate_used"] is False
+    assert cost["bytes_total"] == 32
     assert cost["bytes_per_token"] == pytest.approx(32 / 4)
     with pytest.raises(TypeError):
         runner.cost_from_accounting(None)
