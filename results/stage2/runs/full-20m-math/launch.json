@@ -1,0 +1,49 @@
+{
+  "amendment": "docs/ws19-full-distillation-amendment-vram-measured-preregistration-v1.json",
+  "container": "selvedge-oracle-court-20261117T080142Z-ebfab1",
+  "created_utc": "2026-11-17T08:02:59Z",
+  "invocation_id": "f6cda3fb7c22452cac16a307f840cbf8",
+  "limits": {
+    "container_memory_bytes": 10737418240,
+    "container_memory_swap_bytes": 10737418240,
+    "container_nano_cpus": 8000000000,
+    "container_pids_limit": 1024,
+    "sizing": "10 GiB = 1.55x the measured 6.449 GiB CPU peak at a 12 GiB bound that was not reached",
+    "smoke_cgroup_peak_bytes": 6924623872,
+    "smoke_gpu_peak_allocated_gib": 11.42885684967041,
+    "systemd_memory_max_bytes": 10737418240,
+    "systemd_memory_swap_max_bytes": 10737418240,
+    "vram_limit_gib": 12.5
+  },
+  "main_pid": 4126028,
+  "measured": {
+    "eta_hours": 3.0077178038847685,
+    "eta_seconds": 10827.784093985167,
+    "eta_utc_approx": "2026-11-17T11:02:00Z",
+    "tokens_per_second_steady": 1847.1
+  },
+  "reservation": {
+    "host_mem_available_gib_at_launch": 79,
+    "other_gpu_jobs": "none; the S41 anchored-harness pass had exited",
+    "other_memory_heavy_jobs": "none"
+  },
+  "resumable": "rerun scripts/s43_fulldistill_math.sh with SELVEDGE_MEM=10g; it adds --resume latest and train.py verifies the config and stream hashes",
+  "run_dir": "results/stage2/runs/full-20m-math",
+  "schedule": {
+    "ckpt_every": 1000,
+    "grad_accum": 4,
+    "micro_batch": 1,
+    "realised_tokens": 19998720,
+    "seq_len": 512,
+    "steps": 9765,
+    "tokens": 20000000
+  },
+  "schema": "selvedge/s43-fulldistill-launch/v1",
+  "stream": {
+    "manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "mix": "57% math / 43% general",
+    "sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+    "tokens": 20000000
+  },
+  "unit": "selvedge-fulldistill-math-20261117T080200Z.service"
+}

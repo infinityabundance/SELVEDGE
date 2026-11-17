@@ -4195,3 +4195,43 @@ measurement, and the 2,049-element cost. The full oracle suite is **576 passed**
   and tested; neither has been trained for a score.
 - **No claim that NuminaMath-CoT equals Nemotron-CC-Math.** It is a declared
   substitute for an unavailable gated dataset.
+
+### The full-arm smoke and the 20M launch
+
+The anchored-harness pass exited at 08:00Z (the four remaining arms completed
+and their receipts are under `results/stage2/eval/`). The GPU was then free.
+
+The 20-step smoke ran on the math-weighted stream. The first attempt used an
+8 GiB container bound and measured `memory.events.max = 3,794` with no OOM kill:
+the CPU side was being held against the limit, so that peak is not the
+workload's peak. The same 20 steps were rerun at a 12 GiB bound, which measured
+**6.449 GiB** cgroup peak, `max = 0`, `oom = 0`. The GPU peak was
+**11.429 GiB allocated / 11.672 GiB reserved** under the 12.5 GiB limit, so no
+micro-batch, accumulation or sequence reduction was needed. The modelled
+activation term was replaced by the measured **0.6227 GiB** (0.096 GiB above the
+modelled upper bound). Steady throughput was **1,847 tok/s**, ETA **3.0 hours**.
+
+Stochastic rounding's measured bitwise outcome: at peak LR (step 2, `1e-4`) it
+left **17.26%** of the 498,113,344 trainable elements unchanged against 16.86%
+for nearest-even; at the cosine floor (step 20, `1.07e-5`) it left **82.99%**
+unchanged against 88.63% for nearest-even, i.e. it moved 17.01% of the model
+where nearest-even would move 11.37%. The sub-half-ulp fraction at the floor was
+88.62%. The smoke's CE rose to 17.35 at step 6 because the smoke truncates
+warmup to 2 steps; the launch's 200-step warmup is the registered schedule and
+is not changed on the strength of a 20-step curve.
+
+Launch: `selvedge-fulldistill-math-20261117T080200Z.service` under
+`systemd-run --user --collect`, with `MemoryMax=MemorySwapMax=10 GiB`,
+`TasksMax=1024`, `CPUQuota=800%`, and the court's own container limits verified
+equal. 10 GiB is 1.55x the measured CPU peak. The run is resumable
+(`--resume latest` verifies the config and stream hashes) and checkpoints every
+1,000 steps, two newest plus latest. Receipts:
+`results/stage2/runs/full-20m-math/{manifest,launch}.json`; the run itself is
+in flight and has no final receipt or score at the time of this entry.
+
+### What this continuation does not claim
+
+- **No 20M result.** The run is in flight; its first 1,000-step log is the next
+  evidence.
+- **No score for any new arm.** The 20M full-distill arm has no checkpoint to
+  score yet, and the corrective arms have not been trained.
