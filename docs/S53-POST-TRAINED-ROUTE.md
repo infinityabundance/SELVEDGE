@@ -44,7 +44,13 @@ own tokenizer and chat template.
    frozen, 498,113,344 trainable and 752,393,024 unique active; corrected
    Adam8bit block 256 stochastic rounding, lr 1e-5, cosine, warmup 200, 20M
    tokens. **Win:** greedy beats post-trained 0.8B on both tasks with paired 95%
-   item-level intervals above zero.
+   item-level intervals above zero. The S54 stage-2 amendment supersedes the
+   supervision and win clauses: **failed** rollouts are included when the 2B
+   teacher produces a verified continuation, and the correction is applied to
+   the first-error suffix rather than only to correct rollouts; the win also
+   requires MMLU and MMLU-Pro to stay within an explicit 1.0-point
+   general-capability bound. See
+   `docs/ws19-post-trained-route-stage2-amendment-s54-v1.json`.
 3. **Loop layers 8–15 R times.** Zero-init re-entry gate and zero-init per-pass
    depth-LoRA, so R=1 is bit-identical to stage 2. The teacher is stage-2 at R=1
    with privileged context = a solution that is both the maj@16 consensus and
@@ -52,6 +58,10 @@ own tokenizer and chat template.
    rollouts; per-token reverse KL. **Win:** greedy R=4 beats stage-2 greedy on a
    paired interval, closes at least two thirds of the stage-2 greedy→maj@16 gap
    on both tasks, and uses at most 0.30 of the stage-2 maj@16 FLOPs per answer.
+   The S54 stage-3 amendment makes the accuracy clause the evidence and keeps the
+   FLOPs bound as a guard: four greedy passes against sixteen sampled answers is
+   near-automatic arithmetic, not a result. See
+   `docs/ws19-post-trained-route-stage3-amendment-s54-v1.json`.
 4. **Confirm.** Three seeds of the winning recipe, the Rust executed-set audit,
    greedy + maj@16 with FLOPs per answer against post-trained 0.8B under the same
    protocol. No seed may reverse the stage-3 direction.
@@ -68,4 +78,18 @@ claim requires an executed-set FLOPs ratio, not a parameter-count comparison.
 
 No stage has run. The vLLM 0.34.0 recipe page names the 397B-A17B model, so a
 stage-1 smoke must confirm the 0.8B/2B chat checkpoints on this host before any
-score. The registration records this and the other open items.
+score. **S54 note:** vLLM 0.34.0 is not installed in the offline eval image, so
+the stage-1 measurement uses the pinned transformers stack and the receipt
+records `engine = transformers`, `vllm_available = false`. A vLLM number is not
+claimed.
+
+## S54 pre-run amendments
+
+- Stage 2: verified teacher continuations and first-error corrective
+  supervision on failed rollouts, plus a general-capability preservation bound
+  in the win (`docs/ws19-post-trained-route-stage2-amendment-s54-v1.json`).
+- Stage 3: the accuracy clause is the evidence; the FLOPs ratio is a guard
+  (`docs/ws19-post-trained-route-stage3-amendment-s54-v1.json`).
+- The P19.9 screen was repaired before any run: the accuracy and byte controls
+  are separated, the ledger is request-based with a cache model, the holdout is
+  expanded and the statistics are prompt-level (`docs/S52-REPAIR-S54.md`).

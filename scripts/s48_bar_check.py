@@ -92,8 +92,13 @@ def main(argv: list[str]) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-dir", default="results/stage2/runs/full-20m-math")
+    parser.add_argument("--lr", type=float, default=None,
+                        help="registered learning rate of this run (the S50 bar "
+                             "is 1e-5; default keeps the S48 1e-4 expectation)")
     parser.add_argument("--out", default=None)
     args = parser.parse_args(argv)
+    if args.lr is not None:
+        EXPECTED["lr"] = args.lr
 
     run_dir = os.path.join(REPO, args.run_dir)
     receipt_path = os.path.join(run_dir, "receipt.json")

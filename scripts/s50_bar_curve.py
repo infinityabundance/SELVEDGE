@@ -57,6 +57,10 @@ CE_LAST_SHARE_MIN = 0.10
 #: meaningful "last interval". The interval must span at least this many tokens;
 #: the registered bar has a 5,001,216-token m15-to-m20 gap.
 MIN_LAST_INTERVAL_TOKENS = 1_000_000
+REPORT = "results/REPORT.md"
+SENTINEL = "report-s50-bar-curve"
+BEGIN = "<!-- BEGIN GENERATED: %s -->" % SENTINEL
+END = "<!-- END GENERATED: %s -->" % SENTINEL
 
 
 def _sha256(path: str) -> str:
@@ -245,6 +249,144 @@ def _extension_decision(fixed: dict, final_math: float,
             "justified": still_paying and harness_confirms}
 
 
+def _pct(value: float | None) -> str:
+    return "n/a" if value is None else f"{value * 100:.2f}"
+
+
+def _row(label: str, step, tokens, tasks, knowledge, math_family, seq=True):
+    def score(name):
+        entry = tasks.get(name) or {}
+        value = entry.get("score")
+        error = entry.get("stderr")
+        if value is None:
+            return "n/a"
+        return f"{_pct(value)} ± {_pct(error)}"
+
+    def seq_text(name):
+        if not seq:
+            return "n/a"
+        entry = (tasks.get(name) or {}).get("sequence_correctness") or {}
+        accuracy = entry.get("accuracy")
+        items = entry.get("items")
+        return "n/a" if accuracy is None else f"{_pct(accuracy)} ({items})"
+
+    return (f"| `{label}` | {step if step is not None else '—'} | "
+            f"{tokens if tokens is not None else '—'} | {score('mmlu')} | "
+            f"{score('mmlu_pro')} | {score('gsm8k')} | "
+            f"{score('minerva_math500')} | "
+            f"{_pct(knowledge.get('mean'))} ± "
+            f"{_pct(knowledge.get('combined_stderr'))} | "
+            f"{_pct(math_family.get('mean'))} ± "
+            f"{_pct(math_family.get('combined_stderr'))} | "
+            f"{seq_text('gsm8k')} | {seq_text('minerva_math500')} |")
+
+
+def render(payload: dict) -> str:
+    extension = payload["extension"]
+    fixed = payload["curve"]["fixed_batch"]
+    lines = [
+        "### The corrected bar: milestone scores, retention and the fixed-batch trend",
+        "",
+        "| milestone | step | tokens | MMLU | MMLU-Pro | GSM8K | MATH-500 | knowledge | math | seq GSM8K (items) | seq MATH-500 (items) |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    base = payload["base"]
+    lines.append(_row("base", None, None, base["tasks"], base["knowledge"],
+                      base["math"], seq=False))
+    for row in payload["milestones"]:
+        lines.append(_row(row["name"], row["step"], row["tokens_seen"],
+                          row["tasks"], row["knowledge"], row["math"]))
+    lines += [
+        "",
+        "| fixed batch | checkpoint | tokens | CE | KL |",
+        "| --- | --- | ---: | ---: | ---: |",
+        "| init | — | 0 | "
+        f"{fixed['init']['ce']:.6f} | {fixed['init']['kl']:.6f} |",
+    ]
+    for point in fixed["checkpoints"]:
+        lines.append(f"| {fixed['batch_count']}x{fixed['seq_len']} | "
+                     f"`{point['checkpoint']}` | {point['tokens_seen']} | "
+                     f"{point['ce']:.6f} | {point['kl']:.6f} |")
+    slope = fixed["ce_slope_per_million_tokens"]
+    kl_slope = fixed["kl_slope_per_million_tokens"]
+    share = fixed["ce_last_share"]
+    final = payload["milestones"][2]
+    delta = final["delta_vs_base"]
+    family = final["family_delta_vs_base"]
+    lines += [
+        "",
+        ("**Fixed-batch trend (every saved checkpoint, identical batches):** "
+         f"CE slope {slope:+.6f} per 1M tokens; KL slope "
+         f"{kl_slope:+.6f}; last CE interval "
+         f"{fixed['ce_last_interval']:+.6f} over "
+         f"{fixed['ce_last_interval_tokens']} tokens "
+         f"({fixed['ce_last_interval_from']} to "
+         f"{fixed['ce_last_interval_to']}); last-interval share "
+         f"{share:.4f}" if share is not None else
+         "**Fixed-batch trend (every saved checkpoint, identical batches):** "
+         f"CE slope {slope:+.6f} per 1M tokens; KL slope "
+         f"{kl_slope:+.6f}; last CE interval "
+         f"{fixed['ce_last_interval']:+.6f} over "
+         f"{fixed['ce_last_interval_tokens']} tokens; no total CE drop, so no "
+         "last-interval share"),
+        "",
+        (f"**Did the corrected bar improve math?** GSM8K is "
+         f"{_pct(delta['gsm8k'])} points against base, MATH-500 is "
+         f"{_pct(delta['minerva_math500'])} points, and the math family is "
+         f"{_pct(family['math'])} points. The answer is positive on GSM8K "
+         "only; the family is still below base."),
+        "",
+        (f"**Did it retain general capability?** MMLU is "
+         f"{_pct(delta['mmlu'])} points against base, MMLU-Pro is "
+         f"{_pct(delta['mmlu_pro'])} points, and the knowledge family is "
+         f"{_pct(family['knowledge'])} points. The collapse of the S48 bar is "
+         "gone, but the corrected bar has not recovered base."),
+        "",
+        (f"**Is a 100M extension justified by the fixed-batch trend?** The "
+         f"fixed-batch CE slope is {slope:+.6f} per 1M tokens and the last "
+         f"interval carries "
+         f"{(share * 100 if share is not None else float('nan')):.2f}% of the "
+         "total CE drop, so the optimiser is still paying off. The registered "
+         "decision also requires the harness endpoints not to contradict that "
+         f"reading; they do (harness_confirms={str(extension['harness_confirms']).lower()}), "
+         f"so the registered answer is justified={str(extension['justified']).lower()}. "
+         "The trend supports more optimisation; it does not support a "
+         "capability claim at 100M until the MATH-500 endpoint moves."),
+        "",
+        f"**100M extension justified:** {str(extension['justified']).lower()}. "
+        f"Still paying off: {str(extension['still_paying_off']).lower()}; "
+        f"harness endpoints confirm: {str(extension['harness_confirms']).lower()}.",
+        "",
+        (f"**Math family:** base {_pct(base['math']['mean'])}; m5 "
+         f"{_pct(payload['milestones'][0]['math']['mean'])}; m10 "
+         f"{_pct(payload['milestones'][1]['math']['mean'])}; m20 "
+         f"{_pct(payload['milestones'][2]['math']['mean'])}. The m20-to-base "
+         f"math delta is {_pct(payload['milestones'][2]['family_delta_vs_base']['math'])} "
+         "points."),
+        "",
+        ("Every number above is emitted by `scripts/s50_bar_curve.py` from the "
+         "milestone receipts, `results/stage2/eval/base/eval.json` and the "
+         "fixed-batch receipt named in the curve receipt. The older OLS rule "
+         "over three harness points is retained in the receipt, labelled "
+         "superseded; it does not decide the extension."),
+    ]
+    return "\n".join(lines)
+
+
+def write_region(body: str, path: str = REPORT) -> bool:
+    doc = os.path.join(ROOT, path)
+    text = open(doc, encoding="utf-8").read()
+    start, end = text.find(BEGIN), text.find(END)
+    if start < 0 or end < 0 or end < start:
+        raise SystemExit(f"s50-bar-curve: {path} has no {SENTINEL} region")
+    updated = text[:start + len(BEGIN)] + "\n" + body + "\n" + text[end:]
+    if updated == text:
+        return False
+    with open(doc, "w", encoding="utf-8") as handle:
+        handle.write(updated)
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default=None)
@@ -255,6 +397,10 @@ def main() -> int:
     parser.add_argument("--fixed-batch-receipt", default=None,
                         help="selvedge/s50-fixed-batch-kl/v1 receipt over "
                              "every saved checkpoint; required by the S53 rule")
+    parser.add_argument("--report", default=REPORT,
+                        help="tracked document owning the generated region")
+    parser.add_argument("--no-report", action="store_true",
+                        help="write the JSON receipt without updating the region")
     args = parser.parse_args()
     run_dir = args.run_dir
     eval_root = args.eval_root
@@ -399,6 +545,10 @@ def main() -> int:
     with open(output, "w", encoding="utf-8") as handle:
         json.dump(receipt, handle, indent=2, sort_keys=True)
         handle.write("\n")
+    if not args.no_report:
+        changed = write_region(render(receipt), args.report)
+        print(f"s50-bar-curve: region {SENTINEL} "
+              f"{'updated' if changed else 'already current'}")
     relative = os.path.relpath(output, ROOT)
     print(f"s50-bar-curve: {relative}")
     print(f"{'milestone':>9} {'tokens':>12} {'MMLU':>7} {'MMLU-Pro':>9} "

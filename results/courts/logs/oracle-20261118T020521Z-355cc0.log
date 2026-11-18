@@ -1,0 +1,31 @@
+ok   receipt schema: selvedge/stage2-train/v1
+ok   config hash recomputes: {'recorded': '8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5', 'recomputed': '8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5'}
+ok   config arm: {'expected': 'full', 'actual': 'full'}
+ok   config tokens: {'expected': 20000000, 'actual': 20000000}
+ok   config tokens_per_step: {'expected': 2048, 'actual': 2048}
+ok   config steps: {'expected': 9765, 'actual': 9765}
+ok   config kl_weight: {'expected': 0.5, 'actual': 0.5}
+ok   config temperature: {'expected': 2.0, 'actual': 2.0}
+ok   config lr: {'expected': 1e-05, 'actual': 1e-05}
+ok   config seed: {'expected': 0, 'actual': 0}
+ok   config schedule: {'expected': 'cosine', 'actual': 'cosine'}
+ok   config optimizer: {'expected': 'adam8bit', 'actual': 'adam8bit'}
+ok   config seq_len: {'expected': 512, 'actual': 512}
+ok   config micro_batch: {'expected': 1, 'actual': 1}
+ok   config grad_accum: {'expected': 4, 'actual': 4}
+ok   steps x tokens_per_step == tokens seen: {'product': 19998720, 'tokens_seen_total': 19998720, 'tokens_trained': 19998720}
+ok   realised tokens do not exceed the declared budget: {'product': 19998720, 'declared': 20000000}
+ok   objective is the registered CE+KL: ce_kl
+ok   final checkpoint exists: results/stage2/runs/s50-bar-20m-lr1e-5/ckpt-009765.pt
+ok   checkpoint SHA-256 matches the receipt: {'receipt': '8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32', 'file': '8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32'}
+ok   latest.pt carries the final payload: {'latest': '7ef7149ab46a2bd700f3c8c404a6d70b8b5dde58f33dc369cd407d384a536709', 'final': '7ef7149ab46a2bd700f3c8c404a6d70b8b5dde58f33dc369cd407d384a536709'}
+ok   payload step: {'payload': 9765, 'config': 9765}
+ok   payload tokens_seen == tokens_trained: {'payload': 19998720, 'receipt': 19998720}
+ok   payload config hash: {'payload': '8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5', 'config': '8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5'}
+ok   payload stream hash == config stream hash: {'payload': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56', 'config': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56'}
+ok   payload arm: full
+ok   launch stream tensor hash == config stream hash: {'launch': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56', 'config': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56'}
+ok   stream file SHA-256 == manifest: {'file': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56', 'manifest': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56'}
+ok   stream file SHA-256 == config: {'file': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56', 'config': '9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56'}
+ok   log is complete: {'lines': 9765, 'last_step': 9765, 'steps': 9765}
+s48-bar: VERIFIED receipt=results/stage2/s48-bar-verify-20261118T020529Z.json

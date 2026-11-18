@@ -58,6 +58,26 @@ def _git_revision() -> str:
         return "unknown"
 
 
+def _cgroup_memory() -> dict:
+    report = {}
+    for name in ("memory.peak", "memory.max", "memory.swap.peak"):
+        try:
+            with open(os.path.join("/sys/fs/cgroup", name), encoding="utf-8") as handle:
+                report[name.replace(".", "_")] = handle.read().strip()
+        except OSError:
+            report[name.replace(".", "_")] = None
+    events = {}
+    try:
+        with open("/sys/fs/cgroup/memory.events", encoding="utf-8") as handle:
+            for line in handle:
+                key, _, value = line.partition(" ")
+                events[key] = int(value)
+    except (OSError, ValueError):
+        events = {}
+    report["memory_events"] = events
+    return report
+
+
 def _load_stream(manifest_path: str) -> np.ndarray:
     manifest = json.load(open(manifest_path, encoding="utf-8"))
     path = manifest["stream_path"]
@@ -178,6 +198,7 @@ def main() -> int:
         "results": results,
         "peak_allocated_gib": torch.cuda.max_memory_allocated() / GIB,
         "peak_reserved_gib": torch.cuda.max_memory_reserved() / GIB,
+        "container_memory": _cgroup_memory(),
         "command": sys.argv,
     }
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)

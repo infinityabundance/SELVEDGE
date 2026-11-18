@@ -1,0 +1,58 @@
+{
+  "created_utc": "2026-11-18T07:49:56Z",
+  "reading": "the gap is the free-compute headroom for stage 3; the maj@16 subset is labelled by its common problem count and is not a full-task score",
+  "rows": [
+    {
+      "common_problems": 50,
+      "exact_gap_point": 0.08,
+      "gap": {
+        "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+        "ci95": [
+          -0.02,
+          0.18
+        ],
+        "delta": 0.08,
+        "problems": 50,
+        "resamples": 4000,
+        "seed": 53
+      },
+      "greedy_accuracy": 0.78,
+      "greedy_receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+      "greedy_receipt_sha256": "60537253243feac7d2d78cafe1ad64d32d97a6381b4b0384794e185823c2fc53",
+      "maj16_accuracy": 0.86,
+      "maj16_receipt": "results/stage1/s54-stage1-post-2b-nonthinking-maj16-subset50.json",
+      "maj16_receipt_sha256": "7564e99df3f8d82fc0591fa86273a98eb45b80593332fba49511873105030bd6",
+      "mode": "non-thinking",
+      "model_id": "Qwen/Qwen3.5-2B",
+      "strict_gap_point": 0.12,
+      "task": "gsm8k"
+    },
+    {
+      "common_problems": 50,
+      "exact_gap_point": 0.1,
+      "gap": {
+        "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+        "ci95": [
+          0.02,
+          0.16
+        ],
+        "delta": 0.08,
+        "problems": 50,
+        "resamples": 4000,
+        "seed": 53
+      },
+      "greedy_accuracy": 0.66,
+      "greedy_receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+      "greedy_receipt_sha256": "60537253243feac7d2d78cafe1ad64d32d97a6381b4b0384794e185823c2fc53",
+      "maj16_accuracy": 0.74,
+      "maj16_receipt": "results/stage1/s54-stage1-post-2b-nonthinking-maj16-subset50.json",
+      "maj16_receipt_sha256": "7564e99df3f8d82fc0591fa86273a98eb45b80593332fba49511873105030bd6",
+      "mode": "non-thinking",
+      "model_id": "Qwen/Qwen3.5-2B",
+      "strict_gap_point": 0.08,
+      "task": "math500"
+    }
+  ],
+  "schema": "selvedge/s54-stage1-gap/v1",
+  "stamp": "20261118T074956Z"
+}

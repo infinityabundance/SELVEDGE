@@ -353,23 +353,48 @@ def test_physical_read_accounting_counts_unique_rows_and_tier_bytes():
     cost = runner.cost_from_accounting(accounting)
     assert cost["source"] == "physical_read_accounting"
     assert cost["surrogate_used"] is False
-    assert cost["bytes_total"] == 32
-    assert cost["bytes_per_token"] == pytest.approx(32 / 4)
+    # three requests at 16 bytes each: two cache hits and one fetch. The old
+    # global-unique ledger said 32; the physical count is 48.
+    assert cost["bytes_total"] == 48
+    assert cost["bytes_per_token"] == pytest.approx(48 / 4)
+    assert cost["bytes_unique_modelled"] == 32
+    assert cost["cache_model"] == "call-scoped-address-cache"
     with pytest.raises(TypeError):
         runner.cost_from_accounting(None)
     with pytest.raises(TypeError):
         runner.cost_from_accounting(torch.zeros(1))
 
-    # the store ledger measures the rows actually gathered
-    ledger = runner.StoreLedger(row_bytes=8)
+    # the store ledger measures every request from the table's own row size
+    ledger = runner.StoreLedger()
     table = torch.arange(8, dtype=torch.float32).view(8, 1)
+    ledger.mark_generation()
     ledger.gather(table, torch.tensor([1, 2, 2]))
+    ledger.mark_generation()
     ledger.gather(table, torch.tensor([2, 3]))
     report = ledger.report()
     assert report["calls"] == 2
+    assert report["generations"] == 2
     assert report["requested_rows"] == 5
     assert report["unique_rows"] == 3
-    assert report["bytes"] == 24
+    assert report["repeated_rows"] == 2
+    # row_bytes = element_size 4 * width 1 = 4; physical = 5 * 4
+    assert report["row_bytes"] == 4
+    assert report["bytes"] == 20
+    assert report["bytes_from_source"] == 20
+    assert report["unique_bytes_modelled"] == 12
+    assert report["cache_model"] == "none"
+    assert report["per_call"] == [
+        {"call": 1, "generation": 0, "requested": 3, "unique": 2,
+         "repeated": 1, "cumulative_unique": 2, "cache_hits": 0},
+        {"call": 2, "generation": 1, "requested": 2, "unique": 2,
+         "repeated": 0, "cumulative_unique": 3, "cache_hits": 0},
+    ]
+    assert report["per_generation"] == [
+        {"generation": 0, "calls": 1, "requested": 3, "unique": 2,
+         "repeated": 1, "cache_hits": 0},
+        {"generation": 1, "calls": 1, "requested": 2, "unique": 2,
+         "repeated": 0, "cache_hits": 0},
+    ]
 
 
 def test_selection_report_aggregates_gate_stats_and_reads():
@@ -459,8 +484,13 @@ def test_win_bar_needs_both_controls_and_fewer_bytes():
     arms = {
         "base": {"correct": 10, "items": 50, "read_requests": 0,
                  "read_bytes": 0},
-        "gated-dense": {"correct": 10, "items": 50, "read_requests": 500,
-                        "read_bytes": 1000},
+        # gated-dense is the accuracy control only. Its read numbers are null;
+        # in this test it carries deliberately wrong values to prove they are
+        # never used as the byte control.
+        "gated-dense": {"correct": 10, "items": 50, "read_requests": 999999,
+                        "read_bytes": 999999},
+        "memory": {"correct": 10, "items": 50, "read_requests": 500,
+                   "read_bytes": 1000},
         "utility-outcome": {"correct": 20, "items": 50, "read_requests": 200,
                             "read_bytes": 400},
         "utility-ce": {"correct": 20, "items": 50, "read_requests": 500,
@@ -469,13 +499,26 @@ def test_win_bar_needs_both_controls_and_fewer_bytes():
                            "read_bytes": 0},
     }
     report = runner.evaluate_arms(arms, 50, threshold=0.5)
+    assert report["verdict"]["accuracy_control"] == "gated-dense"
+    assert report["verdict"]["byte_control"] == "memory"
     assert report["arms"]["utility-outcome"]["win"] is True
-    # equal accuracy to the outcome arm, but no byte saving: no win
+    # equal accuracy to the outcome arm, but no byte saving vs the dense memory
     assert report["arms"]["utility-ce"]["beats_base"] is True
     assert report["arms"]["utility-ce"]["fewer_bytes_than_dense"] is False
     assert report["arms"]["utility-ce"]["win"] is False
+    # the gated-dense numbers are not the byte control
+    assert report["arms"]["utility-outcome"]["fewer_bytes_than_dense"] is True
     assert report["verdict"]["chosen"] == "utility-outcome"
     assert report["verdict"]["no_memory_gate_parity"] is True
+
+    # without a dense-memory arm there is no byte claim and no win
+    no_dense = {key: value for key, value in arms.items()
+                if key != "memory"}
+    no_dense_report = runner.evaluate_arms(no_dense, 50)
+    assert no_dense_report["verdict"]["byte_control"] is None
+    assert (no_dense_report["arms"]["utility-outcome"]
+            ["fewer_bytes_than_dense"] is None)
+    assert no_dense_report["arms"]["utility-outcome"]["win"] is False
 
     tie = dict(arms)
     tie["utility-outcome"] = {"correct": 11, "items": 50,
@@ -483,3 +526,34 @@ def test_win_bar_needs_both_controls_and_fewer_bytes():
     tied = runner.evaluate_arms(tie, 50)
     assert tied["arms"]["utility-outcome"]["beats_base"] is False
     assert tied["verdict"]["chosen"] is None
+
+
+def test_prompt_level_bootstrap_clusters_by_problem():
+    # 10 problems, each with 16 continuations. Outcome is always 1, base 0, so
+    # the prompt-level interval excludes zero; a continuation-level bootstrap
+    # would have 160 independent units and a much narrower interval.
+    per_prompt = [{"prompt_id": f"p{index}",
+                   "score": {"utility-outcome": 1.0, "base": 0.0,
+                             "gated-dense": 0.0, "memory": 0.0}}
+                  for index in range(10)]
+    arms = {
+        "base": {"correct": 0, "items": 160, "read_bytes": 0},
+        "gated-dense": {"correct": 0, "items": 160, "read_bytes": None},
+        "memory": {"correct": 0, "items": 160, "read_bytes": 1000},
+        "utility-outcome": {"correct": 160, "items": 160,
+                            "read_bytes": 400},
+    }
+    report = runner.evaluate_arms(arms, 160, per_prompt=per_prompt)
+    row = report["arms"]["utility-outcome"]
+    assert row["prompt_level"]["distinct_problems"] == 10
+    assert row["prompt_level"]["vs_base"]["problems"] == 10
+    assert row["prompt_level"]["vs_base"]["ci95"][0] > 0.0
+    assert report["verdict"]["distinct_problems"] == 10
+    assert row["win"] is True
+
+    # one problem is not enough to establish a positive interval
+    row_ci = runner.prompt_paired_bootstrap(
+        [{"prompt_id": "p0", "score": {"arm": 1.0, "base": 0.0}}],
+        "arm", "base", resamples=100)
+    assert row_ci["problems"] == 1
+    assert row_ci["ci95"] == [1.0, 1.0]

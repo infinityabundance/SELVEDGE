@@ -1,0 +1,7 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s54-stage1: gsm8k-non-thinking-greedy acc=0.6667 strict=0.6667 flexible=0.6667 exact=0.6667 tokens/s=155.4
+s54-stage1: math500-non-thinking-greedy acc=0.6667 strict=0.6667 flexible=0.6667 exact=0.6667 tokens/s=96.1
+s54-stage1: results/stage1/s54-smoke-2b.json

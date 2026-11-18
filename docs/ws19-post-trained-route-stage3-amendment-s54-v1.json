@@ -1,0 +1,35 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage3-amendment/v1",
+  "identifier": "STAGE3-AMENDMENT-S54-V1",
+  "registering_session": "S54",
+  "registered_utc": "2026-11-18T02:10:00Z",
+  "registered_revision": "863b330",
+  "amends": {
+    "path": "docs/ws19-post-trained-route-registration-v1.json",
+    "sha256": "0fbd5f4ad7e632c6bd07083ea0182b8cf0ecae9c08a2828dc5bbe0898bd80ede",
+    "rule": "the S53 registration is not edited. This amendment supersedes only the stage-3 FLOPs clause and its role in the win; the loop, teacher, student, R=1 bit-identity test and the accuracy clause stand unchanged."
+  },
+  "reason": {
+    "near_automatic_ratio": "The registered stage-3 win compared R=4 greedy against stage-2 maj@16 and required at most 0.30 of its FLOPs. Four greedy passes against sixteen sampled answers is a ratio near 0.125 before any prefill accounting, so passing 0.30 is arithmetic rather than evidence that the loop is efficient.",
+    "evidence": "The experimental claim is the accuracy clause: greedy R=4 must close at least two thirds of the stage-2 greedy-to-maj@16 gap on both tasks. That is the result the experiment can fail.",
+    "guard": "The FLOPs bound still matters as a guard against a loop that closes the gap by spending more compute than the maj@16 baseline. It is retained at the registered 0.30, but satisfying it is never cited as a win on its own."
+  },
+  "stage_3_win": {
+    "evidence_clause": "greedy R=4 beats stage-2 greedy on a prompt-level paired 95% interval above zero AND closes at least two thirds of the stage-2 greedy-to-maj@16 gap on BOTH GSM8K and MATH-500",
+    "guard_clause": "R=4 greedy prefill + decode FLOPs per answer <= 0.30 of stage-2 maj@16 FLOPs per answer, from the executed set",
+    "guard_is_not_evidence": true,
+    "no_softening": "a FLOPs ratio below the bound does not substitute for the accuracy clause; a miss on the accuracy clause is not rescued by an efficient loop",
+    "reporting": "the receipt reports the executed-set FLOPs per answer for R=4 greedy and stage-2 maj@16, the ratio, the accuracy deltas and their prompt-level paired intervals. The ratio is labelled a guard in the receipt.",
+    "near_automatic_value": {
+      "value": 0.125,
+      "basis": "four greedy passes against sixteen sampled answers, decode-dominated; not a measurement and not used as a win",
+      "status": "arithmetic expectation only"
+    }
+  },
+  "does_not_change": [
+    "the looped layers 8-15, zero-init re-entry gate, zero-init per-pass depth-LoRA and the R=1 bit-identity test",
+    "the privileged teacher (maj@16 consensus that is also verified against the training label)",
+    "the stage-2 and stage-4 accuracy comparisons",
+    "the executed-set audit and its parameter/FLOPs identities"
+  ]
+}

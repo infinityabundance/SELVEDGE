@@ -4977,3 +4977,108 @@ vLLM Qwen3.5 recipe. The mismatches section flags the `46.2 -> 52.0`
 blocks), `status_consistency` and `prereg_provenance` pass. The bar was still
 training at the end of the CPU work; its milestone and fixed-batch scoring is
 recorded separately below.
+
+## S54 — the corrected bar's milestones, the post-trained frontier, and the S52 repair
+
+**No GPU job overlapped another.** The S50 bar's final milestone eval was already
+running when this session began; it held the GPU alone until `m20` completed.
+Every later job checked the process list, `nvidia-smi`, and host `MemAvailable`
+before launch, and each container had an explicit memory/swap/pids/cpu/tmp limit.
+
+### The bar is verified
+
+`scripts/s48_bar_check.py` re-derived the receipt without trusting its writer:
+the canonical config hash, the registered knobs (lr 1e-5 for this bar), the exact
+step × tokens-per-step arithmetic, the final-checkpoint SHA-256, the payload's
+step/tokens/config/stream fields, `latest.pt`'s payload, the stream file hash and
+the complete log. All checks passed; the receipt is
+`results/stage2/s48-bar-verify-20261118T020529Z.json`. The update tripwire never
+tripped (max update/lr 9.5609 against the 10.0 factor) and the CE tripwire did
+not trip.
+
+The three milestone receipts are complete. The m5/m10/m20 scores, per-task
+standard errors, family means, sequence-correctness counts, the fixed-batch CE/KL
+trend over every saved checkpoint and the 100M decision are generated in
+`results/REPORT.md:report-s50-bar-curve` by `scripts/s50_bar_curve.py`; nothing in
+that block is typed. The direct reading: GSM8K is above base at m20, MATH-500 and
+the math family are still below base, the knowledge family is below base but the
+S48 collapse is gone, and the fixed-batch CE/KL continue to fall while the
+harness endpoint contradicts a capability claim. The registered rule therefore
+returns `justified=false`; the optimiser is still paying off, but the MATH-500
+endpoint is the blocker, not the fixed-batch trend.
+
+### Stage 1: the post-trained frontier
+
+Both post-trained checkpoints were already cached and match
+`models/FRONTIER-POST-TRAINED.lock.json`. vLLM 0.34.0 is not installed in the
+offline eval image, so the measurement uses the pinned transformers stack and
+every receipt records `engine=transformers, vllm_available=false`. Each model is
+prompted with its own tokenizer and `chat_template.jinja`.
+
+Greedy, non-thinking, full tasks (receipts `20261118T033841Z` and
+`20261118T045605Z`, revision `863b330` with a dirty worktree):
+
+- post-trained 0.8B: GSM8K 54.21 ± 1.37, MATH-500 38.20 ± 2.17; MATH-500
+  truncation 32.00% at the registered 4096-token cap;
+- post-trained 2B: GSM8K 78.39 ± 1.13, MATH-500 65.80 ± 2.12.
+
+Strict/flexible/exact extraction is reported side by side; the exact tier is
+`math_verify 0.9.0`. The thinking mode is a measured failure at the registered
+cap: on a 50-problem subset every generation reached 4096 tokens without EOS and
+repeated its reasoning block (receipt `20261118T050329Z`). It is truncation
+evidence, not a score.
+
+The maj@16 runs are 50-problem subsets (receipts `20261118T063329Z` and
+`20261118T074941Z`), paired with the full greedy receipts at the problem level by
+`scripts/s54_gap.py` (receipts `20261118T074956Z`):
+
+- 0.8B: GSM8K +18.00 pp [6.00, 32.00], MATH-500 +18.00 pp [6.00, 30.00];
+- 2B: GSM8K +8.00 pp [-2.00, 18.00], MATH-500 +8.00 pp [2.00, 16.00].
+
+The 0.8B headroom is what stage 3 must close two thirds of; the 2B gap is smaller
+and its GSM8K interval includes zero on this subset. The subset label and the
+problem count are in the generated REPORT block.
+
+Throughput and peaks are in each receipt: 0.8B greedy 283.2 tok/s (GSM8K) and
+703.2 tok/s (MATH-500), 3.73/5.47 GiB CUDA peak; 2B greedy 260.3/528.8 tok/s,
+5.82/7.78 GiB. Container limits were sized from the smoke peaks: 1.72 GiB for
+0.8B (6 GiB run) and 6.12 GiB for 2B (10 GiB run).
+
+### S52 repair
+
+The screen's defects were repaired before any screen run:
+
+- the gated-dense control no longer inherits the memory arm's read counts; its
+  `read_bytes` is null and it is used only for accuracy;
+- the byte comparison is routed read bytes vs the dense memory (always-read)
+  arm's own ledger;
+- `StoreLedger` reports requested/unique/repeated addresses per call and per
+  generation, derives its row size from the table, and labels the global-unique
+  bytes `modelled`; physical bytes are request-based;
+- `physical_read_accounting` carries the physical, modelled-unique, cache-model
+  and addresses-supplied fields separately, and `cost_from_accounting` uses the
+  physical count;
+- the holdout is 24 distinct problems and the statistics are a prompt-level
+  paired bootstrap, not continuation-level.
+
+The v2 registration is `docs/s52-p19.9-router-screen-registration-v2.json`; the
+prompt set is `docs/s52-p19.9-calibration-prompts-v2.json`; the narrative is
+`docs/S52-REPAIR-S54.md`. The screen remains not run. Stage 3's FLOPs clause is
+re-registered as a guard, with the accuracy clause as the evidence
+(`docs/ws19-post-trained-route-stage3-amendment-s54-v1.json`).
+
+### Stage 2 registration
+
+`docs/ws19-post-trained-route-stage2-amendment-s54-v1.json` supersedes the
+failed-rollout and win clauses: verified 2B teacher continuations and
+first-error-suffix corrective supervision on failed rollouts, supervised-position
+accounting beside processed tokens, and a general-capability preservation bound
+on MMLU and MMLU-Pro in the win condition.
+
+### Queue and courts
+
+`docs/S50-GPU-QUEUE.md` is reordered to bar milestones -> stage 1 -> optimiser
+validations -> stage 2 -> deferred (3e-5/5e-5 gate, conditional 3e-5 bar, P19.9
+screen). The S52 runner, S50 mask and S53 optimiser-comparison tests pass in the
+oracle court; `scripts/s52_p19_9_router.py check` passes against the v2 prompt
+set and registration. The four repository courts are run before the commit.

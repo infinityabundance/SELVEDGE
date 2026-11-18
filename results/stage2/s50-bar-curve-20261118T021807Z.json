@@ -1,0 +1,574 @@
+{
+  "base": {
+    "knowledge": {
+      "combined_stderr": 0.010005835355719198,
+      "mean": 0.37470623842757445,
+      "per_task": {
+        "mmlu": {
+          "score": 0.481555333998006,
+          "stderr": 0.004098974719703994
+        },
+        "mmlu_pro": {
+          "score": 0.26785714285714285,
+          "stderr": 0.019587377846722334
+        }
+      },
+      "tasks": [
+        "mmlu",
+        "mmlu_pro"
+      ]
+    },
+    "math": {
+      "combined_stderr": 0.011791949614912601,
+      "mean": 0.31984457922668685,
+      "per_task": {
+        "gsm8k": {
+          "score": 0.38968915845337376,
+          "stderr": 0.013433123236110721
+        },
+        "minerva_math500": {
+          "score": 0.25,
+          "stderr": 0.019384310743640384
+        }
+      },
+      "tasks": [
+        "gsm8k",
+        "minerva_math500"
+      ]
+    },
+    "tasks": {
+      "gsm8k": {
+        "cgroup_memory_peak": "3303825408",
+        "primary_metric": "exact_match,strict-match",
+        "samples": {
+          "sample_count": null,
+          "sample_len": 1319
+        },
+        "score": 0.38968915845337376,
+        "sequence_correctness": null,
+        "stderr": 0.013433123236110721,
+        "wall_clock_s": 506.7
+      },
+      "minerva_math500": {
+        "cgroup_memory_peak": "3303825408",
+        "primary_metric": "math_verify,none",
+        "samples": {
+          "sample_count": null,
+          "sample_len": 500
+        },
+        "score": 0.25,
+        "sequence_correctness": null,
+        "stderr": 0.019384310743640384,
+        "wall_clock_s": 220.4
+      },
+      "mmlu": {
+        "cgroup_memory_peak": "3303825408",
+        "primary_metric": "acc,none",
+        "samples": {
+          "sample_count": 14042,
+          "sample_len": 14042
+        },
+        "score": 0.481555333998006,
+        "sequence_correctness": null,
+        "stderr": 0.004098974719703994,
+        "wall_clock_s": 654.0
+      },
+      "mmlu_pro": {
+        "cgroup_memory_peak": "1748430848",
+        "primary_metric": "exact_match,custom-extract",
+        "samples": {
+          "sample_count": 504,
+          "sample_len": 504
+        },
+        "score": 0.26785714285714285,
+        "sequence_correctness": null,
+        "stderr": 0.019587377846722334,
+        "wall_clock_s": 803.3
+      }
+    }
+  },
+  "base_receipt": "results/stage2/eval/base/eval.json",
+  "base_receipt_sha256": "3f29fe32ca780a7d9bdf60c1b4e4b069bd7e68e0662cd53c0aa97c3649c6d6ef",
+  "command": null,
+  "created_utc": "2026-11-18T02:18:07Z",
+  "curve": {
+    "fixed_batch": {
+      "batch_count": 8,
+      "ce_last_interval": 0.010497340366782737,
+      "ce_last_interval_from": "ckpt-007323.pt",
+      "ce_last_interval_to": "ckpt-009765.pt",
+      "ce_last_interval_tokens": 5001216,
+      "ce_last_share": 0.2081821559652152,
+      "ce_slope_per_million_tokens": -0.003301875768285074,
+      "ce_total_drop_after_first_checkpoint": 0.05042382387728139,
+      "checkpoints": [
+        {
+          "batches": 8,
+          "ce": 0.730826889637683,
+          "checkpoint": "ckpt-002441.pt",
+          "kl": 0.191212575067766,
+          "sha256": "8407623cc42d9e4cff2db8f5e1cdba169661956456226dfb693f6ffaeef54c37",
+          "step": 2441,
+          "tokens_seen": 4999168
+        },
+        {
+          "batches": 8,
+          "ce": 0.7108379641140345,
+          "checkpoint": "ckpt-004882.pt",
+          "kl": 0.1809718218864873,
+          "sha256": "62b51a3ed43ab505efb8052b1d156e3ea3d09b601a486657a1d24b2ead8cd74e",
+          "step": 4882,
+          "tokens_seen": 9998336
+        },
+        {
+          "batches": 8,
+          "ce": 0.6909004061271844,
+          "checkpoint": "ckpt-007323.pt",
+          "kl": 0.17014799901517108,
+          "sha256": "08e3b9db4aae8f84551c7ac85c9d4517abe178130d969266522a80ea134fc74b",
+          "step": 7323,
+          "tokens_seen": 14997504
+        },
+        {
+          "batches": 8,
+          "ce": 0.6810343519446178,
+          "checkpoint": "ckpt-009764.pt",
+          "kl": 0.16618027328513563,
+          "sha256": "974093add197fc74e61025e94b60a089a983d55d6b444b4e98d619e07651db27",
+          "step": 9764,
+          "tokens_seen": 19996672
+        },
+        {
+          "batches": 8,
+          "ce": 0.6804030657604017,
+          "checkpoint": "ckpt-009765.pt",
+          "kl": 0.1662792625138536,
+          "sha256": "8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32",
+          "step": 9765,
+          "tokens_seen": 19998720
+        }
+      ],
+      "init": {
+        "ce": 0.919470345346781,
+        "kl": 0.2528676241636276,
+        "sha256": null
+      },
+      "kl_last_interval": 0.0038687365013174713,
+      "kl_slope_per_million_tokens": -0.0016465831396545061,
+      "min_last_interval_tokens": 1000000,
+      "receipt": "/work/results/stage2/s50-bar-20m-lr1e-5-fixed-batch-20261118T021900Z.json",
+      "receipt_sha256": "c4c99c522dbc622e95388d6c11ede7164941bb0d7e49654a2287136b57d8e418",
+      "run_dir": "results/stage2/runs/s50-bar-20m-lr1e-5",
+      "seq_len": 512,
+      "start_token": 2000000,
+      "temperature": 2.0
+    },
+    "knowledge_family_slope_per_million_tokens": 0.002044328050341502,
+    "math_10m_to_20m_increment": 0.04512357846853676,
+    "math_family": [
+      {
+        "mean": 0.21146019711902958,
+        "tokens_seen": 4999168
+      },
+      {
+        "mean": 0.2563677028051554,
+        "tokens_seen": 9998336
+      },
+      {
+        "mean": 0.3014912812736922,
+        "tokens_seen": 19998720
+      }
+    ],
+    "math_family_slope_per_million_tokens": 0.005789316324201052
+  },
+  "extension": {
+    "harness_condition": "final math family >= previous milestone math family - its combined standard error AND final math family > base",
+    "harness_confirms": false,
+    "harness_endpoints": {
+      "base_math_family": 0.31984457922668685,
+      "final_math_family": 0.3014912812736922,
+      "previous_combined_stderr": 0.010261138579852952,
+      "previous_math_family": 0.2563677028051554
+    },
+    "justified": false,
+    "reading": "the 100M extension is not justified by this bar; the fixed-batch trend and the harness endpoints are reported instead",
+    "rule": "100M extension justified iff the fixed-batch CE slope over every saved checkpoint is negative, the last interval still falls, the last interval carries at least 10% of the total CE drop, the teacher KL does not rise, and the harness endpoints do not contradict the fixed-batch reading",
+    "still_paying_off": true,
+    "superseded_harness_points_rule": {
+      "math_10m_to_20m_increment": 0.04512357846853676,
+      "math_family_slope_per_million_tokens": 0.005789316324201052,
+      "role": "reported for audit only; it does not decide the extension"
+    },
+    "thresholds": {
+      "ce_last_interval": "> 0.0",
+      "ce_last_share": ">= 0.10",
+      "ce_slope_per_million_tokens": "< 0.0",
+      "kl_last_interval": ">= 0.0"
+    }
+  },
+  "milestones": [
+    {
+      "checkpoint_sha256": "8407623cc42d9e4cff2db8f5e1cdba169661956456226dfb693f6ffaeef54c37",
+      "delta_vs_base": {
+        "gsm8k": -0.0947687642153146,
+        "minerva_math500": -0.122,
+        "mmlu": -0.02107961828799315,
+        "mmlu_pro": -0.0873015873015873
+      },
+      "family_delta_vs_base": {
+        "knowledge": -0.054190602794790266,
+        "math": -0.10838438210765727
+      },
+      "knowledge": {
+        "combined_stderr": 0.008786993038760745,
+        "mean": 0.3205156356327842,
+        "per_task": {
+          "mmlu": {
+            "score": 0.46047571571001283,
+            "stderr": 0.004091137113159218
+          },
+          "mmlu_pro": {
+            "score": 0.18055555555555555,
+            "stderr": 0.017091155132823832
+          }
+        },
+        "tasks": [
+          "mmlu",
+          "mmlu_pro"
+        ]
+      },
+      "math": {
+        "combined_stderr": 0.009765378810366727,
+        "mean": 0.21146019711902958,
+        "per_task": {
+          "gsm8k": {
+            "score": 0.29492039423805916,
+            "stderr": 0.012560698010954769
+          },
+          "minerva_math500": {
+            "score": 0.128,
+            "stderr": 0.014955913837590627
+          }
+        },
+        "tasks": [
+          "gsm8k",
+          "minerva_math500"
+        ]
+      },
+      "name": "m5",
+      "receipt": "results/stage2/eval/s50-bar-20m-lr1e-5/m5/eval.json",
+      "receipt_sha256": "68c40509e344a54d887380aa5029d267f1ab7e702352758db01dd73a01dd8d3b",
+      "recorded_checkpoint_step": 2441,
+      "step": 2441,
+      "tasks": {
+        "gsm8k": {
+          "cgroup_memory_peak": "6423457792",
+          "primary_metric": "exact_match,strict-match",
+          "samples": {
+            "sample_count": null,
+            "sample_len": 1319
+          },
+          "score": 0.29492039423805916,
+          "sequence_correctness": {
+            "accuracy": 0.2987111448066717,
+            "accuracy_answered": 0.2987111448066717,
+            "answered": 1319,
+            "items": 1319,
+            "primary_filter": null
+          },
+          "stderr": 0.012560698010954769,
+          "wall_clock_s": 536.7
+        },
+        "minerva_math500": {
+          "cgroup_memory_peak": "6423457792",
+          "primary_metric": "math_verify,none",
+          "samples": {
+            "sample_count": null,
+            "sample_len": 500
+          },
+          "score": 0.128,
+          "sequence_correctness": {
+            "accuracy": 0.088,
+            "accuracy_answered": 0.14057507987220447,
+            "answered": 313,
+            "items": 500,
+            "primary_filter": null
+          },
+          "stderr": 0.014955913837590627,
+          "wall_clock_s": 223.1
+        },
+        "mmlu": {
+          "cgroup_memory_peak": "6423457792",
+          "primary_metric": "acc,none",
+          "samples": {
+            "sample_count": 14042,
+            "sample_len": 14042
+          },
+          "score": 0.46047571571001283,
+          "sequence_correctness": null,
+          "stderr": 0.004091137113159218,
+          "wall_clock_s": 636.5
+        },
+        "mmlu_pro": {
+          "cgroup_memory_peak": "5650616320",
+          "primary_metric": "exact_match,custom-extract",
+          "samples": {
+            "sample_count": 504,
+            "sample_len": 504
+          },
+          "score": 0.18055555555555555,
+          "sequence_correctness": null,
+          "stderr": 0.017091155132823832,
+          "wall_clock_s": 1059.2
+        }
+      },
+      "tokens_seen": 4999168
+    },
+    {
+      "checkpoint_sha256": "62b51a3ed43ab505efb8052b1d156e3ea3d09b601a486657a1d24b2ead8cd74e",
+      "delta_vs_base": {
+        "gsm8k": -0.018953752843062943,
+        "minerva_math500": -0.10800000000000001,
+        "mmlu": -0.015667283862697612,
+        "mmlu_pro": -0.08531746031746032
+      },
+      "family_delta_vs_base": {
+        "knowledge": -0.05049237209007901,
+        "math": -0.06347687642153144
+      },
+      "knowledge": {
+        "combined_stderr": 0.00885054665518517,
+        "mean": 0.32421386633749544,
+        "per_task": {
+          "mmlu": {
+            "score": 0.4658880501353084,
+            "stderr": 0.004075473910503384
+          },
+          "mmlu_pro": {
+            "score": 0.18253968253968253,
+            "stderr": 0.017225539666066894
+          }
+        },
+        "tasks": [
+          "mmlu",
+          "mmlu_pro"
+        ]
+      },
+      "math": {
+        "combined_stderr": 0.010261138579852952,
+        "mean": 0.2563677028051554,
+        "per_task": {
+          "gsm8k": {
+            "score": 0.3707354056103108,
+            "stderr": 0.013304267705458424
+          },
+          "minerva_math500": {
+            "score": 0.142,
+            "stderr": 0.01562563024781025
+          }
+        },
+        "tasks": [
+          "gsm8k",
+          "minerva_math500"
+        ]
+      },
+      "name": "m10",
+      "receipt": "results/stage2/eval/s50-bar-20m-lr1e-5/m10/eval.json",
+      "receipt_sha256": "14fe6c8f44765261fe9ccad5cbc073b6c7429715d1710f7451babac8ee5c3b82",
+      "recorded_checkpoint_step": 4882,
+      "step": 4882,
+      "tasks": {
+        "gsm8k": {
+          "cgroup_memory_peak": "6378377216",
+          "primary_metric": "exact_match,strict-match",
+          "samples": {
+            "sample_count": null,
+            "sample_len": 1319
+          },
+          "score": 0.3707354056103108,
+          "sequence_correctness": {
+            "accuracy": 0.37225170583775585,
+            "accuracy_answered": 0.37225170583775585,
+            "answered": 1319,
+            "items": 1319,
+            "primary_filter": null
+          },
+          "stderr": 0.013304267705458424,
+          "wall_clock_s": 542.6
+        },
+        "minerva_math500": {
+          "cgroup_memory_peak": "6378377216",
+          "primary_metric": "math_verify,none",
+          "samples": {
+            "sample_count": null,
+            "sample_len": 500
+          },
+          "score": 0.142,
+          "sequence_correctness": {
+            "accuracy": 0.12,
+            "accuracy_answered": 0.18126888217522658,
+            "answered": 331,
+            "items": 500,
+            "primary_filter": null
+          },
+          "stderr": 0.01562563024781025,
+          "wall_clock_s": 217.5
+        },
+        "mmlu": {
+          "cgroup_memory_peak": "6378377216",
+          "primary_metric": "acc,none",
+          "samples": {
+            "sample_count": 14042,
+            "sample_len": 14042
+          },
+          "score": 0.4658880501353084,
+          "sequence_correctness": null,
+          "stderr": 0.004075473910503384,
+          "wall_clock_s": 623.8
+        },
+        "mmlu_pro": {
+          "cgroup_memory_peak": "5621579776",
+          "primary_metric": "exact_match,custom-extract",
+          "samples": {
+            "sample_count": 504,
+            "sample_len": 504
+          },
+          "score": 0.18253968253968253,
+          "sequence_correctness": null,
+          "stderr": 0.017225539666066894,
+          "wall_clock_s": 1133.1
+        }
+      },
+      "tokens_seen": 9998336
+    },
+    {
+      "checkpoint_sha256": "8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32",
+      "delta_vs_base": {
+        "gsm8k": 0.027293404094010598,
+        "minerva_math500": -0.064,
+        "mmlu": -0.011964107676969093,
+        "mmlu_pro": -0.0376984126984127
+      },
+      "family_delta_vs_base": {
+        "knowledge": -0.02483126018769094,
+        "math": -0.018353297952994674
+      },
+      "knowledge": {
+        "combined_stderr": 0.009485745737582983,
+        "mean": 0.3498749782398835,
+        "per_task": {
+          "mmlu": {
+            "score": 0.4695912263210369,
+            "stderr": 0.004078238156264727
+          },
+          "mmlu_pro": {
+            "score": 0.23015873015873015,
+            "stderr": 0.01852796433322024
+          }
+        },
+        "tasks": [
+          "mmlu",
+          "mmlu_pro"
+        ]
+      },
+      "math": {
+        "combined_stderr": 0.011043856999354382,
+        "mean": 0.3014912812736922,
+        "per_task": {
+          "gsm8k": {
+            "score": 0.41698256254738436,
+            "stderr": 0.013581320997216593
+          },
+          "minerva_math500": {
+            "score": 0.186,
+            "stderr": 0.01741880678058399
+          }
+        },
+        "tasks": [
+          "gsm8k",
+          "minerva_math500"
+        ]
+      },
+      "name": "m20",
+      "receipt": "results/stage2/eval/s50-bar-20m-lr1e-5/m20/eval.json",
+      "receipt_sha256": "b187889ac75b1f4bf07f81a4dddbc09a33720faedf4eb7c691671f63f1e40070",
+      "recorded_checkpoint_step": 9765,
+      "step": 9765,
+      "tasks": {
+        "gsm8k": {
+          "cgroup_memory_peak": "3873820672",
+          "primary_metric": "exact_match,strict-match",
+          "samples": {
+            "sample_count": null,
+            "sample_len": 1319
+          },
+          "score": 0.41698256254738436,
+          "sequence_correctness": {
+            "accuracy": 0.4184988627748294,
+            "accuracy_answered": 0.4184988627748294,
+            "answered": 1319,
+            "items": 1319,
+            "primary_filter": null
+          },
+          "stderr": 0.013581320997216593,
+          "wall_clock_s": 512.0
+        },
+        "minerva_math500": {
+          "cgroup_memory_peak": "3873820672",
+          "primary_metric": "math_verify,none",
+          "samples": {
+            "sample_count": null,
+            "sample_len": 500
+          },
+          "score": 0.186,
+          "sequence_correctness": {
+            "accuracy": 0.152,
+            "accuracy_answered": 0.22418879056047197,
+            "answered": 339,
+            "items": 500,
+            "primary_filter": null
+          },
+          "stderr": 0.01741880678058399,
+          "wall_clock_s": 222.6
+        },
+        "mmlu": {
+          "cgroup_memory_peak": "3873820672",
+          "primary_metric": "acc,none",
+          "samples": {
+            "sample_count": 14042,
+            "sample_len": 14042
+          },
+          "score": 0.4695912263210369,
+          "sequence_correctness": null,
+          "stderr": 0.004078238156264727,
+          "wall_clock_s": 634.3
+        },
+        "mmlu_pro": {
+          "cgroup_memory_peak": "3116392448",
+          "primary_metric": "exact_match,custom-extract",
+          "samples": {
+            "sample_count": 504,
+            "sample_len": 504
+          },
+          "score": 0.23015873015873015,
+          "sequence_correctness": null,
+          "stderr": 0.01852796433322024,
+          "wall_clock_s": 1058.9
+        }
+      },
+      "tokens_seen": 19998720
+    }
+  ],
+  "revision": "863b3309de8e101600455fc734a207036c0b4a59",
+  "run_dir": "results/stage2/runs/s50-bar-20m-lr1e-5",
+  "schema": "selvedge/s50-bar-curve/v1",
+  "stamp": "20261118T021807Z",
+  "training_log": {
+    "final_knowledge_step": 9765,
+    "max_update_over_lr": 9.560866355895996,
+    "median_update_over_lr": 3.357959270477295,
+    "path": "results/stage2/runs/s50-bar-20m-lr1e-5/log.jsonl",
+    "sha256": "9ca42b026ddca5cd0c6cb3aec62989db3ccd89a86d1a688109e9be9c807b4fd7",
+    "steps": 9765
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "checks": [
+    {
+      "check": "receipt schema",
+      "detail": "selvedge/stage2-train/v1",
+      "ok": true
+    },
+    {
+      "check": "config hash recomputes",
+      "detail": {
+        "recomputed": "8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5",
+        "recorded": "8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5"
+      },
+      "ok": true
+    },
+    {
+      "check": "config arm",
+      "detail": {
+        "actual": "full",
+        "expected": "full"
+      },
+      "ok": true
+    },
+    {
+      "check": "config tokens",
+      "detail": {
+        "actual": 20000000,
+        "expected": 20000000
+      },
+      "ok": true
+    },
+    {
+      "check": "config tokens_per_step",
+      "detail": {
+        "actual": 2048,
+        "expected": 2048
+      },
+      "ok": true
+    },
+    {
+      "check": "config steps",
+      "detail": {
+        "actual": 9765,
+        "expected": 9765
+      },
+      "ok": true
+    },
+    {
+      "check": "config kl_weight",
+      "detail": {
+        "actual": 0.5,
+        "expected": 0.5
+      },
+      "ok": true
+    },
+    {
+      "check": "config temperature",
+      "detail": {
+        "actual": 2.0,
+        "expected": 2.0
+      },
+      "ok": true
+    },
+    {
+      "check": "config lr",
+      "detail": {
+        "actual": 1e-05,
+        "expected": 1e-05
+      },
+      "ok": true
+    },
+    {
+      "check": "config seed",
+      "detail": {
+        "actual": 0,
+        "expected": 0
+      },
+      "ok": true
+    },
+    {
+      "check": "config schedule",
+      "detail": {
+        "actual": "cosine",
+        "expected": "cosine"
+      },
+      "ok": true
+    },
+    {
+      "check": "config optimizer",
+      "detail": {
+        "actual": "adam8bit",
+        "expected": "adam8bit"
+      },
+      "ok": true
+    },
+    {
+      "check": "config seq_len",
+      "detail": {
+        "actual": 512,
+        "expected": 512
+      },
+      "ok": true
+    },
+    {
+      "check": "config micro_batch",
+      "detail": {
+        "actual": 1,
+        "expected": 1
+      },
+      "ok": true
+    },
+    {
+      "check": "config grad_accum",
+      "detail": {
+        "actual": 4,
+        "expected": 4
+      },
+      "ok": true
+    },
+    {
+      "check": "steps x tokens_per_step == tokens seen",
+      "detail": {
+        "product": 19998720,
+        "tokens_seen_total": 19998720,
+        "tokens_trained": 19998720
+      },
+      "ok": true
+    },
+    {
+      "check": "realised tokens do not exceed the declared budget",
+      "detail": {
+        "declared": 20000000,
+        "product": 19998720
+      },
+      "ok": true
+    },
+    {
+      "check": "objective is the registered CE+KL",
+      "detail": "ce_kl",
+      "ok": true
+    },
+    {
+      "check": "final checkpoint exists",
+      "detail": "results/stage2/runs/s50-bar-20m-lr1e-5/ckpt-009765.pt",
+      "ok": true
+    },
+    {
+      "check": "checkpoint SHA-256 matches the receipt",
+      "detail": {
+        "file": "8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32",
+        "receipt": "8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32"
+      },
+      "ok": true
+    },
+    {
+      "check": "latest.pt carries the final payload",
+      "detail": {
+        "final": "7ef7149ab46a2bd700f3c8c404a6d70b8b5dde58f33dc369cd407d384a536709",
+        "latest": "7ef7149ab46a2bd700f3c8c404a6d70b8b5dde58f33dc369cd407d384a536709"
+      },
+      "ok": true
+    },
+    {
+      "check": "payload step",
+      "detail": {
+        "config": 9765,
+        "payload": 9765
+      },
+      "ok": true
+    },
+    {
+      "check": "payload tokens_seen == tokens_trained",
+      "detail": {
+        "payload": 19998720,
+        "receipt": 19998720
+      },
+      "ok": true
+    },
+    {
+      "check": "payload config hash",
+      "detail": {
+        "config": "8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5",
+        "payload": "8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5"
+      },
+      "ok": true
+    },
+    {
+      "check": "payload stream hash == config stream hash",
+      "detail": {
+        "config": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+        "payload": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56"
+      },
+      "ok": true
+    },
+    {
+      "check": "payload arm",
+      "detail": "full",
+      "ok": true
+    },
+    {
+      "check": "launch stream tensor hash == config stream hash",
+      "detail": {
+        "config": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+        "launch": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56"
+      },
+      "ok": true
+    },
+    {
+      "check": "stream file SHA-256 == manifest",
+      "detail": {
+        "file": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+        "manifest": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56"
+      },
+      "ok": true
+    },
+    {
+      "check": "stream file SHA-256 == config",
+      "detail": {
+        "config": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+        "file": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56"
+      },
+      "ok": true
+    },
+    {
+      "check": "log is complete",
+      "detail": {
+        "last_step": 9765,
+        "lines": 9765,
+        "steps": 9765
+      },
+      "ok": true
+    }
+  ],
+  "config_sha256": "8b22eb086081428de7fd19a29e442f67b355ec1de33e068cab9aa148f43f2cf5",
+  "container_memory": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": "21474836480",
+    "memory_peak": "13187850240",
+    "memory_swap_peak": "0"
+  },
+  "created_utc": "2026-11-18T02:05:29Z",
+  "final_checkpoint": "results/stage2/runs/s50-bar-20m-lr1e-5/ckpt-009765.pt",
+  "final_checkpoint_sha256": "8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32",
+  "kind": "bar_verification",
+  "ok": true,
+  "optimizer_numerics": {
+    "min_lr": {
+      "lr": 5.0000000000000004e-08,
+      "step": 1,
+      "sub_half_ulp_fraction": 0.9988037782822377,
+      "unchanged_fraction": 0.9943098111421003,
+      "unchanged_fraction_round_to_nearest": 0.9988049165773805
+    },
+    "peak_lr": {
+      "lr": 1e-05,
+      "step": 200,
+      "sub_half_ulp_fraction": 0.9471603454975902,
+      "unchanged_fraction": 0.8926895220859612,
+      "unchanged_fraction_round_to_nearest": 0.9472008523425544
+    },
+    "reading": "unchanged_fraction is measured bitwise, element by element, after the applied update; the round-to-nearest column is the outcome the same exact fp32 result would have had under nearest-even. A large measured fraction beside a large sub-half-ulp fraction means the update is below the grid, not that the weight did not move.",
+    "records": [
+      {
+        "changed_fraction": 0.0056901888578997795,
+        "elements": 498113344,
+        "expected_unchanged_fraction_stochastic": 0.9943038670804122,
+        "lr": 5.0000000000000004e-08,
+        "mean_absolute_rounding_error": 9.858136405904234e-08,
+        "step": 1,
+        "sub_half_ulp_fraction": 0.9988037782822377,
+        "unchanged_fraction": 0.9943098111421003,
+        "unchanged_fraction_round_to_nearest": 0.9988049165773805
+      },
+      {
+        "changed_fraction": 0.10731047791403878,
+        "elements": 498113344,
+        "expected_unchanged_fraction_stochastic": 0.8926518744555632,
+        "lr": 1e-05,
+        "mean_absolute_rounding_error": 3.101753117772131e-06,
+        "step": 200,
+        "sub_half_ulp_fraction": 0.9471603454975902,
+        "unchanged_fraction": 0.8926895220859612,
+        "unchanged_fraction_round_to_nearest": 0.9472008523425544
+      },
+      {
+        "changed_fraction": 0.01738240122312403,
+        "elements": 498113344,
+        "expected_unchanged_fraction_stochastic": 0.9826067796931794,
+        "lr": 1.0000002427237712e-06,
+        "mean_absolute_rounding_error": 3.573288489250244e-07,
+        "step": 9765,
+        "sub_half_ulp_fraction": 0.994426362928354,
+        "unchanged_fraction": 0.9826175987768759,
+        "unchanged_fraction_round_to_nearest": 0.9944306209953693
+      }
+    ]
+  },
+  "peak_allocated_gib": 11.88544225692749,
+  "receipt": {
+    "created_utc": "2026-11-18T00:10:25Z",
+    "path": "results/stage2/runs/s50-bar-20m-lr1e-5/receipt.json",
+    "revision": "2e79ae3a68ea15c1ecda18031d573577cc642697"
+  },
+  "run_dir": "results/stage2/runs/s50-bar-20m-lr1e-5",
+  "schema": "selvedge/s48-bar-verify/v1",
+  "stamp": "20261118T020529Z",
+  "stream_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+  "tokens_per_second": 1721.6,
+  "tokens_seen_total": 19998720,
+  "tokens_trained": 19998720,
+  "wall_seconds": 11616.665
+}

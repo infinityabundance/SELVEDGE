@@ -1,0 +1,7 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s54-stage1: gsm8k-thinking-greedy acc=0.0400 strict=0.0000 flexible=0.0400 exact=0.0400 tokens/s=968.7
+s54-stage1: math500-thinking-greedy acc=0.0000 strict=0.0000 flexible=0.0000 exact=0.0000 tokens/s=960.6
+s54-stage1: results/stage1/s54-stage1-post-0.8b-thinking-greedy-subset50.json

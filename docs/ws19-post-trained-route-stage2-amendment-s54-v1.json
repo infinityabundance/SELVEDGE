@@ -1,0 +1,88 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2-amendment/v1",
+  "identifier": "STAGE2-AMENDMENT-S54-V1",
+  "registering_session": "S54",
+  "registered_utc": "2026-11-18T02:05:00Z",
+  "registered_revision": "863b330",
+  "amends": {
+    "path": "docs/ws19-post-trained-route-registration-v1.json",
+    "sha256": "0fbd5f4ad7e632c6bd07083ea0182b8cf0ecae9c08a2828dc5bbe0898bd80ede",
+    "rule": "the S53 registration is not edited. This amendment supersedes only the stage-2 supervision and win clauses named below; every other stage-2 field (teacher, student, optimiser, tokens, seed, smoke and queue gates) stands unchanged."
+  },
+  "reason": {
+    "failed_rollouts": "The S53 stage-2 objective gave a failed student rollout zero KL weight. At lr 1e-5 on a 20M-token budget that discards the most informative rollouts: the ones where the student's own policy fails, which are exactly the states stage 2 must correct. Training only on correct rollouts is rejection-sampling fine-tuning with no corrective signal.",
+    "first_error": "A failed rollout usually contains correct early steps and one first divergence. Reverse KL over the whole failed continuation would also reinforce the wrong suffix; the correction must be localised to the first-error suffix.",
+    "retention": "The S53 win asked only for a math gain. A stage that buys math accuracy by losing general capability has not improved the deployed model, and the post-trained 0.8B is the deployed target. The win must include a measured general-capability bound.",
+    "statistics": "The S53 registration named item-level intervals but did not fix the clustering unit. Stage-2 rollouts are K samples per prompt; the interval must resample prompts, not continuations."
+  },
+  "teacher_continuations": {
+    "teacher": "post-trained Qwen3.5-2B at 15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "when": "for every student rollout whose extracted answer is not exactly the reference answer",
+    "decode": {
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "max_new_tokens": 1024,
+      "stop": "EOS only"
+    },
+    "verification": "the teacher continuation is used only when frontier.rft.verify extracts exactly one answer and it equals the reference answer; ambiguous, unparseable and wrong teacher continuations are counted and contribute zero supervision",
+    "attempts": 1,
+    "no_unverified_supervision": "an unverified teacher continuation is never a target and is never silently replaced by the student's own wrong suffix",
+    "prompt": "the same prompt, with the same tokenizer and chat template as the student rollout; the teacher is prompted in non-thinking mode so the target is an answer, not a thinking trace"
+  },
+  "first_error_corrective_supervision": {
+    "definition": "The first token position at which the student rollout's next token differs from the verified teacher continuation, aligned from the shared prompt. If one continuation is a strict prefix of the other, the first position after the shorter prefix is the first error.",
+    "target": "the verified teacher continuation",
+    "loss": "per-token reverse KL, KL(student_T || teacher_T) at T = 2.0, over the first-error suffix only; the shared correct prefix contributes zero loss",
+    "weight": "one rollout weight per failed rollout, normalised by the number of supervised suffix tokens so a long suffix cannot dominate a prompt; the prompt weight is 1/(K * prompts) as in the S53 split",
+    "fallback": "if alignment yields no suffix because the student is already the teacher prefix, the rollout is correct by construction and is handled by the correct-rollout path",
+    "reporting": "the receipt reports failed rollouts, teacher attempts, verified teacher continuations, aligned first-error positions, supervised corrective positions and zero-weight rollouts separately",
+    "no_teacher_leak": "the teacher continuation is a training target only; it is not a prompt at inference and is never inserted into the student's context"
+  },
+  "correct_rollout_supervision": {
+    "unchanged": true,
+    "loss": "per-token reverse KL over the student's own correct rollout tokens at T = 2.0, reward 1.0",
+    "why_reverse_kl": "the student is the sampling policy; reverse KL keeps the objective on the student's own state distribution"
+  },
+  "objective_assembly": {
+    "correct_rollout": "reward_weight * reverse_KL over all rollout tokens",
+    "failed_rollout_with_verified_teacher": "corrective_weight * reverse_KL over the first-error suffix only",
+    "failed_rollout_without_verified_teacher": "zero weight, counted and reported",
+    "supervised_positions": "the receipt reports correct-rollout positions and corrective positions separately, and the total supervised positions beside the processed tokens; the two numbers are never conflated"
+  },
+  "general_capability_preservation_bound": {
+    "applies_to": "stage 2, stage 3 and the stage-4 three-seed confirmation",
+    "tasks": ["mmlu", "mmlu_pro"],
+    "basis": "the same total-cap harness and SDPA attention used for the bar milestones; MMLU total cap 14,042 with the anchored allocation, MMLU-Pro 504 items",
+    "bound": "for each of MMLU and MMLU-Pro, the stage-2 model's accuracy must not be below the post-trained 0.8B control by more than 1.0 absolute percentage point, and the paired item-level 95% bootstrap interval for the drop must have a lower bound no worse than -1.0 point",
+    "combined_clause": "the knowledge family mean (MMLU and MMLU-Pro) must not drop by more than 1.0 absolute point",
+    "no_softening": "meeting the math gain while missing this bound is not a win, regardless of the math interval; a family-mean recovery cannot excuse a single task below its bound",
+    "reporting": "both task accuracies, their standard errors, the paired deltas and the paired interval are emitted from the eval receipt, never typed by hand",
+    "why_one_point": "a one-point drop on a 14,042-item task is inside a narrow band around the control's own sampling error at this scale; a larger drop is a measured capability loss rather than noise. The bound is a guard, not a target."
+  },
+  "statistics": {
+    "clustering_unit": "prompt (problem), never continuation",
+    "paired_interval": "prompt-level paired bootstrap, 4,000 resamples, seed 53",
+    "distinct_problems": "reported beside every interval; a task with fewer than 500 distinct MATH-500 problems or 1,319 GSM8K problems is not silently pooled with another task",
+    "maj16": "maj@16 accuracy is reported for the greedy-vs-maj16 gap, but the stage-2 win is greedy, as registered"
+  },
+  "win": {
+    "statement": "stage 2 wins iff (1) greedy beats post-trained 0.8B on BOTH GSM8K and MATH-500 with prompt-level paired 95% intervals above zero, AND (2) MMLU and MMLU-Pro each stay within the 1.0-point general-capability preservation bound.",
+    "both_tasks": true,
+    "retention_is_a_win_condition": true,
+    "no_softening": "a gain on one task, a family-mean tie, a maj@16-only gain, or a math gain that violates the retention bound is not the win",
+    "greedy_only": "the win is greedy; maj@16 is the free-compute headroom measured in stage 1, not a substitute for the greedy win"
+  },
+  "accounting": {
+    "processed_tokens": "tokens consumed by the training stream, reported as in the bar receipt",
+    "supervised_positions": "tokens that actually contribute a loss, split into correct-rollout positions and first-error corrective positions",
+    "teacher_tokens": "teacher decode tokens generated for verification, reported separately; they are compute, not student training tokens",
+    "no_conflation": "a tokens-processed number is never presented as a supervised-position number or vice versa"
+  },
+  "does_not_change": [
+    "teacher, student and their pinned revisions",
+    "the corrected Adam8bit optimiser, lr 1e-5, cosine schedule, warmup 200, grad clip 1.0, 20M tokens, seed 0",
+    "the 20-step smoke requirement and the container limit sized from its own measured peak",
+    "the queue gates: the corrected bar receipt and the real-gradient first-moment validation before the stage-2 launch",
+    "the contamination, thinking-loop and FLOPs risks and their mitigations"
+  ]
+}

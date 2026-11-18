@@ -256,6 +256,23 @@ class ReadAccounting:
     cache_hits: int
     cache_misses: int
     basis: str
+    #: True when the caller supplied the addressed rows. Without addresses the
+    #: read is a per-token model, and every byte number below is labelled
+    #: `modelled` rather than a physical measurement.
+    addresses_supplied: bool = False
+    #: `none` means every request fetches its addressed row; a repeated address
+    #: is a repeated fetch. `call-scoped-address-cache` means an address reported
+    #: resident is charged to `bytes_from_cache` for this call only.
+    cache_model: str = "none"
+    #: Bytes actually requested from the source under `cache_model`; this is the
+    #: physical byte count. It is not the globally deduplicated row count.
+    bytes_physical: int = 0
+    #: The globally deduplicated rows times their row size. Reported for overlap
+    #: with a sparse gather ledger; it is a `modelled` number and never a
+    #: physical-byte claim on its own.
+    bytes_unique_modelled: int = 0
+    #: One row per selected token; used only when no address grid was supplied.
+    bytes_requested_one_row_per_token: int = 0
 
 
 def _address_grid(selection_mask: torch.Tensor,
@@ -366,6 +383,17 @@ def physical_read_accounting(
             "a multi-tier table needs row_tier_by_address or default_tier; "
             f"address {address} has no assigned tier")
 
+    def size_of(address: int) -> int:
+        tier = tier_of(address)
+        if tier is None:
+            return 0
+        if tier not in sizes:
+            raise ValueError(f"address {address} names tier {tier!r}, which has no byte size")
+        return sizes[tier]
+
+    # Legacy ledger: globally deduplicated unique rows. Kept for overlap with a
+    # sparse gather ledger, but it is not a physical-byte count when a repeated
+    # address is fetched again.
     bytes_by_tier: dict[str, int] = {}
     bytes_from_cache = 0
     cache_hits = 0
@@ -373,28 +401,53 @@ def physical_read_accounting(
         tier = tier_of(address)
         if tier is None:
             continue
-        if tier not in sizes:
-            raise ValueError(f"address {address} names tier {tier!r}, which has no byte size")
-        size = sizes[tier]
+        size = size_of(address)
         if address in cached:
             cache_hits += 1
             bytes_from_cache += size
         else:
             bytes_by_tier[tier] = bytes_by_tier.get(tier, 0) + size
     cache_misses = len(unique) - cache_hits
+
+    # Physical ledger: every request is charged once (cache hits are charged to
+    # the cache side only when the caller declared a cache model).
+    cache_model = ("call-scoped-address-cache" if cached else "none")
+    if addresses is None:
+        request_addresses = list(range(selected_tokens))
+    else:
+        request_addresses = [int(value) for value in addresses.reshape(-1).tolist()]
+    bytes_physical = 0
+    physical_cache_bytes = 0
+    for address in request_addresses:
+        size = size_of(address)
+        bytes_physical += size
+        if cached and address in cached:
+            physical_cache_bytes += size
+    bytes_unique_modelled = sum(bytes_by_tier.values()) + bytes_from_cache
     basis = (
         f"logical selection; {uniqueness}; "
         + ("tier byte sizes supplied and charged per row source" if sizes
            else "tier byte sizes not supplied")
-        + ("; cache residency from the store" if cached
-           else "; no addresses reported as resident in cache")
+        + ("; cache model is the store-reported call-scoped address cache"
+           if cached else
+           "; cache model none: every request fetches its row, so bytes_physical "
+           "counts requests, not global unique rows")
+        + ("" if addresses is not None else
+           "; row addresses not supplied, so the physical count is one row per "
+           "selected token and is labelled modelled")
         + "; per-row latency and cache-read cost are not modelled; "
           "measured_cost(read) remains a surrogate")
     return ReadAccounting(
         tokens=int(flat.numel()), selected_tokens=selected_tokens, heads=heads,
         requests=requests, unique_rows_requested=len(unique),
         bytes_by_tier=bytes_by_tier, bytes_from_cache=bytes_from_cache,
-        cache_hits=cache_hits, cache_misses=cache_misses, basis=basis)
+        cache_hits=cache_hits, cache_misses=cache_misses, basis=basis,
+        addresses_supplied=addresses is not None,
+        cache_model=cache_model,
+        bytes_physical=bytes_physical,
+        bytes_unique_modelled=bytes_unique_modelled,
+        bytes_requested_one_row_per_token=(bytes_physical
+                                           if addresses is None else 0))
 
 
 @dataclass(frozen=True)

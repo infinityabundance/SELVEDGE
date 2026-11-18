@@ -1,0 +1,208 @@
+{
+  "amends": {
+    "path": "docs/ws19-p19.9-corrections-s50-registration-v1.json",
+    "rule": "the S50 file is not edited. This registration consumes its corrected interfaces unchanged and adds the runner, the prompt set and the decision rule.",
+    "sha256": "8220eac252417ce70de2b722dafe65728c65d1419a2e96c25c86f2ebba183146"
+  },
+  "amends_v1": {
+    "path": "docs/s52-p19.9-router-screen-registration-v1.json",
+    "rule": "the v1 registration is retained for provenance. This v2 file is committed before any screen run and corrects three defects found in review, not in a result: (1) the gated-dense control inherited the memory arm read counts; (2) the global-unique ledger was quoted as physical bytes; (3) the holdout had 8 problems and the statistics were continuation-level.",
+    "sha256": "5608d1926e3f5ad3db8edc03805d5fb77f1e6f402201d774671f5785aaa4f069"
+  },
+  "arms": {
+    "base": {
+      "role": "frozen student with no arm"
+    },
+    "gated-dense": {
+      "checkpoint": "results/stage2/runs/gated-dense-2m-math/ckpt-000976.pt",
+      "module": "oracle/frontier/matched_controls.py:IdentityGatedDenseResidual",
+      "role": "accuracy attribution control ONLY: the same zero-initialised gate over a dense read. It has no external store, so it has no memory read bytes and must never inherit another arm read counts."
+    },
+    "matched-dense": {
+      "checkpoint": null,
+      "module": "oracle/frontier/matched_controls.py:MatchedDenseAdapter",
+      "role": "the registered data control at the corrective arm's 539,649-element active union. No trained matched-dense 2M checkpoint exists in the repository, so the screen cannot quote it; it is registered as an arm that must be trained before a matched-data comparison is made. The screen's attribution control is gated-dense."
+    },
+    "memory": {
+      "role": "dense memory (always-read) byte control: the same conv-free memory with every token selected and no router. Its own gather ledger is the byte comparison for every routed arm."
+    },
+    "no-memory-gate": {
+      "read": "zero read at every selected token",
+      "role": "gate-only control: any accuracy change cannot come from memory content; parity with base is the expected outcome",
+      "supervision": "counterfactual-outcome"
+    },
+    "utility-ce": {
+      "role": "the CE route; asks whether outcome labels are needed",
+      "supervision": "counterfactual-token-loss"
+    },
+    "utility-outcome": {
+      "role": "the registered P19.9 outcome route",
+      "supervision": "counterfactual-outcome"
+    }
+  },
+  "decision_rule": [
+    "1. utility-outcome wins: carry the pre-read outcome router to the 20M routed-memory bar beside the corrective arm at equal active union.",
+    "2. utility-ce wins and utility-outcome does not: register a threshold/cost sweep, then a 20M CE-supervised router; outcome supervision is not adopted.",
+    "3. no utility arm wins: the pre-read routing hypothesis is a null at 2M; register no 20M router arm and report the post-read gate comparison instead.",
+    "4. no-memory-gate differs from base beyond its standard error: the screen is invalid (the gate-only control must be the identity); report and do not select an arm.",
+    "5. the mask audit fails: the screen is invalid regardless of accuracy; no arm is selected."
+  ],
+  "evaluation": {
+    "accuracy": "exact-answer accuracy over K samples per prompt, all-items denominator; ambiguous and unparseable count as failures and are reported separately",
+    "byte_comparison": "routed read bytes vs the dense memory (always-read) arm read bytes, both from their own ledgers. The gated-dense control has read_bytes null and is not part of the byte comparison.",
+    "gate_statistics": "mean/min/max of the pre-read gate and the predicted Delta on holdout prompt tokens",
+    "mask_enforcement": "the runtime audit requires exactly zero contribution outside the mask; the store is called with exactly the selected indices",
+    "read_measurement": "each routed arm runs the measured gather ledger; the ledger reports requested, unique and repeated addresses per call and per generation, an explicit cache model, and bytes derived from the table element size and width. The physical byte count is request-based. The globally deduplicated unique-row count is reported as unique_bytes_modelled and is never a physical-byte claim.",
+    "screen_label": "mechanism-validation only: 64 calibration prompts, not a capability claim",
+    "split": "holdout prompts only; no prompt in fit or calib",
+    "statistics": "prompt-level paired bootstrap over distinct problems (4,000 resamples, seed 53); the resampling unit is the problem, never the continuation. The number of distinct problems is reported beside every interval."
+  },
+  "features": {
+    "allow_list": [
+      "h_t (causal hidden state at the site)",
+      "hidden_norm (tanh-bounded scalar)",
+      "position_fraction",
+      "budget_fraction"
+    ],
+    "forbidden": [
+      "r_t",
+      "read_norm",
+      "gate_t",
+      "target",
+      "target_id",
+      "y_t",
+      "answer",
+      "gold",
+      "label",
+      "delta",
+      "base_loss",
+      "memory_loss",
+      "teacher_logprob"
+    ],
+    "implied_by_api": "oracle/frontier/utility_routing.py:PreReadUtilityRouter.features enforces the list; metadata must be exactly {position_fraction, budget_fraction} in [0,1]",
+    "why": "the decision must be computable before the memory fetch. A feature from the read, or from any label, makes the route either post-fetch or supervised leakage."
+  },
+  "identifier": "P19.9-S52-S54",
+  "implementation": {
+    "driver": "scripts/s52_p19_9_router.py",
+    "driver_sha256": "4cb6d9db3bf87c3784c76caacbe1b24c1ea8ceee2748034e00f62b651053dbd0",
+    "runner": "oracle/frontier/routing_runner.py",
+    "runner_sha256": "c4b33861d44a3a0c3a66476cf3bdb17ffa9460b6d8f2492b649d19133e3adfcf",
+    "test_claims": [
+      "prompt-set split leakage and sampling drift refuse",
+      "Delta_outcome sign is correct on hand-built paired rollouts and each side is verified separately",
+      "greedy K repeats are identical; a non-deterministic greedy generator refuses",
+      "the feature allow-list rejects post-read and label keys",
+      "labels keep fit/calib/holdout disjoint",
+      "training is deterministic and chooses the calibration epoch",
+      "unselected tokens receive exactly zero contribution and zero store requests",
+      "the store ledger reports requested/unique/repeated addresses per call and per generation, derives row bytes from the table, and labels the unique-row bytes modelled",
+      "the win bar uses gated-dense for accuracy and the dense memory for bytes; a gated-dense read count is never the byte control",
+      "the prompt-level paired bootstrap resamples distinct problems, not continuations",
+      "missing or unpaired rollouts refuse the runner"
+    ],
+    "tests": "oracle/tests/test_s52_p19_9_runner.py",
+    "tests_sha256": "fb5798eac45d6c68be6bcfac6a1381a6ea17cc9ed9c3c1ab904861cc11e5901c"
+  },
+  "memory_condition": {
+    "checkpoint": "results/stage2/runs/memory-2m/ckpt-000976.pt",
+    "init": "results/stage2/graft/20261116T231451Z/memory-init.pt",
+    "mechanism": "conv-free 8-row table gather with the registered memory key gate and value projection, no cross-token convolution",
+    "role": "the 2M-token memory arm is the base+memory side of the paired rollouts",
+    "why_conv_free": "the corrective memory's 8-channel causal convolution needs the retrieved values of the preceding kernel-1 tokens. A routed token may have unselected predecessors whose rows were never fetched, so that convolution cannot be evaluated exactly from a sparse gather. The routed mechanism therefore removes the convolution and the paired memory side is the same conv-free operator with every token selected. This is a registered mechanism, not a lossy approximation of the corrective arm."
+  },
+  "next_route": {
+    "if_ce_wins": "threshold/cost sweep, then the 20M CE-supervised router",
+    "if_null": "no 20M router arm; the next route is the post-read gate comparison already registered at S43",
+    "if_outcome_wins": "20M routed-memory bar with the pre-read outcome router, scored beside the corrective arm and the matched gated-dense control on the anchored harness",
+    "never": "a 20M router arm is never registered from a 2M null, a mean CE improvement, or a read-magnitude saving"
+  },
+  "prompt_set": {
+    "holdout_power": "24 distinct problems support a prompt-level paired interval; 8 did not. The set remains too small for a benchmark claim and is labelled mechanism-validation only.",
+    "items": 64,
+    "no_leakage": "a prompt id and a normalised prompt text each appear in exactly one split; labels_from_records independently rejects a label key in features and a prompt in both fit and holdout",
+    "path": "docs/s52-p19.9-calibration-prompts-v2.json",
+    "sha256": "8c7b27a6d808af4dfaa4391165536783670b813a009b11a220a88459b1edae53",
+    "source": "the same committed 64 GSM8K-train prompts as v1, re-graded by file order 32/8/24; no question, answer, id or sampling parameter changed",
+    "source_arrow_sha256": "6146bca074f4c6c5e07de7e96cc968adab3833dbdafeda21830f27558eea3d9b",
+    "split": {
+      "calib": 8,
+      "fit": 32,
+      "holdout": 24
+    },
+    "split_unit": "prompt_id; the loader also refuses the same normalised question text in two splits",
+    "why_gsm8k_train": "the anchored harness scores the GSM8K test split and MATH-500; using GSM8K train keeps the router calibration disjoint from both. The prompt set is committed so the split, the answers and the sampling are fixed before the run."
+  },
+  "purpose": "Register the executable 2M counterfactual pre-read router screen before any GPU run: the paired-rollout spec, the supervision sources, the prompt split, the four arms and the attribution control, the win bar and the next route. The S50 registration corrected the router's ordering and its outcome label; this file registers the run that tests them.",
+  "queue_order": {
+    "gate_1": "the corrected 20M bar has a receipt",
+    "gate_2": "the real-gradient first-moment validation receipt exists; if it requires the bf16 switch the screen runs with --first-moment bfloat16",
+    "gate_3": "the rollout and eval stages refuse to start before both; the screen must follow (a)-(d), not run in parallel",
+    "memory_sizing": "the screen's limit is derived from its own smoke peak; a bf16 first moment leaves 0.16 GiB of the 12.5 GiB VRAM limit and the router adds parameters"
+  },
+  "registered_utc": "2026-11-18T02:00:00Z",
+  "registering_session": "S54",
+  "sampling": {
+    "greedy_rule": "temperature 0.0 and top_p 1.0; K repeats are real decodes and must be identical, which is the determinism check",
+    "modes": [
+      "greedy",
+      "sampled"
+    ],
+    "pairing": "base and memory draws share (prompt_id, sample_index) and the same stable seed; they do not share any other seed",
+    "primary_label": "Delta_outcome = P(correct|memory) - P(correct|base) over the K pairs",
+    "registered_primary": {
+      "k": 4,
+      "max_new_tokens": 384,
+      "mode": "sampled",
+      "seed": 0,
+      "temperature": 0.8,
+      "top_p": 0.95
+    },
+    "secondary_label": "Delta_CE = CE_base - CE_memory on the completion; per-token CE differences are recorded for audit, not used as prompt-token targets",
+    "verification": "each completion is verified separately with frontier.rft.verify (exact numeric or canonical expression); ambiguous and unparseable are failures, reported as their own verdicts"
+  },
+  "schema": "selvedge/p19.9-router-screen-registration/v2",
+  "status": "runner and CPU contract implemented and tested; the 2M screen is registered and NOT run. The byte and accuracy comparisons are separated, the holdout is 24 distinct problems, and every statistic is paired at the problem level. This set is a mechanism validation, not a capability benchmark.",
+  "targets_and_cost": {
+    "absolute_control_source": "verified-outcome is kept as a registered source and is not the outcome route",
+    "cost": "physical_read_accounting: unique rows requested, bytes by tier and cache state; the read-magnitude surrogate measured_cost(read) is never used",
+    "cost_units": "the screen reports rows and bytes per token and sweeps the gate threshold; it does not invent a nats-per-byte price",
+    "primary": "counterfactual-outcome (paired verified rollouts)",
+    "row_unit": "one store request is the 8 addressed table rows for one token; the table is fp32, so 8 * 256 * 4 = 8192 bytes per request",
+    "secondary": "counterfactual-token-loss (paired CE)"
+  },
+  "training": {
+    "data": "fit split trains, calibration split chooses the epoch, holdout is scored once",
+    "determinism": "same seed, data and torch build reproduce the parameter hash; asserted by the test suite",
+    "loss": "weighted mean squared error on Delta; weight 1/T per prompt so prompts weigh equally regardless of length",
+    "refusal": "no rollouts, no hidden-state artifact or a prompt without a verified pair refuses training",
+    "registered": {
+      "batch": 256,
+      "epochs": 60,
+      "lr": 0.001,
+      "seed": 0,
+      "threshold": 0.5,
+      "weight_decay": 0.0
+    },
+    "router": "PreReadUtilityRouter, zero-initialised output layer, seeded first layer"
+  },
+  "what_this_registration_does_not_establish": [
+    "that the pre-read router improves routing: no screen has run",
+    "that the paired outcome label beats the absolute control: that is the registered experiment",
+    "that the conv-free routed read matches the corrective arm's read: it is a registered mechanism with its own dense condition, not an approximation",
+    "that the 2M result transfers to 20M or to the anchored harness",
+    "that the cost units are a price: the screen reports bytes and sweeps the threshold"
+  ],
+  "win_bar": {
+    "accuracy_control": "gated-dense (no external store; read_bytes null)",
+    "byte_control": "memory (dense memory, every token reads the table)",
+    "no_global_unique_byte_claim": "no physical-byte claim is made from the global-unique ledger. Physical bytes are requested rows under the stated cache model.",
+    "no_shared_read_counts": "the gated-dense control never inherits the memory arm read counts; its read_bytes is null and it is used only for accuracy",
+    "no_single_number_win": "no accuracy or byte number may be quoted from the training log; every number comes from the eval receipt",
+    "null_result": "if neither utility arm wins, the pre-read routing hypothesis is not supported at 2M and no 20M router arm is registered",
+    "primary_arm": "utility-outcome",
+    "rule": "an arm wins the screen only if (1) its holdout exact-answer accuracy beats base, and (2) it beats the gated-dense accuracy control, each by more than the combined binomial standard error AND with a prompt-level paired 95% bootstrap interval above zero, and (3) it requests fewer physical read bytes than the dense memory (always-read) control, both measured by their own gather ledgers",
+    "secondary_arm": "utility-ce",
+    "why_both_controls": "beating base alone can be the dense data control gain; beating the gate control alone can be the gate rather than the route. The route claim needs both accuracies and a measured read saving against the always-read memory."
+  }
+}

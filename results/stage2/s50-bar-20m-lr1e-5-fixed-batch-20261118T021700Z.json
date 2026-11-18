@@ -1,0 +1,79 @@
+{
+  "batch_count": 8,
+  "command": [
+    "scripts/s50_fixed_batch_kl.py",
+    "--stream-manifest",
+    "results/stage2/stage2-math-stream-20261117T071120Z.json",
+    "--start-token",
+    "2000000",
+    "--run-dir",
+    "results/stage2/runs/s50-bar-20m-lr1e-5",
+    "--out",
+    "results/stage2/s50-bar-20m-lr1e-5-fixed-batch-20261118T021700Z.json"
+  ],
+  "created_utc": "2026-11-18T02:17:07Z",
+  "heldout_manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+  "heldout_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+  "metric": "KL(teacher_T || student_T) per position at T=2.0, fixed held-out batches; CE at T=1.0",
+  "peak_allocated_gib": 6.475625991821289,
+  "peak_reserved_gib": 6.51171875,
+  "results": [
+    {
+      "batches": 8,
+      "ce": 0.919470345346781,
+      "checkpoint": "init",
+      "kl": 0.2528676241636276,
+      "positions": 4096,
+      "sha256": null
+    },
+    {
+      "batches": 8,
+      "ce": 0.730826889637683,
+      "checkpoint": "ckpt-002441.pt",
+      "kl": 0.191212575067766,
+      "positions": 4096,
+      "sha256": "8407623cc42d9e4cff2db8f5e1cdba169661956456226dfb693f6ffaeef54c37"
+    },
+    {
+      "batches": 8,
+      "ce": 0.7108379641140345,
+      "checkpoint": "ckpt-004882.pt",
+      "kl": 0.1809718218864873,
+      "positions": 4096,
+      "sha256": "62b51a3ed43ab505efb8052b1d156e3ea3d09b601a486657a1d24b2ead8cd74e"
+    },
+    {
+      "batches": 8,
+      "ce": 0.6909004061271844,
+      "checkpoint": "ckpt-007323.pt",
+      "kl": 0.17014799901517108,
+      "positions": 4096,
+      "sha256": "08e3b9db4aae8f84551c7ac85c9d4517abe178130d969266522a80ea134fc74b"
+    },
+    {
+      "batches": 8,
+      "ce": 0.6810343519446178,
+      "checkpoint": "ckpt-009764.pt",
+      "kl": 0.16618027328513563,
+      "positions": 4096,
+      "sha256": "974093add197fc74e61025e94b60a089a983d55d6b444b4e98d619e07651db27"
+    },
+    {
+      "batches": 8,
+      "ce": 0.6804030657604017,
+      "checkpoint": "ckpt-009765.pt",
+      "kl": 0.1662792625138536,
+      "positions": 4096,
+      "sha256": "8af223620084a03c06d996d6976c8da57f9e3f9adf41e9c0ad6684a48ad1fc32"
+    }
+  ],
+  "revision": "863b3309de8e101600455fc734a207036c0b4a59",
+  "run_dir": "results/stage2/runs/s50-bar-20m-lr1e-5",
+  "schema": "selvedge/s50-fixed-batch-kl/v1",
+  "seq_len": 512,
+  "stamp": "20261118T021707Z",
+  "start_token": 2000000,
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+  "temperature": 2.0
+}

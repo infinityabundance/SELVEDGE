@@ -1,34 +1,54 @@
-# S50/S51 GPU queue — ordered, not run
+# S54 GPU queue — ordered, one job at a time
 
 The corrected-optimiser 20M bar (`results/stage2/runs/s50-bar-20m-lr1e-5`,
-lr 1e-5) is training. **No command on this page may start before its
-`receipt.json` exists** and the run has exited. Every command below is
-serialised: one GPU job at a time, each with an explicit, workload-sized
-`SELVEDGE_MEM` derived from a measured peak for that workload. The host must have
-`limit + 4 GiB` available before a launch; the launchers check this themselves.
+lr 1e-5) **finished** at step 9,765 with
+`receipt.json` (stamp `20261118T001025Z`, revision `2e79ae3`) and verified by
+`results/stage2/s48-bar-verify-20261118T020529Z.json`. Its milestone evals are
+complete in `results/stage2/eval/s50-bar-20m-lr1e-5/`; the fixed-batch receipt
+is `results/stage2/s50-bar-20m-lr1e-5-fixed-batch-20261118T021900Z.json` and the
+curve is `results/stage2/s50-bar-curve-20261118T075110Z.json`. The scores are in
+`results/REPORT.md:report-s50-bar-curve`.
+
+Stage 1 is measured for the greedy non-thinking protocol on both post-trained
+checkpoints; the table and gaps are in `results/REPORT.md:report-s54-stage1`.
+The thinking mode truncated at the registered cap and is recorded as truncation
+evidence, not a score.
+
+**Remaining order (S54):**
+
+1. optimizer validations (real-gradient first moment, then the model-level
+   comparison);
+2. stage 2 — on-policy distillation with failed-rollout corrective supervision;
+3. deferred: the 3e-5/5e-5 fixed-batch KL gate, the conditional 3e-5 bar, and the
+   P19.9 2M screen.
+
+Every command is serialised. Each has an explicit, workload-sized `SELVEDGE_MEM`;
+the host must have `limit + 4 GiB` of `MemAvailable` before a launch. An OOM kill
+is a recorded failure and the limit arithmetic is fixed before a rerun, never
+rerun with the same undersized limit.
 
 Check the gate:
 
 ```bash
 test -f results/stage2/runs/s50-bar-20m-lr1e-5/receipt.json
-pgrep -af 'oracle/frontier/train.py'   # must print nothing
+pgrep -af 'oracle/frontier/train.py|s43_score_total_cap.py'   # must print nothing
 ```
 
-## (a) Score the 1e-5 bar's 5/10/20M milestones
+## 1. Score the bar's 5/10/20M milestones and decide the 100M extension
 
-The milestones are `ckpt-002441` (4,999,168 tokens), `ckpt-004882`
-(9,998,336), `ckpt-007323` (14,997,504) and `ckpt-009765` (19,998,720). The
-6 GiB eval limit is the registered one and carries headroom over the cgroup peak
-measured for this harness and model. The S53 decision rule also needs the same
-fixed held-out batches measured for **every saved checkpoint**, not only the
-milestones; that is the fixed-batch receipt the curve script consumes.
+Milestones: `ckpt-002441` (4,999,168 tokens), `ckpt-004882` (9,998,336),
+`ckpt-007323` (14,997,504) and `ckpt-009765` (19,998,720). The 6 GiB eval limit
+is the registered one (1.83x the 3.269 GiB cgroup peak measured for this harness
+and model). All three milestones are complete; the command is kept for replay.
 
 ```bash
 SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
   scripts/s50_bar_milestones.sh
 
-# the S53 rule's input: every saved checkpoint on the same fixed batches
-SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+# the S53 rule's input: every saved checkpoint on the same fixed batches.
+# The 16 GiB measurement run recorded container memory.peak = 14.03 GiB, so
+# future fixed-batch runs use 21 GiB = max(1.5x peak, peak + 1 GiB).
+SELVEDGE_MEM=16g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
   scripts/court --gpu oracle -- python3 scripts/s50_fixed_batch_kl.py \
     --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json \
     --start-token 2000000 \
@@ -40,84 +60,68 @@ SELVEDGE_MEM=2g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
     --fixed-batch-receipt results/stage2/s50-bar-20m-lr1e-5-fixed-batch-<stamp>.json
 ```
 
-`scripts/s50_bar_curve.py` refuses to decide without the fixed-batch receipt. It
-writes the curve receipt, the fixed-batch CE/KL trend over every saved
-checkpoint, the registered "still paying off" thresholds, the harness endpoint
-confirmation and the resulting 100M-extension decision. Nothing is typed by
-hand. The old harness-points OLS slope is still reported, labelled superseded.
+`s50_bar_curve.py` refuses to decide without the fixed-batch receipt. It writes
+the curve receipt, the CE/KL trend over every saved checkpoint, the registered
+"still paying off" thresholds, the harness endpoint confirmation, the 100M
+decision, and the `report-s50-bar-curve` region in `results/REPORT.md`. The old
+three-point OLS slope is retained and labelled superseded.
 
-## (b) 200-step fixed-batch KL gate at lr 3e-5 and 5e-5
+## 2. Stage 1 — measure the post-trained frontier
 
-Run both rates with the corrected optimiser, then measure the same fixed batches
-for the init and every checkpoint. The 12 GiB limit is the one used by the
-existing 200-step revalidation receipts; the 3e-5/5e-5 runs are the same
-workload (student + teacher + 200 steps).
+Both post-trained checkpoints are already in the persistent cache and verified
+against `models/FRONTIER-POST-TRAINED.lock.json`: 0.8B
+`2fc06364715b967f1860aea9cf38778875588b17` (weight
+`04b1c301…`), 2B `15852e8c16360a2fea060d615a32b45270f8a8fc` (weight
+`aa33250c…`), both Apache-2.0. The fetch receipts are
+`results/frontier-models/20261116-fetch-qwen35-08b.json` and
+`results/frontier/s53-fetch-2b-chat.json`. No re-fetch is needed.
 
-```bash
-SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
-  scripts/court --gpu oracle -- python3 oracle/frontier/train.py \
-    --arm full \
-    --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json \
-    --tokens 409600 --seq-len 512 --micro-batch 1 --grad-accum 4 \
-    --lr 3e-5 --temperature 2.0 --kl-weight 0.5 \
-    --optimizer adam8bit --optim-block 256 --optim-numerics stochastic \
-    --schedule constant --warmup 20 --grad-clip 1.0 --seed 0 \
-    --ckpt-every 50 --keep-checkpoints 8 --log-every 50 \
-    --run-dir results/stage2/runs/s50-revalidate-200-lr3e-5 \
-    --vram-limit-gib 12.5 --abort-update-factor 10.0
+**Engine.** vLLM 0.34.0 is the registered future engine but is **not installed**
+in the offline eval image. The pinned transformers stack (5.23.0 / torch 2.15.0)
+loads the checkpoints; every stage-1 number is a transformers number and the
+receipt says so. A vLLM number is not claimed.
 
-SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
-  scripts/court --gpu oracle -- python3 scripts/s50_fixed_batch_kl.py \
-    --stream-manifest results/stage2/stage2-math-stream-20261117T071120Z.json \
-    --start-token 2000000 \
-    --run-dir results/stage2/runs/s50-revalidate-200-lr3e-5 \
-    --out results/stage2/s50-fixed-batch-kl-math-lr3e-5-<stamp>.json
-```
-
-Repeat the pair with `--lr 5e-5` and `lr5e-5` in the run directory and output
-name. The gate is the **fixed-batch** teacher KL falling from `init` to
-`ckpt-000200`; the per-step log KL is recorded but is not the gate, because every
-step sees a different batch.
-
-## (c) If, and only if, 3e-5 passes the KL gate: launch the 3e-5 20M bar
-
-The 1e-5 rate was selected by the KL gate, not by a search for the largest stable
-rate. 3e-5 is 3x that rate. The S49 3e-5 run is not evidence against it: that
-run was produced by the defective second moment and is invalidated as a whole.
-The 3x test therefore asks whether the lower rate bought stability at the cost of
-convergence, with the same corrected optimiser and the same tripwires
-(update factor 10.0, CE factor 1.5).
+Smoke each model first and size the real limit from its own cgroup peak:
 
 ```bash
-SELVEDGE_MEM=20g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
-  scripts/s50_bar_20m.sh --lr 3e-5 \
-    --run-dir results/stage2/runs/s50-bar-20m-lr3e-5 \
-    --kl-receipt results/stage2/s50-fixed-batch-kl-math-lr3e-5-<stamp>.json \
-    --detach
+SELVEDGE_MEM=16g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/court --gpu eval -- python3 scripts/s54_post_trained_eval.py \
+    --model-dir /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 \
+    --model-id Qwen/Qwen3.5-0.8B --revision 2fc06364715b967f1860aea9cf38778875588b17 \
+    --tasks gsm8k,math500 --modes non-thinking --decodings greedy \
+    --limit 3 --out results/stage1/s54-smoke-0.8b.json
 ```
 
-The launcher refuses a non-default rate without a KL-gate receipt and records
-its SHA-256 in `launch.json`. When the run exits:
+Then greedy, non-thinking, both tasks (the next number). The 0.8B smoke
+recorded `container_memory.memory_peak` = 1.72 GiB, so the full run used 6 GiB
+(3.5x the smoke peak).
 
 ```bash
-SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
-  scripts/s50_bar_milestones.sh \
-    --run-dir results/stage2/runs/s50-bar-20m-lr3e-5 \
-    --eval-root results/stage2/eval/s50-bar-20m-lr3e-5
-
-SELVEDGE_MEM=2g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
-  scripts/court python -- python3 scripts/s50_bar_curve.py \
-    --run-dir results/stage2/runs/s50-bar-20m-lr3e-5 \
-    --eval-root results/stage2/eval/s50-bar-20m-lr3e-5 \
-    --out results/stage2/s50-bar-curve-lr3e-5-<stamp>.json
+SELVEDGE_MEM=6g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/court --gpu eval -- python3 scripts/s54_post_trained_eval.py \
+    --model-dir /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 \
+    --model-id Qwen/Qwen3.5-0.8B --revision 2fc06364715b967f1860aea9cf38778875588b17 \
+    --tasks gsm8k,math500 --modes non-thinking --decodings greedy \
+    --batch-size 32 --vram-limit-gib 13.0 \
+    --out results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json
 ```
 
-If 3e-5 fails the KL gate, **do not launch a 5e-5 bar**; the 5e-5 KL receipt is
-the record and the 1e-5 bar remains the eligible one. A failing 3e-5 20M bar is
-also a result: it says the 1e-5 rate is the correct operating point for this
-optimiser, not that a higher rate is forbidden.
+Repeat for the 2B. Its smoke recorded `container_memory.memory_peak` = 6.12 GiB,
+so the full 2B run used 10 GiB (1.63x the smoke peak). Thinking mode was run on a
+50-problem subset and truncated every generation at the registered cap; it is
+recorded as truncation evidence, not a score. The maj@16 subsets use the same
+protocol and are paired at the problem level.
 
-## (d) Real-gradient first-moment validation
+Render the table after the runs:
+
+```bash
+SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=512m \
+  scripts/court python -- python3 scripts/s54_stage1_report.py --write
+```
+
+## 3. Optimiser validations
+
+### 3a. Real-gradient first-moment validation
 
 Capture (GPU; one file, two probes, model not updated between probes):
 
@@ -129,9 +133,7 @@ SELVEDGE_MEM=20g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
 ```
 
 The 20g limit is the bar's: the same student and teacher are resident, and the
-previous bar's cgroup peak was 8.76 GB (floor max(1.5x, +1 GiB) = 13.1 GB). The
-fixture is a `.pt` file under `results/artifacts/`, which is gitignored; the
-tracked evidence is `capture.json` with the fixture SHA-256.
+bar's cgroup peak was 12.281 GiB (floor max(1.5x, +1 GiB) = 18.4 GiB).
 
 CPU harness (no GPU; runs on the captured tensors):
 
@@ -145,84 +147,14 @@ SELVEDGE_MEM=8g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
 Decision rule (in the receipt): the int8 first moment stays if the worst
 relative update L2 is `< 0.40`, the max `|update|` ratio against AdamW is
 `< 3.0`, and the final parameter error is `< 0.02`. If int8 fails and the
-`first_moment_storage="bfloat16"` arm passes, the switch is mandatory for the
-next launch (`4.000 B/element`, projected 12.34 GiB against the 12.5 GiB limit). If
-both fail, the first moment is not the cause and a storage switch must not be
-used to excuse the gradient or step-size regime. Do not change the running bar
-mid-run.
+bfloat16 arm passes, the switch is mandatory for the next launch. Do not change
+a running job mid-run.
 
-## (e) P19.9 counterfactual pre-read router, 2M screen
+### 3b. Model-level optimiser comparison, custom int8 state vs fp32 AdamW
 
-The router interface is `oracle/frontier/utility_routing.py` (`select` returns a
-boolean mask, `execute` fetches only selected rows, the two-stage gate cannot
-resurrect a rejected token). Its runner is now implemented:
-
-- `oracle/frontier/routing_runner.py` — paired rollouts, the counterfactual
-  labels, pre-read training, mask-enforced selection audit and read accounting;
-- `scripts/s52_p19_9_router.py` — the executable stages;
-- `oracle/tests/test_s52_p19_9_runner.py` — the CPU contract;
-- `docs/s52-p19.9-router-screen-registration-v1.json` — the registered arms,
-  win bar and next route;
-- `docs/s52-p19.9-calibration-prompts-v1.json` — the registered 64-prompt
-  GSM8K-train calibration set (48 fit / 8 calib / 8 holdout), disjoint from the
-  harness tasks.
-
-The stage gates, all enforced by the driver rather than remembered:
-
-1. supervision is `counterfactual-outcome` (primary) or
-   `counterfactual-token-loss` (secondary) through `labels_from_records`, with
-   the prompt-level fit/calib/holdout split enforced and the same prompt text
-   forbidden in two splits;
-2. the routed read calls `execute` with a read path that records the unique
-   table rows it gathers; the receipt reports that ledger beside
-   `physical_read_accounting` (unique rows, tier bytes, cache hits), and the
-   read-magnitude surrogate `measured_cost(read)` is never used;
-3. the GPU stages refuse to start before the bar receipt and the real-gradient
-   validation receipt exist, and a `switch-first-moment-to-bfloat16` decision
-   forces `--first-moment bfloat16`;
-4. the container limit must come from this workload's own smoke peak. No smoke
-   has run yet, so the number below is deliberately absent: run `rollouts` once
-   with a generous limit, read `container_memory.memory_peak` from its receipt,
-   and size the real run from that measured peak (factor 1.5, never below
-   +1 GiB) before any screen number is quoted.
-
-```bash
-SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=512m \
-  scripts/s52_p19_9_screen.sh frame
-
-# smoke: size the limit from the receipt's container_memory.memory_peak later
-SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
-  scripts/s52_p19_9_screen.sh rollouts
-
-SELVEDGE_MEM=4g SELVEDGE_CPUS=4 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g \
-  scripts/s52_p19_9_screen.sh train
-
-SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
-  scripts/s52_p19_9_screen.sh eval
-
-SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=512m \
-  scripts/s52_p19_9_screen.sh screen
-```
-
-The screen is registered (arms `utility-outcome`, `utility-ce`,
-`no-memory-gate`, `matched-dense`, with `gated-dense` as the attribution
-control) and **not run**. The win bar and the next route are in the
-registration; no 20M router arm may be registered without a win here.
-
-## (f) Model-level optimiser comparison, custom int8 state vs fp32 AdamW
-
-The CPU harness is `oracle/frontier/optim_compare.py`; its contract is
-`oracle/tests/test_s53_optimizer_comparison.py` and it passes on fake states.
-The GPU driver is `scripts/s53_optimizer_comparison.py`. It captures one exact
-initial trainable state, restores it for each arm, uses the same stream offsets
-and the same fixed evaluation batches for both arms, and reports fixed-batch
-teacher KL plus held-out CE at init and every 25 steps for 200 steps. The arms
-run sequentially so only one student is resident.
-
-No smoke of this workload has run, so **no container limit is written here**.
-Run a short smoke first with a generous explicit `SELVEDGE_MEM`, read
-`container_memory.memory_peak` from its receipt, and size the 200-step run at
-max(1.5x peak, peak + 1 GiB) before any number is quoted. The queued command is:
+No smoke of this workload has run. Run a short smoke with a generous explicit
+`SELVEDGE_MEM`, read `container_memory.memory_peak` from its receipt, and size
+the 200-step run at max(1.5x peak, peak + 1 GiB) before any number is quoted.
 
 ```bash
 SELVEDGE_MEM=<from the smoke receipt> SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 \
@@ -235,25 +167,83 @@ SELVEDGE_TMP=2g scripts/court --gpu oracle -- \
     --out results/stage2/s53-optimiser-comparison-<stamp>.json
 ```
 
-This is queued, not run. It does not replace the real-gradient first-moment
-validation in (d); it asks the model-level question that a per-tensor parity
-test cannot answer.
+This asks the model-level question a per-tensor parity test cannot answer.
+
+## 4. Stage 2 — on-policy distillation
+
+Registration: `docs/ws19-post-trained-route-registration-v1.json`. The S54
+amendment `docs/ws19-post-trained-route-stage2-amendment-s54-v1.json` supersedes
+the supervision and win clauses **before any stage-2 run**:
+
+- correct rollouts keep per-token reverse KL;
+- failed rollouts are included when the post-trained 2B produces a continuation
+  that `frontier.rft.verify` confirms; supervision is the first-error suffix,
+  not the whole failed continuation;
+- failed rollouts without a verified teacher continuation contribute zero and
+  are counted;
+- the win now also requires MMLU and MMLU-Pro to stay inside the registered
+  general-capability bound.
+
+Stage 2 may start only after items 1 and 3 settle the bar and the first-moment
+storage. A 20-step smoke sizes the container from its own cgroup peak; the
+registered recipe is lr 1e-5, 20M tokens, seed 0, corrected Adam8bit.
+
+```bash
+SELVEDGE_MEM=<1.5x the stage-2 smoke peak, never below +1 GiB> \
+SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
+  scripts/court --gpu oracle -- python3 oracle/frontier/train.py \
+    --arm full --sft-examples <the refresh-1 examples> \
+    --tokens 20000000 --seq-len 512 --micro-batch 1 --grad-accum 4 \
+    --lr 1e-5 --temperature 2.0 --kl-weight 0.5 \
+    --optimizer adam8bit --optim-block 256 --optim-numerics stochastic \
+    --schedule cosine --min-lr-ratio 0.1 --warmup 200 --grad-clip 1.0 --seed 0 \
+    --run-dir results/stage2/runs/s54-stage2-post-trained \
+    --vram-limit-gib 12.5 --abort-update-factor 10.0
+```
+
+The exact refresh, corrective-supervision and accounting flags are the
+implementation step; they must be receipted before launch. The queue entry is
+ordered, not a substitute for the registered implementation.
+
+## 5. Deferred
+
+### 5a. 200-step fixed-batch KL gate at lr 3e-5 and 5e-5
+
+Deferred. The corrected 1e-5 bar is the eligible operating point; a rate search
+is not the next number. If it is run, the gate is the fixed-batch teacher KL
+falling from `init` to `ckpt-000200`, not the per-step log KL.
+
+### 5b. Conditional 3e-5 20M bar
+
+Deferred and conditional on 5a passing. A failing 3e-5 gate is a result: it says
+1e-5 is the correct operating point, not that a higher rate is forbidden.
+
+### 5c. P19.9 2M router screen
+
+Deferred. S54 repaired the pre-run defects: the accuracy control (`gated-dense`)
+and the byte control (`memory`, dense always-read) are separate; the gather
+ledger reports requested/unique/repeated addresses per call and per generation
+with an explicit cache model; physical bytes are request-based and the unique
+count is labelled `modelled`; the holdout is 24 distinct problems and the
+statistics are a prompt-level paired bootstrap. See
+`docs/S52-REPAIR-S54.md` and
+`docs/s52-p19.9-router-screen-registration-v2.json`. The screen is a
+mechanism validation, not a capability claim, and is not run.
 
 ## Numbers in this page and their receipts
 
-These are operational limits and byte projections, not new measurements:
+Operational limits and byte projections, not new measurements:
 
-- **8.76 GB** is `container_memory.memory_peak` = 8,762,351,616 bytes in
-  `results/stage2/runs/full-20m-math/receipt.json`. That run is invalidated as a
-  score by S50, but the model and teacher it held are the same, so its resource
-  peak is the sizing precedent it was already used for at the S49 launch.
-- **11.885 GiB** is `peak_allocated_gib` in
-  `results/stage2/s50-revalidation-20261117T210326Z.json` (stamp
-  `20261117T210326Z`, revision `547953f`), the corrected 200-step run.
-- **4.000 B/element** and the **12.34 GiB** bf16-first-moment projection are the
-  byte arithmetic in `oracle/frontier/optim8bit.py` over the measured
-  498,113,344 trainable elements: int8 is 3.015625 B/element, bf16 is 4.000
-  B/element, and the difference is +0.457 GiB over the measured 11.885 GiB peak.
-- The decision thresholds **0.40**, **3.0** and **0.02** are stated in
-  `scripts/s50_real_gradient_validation.py` with their basis; they are not
-  measurements.
+- **12.281 GiB** is `container_memory.memory_peak` = 13,187,850,240 bytes in
+  `results/stage2/runs/s50-bar-20m-lr1e-5/receipt.json` (stamp
+  `20261118T001025Z`, revision `2e79ae3`).
+- **6.476 GiB** is `peak_allocated_gib` in
+  `results/stage2/s50-fixed-batch-kl-math-lr1e-5-20261117T205600Z.json` for the
+  fixed-batch workload.
+- **3.269 GiB** is the cgroup peak of the anchored eval harness in the S48 bar
+  score; the 6 GiB milestone limit is 1.83x it.
+- **4.000 B/element** and the bf16-first-moment projection are the byte
+  arithmetic in `oracle/frontier/optim8bit.py` over the measured
+  498,113,344 trainable elements.
+- The extension thresholds **0.0**, **0.10** and **0.30** are the registered
+  S53/S54 decision constants, not measurements.

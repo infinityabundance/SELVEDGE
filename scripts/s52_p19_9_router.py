@@ -39,8 +39,8 @@ sys.path.insert(0, os.path.join(ROOT, "oracle"))
 from frontier import routing_runner as runner  # noqa: E402
 from frontier import rft  # noqa: E402
 
-PROMPT_SET = "docs/s52-p19.9-calibration-prompts-v1.json"
-REGISTRATION = "docs/s52-p19.9-router-screen-registration-v1.json"
+PROMPT_SET = "docs/s52-p19.9-calibration-prompts-v2.json"
+REGISTRATION = "docs/s52-p19.9-router-screen-registration-v2.json"
 BAR_RECEIPT = "results/stage2/runs/s50-bar-20m-lr1e-5/receipt.json"
 STUDENT_DIR = ("/hf-cache/models/Qwen/Qwen3.5-0.8B-Base/"
                "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68")
@@ -276,6 +276,8 @@ def _sampling_lookup(model_dir: str, device: str, items, spec, condition,
     for item in items:
         plan = runner.sampling_plan(spec, item.prompt_id)
         for sample in plan:
+            if arm is not None:
+                arm.ledger.mark_generation()
             results[(item.prompt_id, sample["sample_index"])] = _generate_one(
                 model, tokenizer, item.prompt, sample, spec.max_new_tokens,
                 device)
@@ -504,16 +506,30 @@ def stage_eval(args) -> int:
 
     def score(name, results_lookup):
         records = []
+        per_prompt = []
         for item in items:
+            prompt_records = []
             for sample in runner.sampling_plan(spec, item.prompt_id):
                 generated = results_lookup[(item.prompt_id,
                                            sample["sample_index"])]
                 verdict = _exact_verifier(spec)(item, generated["completion"])
+                prompt_records.append(verdict["verdict"])
                 records.append(verdict["verdict"])
+            correct = sum(1 for value in prompt_records if value == "correct")
+            per_prompt.append({
+                "prompt_id": item.prompt_id,
+                "score": {name: correct / len(prompt_records)
+                          if prompt_records else 0.0},
+                "correct": correct,
+                "samples": len(prompt_records),
+            })
         correct = sum(1 for value in records if value == "correct")
         return {"correct": correct, "items": len(records),
                 "answered": sum(1 for value in records
                                 if value in ("correct", "wrong")),
+                "distinct_problems": len({row["prompt_id"]
+                                          for row in per_prompt}),
+                "per_prompt": per_prompt,
                 "verdicts": {value: records.count(value)
                              for value in set(records)}}
 
@@ -557,20 +573,39 @@ def stage_eval(args) -> int:
             ledger = ledgers.get(name) or {}
             summary[name]["read_requests"] = int(ledger.get("requested_rows", 0))
             summary[name]["read_bytes"] = int(ledger.get("bytes", 0))
+            summary[name]["read_unique_rows"] = int(ledger.get("unique_rows", 0))
+            summary[name]["read_repeated_rows"] = int(ledger.get("repeated_rows", 0))
+            summary[name]["read_byte_basis"] = (
+                "physical requests from the measured gather ledger; cache "
+                f"model {ledger.get('cache_model')}")
+            summary[name]["ledger"] = ledger
     if "memory" in summary:
         ledger = ledgers.get("memory") or {}
         summary["memory"]["read_requests"] = int(ledger.get("requested_rows", 0))
         summary["memory"]["read_bytes"] = int(ledger.get("bytes", 0))
+        summary["memory"]["read_unique_rows"] = int(ledger.get("unique_rows", 0))
+        summary["memory"]["read_repeated_rows"] = int(ledger.get("repeated_rows", 0))
+        summary["memory"]["read_byte_basis"] = (
+            "physical requests from the measured gather ledger; this is the "
+            "dense always-read condition, one read at every token")
+        summary["memory"]["ledger"] = ledger
     if "no-memory-gate" in summary:
         summary["no-memory-gate"]["read_requests"] = 0
         summary["no-memory-gate"]["read_bytes"] = 0
-    # the dense gate control's reads are the memory arm's reads at the same
-    # tokens; it has no external store, so its read bytes are its dense adapter's
+        summary["no-memory-gate"]["read_byte_basis"] = (
+            "zero read at every selected token by construction")
+    # The gated-dense control has no external store. It must not inherit the
+    # memory arm's read counts: its read numbers are null, and it is used only
+    # as the accuracy control.
     if "gated-dense" in summary:
-        summary["gated-dense"]["read_requests"] = summary.get(
-            "memory", {}).get("read_requests", 0)
-        summary["gated-dense"]["read_bytes"] = summary.get(
-            "memory", {}).get("read_bytes", 0)
+        summary["gated-dense"]["read_requests"] = None
+        summary["gated-dense"]["read_bytes"] = None
+        summary["gated-dense"]["read_byte_basis"] = (
+            "no external store; its dense adapter weights are not memory "
+            "reads, so no byte claim is made for this control")
+        summary["gated-dense"]["role"] = "accuracy attribution control"
+    if "memory" in summary:
+        summary["memory"]["role"] = "dense memory (always-read) byte control"
 
     # prompt-token selection audit: gate statistics and physical read cost of
     # the pre-read decision, measured before any generation read happens
@@ -590,11 +625,21 @@ def stage_eval(args) -> int:
             summary[name]["gate_mean"] = audit["gate_mean"]
             summary[name]["selected_fraction_prompt_tokens"] = (
                 audit["selected_fraction"])
+    # prompt-level paired rows: one per distinct problem, with every arm's
+    # fraction correct for that problem. The bootstrap resamples these rows.
+    prompt_rows = {}
+    for name, value in summary.items():
+        for row in value.get("per_prompt") or []:
+            entry = prompt_rows.setdefault(row["prompt_id"], {
+                "prompt_id": row["prompt_id"], "score": {}})
+            entry["score"].update(row["score"])
+    prompt_rows = [prompt_rows[key] for key in sorted(prompt_rows)]
     scored = runner.evaluate_arms(
         {name: value for name, value in summary.items()
-         if name in ("base", "gated-dense", "utility-outcome", "utility-ce",
-                     "no-memory-gate")},
-        len(items) * spec.k, threshold=args.threshold)
+         if name in ("base", "gated-dense", "memory", "utility-outcome",
+                     "utility-ce", "no-memory-gate")},
+        len(items) * spec.k, threshold=args.threshold,
+        per_prompt=prompt_rows)
     out = args.out
     write_json(out, {
         "schema": "selvedge/p19.9-eval/v1",
@@ -607,6 +652,21 @@ def stage_eval(args) -> int:
         "scored": scored,
         "selection_audit": selection,
         "read_ledgers": ledgers,
+        "prompt_level_rows": len(prompt_rows),
+        "statistics": ("prompt-level paired bootstrap over distinct problems; "
+                       "the resampling unit is the problem, not the "
+                       "continuation"),
+        "screen_label": ("mechanism-validation only: a 64-prompt calibration "
+                         "set is not a capability claim"),
+        "byte_accounting": {
+            "accuracy_control": "gated-dense (no external store, read_bytes null)",
+            "byte_control": "memory (dense always-read)",
+            "no_global_unique_byte_claim": (
+                "the memory arm's read_bytes is the request-based physical "
+                "count from its own gather ledger; the globally deduplicated "
+                "unique-row number is reported as unique_bytes_modelled and is "
+                "never a physical-byte claim"),
+        },
         "evaluation": ("holdout prompts only; exact-answer accuracy over K "
                        "samples per prompt; read cost is the measured gather "
                        "ledger"),
@@ -691,6 +751,12 @@ def stage_screen(args) -> int:
     payload = {
         "schema": runner.SCREEN_RECEIPT_SCHEMA,
         "created_utc": utcnow(), "stamp": stamp(), "revision": revision(),
+        "screen_label": ("mechanism-validation only: 64 calibration prompts, "
+                         "not a capability claim"),
+        "statistics": ("prompt-level paired bootstrap over distinct problems; "
+                       "the resampling unit is the problem, not the "
+                       "continuation"),
+        "byte_accounting": (evaluation.get("byte_accounting") or {}),
         "train_receipt": os.path.relpath(args.train, ROOT),
         "train_receipt_sha256": runner.sha256_file(args.train),
         "eval_receipt": os.path.relpath(args.eval, ROOT),

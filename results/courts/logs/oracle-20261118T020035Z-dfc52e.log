@@ -1,0 +1,58 @@
+.......F...F.........                                                    [100%]
+=================================== FAILURES ===================================
+_______ test_physical_read_accounting_counts_unique_rows_and_tier_bytes ________
+
+    def test_physical_read_accounting_counts_unique_rows_and_tier_bytes():
+        mask = torch.tensor([True, False, True, True])
+        addresses = torch.tensor([0, 0, 0, 1])
+        accounting = routing.physical_read_accounting(
+            mask, row_addresses=addresses, row_bytes_by_tier={"table": 16},
+            cached_addresses={0})
+        assert accounting.tokens == 4
+        assert accounting.selected_tokens == 3
+        assert accounting.requests == 3
+        assert accounting.unique_rows_requested == 2
+        assert accounting.bytes_by_tier == {"table": 16}  # address 1 was fetched
+        assert accounting.bytes_from_cache == 16           # address 0 hit
+        assert accounting.cache_hits == 1
+        assert accounting.cache_misses == 1
+    
+        with pytest.raises(ValueError):
+            routing.physical_read_accounting(mask, cached_addresses={-1})
+        with pytest.raises(ValueError):
+            routing.physical_read_accounting(mask, row_bytes_by_tier={"table": -1})
+        # a float mask would let a rejected token receive a scaled contribution
+        with pytest.raises(ValueError):
+            routing.physical_read_accounting(mask.float())
+    
+        cost = runner.cost_from_accounting(accounting)
+        assert cost["source"] == "physical_read_accounting"
+        assert cost["surrogate_used"] is False
+>       assert cost["bytes_total"] == 32
+E       assert 48 == 32
+
+oracle/tests/test_s52_p19_9_runner.py:356: AssertionError
+_______________ test_win_bar_needs_both_controls_and_fewer_bytes _______________
+
+    def test_win_bar_needs_both_controls_and_fewer_bytes():
+        arms = {
+            "base": {"correct": 10, "items": 50, "read_requests": 0,
+                     "read_bytes": 0},
+            "gated-dense": {"correct": 10, "items": 50, "read_requests": 500,
+                            "read_bytes": 1000},
+            "utility-outcome": {"correct": 20, "items": 50, "read_requests": 200,
+                                "read_bytes": 400},
+            "utility-ce": {"correct": 20, "items": 50, "read_requests": 500,
+                           "read_bytes": 1000},
+            "no-memory-gate": {"correct": 10, "items": 50, "read_requests": 200,
+                               "read_bytes": 0},
+        }
+        report = runner.evaluate_arms(arms, 50, threshold=0.5)
+>       assert report["arms"]["utility-outcome"]["win"] is True
+E       assert False is True
+
+oracle/tests/test_s52_p19_9_runner.py:472: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s52_p19_9_runner.py::test_physical_read_accounting_counts_unique_rows_and_tier_bytes
+FAILED oracle/tests/test_s52_p19_9_runner.py::test_win_bar_needs_both_controls_and_fewer_bytes
+2 failed, 19 passed in 3.64s

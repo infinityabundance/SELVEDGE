@@ -1,0 +1,333 @@
+{
+  "cgroup_memory": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": "17179869184",
+    "memory_peak": "6124576768",
+    "memory_swap_peak": "0"
+  },
+  "command": [
+    "scripts/s54_post_trained_eval.py",
+    "--model-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "--model-id",
+    "Qwen/Qwen3.5-2B",
+    "--revision",
+    "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "--tasks",
+    "gsm8k,math500",
+    "--modes",
+    "non-thinking",
+    "--decodings",
+    "greedy",
+    "--limit",
+    "3",
+    "--batch-size",
+    "4",
+    "--vram-limit-gib",
+    "13.0",
+    "--out",
+    "results/stage1/s54-smoke-2b.json"
+  ],
+  "complete": true,
+  "created_utc": "2026-11-18T03:40:16Z",
+  "engine": {
+    "attention": "sdpa",
+    "dtype": "bfloat16",
+    "name": "transformers",
+    "torch_version": "2.15.0+cu132",
+    "version": "5.23.0",
+    "vllm_available": false,
+    "vllm_note": "vLLM 0.34.0 is not installed in the offline eval image; the pinned transformers stack loads these checkpoints and is the engine for every number here"
+  },
+  "greedy_vs_maj16": {},
+  "model": {
+    "bundle": {
+      "LICENSE": {
+        "bytes": 11544,
+        "sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a"
+      },
+      "chat_template.jinja": {
+        "bytes": 7755,
+        "sha256": "273d8e0e683b885071fb17e08d71e5f2a5ddfb5309756181681de4f5a1822d80"
+      },
+      "config.json": {
+        "bytes": 2908,
+        "sha256": "ed1c1723241f23f7f4e23430759cbd7dcfb4103cbdfe052bfe7626b57c2615b4"
+      },
+      "model.safetensors.index.json": {
+        "bytes": 64460,
+        "sha256": "aca8afed9da75b0f050b408d270766fd77627f1af401e240f61c3b47d0db02f9"
+      },
+      "tokenizer.json": {
+        "bytes": 12807982,
+        "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+      },
+      "tokenizer_config.json": {
+        "bytes": 16709,
+        "sha256": "49e2b6e395f959f077f1e992b338919c0d4a9732fc6e613995e06557f843500c"
+      }
+    },
+    "dir": "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "id": "Qwen/Qwen3.5-2B",
+    "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "text_tower_elements": 1881825088,
+    "weight_sha256_first_shard": "aa33250c4fc64891ddfaba3a314fd9542ea371843c387178b425fbcc5ed680b1"
+  },
+  "protocol": {
+    "extraction": {
+      "exact": "math_verify 0.9.0",
+      "flexible": "boxed, then ####/last number for GSM8K and 'final answer is' for MATH-500",
+      "strict": "last balanced \\boxed{} only"
+    },
+    "few_shot": 0,
+    "greedy": {
+      "temperature": 0.0,
+      "top_p": 1.0
+    },
+    "maj16": {
+      "k": 16,
+      "no_answer": "does not vote",
+      "seed_rule": "torch.manual_seed(5300 + item_index) per item",
+      "temperature": 0.8,
+      "tie": "earliest sample",
+      "top_p": 0.95,
+      "vote_unit": "canonicalised extracted answer"
+    },
+    "max_new_tokens": 4096,
+    "stop": "EOS only",
+    "system": null,
+    "user_template": "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{{}}."
+  },
+  "raw_paths": {
+    "gsm8k-non-thinking-greedy": "results/stage1/s54-smoke-2b-raw/gsm8k-non-thinking-greedy.jsonl",
+    "math500-non-thinking-greedy": "results/stage1/s54-smoke-2b-raw/math500-non-thinking-greedy.jsonl"
+  },
+  "raw_sha256": {
+    "gsm8k-non-thinking-greedy": "c7062006aacd6208128d89d5634fe1828f42d88da81e0ccbb0e7a6fa11c3bf27",
+    "math500-non-thinking-greedy": "c4f6e91edd4b0a302cac5ca77e18fa3794680d598831cad415fcd7b3b8504044"
+  },
+  "revision": "863b3309de8e101600455fc734a207036c0b4a59",
+  "schema": "selvedge/s54-stage1-eval/v1",
+  "stamp": "20261118T034016Z",
+  "tasks": [
+    {
+      "accuracy": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "answered_samples": 3,
+      "boxed_samples": 3,
+      "decode_wall_seconds": 6.659081935882568,
+      "decoding": "greedy",
+      "distinct_problems": 3,
+      "exact": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "exact_basis": "math_verify 0.9.0",
+      "flexible": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "format_correct_fraction": 1.0,
+      "generated_tokens": 1035,
+      "items": 3,
+      "mean_new_tokens": 345.0,
+      "mode": "non-thinking",
+      "peak_vram_gib": 3.6194000244140625,
+      "peak_vram_reserved_gib": 3.658203125,
+      "per_problem": [
+        {
+          "answered_samples": 1,
+          "boxed_samples": 1,
+          "exact_correct": true,
+          "exact_vote_correct": null,
+          "exact_vote_status": null,
+          "flexible_correct": true,
+          "flexible_vote_correct": null,
+          "gold": "18",
+          "problem_id": "gsm8k-test:0",
+          "samples": 1,
+          "strict_correct": true,
+          "strict_vote_correct": null,
+          "strict_vote_status": null,
+          "truncated_samples": 0,
+          "vote_correct": null,
+          "vote_status": null,
+          "vote_value": null
+        },
+        {
+          "answered_samples": 1,
+          "boxed_samples": 1,
+          "exact_correct": true,
+          "exact_vote_correct": null,
+          "exact_vote_status": null,
+          "flexible_correct": true,
+          "flexible_vote_correct": null,
+          "gold": "3",
+          "problem_id": "gsm8k-test:1",
+          "samples": 1,
+          "strict_correct": true,
+          "strict_vote_correct": null,
+          "strict_vote_status": null,
+          "truncated_samples": 0,
+          "vote_correct": null,
+          "vote_status": null,
+          "vote_value": null
+        },
+        {
+          "answered_samples": 1,
+          "boxed_samples": 1,
+          "exact_correct": false,
+          "exact_vote_correct": null,
+          "exact_vote_status": null,
+          "flexible_correct": false,
+          "flexible_vote_correct": null,
+          "gold": "70000",
+          "problem_id": "gsm8k-test:2",
+          "samples": 1,
+          "strict_correct": false,
+          "strict_vote_correct": null,
+          "strict_vote_status": null,
+          "truncated_samples": 0,
+          "vote_correct": null,
+          "vote_status": null,
+          "vote_value": null
+        }
+      ],
+      "samples_per_problem": 1,
+      "strict": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "task": "gsm8k",
+      "tokens_per_second": 155.426830600009,
+      "total_samples": 3,
+      "truncated_fraction": 0.0,
+      "truncated_samples": 0,
+      "wall_seconds": 6.8
+    },
+    {
+      "accuracy": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "answered_samples": 2,
+      "boxed_samples": 2,
+      "decode_wall_seconds": 53.76044511795044,
+      "decoding": "greedy",
+      "distinct_problems": 3,
+      "exact": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "exact_basis": "math_verify 0.9.0",
+      "flexible": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "format_correct_fraction": 0.6666666666666666,
+      "generated_tokens": 5168,
+      "items": 3,
+      "mean_new_tokens": 1722.6666666666667,
+      "mode": "non-thinking",
+      "peak_vram_gib": 3.721022129058838,
+      "peak_vram_reserved_gib": 3.779296875,
+      "per_problem": [
+        {
+          "answered_samples": 1,
+          "boxed_samples": 1,
+          "exact_correct": true,
+          "exact_vote_correct": null,
+          "exact_vote_status": null,
+          "flexible_correct": true,
+          "flexible_vote_correct": null,
+          "gold": "\\left( 3, \\frac{\\pi}{2} \\right)",
+          "problem_id": "math500:test/precalculus/807.json",
+          "samples": 1,
+          "strict_correct": true,
+          "strict_vote_correct": null,
+          "strict_vote_status": null,
+          "truncated_samples": 0,
+          "vote_correct": null,
+          "vote_status": null,
+          "vote_value": null
+        },
+        {
+          "answered_samples": 0,
+          "boxed_samples": 0,
+          "exact_correct": false,
+          "exact_vote_correct": null,
+          "exact_vote_status": null,
+          "flexible_correct": false,
+          "flexible_vote_correct": null,
+          "gold": "p - q",
+          "problem_id": "math500:test/intermediate_algebra/1994.json",
+          "samples": 1,
+          "strict_correct": false,
+          "strict_vote_correct": null,
+          "strict_vote_status": null,
+          "truncated_samples": 1,
+          "vote_correct": null,
+          "vote_status": null,
+          "vote_value": null
+        },
+        {
+          "answered_samples": 1,
+          "boxed_samples": 1,
+          "exact_correct": true,
+          "exact_vote_correct": null,
+          "exact_vote_status": null,
+          "flexible_correct": true,
+          "flexible_vote_correct": null,
+          "gold": "\\frac{14}{3}",
+          "problem_id": "math500:test/algebra/2584.json",
+          "samples": 1,
+          "strict_correct": true,
+          "strict_vote_correct": null,
+          "strict_vote_status": null,
+          "truncated_samples": 0,
+          "vote_correct": null,
+          "vote_status": null,
+          "vote_value": null
+        }
+      ],
+      "samples_per_problem": 1,
+      "strict": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "items": 3,
+        "stderr": 0.2721655269759087
+      },
+      "task": "math500",
+      "tokens_per_second": 96.13015644981,
+      "total_samples": 3,
+      "truncated_fraction": 0.3333333333333333,
+      "truncated_samples": 1,
+      "wall_seconds": 53.9
+    }
+  ],
+  "wall_seconds": 65.6
+}

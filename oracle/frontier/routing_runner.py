@@ -800,16 +800,32 @@ class StoreLedger:
     """What the sparse read path actually gathered.
 
     A `GatherStore` is the only object allowed to touch the table. It records
-    each call's requests, the unique table rows gathered and the bytes those
-    rows cost; the runner reports this beside `physical_read_accounting`.
+    every call's requested / unique / repeated addresses and the byte size it
+    derives from the table itself (`element_size * row_width`).
+
+    The ledger's byte count is **request-based**: with the default
+    `cache_model="none"` a repeated address is a repeated fetch, so
+    `bytes = requested_rows * row_bytes`. The globally deduplicated
+    `unique_rows * row_bytes` number is reported separately and labelled
+    `modelled`; it is not a physical-byte claim.
     """
 
-    row_bytes: int = TABLE_BYTES_PER_ROW
+    row_bytes: int | None = None
+    element_bytes: int | None = None
+    row_width: int | None = None
     calls: int = 0
     requested: int = 0
     unique_rows: int = 0
     unique_row_ids: set = field(default_factory=set)
     cache_hits: int = 0
+    cache_model: str = "none"
+    generation: int = -1
+    call_records: list = field(default_factory=list)
+
+    def mark_generation(self) -> int:
+        """Start a new generation (one sample); calls are grouped by it."""
+        self.generation += 1
+        return self.generation
 
     def gather(self, table: torch.Tensor, addresses: torch.Tensor,
                cache: bool = False) -> torch.Tensor:
@@ -820,23 +836,87 @@ class StoreLedger:
             return table.new_zeros((0,) + tuple(table.shape[1:]))
         if int(addresses.min()) < 0 or int(addresses.max()) >= table.shape[0]:
             raise ValueError("address outside the table")
+        if table.ndim < 2:
+            raise ValueError("the table must have a row axis and a value axis")
+        element_bytes = int(table.element_size())
+        row_width = int(table.shape[1])
+        derived = element_bytes * row_width
+        if self.row_bytes is None:
+            self.row_bytes = derived
+            self.element_bytes = element_bytes
+            self.row_width = row_width
+        elif self.row_bytes != derived:
+            raise ValueError(
+                "the table's own row size changed mid-run: "
+                f"{derived} != {self.row_bytes}")
+        values = [int(value) for value in addresses.tolist()]
+        call_unique = len(set(values))
+        repeated = len(values) - call_unique
         self.calls += 1
-        self.requested += int(addresses.numel())
-        self.unique_row_ids.update(int(v) for v in addresses.tolist())
+        self.requested += len(values)
+        self.unique_row_ids.update(values)
         self.unique_rows = len(self.unique_row_ids)
         if cache:
-            self.cache_hits += int(addresses.numel())
+            self.cache_hits += len(values)
+            if self.cache_model == "none":
+                self.cache_model = "call-scoped-address-cache"
+        self.call_records.append({
+            "call": self.calls,
+            "generation": self.generation,
+            "requested": len(values),
+            "unique": call_unique,
+            "repeated": repeated,
+            "cumulative_unique": self.unique_rows,
+            "cache_hits": len(values) if cache else 0,
+        })
         return table[addresses]
 
     def report(self) -> dict:
+        if self.row_bytes is None:
+            row_bytes = 0
+        else:
+            row_bytes = int(self.row_bytes)
+        requested_bytes = self.requested * row_bytes
+        cache_bytes = self.cache_hits * row_bytes
+        source_bytes = requested_bytes - cache_bytes
+        generations: dict[int, dict] = {}
+        for record in self.call_records:
+            key = int(record["generation"])
+            bucket = generations.setdefault(
+                key, {"generation": key, "calls": 0, "requested": 0,
+                      "unique": 0, "repeated": 0, "cache_hits": 0})
+            bucket["calls"] += 1
+            bucket["requested"] += int(record["requested"])
+            bucket["unique"] += int(record["unique"])
+            bucket["repeated"] += int(record["repeated"])
+            bucket["cache_hits"] += int(record["cache_hits"])
         return {
             "calls": self.calls,
+            "generations": max(0, self.generation + 1),
             "requested_rows": self.requested,
             "unique_rows": self.unique_rows,
-            "bytes": self.unique_rows * self.row_bytes,
-            "row_bytes": self.row_bytes,
+            "repeated_rows": self.requested - self.unique_rows,
+            "bytes": requested_bytes,
+            "bytes_from_source": source_bytes,
+            "bytes_from_cache": cache_bytes,
+            "unique_bytes_modelled": self.unique_rows * row_bytes,
+            "row_bytes": row_bytes,
+            "row_width": self.row_width,
+            "element_bytes": self.element_bytes,
+            "cache_model": self.cache_model,
             "cache_hits": self.cache_hits,
-            "basis": "measured gather ledger: unique addressed table rows",
+            "bases": {
+                "bytes": ("physical requests under cache_model; repeated "
+                          "addresses are repeated fetches when cache_model is "
+                          "none"),
+                "unique_bytes_modelled": ("modelled: globally deduplicated "
+                                          "rows times the table's own row size; "
+                                          "not a physical-byte claim"),
+                "row_bytes": ("derived from table.element_size() * "
+                              "table.shape[1] on the first gather"),
+            },
+            "per_call": list(self.call_records),
+            "per_generation": [generations[key] for key in sorted(generations)],
         }
 
 
@@ -853,7 +933,8 @@ def cost_from_accounting(accounting: routing.ReadAccounting) -> dict:
             "surrogate measured_cost(read) is not accepted")
     tokens = max(int(accounting.tokens), 1)
     fetched_bytes = sum(int(value) for value in accounting.bytes_by_tier.values())
-    total_bytes = fetched_bytes + int(accounting.bytes_from_cache)
+    unique_bytes = fetched_bytes + int(accounting.bytes_from_cache)
+    physical_bytes = int(getattr(accounting, "bytes_physical", unique_bytes))
     return {
         "source": "physical_read_accounting",
         "tokens": tokens,
@@ -864,13 +945,21 @@ def cost_from_accounting(accounting: routing.ReadAccounting) -> dict:
         "unique_rows_requested": int(accounting.unique_rows_requested),
         "unique_rows_per_token": accounting.unique_rows_requested / tokens,
         "bytes_by_tier": dict(accounting.bytes_by_tier),
-        "bytes_fetched_total": fetched_bytes,
-        "bytes_fetched_per_token": fetched_bytes / tokens,
+        "bytes_physical": physical_bytes,
+        "bytes_physical_per_token": physical_bytes / tokens,
+        "bytes_unique_modelled": unique_bytes,
+        "bytes_unique_modelled_per_token": unique_bytes / tokens,
         "bytes_from_cache": int(accounting.bytes_from_cache),
-        "bytes_total": total_bytes,
-        "bytes_per_token": total_bytes / tokens,
+        "bytes_total": physical_bytes,
+        "bytes_per_token": physical_bytes / tokens,
         "cache_hits": int(accounting.cache_hits),
         "cache_misses": int(accounting.cache_misses),
+        "cache_model": getattr(accounting, "cache_model", "none"),
+        "addresses_supplied": bool(getattr(accounting, "addresses_supplied", False)),
+        "byte_claim": ("physical requests under the stated cache model"
+                       if getattr(accounting, "addresses_supplied", False)
+                       else "modelled: row addresses were not supplied, so one "
+                            "row per selected token is charged"),
         "surrogate_used": False,
         "basis": accounting.basis,
     }
@@ -935,9 +1024,16 @@ def selection_report(router: routing.PreReadUtilityRouter,
         unique_rows_requested=rows_selected,
         bytes_by_tier=bytes_by_tier, bytes_from_cache=bytes_from_cache,
         cache_hits=cache_hits, cache_misses=rows_selected - cache_hits,
+        addresses_supplied=False,
+        cache_model="modelled-one-row-per-token",
+        bytes_physical=sum(bytes_by_tier.values()) + bytes_from_cache,
+        bytes_unique_modelled=sum(bytes_by_tier.values()) + bytes_from_cache,
+        bytes_requested_one_row_per_token=sum(bytes_by_tier.values())
+        + bytes_from_cache,
         basis="sum over prompts; one row per selected token "
               "(memory row addresses not supplied to the selection audit; "
-              "the executed path charges the memory's 8 rows per token)")
+              "the executed path charges the memory's 8 rows per token); "
+              "this is a modelled selection cost, not a physical-byte claim")
     return {
         "prompts": len(examples),
         "tokens": total_tokens,
@@ -961,24 +1057,90 @@ def selection_report(router: routing.PreReadUtilityRouter,
             "bytes_from_cache": accounting.bytes_from_cache,
             "cache_hits": accounting.cache_hits,
             "cache_misses": accounting.cache_misses,
+            "cache_model": accounting.cache_model,
+            "addresses_supplied": accounting.addresses_supplied,
+            "bytes_physical": accounting.bytes_physical,
+            "bytes_unique_modelled": accounting.bytes_unique_modelled,
             "basis": accounting.basis,
         },
         "cost": cost_from_accounting(accounting),
+        "selection_cost_label": ("modelled: one row per selected token; the "
+                                 "executed path's own ledger is the physical "
+                                 "measurement"),
         "mask_enforcement": ("unselected contribution is exactly zero; the "
                              "post-read stage never sees an unfetched value"),
         "audited": bool(audit_mask),
     }
 
 
-def evaluate_arms(arms: Mapping[str, Mapping], n_items: int,
-                  threshold: float = 0.5) -> dict:
-    """Score the registered arms and apply the win bar.
+def _percentile(values: list[float], fraction: float) -> float:
+    ordered = sorted(values)
+    if not ordered:
+        return 0.0
+    position = fraction * (len(ordered) - 1)
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = position - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
 
-    Each arm provides `correct`, `items`, `read_requests`, `read_bytes` and
-    optionally `answered`. Accuracy uses the all-items denominator; the standard
-    error is binomial. An arm wins only if it beats both the base and the
-    matched gated-dense control by more than the combined standard error **and**
-    requests fewer bytes than the dense control.
+
+def prompt_paired_bootstrap(per_prompt: Sequence[dict], arm: str,
+                            reference: str,
+                            resamples: int = 4000, seed: int = 53) -> dict:
+    """Paired bootstrap over distinct problems, never over continuations.
+
+    Each `per_prompt` entry carries one score per arm in [0, 1] (the fraction
+    correct for that problem's K samples). The resampling unit is the problem,
+    so a prompt with 16 continuations is one observation, not sixteen.
+    """
+    import random
+
+    deltas = []
+    for row in per_prompt:
+        scores = row.get("score") or {}
+        if arm not in scores or reference not in scores:
+            continue
+        deltas.append(float(scores[arm]) - float(scores[reference]))
+    if not deltas:
+        return {"problems": 0, "delta": None, "ci95": None,
+                "basis": "prompt-level paired bootstrap"}
+    observed = sum(deltas) / len(deltas)
+    rng = random.Random(seed)
+    n = len(deltas)
+    draws = []
+    for _ in range(resamples):
+        draws.append(sum(deltas[rng.randrange(n)] for _ in range(n)) / n)
+    return {
+        "problems": n,
+        "delta": observed,
+        "ci95": [_percentile(draws, 0.025), _percentile(draws, 0.975)],
+        "resamples": resamples,
+        "seed": seed,
+        "basis": ("prompt-level paired bootstrap; the resampling unit is the "
+                  "distinct problem, never the continuation"),
+    }
+
+
+def evaluate_arms(arms: Mapping[str, Mapping], n_items: int,
+                  threshold: float = 0.5,
+                  per_prompt: Sequence[dict] | None = None) -> dict:
+    """Score the registered arms and apply the corrected win bar.
+
+    The two controls answer two different questions and are never substituted
+    for each other:
+
+    * **accuracy** is compared against `gated-dense`, the same zero-initialised
+      gate over a dense read. It has no external store and therefore no memory
+      read bytes; its `read_bytes` is `None` and is never borrowed from another
+      arm.
+    * **bytes** are compared against the dense memory condition, `memory`
+      (every token reads the table, no router), whose measured gather ledger is
+      the always-read byte count. If that arm is absent, no byte claim is made
+      and no arm can win on bytes.
+
+    When `per_prompt` is supplied, the statistical condition is also required
+    on a prompt-level paired bootstrap: the interval must exclude zero. The
+    resampling unit is the distinct problem.
     """
     required = {"base", "gated-dense"}
     missing = required - set(arms)
@@ -992,20 +1154,35 @@ def evaluate_arms(arms: Mapping[str, Mapping], n_items: int,
         correct = int(value["correct"])
         accuracy = correct / items
         stderr = math.sqrt(accuracy * (1.0 - accuracy) / items)
+        read_bytes = value.get("read_bytes")
         report[name] = {
             "correct": correct,
             "items": items,
             "answered": int(value.get("answered", items)),
             "accuracy": accuracy,
             "accuracy_stderr": stderr,
-            "read_requests": int(value.get("read_requests", 0)),
-            "read_bytes": int(value.get("read_bytes", 0)),
+            "read_requests": (None if read_bytes is None
+                              else int(value.get("read_requests", 0))),
+            "read_bytes": None if read_bytes is None else int(read_bytes),
             "gate_mean": value.get("gate_mean"),
         }
     base = report["base"]
     control = report["gated-dense"]
-    dense = arms["gated-dense"]
-    dense_bytes = int(dense.get("read_bytes", 0))
+    # the dense memory condition is the byte control; gated-dense is never one
+    dense = arms.get("dense-memory") or arms.get("memory")
+    dense_bytes = None if dense is None else dense.get("read_bytes")
+    dense_bytes = None if dense_bytes is None else int(dense_bytes)
+    prompt_level = {}
+    if per_prompt:
+        distinct = len({row["prompt_id"] for row in per_prompt})
+        for name in report:
+            prompt_level[name] = {
+                "distinct_problems": distinct,
+                "vs_base": prompt_paired_bootstrap(per_prompt, name, "base"),
+                "vs_control": prompt_paired_bootstrap(per_prompt, name,
+                                                      "gated-dense"),
+            }
+            report[name]["prompt_level"] = prompt_level[name]
     for name, row in report.items():
         if name in ("base", "gated-dense"):
             continue
@@ -1017,19 +1194,37 @@ def evaluate_arms(arms: Mapping[str, Mapping], n_items: int,
         row["combined_stderr_vs_base"] = se_base
         row["delta_vs_control"] = delta_control
         row["combined_stderr_vs_control"] = se_control
-        row["beats_base"] = delta_base > se_base
-        row["beats_control"] = delta_control > se_control
-        row["fewer_bytes_than_dense"] = (row["read_bytes"] < dense_bytes
-                                         if dense_bytes > 0 else
-                                         row["read_requests"] <
-                                         int(dense.get("read_requests", 0)))
+        ci_base = (prompt_level.get(name, {}).get("vs_base", {})
+                   .get("ci95"))
+        ci_control = (prompt_level.get(name, {}).get("vs_control", {})
+                      .get("ci95"))
+        row["beats_base"] = bool(
+            delta_base > se_base and
+            (ci_base is None or ci_base[0] > 0.0))
+        row["beats_control"] = bool(
+            delta_control > se_control and
+            (ci_control is None or ci_control[0] > 0.0))
+        if dense_bytes is None or row["read_bytes"] is None:
+            row["fewer_bytes_than_dense"] = None
+        else:
+            row["fewer_bytes_than_dense"] = row["read_bytes"] < dense_bytes
         row["win"] = bool(row["beats_base"] and row["beats_control"]
-                          and row["fewer_bytes_than_dense"])
+                          and row["fewer_bytes_than_dense"] is True)
     verdict = {
-        "rule": ("an arm wins only if it beats base and the matched gated-dense "
-                 "control by more than the combined binomial standard error and "
-                 "requests fewer bytes than the dense control"),
+        "rule": ("an arm wins only if its accuracy beats base and the matched "
+                 "gated-dense control (binomial SE and, when prompt-level rows "
+                 "are supplied, a prompt-level paired 95% bootstrap interval "
+                 "above zero) and it requests fewer physical bytes than the "
+                 "dense memory (always-read) condition"),
+        "accuracy_control": "gated-dense",
+        "byte_control": ("memory" if dense is not None else None),
+        "byte_control_role": ("dense memory, every token reads the table"
+                              if dense is not None else None),
+        "gated_dense_read_claim": ("none: the gated-dense control has no "
+                                   "external store and its read_bytes is null"),
         "threshold": float(threshold),
+        "distinct_problems": (len({row["prompt_id"] for row in per_prompt})
+                              if per_prompt else None),
         "utility_outcome_wins": bool(report.get("utility-outcome", {}).get("win")),
         "utility_ce_wins": bool(report.get("utility-ce", {}).get("win")),
         "no_memory_gate_parity": (
@@ -1051,4 +1246,5 @@ def evaluate_arms(arms: Mapping[str, Mapping], n_items: int,
         verdict["next_route"] = (
             "the pre-read routing hypothesis is not supported at 2M; register no "
             "20M router arm and report the post-read gate comparison instead")
-    return {"arms": report, "verdict": verdict}
+    return {"arms": report, "verdict": verdict,
+            "prompt_level": prompt_level}

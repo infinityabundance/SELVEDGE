@@ -4975,6 +4975,25 @@ this section: the "752M" figure is the **text tower**, not the checkpoint, and t
 checkpoint is **multimodal**, so a text-only runtime must be declared and audited
 as such.
 
+**Status update, 2026-11-18 (S54).** The win target moved at S53 to the
+**post-trained** `Qwen/Qwen3.5-0.8B`; Base remains a control. The S54 receipts:
+
+- the corrected 20M bar is verified and its milestones are scored; the curve,
+  retention and 100M-extension decision are the generated block
+  `report-s50-bar-curve` in `results/REPORT.md`;
+- the post-trained 0.8B and 2B have a stage-1 greedy/non-thinking measurement,
+  a truncation-only thinking observation and a maj@16 subset gap in the
+  generated block `report-s54-stage1` in `results/REPORT.md`;
+- stage 2 is registered with the S54 amendment (failed-rollout teacher
+  continuations, first-error corrective supervision and a general-capability
+  preservation bound) and is **not run**;
+- the P19.9 screen is repaired and re-registered under
+  `docs/s52-p19.9-router-screen-registration-v2.json` and is **not run**.
+  `docs/S52-REPAIR-S54.md` records the accounting and statistics corrections.
+
+The old P19.2 memory route is a measured null at 2M (`report-s48-screen`); the
+active route is the post-trained one, not another memory weighting.
+
 ### P19.0 (prerequisite, blocking for stages 5–6) — the toolchain must accept the anchor
 
 **What.** Two separable halves, and they now gate different stages:
