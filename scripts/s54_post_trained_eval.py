@@ -71,7 +71,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "oracle"))
 
-from frontier import arms, rft  # noqa: E402
+from frontier import arms, rft, termination  # noqa: E402
 
 GIB = float(1 << 30)
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -464,6 +464,7 @@ def evaluate_task(model, tokenizer, items: list[dict], task: str, mode: str,
     greedy = decoding == "greedy"
     thinking = mode == "thinking"
     per_problem = []
+    termination_samples = []
     started = time.time()
     generated_tokens = 0
     decode_seconds = 0.0
@@ -516,6 +517,13 @@ def evaluate_task(model, tokenizer, items: list[dict], task: str, mode: str,
                     "strict_correct": bool(strict_correct),
                     "flexible_correct": bool(flexible_correct),
                     "exact_correct": bool(exact_correct),
+                })
+                termination_samples.append({
+                    "problem_id": item["problem_id"],
+                    "completion": completion,
+                    "new_tokens": new_tokens,
+                    "truncated": truncated,
+                    "correct": bool(flexible_correct),
                 })
                 if raw_handle is not None:
                     raw_handle.write(json.dumps({
@@ -616,6 +624,17 @@ def evaluate_task(model, tokenizer, items: list[dict], task: str, mode: str,
         return {"correct": sum(1 for flag in flags if flag),
                 "items": len(flags), "accuracy": accuracy, "stderr": stderr}
 
+    # Accuracy conditioned on termination uses the receipt's own primary verdict
+    # (greedy: flexible; maj@16: the flexible vote), so the conditional numbers
+    # are not a second metric.
+    problem_correct = {
+        row["problem_id"]: (row["flexible_correct"] if greedy
+                            else row["vote_correct"])
+        for row in per_problem}
+    for sample in termination_samples:
+        sample["problem_correct"] = problem_correct.get(sample["problem_id"])
+    termination_summary = termination.summarise(termination_samples)
+
     answered = sum(row["answered_samples"] for row in per_problem)
     total_samples = sum(row["samples"] for row in per_problem)
     boxed = sum(row["boxed_samples"] for row in per_problem)
@@ -637,6 +656,7 @@ def evaluate_task(model, tokenizer, items: list[dict], task: str, mode: str,
         "format_correct_fraction": boxed / total_samples if total_samples else None,
         "truncated_samples": truncated_count,
         "truncated_fraction": truncated_count / total_samples if total_samples else None,
+        "termination": termination_summary,
         "mean_new_tokens": (generated_tokens / total_samples
                             if total_samples else None),
         "generated_tokens": generated_tokens,
@@ -727,7 +747,11 @@ def main(argv: list[str]) -> int:
                       f"strict={result['strict']['accuracy']:.4f} "
                       f"flexible={result['flexible']['accuracy']:.4f} "
                       f"exact={result['exact']['accuracy']:.4f} "
-                      f"tokens/s={result['tokens_per_second']:.1f}", flush=True)
+                      f"tokens/s={result['tokens_per_second']:.1f} "
+                      f"truncated={result['termination']['truncation_rate']:.4f} "
+                      f"loop={result['termination']['loop_classified_fraction']:.4f} "
+                      f"mean_tokens={result['termination']['mean_new_tokens']['all']:.1f}",
+                      flush=True)
                 write_json(args.out, {
                     "schema": "selvedge/s54-stage1-eval/v1",
                     "created_utc": utcnow(), "stamp": stamp(),
@@ -773,6 +797,18 @@ def main(argv: list[str]) -> int:
                                          "and 'final answer is' for MATH-500"),
                             "exact": _MATH_VERIFY_BASIS,
                         },
+                        "termination": {
+                            "detector": "oracle/frontier/termination.py",
+                            "thresholds": termination.DEFAULT_THRESHOLDS,
+                            "tail_chars": termination.TAIL_CHARS,
+                            "min_chars": termination.MIN_CHARS,
+                            "decoding_unchanged": True,
+                            "calibration": ("results/stage1/"
+                                            "s56-termination-calibration.json"),
+                            "truncated_definition": (
+                                "the harness hit max_new_tokens without EOS; "
+                                "truncated samples are not silently dropped"),
+                        },
                     },
                     "tasks": task_results,
                     "raw_paths": raw_paths,
@@ -813,6 +849,22 @@ def main(argv: list[str]) -> int:
     payload["created_utc"] = utcnow()
     payload["stamp"] = stamp()
     payload["greedy_vs_maj16"] = gaps
+    # A compact cross-checkpoint table: the same keys appear in every stage-1
+    # receipt, so a checkpoint's termination rate is comparable without parsing
+    # the per-task rows.
+    payload["termination_rates"] = {
+        f"{row['task']}-{row['mode']}-{row['decoding']}": {
+            "truncation_rate": row["termination"]["truncation_rate"],
+            "loop_classified_fraction": row["termination"][
+                "loop_classified_fraction"],
+            "mean_new_tokens": row["termination"]["mean_new_tokens"]["all"],
+            "accuracy_terminated": row["termination"]["sample_level"][
+                "terminated"]["accuracy"],
+            "accuracy_truncated": row["termination"]["sample_level"][
+                "truncated"]["accuracy"],
+        }
+        for row in task_results
+    }
     payload["wall_seconds"] = round(time.time() - started, 1)
     payload["raw_sha256"] = {label: sha256_file(path)
                              for label, path in raw_paths.items()}

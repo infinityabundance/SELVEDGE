@@ -1,0 +1,7 @@
+s56-probe: plan (no model loaded)
+s56-probe: checkpoint results/stage2/runs/s50-bar-20m-lr1e-5/latest.pt
+s56-probe: student /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+s56-probe: tasks gsm8k,math500 limit 50 cap 4096 greedy
+s56-probe: out results/stage2/termination/s50-bar-20m-lr1e-5/m10.json
+s56-probe: limits SELVEDGE_MEM=8g SELVEDGE_CPUS=4 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g
+s56-probe: command: SELVEDGE_MEM=8g SELVEDGE_CPUS=4 scripts/court --gpu eval -- python3 scripts/s56_termination_probe.py --run-dir results/stage2/runs/s50-bar-20m-lr1e-5 --label m10 --dry-run

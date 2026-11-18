@@ -1,0 +1,44 @@
+.FF..F...                                                                [100%]
+=================================== FAILURES ===================================
+______________________ test_exact_repeated_text_is_a_loop ______________________
+
+    def test_exact_repeated_text_is_a_loop():
+        signal = termination.classify(LOOP)
+>       assert signal["loop"] is True
+E       assert False is True
+
+oracle/tests/test_s56_termination.py:50: AssertionError
+________________ test_period_is_found_for_a_short_repeated_tail ________________
+
+    def test_period_is_found_for_a_short_repeated_tail():
+        signal = termination.classify(PERIOD)
+        assert signal["repetition"]["period"] is not None
+        assert signal["repetition"]["period"]["period_chars"] == len(
+            "x = x + 1; then we check the invariant again; ")
+>       assert signal["loop"] is True
+E       assert False is True
+
+oracle/tests/test_s56_termination.py:59: AssertionError
+_______________ test_summary_conditions_accuracy_on_termination ________________
+
+    def test_summary_conditions_accuracy_on_termination():
+        rows = [
+            {"problem_id": "p1", "completion": VARIED, "new_tokens": 300,
+             "truncated": False, "correct": True, "problem_correct": True},
+            {"problem_id": "p2", "completion": LOOP, "new_tokens": 4096,
+             "truncated": True, "correct": False, "problem_correct": False},
+            {"problem_id": "p3", "completion": LOOP, "new_tokens": 4096,
+             "truncated": True, "correct": False, "problem_correct": False},
+        ]
+        summary = termination.summarise(rows)
+        assert summary["samples"] == 3
+        assert summary["truncation_rate"] == 2 / 3
+>       assert summary["loop_classified_samples"] == 2
+E       assert 0 == 2
+
+oracle/tests/test_s56_termination.py:93: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s56_termination.py::test_exact_repeated_text_is_a_loop
+FAILED oracle/tests/test_s56_termination.py::test_period_is_found_for_a_short_repeated_tail
+FAILED oracle/tests/test_s56_termination.py::test_summary_conditions_accuracy_on_termination
+3 failed, 6 passed in 0.03s
