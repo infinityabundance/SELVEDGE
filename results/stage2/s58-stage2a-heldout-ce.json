@@ -1,0 +1,249 @@
+{
+  "command": [
+    "scripts/s55_heldout_ce.py",
+    "--student-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--holdout",
+    "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "--run-dir",
+    "results/stage2/runs/s58-stage2a",
+    "--seq-len",
+    "1250",
+    "--out",
+    "results/stage2/s58-stage2a-heldout-ce.json"
+  ],
+  "created_utc": "2026-11-18T21:03:46Z",
+  "elapsed_seconds": 85.04766988754272,
+  "holdout": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+  "packing": {
+    "boundary_safe": true,
+    "boundary_safe_note": "one complete example per row: no example attends to another",
+    "completion_only_loss": true,
+    "dropped_overflow": 3,
+    "eos_id": 248046,
+    "examples": 82,
+    "examples_per_row": 1,
+    "kind": "sft_example_packing",
+    "max_example_tokens": 1649,
+    "overflow": "drop",
+    "packed_examples": 79,
+    "pad_id": 248044,
+    "padding_tokens": 51680,
+    "prompt_tokens": 6875,
+    "rows": 79,
+    "seq_len": 1250,
+    "supervised_tokens": 40195
+  },
+  "peak_allocated_gib": 3.7715539932250977,
+  "peak_reserved_gib": 5.146484375,
+  "results": [
+    {
+      "ce": 0.2494520254476361,
+      "label": "base",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.24944726376523496,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.24945797661781047,
+          "positions": 17866
+        }
+      },
+      "positions": 40195
+    },
+    {
+      "ce": 0.3477923950877987,
+      "label": "ckpt-000800.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.33332105910412874,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3658787300916814,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-000800.pt",
+      "step": 800,
+      "tokens_seen": 2000000
+    },
+    {
+      "ce": 0.3447974211432126,
+      "label": "ckpt-001200.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.3306103719488119,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.36252845335309597,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-001200.pt",
+      "step": 1200,
+      "tokens_seen": 3000000
+    },
+    {
+      "ce": 0.332687299149311,
+      "label": "ckpt-001600.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.310254762416688,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.36072357546761047,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-001600.pt",
+      "step": 1600,
+      "tokens_seen": 4000000
+    },
+    {
+      "ce": 0.31686598551901185,
+      "label": "ckpt-002000.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.29691962701341035,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3417950261028905,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-002000.pt",
+      "step": 2000,
+      "tokens_seen": 5000000
+    },
+    {
+      "ce": 0.32342549032637447,
+      "label": "ckpt-002400.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.3037813375161576,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.347976832993974,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-002400.pt",
+      "step": 2400,
+      "tokens_seen": 6000000
+    },
+    {
+      "ce": 0.3181762354128068,
+      "label": "ckpt-002800.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.29521559561081956,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3468725371109247,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-002800.pt",
+      "step": 2800,
+      "tokens_seen": 7000000
+    },
+    {
+      "ce": 0.3132888634117791,
+      "label": "ckpt-003200.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.29257986338321984,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3391710564957206,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-003200.pt",
+      "step": 3200,
+      "tokens_seen": 8000000
+    },
+    {
+      "ce": 0.31082766055962746,
+      "label": "ckpt-003600.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.28967986198732865,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.33725826586136587,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-003600.pt",
+      "step": 3600,
+      "tokens_seen": 9000000
+    },
+    {
+      "ce": 0.30868111994079267,
+      "label": "ckpt-004000.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.28544052356595123,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3377273125106926,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+      "step": 4000,
+      "tokens_seen": 10000000
+    },
+    {
+      "ce": 0.31042803869721397,
+      "label": "ckpt-004376.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.28806503156775515,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3383774166326044,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s58-stage2a/ckpt-004376.pt",
+      "step": 4376,
+      "tokens_seen": 10940000
+    }
+  ],
+  "revision": "e5381f5b6f60980f623bedb32e2b81a6e85edb2e",
+  "schema": "selvedge/s55-stage2a-heldout-ce/v1",
+  "selected": {
+    "base_ce": 0.2494520254476361,
+    "ce": 0.30868111994079267,
+    "checkpoint": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+    "delta": 0.05922909449315658,
+    "rule": "minimum held-out supervised-position CE across saved checkpoints",
+    "step": 4000
+  },
+  "seq_len": 1250,
+  "stamp": "20261118T210346Z",
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
+}

@@ -1,0 +1,67 @@
+{
+  "cadence": {
+    "checkpoint_every_steps": 400,
+    "points": [
+      800,
+      2000,
+      4376
+    ],
+    "rule": "a checkpoint every 1,000,000 processed tokens; 2M and 5M land on exact checkpoints",
+    "tokens": [
+      2000000,
+      5000000,
+      10940000
+    ]
+  },
+  "created_utc": "2026-11-18T19:32:52Z",
+  "data": {
+    "completion_only_loss": true,
+    "examples": {
+      "path": "results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl",
+      "sha256": "9426e36d92f8d09ed62289b8b97d79ce4971b37090754eeb6eed038330d275b7"
+    },
+    "examples_longer_than_seq_len_dropped": 191,
+    "examples_receipt": {
+      "path": "results/artifacts/stage2/s58-combined/stage2a-combined-examples-receipt.json",
+      "sha256": "4541a953ece4f8e688751986d48c2373cc71a26e72c5a3acd7f22978b79285c8"
+    },
+    "packing": "one complete example per row; no boundary crossing",
+    "rows_fit": 4376,
+    "supervised_positions_in_rows": 2225863
+  },
+  "launcher": "scripts/s57_stage2a_train.sh",
+  "limits": {
+    "container_cpus": 8,
+    "container_memory_bytes": 15032385536,
+    "container_memory_swap_bytes": 15032385536,
+    "container_pids": 1024,
+    "container_tmp": "2g",
+    "sizing": "floor max(1.5 x 8.76 GB previous full-arm peak, +1 GiB) = 13.1 GiB; 14g used. No teacher is loaded in this run, so the peak is expected below the bar's.",
+    "vram_limit_gib": 13.5
+  },
+  "recipe": {
+    "early_stop": "at most two passes; the deployed checkpoint is the minimum of the held-out-solution-CE curve measured on every saved checkpoint",
+    "epochs": 2,
+    "lr": 1e-05,
+    "lr_basis": "the S50 fixed-batch KL gate at 1e-5 (0.2529 -> 0.2145); 1e-4 rose (0.2529 -> 0.5473)",
+    "optimizer": "Adam8bit block 256, int8 first moment, bf16 second moment, stochastic weight rounding",
+    "schedule": "cosine to 10%, warmup 200, grad-clip 1.0",
+    "seed": 0,
+    "steps": 4376,
+    "tied_embedding": "frozen",
+    "tokens_per_step": 2500,
+    "tokens_processed": 10940000
+  },
+  "registration": [
+    "docs/ws19-post-trained-route-stage2a-amendment-s55-v1.json",
+    "docs/ws19-post-trained-route-stage2a-amendment-s56-v1.json"
+  ],
+  "run_dir": "results/stage2/runs/s58-stage2a",
+  "schema": "selvedge/s57-stage2a-launch/v1",
+  "student": {
+    "dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "id": "Qwen/Qwen3.5-0.8B",
+    "note": "post-trained chat checkpoint, not the Base model",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17"
+  }
+}
