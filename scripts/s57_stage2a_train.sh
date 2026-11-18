@@ -80,9 +80,16 @@ done
 
 [[ -f "$examples" ]] || { printf 's57-train: missing examples %s\n' "$examples" >&2; exit 78; }
 [[ -f "$examples_receipt" ]] || { printf 's57-train: missing examples receipt %s\n' "$examples_receipt" >&2; exit 78; }
-if [[ ! -f "$student_dir/config.json" ]]; then
-  printf 's57-train: student dir %s has no config.json\n' "$student_dir" >&2
-  exit 78
+if [[ -d /hf-cache ]]; then
+  # Host-side pre-flight when the cache is mounted here; inside the court the
+  # path is the container's /hf-cache, so this check runs in the launcher only.
+  [[ -f "$student_dir/config.json" ]] || {
+    printf 's57-train: student dir %s has no config.json\n' "$student_dir" >&2
+    exit 78
+  }
+else
+  printf 's57-train: /hf-cache is not mounted on the host; the student path %s is verified inside the court\n' \
+    "$student_dir" >&2
 fi
 case "$student_dir" in
   *Qwen3.5-0.8B-Base*)

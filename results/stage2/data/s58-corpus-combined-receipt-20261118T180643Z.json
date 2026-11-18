@@ -1,0 +1,289 @@
+{
+  "by_dataset": {
+    "gsm8k": {
+      "distinct_prompts": 2639,
+      "prompt_coverage": 0.754,
+      "prompt_tokens": 227221,
+      "prompt_universe": 3500,
+      "reading": "prompt_coverage is merged distinct prompts over the registered prompt budget; the sampling rates belong to the individual runs listed in sampling_by_run",
+      "rows": 2639,
+      "rows_by_source": {
+        "results/artifacts/stage2/s55-stage2a/stage2a-accepted.jsonl": 2606,
+        "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-accepted.jsonl": 33,
+        "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-accepted.jsonl": 0,
+        "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-accepted.jsonl": 0
+      },
+      "sampling_by_run": [
+        {
+          "correct": 221,
+          "correct_over_sampled": 0.7568493150684932,
+          "duplicates": 0,
+          "generated_tokens": 150034,
+          "kept": 221,
+          "kept_over_sampled": 0.7568493150684932,
+          "max_new_tokens": 1024,
+          "prompts": 292,
+          "receipt": "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-receipt.json",
+          "sampled": 292,
+          "truncated": 41,
+          "truncation_over_sampled": 0.1404109589041096,
+          "verdicts": {
+            "ambiguous": 0,
+            "correct": 221,
+            "unparseable": 41,
+            "wrong": 30
+          },
+          "wall_seconds": 253.38028955459595
+        }
+      ],
+      "solution_length": {
+        "cap": 1024,
+        "max": 1020,
+        "mean": 417.2940507768094,
+        "p50": 389.0,
+        "p90": 601.0,
+        "p99": 905.0
+      },
+      "solution_tokens": 1101239
+    },
+    "math": {
+      "distinct_prompts": 1445,
+      "prompt_coverage": 0.6020833333333333,
+      "prompt_tokens": 116569,
+      "prompt_universe": 2400,
+      "reading": "prompt_coverage is merged distinct prompts over the registered prompt budget; the sampling rates belong to the individual runs listed in sampling_by_run",
+      "rows": 1445,
+      "rows_by_source": {
+        "results/artifacts/stage2/s55-stage2a/stage2a-accepted.jsonl": 391,
+        "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-accepted.jsonl": 0,
+        "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-accepted.jsonl": 380,
+        "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-accepted.jsonl": 674
+      },
+      "sampling_by_run": [
+        {
+          "correct": 991,
+          "correct_over_sampled": 0.41291666666666665,
+          "duplicates": 0,
+          "generated_tokens": 2010289,
+          "kept": 991,
+          "kept_over_sampled": 0.41291666666666665,
+          "max_new_tokens": 1024,
+          "prompts": 2400,
+          "receipt": "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-receipt.json",
+          "sampled": 2400,
+          "truncated": 1267,
+          "truncation_over_sampled": 0.5279166666666667,
+          "verdicts": {
+            "ambiguous": 0,
+            "correct": 991,
+            "unparseable": 1267,
+            "wrong": 142
+          },
+          "wall_seconds": 2218.046352624893
+        },
+        {
+          "correct": 1342,
+          "correct_over_sampled": 0.5591666666666667,
+          "duplicates": 0,
+          "generated_tokens": 3044023,
+          "kept": 1342,
+          "kept_over_sampled": 0.5591666666666667,
+          "max_new_tokens": 2048,
+          "prompts": 2400,
+          "receipt": "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-receipt.json",
+          "sampled": 2400,
+          "truncated": 840,
+          "truncation_over_sampled": 0.35,
+          "verdicts": {
+            "ambiguous": 1,
+            "correct": 1342,
+            "unparseable": 841,
+            "wrong": 216
+          },
+          "wall_seconds": 4917.4560804367065
+        }
+      ],
+      "solution_length": {
+        "cap": 2048,
+        "max": 2046,
+        "mean": 781.636678200692,
+        "p50": 700.0,
+        "p90": 1323.6000000000001,
+        "p99": 1947.4799999999996
+      },
+      "solution_tokens": 1129465
+    }
+  },
+  "command": [
+    "scripts/s58_merge_corpus.py",
+    "--source",
+    "results/artifacts/stage2/s55-stage2a/stage2a-accepted.jsonl",
+    "--source",
+    "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-accepted.jsonl",
+    "--source",
+    "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-accepted.jsonl",
+    "--source",
+    "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-accepted.jsonl",
+    "--source-receipt",
+    "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-receipt.json",
+    "--source-receipt",
+    "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-receipt.json",
+    "--source-receipt",
+    "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-receipt.json",
+    "--prompt-universe",
+    "math=2400",
+    "--prompt-universe",
+    "gsm8k=3500",
+    "--label",
+    "stage2a-accepted-combined",
+    "--out-dir",
+    "results/artifacts/stage2/s58-combined",
+    "--gzip",
+    "results/stage2/data/stage2a-accepted-combined-20261118.jsonl.gz"
+  ],
+  "contamination": {
+    "at_or_above_discard": 0,
+    "at_or_above_fail": 0,
+    "discard_jaccard": 0.2,
+    "examples": [],
+    "fail_closed": false,
+    "fail_jaccard": 0.5,
+    "items": 4084,
+    "max_jaccard": 0.155049786628734,
+    "shingle_width": 5,
+    "test_items": 1819
+  },
+  "created_utc": "2026-11-18T18:06:43Z",
+  "duplicates_removed": {
+    "examples": [
+      {
+        "dataset": "math",
+        "id": "math-train:geometry:317",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:geometry:317"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:geometry:258",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:geometry:258"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:geometry:26",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:geometry:26"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:intermediate_algebra:231",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:intermediate_algebra:231"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:prealgebra:511",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:prealgebra:511"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:algebra:718",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:algebra:718"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:number_theory:539",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:number_theory:539"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:algebra:1357",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:algebra:1357"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:prealgebra:1049",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:prealgebra:1049"
+      },
+      {
+        "dataset": "math",
+        "id": "math-train:geometry:356",
+        "reason": "prompt_already_has_a_solution",
+        "same_as": "math:math-train:geometry:356"
+      }
+    ],
+    "prompt_already_has_a_solution": 1462,
+    "solution_tokens": 5
+  },
+  "kind": "stage2a-merged-teacher-corpus",
+  "label": "stage2a-accepted-combined",
+  "merge_rules": {
+    "exact_duplicate": "SHA-256 over the generated solution token ids",
+    "one_solution_per_prompt": true,
+    "order": "sources in command-line order",
+    "sort": "(dataset, id, sample_index)"
+  },
+  "merged": {
+    "bytes": 23038563,
+    "distinct_prompts": 4084,
+    "gzip_path": "results/stage2/data/stage2a-accepted-combined-20261118.jsonl.gz",
+    "gzip_sha256": "d3cf28599880364cf5a7f05680a760d697d7b87fa5662c68706448ac668c2c66",
+    "path": "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl",
+    "prompt_tokens": 343790,
+    "rows": 4084,
+    "sha256": "066c1480f3b59e586bf3fd947fae1f9f76f1b989c708238326d0539859486d24",
+    "solution_tokens": 2230704,
+    "supervised_positions_with_eos": 2234788
+  },
+  "revision": "9ea15c940953a006b8f4bbd8057afbc1e4e9fee3",
+  "schema": "selvedge/s58-stage2a-merge/v1",
+  "sources": [
+    {
+      "by_dataset": {
+        "gsm8k": 2606,
+        "math": 391
+      },
+      "bytes": 14743472,
+      "kept": 2997,
+      "path": "results/artifacts/stage2/s55-stage2a/stage2a-accepted.jsonl",
+      "rows": 2997,
+      "sha256": "beaf9720291d206e4a95bf23672830f93b32ea3c9746555d5345e576ee0420c8"
+    },
+    {
+      "by_dataset": {
+        "math": 674
+      },
+      "bytes": 5925171,
+      "kept": 674,
+      "path": "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-accepted.jsonl",
+      "rows": 991,
+      "sha256": "5ee946e7ffe57ef01ed7a1a068f5a2135126e320fa977d2139b76e7bbc31067b"
+    },
+    {
+      "by_dataset": {
+        "math": 380
+      },
+      "bytes": 10150554,
+      "kept": 380,
+      "path": "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-accepted.jsonl",
+      "rows": 1342,
+      "sha256": "6555a693cff1094b5628930a936a9bfc29b7cb898629692f3e15bf5a0c6f766a"
+    },
+    {
+      "by_dataset": {
+        "gsm8k": 33
+      },
+      "bytes": 1050443,
+      "kept": 33,
+      "path": "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-accepted.jsonl",
+      "rows": 221,
+      "sha256": "96a02a39f8df9c0ff9b26cf4309d40f52a0ce34975daf8964a3c7cdd14e9e054"
+    }
+  ],
+  "stamp": "20261118T180643Z"
+}

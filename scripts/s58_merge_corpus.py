@@ -105,8 +105,21 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--gzip", default=None,
                         help="also write a .gz copy (for the tracked corpus)")
+    parser.add_argument("--prompt-universe", action="append", default=[],
+                        help="dataset=<registered prompt count>, repeatable; "
+                             "turns merged rows into a prompt-coverage number "
+                             "against the registered budget")
     parser.add_argument("--skip-contamination", action="store_true")
     args = parser.parse_args(argv)
+
+    universe = {}
+    for item in args.prompt_universe:
+        name, _, raw = item.partition("=")
+        try:
+            universe[name.strip()] = int(raw)
+        except ValueError:
+            raise SystemExit(f"s58-merge: --prompt-universe {item!r} is not "
+                             "dataset=<int>")
 
     sources = []
     seen_solutions: dict[str, str] = {}
@@ -211,6 +224,9 @@ def main(argv: list[str]) -> int:
             "distinct_prompts": len(entry["prompts"]),
             "prompt_tokens": entry["prompt_tokens"],
             "solution_tokens": entry["solution_tokens"],
+            "rows_by_source": {
+                item["path"]: item["by_dataset"].get(name, 0)
+                for item in sources},
             "solution_length": {
                 "mean": sum(entry["lengths"]) / len(entry["lengths"]),
                 "p50": quantile(entry["lengths"], 0.50),
@@ -221,22 +237,31 @@ def main(argv: list[str]) -> int:
                            default=None),
             },
         }
-        generation = receipt_by_dataset.get(name, [])
-        sampled = sum(item.get("sampled") or 0 for item in generation)
-        correct = sum(item.get("correct") or 0 for item in generation)
-        truncated = sum(item.get("truncated") or 0 for item in generation)
-        prompts_sampled = sum(item.get("prompts") or 0 for item in generation)
-        accepted["generation_receipts"] = generation
-        accepted["sampling"] = {
-            "prompts_sampled": prompts_sampled,
-            "completions_sampled": sampled,
-            "verified_correct": correct,
-            "truncated_without_eos": truncated,
-            "acceptance_kept_over_sampled": (
-                entry["rows"] / sampled if sampled else None),
-            "correct_over_sampled": (correct / sampled if sampled else None),
-            "truncation_over_sampled": (truncated / sampled if sampled else None),
-        }
+        # Rates are per generation run, never a merged row count divided by one
+        # run's sample count: the corpus is a union of runs and a shard receipt
+        # covers a sample of the registered prompt set.
+        accepted["sampling_by_run"] = []
+        for item in receipt_by_dataset.get(name, []):
+            sampled = item.get("sampled") or 0
+            truncated = item.get("truncated") or 0
+            accepted["sampling_by_run"].append({
+                **item,
+                "kept_over_sampled": (
+                    item["kept"] / sampled if sampled else None),
+                "correct_over_sampled": (
+                    item["correct"] / sampled if sampled else None),
+                "truncation_over_sampled": (
+                    truncated / sampled if sampled else None),
+            })
+        if name in universe:
+            accepted["prompt_universe"] = universe[name]
+            accepted["prompt_coverage"] = (
+                len(entry["prompts"]) / universe[name]
+                if universe[name] else None)
+        accepted["reading"] = (
+            "prompt_coverage is merged distinct prompts over the registered "
+            "prompt budget; the sampling rates belong to the individual runs "
+            "listed in sampling_by_run")
         datasets[name] = accepted
 
     contamination = {"status": "skipped"}
@@ -301,12 +326,16 @@ def main(argv: list[str]) -> int:
           f"dropped {duplicates_solution} exact duplicates and "
           f"{duplicates_prompt} second-solutions-per-prompt")
     for name, entry in datasets.items():
-        sampling = entry["sampling"]
+        runs = entry["sampling_by_run"]
+        rates = ", ".join(
+            f"{run['receipt'].split('/')[-1]}: kept/sampled="
+            f"{run['kept_over_sampled']:.3f} "
+            f"trunc/sampled={run['truncation_over_sampled']:.3f}"
+            for run in runs if run["kept_over_sampled"] is not None)
         print(f"s58-merge: {name} rows={entry['rows']} "
               f"prompts={entry['distinct_prompts']} "
-              f"kept/sampled={sampling['acceptance_kept_over_sampled']} "
-              f"truncated/sampled={sampling['truncation_over_sampled']} "
-              f"solution_tokens={entry['solution_tokens']}")
+              f"coverage={entry.get('prompt_coverage')} "
+              f"solution_tokens={entry['solution_tokens']} [{rates}]")
     print(f"s58-merge: contamination max_jaccard="
           f"{contamination.get('max_jaccard')} "
           f"fail_closed={contamination.get('fail_closed')}")

@@ -1,0 +1,224 @@
+{
+  "acceptance": {
+    "by_dataset": {
+      "gsm8k": {
+        "correct": 221,
+        "duplicates": 0,
+        "generated_tokens": 150034,
+        "kept": 221,
+        "max_new_tokens": 1024,
+        "prompts": 292,
+        "sampled": 292,
+        "truncated": 41,
+        "verdicts": {
+          "ambiguous": 0,
+          "correct": 221,
+          "unparseable": 41,
+          "wrong": 30
+        },
+        "wall_seconds": 253.38028955459595
+      }
+    },
+    "kept_rate": 0.7568493150684932,
+    "totals": {
+      "correct": 221,
+      "duplicates": 0,
+      "generated_tokens": 150034,
+      "kept": 221,
+      "prompts": 292,
+      "sampled": 292,
+      "truncated": 41,
+      "wall_seconds": 253.38028955459595
+    },
+    "verified_rate": 0.7568493150684932
+  },
+  "accepted": {
+    "by_dataset": {
+      "gsm8k": {
+        "distinct_prompts": 221,
+        "examples": 221,
+        "prompt_tokens": 19542,
+        "solution_tokens": 91651
+      }
+    },
+    "path": "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-accepted.jsonl",
+    "prompt_tokens": 19542,
+    "rows": 221,
+    "sha256": "96a02a39f8df9c0ff9b26cf4309d40f52a0ce34975daf8964a3c7cdd14e9e054",
+    "supervised_solution_tokens": 91651,
+    "write_mode": "truncate (mode 'w')"
+  },
+  "command": [
+    "scripts/s55_stage2_data.py",
+    "--teacher-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "--tokenizer-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--datasets",
+    "gsm8k-train",
+    "--select-gsm8k",
+    "3500",
+    "--k-gsm8k",
+    "1",
+    "--batch-prompts",
+    "32",
+    "--max-new-tokens-gsm8k",
+    "1024",
+    "--shards",
+    "12",
+    "--shard-index",
+    "0",
+    "--vram-limit-gib",
+    "13.0",
+    "--out-dir",
+    "results/artifacts/stage2/s58-gsm8k-shard0",
+    "--label",
+    "gsm8k-1024-shard0"
+  ],
+  "contamination": {
+    "at_or_above_discard": 0,
+    "at_or_above_fail": 0,
+    "discard_jaccard": 0.2,
+    "examples": [],
+    "fail_closed": false,
+    "fail_jaccard": 0.5,
+    "items": 221,
+    "max_jaccard": 0.01694915254237288,
+    "shingle_width": 5,
+    "test_items": 1819
+  },
+  "created_utc": "2026-11-18T18:06:15Z",
+  "generation": {
+    "elapsed_seconds": 253.51670050621033,
+    "generated_tokens": 150034,
+    "peak_allocated_gib": 4.9927849769592285,
+    "peak_reserved_gib": 5.318359375,
+    "sampling_wall_seconds": 253.38028955459595,
+    "tokens_per_second": 592.1297203651357
+  },
+  "kind": "stage2a-teacher-solutions",
+  "prompt_protocol": "the student's own chat template, add_generation_prompt=True, enable_thinking=False",
+  "prompt_template": "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{{}}.",
+  "revision": "9ea15c940953a006b8f4bbd8057afbc1e4e9fee3",
+  "sampling": {
+    "batch_prompts": 32,
+    "do_sample": true,
+    "k_gsm8k": 1,
+    "k_math": 1,
+    "max_new_tokens_gsm8k": 1024,
+    "max_new_tokens_math": 1024,
+    "seed": 5500,
+    "shard_index": 0,
+    "shards": 12,
+    "stop": "EOS only",
+    "temperature": 0.8,
+    "top_p": 0.95
+  },
+  "schema": "selvedge/s55-stage2a-teacher-data/v1",
+  "selection": {
+    "gsm8k-train": {
+      "kind": "stratified_selection",
+      "length_boundaries_words": [
+        38,
+        54,
+        75
+      ],
+      "pool": 7473,
+      "replaces": "prefix truncation (items[start:start+limit])",
+      "requested": 3500,
+      "seed": 5500,
+      "selected": 3500,
+      "strata": [
+        {
+          "key": "gsm8k|steps0|0",
+          "pool": 23,
+          "selected": 11
+        },
+        {
+          "key": "gsm8k|steps0|1",
+          "pool": 20,
+          "selected": 10
+        },
+        {
+          "key": "gsm8k|steps0|2",
+          "pool": 33,
+          "selected": 16
+        },
+        {
+          "key": "gsm8k|steps0|3",
+          "pool": 19,
+          "selected": 9
+        },
+        {
+          "key": "gsm8k|steps1|0",
+          "pool": 161,
+          "selected": 76
+        },
+        {
+          "key": "gsm8k|steps1|1",
+          "pool": 118,
+          "selected": 56
+        },
+        {
+          "key": "gsm8k|steps1|2",
+          "pool": 84,
+          "selected": 40
+        },
+        {
+          "key": "gsm8k|steps1|3",
+          "pool": 41,
+          "selected": 20
+        },
+        {
+          "key": "gsm8k|steps2|0",
+          "pool": 1213,
+          "selected": 567
+        },
+        {
+          "key": "gsm8k|steps2|1",
+          "pool": 612,
+          "selected": 286
+        },
+        {
+          "key": "gsm8k|steps2|2",
+          "pool": 270,
+          "selected": 127
+        },
+        {
+          "key": "gsm8k|steps2|3",
+          "pool": 80,
+          "selected": 38
+        },
+        {
+          "key": "gsm8k|steps3|0",
+          "pool": 355,
+          "selected": 166
+        },
+        {
+          "key": "gsm8k|steps3|1",
+          "pool": 1165,
+          "selected": 545
+        },
+        {
+          "key": "gsm8k|steps3|2",
+          "pool": 1484,
+          "selected": 694
+        },
+        {
+          "key": "gsm8k|steps3|3",
+          "pool": 1795,
+          "selected": 839
+        }
+      ]
+    }
+  },
+  "stage": "2a teacher-solution SFT (on-policy path not implemented)",
+  "stamp": "20261118T180615Z",
+  "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+  "tokenizer_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "verification": {
+    "deduplication": "exact generated-token-sequence SHA-256, global",
+    "extractor": "frontier.rft.verify against the train label",
+    "kept": "verdict == correct only; ambiguous, unparseable, wrong and truncated completions are never a target"
+  }
+}

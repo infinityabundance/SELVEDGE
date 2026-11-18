@@ -1,0 +1,160 @@
+{
+  "argv": [
+    "python3",
+    "scripts/s58_merge_corpus.py",
+    "--source",
+    "results/artifacts/stage2/s55-stage2a/stage2a-accepted.jsonl",
+    "--source",
+    "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-accepted.jsonl",
+    "--source",
+    "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-accepted.jsonl",
+    "--source",
+    "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-accepted.jsonl",
+    "--source-receipt",
+    "results/artifacts/stage2/s58-stage2a-math-full/stage2a-math-full-receipt.json",
+    "--source-receipt",
+    "results/artifacts/stage2/s58-stage2a-math-2048/stage2a-math-2048-receipt.json",
+    "--source-receipt",
+    "results/artifacts/stage2/s58-gsm8k-shard0/gsm8k-1024-shard0-receipt.json",
+    "--prompt-universe",
+    "math=2400",
+    "--prompt-universe",
+    "gsm8k=3500",
+    "--label",
+    "stage2a-accepted-combined",
+    "--out-dir",
+    "results/artifacts/stage2/s58-combined",
+    "--gzip",
+    "results/stage2/data/stage2a-accepted-combined-20261118.jsonl.gz"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "075e33af2e0a5c4af407c4da59764a4f9fa4d1bf6c1b178b8197f89a32907abf",
+  "container_name": "selvedge-oracle-court-20261118T180639Z-4fb2b1",
+  "court": "oracle",
+  "duration_ms": 5053,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "memory_swap_bytes": {
+        "actual": 6442450944,
+        "expected": 6442450944
+      },
+      "nano_cpus": {
+        "actual": 4000000000,
+        "expected": 4000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 512,
+        "expected": 512
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 1073741824,
+        "expected": 1073741824
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-18T18:06:44Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.5-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:9ab05582a5408ca34b71858451218ab080859204290f7b6ef1cf4c4c02c91e74",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:9ab05582a5408ca34b71858451218ab080859204290f7b6ef1cf4c4c02c91e74",
+  "image_ref": "selvedge/oracle-court:20261118-3.12-slim-cu132-9ed5f06e7d60",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "4",
+    "init": true,
+    "memory": "6g",
+    "memory_bytes": 6442450944,
+    "memory_swap": "6g",
+    "memory_swap_bytes": 6442450944,
+    "nano_cpus": 4000000000,
+    "nofile": 65536,
+    "pids": 512,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 1073741824,
+    "tmpfs_size": "1g"
+  },
+  "log_path": "results/courts/logs/oracle-20261118T180639Z-4fb2b1.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "9ea15c940953a006b8f4bbd8057afbc1e4e9fee3",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261118T180639Z",
+  "started_utc": "2026-11-18T18:06:39Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.5-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

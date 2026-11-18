@@ -1,0 +1,97 @@
+{
+  "command": [
+    "scripts/s55_stage2a_examples.py",
+    "--accepted",
+    "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl",
+    "--tokenizer-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--label",
+    "stage2a-combined",
+    "--out-dir",
+    "results/artifacts/stage2/s58-combined",
+    "--replay-fraction",
+    "0.13",
+    "--replay-max-tokens",
+    "768",
+    "--seq-len",
+    "1250",
+    "--holdout-fraction",
+    "0.02"
+  ],
+  "created_utc": "2026-11-18T18:06:56Z",
+  "examples": {
+    "path": "results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl",
+    "rows": 4567,
+    "sha256": "849aaed85240e46449b6273c436baa8525d36c85fc4d4d1adeca20327557346d"
+  },
+  "holdout": {
+    "fraction": 0.02,
+    "path": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "rows": 82,
+    "sha256": "ac34011607eeefcb61ab6ffdc2d8bf8b0cb810b6385cc23c43f4402a87f6196c",
+    "supervised_solution_tokens": 44383
+  },
+  "inputs": [
+    "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl"
+  ],
+  "kind": "stage2a-sft-examples",
+  "label": "stage2a-combined",
+  "length_profile": {
+    "examples": 4002,
+    "max_example_tokens": 2273,
+    "mean_example_tokens": 631.4262868565717,
+    "over_seq_len": 191,
+    "over_seq_len_fraction": 0.047726136931534234,
+    "over_seq_len_supervised_tokens": 291877,
+    "seq_len": 1250
+  },
+  "mix": {
+    "achieved_replay_fraction": 0.13012162185819484,
+    "basis": "supervised positions after prompt masking",
+    "requested_replay_fraction": 0.13,
+    "total_supervised_tokens": 2513364
+  },
+  "replay": {
+    "contamination": {
+      "at_or_above_discard": 0,
+      "at_or_above_fail": 0,
+      "discard_jaccard": 0.2,
+      "examples": [],
+      "fail_closed": false,
+      "fail_jaccard": 0.5,
+      "items": 565,
+      "max_jaccard": 0.012698412698412698,
+      "shingle_width": 5,
+      "test_items": 1819
+    },
+    "documents": 565,
+    "files": [
+      "results/artifacts/train-corpus/fineweb-edu-sample-10bt/sample/10BT/013_00000.parquet"
+    ],
+    "max_tokens_per_document": 768,
+    "rows_considered": 565,
+    "source": "results/artifacts/train-corpus/fineweb-edu-sample-10bt",
+    "supervised_tokens": 327043,
+    "truncated_documents": 235,
+    "truncation_policy": "whole-document prefix at a token boundary; replay text is not a solution and carries no answer"
+  },
+  "schema": "selvedge/s55-stage2a-examples/v1",
+  "stamp": "20261118T180656Z",
+  "teacher": {
+    "by_dataset": {
+      "gsm8k": {
+        "examples": 2586,
+        "supervised_solution_tokens": 1078963
+      },
+      "math": {
+        "examples": 1416,
+        "supervised_solution_tokens": 1107358
+      }
+    },
+    "distinct_prompts": 4002,
+    "examples": 4002,
+    "prompt_tokens": 336645,
+    "supervised_solution_tokens": 2186321
+  },
+  "tokenizer_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
+}
