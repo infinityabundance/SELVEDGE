@@ -1,0 +1,217 @@
+{
+  "analysis": {
+    "by_task_mode_decoding": [
+      {
+        "correct_uncut": 1753,
+        "cut_fraction": 0.012481089258698942,
+        "cuts": 33,
+        "decoding": "greedy",
+        "false_cut_rate": 0.0011409013120365088,
+        "false_cuts": 2,
+        "mode": "non-thinking",
+        "samples": 2644,
+        "saved_tokens_estimate": 41411.0,
+        "task": "gsm8k"
+      },
+      {
+        "correct_uncut": 1016,
+        "cut_fraction": 0.0075,
+        "cuts": 12,
+        "decoding": "maj16",
+        "false_cut_rate": 0.000984251968503937,
+        "false_cuts": 1,
+        "mode": "non-thinking",
+        "samples": 1600,
+        "saved_tokens_estimate": 10587.0,
+        "task": "gsm8k"
+      },
+      {
+        "correct_uncut": 2,
+        "cut_fraction": 0.84,
+        "cuts": 42,
+        "decoding": "greedy",
+        "false_cut_rate": 0.0,
+        "false_cuts": 0,
+        "mode": "thinking",
+        "samples": 50,
+        "saved_tokens_estimate": 98530.0,
+        "task": "gsm8k"
+      },
+      {
+        "correct_uncut": 524,
+        "cut_fraction": 0.07554671968190854,
+        "cuts": 76,
+        "decoding": "greedy",
+        "false_cut_rate": 0.003816793893129771,
+        "false_cuts": 2,
+        "mode": "non-thinking",
+        "samples": 1006,
+        "saved_tokens_estimate": 145173.0,
+        "task": "math500"
+      },
+      {
+        "correct_uncut": 779,
+        "cut_fraction": 0.019375,
+        "cuts": 31,
+        "decoding": "maj16",
+        "false_cut_rate": 0.007702182284980745,
+        "false_cuts": 6,
+        "mode": "non-thinking",
+        "samples": 1600,
+        "saved_tokens_estimate": 32398.0,
+        "task": "math500"
+      },
+      {
+        "correct_uncut": 0,
+        "cut_fraction": 0.86,
+        "cuts": 43,
+        "decoding": "greedy",
+        "false_cut_rate": null,
+        "false_cuts": 0,
+        "mode": "thinking",
+        "samples": 50,
+        "saved_tokens_estimate": 103713.0,
+        "task": "math500"
+      }
+    ],
+    "correct_uncut": 4074,
+    "cut_fraction": 0.034100719424460434,
+    "cut_samples": 237,
+    "false_cut_examples": [
+      {
+        "cut_chars": 7168,
+        "decoding": "greedy",
+        "mode": "non-thinking",
+        "reason": "compressed_repetitive_tail",
+        "task": "gsm8k",
+        "uncut_correct": true
+      },
+      {
+        "cut_chars": 7616,
+        "decoding": "maj16",
+        "mode": "non-thinking",
+        "reason": "exact_period_tail",
+        "task": "gsm8k",
+        "uncut_correct": true
+      },
+      {
+        "cut_chars": 1408,
+        "decoding": "maj16",
+        "mode": "non-thinking",
+        "reason": "exact_period_tail",
+        "task": "math500",
+        "uncut_correct": true
+      },
+      {
+        "cut_chars": 4864,
+        "decoding": "maj16",
+        "mode": "non-thinking",
+        "reason": "exact_period_tail",
+        "task": "math500",
+        "uncut_correct": true
+      },
+      {
+        "cut_chars": 1088,
+        "decoding": "maj16",
+        "mode": "non-thinking",
+        "reason": "exact_period_tail",
+        "task": "math500",
+        "uncut_correct": true
+      }
+    ],
+    "false_cut_rate": 0.002700049091801669,
+    "false_cut_rate_of_cuts": 0.046413502109704644,
+    "false_cuts": 11,
+    "method": "scan stored completions at a fixed character stride with the calibrated detector, verify the prefix that would have been emitted, and compare with the uncut verdict. For a deterministic rollout the prefix tokens are identical to the uncut run; the stride is the text/token approximation.",
+    "samples": 6950,
+    "saved_tokens_estimate": 431812.0,
+    "stride_chars": 64,
+    "thresholds": {
+      "ngram_n": 6,
+      "ngram_repeat_min": 0.2,
+      "period_chars_max": 160,
+      "period_repeats_min": 3,
+      "tail_over_full_max": 0.78
+    }
+  },
+  "created_utc": "2026-11-18T08:44:26Z",
+  "kind": "false-cut-analysis",
+  "reading": "The cut is applied only to a tail the calibrated detector calls a loop. A false cut is an uncut-correct answer whose cut prefix no longer verifies correct. The saving is an estimate from the text length and the row's own token count, not a re-run. If the rate is too high, the cut is disabled by configuration; the reward still counts a truncated rollout as wrong.",
+  "registered_rollout_cap_tokens": 2048,
+  "revision": "b7f2daaf069246b21c47106f1a79feb685bafb67",
+  "schema": "selvedge/s56-false-cut/v1",
+  "sources": [
+    {
+      "path": "results/stage1/s54-smoke-0.8b-raw/gsm8k-non-thinking-greedy.jsonl",
+      "rows": 3,
+      "sha256": "07d858334df789e1bddec4105ef193d0e4a5ea3737d9123dbaf37b839136e062"
+    },
+    {
+      "path": "results/stage1/s54-smoke-0.8b-raw/math500-non-thinking-greedy.jsonl",
+      "rows": 3,
+      "sha256": "66f4a240a6525c4065f0d205c5189f2e5693fa05fc05830a303a451b04db538f"
+    },
+    {
+      "path": "results/stage1/s54-smoke-2b-raw/gsm8k-non-thinking-greedy.jsonl",
+      "rows": 3,
+      "sha256": "c7062006aacd6208128d89d5634fe1828f42d88da81e0ccbb0e7a6fa11c3bf27"
+    },
+    {
+      "path": "results/stage1/s54-smoke-2b-raw/math500-non-thinking-greedy.jsonl",
+      "rows": 3,
+      "sha256": "c4f6e91edd4b0a302cac5ca77e18fa3794680d598831cad415fcd7b3b8504044"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy-raw/gsm8k-non-thinking-greedy.jsonl",
+      "rows": 1319,
+      "sha256": "453b0a91b643855f8aa6cf9292971b119e3e764252fe8f9b1140a35c4942e8b1"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy-raw/math500-non-thinking-greedy.jsonl",
+      "rows": 500,
+      "sha256": "bbf0ef1fddefe2793826af99f514c5b54f5aa033173d226b458ba3c5c03f2967"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-0.8b-nonthinking-maj16-subset50-raw/gsm8k-non-thinking-maj16.jsonl",
+      "rows": 800,
+      "sha256": "f1342fefe718b310ad6c382e39b5d9ba5ebaed8dc16332ae835a474eb2c464ce"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-0.8b-nonthinking-maj16-subset50-raw/math500-non-thinking-maj16.jsonl",
+      "rows": 800,
+      "sha256": "e669f2351ef89c34c3f9f59978860c37a4f7bc9b1443f96d29c72f037d317684"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-0.8b-thinking-greedy-subset50-raw/gsm8k-thinking-greedy.jsonl",
+      "rows": 50,
+      "sha256": "b0a3e6943be8b7fd5f9ba1bf0345009e10fb3dd99eec3d687b23ff1539220aef"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-0.8b-thinking-greedy-subset50-raw/math500-thinking-greedy.jsonl",
+      "rows": 50,
+      "sha256": "b5190dae83b6e71d7faad79740f44fd7b99e7721c34e59ff2503ea377411b3bb"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-2b-nonthinking-greedy-raw/gsm8k-non-thinking-greedy.jsonl",
+      "rows": 1319,
+      "sha256": "87bd83804e3890af4bd323be41060c83a93206334143890e29d1cb1af91c1b08"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-2b-nonthinking-greedy-raw/math500-non-thinking-greedy.jsonl",
+      "rows": 500,
+      "sha256": "bda1546b288ec2bdde833bc81e47abfed7598a3a9c693a704adc52671f56a9f4"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-2b-nonthinking-maj16-subset50-raw/gsm8k-non-thinking-maj16.jsonl",
+      "rows": 800,
+      "sha256": "ef7e58146284e52c673cd24dee1f33c4a0758562abff7679f544220907373f7f"
+    },
+    {
+      "path": "results/stage1/s54-stage1-post-2b-nonthinking-maj16-subset50-raw/math500-non-thinking-maj16.jsonl",
+      "rows": 800,
+      "sha256": "d1828e49e74736adcab32c1c1f0bca76eb00dac6ee437295379eb53d5b3d35ee"
+    }
+  ],
+  "stamp": "20261118T084426Z",
+  "stored_generation_cap_tokens": 4096
+}
