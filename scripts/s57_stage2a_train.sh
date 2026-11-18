@@ -127,6 +127,11 @@ if ((milestone_2m % ckpt_every != 0 || milestone_5m % ckpt_every != 0)); then
   printf 's57-train: cadence checkpoints are not on the ckpt-every grid\n' >&2
   exit 78
 fi
+if ((steps < milestone_5m)); then
+  printf 's57-train: %s steps cannot reach the 5M-token cadence point; the corpus is too small for the registered cadence\n' \
+    "$steps" >&2
+  exit 78
+fi
 
 cmd=(python3 oracle/frontier/train.py
   --arm full

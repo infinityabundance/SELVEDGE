@@ -1,0 +1,74 @@
+{
+  "command": [
+    "scripts/s57_paired.py",
+    "--lm-eval-candidate",
+    "results/stage2/eval/base/raw/20261117T041926Z-mmlu.json.gz,results/stage2/eval/base/raw/20261117T040831Z-mmlu_pro.json",
+    "--lm-eval-baseline",
+    "results/stage2/eval/base/raw/20261117T041926Z-mmlu.json.gz,results/stage2/eval/base/raw/20261117T040831Z-mmlu_pro.json",
+    "--out",
+    "results/stage2/s57-paired-selftest.json"
+  ],
+  "created_utc": "2026-11-18T09:25:56Z",
+  "kind": "retention-paired",
+  "passed": true,
+  "retention_bound": {
+    "statement": "within 1.0 point of the post-trained baseline, paired 95% interval no worse than -1.0"
+  },
+  "revision": "9463452db8ff5437d74c7edcc2679e23fdac9b6b",
+  "rows": [
+    {
+      "baseline_items": 14042,
+      "baseline_only": 0,
+      "baseline_raw": "results/stage2/eval/base/raw/20261117T041926Z-mmlu.json.gz",
+      "baseline_score": 0.481555333998006,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_items": 14042,
+      "candidate_only": 0,
+      "candidate_raw": "results/stage2/eval/base/raw/20261117T041926Z-mmlu.json.gz",
+      "candidate_score": 0.481555333998006,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "delta": 0.0,
+      "interval_above_zero": false,
+      "interval_no_worse_than_minus_1_point": true,
+      "items": 14042,
+      "kind": "lm-eval-primary-metric",
+      "metric": "acc",
+      "paired_items": 14042,
+      "pairing_key": "(leaf task, doc_id), with doc_hash equality enforced",
+      "resamples": 4000,
+      "seed": 53,
+      "task": "mmlu"
+    },
+    {
+      "baseline_items": 504,
+      "baseline_only": 0,
+      "baseline_raw": "results/stage2/eval/base/raw/20261117T040831Z-mmlu_pro.json",
+      "baseline_score": 0.26785714285714285,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_items": 504,
+      "candidate_only": 0,
+      "candidate_raw": "results/stage2/eval/base/raw/20261117T040831Z-mmlu_pro.json",
+      "candidate_score": 0.26785714285714285,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "delta": 0.0,
+      "interval_above_zero": false,
+      "interval_no_worse_than_minus_1_point": true,
+      "items": 504,
+      "kind": "lm-eval-primary-metric",
+      "metric": "exact_match",
+      "paired_items": 504,
+      "pairing_key": "(leaf task, doc_id), with doc_hash equality enforced",
+      "resamples": 4000,
+      "seed": 53,
+      "task": "mmlu_pro"
+    }
+  ],
+  "schema": "selvedge/s57-paired-comparison/v1",
+  "stamp": "20261118T092556Z"
+}

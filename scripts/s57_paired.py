@@ -152,15 +152,149 @@ def compare_task(candidate: dict, baseline: dict) -> dict:
     return out
 
 
+def lm_eval_rows(path: str, metric: str) -> dict[tuple[str, int], tuple[float, str]]:
+    """Per-item primary-metric value from an lm-evaluation-harness raw dump.
+
+    Items are identified by `(leaf task, doc_id)`, the harness's own positional
+    identity within a leaf, and the document's `doc_hash` is carried beside it
+    so the pairing can refuse two runs that index different documents.
+    """
+    if path.endswith(".gz"):
+        import gzip
+        handle = gzip.open(path, "rt", encoding="utf-8")
+    else:
+        handle = open(path, "r", encoding="utf-8")
+    with handle:
+        payload = json.load(handle)
+    rows: dict[tuple[str, int], tuple[float, str]] = {}
+    for leaf, samples in payload["samples"].items():
+        for sample in samples:
+            if metric not in sample:
+                continue
+            rows[(leaf, int(sample["doc_id"]))] = (
+                float(sample[metric]), sample.get("doc_hash", ""))
+    return rows
+
+
+def compare_lm_eval(a_path: str, b_path: str, metric: str) -> dict:
+    a_rows = lm_eval_rows(a_path, metric)
+    b_rows = lm_eval_rows(b_path, metric)
+    common = sorted(set(a_rows) & set(b_rows))
+    if not common:
+        raise SystemExit("s57-paired: the two dumps share no (leaf, doc_id) item")
+    mismatched_docs = [key for key in common
+                       if a_rows[key][1] != b_rows[key][1]]
+    if mismatched_docs:
+        raise SystemExit(
+            "s57-paired: the two dumps index different documents at "
+            f"{len(mismatched_docs)} paired positions (first {mismatched_docs[:3]})")
+    deltas = [a_rows[key][0] - b_rows[key][0] for key in common]
+    a_score = sum(a_rows[key][0] for key in common) / len(common)
+    b_score = sum(b_rows[key][0] for key in common) / len(common)
+    interval = bootstrap(deltas)
+    ci = interval["ci95"]
+    return {
+        "kind": "lm-eval-primary-metric",
+        "metric": metric,
+        "candidate_items": len(a_rows),
+        "baseline_items": len(b_rows),
+        "paired_items": len(common),
+        "candidate_only": len(set(a_rows) - set(b_rows)),
+        "baseline_only": len(set(b_rows) - set(a_rows)),
+        "candidate_score": a_score,
+        "baseline_score": b_score,
+        "delta": interval["delta"],
+        "ci95": ci,
+        "items": interval["problems"],
+        "resamples": interval["resamples"],
+        "seed": interval["seed"],
+        "basis": interval["basis"],
+        "interval_above_zero": bool(ci is not None and ci[0] > 0.0),
+        "interval_no_worse_than_minus_1_point": bool(
+            ci is not None and ci[0] >= -0.01),
+        "pairing_key": "(leaf task, doc_id), with doc_hash equality enforced",
+    }
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--candidate", required=True)
-    parser.add_argument("--baseline", required=True)
+    parser.add_argument("--candidate", default=None)
+    parser.add_argument("--baseline", default=None)
     parser.add_argument("--tasks", default=None,
                         help="comma-separated task filter (default: every task "
                              "present in both receipts)")
+    parser.add_argument("--lm-eval-candidate", default=None,
+                        help="comma-separated harness raw dumps in the order "
+                             "mmlu,mmlu_pro (instead of stage-1 receipts)")
+    parser.add_argument("--lm-eval-baseline", default=None)
+    parser.add_argument("--lm-eval-metrics", default="mmlu,mmlu_pro",
+                        help="retention tasks to pair, in the same order as the "
+                             "dumps")
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
+
+    if args.lm_eval_candidate or args.lm_eval_baseline:
+        if not (args.lm_eval_candidate and args.lm_eval_baseline):
+            raise SystemExit("s57-paired: give both harness raw dumps")
+        rows = []
+        candidates = [value.strip() for value in
+                      args.lm_eval_candidate.split(",") if value.strip()]
+        baselines = [value.strip() for value in
+                     args.lm_eval_baseline.split(",") if value.strip()]
+        wanted = [value.strip() for value in
+                  args.lm_eval_metrics.split(",") if value.strip()]
+        plan = []
+        for task, metric in (("mmlu", "acc"), ("mmlu_pro", "exact_match")):
+            if task in wanted or metric in wanted:
+                plan.append((task, metric))
+        if len(candidates) != len(plan) or len(baselines) != len(plan):
+            raise SystemExit(
+                "s57-paired: give one raw dump per retention task, in the order "
+                f"{ [task for task, _ in plan] }; got {len(candidates)} "
+                f"candidate and {len(baselines)} baseline paths")
+        for (task, metric), candidate_path, baseline_path in zip(
+                plan, candidates, baselines):
+            row = compare_lm_eval(os.path.join(ROOT, candidate_path),
+                                  os.path.join(ROOT, baseline_path), metric)
+            row["task"] = task
+            row["candidate_raw"] = candidate_path
+            row["baseline_raw"] = baseline_path
+            rows.append(row)
+        if not rows:
+            raise SystemExit("s57-paired: no retention task matched the metric filter")
+        payload = {
+            "schema": SCHEMA,
+            "created_utc": utcnow(),
+            "stamp": stamp(),
+            "revision": revision(),
+            "kind": "retention-paired",
+            "retention_bound": {
+                "statement": "within 1.0 point of the post-trained baseline, "
+                             "paired 95% interval no worse than -1.0",
+            },
+            "rows": rows,
+            "passed": all(row["interval_no_worse_than_minus_1_point"]
+                          and abs(row["delta"]) <= 0.01 for row in rows),
+            "command": sys.argv,
+        }
+        out_path = os.path.join(ROOT, args.out)
+        os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+        with open(out_path + ".tmp", "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        os.replace(out_path + ".tmp", out_path)
+        for row in rows:
+            print(f"s57-paired: {row['task']} n={row['paired_items']} "
+                  f"candidate={row['candidate_score']:.4f} "
+                  f"baseline={row['baseline_score']:.4f} "
+                  f"delta={row['delta']:+.4f} "
+                  f"ci95=[{row['ci95'][0]:+.4f},{row['ci95'][1]:+.4f}] "
+                  f"no_worse_than_-1pt={row['interval_no_worse_than_minus_1_point']}")
+        print(f"s57-paired: passed={payload['passed']} -> {args.out}")
+        return 0
+
+    if not (args.candidate and args.baseline):
+        raise SystemExit("s57-paired: give --candidate/--baseline or the lm-eval dumps")
 
     candidate_path = os.path.join(ROOT, args.candidate)
     baseline_path = os.path.join(ROOT, args.baseline)

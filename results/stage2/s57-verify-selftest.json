@@ -1,0 +1,120 @@
+{
+  "accepted": {
+    "path": "results/artifacts/stage2/s55-smoke/smoke64-accepted.jsonl",
+    "sha256": "f9e4f40791ab1b06969cdd373aaefadd43ca07faca7ce2d03481cb7d9955579a"
+  },
+  "command": [
+    "scripts/s57_verify_stage2a.py",
+    "--receipt",
+    "results/artifacts/stage2/s55-smoke/smoke64-receipt.json",
+    "--accepted",
+    "results/artifacts/stage2/s55-smoke/smoke64-accepted.jsonl",
+    "--out",
+    "results/stage2/s57-verify-selftest.json"
+  ],
+  "contamination": {
+    "at_or_above_discard": 0,
+    "at_or_above_fail": 0,
+    "discard_jaccard": 0.2,
+    "examples": [],
+    "fail_closed": false,
+    "fail_jaccard": 0.5,
+    "items": 91,
+    "max_jaccard": 0.11278195488721804,
+    "shingle_width": 5,
+    "test_items": 1819
+  },
+  "created_utc": "2026-11-18T09:02:24Z",
+  "gates": {
+    "acceptance_floor": 0.4,
+    "acceptance_measured": 0.7109375,
+    "acceptance_passes": true,
+    "contamination_fail_closed": false,
+    "corpus_usable": true,
+    "reading": "acceptance is kept/sampled over every sampled completion; a completion that hit the cap without EOS is counted truncated and can never be a target, so a high kept rate beside a high truncated rate would mean the cap is doing the selection",
+    "solution_cap_reached_by_kept": {
+      "gsm8k": 0.0
+    },
+    "truncation_ceiling": 0.2,
+    "truncation_measured": 0.0625,
+    "truncation_passes": true
+  },
+  "generation": {
+    "elapsed_seconds": 112.13633751869202,
+    "generated_tokens": 61810,
+    "peak_allocated_gib": 6.462774753570557,
+    "peak_reserved_gib": 7.1015625,
+    "sampling_wall_seconds": 112.08299970626831,
+    "tokens_per_second": 551.4663255086243
+  },
+  "overall": {
+    "acceptance_correct_over_sampled": 0.7109375,
+    "acceptance_kept_over_sampled": 0.7109375,
+    "distinct_prompts": 54,
+    "duplicates_across_sources": [],
+    "generated_tokens_total": 61810,
+    "prompt_tokens_accepted": 8282,
+    "rows": 91,
+    "solution_tokens_accepted": 38144,
+    "supervised_positions_with_eos": 38235,
+    "truncated_over_sampled": 0.0625
+  },
+  "receipt": {
+    "path": "results/artifacts/stage2/s55-smoke/smoke64-receipt.json",
+    "sha256": "e9c6a6e6528d21b564a150e639e27ba5265b250cccbdceed0dd4c72fa8409a9c"
+  },
+  "revision": "897c4d921d2f238c2eba0c5cada7a50e2a81187a",
+  "sampling": {
+    "batch_prompts": 32,
+    "do_sample": true,
+    "k_gsm8k": 2,
+    "k_math": 1,
+    "max_new_tokens_gsm8k": 1024,
+    "max_new_tokens_math": 1024,
+    "seed": 5500,
+    "shard_index": 0,
+    "shards": 1,
+    "stop": "EOS only",
+    "temperature": 0.8,
+    "top_p": 0.95
+  },
+  "schema": "selvedge/s57-stage2a-verification/v1",
+  "sources": {
+    "gsm8k": {
+      "distinct_prompts": 54,
+      "prompt_tokens_accepted": 8282,
+      "rows": 91,
+      "sampling": {
+        "acceptance_kept_over_sampled": 0.7109375,
+        "completions_sampled": 128,
+        "correct": 91,
+        "correct_over_sampled": 0.7109375,
+        "duplicates": 0,
+        "generated_tokens": 61810,
+        "kept": 91,
+        "prompts_generated": 64,
+        "prompts_with_a_kept_solution": 54,
+        "truncated_over_sampled": 0.0625,
+        "truncated_without_eos": 8,
+        "verdicts": {
+          "ambiguous": 0,
+          "correct": 91,
+          "unparseable": 8,
+          "wrong": 29
+        }
+      },
+      "solution_tokens": {
+        "cap": 1024,
+        "fraction_at_cap": 0.0,
+        "fraction_at_or_above_90_percent_of_cap": 0.01098901098901099,
+        "max": 1007,
+        "mean": 419.16483516483515,
+        "p50": 407.0,
+        "p90": 593.0,
+        "p99": 830.5999999999989
+      },
+      "solution_tokens_accepted": 38144
+    }
+  },
+  "stamp": "20261118T090224Z"
+}

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/scripts/s57_verify_stage2a.py", line 285, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s57_verify_stage2a.py", line 212, in main
+    contamination = rft.contamination_check(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier/rft.py", line 546, in contamination_check
+    tests = tests if tests is not None else test_items()
+                                            ^^^^^^^^^^^^
+  File "/work/oracle/frontier/rft.py", line 512, in test_items
+    import pyarrow.ipc as ipc
+ModuleNotFoundError: No module named 'pyarrow'
