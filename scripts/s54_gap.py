@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import random
+import subprocess
 import sys
 from datetime import datetime, timezone
 
@@ -35,6 +36,15 @@ def _sha256(path: str) -> str:
         for block in iter(lambda: handle.read(1 << 22), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _revision() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", ROOT, "rev-parse", "HEAD"], text=True,
+            stderr=subprocess.DEVNULL).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
 
 
 def _percentile(values: list[float], fraction: float) -> float:
@@ -131,6 +141,7 @@ def main(argv: list[str]) -> int:
         "schema": "selvedge/s54-stage1-gap/v1",
         "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "stamp": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+        "revision": _revision(),
         "rows": rows,
         "reading": ("the gap is the free-compute headroom for stage 3; the "
                     "maj@16 subset is labelled by its common problem count and "
