@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/work/scripts/s57_paired.py", line 356, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s57_paired.py", line 257, in main
+    row = compare_lm_eval(os.path.join(ROOT, candidate_path),
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s57_paired.py", line 181, in compare_lm_eval
+    b_rows = lm_eval_rows(b_path, metric)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s57_paired.py", line 166, in lm_eval_rows
+    handle = open(path, "r", encoding="utf-8")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/work/results/stage2/eval/s58-post-0.8b-baseline-mmlu/raw/20261118T231814Z-mmlu.json'
