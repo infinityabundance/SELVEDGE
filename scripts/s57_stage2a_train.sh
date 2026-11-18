@@ -20,13 +20,23 @@
 # per-step token count does not divide 1,000,000. The default below divides it
 # exactly:
 #
-#   seq_len 1000, micro-batch 2, grad-accum 1 -> 2,000 tokens/step
-#   1,000,000 / 2,000 = 500 steps -> a checkpoint every 1.000M tokens
-#   -> the 2M (step 1000) and 5M (step 2500) checkpoints are exact.
+#   seq_len 1250, micro-batch 1, grad-accum 2 -> 2,500 tokens/step
+#   1,000,000 / 2,500 = 400 steps -> a checkpoint every 1.000M tokens
+#   -> the 2M (step 800) and 5M (step 2000) checkpoints are exact.
 #
-# 1000 tokens covers the measured teacher-solution length distribution at the
-# 1024-token cap (p99 below the cap, max at the cap); a longer example is dropped
-# whole and counted, never split across rows.
+# seq_len 1250 is chosen from the measured total-example length distribution of
+# the merged corpus: 4.8% of examples exceed it and are dropped whole and
+# counted (`overflow=drop`), never split. At seq_len 1000 the drop would be
+# 10.1% of rows but 23.0% of supervised solution tokens, because the long
+# solutions carry most of the loss; 1250 keeps them.
+#
+# The early-loss tripwire's baseline window must cover the warmup. With
+# baseline_steps 100 and warmup 200 the baseline is measured entirely inside
+# the linear ramp (LR <= 5e-6) and the trailing window at full LR, so the
+# comparison is between two learning-rate regimes rather than against a
+# divergence. The first S58 launch aborted at step 218 for exactly that reason
+# (ratio 1.517; results/stage2/runs/s58-stage2a-abort-20261118T181418Z/). The
+# baseline is now 400 steps (warmup plus 200 at full LR) and the window 100.
 #
 # Usage:
 #   SELVEDGE_MEM=14g scripts/s57_stage2a_train.sh --dry-run
@@ -51,12 +61,12 @@ run_dir="results/stage2/runs/s58-stage2a"
 # train the wrong model and every downstream comparison would be void.
 student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
 epochs=2
-seq_len=1000
-micro_batch=2
-grad_accum=1
+seq_len=1250
+micro_batch=1
+grad_accum=2
 lr="1e-5"
 keep_checkpoints=10
-vram_limit="12.5"
+vram_limit="13.5"
 detach=0
 dry_run=0
 while (($#)); do
@@ -184,8 +194,8 @@ cmd=(python3 oracle/frontier/train.py
   --vram-limit-gib "$vram_limit"
   --abort-update-factor 10.0
   --abort-ce-factor 1.5
-  --abort-ce-baseline-steps 100
-  --abort-ce-window 50)
+  --abort-ce-baseline-steps 400
+  --abort-ce-window 100)
 
 if ((dry_run)); then
   printf 's57-train: run_dir=%s epochs=%s rows=%s steps/epoch=%s steps=%s tokens=%s\n' \

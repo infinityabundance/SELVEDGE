@@ -1,0 +1,8 @@
+train: packed 4376 examples into 4376 rows of 1250; supervised_tokens=2225863
+train: loading student /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+train: step 1/4376 loss=0.2290 ce=0.2290 kl=0.0000 1632 tok/s peak=11.33GiB
+train: step 101/4376 loss=0.3394 ce=0.3394 kl=0.0000 2162 tok/s peak=12.73GiB
+train: step 201/4376 loss=0.5724 ce=0.5724 kl=0.0000 2159 tok/s peak=12.73GiB
+train: TRIPWIRE step 218 ratio=1.517 > 1.500; aborted
