@@ -43,9 +43,13 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 repo_root=$(cd -- "$script_dir/.." && pwd -P)
 cd "$repo_root"
 
-examples="results/artifacts/stage2/s55-stage2a/stage2a-examples.jsonl"
-examples_receipt="results/artifacts/stage2/s55-stage2a/stage2a-examples-receipt.json"
-run_dir="results/stage2/runs/s57-stage2a"
+examples="results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples.jsonl"
+examples_receipt="results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples-receipt.json"
+run_dir="results/stage2/runs/s58-stage2a"
+# The stage-2a student is the POST-TRAINED 0.8B (2fc06364...). train.py's
+# default is the Base checkpoint; without this pin the launcher would silently
+# train the wrong model and every downstream comparison would be void.
+student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
 epochs=2
 seq_len=1000
 micro_batch=2
@@ -59,6 +63,7 @@ while (($#)); do
   case "$1" in
     --examples) examples="${2-}"; shift 2 ;;
     --examples-receipt) examples_receipt="${2-}"; shift 2 ;;
+    --student-dir) student_dir="${2-}"; shift 2 ;;
     --run-dir) run_dir="${2-}"; shift 2 ;;
     --epochs) epochs="${2-}"; shift 2 ;;
     --seq-len) seq_len="${2-}"; shift 2 ;;
@@ -75,6 +80,17 @@ done
 
 [[ -f "$examples" ]] || { printf 's57-train: missing examples %s\n' "$examples" >&2; exit 78; }
 [[ -f "$examples_receipt" ]] || { printf 's57-train: missing examples receipt %s\n' "$examples_receipt" >&2; exit 78; }
+if [[ ! -f "$student_dir/config.json" ]]; then
+  printf 's57-train: student dir %s has no config.json\n' "$student_dir" >&2
+  exit 78
+fi
+case "$student_dir" in
+  *Qwen3.5-0.8B-Base*)
+    printf 's57-train: student %s is the BASE checkpoint; stage 2a trains the post-trained 0.8B\n' \
+      "$student_dir" >&2
+    exit 78
+    ;;
+esac
 [[ "$lr" == "1e-5" ]] || {
   printf 's57-train: a non-default lr requires its own registered amendment and a fixed-batch KL gate receipt\n' >&2
   exit 78
@@ -135,6 +151,7 @@ fi
 
 cmd=(python3 oracle/frontier/train.py
   --arm full
+  --student-dir "$student_dir"
   --sft-examples "$examples"
   --sft-examples-per-row 1
   --sft-overflow drop
@@ -206,11 +223,11 @@ fi
 
 python3 - "$run_dir" "$examples" "$examples_receipt" "$epochs" "$tokens" "$steps" \
   "$ckpt_every" "$milestone_2m" "$milestone_5m" "$SELVEDGE_MEM" "$vram_limit" "$rows" \
-  "$too_long" "$supervised_tokens" "$tokens_per_step" <<'PY'
+  "$too_long" "$supervised_tokens" "$tokens_per_step" "$student_dir" <<'PY'
 import hashlib, json, os, re, sys
 from datetime import datetime, timezone
 (run_dir, examples, receipt, epochs, tokens, steps, ckpt_every, m2m, m5m, mem,
- vram, rows, too_long, supervised, tokens_per_step) = sys.argv[1:16]
+ vram, rows, too_long, supervised, tokens_per_step, student_dir) = sys.argv[1:17]
 
 
 def sha256(path):
@@ -241,6 +258,12 @@ record = {
         "supervised_positions_in_rows": int(supervised),
         "packing": "one complete example per row; no boundary crossing",
         "completion_only_loss": True,
+    },
+    "student": {
+        "dir": student_dir,
+        "id": "Qwen/Qwen3.5-0.8B",
+        "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+        "note": "post-trained chat checkpoint, not the Base model",
     },
     "recipe": {
         "epochs": int(epochs),

@@ -1,0 +1,254 @@
+{
+  "acceptance": {
+    "by_dataset": {
+      "math": {
+        "correct": 117,
+        "duplicates": 0,
+        "generated_tokens": 236354,
+        "kept": 117,
+        "max_new_tokens": 2048,
+        "prompts": 200,
+        "sampled": 200,
+        "truncated": 67,
+        "verdicts": {
+          "ambiguous": 0,
+          "correct": 117,
+          "unparseable": 67,
+          "wrong": 16
+        },
+        "wall_seconds": 429.6338436603546
+      }
+    },
+    "kept_rate": 0.585,
+    "totals": {
+      "correct": 117,
+      "duplicates": 0,
+      "generated_tokens": 236354,
+      "kept": 117,
+      "prompts": 200,
+      "sampled": 200,
+      "truncated": 67,
+      "wall_seconds": 429.6338436603546
+    },
+    "verified_rate": 0.585
+  },
+  "accepted": {
+    "by_dataset": {
+      "math": {
+        "distinct_prompts": 117,
+        "examples": 117,
+        "prompt_tokens": 8752,
+        "solution_tokens": 86501
+      }
+    },
+    "path": "results/artifacts/stage2/s58-cap-pilot/math-cap2048-shard0-accepted.jsonl",
+    "prompt_tokens": 8752,
+    "rows": 117,
+    "sha256": "98ea2e8ac1d06525eac76eb3fa9f35ba4a1cef8074306136687ee84377cc4270",
+    "supervised_solution_tokens": 86501,
+    "write_mode": "truncate (mode 'w')"
+  },
+  "command": [
+    "scripts/s55_stage2_data.py",
+    "--teacher-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "--tokenizer-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--datasets",
+    "math-train",
+    "--select-math",
+    "2400",
+    "--k-math",
+    "1",
+    "--batch-prompts",
+    "32",
+    "--max-new-tokens-math",
+    "2048",
+    "--shards",
+    "12",
+    "--shard-index",
+    "0",
+    "--vram-limit-gib",
+    "13.0",
+    "--out-dir",
+    "results/artifacts/stage2/s58-cap-pilot",
+    "--label",
+    "math-cap2048-shard0"
+  ],
+  "contamination": {
+    "at_or_above_discard": 0,
+    "at_or_above_fail": 0,
+    "discard_jaccard": 0.2,
+    "examples": [],
+    "fail_closed": false,
+    "fail_jaccard": 0.5,
+    "items": 117,
+    "max_jaccard": 0.14504881450488144,
+    "shingle_width": 5,
+    "test_items": 1819
+  },
+  "created_utc": "2026-11-18T16:35:50Z",
+  "generation": {
+    "elapsed_seconds": 429.7609143257141,
+    "generated_tokens": 236354,
+    "peak_allocated_gib": 8.345351696014404,
+    "peak_reserved_gib": 8.974609375,
+    "sampling_wall_seconds": 429.6338436603546,
+    "tokens_per_second": 550.1289143944832
+  },
+  "kind": "stage2a-teacher-solutions",
+  "prompt_protocol": "the student's own chat template, add_generation_prompt=True, enable_thinking=False",
+  "prompt_template": "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{{}}.",
+  "revision": "eaeae264171048ea9e8f5662b712cd8b6973c407",
+  "sampling": {
+    "batch_prompts": 32,
+    "do_sample": true,
+    "k_gsm8k": 2,
+    "k_math": 1,
+    "max_new_tokens_gsm8k": 768,
+    "max_new_tokens_math": 2048,
+    "seed": 5500,
+    "shard_index": 0,
+    "shards": 12,
+    "stop": "EOS only",
+    "temperature": 0.8,
+    "top_p": 0.95
+  },
+  "schema": "selvedge/s55-stage2a-teacher-data/v1",
+  "selection": {
+    "math-train": {
+      "kind": "stratified_selection",
+      "length_boundaries_words": [
+        49,
+        82,
+        140
+      ],
+      "pool": 7472,
+      "replaces": "prefix truncation (items[start:start+limit])",
+      "requested": 2400,
+      "seed": 5500,
+      "selected": 2400,
+      "strata": [
+        {
+          "key": "math|level0|1",
+          "pool": 1,
+          "selected": 1
+        },
+        {
+          "key": "math|level0|2",
+          "pool": 1,
+          "selected": 1
+        },
+        {
+          "key": "math|level1|0",
+          "pool": 376,
+          "selected": 121
+        },
+        {
+          "key": "math|level1|1",
+          "pool": 134,
+          "selected": 43
+        },
+        {
+          "key": "math|level1|2",
+          "pool": 44,
+          "selected": 15
+        },
+        {
+          "key": "math|level1|3",
+          "pool": 9,
+          "selected": 3
+        },
+        {
+          "key": "math|level2|0",
+          "pool": 622,
+          "selected": 199
+        },
+        {
+          "key": "math|level2|1",
+          "pool": 421,
+          "selected": 135
+        },
+        {
+          "key": "math|level2|2",
+          "pool": 211,
+          "selected": 68
+        },
+        {
+          "key": "math|level2|3",
+          "pool": 90,
+          "selected": 29
+        },
+        {
+          "key": "math|level3|0",
+          "pool": 432,
+          "selected": 139
+        },
+        {
+          "key": "math|level3|1",
+          "pool": 520,
+          "selected": 167
+        },
+        {
+          "key": "math|level3|2",
+          "pool": 413,
+          "selected": 133
+        },
+        {
+          "key": "math|level3|3",
+          "pool": 218,
+          "selected": 70
+        },
+        {
+          "key": "math|level4|0",
+          "pool": 276,
+          "selected": 89
+        },
+        {
+          "key": "math|level4|1",
+          "pool": 465,
+          "selected": 149
+        },
+        {
+          "key": "math|level4|2",
+          "pool": 531,
+          "selected": 170
+        },
+        {
+          "key": "math|level4|3",
+          "pool": 412,
+          "selected": 132
+        },
+        {
+          "key": "math|level5|0",
+          "pool": 109,
+          "selected": 35
+        },
+        {
+          "key": "math|level5|1",
+          "pool": 355,
+          "selected": 114
+        },
+        {
+          "key": "math|level5|2",
+          "pool": 681,
+          "selected": 218
+        },
+        {
+          "key": "math|level5|3",
+          "pool": 1151,
+          "selected": 369
+        }
+      ]
+    }
+  },
+  "stage": "2a teacher-solution SFT (on-policy path not implemented)",
+  "stamp": "20261118T163550Z",
+  "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+  "tokenizer_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "verification": {
+    "deduplication": "exact generated-token-sequence SHA-256, global",
+    "extractor": "frontier.rft.verify against the train label",
+    "kept": "verdict == correct only; ambiguous, unparseable, wrong and truncated completions are never a target"
+  }
+}

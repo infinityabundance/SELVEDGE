@@ -213,12 +213,29 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--vram-limit-gib", type=float, default=14.0)
     parser.add_argument("--receipt-only", action="store_true",
                         help="rebuild the receipt from an existing jsonl")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="allow replacing an existing accepted jsonl; the "
+                             "default fails closed so a partial corpus is never "
+                             "clobbered by a re-run")
     args = parser.parse_args(argv)
 
     out_dir = os.path.join(ROOT, args.out_dir)
     os.makedirs(out_dir, exist_ok=True)
     accepted_path = os.path.join(out_dir, f"{args.label}-accepted.jsonl")
     receipt_path = os.path.join(out_dir, f"{args.label}-receipt.json")
+
+    # The writer below opens the accepted file with mode "w". A re-run of the
+    # same label would therefore destroy a partial corpus (S58 resumed exactly
+    # such a partial: 2,997 accepted rows). Fail closed instead, and require an
+    # explicit --overwrite or a new --out-dir/--label. Accepted corpora are
+    # combined by `scripts/s58_merge_corpus.py`, never by rewriting them.
+    if (not args.receipt_only and os.path.exists(accepted_path)
+            and not args.overwrite):
+        raise SystemExit(
+            f"s55-data: {os.path.relpath(accepted_path, ROOT)} already exists; "
+            "this script writes with mode 'w' and would clobber it. Pass "
+            "--overwrite deliberately, or write to a new --out-dir/--label "
+            "and merge with scripts/s58_merge_corpus.py")
 
     import torch
 
@@ -462,6 +479,8 @@ def main(argv: list[str]) -> int:
         "accepted": {
             "path": os.path.relpath(accepted_path, ROOT),
             "sha256": sha256_file(accepted_path),
+            "write_mode": ("rebuild" if args.receipt_only else
+                           "truncate (mode 'w')"),
             "rows": len(rows),
             "supervised_solution_tokens": supervised,
             "prompt_tokens": prompt_tokens,
