@@ -39,7 +39,44 @@ copy_ws19() {
     fi
   done
 }
-copy_ws19
+
+# The live bar is named by its own launch receipt. The documents now name its
+# milestone scores, so a baseline copy without those receipts would render a
+# different (fallback) block and every case would fail as stale. Copy the run
+# and every milestone receipt it publishes.
+copy_live_bar() {
+  local run="results/stage2/runs/s50-bar-20m-lr1e-5"
+  local eval_root="results/stage2/eval/s50-bar-20m-lr1e-5"
+  if [[ -d "$repo_root/$run" ]]; then
+    mkdir -p "$work/$run"
+    for name in launch.json manifest.json log.jsonl; do
+      [[ -f "$repo_root/$run/$name" ]] && cp "$repo_root/$run/$name" "$work/$run/$name"
+    done
+  fi
+  if [[ -d "$repo_root/$eval_root" ]]; then
+    local receipt
+    for receipt in "$repo_root/$eval_root"/m*/eval.json; do
+      [[ -f "$receipt" ]] || continue
+      mkdir -p "$work/$(dirname "${receipt#$repo_root/}")"
+      cp "$receipt" "$work/${receipt#$repo_root/}"
+    done
+  fi
+  # Eligibility is derived from the invalidation receipts, so a baseline copy
+  # without them renders a different eligibility line and every case fails as
+  # stale. Copy the master record and the per-directory markers verbatim.
+  local path
+  for path in "$repo_root"/results/stage2/*invalidation*.json; do
+    [[ -f "$path" ]] || continue
+    mkdir -p "$work/$(dirname "${path#$repo_root/}")"
+    cp "$path" "$work/${path#$repo_root/}"
+  done
+  while IFS= read -r path; do
+    [[ -n "$path" ]] || continue
+    mkdir -p "$work/$(dirname "${path#$repo_root/}")"
+    cp "$path" "$work/${path#$repo_root/}"
+  done < <(find "$repo_root/results/stage2" -name INVALIDATED.json 2>/dev/null)
+}
+copy_live_bar
 
 failures=0
 
@@ -51,6 +88,7 @@ reset_copy() {
   cp "$repo_root/results/capability/runs/t2-comparison.json" \
     "$work/results/capability/runs/t2-comparison.json"
   copy_ws19
+  copy_live_bar
 }
 
 check_case() {

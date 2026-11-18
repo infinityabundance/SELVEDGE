@@ -1,0 +1,15 @@
+status_consistency: 3 block(s) already current
+status_consistency: OK — 3 block(s) match the receipts and 11 contradiction rule(s) found no claim in README/REPORT that the receipts contradict
+FAIL baseline                           baseline copy does not check clean
+status_consistency: README.md:75: stale status block 'readme-status' (the receipts render a different body; run --write)
+status_consistency: results/REPORT.md:3: stale status block 'report-status' (the receipts render a different body; run --write)
+status_consistency: 2 problem(s); the status blocks are derived from receipts, so fix the document, not the receipt
+PASS claims-a-run-is-training           no-run-is-training
+PASS claims-no-verdict                  verdict-exists
+PASS claims-suite-never-ran             capability-suite-has-run
+PASS claims-arm-unevaluated             all-arms-evaluated
+PASS hand-edited-status-block           stale status block
+PASS receipt-moved-under-block          stale status block
+PASS owned-sentinel-deleted             is missing
+FAIL history-allowed                    a past-tense sentence was rejected
+status_consistency negative cases: 2 failure(s)

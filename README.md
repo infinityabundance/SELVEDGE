@@ -81,8 +81,9 @@ hand.
 - **T2 pilot `done`** — started `2026-11-15T13:26:56Z`, finished `2026-11-16T09:18:31Z`, receipt stamp `2026-11-16T09:18:32Z` (`results/t2/pilot-state.json`).
 - **Arms evaluated: 5 of 5** (`D`, `H`, `H*`, `M`, `X`); **0 training**, **0 neither trained-and-scored nor training**.
 - **T2 branch: complete** — the pilot is terminal and every arm is evaluated; this is the closed branch, not the live work.
-- **WS19 stage-2b: `complete`** — the 20M math-weighted full-distillation bar (`results/stage2/runs/s50-bar-20m-lr1e-5`) was launched `2026-11-17T20:56:40Z` at `20000000` tokens / `9765` steps on stream `9c5fb53b20a8f916…`; no anchored score exists yet.
-- **Result eligibility:** `currently_eligible`: none; 18 artefact(s) are **`invalidated`**, including the anchored scores `results/stage2/eval/full-20m-math`, `results/stage2/eval/full-20m-math-s49`; they are retained as `historically_scored` evidence only and may not be cited as the current bar, baseline or eligible result (master record `results/stage2/s50-invalidation-20261117T205855Z.json`).
+- **WS19 stage-2b: `currently_eligible`** — the 20M math-weighted full-distillation bar (`results/stage2/runs/s50-bar-20m-lr1e-5`) was launched `2026-11-17T20:56:40Z` at `20000000` tokens / `9765` steps on stream `9c5fb53b20a8f916…`; the scored endpoint is `m20` and every eligible milestone receipt is listed on the next line.
+- **WS19 stage-2b milestone receipts:** `m5` (step `2441` / `4999168` tokens, stamp `20261118T005244Z`, gsm8k 29.9%, minerva_math500 3.2%, mmlu 46.0%, mmlu_pro 18.1%); `m10` (step `4882` / `9998336` tokens, stamp `20261118T013503Z`, gsm8k 37.4%, minerva_math500 12.6%, mmlu 46.6%, mmlu_pro 18.3%); `m20` (step `9765` / `19998720` tokens, stamp `20261118T021549Z`, gsm8k 41.7%, minerva_math500 8.8%, mmlu 47.0%, mmlu_pro 23.0%). The scored endpoint is `m20` at step `9765` / `19998720` tokens (`results/stage2/eval/s50-bar-20m-lr1e-5/m20/eval.json`); no eligible milestone is marked invalidated.
+- **Result eligibility:** `currently_eligible`: `results/stage2/eval/s50-bar-20m-lr1e-5/m10/eval.json`, `results/stage2/eval/s50-bar-20m-lr1e-5/m20/eval.json`, `results/stage2/eval/s50-bar-20m-lr1e-5/m5/eval.json`; 18 artefact(s) are **`invalidated`**, including the anchored scores `results/stage2/eval/full-20m-math`, `results/stage2/eval/full-20m-math-s49`; they are retained as `historically_scored` evidence only and may not be cited as the current bar, baseline or eligible result (master record `results/stage2/s50-invalidation-20261117T205855Z.json`).
 - **Registered T2 outcome: `error_direction_not_supported`** — K15–K19: K15 FAIL, K16 FAIL, K17 PASS, K18 FAIL, K19 FAIL; verdict receipt stamp `20261116T134706Z`, revision `afe554692985…` (`results/t2-verdict.json`).
 - **Verified-task comparison: `conditional_capacity_not_supported_on_verified_tasks`** — receipt stamp `20261116T134342Z`, revision `afe554692985…` (`results/capability/runs/t2-comparison.json`). A floor on the instrument is not a ranking of arms; the diagnosis is in `docs/CAPABILITY-COURT.md` §12.
 <!-- END GENERATED: readme-status -->
@@ -96,12 +97,16 @@ as negatives, not as the program's result.
 The status block above is derived from the receipts and is the authority. It now
 separates the two branches explicitly: **T2 is complete** (every arm evaluated,
 the verdict terminal), while **WS19 stage-2b is the live program**. The
-corrected-optimiser 20M bar (`s50-bar-20m-lr1e-5`) is in flight on the single
-GPU; its launch and state are published by the block, not typed here. The earlier
-`full-20m-math` runs and their scores are **invalidated** by the S50 optimiser
-defect and are retained only as `historically_scored` evidence; they are not a
-bar or baseline. No corrective arm has trained, so the stage-2b registration and
-its S47 amendment are paperwork and CPU tests until the bar exits and is scored.
+corrected-optimiser 20M bar (`s50-bar-20m-lr1e-5`) **exited and is scored at its
+three registered milestones (m5, m10, m20)**; the milestone receipts, their
+stamps and the scored endpoint are published by the block, not typed here. The
+earlier `full-20m-math` runs and their scores are **invalidated** by the S50
+optimiser defect and are retained only as `historically_scored` evidence; they
+are not a bar or baseline. The stage-2a route (verified teacher-solution SFT) is
+registered in `docs/ws19-post-trained-route-stage2a-amendment-s55-v1.json` and
+its S56 correction; its corpus is being generated. No corrective arm has trained,
+so first-textual-divergence correction remains a registered future experiment,
+not a result.
 
 Read-only monitoring, for when a run exists again:
 

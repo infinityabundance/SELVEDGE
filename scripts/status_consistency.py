@@ -66,8 +66,27 @@ CURRENT_BAR_REL = "results/stage2/runs/s50-bar-20m-lr1e-5"
 CURRENT_BAR_LAUNCH = CURRENT_BAR_REL + "/launch.json"
 CURRENT_BAR_MANIFEST = CURRENT_BAR_REL + "/manifest.json"
 CURRENT_BAR_LOG = CURRENT_BAR_REL + "/log.jsonl"
-CURRENT_BAR_EVAL = "results/stage2/eval/s50-bar-20m-lr1e-5/eval.json"
+CURRENT_BAR_EVAL_ROOT = "results/stage2/eval/s50-bar-20m-lr1e-5"
+#: The path the first S51 status block assumed: one `eval.json` at the root of
+#: the eval directory. The milestone driver writes `m5/eval.json`,
+#: `m10/eval.json` and `m20/eval.json` instead, so this path is only the
+#: fallback for a run that predates milestones. Discovery, not this constant,
+#: decides whether a score exists.
+CURRENT_BAR_EVAL = CURRENT_BAR_EVAL_ROOT + "/eval.json"
 INVALIDATION_GLOB = "results/stage2/*invalidation*.json"
+
+#: Milestone directories are `<eval-root>/m<k>` where `k` is the checkpoint's
+#: ordinal in the run's own recorded milestone list.
+MILESTONE_DIR_RE = re.compile(r"^m(\d+)$")
+#: The metric each milestone scored, in preference order. The driver emits
+#: lm-evaluation-harness metric names verbatim; a task with none of these keys
+#: contributes no number rather than a guessed one.
+MILESTONE_SCORE_KEYS = {
+    "gsm8k": ("exact_match,flexible-extract", "exact_match,strict-match"),
+    "minerva_math500": ("exact_match,none", "math_verify,none"),
+    "mmlu": ("acc,none",),
+    "mmlu_pro": ("exact_match,custom-extract", "acc,none"),
+}
 
 REGIONS = (
     ("readme-status", "README.md"),
@@ -175,7 +194,11 @@ def load_invalidations(root: str) -> dict:
     # master record is present (the marker and the master are written together,
     # but a shallow checkout may have only one).
     for pattern in ("results/stage2/runs/*/INVALIDATED.json",
-                    "results/stage2/eval/*/INVALIDATED.json"):
+                    "results/stage2/eval/*/INVALIDATED.json",
+                    # A milestone receipt lives one level below the eval
+                    # directory (`eval/<run>/m20/eval.json`); a marker there is
+                    # authoritative for that milestone only.
+                    "results/stage2/eval/*/*/INVALIDATED.json"):
         for marker_path in glob.glob(os.path.join(root, pattern)):
             marker = read_json(marker_path)
             if not isinstance(marker, dict) or not marker.get("invalidated"):
@@ -229,6 +252,92 @@ def classify_result(path: str, scored: bool, invalidations: dict,
     return "unscored"
 
 
+def _milestone_score(receipt: dict, task: str) -> float | None:
+    """The task's primary metric value from a milestone eval receipt."""
+    for entry in receipt.get("tasks") or []:
+        if not isinstance(entry, dict) or entry.get("task") != task:
+            continue
+        metrics = entry.get("all_metrics") or {}
+        for key in MILESTONE_SCORE_KEYS.get(task, ()):
+            value = metrics.get(key)
+            if isinstance(value, (int, float)):
+                return float(value)
+    return None
+
+
+def discover_milestones(root: str, eval_root: str, invalidations: dict,
+                        tokens_per_step: int | None = None) -> list[dict]:
+    """Find, classify and order a run's milestone score receipts.
+
+    Eligibility is derived, not assumed:
+
+    * the directory must be `<eval-root>/m<k>` and contain `eval.json`;
+    * the receipt must be `complete` and carry a `stamp` and a `revision`;
+    * it must name a checkpoint step, and that step must be one the run's
+      launch receipt recorded (when the launch lists milestones);
+    * no invalidation receipt may name the directory or the file.
+
+    An invalidated milestone is returned with `state = invalidated` so the
+    document can name it as history; it is never the endpoint. An incomplete
+    receipt is returned with `state = incomplete` and is never eligible.
+    """
+    base = os.path.join(root, eval_root)
+    if not os.path.isdir(base):
+        return []
+    launch = read_json(os.path.join(root, CURRENT_BAR_LAUNCH)) if (
+        _normalise_path(eval_root) == _normalise_path(CURRENT_BAR_EVAL_ROOT)
+    ) else None
+    recorded = {
+        int(step) for step in ((launch or {}).get("checkpoints") or {}).get(
+            "milestones") or []
+        if isinstance(step, int) or str(step).isdigit()
+    }
+    milestones: list[dict] = []
+    for directory in sorted(glob.glob(os.path.join(base, "m*"))):
+        if not os.path.isdir(directory):
+            continue
+        label = os.path.basename(directory)
+        if not MILESTONE_DIR_RE.match(label):
+            continue
+        rel = _normalise_path(os.path.relpath(directory, root))
+        path = f"{rel}/eval.json"
+        receipt = read_json(os.path.join(root, path))
+        if not isinstance(receipt, dict):
+            continue
+        report = receipt.get("arm_report") or {}
+        raw_step = report.get("checkpoint_step")
+        step = int(raw_step) if isinstance(raw_step, (int, str)) and str(
+            raw_step).isdigit() else None
+        tokens = report.get("checkpoint_tokens")
+        if not isinstance(tokens, int) and step is not None and tokens_per_step:
+            tokens = step * int(tokens_per_step)
+        invalidated = _is_invalidated(path, invalidations)
+        complete = receipt.get("complete") is True
+        anchored = bool(receipt.get("stamp")) and bool(receipt.get("revision"))
+        step_matches = (step is not None and (not recorded or step in recorded))
+        eligible = complete and anchored and step_matches and not invalidated
+        if invalidated:
+            state = "invalidated"
+        elif eligible:
+            state = "eligible"
+        else:
+            state = "incomplete"
+        milestones.append({
+            "label": label,
+            "path": path,
+            "stamp": receipt.get("stamp"),
+            "revision": (receipt.get("revision") or "")[:12] or None,
+            "step": step,
+            "tokens": tokens if isinstance(tokens, int) else None,
+            "state": state,
+            "scores": {task: _milestone_score(receipt, task)
+                       for task in MILESTONE_SCORE_KEYS},
+        })
+    milestones.sort(key=lambda item: (
+        item["step"] if item["step"] is not None else -1, item["label"]))
+    return milestones
+
+
 def load_ws19(root: str, invalidations: dict | None = None) -> dict | None:
     """Derive the WS19 stage-2 bar's state without reading a live step count.
 
@@ -247,15 +356,16 @@ def load_ws19(root: str, invalidations: dict | None = None) -> dict | None:
     """
     invalidations = invalidations or _empty_invalidations()
     current_launch = read_json(os.path.join(root, CURRENT_BAR_LAUNCH))
+    milestone_aware = current_launch is not None
     if current_launch is not None:
         run_dir = CURRENT_BAR_REL
         launch = current_launch
         manifest = read_json(os.path.join(root, CURRENT_BAR_MANIFEST))
         log_tail = _last_json_line(os.path.join(root, CURRENT_BAR_LOG))
-        receipt = read_json(os.path.join(root, CURRENT_BAR_EVAL))
         amended = False
         selected: dict = {}
-        eval_path = CURRENT_BAR_EVAL
+        eval_root = CURRENT_BAR_EVAL_ROOT
+        fallback_eval = CURRENT_BAR_EVAL
     else:
         marker = read_json(os.path.join(root, WS19_SELECTED))
         selected = (marker or {}).get("selected") or {}
@@ -265,22 +375,33 @@ def load_ws19(root: str, invalidations: dict | None = None) -> dict | None:
             launch = read_json(os.path.join(root, run_dir, "launch.json"))
             manifest = read_json(os.path.join(root, run_dir, "manifest.json"))
             log_tail = _last_json_line(os.path.join(root, run_dir, "log.jsonl"))
-            receipt = read_json(os.path.join(root, WS19_AMENDED_EVAL))
-            eval_path = WS19_AMENDED_EVAL
+            fallback_eval = WS19_AMENDED_EVAL
         else:
+            run_dir = WS19_RUN_REL
             launch = read_json(os.path.join(root, WS19_LAUNCH))
             manifest = read_json(os.path.join(root, WS19_MANIFEST))
             log_tail = _last_json_line(os.path.join(root, WS19_LOG))
-            receipt = read_json(os.path.join(root, WS19_EVAL))
-            eval_path = WS19_EVAL
+            fallback_eval = WS19_EVAL
+        eval_root = os.path.dirname(fallback_eval)
     if launch is None and manifest is None:
         return None
     steps = int((manifest or {}).get("steps") or 0)
     last_step = int((log_tail or {}).get("step") or -1)
+    tokens_per_step = (manifest or {}).get("tokens_per_step")
+    milestones = (discover_milestones(root, eval_root, invalidations,
+                                      tokens_per_step)
+                  if milestone_aware else [])
+    eligible = [item for item in milestones if item["state"] == "eligible"]
+    endpoint = eligible[-1] if eligible else None
+    eval_path = endpoint["path"] if endpoint is not None else fallback_eval
+    receipt = read_json(os.path.join(root, eval_path))
     invalidated = _is_invalidated(eval_path, invalidations)
-    if invalidated:
+    if endpoint is not None:
+        state = "scored"
+    elif milestones and all(item["state"] == "invalidated"
+                            for item in milestones):
         state = "invalidated"
-    elif receipt is not None:
+    elif receipt is not None and not invalidated:
         state = "scored"
     elif steps and last_step >= steps - 1:
         state = "complete"
@@ -299,8 +420,11 @@ def load_ws19(root: str, invalidations: dict | None = None) -> dict | None:
         "run_dir": run_dir,
         "eval_path": eval_path,
         "invalidated": invalidated,
+        "milestones": milestones,
+        "eligible_milestones": eligible,
+        "endpoint": endpoint,
         "score_state": classify_result(
-            eval_path, receipt is not None, invalidations,
+            eval_path, receipt is not None and not invalidated, invalidations,
             current_bar=eval_path if not invalidated else None),
         "diverged_receipt": read_json(os.path.join(root, WS19_EVAL)),
         "diverged_invalidated": (
@@ -386,6 +510,68 @@ def _eligibility_line(facts: dict,
     return f"- **Result eligibility:** `currently_eligible`: {eligible}; {invalid_text}"
 
 
+def _percent(value: float | None) -> str:
+    return "—" if value is None else f"{100.0 * value:.1f}%"
+
+
+def _milestone_summary(milestones: Sequence[dict]) -> str:
+    """`m5 50.0% / 40.0% ..., m10 ..., m20 ...` for the status block."""
+    parts = []
+    for item in milestones:
+        scores = item.get("scores") or {}
+        detail = ", ".join(
+            f"{task} {_percent(scores.get(task))}"
+            for task in ("gsm8k", "minerva_math500", "mmlu", "mmlu_pro")
+            if scores.get(task) is not None)
+        step = f"step `{item['step']}`" if item.get("step") is not None else "step ?"
+        tokens = (f" / `{item['tokens']}` tokens"
+                  if item.get("tokens") is not None else "")
+        parts.append(
+            f"`{item['label']}` ({step}{tokens}, stamp `{item.get('stamp')}`"
+            + (f", {detail}" if detail else "") + ")")
+    return "; ".join(parts)
+
+
+def _milestone_explanation(ws19: dict) -> str | None:
+    """The milestone sentence for the live bar, or None when there are none."""
+    milestones = ws19.get("milestones") or []
+    if not milestones:
+        return None
+    eligible = ws19.get("eligible_milestones") or []
+    endpoint = ws19.get("endpoint")
+    if eligible:
+        return (
+            "- **WS19 stage-2b milestone receipts:** "
+            + _milestone_summary(eligible)
+            + f". The scored endpoint is `{endpoint['label']}`"
+            + (f" at step `{endpoint['step']}`" if endpoint["step"] is not None else "")
+            + (f" / `{endpoint['tokens']}` tokens"
+               if endpoint["tokens"] is not None else "")
+            + f" (`{endpoint['path']}`); no eligible milestone is marked invalidated."
+        )
+    invalidated = [item for item in milestones if item["state"] == "invalidated"]
+    if invalidated:
+        return (
+            "- **WS19 stage-2b milestone receipts are history:** "
+            + _milestone_summary(invalidated)
+            + "; an invalidation receipt names them, so none is the current bar."
+        )
+    return (
+        "- **WS19 stage-2b milestone receipts are incomplete:** "
+        + _milestone_summary(milestones)
+        + "; an incomplete receipt is not a score."
+    )
+
+
+def _eligible_paths(ws19: dict | None) -> list[str]:
+    """Every path the status may call `currently_eligible`."""
+    if ws19 is None or ws19.get("score_state") != "currently_eligible":
+        return []
+    milestones = ws19.get("eligible_milestones") or []
+    return ([item["path"] for item in milestones] if milestones
+            else [ws19["eval_path"]])
+
+
 def render_readme_status(facts: dict) -> str:
     pilot = facts["pilot"]
     if pilot is None:
@@ -437,14 +623,25 @@ def render_readme_status(facts: dict) -> str:
                 "`historically_scored` evidence, not an eligible bar or baseline."
             )
         elif ws19["state"] == "scored":
-            lines.append(
-                f"- **WS19 stage-2b: `currently_eligible`** — the 20M math-weighted "
-                f"full-distillation bar (`{unit}`) was launched "
-                f"`{launch.get('created_utc')}` at "
-                f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
-                f"steps on stream `{sha[:16]}…`; anchored receipt stamp "
-                f"`{ws19['eval_stamp']}` (`{ws19['eval_path']}`)."
-            )
+            if ws19.get("endpoint") is not None:
+                lines.append(
+                    "- **WS19 stage-2b: `currently_eligible`** — the 20M "
+                    f"math-weighted full-distillation bar (`{unit}`) was launched "
+                    f"`{launch.get('created_utc')}` at "
+                    f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
+                    f"steps on stream `{sha[:16]}…`; the scored endpoint is "
+                    f"`{ws19['endpoint']['label']}` and every eligible milestone "
+                    "receipt is listed on the next line."
+                )
+            else:
+                lines.append(
+                    f"- **WS19 stage-2b: `currently_eligible`** — the 20M math-weighted "
+                    f"full-distillation bar (`{unit}`) was launched "
+                    f"`{launch.get('created_utc')}` at "
+                    f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
+                    f"steps on stream `{sha[:16]}…`; anchored receipt stamp "
+                    f"`{ws19['eval_stamp']}` (`{ws19['eval_path']}`)."
+                )
         else:
             lines.append(
                 f"- **WS19 stage-2b: `{ws19['state']}`** — the 20M math-weighted "
@@ -453,6 +650,9 @@ def render_readme_status(facts: dict) -> str:
                 f"`{manifest.get('tokens')}` tokens / `{manifest.get('steps')}` "
                 f"steps on stream `{sha[:16]}…`; no anchored score exists yet."
             )
+        milestone_line = _milestone_explanation(ws19)
+        if milestone_line:
+            lines.append(milestone_line)
         if ws19["amended"] and ws19["amended_invalidated"]:
             recipe = (ws19["selected"] or {}).get("lr")
             lines.append(
@@ -470,11 +670,7 @@ def render_readme_status(facts: dict) -> str:
                 f"as a recorded divergence (`{WS19_EVAL}`); it is not the arm the "
                 "stage-2 win conditions compare against."
             )
-    lines.append(_eligibility_line(
-        facts,
-        eligible_paths=[ws19["eval_path"]] if (
-            ws19 is not None and ws19["score_state"] == "currently_eligible")
-        else []))
+    lines.append(_eligibility_line(facts, eligible_paths=_eligible_paths(ws19)))
     verdict = facts["verdict"]
     if verdict is None:
         lines.append(
@@ -567,10 +763,11 @@ def render_report_status(facts: dict) -> str:
             + f"`** (`{ws19['run_dir']}`); every scored result is classified by "
             "`scripts/status_consistency.py` against the invalidation receipts."
         )
-        lines.append(_eligibility_line(
-            facts,
-            eligible_paths=[ws19["eval_path"]]
-            if ws19["score_state"] == "currently_eligible" else []))
+        lines.append(_eligibility_line(facts,
+                                     eligible_paths=_eligible_paths(ws19)))
+        milestone_line = _milestone_explanation(ws19)
+        if milestone_line:
+            lines.append(milestone_line)
     else:
         lines.append(_eligibility_line(facts))
     lines.append(tail)
@@ -726,6 +923,28 @@ def contradiction_rules(facts: dict) -> list[dict]:
                     r"\b(not|no\s+longer|never|invalidated|historical|history|"
                     r"retained|superseded|may\s+not|cannot|isn't|is\s+not|"
                     r"are\s+not)\b",
+                    re.IGNORECASE,
+                ),
+            }
+        )
+    ws19 = facts.get("ws19") or {}
+    if ws19.get("eligible_milestones"):
+        run_name = os.path.basename(
+            _normalise_path(ws19.get("run_dir") or CURRENT_BAR_REL))
+        rules.append(
+            {
+                "name": "anchored-score-exists",
+                "why": (
+                    "eligible milestone receipts exist, so a claim that the bar "
+                    "is unscored or still in flight contradicts them"),
+                "pattern": re.compile(
+                    r"\bno\s+anchored\s+score\s+exists\b"
+                    rf"|{re.escape(run_name)}[^\n]{{0,160}}\b(no\s+score|unscored|"
+                    r"not\s+(yet\s+)?scored|is\s+(currently\s+)?(still\s+)?in\s+flight|"
+                    r"is\s+(currently\s+)?(still\s+)?training)"
+                    r"|\b(no\s+score|unscored|is\s+(currently\s+)?(still\s+)?in\s+flight|"
+                    r"is\s+(currently\s+)?(still\s+)?training)\b[^\n]{{0,160}}"
+                    + re.escape(run_name),
                     re.IGNORECASE,
                 ),
             }

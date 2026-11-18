@@ -1,0 +1,23 @@
+...F....                                                                 [100%]
+=================================== FAILURES ===================================
+___________ test_invalidated_milestone_is_excluded_from_the_endpoint ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_invalidated_milestone_is_0')
+
+    def test_invalidated_milestone_is_excluded_from_the_endpoint(tmp_path):
+        root = _repo(tmp_path)
+        _write(os.path.join(root, sc.CURRENT_BAR_EVAL_ROOT, "m20", "INVALIDATED.json"),
+               {"invalidated": True, "reason": "test fixture"})
+        facts = sc.load_facts(root)
+        ws19 = facts["ws19"]
+        states = {item["label"]: item["state"] for item in ws19["milestones"]}
+>       assert states["m20"] == "invalidated"
+E       AssertionError: assert 'eligible' == 'invalidated'
+E         
+E         - invalidated
+E         + eligible
+
+oracle/tests/test_s56_status_milestones.py:140: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s56_status_milestones.py::test_invalidated_milestone_is_excluded_from_the_endpoint
+1 failed, 7 passed in 0.04s

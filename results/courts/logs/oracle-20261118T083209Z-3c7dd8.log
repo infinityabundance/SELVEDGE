@@ -1,0 +1,27 @@
+...F....                                                                 [100%]
+=================================== FAILURES ===================================
+___________ test_invalidated_milestone_is_excluded_from_the_endpoint ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_invalidated_milestone_is_0')
+
+    def test_invalidated_milestone_is_excluded_from_the_endpoint(tmp_path):
+        root = _repo(tmp_path)
+        _write(os.path.join(root, sc.CURRENT_BAR_EVAL_ROOT, "m20", "INVALIDATED.json"),
+               {"invalidated": True, "reason": "test fixture"})
+        facts = sc.load_facts(root)
+        ws19 = facts["ws19"]
+        states = {item["label"]: item["state"] for item in ws19["milestones"]}
+        assert states["m20"] == "invalidated"
+        assert states["m10"] == "eligible"
+        assert ws19["endpoint"]["label"] == "m10"
+        assert ws19["eval_path"].endswith("m10/eval.json")
+        assert "m20/eval.json" not in sc._eligible_paths(ws19)
+>       assert "m10/eval.json" in sc._eligible_paths(ws19)
+E       AssertionError: assert 'm10/eval.json' in ['results/stage2/eval/s50-bar-20m-lr1e-5/m5/eval.json', 'results/stage2/eval/s50-bar-20m-lr1e-5/m10/eval.json']
+E        +  where ['results/stage2/eval/s50-bar-20m-lr1e-5/m5/eval.json', 'results/stage2/eval/s50-bar-20m-lr1e-5/m10/eval.json'] = <function _eligible_paths at 0x7f05f05deca0>({'state': 'scored', 'launch': {'checkpoints': {'milestones': [5, 10, 20]}, 'created_utc': '2026-01-03T00:00:00Z', 'run...6': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'tokens': 200, ...}, 'eval_present': True, ...})
+E        +    where <function _eligible_paths at 0x7f05f05deca0> = sc._eligible_paths
+
+oracle/tests/test_s56_status_milestones.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s56_status_milestones.py::test_invalidated_milestone_is_excluded_from_the_endpoint
+1 failed, 7 passed in 0.04s

@@ -1,0 +1,172 @@
+status_consistency: updated 1 block(s): README.md:readme-status
+status_consistency: OK — 3 block(s) match the receipts and 11 contradiction rule(s) found no claim in README/REPORT that the receipts contradict
+FAIL baseline                           baseline copy does not check clean
+Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL claims-a-run-is-training           missing diagnostic no-run-is-training
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL claims-no-verdict                  missing diagnostic verdict-exists
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL claims-suite-never-ran             missing diagnostic capability-suite-has-run
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL claims-arm-unevaluated             missing diagnostic all-arms-evaluated
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL hand-edited-status-block           missing diagnostic stale\ status\ block
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL receipt-moved-under-block          missing diagnostic stale\ status\ block
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL owned-sentinel-deleted             missing diagnostic is\ missing
+     output was: Traceback (most recent call last):
+  File "/work/scripts/status_consistency.py", line 1103, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 1091, in main
+    return check(root)
+           ^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 982, in check
+    expected = expected_blocks(root)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 974, in expected_blocks
+    facts = load_facts(root)
+            ^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 458, in load_facts
+    "ws19": load_ws19(root, invalidations),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/status_consistency.py", line 419, in load_ws19
+    "run_dir": run_dir,
+               ^^^^^^^
+UnboundLocalError: cannot access local variable 'run_dir' where it is not associated with a value
+FAIL history-allowed                    a past-tense sentence was rejected
+status_consistency negative cases: 9 failure(s)
