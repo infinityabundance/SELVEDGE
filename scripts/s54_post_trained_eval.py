@@ -71,7 +71,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "oracle"))
 
-from frontier import arms, rft, termination  # noqa: E402
+from frontier import arms, full, rft, termination  # noqa: E402
 
 GIB = float(1 << 30)
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -691,6 +691,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--vram-limit-gib", type=float, default=14.0)
     parser.add_argument("--out", required=True)
     parser.add_argument("--raw-dir", default=None)
+    parser.add_argument(
+        "--full-checkpoint", default=None,
+        help="a stage-2 full-backbone checkpoint (`arm: full`) whose trainable "
+             "state is loaded over --model-dir before decoding. The decoding "
+             "protocol is unchanged; only the weights differ, and the receipt "
+             "records the checkpoint path, sha256, step and tokens_seen.")
     args = parser.parse_args(argv)
 
     tasks = [value.strip() for value in args.tasks.split(",") if value.strip()]
@@ -724,6 +730,26 @@ def main(argv: list[str]) -> int:
     model = arms.load_model(args.model_dir, dtype=torch.bfloat16,
                             device="cuda", attn_implementation="sdpa")
     model.eval()
+    checkpoint_block = None
+    if args.full_checkpoint:
+        payload = torch.load(os.path.join(ROOT, args.full_checkpoint),
+                             map_location="cpu", weights_only=False)
+        if payload.get("arm") not in (None, "full"):
+            raise SystemExit(f"s54-stage1: {args.full_checkpoint} is not a "
+                             f"full-arm checkpoint (arm={payload.get('arm')!r})")
+        full.load_full_state_into(model, payload["arm_state"])
+        model.eval()
+        checkpoint_block = {
+            "path": args.full_checkpoint,
+            "sha256": sha256_file(os.path.join(ROOT, args.full_checkpoint)),
+            "step": payload.get("step"),
+            "tokens_seen": payload.get("tokens_seen"),
+            "arm": "full",
+            "freeze_embedding": True,
+        }
+        print(f"s54-stage1: loaded full checkpoint {args.full_checkpoint} "
+              f"step={checkpoint_block['step']} "
+              f"tokens_seen={checkpoint_block['tokens_seen']}", flush=True)
 
     raw_dir = args.raw_dir or (os.path.splitext(args.out)[0] + "-raw")
     os.makedirs(raw_dir, exist_ok=True)
@@ -765,6 +791,7 @@ def main(argv: list[str]) -> int:
                         "bundle": bundle_hashes(args.model_dir),
                         "weight_sha256_first_shard": weight_sha256(args.model_dir),
                     },
+                    "checkpoint": checkpoint_block,
                     "engine": {
                         "name": "transformers",
                         "version": __import__("transformers").__version__,
