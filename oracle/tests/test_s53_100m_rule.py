@@ -76,6 +76,33 @@ def test_fixed_batch_trend_uses_every_saved_checkpoint(tmp_path):
     assert trend["init"]["ce"] == pytest.approx(1.2)
 
 
+def test_last_interval_floor_skips_a_one_step_duplicate(tmp_path):
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    results = [{"checkpoint": "init", "ce": 1.2, "kl": 0.5, "sha256": None,
+                "batches": 8, "positions": 4096}]
+    for step, ce, kl in ((100, 1.0, 0.30), (200, 0.9, 0.28),
+                         (300, 0.88, 0.27), (301, 0.8799, 0.2699)):
+        path = run_dir / f"ckpt-{step:06d}.pt"
+        path.write_bytes(f"c-{step}".encode())
+        results.append({"checkpoint": path.name, "ce": ce, "kl": kl,
+                        "sha256": _sha(str(path)), "batches": 8,
+                        "positions": 4096})
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(json.dumps({
+        "schema": "selvedge/s50-fixed-batch-kl/v1", "seq_len": 512,
+        "batch_count": 8, "results": results}))
+    without_floor = curve._fixed_batch_trend(
+        str(receipt), str(run_dir), tokens_per_step=100_000)
+    assert without_floor["ce_last_interval_from"] == "ckpt-000300.pt"
+    with_floor = curve._fixed_batch_trend(
+        str(receipt), str(run_dir), tokens_per_step=100_000,
+        min_last_interval_tokens=1_000_000)
+    assert with_floor["ce_last_interval_from"] == "ckpt-000200.pt"
+    assert with_floor["ce_last_interval_tokens"] == (301 - 200) * 100_000
+    assert with_floor["ce_last_interval"] == pytest.approx(0.9 - 0.8799)
+
+
 def test_rule_requires_slope_last_interval_share_and_kl(tmp_path):
     receipt, run_dir = _fixture(tmp_path)
     trend = curve._fixed_batch_trend(receipt, run_dir, tokens_per_step=2048)

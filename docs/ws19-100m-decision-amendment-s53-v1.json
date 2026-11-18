@@ -17,6 +17,7 @@
     "verification": "each checkpoint label in the fixed-batch receipt is matched to a file in the run directory by SHA-256; a missing checkpoint, an extra checkpoint, or a hash mismatch fails closed",
     "ce_slope": "ordinary-least-squares slope of fixed-batch CE against tokens_seen, reported per 1,000,000 tokens",
     "ce_last_interval": "CE at the second-to-last saved checkpoint minus CE at the last saved checkpoint; positive means CE is still falling",
+    "ce_last_interval_floor": "the interval must span at least 1,000,000 tokens. A checkpoint saved one optimiser step before the final checkpoint is not a last interval; the rule walks back to the most recent checkpoint at least 1,000,000 tokens earlier. This was added after the corrected bar's final two checkpoints (steps 9,764 and 9,765) were seen in the run directory and before the fixed-batch receipt or any curve decision existed. The bar's registered m15-to-m20 gap is 5,001,216 tokens.",
     "ce_last_share": "ce_last_interval divided by (first saved checkpoint CE - last saved checkpoint CE)",
     "kl_last_interval": "KL at the second-to-last saved checkpoint minus KL at the last saved checkpoint; non-negative means teacher KL is not rising",
     "thresholds": {

@@ -53,6 +53,10 @@ FIXED_BATCH_THRESHOLDS = {
     "kl_last_interval": ">= 0.0",
 }
 CE_LAST_SHARE_MIN = 0.10
+#: A checkpoint saved one optimiser step before the final one is not a
+#: meaningful "last interval". The interval must span at least this many tokens;
+#: the registered bar has a 5,001,216-token m15-to-m20 gap.
+MIN_LAST_INTERVAL_TOKENS = 1_000_000
 
 
 def _sha256(path: str) -> str:
@@ -140,7 +144,8 @@ def _checkpoint_step(label: str) -> int | None:
 
 
 def _fixed_batch_trend(receipt_path: str, run_dir: str,
-                       tokens_per_step: int) -> dict:
+                       tokens_per_step: int,
+                       min_last_interval_tokens: int = 0) -> dict:
     """Validate and fit the fixed-batch curve over every saved checkpoint."""
     payload = json.load(open(receipt_path, encoding="utf-8"))
     if payload.get("schema") != "selvedge/s50-fixed-batch-kl/v1":
@@ -185,6 +190,11 @@ def _fixed_batch_trend(receipt_path: str, run_dir: str,
     kl_slope = _slope([(point["tokens_seen"], point["kl"]) for point in points])
     first, last = points[0], points[-1]
     previous = points[-2]
+    for candidate in reversed(points[:-1]):
+        if (last["tokens_seen"] - candidate["tokens_seen"]
+                >= min_last_interval_tokens):
+            previous = candidate
+            break
     total_drop = first["ce"] - last["ce"]
     last_drop = previous["ce"] - last["ce"]
     last_share = (last_drop / total_drop
@@ -206,6 +216,11 @@ def _fixed_batch_trend(receipt_path: str, run_dir: str,
         "kl_slope_per_million_tokens": (kl_slope * 1_000_000
                                         if kl_slope is not None else None),
         "ce_last_interval": last_drop,
+        "ce_last_interval_from": previous["checkpoint"],
+        "ce_last_interval_to": last["checkpoint"],
+        "ce_last_interval_tokens": (last["tokens_seen"]
+                                     - previous["tokens_seen"]),
+        "min_last_interval_tokens": int(min_last_interval_tokens),
         "kl_last_interval": previous["kl"] - last["kl"],
         "ce_total_drop_after_first_checkpoint": total_drop,
         "ce_last_share": last_share,
@@ -297,7 +312,8 @@ def main() -> int:
     if tokens_per_step is None:
         tokens_per_step = run_manifest["config"]["tokens_per_step"]
     fixed = _fixed_batch_trend(_resolve(args.fixed_batch_receipt), run_dir,
-                               int(tokens_per_step))
+                               int(tokens_per_step),
+                               min_last_interval_tokens=MIN_LAST_INTERVAL_TOKENS)
     base_math_mean = _family(base_rows, MATH)["mean"]
     final_math = milestones[-1]["math"]["mean"]
     previous_math = milestones[-2]["math"]["mean"]
