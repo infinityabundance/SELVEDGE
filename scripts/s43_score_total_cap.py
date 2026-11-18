@@ -312,8 +312,8 @@ def receipt_base(args, prereg, prereg_digest, commit, version, arm_report,
         "revision": anchor.git_revision(),
         "arm": args.arm,
         "model": {
-            "id": "Qwen/Qwen3.5-0.8B-Base",
-            "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+            "id": args.model_id,
+            "revision": args.model_revision,
             "directory": args.student_dir,
         },
         "harness_preregistration": {"path": args.prereg, "sha256": prereg_digest},
@@ -386,6 +386,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--control-checkpoint", default=None)
     parser.add_argument("--full-checkpoint", default=None)
     parser.add_argument("--heldout-manifest", default=None)
+    parser.add_argument("--model-id", default="Qwen/Qwen3.5-0.8B-Base",
+                        help="identity written into the receipt; the default is "
+                             "the registered Base control, so an unchanged "
+                             "invocation produces an unchanged receipt")
+    parser.add_argument("--model-revision",
+                        default="dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68")
     parser.add_argument("--hidden", type=int, default=1024)
     parser.add_argument("--site", type=int, default=2)
     parser.add_argument("--layers", type=int, default=4)

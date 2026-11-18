@@ -1,0 +1,39 @@
+{
+  "attempt": "S57 retry (attempt 3 of the S56+ S57 series)",
+  "command": "SELVEDGE_BUILD_MEM=4g SELVEDGE_BUILD_CPUS=6 scripts/build-courts.sh vllm",
+  "created_utc": "2026-11-18T09:08:39Z",
+  "engine_for_all_numbers": "transformers (pinned stack, torch 2.15.0+cu132, transformers 5.23.0)",
+  "failure": {
+    "container_memory_limit": "4g (--memory 4g --memory-swap 4g)",
+    "disk_arithmetic": "8.4 GiB free on the 26 GiB tmpfs Docker root against a cu132 torch + cuDNN 9.24 + CUDA 13.2 pip stack whose wheels alone exceed 6 GiB and whose installed size exceeds the remaining space; the eval court image (6.4 GiB) that scores every number cannot be removed",
+    "elapsed_seconds": 407.0,
+    "exit_code": 137,
+    "reading": "the pip install of the torch 2.14+cu132 / CUDA 13.2 stack was killed by the build container's own 4 GiB memory limit after the downloads completed; this is an OOM kill, not the S56 disk error",
+    "signal": "SIGKILL",
+    "stage": "pip install layer"
+  },
+  "kind": "vllm-throughput-image-build-attempt",
+  "log": {
+    "bytes": 77268,
+    "path": "/tmp/s57-vllm-build.log",
+    "sha256": "1ac4aad66f199bc14d562d93c6f03223554435e834f9e84250a5ce76cdfc9b83"
+  },
+  "not_pushed_further": {
+    "why": "the mission allows one retry, and the throughput image cannot produce a comparable score in any case: docs/S56-VLLM.md and docs/ws19-post-trained-route-registration-v1.json both say no score may be produced in the vLLM image. Raising the build memory to fit the install would put the tmpfs at or above 100% while the training and scoring courts still need it."
+  },
+  "outcome": "not_built",
+  "schema": "selvedge/s57-vllm-build/v1",
+  "space_recovery": {
+    "action": "removed three superseded SELVEDGE-owned images that are not in docker/IMAGES.lock and were not running",
+    "docker_images_after_bytes": 17090000000,
+    "docker_images_before_bytes": 23040000000,
+    "docker_root_fs": "/run/media/one/1tb_kingston/docker on a 26 GiB tmpfs mounted at /run",
+    "free_after_recovery_bytes": 8400000000,
+    "images": [
+      "selvedge/oracle-court:20261114-3.12-slim-cu132-3166c06e5819",
+      "selvedge/rust-court:20261114-1.98-slim-f734ce647d5d",
+      "selvedge/rust-court:20261114-1.98-slim-2e7ff45ecc4d"
+    ],
+    "not_removed": "weft/* and openssl-rs-court images belong to other projects and were left alone"
+  }
+}

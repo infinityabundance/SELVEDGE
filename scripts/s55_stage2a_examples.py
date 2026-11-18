@@ -124,7 +124,8 @@ def replay_documents(tokenizer, *, max_tokens: int, target_tokens: int,
     """Read the pinned fineweb-edu shard and cut whole documents."""
     import pyarrow.parquet as pq
 
-    paths = sorted(glob.glob(os.path.join(ROOT, FINE_WEB_EDU, "*.parquet")))
+    paths = sorted(glob.glob(os.path.join(ROOT, FINE_WEB_EDU, "**", "*.parquet"),
+                             recursive=True))
     if not paths:
         raise SystemExit(f"s55-examples: no fineweb-edu parquet under {FINE_WEB_EDU}")
     documents: list[dict] = []
