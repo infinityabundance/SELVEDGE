@@ -1,0 +1,40 @@
+.....FF.                                                                 [100%]
+=================================== FAILURES ===================================
+_________ test_false_cut_is_an_uncut_correct_answer_losing_its_answer __________
+
+    def test_false_cut_is_an_uncut_correct_answer_losing_its_answer():
+        # Correct answer, but a long repeated tail before the boxed answer: the cut
+        # removes the answer, so the uncut-correct row is a false cut.
+        bad_cut = "The total is 37. " + LOOP_TEXT + " Therefore \\boxed{37}."
+        rows = [
+            {"completion": bad_cut, "new_tokens": 2000, "flexible_correct": True,
+             "gold": "37", "task": "gsm8k", "mode": "non-thinking",
+             "decoding": "greedy"},
+            {"completion": LOOP_TEXT, "new_tokens": 2048, "flexible_correct": False,
+             "gold": "999", "task": "gsm8k", "mode": "non-thinking",
+             "decoding": "greedy"},
+        ]
+        result = rollouts.false_cut_analysis(rows, stride_chars=32)
+        assert result["samples"] == 2
+        assert result["cut_samples"] == 2
+        assert result["correct_uncut"] == 1
+>       assert result["false_cuts"] == 1
+E       assert 0 == 1
+
+oracle/tests/test_s56_rollouts.py:105: AssertionError
+______________________ test_cut_free_rows_are_not_counted ______________________
+
+    def test_cut_free_rows_are_not_counted():
+        rows = [{"completion": CORRECT, "new_tokens": 100,
+                 "flexible_correct": True, "gold": "37", "task": "gsm8k",
+                 "mode": "non-thinking", "decoding": "greedy"}]
+        result = rollouts.false_cut_analysis(rows)
+        assert result["cut_samples"] == 0
+>       assert result["false_cut_rate"] is None
+E       assert 0.0 is None
+
+oracle/tests/test_s56_rollouts.py:118: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s56_rollouts.py::test_false_cut_is_an_uncut_correct_answer_losing_its_answer
+FAILED oracle/tests/test_s56_rollouts.py::test_cut_free_rows_are_not_counted
+2 failed, 6 passed in 1.56s

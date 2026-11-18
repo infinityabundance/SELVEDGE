@@ -1,0 +1,75 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2a-amendment/v1",
+  "identifier": "STAGE2A-AMENDMENT-S56-V1",
+  "registering_session": "S56",
+  "registered_utc": "2026-11-18T08:45:00Z",
+  "registered_revision": "b7f2daa",
+  "amends": {
+    "paths": [
+      "docs/ws19-post-trained-route-stage2-amendment-s54-v1.json",
+      "docs/ws19-post-trained-route-stage2a-amendment-s55-v1.json"
+    ],
+    "rule": "This is an additive correction. The S54 and S55 documents are not rewritten; their supervision, win, retention, teacher, student, optimiser, lr, schedule, seed and accounting clauses stand. This document supersedes exactly two things in them: the *name* of the first token mismatch (S54 `first_error_corrective_supervision`), and any reading of the S55 stage-2a objective that computes the teacher KL on the teacher's own history rather than on the student's prefix. It also registers the termination-aware rollout protocol and the 2M / 5M / final scoring cadence."
+  },
+  "terminology_correction": {
+    "old_term": "first error / first-error suffix",
+    "old_field": "first_error_corrective_supervision (docs/ws19-post-trained-route-stage2-amendment-s54-v1.json)",
+    "new_term": "first_textual_divergence",
+    "definition": "The first token position at which the student's continuation and the verified teacher continuation differ, aligned from the shared prompt. If one continuation is a strict prefix of the other there is no differing token and the divergence is reported as none; the S54 wording that named the position after the shorter prefix is withdrawn.",
+    "why_the_rename": "A token mismatch is not a reasoning error. The teacher and student can write the same valid step with different notation, a paraphrase, or an equivalent algebraic form, and the first differing token then sits inside a correct step. The quantity is useful as a diagnostic of textual divergence and as an alignment offset; it is not evidence that the student's step was wrong and it is not a step boundary.",
+    "status_of_the_old_term": "Historical wording only. No current loss, registration, receipt or claim may call this quantity a reasoning error. `oracle/frontier/same_prefix.py:first_textual_divergence` is the only implementation, and its docstring repeats this limit.",
+    "historical_documents": "The S54 registration and the S55 amendment retain their original wording because a registered document is not rewritten retroactively; this amendment and the current design prose (`docs/S53-POST-TRAINED-ROUTE.md`, `docs/PROGRAM-PLAN.md`, `docs/S50-GPU-QUEUE.md`) use the new term."
+  },
+  "immediate_objective": {
+    "targets": "verified teacher solutions from the S55 corpus (frontier.rft.verify == correct), completion-only",
+    "completion_only": "the prompt ids and padding are -100; only the solution tokens and the trailing EOS contribute a loss",
+    "teacher_kl": {
+      "direction": "KL(student_T || teacher_T) at T = 2.0 (reverse KL: the student is the distribution integrated over)",
+      "positions": "exactly the supervised completion positions used by the CE; prompt positions contribute neither CE nor KL",
+      "prefix": "the teacher logits are produced by a forward pass over the student's own input ids, i.e. the same causal prefix the student attended to. The teacher's own generated history is never the conditioning context and no teacher tokens are inserted into the student's context.",
+      "why": "conditioning the teacher on its own continuation grades a continuation the student never produced; the KL at a student prefix is the only quantity that describes the student's state distribution. In a teacher-forced batch the input ids are the student prefix, so a single teacher pass over the same `inputs` is exact.",
+      "implementation": "oracle/frontier/same_prefix.py: `sft_with_same_prefix_kl`, wired as `oracle/frontier/train.py --objective sft-kl`. The trainer fails closed when the teacher logits do not have the student prefix's shape.",
+      "masking": "same_prefix.completion_mask; an all-masked batch fails closed instead of returning a silent zero gradient"
+    },
+    "not_claimed": "stage 2a does not claim step-local correction, reward-weighted on-policy distillation, or the S54 corrective suffix loss. Those remain future experiments."
+  },
+  "step_local_correction": {
+    "status": "registered future experiment; NOT run and NOT claimed",
+    "what_it_would_need": [
+      "a trustworthy process verifier that labels a step boundary and whether the step is wrong, with precision and recall measured on a held-out labelled set",
+      "an alignment protocol that does not confuse textual divergence with a step boundary (the S54 rule does)",
+      "its own pre-registration before the first run, including the loss, the mask and the accounting"
+    ],
+    "why_not_now": "No process verifier exists in this repository. A token-level divergence is not a step label, so using it as a corrective target would train on paraphrases and notation changes as if they were errors."
+  },
+  "termination_aware_rollouts": {
+    "applies_to": "stage 2b on-policy rollouts (the S55 document already registers stage 2b as the on-policy path)",
+    "cap_tokens": 2048,
+    "truncated_reward": "a rollout that reaches the cap without EOS is counted wrong in the verified reward (reward 0). It is counted, never silently dropped.",
+    "early_cut": {
+      "detector": "oracle/frontier/termination.py (zlib tail-vs-whole compression + repeated word n-grams + an exact-period test)",
+      "thresholds": "tail_over_full_max 0.78, ngram_repeat_min 0.20, ngram_n 6, period_repeats_min 3, period_chars_max 160 (results/stage1/s56-termination-calibration.json)",
+      "check_every_tokens": 64,
+      "cut_when": "the tail of the decoded rollout is loop-classified at a check; the cut position and the detector evidence are recorded",
+      "saved_tokens": "cap_tokens - emitted_tokens for every cut rollout, summed into the receipt",
+      "false_cut_rate": "measured on a sample by generating the same prompt/seed without the cut: a cut is false when the uncut rollout would have been verified correct. The measured rate is reported with the sample size, never assumed.",
+      "why_it_is_safe_to_try": "the cut only ends a generation whose tail already repeats; the alternative is to spend the remaining cap on the same loop. The false-cut measurement, not the assumption, decides whether the cut stays on."
+    },
+    "decoding_unchanged": "the registered sampling temperature, top_p and cap are unchanged. No repetition penalty is added, and no decoding parameter is tuned to raise a score.",
+    "calibration": "results/stage1/s56-termination-calibration.json; 6,950 stored stage-1 generations, 5,791 finished and 1,159 truncated"
+  },
+  "scoring_cadence": {
+    "tokens": [2000000, 5000000, "final"],
+    "why": "scoring only the endpoint hides an early dip. Every stage-2a checkpoint at these budgets is scored on the same instrument, and the termination probe runs at the same cadence so a loop or truncation regression is visible between scores.",
+    "instrument": "the stage-1 protocol (`scripts/s54_post_trained_eval.py`) for the mode/termination diagnostics and the registered total-cap harness for the win; a diagnostic is never reported as the win",
+    "probe": "scripts/s56_termination_probe.py --limit 50 --max-new-tokens 4096, greedy, no repetition penalty",
+    "does_not_replace": "the bar's own 5M / 10M / 20M milestone cadence remains as scored; this cadence is for the stage-2a arm."
+  },
+  "does_not_change": [
+    "teacher, student and their pinned revisions",
+    "the teacher-solution corpus protocol and verification rule from S55",
+    "the general-capability preservation bound and the win condition",
+    "the tokens-processed / supervised-positions / teacher-tokens accounting split",
+    "the corrected optimiser, lr 1e-5, cosine schedule, warmup 200, grad clip 1.0 and seed"
+  ]
+}

@@ -1,0 +1,47 @@
+.....F.F.                                                                [100%]
+=================================== FAILURES ===================================
+___________________ test_kl_direction_is_student_to_teacher ____________________
+
+    def test_kl_direction_is_student_to_teacher():
+        student = torch.zeros(1, 1, 2)
+        teacher = torch.tensor([[[0.0, 10.0]]])
+        targets = torch.tensor([[0]])
+        value = float(same_prefix.same_prefix_teacher_kl(
+            student, teacher, targets, 1.0))
+        # KL(student || teacher) is large: the teacher puts almost all mass on 1.
+>       assert value > 5.0
+E       assert 0.6926477551460266 > 5.0
+
+oracle/tests/test_s56_same_prefix.py:88: AssertionError
+_____________________ test_assert_same_prefix_fails_closed _____________________
+
+    def test_assert_same_prefix_fails_closed():
+        left = torch.tensor([[1, 2, 3, 4]])
+        same_prefix.assert_same_prefix(left, left.clone())
+        with pytest.raises(ValueError):
+>           same_prefix.assert_same_prefix(left, torch.tensor([[1, 2, 9, 4]]))
+
+oracle/tests/test_s56_same_prefix.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+student_input_ids = tensor([[1, 2, 3, 4]])
+teacher_input_ids = tensor([[1, 2, 9, 4]])
+
+    def assert_same_prefix(student_input_ids: torch.Tensor,
+                           teacher_input_ids: torch.Tensor) -> None:
+        """Fail closed unless the teacher consumed the student's exact prefix."""
+        if student_input_ids.shape != teacher_input_ids.shape:
+            raise ValueError(
+                "teacher and student prefixes differ in shape: the teacher is not "
+                "conditioned on the student's causal prefix")
+        if not torch.equal(student_input_ids, teacher_input_ids):
+            difference = (student_input_ids != teacher_input_ids).nonzero()
+>           first = int(difference[0].item()) if difference.numel() else -1
+                        ^^^^^^^^^^^^^^^^^^^^
+E           RuntimeError: a Tensor with 2 elements cannot be converted to Scalar
+
+oracle/frontier/same_prefix.py:128: RuntimeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s56_same_prefix.py::test_kl_direction_is_student_to_teacher
+FAILED oracle/tests/test_s56_same_prefix.py::test_assert_same_prefix_fails_closed
+2 failed, 7 passed in 1.64s

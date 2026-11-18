@@ -55,6 +55,7 @@ sys.path.insert(0, ORACLE)
 
 from frontier import arms, corrective, full, matched_controls, memory, optim8bit  # noqa: E402
 from frontier import sft_data  # noqa: E402
+from frontier import same_prefix  # noqa: E402
 from frontier.stream import load_stream, sha256_file  # noqa: E402
 
 CACHE = os.environ.get("HF_HOME", "/hf-cache")
@@ -651,6 +652,23 @@ def run(args) -> int:
                 # Verified-solution cross-entropy: no teacher, no KL.
                 loss, ce, kl = token_loss(student, None, targets,
                                           args.temperature, 0.0)
+            elif objective == "sft-kl":
+                # The registered stage-2a objective: completion-only CE plus
+                # teacher KL at the SAME causal prefix. `inputs` is the
+                # student's own prefix, and the teacher consumed exactly those
+                # ids above; the guard fails closed if that ever stops being
+                # true.
+                if teacher_logits is None:
+                    raise SystemExit(
+                        "train: sft-kl requires the online teacher")
+                if tuple(teacher_logits.shape[:2]) != tuple(inputs.shape):
+                    raise SystemExit(
+                        "train: teacher logits do not describe the student "
+                        f"prefix: {tuple(teacher_logits.shape[:2])} vs "
+                        f"{tuple(inputs.shape)}")
+                loss, ce, kl = same_prefix.sft_with_same_prefix_kl(
+                    student, teacher_logits, targets, args.temperature,
+                    args.kl_weight)
             elif (corrective_module is not None and objective == "correction"):
                 if teacher_logits is None:
                     raise SystemExit(
@@ -908,6 +926,10 @@ def validate_objective_args(args) -> None:
         raise SystemExit("--objective correction requires --arm corrective")
     if args.objective == "sft" and args.kl_weight != 0.0:
         raise SystemExit("--objective sft requires --kl-weight 0")
+    if args.objective == "sft-kl" and args.kl_weight <= 0.0:
+        raise SystemExit("--objective sft-kl requires --kl-weight > 0")
+    if args.objective == "sft-kl" and not args.teacher_dir:
+        raise SystemExit("--objective sft-kl requires --teacher-dir")
     if args.arm == "full" and args.objective != "sft" and args.kl_weight <= 0.0:
         raise SystemExit("--arm full needs kl_weight > 0 unless --objective sft")
 
@@ -952,7 +974,7 @@ def main(argv: list[str]) -> int:
                         help="weight-update rounding for the 8-bit optimizer")
     parser.add_argument("--optim-measure-every", type=int, default=0,
                         help="also measure unchanged-element fractions every N steps")
-    parser.add_argument("--objective", choices=list(corrective.OBJECTIVES) + ["sft"],
+    parser.add_argument("--objective", choices=list(corrective.OBJECTIVES) + ["sft", "sft-kl"],
                         default=None,
                         help="correction (default for --arm corrective), ce_kl, or "
                              "sft (verified-solution cross-entropy, kl_weight 0)")

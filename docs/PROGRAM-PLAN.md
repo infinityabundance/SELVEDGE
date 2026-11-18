@@ -4985,8 +4985,10 @@ as such.
   a truncation-only thinking observation and a maj@16 subset gap in the
   generated block `report-s54-stage1` in `results/REPORT.md`;
 - stage 2 is registered with the S54 amendment (failed-rollout teacher
-  continuations, first-error corrective supervision and a general-capability
-  preservation bound) and is **not run**;
+  continuations, first-textual-divergence corrective supervision and a
+  general-capability preservation bound) and is **not run**; the S56 correction
+  renames the quantity and states that it is not a reasoning error
+  (`docs/ws19-post-trained-route-stage2a-amendment-s56-v1.json`);
 - the P19.9 screen is repaired and re-registered under
   `docs/s52-p19.9-router-screen-registration-v2.json` and is **not run**.
   `docs/S52-REPAIR-S54.md` records the accounting and statistics corrections.

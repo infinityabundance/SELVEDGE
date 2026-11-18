@@ -1,0 +1,18 @@
+.....F...                                                                [100%]
+=================================== FAILURES ===================================
+___________________ test_kl_direction_is_student_to_teacher ____________________
+
+    def test_kl_direction_is_student_to_teacher():
+        student = torch.zeros(1, 1, 2)
+        teacher = torch.tensor([[[0.0, 10.0]]])
+        targets = torch.tensor([[0]])
+        value = float(same_prefix.same_prefix_teacher_kl(
+            student, teacher, targets, 1.0))
+        # KL(student || teacher) is large: the teacher puts almost all mass on 1.
+>       assert value > 2.0
+E       assert 0.6926477551460266 > 2.0
+
+oracle/tests/test_s56_same_prefix.py:88: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s56_same_prefix.py::test_kl_direction_is_student_to_teacher
+1 failed, 8 passed in 1.57s

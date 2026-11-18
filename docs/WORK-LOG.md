@@ -5071,9 +5071,14 @@ re-registered as a guard, with the accuracy clause as the evidence
 
 `docs/ws19-post-trained-route-stage2-amendment-s54-v1.json` supersedes the
 failed-rollout and win clauses: verified 2B teacher continuations and
-first-error-suffix corrective supervision on failed rollouts, supervised-position
-accounting beside processed tokens, and a general-capability preservation bound
-on MMLU and MMLU-Pro in the win condition.
+first-textual-divergence-suffix corrective supervision on failed rollouts,
+supervised-position accounting beside processed tokens, and a
+ general-capability preservation bound on MMLU and MMLU-Pro in the win
+condition. The S56 correction
+(`docs/ws19-post-trained-route-stage2a-amendment-s56-v1.json`) renames the
+quantity from "first error": it is the first token mismatch between the student
+and the teacher, not a reasoning error, and step-local correction is deferred
+until a trustworthy process verifier exists.
 
 ### Queue and courts
 

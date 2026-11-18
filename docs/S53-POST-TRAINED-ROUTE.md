@@ -46,8 +46,10 @@ own tokenizer and chat template.
    tokens. **Win:** greedy beats post-trained 0.8B on both tasks with paired 95%
    item-level intervals above zero. The S54 stage-2 amendment supersedes the
    supervision and win clauses: **failed** rollouts are included when the 2B
-   teacher produces a verified continuation, and the correction is applied to
-   the first-error suffix rather than only to correct rollouts; the win also
+   teacher produces a verified continuation, and supervision starts at the
+   first *textual divergence* between the student and the teacher (renamed from
+   the S54 wording "first error" by the S56 correction: a token mismatch is not
+   a reasoning error); the win also
    requires MMLU and MMLU-Pro to stay within an explicit 1.0-point
    general-capability bound. See
    `docs/ws19-post-trained-route-stage2-amendment-s54-v1.json`.
@@ -85,9 +87,13 @@ claimed.
 
 ## S54 pre-run amendments
 
-- Stage 2: verified teacher continuations and first-error corrective
-  supervision on failed rollouts, plus a general-capability preservation bound
-  in the win (`docs/ws19-post-trained-route-stage2-amendment-s54-v1.json`).
+- Stage 2: verified teacher continuations and first-textual-divergence-suffix
+  corrective supervision on failed rollouts, plus a general-capability
+  preservation bound in the win
+  (`docs/ws19-post-trained-route-stage2-amendment-s54-v1.json`). The S56
+  correction renames the quantity and defers the step-local correction until a
+  process verifier exists
+  (`docs/ws19-post-trained-route-stage2a-amendment-s56-v1.json`).
 - Stage 3: the accuracy clause is the evidence; the FLOPs ratio is a guard
   (`docs/ws19-post-trained-route-stage3-amendment-s54-v1.json`).
 - The P19.9 screen was repaired before any run: the accuracy and byte controls

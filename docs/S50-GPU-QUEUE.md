@@ -177,8 +177,9 @@ the supervision and win clauses **before any stage-2 run**:
 
 - correct rollouts keep per-token reverse KL;
 - failed rollouts are included when the post-trained 2B produces a continuation
-  that `frontier.rft.verify` confirms; supervision is the first-error suffix,
-  not the whole failed continuation;
+  that `frontier.rft.verify` confirms; supervision starts at the first *textual
+  divergence* (renamed by the S56 correction: a token mismatch is not a
+  reasoning error), not at the whole failed continuation;
 - failed rollouts without a verified teacher continuation contribute zero and
   are counted;
 - the win now also requires MMLU and MMLU-Pro to stay inside the registered
