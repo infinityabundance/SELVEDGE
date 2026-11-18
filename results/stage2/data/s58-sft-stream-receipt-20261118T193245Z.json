@@ -16,13 +16,15 @@
     "--seq-len",
     "1250",
     "--holdout-fraction",
-    "0.02"
+    "0.02",
+    "--order",
+    "seeded-shuffle"
   ],
-  "created_utc": "2026-11-18T18:06:56Z",
+  "created_utc": "2026-11-18T19:32:45Z",
   "examples": {
     "path": "results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl",
     "rows": 4567,
-    "sha256": "849aaed85240e46449b6273c436baa8525d36c85fc4d4d1adeca20327557346d"
+    "sha256": "9426e36d92f8d09ed62289b8b97d79ce4971b37090754eeb6eed038330d275b7"
   },
   "holdout": {
     "fraction": 0.02,
@@ -51,6 +53,13 @@
     "requested_replay_fraction": 0.13,
     "total_supervised_tokens": 2513364
   },
+  "order": {
+    "mode": "seeded-shuffle",
+    "note": "the trainer consumes this file in order; a seeded permutation is deterministic and is re-derivable from this seed and the same inputs",
+    "rows": 4567,
+    "seed": 5500,
+    "why": "a contiguous replay block changes the loss distribution mid-run; S58 measured teacher-solution CE 0.31 against replay CE 2.8 at that boundary"
+  },
   "replay": {
     "contamination": {
       "at_or_above_discard": 0,
@@ -76,7 +85,7 @@
     "truncation_policy": "whole-document prefix at a token boundary; replay text is not a solution and carries no answer"
   },
   "schema": "selvedge/s55-stage2a-examples/v1",
-  "stamp": "20261118T180656Z",
+  "stamp": "20261118T193245Z",
   "teacher": {
     "by_dataset": {
       "gsm8k": {

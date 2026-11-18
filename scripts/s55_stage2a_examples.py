@@ -179,6 +179,16 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--holdout-fraction", type=float, default=0.02)
     parser.add_argument("--seq-len", type=int, default=768)
     parser.add_argument("--seed", type=int, default=5500)
+    parser.add_argument(
+        "--order", choices=["seeded-shuffle", "teacher-then-replay"],
+        default="seeded-shuffle",
+        help="row order of the examples file. The trainer consumes the file in "
+             "order and never shuffles, so this is the training order. The "
+             "default interleaves replay deterministically; a contiguous "
+             "replay block at the end of the stream changes the loss "
+             "distribution mid-run (measured in S58: teacher-solution CE "
+             "0.31 -> replay CE 2.8 at the block boundary) and made the "
+             "early-loss tripwire fire on the distribution change.")
     args = parser.parse_args(argv)
 
     from transformers import AutoTokenizer
@@ -231,7 +241,11 @@ def main(argv: list[str]) -> int:
                 "rows": len(rows)}
 
     teacher_rows = [{"kind": "teacher", **row} for row in kept]
-    examples = write_rows(examples_path, teacher_rows + replay)
+    ordered = teacher_rows + replay
+    if args.order == "seeded-shuffle":
+        order_rng = random.Random(args.seed)
+        order_rng.shuffle(ordered)
+    examples = write_rows(examples_path, ordered)
     holdout_meta = write_rows(holdout_path, [{"kind": "teacher", **row}
                                             for row in holdout])
 
@@ -292,6 +306,19 @@ def main(argv: list[str]) -> int:
             "basis": "supervised positions after prompt masking",
         },
         "examples": examples,
+        "order": {
+            "mode": args.order,
+            "seed": args.seed,
+            "rows": len(ordered),
+            "note": ("the trainer consumes this file in order; a seeded "
+                     "permutation is deterministic and is re-derivable from "
+                     "this seed and the same inputs" if
+                     args.order == "seeded-shuffle" else
+                     "teacher rows first, then the replay block"),
+            "why": ("a contiguous replay block changes the loss distribution "
+                    "mid-run; S58 measured teacher-solution CE 0.31 against "
+                    "replay CE 2.8 at that boundary"),
+        },
         "length_profile": profile,
         "command": sys.argv,
     }
