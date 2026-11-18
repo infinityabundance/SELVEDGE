@@ -56,6 +56,24 @@
       "why_it_is_safe_to_try": "the cut only ends a generation whose tail already repeats; the alternative is to spend the remaining cap on the same loop. The false-cut measurement, not the assumption, decides whether the cut stays on."
     },
     "decoding_unchanged": "the registered sampling temperature, top_p and cap are unchanged. No repetition penalty is added, and no decoding parameter is tuned to raise a score.",
+    "evidence_and_open_question": {
+      "dapo": "DAPO (arXiv:2503.14476) reports that a punitive reward for truncated samples introduces reward noise and that masking the loss of truncated samples (Overlong Filtering) stabilises long-CoT RL. This is in tension with counting truncated rollouts as wrong.",
+      "why_still_registered": "The verified reward here admits or weights a target; a truncated solution is not a verified teacher target, so it cannot earn reward 1. That is a corpus-admission rule, not a claim that a dense punitive reward is the better policy-gradient estimator.",
+      "ablation_before_any_claim": "stage 2b must compare `truncated = wrong` against `mask the truncated loss` (and the soft overlong penalty) on the same prompts before claiming either is better. The outcome is not assumed.",
+      "early_stopping_rollout": "ESR (arXiv:2605.27028) finds that later rollout tokens hurt on-policy distillation and stops by position. Our cut stops on a loop instead. The two rules are registered as different interventions and must be compared, not conflated.",
+      "literature": "docs/S56-LITERATURE.md"
+    },
+    "measured_on_stage1": {
+      "samples": 6950,
+      "cut_fraction": 0.0341,
+      "saved_tokens_estimate": 431812,
+      "false_cuts": 11,
+      "uncut_correct": 4074,
+      "false_cut_rate": 0.0027,
+      "false_cut_rate_of_cuts": 0.0464,
+      "caveat": "thinking-mode subsets cut at 84-86% but contain only 2 uncut-correct answers; their false-cut estimate is not informative",
+      "receipt": "results/stage1/s56-false-cut.json"
+    },
     "calibration": "results/stage1/s56-termination-calibration.json; 6,950 stored stage-1 generations, 5,791 finished and 1,159 truncated"
   },
   "scoring_cadence": {

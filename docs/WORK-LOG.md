@@ -5087,3 +5087,77 @@ validations -> stage 2 -> deferred (3e-5/5e-5 gate, conditional 3e-5 bar, P19.9
 screen). The S52 runner, S50 mask and S53 optimiser-comparison tests pass in the
 oracle court; `scripts/s52_p19_9_router.py check` passes against the v2 prompt
 set and registration. The four repository courts are run before the commit.
+
+## S56 — status discovery, termination as a metric, and the vLLM attempt
+
+**Status defect and fix.** `CURRENT_BAR_EVAL` named
+`results/stage2/eval/s50-bar-20m-lr1e-5/eval.json`, which does not exist; the
+milestone driver writes `m5/eval.json`, `m10/eval.json` and `m20/eval.json`, so
+the README claimed "no anchored score exists yet" while three stamped receipts
+were on disk. `scripts/status_consistency.py` now discovers `m<k>` receipts,
+classifies each eligible only when it is complete, stamped, step-matched to the
+launch and not invalidated, and publishes the endpoint plus every milestone's
+step, tokens, stamp and four task scores. A new `anchored-score-exists`
+contradiction fails closed on prose that calls the bar unscored or in flight.
+Tests: `oracle/tests/test_s56_status_milestones.py` (8 cases); the negative-case
+self-test now copies the live bar and the invalidation receipts.
+
+**Termination as a first-class metric.** `oracle/frontier/termination.py`
+measures zlib tail-vs-whole compression, word n-gram repetition and an
+exact-period tail. Calibrated on 6,950 stored stage-1 generations (5,791 finished,
+1,159 truncated): `tail_over_full_max=0.78`, `ngram_repeat_min=0.20`, 12.5% of
+truncated answers classified looping and **0 of 5,791 finished**. The
+distribution is the finding: most truncations are long derivations, not loops;
+thinking-mode greedy is the exception (48-52%). Accuracy conditioned on
+termination is 69.7% terminated / 3.1% truncated / 4.8% looped
+(`results/stage1/s56-termination-calibration.json`). The stage-1 eval receipt
+now carries the block per task, mode and decoding and prints it in the log;
+`scripts/s56_termination_probe.py` is the checkpoint probe at the registered
+2M/5M/final cadence. Decoding is unchanged.
+
+**The first-error claim.** The S54 phrase named the first *token* mismatch, which
+is a textual divergence, not a reasoning error. The S56 amendment renames it
+`first_textual_divergence` and registers step-local correction as a future
+experiment that requires a trustworthy process verifier. The immediate objective
+is verified teacher-solution, completion-only SFT plus teacher reverse KL on the
+**same causal student prefix**; `oracle/frontier/same_prefix.py` implements it
+and `--objective sft-kl` wires it into the trainer. Tests:
+`oracle/tests/test_s56_same_prefix.py` (9 cases).
+
+**Termination-aware rollouts.** `oracle/frontier/rollouts.py` implements the
+2048-token cap, `truncated = wrong`, the loop stopping criterion and the
+false-cut replay. On the stored generations the cut fires on 237 of 6,950
+(3.41%), saves an estimated 431,812 tokens, and 11 of 4,074 uncut-correct answers
+lose their answer (0.27% of uncut-correct; 4.6% of cuts). Thinking-mode subsets
+cut at 84-86% but have only 2 uncut-correct answers, so their false-cut estimate
+is not informative. Receipt: `results/stage1/s56-false-cut.json`. Tests:
+`oracle/tests/test_s56_rollouts.py` (8 cases). DAPO's contrary finding on
+punitive truncation rewards and ESR's position-based early stop are recorded in
+`docs/S56-LITERATURE.md`; stage 2b must compare the two reward rules before
+claiming either is better.
+
+**vLLM.** No released vLLM requires torch 2.15.0 (0.28-0.32 pin torch 2.13.0;
+0.33-0.34 pin 2.14.0), so the throughput image cannot share the scoring image.
+The pinned image (torch 2.14.0+cu132, transformers 5.22.2, vLLM 0.34.0) did not
+build here: attempt 1 failed on `torchaudio==2.11.0+cu132`, and attempt 2
+resolved every version then hit `[Errno 28] No space left on device` because
+Docker's data root is a 26 GiB tmpfs with 2.8 GiB free. Exact failure, log
+sha256, version arithmetic and the queued smoke command are in
+`results/stage2/s56-vllm-build.json`, `docs/S56-VLLM.md` and
+`docs/S50-GPU-QUEUE.md`. No throughput number is claimed; the transformers
+fallback stays the engine of record.
+
+**Literature.** `docs/S56-LITERATURE.md` records URL, date, claim and
+VERIFIED/PARTIAL/UNSUPPORTED for looping in reasoning models (Circular Reasoning,
+LoopBench, CUSUM), repetition penalties versus training-time objectives (LZ
+Penalty, unlikelihood, Repetition In Repetition Out), compression-based
+signals, on-policy distillation and truncation (GKD, MiniLLM, ESR, TRSD, DAPO,
+Dr. GRPO), and vLLM 0.34.0's Qwen3.5 registry support.
+
+**Data job.** The S55 stage-2a corpus generator remained the only GPU job and was
+not touched. At 08:53Z it had sampled 1,952 of 3,500 GSM8K prompts, kept 1,466
+and measured ~582 tok/s; MATH-train had not started.
+
+Commits: `c8cfcd3` (status discovery), `b7f2daa` (termination), `66e2f96`
+(first-textual-divergence and same-prefix KL), `49ad4be` (rollouts), `e3d56f6`
+(vLLM attempt and queue).
