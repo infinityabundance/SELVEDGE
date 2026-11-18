@@ -1,0 +1,19 @@
+# Pinned inputs for the SELVEDGE vLLM throughput image.
+#
+# This is deliberately a SMALL direct pin set: the full resolved graph is
+# recorded after the build as `docker/vllm-freeze.txt` (from `pip freeze`) and
+# the image digest is recorded in `docker/IMAGES.lock`. Do not add a dependency
+# here casually; rebuild and let the lock and freeze move together.
+#
+# Version arithmetic (checked against PyPI, 2026-11-18):
+#   vllm 0.34.0 requires torch==2.14.0 and transformers<5.23.0,>=5.16.1.
+#   No released vLLM requires torch 2.15.0. 0.34.0 is therefore the newest vLLM
+#   that works at all, and it needs torch 2.14.0+cu132; it cannot share an image
+#   with the scoring stack (torch 2.15.0+cu132, transformers 5.23.0).
+torch==2.14.0+cu132
+torchvision==0.29.0+cu132
+torchaudio==2.11.0
+transformers==5.22.2
+huggingface_hub>=2.0.0
+tokenizers>=0.23.3
+vllm==0.34.0

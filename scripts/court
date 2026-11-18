@@ -11,6 +11,7 @@
 #   scripts/court --net oracle -- python3 scripts/oracle/fetch_models.py
 #   scripts/court --gpu oracle -- python3 oracle/probe_oracle.py --json
 #   scripts/court --gpu eval -- python3 scripts/s34_anchor.py run --config ...
+#   scripts/court --gpu vllm -- python3 scripts/s56_vllm_smoke.py ...
 #   scripts/court io -- fio --name=seq --filename=/work/target/io.bin ...
 #   scripts/court commit_identity
 #   scripts/court perf_numbers
@@ -120,6 +121,16 @@ case "$court" in
       exec "$court_runner" eval "${flags[@]}" -- "$@"
     fi
     exec "$court_runner" eval "${flags[@]}" -- python3 "$@"
+    ;;
+  vllm)
+    if (($# == 0)); then
+      exec "$court_runner" vllm "${flags[@]}"
+    fi
+    if [[ "$1" == "--" ]]; then
+      shift
+      exec "$court_runner" vllm "${flags[@]}" -- "$@"
+    fi
+    exec "$court_runner" vllm "${flags[@]}" -- python3 "$@"
     ;;
   commit_identity)
     exec "$court_runner" commit_identity "${flags[@]}" -- "$@"

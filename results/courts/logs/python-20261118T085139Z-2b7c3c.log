@@ -1,0 +1,7 @@
+s56-vllm-smoke: plan (no model loaded, no CUDA)
+s56-vllm-smoke: model /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17
+s56-vllm-smoke: model /hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc
+s56-vllm-smoke: prompts 8 sha256 1dcd366b945d00fd…
+s56-vllm-smoke: greedy, cap 256, vram limit 12.5 GiB
+s56-vllm-smoke: requires the vllm court image (scripts/build-courts.sh vllm) and a free GPU
+s56-vllm-smoke: command: SELVEDGE_MEM=12g SELVEDGE_CPUS=4 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g scripts/court --gpu vllm -- python3 scripts/s56_vllm_smoke.py

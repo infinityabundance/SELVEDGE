@@ -1,0 +1,79 @@
+{
+  "schema": "selvedge/s56-vllm-build/v1",
+  "kind": "vllm-build-attempt",
+  "created_utc": "2026-11-18T09:05:00Z",
+  "stamp": "20261118T090500Z",
+  "revision": "49ad4be",
+  "outcome": "not_built",
+  "image": null,
+  "image_digest": null,
+  "pip_freeze": null,
+  "build_command": "docker build --memory 6g --memory-swap 6g --ulimit nofile=65536:65536 --build-arg VLLM_BASE=python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b -f docker/Dockerfile.vllm -t selvedge/vllm-court:20261118-test .",
+  "sources": {
+    "docker/Dockerfile.vllm": "7332cf2e2ae946578442e1e57ff24d734f4bc4ebf65d664c1f663f850ff6d0f8",
+    "docker/requirements-vllm.txt": "572073f6670cb87d44eb7e8df5852865372a7185d34d94f7865b38a23b208b85",
+    "scripts/s56_vllm_smoke.py": "24c44d907cdbb1c7aa875d12ed1207ded7d8a90c22c7a3f71faee242ae4e74fe"
+  },
+  "version_arithmetic": {
+    "question": "which vLLM release supports torch 2.15 / cu132 and driver 620?",
+    "answer": "none on PyPI as of 2026-11-18. vLLM 0.28.0-0.32.0 require torch==2.13.0, 0.33.0-0.34.0 require torch==2.14.0. No release requires torch 2.15.0.",
+    "checked": [
+      {"vllm": "0.28.0", "torch": "2.13.0", "transformers": ">=5.5.3"},
+      {"vllm": "0.31.0", "torch": "2.13.0", "transformers": "<5.18.0,>=5.10.4"},
+      {"vllm": "0.32.0", "torch": "2.13.0", "transformers": "<5.20.0,>=5.16.1"},
+      {"vllm": "0.33.0", "torch": "2.14.0", "transformers": "<5.21.0,>=5.16.1"},
+      {"vllm": "0.34.0", "torch": "2.14.0", "transformers": "<5.23.0,>=5.16.1"}
+    ],
+    "source": "https://pypi.org/pypi/vllm/<version>/json requires_dist, fetched 2026-11-18 inside scripts/court --net python",
+    "consequence": "vLLM cannot share the scoring image (torch 2.15.0+cu132, transformers 5.23.0). The separate image pins torch 2.14.0+cu132, torchvision 0.29.0+cu132, torchaudio 2.11.0, transformers 5.22.2 and vLLM 0.34.0."
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "result": "pip resolution failed on an exact pin",
+      "command": "torchaudio==2.11.0+cu132 in docker/requirements-vllm.txt",
+      "error": "ERROR: Could not find a version that satisfies the requirement torchaudio==2.11.0+cu132 (from versions: 2.2.0, ..., 2.11.0, 2.11.1, 2.11.1+cu132). ERROR: No matching distribution found for torchaudio==2.11.0+cu132",
+      "fix": "pin torchaudio==2.11.0 (PyPI), the exact version vLLM requires; 2.11.1+cu132 exists but does not satisfy ==2.11.0"
+    },
+    {
+      "attempt": 2,
+      "result": "dependency resolution succeeded, pip install ran out of disk",
+      "log": "results/stage2/s56-vllm-build.log",
+      "log_sha256": "0f74bd21d727fc9557f823c3825ec5e37ea54b0934e0f0b7db196e173022e61b",
+      "error": "ERROR: Could not install packages due to an OSError: [Errno 28] No space left on device",
+      "when": "217 s into the pip layer, after 220 package downloads",
+      "note": "No version conflict was reported: torch 2.14.0+cu132, torchvision 0.29.0+cu132, torchaudio 2.11.0, transformers 5.22.2 and vllm 0.34.0 resolved together."
+    }
+  ],
+  "environment": {
+    "docker_root_dir": "/run/media/one/1tb_kingston/docker",
+    "docker_root_filesystem": "tmpfs mounted at /run",
+    "df_run": "tmpfs 26G 23G 2.8G 90% /run",
+    "docker_system_df": {
+      "images": "23.04GB total, 11.3GB reclaimable (49%)",
+      "containers": "67.25MB, 3 active",
+      "build_cache": "0B after prune"
+    },
+    "host_mem_available_gib": 73.4,
+    "reading": "The build host has RAM, not disk: Docker's data root is a 26 GiB tmpfs. The vLLM stack is larger than the 2.8 GiB free after the existing court images. Reclaiming the 11.3 GB of images not used by the running job would be an operator decision, not an agent's; this attempt did not remove another court's image."
+  },
+  "decision": {
+    "build": "not built; the failure is environmental (disk), not a version or code defect beyond the documented torchaudio pin",
+    "engine": "keep the pinned transformers 5.23.0 / torch 2.15.0+cu132 stack as the only engine; every number in a score receipt stays a transformers number",
+    "no_fabrication": "no vLLM throughput number is claimed; the eval receipt's `vllm_available: false` note remains accurate",
+    "to_build_later": "free >= 12 GiB in the Docker root (or move the data root to a disk-backed filesystem), then run `scripts/build-courts.sh vllm`; it writes the image id and digest into docker/IMAGES.lock and `pip freeze` into docker/vllm-freeze.txt"
+  },
+  "queued_smoke": {
+    "status": "queued; not run",
+    "precondition": "the s55 stage-2a data job has exited and the GPU is free; the vllm court image exists in docker/IMAGES.lock",
+    "command": "SELVEDGE_MEM=12g SELVEDGE_CPUS=4 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g scripts/court --gpu vllm -- python3 scripts/s56_vllm_smoke.py",
+    "models": [
+      "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+      "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc"
+    ],
+    "fallback": "SELVEDGE_MEM=12g scripts/court --gpu eval -- python3 scripts/s56_vllm_smoke.py --allow-transformers",
+    "fallback_label": "the fallback receipt records engine=transformers; it is not a vLLM throughput claim",
+    "cpu_plan": "SELVEDGE_MEM=2g scripts/court python -- python3 scripts/s56_vllm_smoke.py --dry-run"
+  },
+  "reading": "A pinned image was not produced in this environment. The exact failure, the version arithmetic and the reproducible build command are recorded so the next session does not repeat the discovery. The transformers fallback remains the engine of record, and no throughput number is reported from an unbuilt image."
+}

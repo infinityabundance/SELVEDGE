@@ -1,0 +1,45 @@
+# SELVEDGE vLLM evaluation image (throughput smoke only).
+#
+# WHY A SEPARATE IMAGE. vLLM 0.34.0 pins torch==2.14.0 and
+# transformers<5.23.0. The anchor/eval instrument pins torch 2.15.0+cu132 and
+# transformers 5.23.0 (docker/IMAGES.lock, docker/requirements-oracle.txt), so
+# installing vLLM into that image would either rewrite the instrument or fail
+# resolution. This image keeps the scoring stack untouched and builds the
+# throughput stack beside it. **No score may be produced here.** The digest and
+# the full pip freeze are recorded in docker/IMAGES.lock and
+# results/stage2/s56-vllm-build.json.
+#
+# The base is the same digest-pinned python:3.12-slim as the oracle court, and
+# torch comes from the cu132 index so the runtime matches driver 620.
+ARG VLLM_BASE
+FROM ${VLLM_BASE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TORCH_INDEX=https://download.pytorch.org/whl/cu132
+
+COPY docker/requirements-vllm.txt /tmp/requirements-vllm.txt
+
+RUN pip install --no-cache-dir --no-compile \
+        --extra-index-url "${TORCH_INDEX}" \
+        -r /tmp/requirements-vllm.txt \
+    && rm -f /tmp/requirements-vllm.txt
+
+# Fail the build if the stack does not import together, and print the versions
+# that the runtime receipt will record.
+RUN python3 - <<'PY'
+import torch, transformers, vllm
+print("torch", torch.__version__, "cuda_runtime", torch.version.cuda)
+print("transformers", transformers.__version__)
+print("vllm", vllm.__version__)
+assert torch.__version__.startswith("2.14.0"), torch.__version__
+assert transformers.__version__.startswith("5.22."), transformers.__version__
+assert vllm.__version__ == "0.34.0", vllm.__version__
+PY
+
+ENV HF_HUB_DISABLE_TELEMETRY=1 \
+    HF_HUB_DISABLE_PROGRESS_BARS=1 \
+    TOKENIZERS_PARALLELISM=false \
+    PYTHONDONTWRITEBYTECODE=1 \
+    VLLM_USE_V1=1
+
+WORKDIR /work

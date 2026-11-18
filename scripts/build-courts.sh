@@ -6,6 +6,7 @@
 #   scripts/build-courts.sh python
 #   scripts/build-courts.sh oracle               # torch/transformers teacher image
 #   scripts/build-courts.sh eval                 # lm-evaluation-harness evaluation image
+#   scripts/build-courts.sh vllm                 # pinned vLLM throughput image
 #
 # The oracle image is not part of the default build set: it is several
 # gigabytes and only the real-model path needs it.
@@ -50,7 +51,7 @@ if ((${#targets[@]} == 0)); then
 fi
 for target in "${targets[@]}"; do
   case "$target" in
-    rust | python | oracle | eval) ;;
+    rust | python | oracle | eval | vllm) ;;
     *) die "unknown target '$target' (expected rust|python|oracle|eval)" 64 ;;
   esac
 done
@@ -82,11 +83,19 @@ build_one() {
       # lock has been read; there is no registry pull for this target.
       base_ref=""
       ;;
+    vllm)
+      dockerfile="docker/Dockerfile.vllm"
+      # Same digest as the oracle court base: the throughput image differs in
+      # its Python stack, not in its OS base.
+      base_ref="${SELVEDGE_VLLM_BASE:-python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b}"
+      ;;
   esac
   if [[ "$key" == "oracle" ]]; then
     base_tag="3.12-slim-cu132"
   elif [[ "$key" == "eval" ]]; then
     base_tag="3.12-slim-eval"
+  elif [[ "$key" == "vllm" ]]; then
+    base_tag="3.12-slim-vllm"
   else
     base_tag="${base_ref##*:}"
   fi
@@ -131,6 +140,8 @@ PY
         [[ -f "$repo_root/docker/requirements-oracle.txt" ]] && cat "$repo_root/docker/requirements-oracle.txt"
       elif [[ "$key" == "eval" ]]; then
         [[ -f "$repo_root/docker/requirements-eval.txt" ]] && cat "$repo_root/docker/requirements-eval.txt"
+      elif [[ "$key" == "vllm" ]]; then
+        [[ -f "$repo_root/docker/requirements-vllm.txt" ]] && cat "$repo_root/docker/requirements-vllm.txt"
       else
         [[ -f "$repo_root/docker/requirements-court.txt" ]] && cat "$repo_root/docker/requirements-court.txt"
       fi
@@ -143,6 +154,7 @@ PY
   [[ "$key" == "python" ]] && build_arg="PYTHON_BASE"
   [[ "$key" == "oracle" ]] && build_arg="ORACLE_BASE"
   [[ "$key" == "eval" ]] && build_arg="EVAL_BASE"
+  [[ "$key" == "vllm" ]] && build_arg="VLLM_BASE"
   printf 'build-courts: building %s\n' "$tag" >&2
   docker build \
     --memory "$BUILD_MEM" \
@@ -173,6 +185,19 @@ PY
   [[ -n "$probe_versions" ]] || die "built image $tag could not be probed"
 
   printf '%s\n' "$probe_versions" >"$work/$key.toolchain"
+  if [[ "$key" == "vllm" ]]; then
+    # The image's exact Python graph is evidence, not a comment. Record it
+    # beside the lock so a later reader can compare a smoke run with the build.
+    docker run --rm \
+      --memory="$BUILD_MEM" --memory-swap="$BUILD_MEM" \
+      --pids-limit="$BUILD_NPROC" --cpus="$BUILD_CPUS" \
+      --network none \
+      --tmpfs "/tmp:rw,size=1g,mode=1777,nosuid,nodev" \
+      --security-opt no-new-privileges --cap-drop ALL \
+      --entrypoint /bin/sh \
+      "$tag" -c 'pip freeze' >"$work/$key.freeze" ||
+      die "built vllm image $tag could not emit pip freeze"
+  fi
   printf '%s\n' "$tag" >"$work/$key.ref"
   printf '%s\n' "$image_id" >"$work/$key.id"
   printf '%s\n' "$base_ref" >"$work/$key.base_ref"
@@ -183,6 +208,10 @@ PY
 for target in "${targets[@]}"; do
   build_one "$target"
 done
+
+if [[ -f "$work/vllm.freeze" ]]; then
+  cp "$work/vllm.freeze" "$repo_root/docker/vllm-freeze.txt"
+fi
 
 python3 - "$lock_file" "$work" "${targets[@]}" <<'PY'
 import json

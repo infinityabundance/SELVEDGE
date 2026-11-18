@@ -4,7 +4,7 @@
 # Usage:
 #   scripts/docker-court.sh <court> [flags] [-- argv...]
 #
-#   courts: rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait
+#   courts: rust | python | oracle | eval | vllm | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait
 #   flags:  --net            enable network (default: --network none)
 #           --gpu            pass the NVIDIA GPU (fails closed if unavailable)
 #           --host-root-ro   expose the host root read-only at /hostroot
@@ -60,7 +60,7 @@ usage() {
   cat <<'EOF'
 usage: scripts/docker-court.sh <court> [flags] [-- argv...]
 
-  courts : rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait
+  courts : rust | python | oracle | eval | vllm | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait
            (or start with -- for a generic Python-court passthrough)
   flags  : --net            enable network (default: --network none)
            --gpu            pass the NVIDIA GPU (fails closed if unavailable)
@@ -136,8 +136,8 @@ else
 fi
 
 case "$court" in
-  rust | python | oracle | eval | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait) ;;
-  *) die "unknown court '$court' (expected rust|python|oracle|io|commit_identity|perf_numbers|status_consistency|wait, or -- <argv>)" 64 ;;
+  rust | python | oracle | eval | vllm | io | commit_identity | perf_numbers | status_consistency | prereg_provenance | wait) ;;
+  *) die "unknown court '$court' (expected rust|python|oracle|eval|vllm|io|commit_identity|perf_numbers|status_consistency|wait, or -- <argv>)" 64 ;;
 
 esac
 
@@ -349,6 +349,7 @@ case "$court" in
   rust) image_key="rust" ;;
   oracle) image_key="oracle" ;;
   eval) image_key="eval" ;;
+  vllm) image_key="vllm" ;;
   *) image_key="python" ;;
 esac
 
@@ -388,6 +389,7 @@ if ((${#argv[@]} == 0)); then
     rust) argv=(cargo --version) ;;
     python) argv=(python3 --version) ;;
     oracle) argv=(python3 /work/oracle/probe_oracle.py) ;;
+      vllm) argv=(python3 -c 'import torch, transformers, vllm; print(vllm.__version__, torch.__version__, transformers.__version__)') ;;
     io) argv=(df -h /tmp) ;;
     commit_identity) argv=(scripts/check-commit-identity.sh) ;;
     perf_numbers) argv=(python3 scripts/perf_numbers.py --check) ;;
@@ -510,7 +512,7 @@ declare -a recorded_mounts=()
 if [[ "$court" == "python" || "$court" == "io" || "$court" == "perf_numbers" || "$court" == "status_consistency" || "$court" == "prereg_provenance" || "$court" == "eval" ]]; then
   mounts+=("$pycache:/pycache")
 fi
-if [[ "$court" == "oracle" || "$court" == "eval" ]]; then
+if [[ "$court" == "oracle" || "$court" == "eval" || "$court" == "vllm" ]]; then
   # Persistent model cache, read-write. Recorded so a receipt always names the
   # exact host path a teacher is read from.
   mounts+=("$hf_cache:/hf-cache")

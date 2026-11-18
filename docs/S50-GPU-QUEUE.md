@@ -18,7 +18,9 @@ evidence, not a score.
 
 1. optimizer validations (real-gradient first moment, then the model-level
    comparison);
-2. stage 2 — on-policy distillation with failed-rollout corrective supervision;
+2. stage 2a — verified teacher-solution SFT plus same-prefix teacher KL
+   (`docs/ws19-post-trained-route-stage2a-amendment-s55-v1.json`, corrected by
+   `...-s56-v1.json`); stage 2b on-policy rollouts are registered but not run;
 3. deferred: the 3e-5/5e-5 fixed-batch KL gate, the conditional 3e-5 bar, and the
    P19.9 2M screen.
 
@@ -32,6 +34,34 @@ Check the gate:
 ```bash
 test -f results/stage2/runs/s50-bar-20m-lr1e-5/receipt.json
 pgrep -af 'oracle/frontier/train.py|s43_score_total_cap.py'   # must print nothing
+```
+
+## S56 additions (queued, not launched)
+
+The S55 stage-2a corpus job
+(`scripts/s55_stage2_data.py`, `selvedge-oracle-court-20261118T082121Z-c5b383`)
+is the only GPU job that may run now. Everything below waits for it to exit and
+for the GPU to be idle.
+
+**Termination probe at the registered cadence (2M, 5M, final).** Diagnostic
+only, 50 problems per task, greedy, cap unchanged:
+
+```bash
+SELVEDGE_MEM=8g SELVEDGE_CPUS=4 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
+  scripts/court --gpu eval -- python3 scripts/s56_termination_probe.py \
+    --run-dir results/stage2/runs/<stage2a-run> \
+    --checkpoint results/stage2/runs/<stage2a-run>/ckpt-<step>.pt \
+    --label <m2|m5|final>
+```
+
+**vLLM throughput smoke.** The vLLM image could not be built because the Docker
+data root is a 26 GiB tmpfs with 2.8 GiB free; the exact failure and version
+arithmetic are in `results/stage2/s56-vllm-build.json` and `docs/S56-VLLM.md`.
+The smoke is queued and must not be run as a score:
+
+```bash
+SELVEDGE_MEM=12g SELVEDGE_CPUS=4 SELVEDGE_PIDS=2048 SELVEDGE_TMP=2g \
+  scripts/court --gpu vllm -- python3 scripts/s56_vllm_smoke.py
 ```
 
 ## 1. Score the bar's 5/10/20M milestones and decide the 100M extension
