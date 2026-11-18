@@ -130,6 +130,10 @@ def _step_updates(initial: torch.Tensor, gradients: list[torch.Tensor],
                   steps: int, storage: str, lr: float, betas, eps: float,
                   block: int) -> dict:
     """Replay one tensor through one arm and AdamW, keeping only scalars."""
+    # The fixture stores the captured tensor at its captured shape (optionally
+    # row-capped); the optimiser arms work on one flat vector, so flatten here
+    # rather than assuming the 1-D case (S55 fix).
+    initial = initial.reshape(-1).contiguous()
     reference = nn.Parameter(initial.clone())
     adamw = torch.optim.AdamW([reference], lr=lr, betas=betas, eps=eps,
                               weight_decay=0.0)

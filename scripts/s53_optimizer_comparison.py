@@ -131,6 +131,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--kl-weight", type=float, default=0.5)
     parser.add_argument("--grad-clip", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--arms", default="custom,adamw",
+                        help="comma-separated arms: custom (int8 first moment), "
+                             "custom_bf16 (bfloat16 first moment), adamw "
+                             "(fp32 reference)")
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
 
@@ -172,12 +176,14 @@ def main(argv: list[str]) -> int:
             arm.load_state_dict(init_state)
             arm.train()
             trainable = arm.parameters()
-            if name == "custom":
+            if name in ("custom", "custom_bf16"):
                 generator = torch.Generator(device=device)
                 generator.manual_seed(args.seed + 1)
                 optimizer = optim8bit.Adam8bit(
                     trainable, lr=args.lr, betas=(0.9, 0.95), weight_decay=0.0,
                     block=256, weight_rounding="stochastic",
+                    first_moment_storage=(
+                        "bfloat16" if name == "custom_bf16" else "int8"),
                     generator=generator)
             else:
                 optimizer = torch.optim.AdamW(
@@ -187,10 +193,17 @@ def main(argv: list[str]) -> int:
                     "trainable": trainable}
         return build
 
+    #: The online loss of each step's own microbatches. The fixed-batch eval
+    #: measures repetition on one batch set; this is the objective the optimiser
+    #: is actually asked to reduce, recorded on fresh batches every step.
+    online: dict[str, list[dict]] = {name: [] for name in args.arms.split(",")}
+    current = {"arm": None}
+
     def step(state, step_index):
         optimizer = state["optimizer"]
         model = state["model"]
         optimizer.zero_grad(set_to_none=True)
+        losses = []
         for micro in range(args.grad_accum):
             offset = (args.start_token
                       + (step_index * args.grad_accum + micro) * args.seq_len)
@@ -202,6 +215,14 @@ def main(argv: list[str]) -> int:
                 student_logits, teacher_logits, targets, args.temperature,
                 args.kl_weight)
             (loss / args.grad_accum).backward()
+            losses.append({"loss": float(loss.detach()), "ce": float(_ce),
+                           "kl": float(_kl)})
+        online[current["arm"]].append({
+            "step": step_index + 1,
+            "loss": sum(item["loss"] for item in losses) / len(losses),
+            "ce": sum(item["ce"] for item in losses) / len(losses),
+            "kl": sum(item["kl"] for item in losses) / len(losses),
+        })
         torch.nn.utils.clip_grad_norm_(state["trainable"], args.grad_clip)
         optimizer.step()
         return state
@@ -213,17 +234,32 @@ def main(argv: list[str]) -> int:
         del state["arm"], state["model"], state["optimizer"], state["trainable"]
         torch.cuda.empty_cache()
 
-    specs = {
-        "custom": optim_compare.ArmSpec(make=make("custom"), step=step,
-                                        release=release),
-        "adamw": optim_compare.ArmSpec(make=make("adamw"), step=step,
-                                       release=release),
-    }
+    def wrapped(label, name):
+        def build():
+            current["arm"] = label
+            return make(name)()
+        return build
+
+    builders = {"custom": "custom", "custom_bf16": "custom_bf16",
+                "adamw": "adamw"}
+    specs = {}
+    for label in args.arms.split(","):
+        if label not in builders:
+            raise SystemExit(f"s53-optim: unknown arm {label!r}")
+        specs[label] = optim_compare.ArmSpec(
+            make=wrapped(label, builders[label]),
+            step=step, release=release)
+    if "adamw" not in specs:
+        raise SystemExit("s53-optim: the fp32 AdamW reference arm is required")
     torch.cuda.reset_peak_memory_stats()
     comparison = optim_compare.run_comparison(
         specs, evaluate, args.steps, eval_every=args.eval_every)
-    summary = optim_compare.summarise_comparison(
-        comparison, reference="adamw", candidate="custom", seed=args.seed + 53)
+    summaries = {}
+    for label in specs:
+        if label == "adamw":
+            continue
+        summaries[f"{label}_minus_adamw"] = optim_compare.summarise_comparison(
+            comparison, reference="adamw", candidate=label, seed=args.seed + 53)
 
     receipt = {
         "schema": "selvedge/s53-optimiser-comparison-run/v1",
@@ -248,10 +284,19 @@ def main(argv: list[str]) -> int:
         "matched_init_sha256": init_digest,
         "trainable_elements": trainable_elements,
         "arms": {
-            "custom": {"optimizer": "adam8bit block 256 stochastic rounding"},
-            "adamw": {"optimizer": "torch.optim.AdamW fp32 moments"},
-        },
-        "comparison": summary,
+            label: {
+                "optimizer": ("adam8bit block 256 stochastic rounding, int8 "
+                              "first moment" if label == "custom" else
+                              "adam8bit block 256 stochastic rounding, "
+                              "bfloat16 first moment" if label == "custom_bf16"
+                              else "torch.optim.AdamW fp32 moments")}
+            for label in specs},
+        "comparisons": summaries,
+        "online_loss": {label: trace for label, trace in online.items() if trace},
+        "online_loss_note": (
+            "each step's own microbatches at the training offsets, so this trace "
+            "is the objective the optimiser is asked to reduce; the fixed-batch "
+            "series asks whether the arms agree on one batch set"),
         "peak_allocated_gib": torch.cuda.max_memory_allocated() / GIB,
         "peak_reserved_gib": torch.cuda.max_memory_reserved() / GIB,
         "command": sys.argv,

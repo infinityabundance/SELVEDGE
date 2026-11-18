@@ -1,0 +1,385 @@
+{
+  "arms": {
+    "bfloat16": {
+      "final_parameter_relative_error": 6.750792615132356e-05,
+      "first_moment_storage": "bfloat16",
+      "max_update_ratio": 1.0195334522703963,
+      "moment_bytes_per_element": 4.0,
+      "per_step_relative_l2": [
+        2.252667436797693e-06,
+        0.001057822998861406,
+        0.0014061512437551391,
+        0.0016366642298258278,
+        0.0019515956770490563,
+        0.0020843006620537684,
+        0.002314955606655719,
+        0.002435329207261748,
+        0.0026234930052681494,
+        0.0027207900190805534,
+        0.00287986191968025,
+        0.002953484744855304,
+        0.003091766905611743,
+        0.00308864135401477,
+        0.0032074641603106837,
+        0.003269687713915341,
+        0.0035216221318067225,
+        0.003616318183489201,
+        0.0036782919032093773,
+        0.0035418984425750213,
+        0.0035101112199857755,
+        0.0034003879332741432,
+        0.003419287856684772,
+        0.0033098549744953673,
+        0.003319496167203131,
+        0.00323750498594273,
+        0.0032782075153198554,
+        0.0032224710494838317,
+        0.0032213546476097124,
+        0.003187060738152672,
+        0.0033299597805811587,
+        0.003413610602784207,
+        0.0035844275122384195,
+        0.0036075621953714967,
+        0.003704543586735969,
+        0.003653717270722931,
+        0.0037210719420307254,
+        0.003783599138578496,
+        0.004096281427368889,
+        0.004423183595174436,
+        0.005002507458885309,
+        0.00553483610990598,
+        0.006219330469285761,
+        0.006754396551142516,
+        0.007415181254423073,
+        0.007843390777042367,
+        0.008431683317748939,
+        0.0087385299179802,
+        0.009250750226258472,
+        0.009467736870238127
+      ],
+      "worst_relative_l2": 0.009467736870238127,
+      "worst_step": 50
+    },
+    "int8": {
+      "final_parameter_relative_error": 0.001664860449949585,
+      "first_moment_storage": "int8",
+      "max_update_ratio": 2.582338963016849,
+      "moment_bytes_per_element": 3.015625,
+      "per_step_relative_l2": [
+        2.252667436797693e-06,
+        0.03499536980357279,
+        0.04492018384270807,
+        0.050307552425269464,
+        0.05261604380568915,
+        0.056987187500229755,
+        0.05594295082501848,
+        0.05987344963322885,
+        0.05771122793264011,
+        0.061266378038221096,
+        0.05886164978939765,
+        0.061528785281449824,
+        0.05960926027387762,
+        0.06193715415060592,
+        0.06022568381117966,
+        0.06233694153834771,
+        0.06067906559148853,
+        0.06251696805238305,
+        0.06103416274496859,
+        0.06269603688251238,
+        0.06131241755466799,
+        0.06284859445422805,
+        0.061525975330381545,
+        0.0629803638002835,
+        0.06169296192458258,
+        0.06307269714910897,
+        0.06183278575126929,
+        0.06315206463712901,
+        0.061935297504799015,
+        0.06320955285034494,
+        0.06203106955683832,
+        0.06324080007429116,
+        0.06210082664100409,
+        0.06326559467885993,
+        0.062166382320565636,
+        0.06329218385949048,
+        0.06221327334936069,
+        0.06331252084929663,
+        0.062255020337245004,
+        0.0633391449095483,
+        0.062293818149708746,
+        0.06336082513836071,
+        0.062324763206764326,
+        0.06337910144486839,
+        0.062352296380673335,
+        0.06339590343180068,
+        0.062379447443105834,
+        0.06341650767023109,
+        0.06240954881932903,
+        0.06343773261537661
+      ],
+      "worst_relative_l2": 0.06343773261537661,
+      "worst_step": 50
+    }
+  },
+  "betas": [
+    0.9,
+    0.95
+  ],
+  "block": 256,
+  "created_utc": "2026-11-18T07:59:01Z",
+  "decision": {
+    "action": "the int8 first moment stays the default; no storage switch is authorised by this fixture",
+    "bfloat16_failures": [],
+    "int8_failures": [],
+    "status": "retain-int8-first-moment",
+    "tolerance": {
+      "final_parameter_relative_error": 0.02,
+      "max_update_ratio": 3.0,
+      "worst_relative_l2": 0.4
+    },
+    "tolerance_basis": "synthetic per-element lognormal(0, 1) gradients, 50 steps, results/stage2/s50-parity-components-20261117T203840Z.json: shipped int8 first moment worst relative L2 0.2789, max update ratio 2.46, final parameter error 0.008828 at lr 1e-4; thresholds add headroom"
+  },
+  "eps": 1e-08,
+  "fixture": {
+    "capture": {
+      "capture_revision": "3eb7e7df2149d746c474346ae877cd4bc97294fc",
+      "capture_stamp": "20261118T075834Z",
+      "command": [
+        "scripts/s50_capture_real_gradients.py",
+        "--student-dir",
+        "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+        "--teacher-dir",
+        "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+        "--out-dir",
+        "results/artifacts/stage2/s55-real-gradients",
+        "--steps",
+        "2",
+        "--max-elements-per-tensor",
+        "500000"
+      ],
+      "grad_clip": 1.0,
+      "gradient_dtype": "float32 (exact widening of the bf16 gradient)",
+      "gradient_timing": "post-clip gradient of the loss the bar optimises (CE + kl_weight * T^2 * KL); the model is not updated between probes",
+      "micro_batch": 1,
+      "parameter_dtype": "bfloat16 in the model, stored float32 in the fixture",
+      "peak_allocated_gib": 9.644478797912598,
+      "probes": [
+        {
+          "clip": 1.0,
+          "losses": [
+            {
+              "ce": 0.5598660707473755,
+              "kl": 0.19775299727916718,
+              "loss": 0.9553720951080322
+            }
+          ],
+          "micro_batches": 1,
+          "pre_clip_grad_norm": 40.0,
+          "probe": 1,
+          "stream_offset": 0
+        },
+        {
+          "clip": 1.0,
+          "losses": [
+            {
+              "ce": 0.7507116198539734,
+              "kl": 0.24548859894275665,
+              "loss": 1.241688847541809
+            }
+          ],
+          "micro_batches": 1,
+          "pre_clip_grad_norm": 29.625,
+          "probe": 2,
+          "stream_offset": 512
+        }
+      ],
+      "schema": "selvedge/s50-real-gradient-capture/v1",
+      "seq_len": 512,
+      "start_token": 0,
+      "steps_captured": 2,
+      "stream_manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+      "stream_path": "results/artifacts/stage2/stage2-math-stream-20261117T071120Z.u32",
+      "stream_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+      "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+      "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "tensors": [
+        {
+          "cap_basis": "whole leading rows only, so every captured 256-element block is a real contiguous block of the source tensor",
+          "captured_elements": 498176,
+          "captured_shape": [
+            139,
+            3584
+          ],
+          "elements": 498176,
+          "grad_absmax_over_steps": [
+            0.0033721923828125,
+            0.005340576171875
+          ],
+          "grad_first_step_absmax": 0.0033721923828125,
+          "grad_first_step_rms": 8.880524546839297e-05,
+          "grad_steps": 2,
+          "name": "layers.0.mlp.down_proj.weight",
+          "row_capped": true,
+          "rows_kept": 139,
+          "rows_total": 1024,
+          "source_shape": [
+            1024,
+            3584
+          ]
+        },
+        {
+          "cap_basis": "whole leading rows only, so every captured 256-element block is a real contiguous block of the source tensor",
+          "captured_elements": 498176,
+          "captured_shape": [
+            139,
+            3584
+          ],
+          "elements": 498176,
+          "grad_absmax_over_steps": [
+            0.000598907470703125,
+            0.00150299072265625
+          ],
+          "grad_first_step_absmax": 0.000598907470703125,
+          "grad_first_step_rms": 2.778855741780717e-05,
+          "grad_steps": 2,
+          "name": "layers.11.mlp.down_proj.weight",
+          "row_capped": true,
+          "rows_kept": 139,
+          "rows_total": 1024,
+          "source_shape": [
+            1024,
+            3584
+          ]
+        },
+        {
+          "cap_basis": "whole leading rows only, so every captured 256-element block is a real contiguous block of the source tensor",
+          "captured_elements": 498176,
+          "captured_shape": [
+            139,
+            3584
+          ],
+          "elements": 498176,
+          "grad_absmax_over_steps": [
+            0.001953125,
+            0.002899169921875
+          ],
+          "grad_first_step_absmax": 0.001953125,
+          "grad_first_step_rms": 3.8064230466261506e-05,
+          "grad_steps": 2,
+          "name": "layers.23.mlp.down_proj.weight",
+          "row_capped": true,
+          "rows_kept": 139,
+          "rows_total": 1024,
+          "source_shape": [
+            1024,
+            3584
+          ]
+        },
+        {
+          "cap_basis": "whole leading rows only, so every captured 256-element block is a real contiguous block of the source tensor",
+          "captured_elements": 499712,
+          "captured_shape": [
+            488,
+            1024
+          ],
+          "elements": 499712,
+          "grad_absmax_over_steps": [
+            0.00982666015625,
+            0.005645751953125
+          ],
+          "grad_first_step_absmax": 0.00982666015625,
+          "grad_first_step_rms": 7.40911127650179e-05,
+          "grad_steps": 2,
+          "name": "layers.0.mlp.gate_proj.weight",
+          "row_capped": true,
+          "rows_kept": 488,
+          "rows_total": 3584,
+          "source_shape": [
+            3584,
+            1024
+          ]
+        },
+        {
+          "cap_basis": "whole leading rows only, so every captured 256-element block is a real contiguous block of the source tensor",
+          "captured_elements": 499712,
+          "captured_shape": [
+            488,
+            1024
+          ],
+          "elements": 499712,
+          "grad_absmax_over_steps": [
+            0.001708984375,
+            0.0027923583984375
+          ],
+          "grad_first_step_absmax": 0.001708984375,
+          "grad_first_step_rms": 2.1633350115735084e-05,
+          "grad_steps": 2,
+          "name": "layers.11.self_attn.q_proj.weight",
+          "row_capped": true,
+          "rows_kept": 488,
+          "rows_total": 4096,
+          "source_shape": [
+            4096,
+            1024
+          ]
+        },
+        {
+          "cap_basis": "whole leading rows only, so every captured 256-element block is a real contiguous block of the source tensor",
+          "captured_elements": 499712,
+          "captured_shape": [
+            488,
+            1024
+          ],
+          "elements": 499712,
+          "grad_absmax_over_steps": [
+            0.000942230224609375,
+            0.00173187255859375
+          ],
+          "grad_first_step_absmax": 0.000942230224609375,
+          "grad_first_step_rms": 5.753836376243271e-06,
+          "grad_steps": 2,
+          "name": "layers.23.self_attn.q_proj.weight",
+          "row_capped": true,
+          "rows_kept": 488,
+          "rows_total": 4096,
+          "source_shape": [
+            4096,
+            1024
+          ]
+        }
+      ]
+    },
+    "elements": 2993664,
+    "grad_steps": 2,
+    "path": "results/artifacts/stage2/s55-real-gradients/fixture.pt",
+    "schema": "selvedge/s50-real-gradient-fixture/v1",
+    "sha256": "58f9271fcc7fea300cab1d89059013cddb12b1252de7d4911c82702f899cfcf5",
+    "synthetic": false,
+    "tensor_count": 6,
+    "tensor_names": [
+      "layers.0.mlp.down_proj.weight",
+      "layers.0.mlp.gate_proj.weight",
+      "layers.11.mlp.down_proj.weight",
+      "layers.11.self_attn.q_proj.weight",
+      "layers.23.mlp.down_proj.weight",
+      "layers.23.self_attn.q_proj.weight"
+    ]
+  },
+  "kind": "s50-real-gradient-validation",
+  "lr": 1e-05,
+  "memory": {
+    "bfloat16_fits": true,
+    "bfloat16_moment_bytes_per_element": 4.0,
+    "bfloat16_projected_peak_gib": 12.341655698828399,
+    "int8_moment_bytes_per_element": 3.015625,
+    "measured_int8_projected_peak_gib": 11.885,
+    "vram_limit_gib": 12.5
+  },
+  "parameter_dtype": "float32 (the only difference from AdamW is moment storage)",
+  "replay": "captured gradients are replayed cyclically for the requested step count; the comparison is over the captured spectrum, not the data order",
+  "revision": "3eb7e7df2149d746c474346ae877cd4bc97294fc",
+  "schema": "selvedge/s50-real-gradient-validation/v1",
+  "stamp": "20261118T075901Z",
+  "steps": 50,
+  "weight_rounding": "nearest (fp32 parameters; isolates moment storage)"
+}

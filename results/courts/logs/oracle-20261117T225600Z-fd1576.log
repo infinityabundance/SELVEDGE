@@ -1,0 +1,67 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_greedy_mode_is_deterministic_and_rejects_sampled_specs __________
+
+    def test_greedy_mode_is_deterministic_and_rejects_sampled_specs():
+        greedy = runner.RolloutSpec(k=3, temperature=0.0, top_p=1.0,
+                                    mode="greedy", max_new_tokens=64, seed=0)
+        plan = runner.sampling_plan(greedy, "p")
+        assert len(plan) == 3 and all(sample["greedy"] for sample in plan)
+        rows = runner.run_paired_rollouts(
+            [_item("g")],
+            FakeGenerator(lambda condition, item, sample: item.answer),
+            exact_verifier, greedy)
+        assert set(rows[0]["completions"]["base"]) == {"7"}
+        assert rows[0]["delta_outcome"] == pytest.approx(0.0)
+    
+        # a non-deterministic greedy generator is a failed determinism check
+        flip = {"n": 0}
+    
+        def nondeterministic(condition, item, sample):
+            flip["n"] += 1
+            return item.answer if flip["n"] % 2 else "5"
+    
+>       with pytest.raises(ValueError, match="not deterministic"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+oracle/tests/test_s52_p19_9_runner.py:169: Failed
+_______ test_training_is_deterministic_and_selects_the_calibration_epoch _______
+
+    def test_training_is_deterministic_and_selects_the_calibration_epoch():
+        hidden = torch.randn(24, 6)
+        metadata = runner.metadata_for_prompt("p", 24)
+        # a learnable rule: Delta is positive where feature 0 is positive
+        label = float(hidden[:, 0].mean() > 0.0)
+        labels = {
+            "fit": [{"prompt_id": "p", "split": "fit", "label": label}],
+            "calib": [{"prompt_id": "c", "split": "calib", "label": label}],
+            "holdout": [],
+        }
+        hidden_map = {"p": hidden, "c": hidden}
+        metadata_map = {"p": metadata, "c": metadata}
+    
+        def build():
+            router = routing.PreReadUtilityRouter(hidden=6, tau=1.0)
+            examples = runner.assemble_examples(
+                router, hidden_map, metadata_map, labels,
+                "counterfactual-outcome")
+            fit = [row for row in examples if row.split == "fit"]
+            calib = [row for row in examples if row.split == "calib"]
+            report = runner.train_router(router, fit, calib, epochs=8, lr=1e-2,
+                                         seed=3)
+            return router, report
+    
+        first_router, first = build()
+        second_router, second = build()
+>       assert first["parameter_hash"] == second["parameter_hash"]
+E       AssertionError: assert '94772deb23c0...92ef76226a2cd' == '52b7d41e8cdf...28502442a067b'
+E         
+E         - 52b7d41e8cdf843b83358657d00d0097d8b74caacfba54ee75228502442a067b
+E         + 94772deb23c0705c3df15e654f1b38363e300a2f53e849d402392ef76226a2cd
+
+oracle/tests/test_s52_p19_9_runner.py:265: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s52_p19_9_runner.py::test_greedy_mode_is_deterministic_and_rejects_sampled_specs
+FAILED oracle/tests/test_s52_p19_9_runner.py::test_training_is_deterministic_and_selects_the_calibration_epoch
+2 failed, 9 deselected in 3.63s

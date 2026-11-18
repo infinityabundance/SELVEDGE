@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/work/scripts/s52_p19_9_router.py", line 810, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s52_p19_9_router.py", line 806, in main
+    return stages[args.stage](args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s52_p19_9_router.py", line 723, in stage_check
+    if not os.path.isfile(os.path.join(ROOT, registration.get("prompt_set",
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 90, in join
+  File "<frozen genericpath>", line 164, in _check_arg_types
+TypeError: join() argument must be str, bytes, or os.PathLike object, not 'dict'

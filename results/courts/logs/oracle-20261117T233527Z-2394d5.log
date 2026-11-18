@@ -1,0 +1,27 @@
+................................F.....                                   [100%]
+=================================== FAILURES ===================================
+__________ test_pack_examples_masks_prompt_and_pads_without_splitting __________
+
+    def test_pack_examples_masks_prompt_and_pads_without_splitting():
+        examples = [
+            {"id": "a", "prompt_ids": [1, 2], "solution_ids": [3, 4]},
+            {"id": "b", "prompt_ids": [5], "solution_ids": [6, 7, 8]},
+        ]
+        packed = sft_data.pack_examples(examples, seq_len=8, pad_id=0, eos_id=9)
+        assert packed.report["rows"] == 2
+        assert packed.report["boundary_safe"] is True
+        assert packed.report["completion_only_loss"] is True
+>       assert packed.report["padding_tokens"] == 3 + 2
+E       assert 6 == (3 + 2)
+
+oracle/tests/test_s45_rft.py:279: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s45_rft.py::test_sft_loss_all_ignored_is_a_zero_with_a_graph
+  /work/oracle/tests/test_s45_rft.py:263: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(loss) == 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s45_rft.py::test_pack_examples_masks_prompt_and_pads_without_splitting
+1 failed, 37 passed, 1 warning in 1.66s

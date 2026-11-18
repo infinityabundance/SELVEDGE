@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/work/scripts/s50_real_gradient_validation.py", line 335, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/work/scripts/s50_real_gradient_validation.py", line 299, in main
+    result = evaluate(fixture, steps=args.steps, lr=args.lr, block=args.block)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s50_real_gradient_validation.py", line 243, in evaluate
+    storage: _evaluate_arm(tensors, steps, storage, lr, betas, eps, block)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s50_real_gradient_validation.py", line 183, in _evaluate_arm
+    result = _step_updates(
+             ^^^^^^^^^^^^^^
+  File "/work/scripts/s50_real_gradient_validation.py", line 148, in _step_updates
+    reference.grad = gradient.clone()
+    ^^^^^^^^^^^^^^
+RuntimeError: attempting to assign a gradient of size '[498176]' to a tensor of size '[139, 3584]'. Please ensure that the gradient and the tensor are the same size

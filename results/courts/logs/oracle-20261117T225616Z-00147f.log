@@ -1,0 +1,46 @@
+......F....                                                              [100%]
+=================================== FAILURES ===================================
+__________ test_mask_enforcement_zero_contribution_and_zero_requests ___________
+
+    def test_mask_enforcement_zero_contribution_and_zero_requests():
+        router = _partial_router()
+        hidden = torch.tensor([[-2.0, 0.0, 0.0, 0.0],
+                               [-1.0, 0.0, 0.0, 0.0],
+                               [1.0, 0.0, 0.0, 0.0],
+                               [2.0, 0.0, 0.0, 0.0],
+                               [3.0, 0.0, 0.0, 0.0]]).unsqueeze(0)
+        metadata = runner.metadata_for_prompt("p", 5)
+        store = torch.arange(20, dtype=torch.float32).view(5, 4)
+        requested: list[torch.Tensor] = []
+    
+        def read_path(indices):
+            requested.append(indices.clone())
+            return store[indices]
+    
+        execution = router.execute(hidden, metadata, read_path, cost=0.0,
+                                   threshold=0.5)
+        mask = execution.selection_mask
+        assert mask.tolist() == [[False, False, True, True, True]]
+        assert len(requested) == 1
+        assert torch.equal(requested[0], mask.reshape(-1).nonzero().squeeze(-1))
+        # the store was never asked for an unselected token
+        assert not bool(set(requested[0].tolist()) & set((~mask.reshape(-1))
+                                                         .nonzero().squeeze(-1)
+                                                         .tolist()))
+        outside = execution.contribution[~mask]
+>       assert outside.numel() == 2
+E       assert 8 == 2
+E        +  where 8 = <built-in method numel of Tensor object at 0x7ff2ce7c0eb0>()
+E        +    where <built-in method numel of Tensor object at 0x7ff2ce7c0eb0> = tensor([[0., 0., 0., 0.],\n        [0., 0., 0., 0.]], grad_fn=<IndexBackward0>).numel
+
+oracle/tests/test_s52_p19_9_runner.py:310: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s52_p19_9_runner.py::test_selection_report_aggregates_gate_stats_and_reads
+  /work/oracle/frontier/routing_runner.py:812: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    if outside.numel() and float(outside.abs().max()) != 0.0:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s52_p19_9_runner.py::test_mask_enforcement_zero_contribution_and_zero_requests
+1 failed, 10 passed, 1 warning in 3.64s

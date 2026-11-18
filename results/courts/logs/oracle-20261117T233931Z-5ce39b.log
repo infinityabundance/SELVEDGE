@@ -1,0 +1,14 @@
+header identical      : True
+tensor table identical: True (632 tensors)
+weights identical     : False
+config identical      : True
+tokenizer identical   : False
+vocab+merges identical: True
+different files       : ['tokenizer.json', 'tokenizer_config.json', 'LICENSE', 'README.md']
+verdict               : the same graph (identical safetensors header, tensor names, shapes, dtypes and offsets) over different weights (different shard sha256): an element-count or ceiling argument transfers between them, a capability score does not
+receipt               : results/frontier/20261117T233931Z-revision-compare-2b-chat-vs-base.json
+tokenizer sections differing: ['model', 'added_tokens']
+tokenizer vocab identical   : True
+tokenizer merges identical  : True
+added tokens only in a      : [('</think>', 248069), ('</tool_response>', 248067), ('<think>', 248068), ('<tool_response>', 248066)]
+added tokens only in b      : []

@@ -91,7 +91,13 @@ def _revision() -> str:
 
 
 def _select_tensors(named, suffixes: tuple[str, ...]) -> dict:
-    """Match each suffix to exactly one trainable parameter, fail closed."""
+    """Match each suffix to exactly one trainable parameter, fail closed.
+
+    `named` is materialised first: `named_trainable()` yields a generator, and a
+    generator would be exhausted by the first suffix, silently matching zero
+    tensors for every later suffix (S55 fix; the script had never run).
+    """
+    named = list(named)
     selected = {}
     for suffix in suffixes:
         matches = [

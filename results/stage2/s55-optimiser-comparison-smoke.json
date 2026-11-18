@@ -1,0 +1,126 @@
+{
+  "arms": {
+    "adamw": {
+      "optimizer": "torch.optim.AdamW fp32 moments"
+    },
+    "custom": {
+      "optimizer": "adam8bit block 256 stochastic rounding"
+    }
+  },
+  "command": [
+    "scripts/s53_optimizer_comparison.py",
+    "--student-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--teacher-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "--steps",
+    "10",
+    "--eval-every",
+    "5",
+    "--batches",
+    "2",
+    "--out",
+    "results/stage2/s55-optimiser-comparison-smoke.json"
+  ],
+  "comparison": {
+    "arms": {
+      "adamw": {
+        "final": {
+          "ce": 0.576790539547801,
+          "kl": 0.26763269305229187
+        },
+        "series": [
+          {
+            "ce": 0.9877348938025534,
+            "kl": 0.2514429963193834,
+            "step": 0
+          },
+          {
+            "ce": 0.573699583299458,
+            "kl": 0.24562121136114,
+            "step": 5
+          },
+          {
+            "ce": 0.576790539547801,
+            "kl": 0.26763269305229187,
+            "step": 10
+          }
+        ]
+      },
+      "custom": {
+        "final": {
+          "ce": 0.564197133295238,
+          "kl": 0.6088490942493081
+        },
+        "series": [
+          {
+            "ce": 0.9877348938025534,
+            "kl": 0.2514429963193834,
+            "step": 0
+          },
+          {
+            "ce": 0.5190252133179456,
+            "kl": 0.3841139432042837,
+            "step": 5
+          },
+          {
+            "ce": 0.564197133295238,
+            "kl": 0.6088490942493081,
+            "step": 10
+          }
+        ]
+      }
+    },
+    "eval_steps": [
+      0,
+      5,
+      10
+    ],
+    "finite": true,
+    "matched_init": true,
+    "paired": {
+      "custom_minus_adamw": {
+        "ce": {
+          "ci95": [
+            -0.05467436998151243,
+            0.0
+          ],
+          "mean": -0.022422592078025144,
+          "n": 3
+        },
+        "kl": {
+          "ci95": [
+            0.0,
+            0.34121640119701624
+          ],
+          "mean": 0.15990304434671998,
+          "n": 3
+        }
+      }
+    },
+    "reading": "teacher KL and held-out CE are fixed-batch measurements; the paired interval is over the shared evaluation steps, not over the training steps, whose batches differ",
+    "schema": "selvedge/optimiser-comparison/v1",
+    "steps": 10
+  },
+  "created_utc": "2026-11-18T07:59:39Z",
+  "eval_batches": 2,
+  "eval_every": 5,
+  "grad_accum": 4,
+  "grad_clip": 1.0,
+  "kl_weight": 0.5,
+  "lr": 1e-05,
+  "matched_init_sha256": "e6e056cdc83339b23e30c09495a143ef2944b91e4836e6436a04a58dde29a007",
+  "peak_allocated_gib": 12.34204626083374,
+  "peak_reserved_gib": 12.4921875,
+  "revision": "3eb7e7df2149d746c474346ae877cd4bc97294fc",
+  "schema": "selvedge/s53-optimiser-comparison-run/v1",
+  "seed": 0,
+  "seq_len": 512,
+  "stamp": "20261118T075939Z",
+  "start_token": 2000000,
+  "steps": 10,
+  "stream_manifest": "results/stage2/stage2-math-stream-20261117T071120Z.json",
+  "stream_sha256": "9c5fb53b20a8f9165566b8c4e237103eb2e4c658f944bb221b3909d1dc8b6d56",
+  "temperature": 2.0,
+  "trainable_elements": 498113344
+}

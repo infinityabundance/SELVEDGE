@@ -1,0 +1,94 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2a-amendment/v1",
+  "identifier": "STAGE2A-AMENDMENT-S55-V1",
+  "registering_session": "S55",
+  "registered_utc": "2026-11-18T08:30:00Z",
+  "registered_revision": "3eb7e7d",
+  "amends": {
+    "path": "docs/ws19-post-trained-route-stage2-amendment-s54-v1.json",
+    "sha256": null,
+    "rule": "this amendment replaces only the stage-2 *supervision construction* with teacher-solution SFT (registered as stage 2a). The teacher, student, optimiser, lr, schedule, seed, token accounting, general-capability bound, statistics and win condition of the S53 registration and the S54 amendment stand unchanged."
+  },
+  "why_stage_2a_and_not_on_policy": {
+    "trainer_capability": "oracle/frontier/train.py implements two objectives for the full backbone arm: token-stream CE+reverse-KL and completion-masked cross-entropy (`--objective sft`). The S54 amendment's first-error corrective supervision needs a per-token suffix mask aligned from the shared prompt, which the trainer does not implement. The `--objective correction` path is attached to the `corrective` memory arm, not the full backbone, and is not a stage-2 substitute.",
+    "throughput_arithmetic": {
+      "measured_teacher_throughput_tokens_per_second": 551.0,
+      "measured_on": "64 GSM8K-train prompts x K=2, batch 32 prompts, cap 1024, post-trained 2B, transformers 5.23.0, eager reference linear-attention kernels (`causal_conv1d` and `flash-linear-attention` are not installed in the pinned offline image)",
+      "receipt": "results/artifacts/stage2/s55-smoke/smoke64-receipt.json",
+      "math_throughput_tokens_per_second": 687.0,
+      "math_receipt": "results/artifacts/stage2/s55-smoke/math48-receipt.json",
+      "projection": "a 5M-token on-policy corpus (student rollouts plus a verified teacher continuation for every failed rollout) is at least 5,000,000 / 551 = 9,075 s = 2.52 h of teacher decode alone, before student rollout refresh, alignment and training. The stage-2a corpus of the same student/data budget is generated once and supervised directly, so the same GPU hours buy supervision instead of decode.",
+      "decision": "teacher-solution SFT. The on-policy path stays registered as stage 2b for a session with the mask implemented and a faster kernel."
+    }
+  },
+  "teacher_solutions": {
+    "teacher": "post-trained Qwen3.5-2B at 15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "prompts": "GSM8K-train and MATH-train items with an extractable train label (`frontier.rft.load_items`), selected by seeded stratified selection over (source, difficulty bucket, reasoning-length quartile)",
+    "prompt_protocol": "the student's own tokenizer and chat template, add_generation_prompt=True, enable_thinking=False, with the stage-1 instruction `Solve the problem step by step. Put the final answer in \\boxed{}`; the training prompt and the scored prompt are the same string",
+    "sampling": {
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "k_per_prompt": 1,
+      "max_new_tokens": 1024,
+      "stop": "EOS only",
+      "seed": 5500
+    },
+    "selection_sizes": {
+      "gsm8k_train_prompts": 3500,
+      "math_train_prompts": 2400,
+      "rationale": "one verified solution per prompt; breadth of distinct prompts rather than K per prompt, because a single-prompt repeated solution teaches less than a new prompt and the corpus is small"
+    },
+    "verification": "frontier.rft.verify against the train label; only verdict == correct is kept; ambiguous, unparseable, wrong and truncated (no EOS at the cap) completions are counted and contribute nothing",
+    "deduplication": "exact generated-token-sequence SHA-256, global across both sources",
+    "supervision": "prompt ids are masked to -100; the generated solution ids and the trailing EOS are supervised (completion-only loss, `--sft-examples`)"
+  },
+  "general_replay": {
+    "fraction_of_supervised_tokens": 0.13,
+    "source": "HuggingFaceFW/fineweb-edu sample/10BT/013_00000.parquet (the pinned train-corpus source, revision 87f09149ef4734204d70ed1d046ddc9ca3f2b8f9)",
+    "why": "protects MMLU and MMLU-Pro; the source is not the held-out calibration text (wikitext-2 validation is never trained on)",
+    "contamination": "5-word-shingle Jaccard against the GSM8K test and MATH-500 items; a replay document at or above the registered fail threshold is dropped and counted",
+    "supervision": "whole document supervised (empty prompt), truncated only at a document boundary"
+  },
+  "training": {
+    "student": "post-trained Qwen/Qwen3.5-0.8B at 2fc06364715b967f1860aea9cf38778875588b17",
+    "arm": "full backbone, tied embedding frozen (498,113,344 trainable of 752,393,024 text-tower elements)",
+    "objective": "completion-masked cross-entropy (`--objective sft`, kl_weight 0)",
+    "optimizer": "corrected Adam8bit, block 256, stochastic rounding, int8 first moment (retained by the S55 real-gradient validation), bfloat16 second moment",
+    "lr": 1e-05,
+    "schedule": "cosine, warmup 200, min_lr_ratio 0.1",
+    "grad_clip": 1.0,
+    "epochs": "at most 2 passes over the accepted corpus; the run stops at the held-out-solution-CE minimum",
+    "early_stop": "held-out solution CE is evaluated on a stratified 2% hold-out of accepted examples at every saved checkpoint; the selected checkpoint is the minimum, and a second pass that raises held-out CE is not used",
+    "window": "declared <= 6 h from the measured student tokens-per-second",
+    "unregistered_deviation_rule": "any change from these knobs is a new registered amendment, recorded before the launch"
+  },
+  "accounting": {
+    "processed_tokens": "rows x seq_len actually consumed by the trainer",
+    "supervised_positions": "solution + EOS positions that contribute a loss, reported separately from processed tokens",
+    "teacher_tokens": "2B decode tokens generated for the corpus, reported separately",
+    "no_conflation": "unchanged from the S54 amendment"
+  },
+  "statistics": {
+    "clustering_unit": "prompt (problem)",
+    "paired_interval": "prompt-level paired bootstrap, 4,000 resamples, seed 53",
+    "tasks": ["gsm8k (1,319 items)", "math500 (500 items)", "mmlu", "mmlu_pro"],
+    "maj16": "reported on the same 50-problem subset as stage 1 for the headroom comparison, not as a win"
+  },
+  "win": {
+    "statement": "stage 2a wins iff (1) greedy beats post-trained 0.8B on BOTH GSM8K and MATH-500 with prompt-level paired 95% intervals above zero, AND (2) MMLU and MMLU-Pro each stay within the 1.0-point general-capability preservation bound",
+    "unchanged_from": "docs/ws19-post-trained-route-stage2-amendment-s54-v1.json",
+    "no_softening": "a gain on one task, a family-mean tie, a maj@16-only gain, or a math gain that violates the retention bound is not the win"
+  },
+  "next_route_if_not_a_win": [
+    "more teacher tokens at the same recipe (larger selection, K=2 on the short GSM8K prompts)",
+    "a second epoch only if the held-out CE curve shows it is still falling at the first-pass minimum",
+    "first-error corrective supervision on the student's own failed rollouts (stage 2b), which needs the mask the trainer does not yet implement",
+    "the validated higher lr (3e-05) only through the registered fixed-batch KL gate"
+  ],
+  "does_not_change": [
+    "teacher, student and their pinned revisions",
+    "the general-capability preservation bound and the win condition",
+    "the accounting rules",
+    "the queue gate that the corrected bar receipt and the real-gradient validation precede any stage-2 launch"
+  ]
+}

@@ -1,0 +1,19 @@
+....................................F..                                  [100%]
+=================================== FAILURES ===================================
+______________ test_difficulty_bucket_accepts_the_math_level_text ______________
+
+    def test_difficulty_bucket_accepts_the_math_level_text():
+        # The Hendrycks parquet stores "Level 5", not 5.
+>       assert rft._difficulty_bucket(
+            {"dataset": "math", "difficulty": "Level 5"}) == "level5"
+E       AssertionError: assert 'level0' == 'level5'
+E         
+E         - level5
+E         ?      ^
+E         + level0
+E         ?      ^
+
+oracle/tests/test_s45_rft.py:342: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s45_rft.py::test_difficulty_bucket_accepts_the_math_level_text
+1 failed, 38 passed in 1.61s
