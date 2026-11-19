@@ -236,6 +236,29 @@ interval lower bound ≥ −1.0), and MMLU fails both. MMLU-Pro's point drop is
 lower bound is −4.37; that is a statement about sample size, not a claim that
 MMLU-Pro moved.
 
+### Milestone cadence (the early dip is real)
+
+The S56 cadence scores every registered milestone on the same instrument, and
+that is what found the shape of this run. Receipts:
+`results/stage1/s58-stage2a-m2-nonthinking-greedy.json` (stamp
+`20261119T010711Z`, checkpoint step 800, 2,000,000 tokens seen) and the final
+receipt above.
+
+| milestone | processed tokens | GSM8K flexible | MATH-500 flexible | GSM8K truncated | MATH truncated / loop |
+|---|---|---|---|---|---|
+| base | 0 | 0.5421 | 0.3820 | 0.0697 | 0.3200 / — |
+| 2M | 2,000,000 | 0.3101 | 0.1080 | 0.0675 | 0.3080 / 0.1640 |
+| final (ckpt-004000) | 10,000,000 | 0.5709 | 0.2720 | 0.0227 | 0.2100 / 0.0840 |
+
+The 2M checkpoint is catastrophic on both tasks: GSM8K −23.2 points (paired
+interval [−0.2623, −0.2024]) and MATH-500 −27.4 points ([−0.3180, −0.2300]),
+against a held-out CE that is also the worst measured (0.3478). The endpoint
+recovered GSM8K above the base model and recovered MATH only part of the way.
+A run scored only at its endpoint would have hidden this entirely, and the
+trajectory is the strongest evidence in this campaign that lr 1e-5 is too high
+for this objective: the model is thrown far off its optimum early and the
+cosine decay lets it walk part of the way back.
+
 ## 6. Verdict
 
 **Not a win.** The registered win requires both GSM8K and MATH-500 to beat the
