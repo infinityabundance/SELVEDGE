@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/work/scripts/s66_rebuild_interp.py", line 117, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s66_rebuild_interp.py", line 54, in main
+    payload = torch_load(checkpoint)
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s60_interpolate.py", line 413, in torch_load
+    import torch
+ModuleNotFoundError: No module named 'torch'

@@ -59,6 +59,7 @@ WS19_LOG = WS19_RUN_REL + "/log.jsonl"
 WS19_EVAL = "results/stage2/eval/full-20m-math/eval.json"
 WS19_SELECTED = "results/stage2/runs/full-20m-math-s49-selected.json"
 WS19_AMENDED_EVAL = "results/stage2/eval/full-20m-math-s49/m20/eval.json"
+S65_IDENTITY = "results/stage2/s65-interp-selected/identity.json"
 # S51: the live bar is the corrected-optimiser rerun. It is named by its own
 # launch receipt, so the status block does not have to infer it from an
 # invalidated selection marker.
@@ -621,6 +622,49 @@ def _milestone_explanation(ws19: dict) -> str | None:
     )
 
 
+def _pct_ci(row: dict) -> str:
+    return (f"{100.0 * row['delta']:+.2f} "
+            f"[{100.0 * row['ci95'][0]:+.2f},{100.0 * row['ci95'][1]:+.2f}]")
+
+
+def _s65_result_line() -> str | None:
+    """The S65 test-split result, derived from its identity receipt."""
+    identity = read_json(os.path.join(root_for_status(), S65_IDENTITY))
+    if identity is None:
+        return None
+    full = identity.get("full_test_evaluation") or {}
+    gsm = full.get("gsm8k") or {}
+    math = full.get("math500") or {}
+    mmlu = full.get("mmlu") or {}
+    pro = full.get("mmlu_pro") or {}
+    if not (gsm and math and mmlu and pro):
+        return None
+    selection = identity.get("selection") or {}
+    return (
+        "- **S65 weight-space interpolation (WiSE-FT) at "
+        f"alpha `{selection.get('coefficient')}`** — full GSM8K "
+        f"`{100.0 * gsm['candidate_flexible']:.2f}%` (delta "
+        f"`{_pct_ci(gsm)}` points), MATH-500 "
+        f"`{100.0 * math['candidate_flexible']:.2f}%` (delta "
+        f"`{_pct_ci(math)}`), MMLU "
+        f"`{100.0 * mmlu['candidate']:.2f}%` (delta `{_pct_ci(mmlu)}`), "
+        f"MMLU-Pro `{100.0 * pro['candidate']:.2f}%` (delta `{_pct_ci(pro)}`; "
+        "504 items, registered 4,000-item instrument absent -> retention "
+        "clause unresolved). The coefficient was selected on train-split "
+        "calibration only; alpha 0.25 was scored after selection and is a "
+        "sensitivity point, never adopted. Checkpoint "
+        f"`{identity['checkpoint']['sha256']}`; the capability claim rests on "
+        "the text-path accounting certificate, not a per-token executed-set "
+        "audit (P19.0 kernels). Receipt: "
+        f"`{S65_IDENTITY}`."
+    )
+
+
+def root_for_status() -> str:
+    """The repository root; `read_json` callers pass relative paths."""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 def _eligible_paths(ws19: dict | None) -> list[str]:
     """Every path the status may call `currently_eligible`."""
     if ws19 is None or ws19.get("score_state") != "currently_eligible":
@@ -711,6 +755,9 @@ def render_readme_status(facts: dict) -> str:
         milestone_line = _milestone_explanation(ws19)
         if milestone_line:
             lines.append(milestone_line)
+        s65_line = _s65_result_line()
+        if s65_line:
+            lines.append(s65_line)
         if ws19["amended"] and ws19["amended_invalidated"]:
             recipe = (ws19["selected"] or {}).get("lr")
             lines.append(
@@ -828,6 +875,9 @@ def render_report_status(facts: dict) -> str:
             lines.append(milestone_line)
     else:
         lines.append(_eligibility_line(facts))
+    s65_line = _s65_result_line()
+    if s65_line:
+        lines.append(s65_line)
     lines.append(tail)
     return "\n".join(lines)
 
