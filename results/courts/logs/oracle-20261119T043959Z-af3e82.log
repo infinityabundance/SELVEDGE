@@ -1,0 +1,27 @@
+5.23.0
+class StoppingCriteria(ABC):
+    """Abstract base class for all stopping criteria that can be applied during generation.
+
+    If your stopping criteria depends on the `scores` input, make sure you pass `return_dict_in_generate=True,
+    output_scores=True` to `generate`.
+    """
+
+    @add_start_docstrings(STOPPING_CRITERIA_INPUTS_DOCSTRING)
+    def __call__(self, input_ids: torch.LongTensor, scores: tuple[torch.Tensor] | None, **kwargs) -> torch.BoolTensor:
+        raise NotImplementedError("StoppingCriteria needs to be subclassed")
+
+class StoppingCriteriaList(list):
+    @add_start_docstrings(STOPPING_CRITERIA_INPUTS_DOCSTRING)
+    def __call__(self, input_ids: torch.LongTensor, scores: tuple[torch.Tensor] | None, **kwargs) -> torch.BoolTensor:
+        is_done = torch.full((input_ids.shape[0],), False, device=input_ids.device, dtype=torch.bool)
+        for criteria in self:
+            is_done = is_done | criteria(input_ids, scores, **kwargs)
+        return is_done
+
+    @property
+    def max_length(self) -> int | None:
+        for stopping_criterium in self:
+            if isinstance(stopping_criterium, MaxLengthCriteria):
+                return stopping_criterium.max_length
+        return None
+

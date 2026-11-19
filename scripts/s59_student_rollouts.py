@@ -15,8 +15,17 @@ Two decode rules are registered and implemented here:
 * **loop cut**: a sequence stops at the first token of a repeated block when its
   trailing 64 tokens are four copies of a 16-token block, or its trailing 144
   tokens are three copies of a 48-token block. The cut is per sequence — the
-  other rows in the batch keep decoding — and the retained prefix is still
-  verified, so a trajectory that boxes a correct answer before looping is kept.
+  criterion returns one BoolTensor element per row, so the row that loops
+  stops while the other rows in the batch keep decoding — and the retained
+  prefix is still verified, so a trajectory that boxes a correct answer before
+  looping is kept.
+
+**What the stop does and does not save.** A per-row stop ends that row's token
+emission; it does not reduce the batch's forward cost, because a batched
+`generate` keeps running every row until the slowest row stops. Any
+saved-token or throughput number from this script is therefore a **textual
+replay** count (tokens that would have been emitted), not compute saved. The
+receipt carries `compute_saved: false` beside every such count.
 
 The prompts are the seeded stratified selection of stage 2a's prompt universe
 minus every id in the frozen stage-2a hold-out (`--exclude-ids`), so the
@@ -110,9 +119,18 @@ class LoopCutStopping:
         self.cut_at: dict[int, int] = {}
         self.eos_seen: set[int] = set()
 
-    def __call__(self, input_ids, scores, **kwargs) -> bool:  # noqa: ARG002
+    def __call__(self, input_ids, scores, **kwargs):  # noqa: ARG002
+        """Return one BoolTensor element per row: True stops that row.
+
+        Transformers' `StoppingCriteriaList` ORs the criteria into a per-row
+        BoolTensor. Returning a single bool for the whole batch (as the first
+        implementation did) only stops generation once every row has finished,
+        which is exactly the behaviour the loop cut exists to avoid: a looping
+        row keeps consuming decode steps until its siblings terminate.
+        """
+        import torch
+
         rows, width = input_ids.shape
-        generated_width = width - self.prompt_width
         for row in range(rows):
             if row in self.finished:
                 continue
@@ -125,13 +143,19 @@ class LoopCutStopping:
                 self.finished.add(row)
                 self.eos_seen.add(row)
                 continue
-            generated = input_ids[row, self.prompt_width:width].tolist()
-            cut = loop_cut_index(generated)
+            # `loop_cut_index` only inspects the trailing 144 tokens. Slicing
+            # that tail keeps the per-step cost bounded by the rule, not by the
+            # generated length, and `cut_at` is translated back to an index into
+            # the full generated sequence.
+            tail_start = max(self.prompt_width, width - 144)
+            tail = input_ids[row, tail_start:width].tolist()
+            cut = loop_cut_index(tail)
             if cut is not None:
                 self.looped.add(row)
-                self.cut_at[row] = cut
+                self.cut_at[row] = (tail_start - self.prompt_width) + cut
                 self.finished.add(row)
-        return len(self.finished) == rows
+        return torch.tensor([row in self.finished for row in range(rows)],
+                            dtype=torch.bool, device=input_ids.device)
 
     def emitted_eos(self, row: int) -> bool:
         return row in self.eos_seen
@@ -194,6 +218,12 @@ def generate(model, tokenizer, prompts: list[str], *, samples: int,
         "details": details,
         "prompt_tokens": int(attention_mask.sum().item()),
         "tokens_per_second": (tokens / wall) if wall > 0 else None,
+        "compute_saved": False,
+        "token_savings_basis": (
+            "textual replay only: the per-row criterion ends that row's token "
+            "emission, but a batched generate still runs every row until the "
+            "slowest row stops, so the batch forward cost is not reduced"),
+        "stopped_rows": len(criterion.finished),
     }
 
 
@@ -238,6 +268,109 @@ def length_profile(lengths: list[int]) -> dict:
     }
 
 
+def ledger_entry(task: dict) -> dict:
+    """One problem's outcome counters, before any sample is inspected."""
+    return {
+        "id": str(task["id"]),
+        "dataset": task["dataset"],
+        "attempts": 0,
+        "verified_correct": 0,
+        "wrong": 0,
+        "ambiguous": 0,
+        "unparseable": 0,
+        "truncated": 0,
+        "loop_cut": 0,
+        "duplicates": 0,
+        "accepted_rows": 0,
+        "accepted_solution_tokens": 0,
+        "k": int(task["samples"]),
+        "max_new_tokens": int(task["max_new_tokens"]),
+    }
+
+
+def finalise_ledger_entry(entry: dict) -> dict:
+    """Attach the pass rate and the p(1-p) weight computed from attempts.
+
+    `p` is `verified_correct / attempts`, where `attempts` counts every sampled
+    completion including truncations and duplicates. It is never recomputed from
+    the deduplicated accepted rows: deduplication removes correct trajectories,
+    so a p built from accepted rows would understate the pass rate exactly where
+    the p(1-p) weight matters most.
+    """
+    attempts = int(entry["attempts"])
+    correct = int(entry["verified_correct"])
+    p = (correct / attempts) if attempts else 0.0
+    entry["p"] = p
+    entry["weight_p1mp"] = p * (1.0 - p)
+    entry["p_basis"] = "verified_correct / attempts (attempts include truncations "
+    "and duplicates; accepted rows are never the denominator)"
+    return entry
+
+
+def summarise_ledger(entries: list[dict]) -> dict:
+    """Receipt summary of the per-problem ledger."""
+    if not entries:
+        return {"prompts": 0, "p_basis": "no prompts"}
+    attempts = sum(int(entry["attempts"]) for entry in entries)
+    correct = sum(int(entry["verified_correct"]) for entry in entries)
+    successes = [int(entry["verified_correct"]) for entry in entries]
+    p_values = [float(entry["p"]) for entry in entries]
+    histogram: dict[str, int] = {}
+    for entry in entries:
+        numerator = int(entry["verified_correct"])
+        denominator = max(1, int(entry["attempts"]))
+        key = f"{numerator}/{denominator}"
+        histogram[key] = histogram.get(key, 0) + 1
+    return {
+        "prompts": len(entries),
+        "attempts": attempts,
+        "verified_correct": correct,
+        "verified_rate_from_attempts": (correct / attempts) if attempts else 0.0,
+        "mean_p": (sum(p_values) / len(p_values)) if p_values else 0.0,
+        "sum_weight_p1mp": sum(entry["weight_p1mp"] for entry in entries),
+        "zero_p_problems": sum(1 for value in p_values if value == 0.0),
+        "one_p_problems": sum(1 for value in p_values if value == 1.0),
+        "truncated": sum(int(entry["truncated"]) for entry in entries),
+        "failures_wrong": sum(int(entry["wrong"]) for entry in entries),
+        "ambiguous": sum(int(entry["ambiguous"]) for entry in entries),
+        "unparseable": sum(int(entry["unparseable"]) for entry in entries),
+        "duplicates": sum(int(entry["duplicates"]) for entry in entries),
+        "loop_cut": sum(int(entry["loop_cut"]) for entry in entries),
+        "accepted_rows": sum(int(entry["accepted_rows"]) for entry in entries),
+        "p_histogram": dict(sorted(histogram.items())),
+        "p_basis": "verified_correct / attempts, attempts = every sampled "
+                    "completion before deduplication",
+        "weight_basis": "p(1-p)",
+        "max_attempts": max((int(entry["attempts"]) for entry in entries),
+                            default=0),
+        "successes_per_problem": successes,
+    }
+
+
+def read_ledger(path: str) -> list[dict]:
+    entries = []
+    if not os.path.exists(path):
+        return entries
+    with open(path, "r", encoding="utf-8") as handle:
+        for line in handle:
+            if line.strip():
+                entries.append(json.loads(line))
+    return entries
+
+
+def write_ledger_entry(handle, entry: dict) -> dict:
+    """Finalise and append one problem's ledger row, then flush.
+
+    This is called for every prompt, accepted rows or not: the ledger is the
+    only place a problem's failures and truncations survive when the accepted
+    file discards their text.
+    """
+    finalise_ledger_entry(entry)
+    handle.write(json.dumps(entry, sort_keys=True) + "\n")
+    handle.flush()
+    return entry
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--policy-dir", required=True)
@@ -269,6 +402,7 @@ def main(argv: list[str]) -> int:
     os.makedirs(out_dir, exist_ok=True)
     accepted_path = os.path.join(out_dir, f"{args.label}-accepted.jsonl")
     receipt_path = os.path.join(out_dir, f"{args.label}-receipt.json")
+    ledger_path = os.path.join(out_dir, f"{args.label}-ledger.jsonl")
 
     if (not args.receipt_only and os.path.exists(accepted_path)
             and not args.overwrite):
@@ -346,6 +480,8 @@ def main(argv: list[str]) -> int:
         per_dataset: dict[str, dict] = {}
         started_all = time.time()
         handle = open(accepted_path, "w", encoding="utf-8")
+        ledger_handle = open(ledger_path, "w", encoding="utf-8")
+        ledger_entries: list[dict] = []
         for start in range(0, len(tasks), args.batch_prompts):
             batch = tasks[start:start + args.batch_prompts]
             rendered = [render_prompt(tokenizer, task["question"])
@@ -372,28 +508,36 @@ def main(argv: list[str]) -> int:
                     "duplicates": 0, "truncated": 0, "loop_cut": 0,
                     "generated_tokens": 0, "wall_seconds": 0.0,
                     "verdicts": {"correct": 0, "wrong": 0, "ambiguous": 0,
-                                 "unparseable": 0},
+                                 "unparseable": 0, "truncated": 0},
                     "solution_lengths": [],
                 })
                 stats["prompts"] += 1
                 totals["prompts"] += 1
+                entry = ledger_entry(task)
                 seen: set[str] = set()
                 for sample_index in range(samples):
                     row_index = prompt_index * samples + sample_index
                     solution_ids = ids_batch[row_index]
                     detail = gen_stats["details"][row_index]
+                    entry["attempts"] += 1
                     stats["sampled"] += 1
                     totals["sampled"] += 1
                     stats["truncated"] += 1 if detail["truncated"] else 0
                     stats["loop_cut"] += 1 if detail["loop_cut"] else 0
+                    entry["loop_cut"] += 1 if detail["loop_cut"] else 0
                     stats["generated_tokens"] += len(solution_ids)
                     if detail["truncated"]:
-                        stats["verdicts"]["unparseable"] += 1
+                        entry["truncated"] += 1
+                        stats["verdicts"]["truncated"] += 1
                         continue
                     text = tokenizer.decode(solution_ids,
                                             skip_special_tokens=True)
                     result = rft.verify(text, task["target"], task["dataset"])
                     stats["verdicts"][result["verdict"]] += 1
+                    if result["verdict"] == "correct":
+                        entry["verified_correct"] += 1
+                    else:
+                        entry[result["verdict"]] += 1
                     if result["verdict"] != "correct":
                         continue
                     stats["correct"] += 1
@@ -404,6 +548,7 @@ def main(argv: list[str]) -> int:
                     if key in seen:
                         stats["duplicates"] += 1
                         totals["duplicates"] += 1
+                        entry["duplicates"] += 1
                         continue
                     seen.add(key)
                     stats["solution_lengths"].append(len(solution_ids))
@@ -430,6 +575,10 @@ def main(argv: list[str]) -> int:
                     handle.flush()
                     stats["kept"] += 1
                     totals["kept"] += 1
+                    entry["accepted_rows"] += 1
+                    entry["accepted_solution_tokens"] += len(solution_ids)
+                write_ledger_entry(ledger_handle, entry)
+                ledger_entries.append(entry)
             if (start // args.batch_prompts) % 5 == 0:
                 print(f"s59-rollouts: prompts {totals['prompts']}/{len(tasks)} "
                       f"sampled={totals['sampled']} kept={totals['kept']} "
@@ -437,6 +586,7 @@ def main(argv: list[str]) -> int:
                       f"tok/s={(totals['generated_tokens'] / max(totals['wall_seconds'], 1e-9)):.0f}",
                       flush=True)
         handle.close()
+        ledger_handle.close()
         elapsed = time.time() - started_all
         peak_alloc = torch.cuda.max_memory_allocated() / GIB
         peak_reserved = torch.cuda.max_memory_reserved() / GIB
@@ -456,6 +606,8 @@ def main(argv: list[str]) -> int:
         generation = {"rebuilt_from": accepted_path}
 
     # -- receipt from the jsonl on disk --------------------------------------
+    if args.receipt_only:
+        ledger_entries = read_ledger(ledger_path)
     rows = []
     with open(accepted_path, "r", encoding="utf-8") as handle:
         for line in handle:
@@ -514,6 +666,14 @@ def main(argv: list[str]) -> int:
             "action": "stop the sequence at the first token of the first "
                       "repeated copy; retained prefix is verified",
             "per_sequence": True,
+            "criterion_output": "one BoolTensor element per row; the criterion "
+                                "is a transformers StoppingCriteriaList member",
+            "compute_saved": False,
+            "saved_token_claim": (
+                "textual replay only. A batched generate advances every row "
+                "until the slowest row stops, so the tokens cut from one row "
+                "are not GPU compute saved. Nothing in this receipt claims "
+                "throughput or compute savings from the cut."),
         },
         "verification": {
             "extractor": "frontier.rft.verify against the train label",
@@ -529,6 +689,18 @@ def main(argv: list[str]) -> int:
             "excluded_from_pool": excluded_counts if not args.receipt_only else {},
         },
         "selection": selection_report if not args.receipt_only else {},
+        "ledger": {
+            "path": os.path.relpath(ledger_path, ROOT),
+            "sha256": (sha256_file(ledger_path)
+                       if os.path.exists(ledger_path) else None),
+            "rows": len(ledger_entries),
+            "summary": summarise_ledger(ledger_entries),
+            "written_when_accepted_text_discarded": True,
+            "why": "the accepted file holds only deduplicated verified-correct "
+                   "trajectories; the ledger holds every problem's attempts, "
+                   "verified successes, failures, truncations and duplicates, "
+                   "so p is computed from attempts and survives the discard",
+        },
         "accepted": {
             "path": os.path.relpath(accepted_path, ROOT),
             "sha256": sha256_file(accepted_path),

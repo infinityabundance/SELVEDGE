@@ -1,0 +1,63 @@
+.............F..                                                         [100%]
+=================================== FAILURES ===================================
+____ test_stopping_criterion_returns_a_per_row_booltensor_and_stops_one_row ____
+
+    def test_stopping_criterion_returns_a_per_row_booltensor_and_stops_one_row():
+        """The old whole-batch bool could not stop row 0 until row 1 finished."""
+        import torch
+    
+        from s59_student_rollouts import LoopCutStopping
+    
+        config, ScriptedLM = _scripted_model()
+        model = ScriptedLM(config).eval()
+        block = list(range(20, 36))
+        model.script = {
+            10: lambda n: block[n % 16],          # row 0: four block copies
+            11: lambda n: 1 if n >= 80 else 100 + n,  # row 1: EOS at step 80
+        }
+        model.prompt_width = 1
+        input_ids = torch.tensor([[10], [11]], dtype=torch.long)
+        criterion = LoopCutStopping(prompt_width=1, eos=1, pad=0)
+>       output = model.generate(
+                 ^^^^^^^^^^^^^^
+            input_ids=input_ids, attention_mask=torch.ones_like(input_ids),
+            max_new_tokens=100, do_sample=False, num_return_sequences=1,
+            pad_token_id=0, eos_token_id=1, use_cache=False,
+            stopping_criteria=[criterion])
+
+oracle/tests/test_s59_stage2b.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ScriptedLM(
+  (embed): Embedding(256, 8)
+  (head): Linear(in_features=8, out_features=256, bias=False)
+)
+name = 'generate'
+
+    def __getattr__(self, name: str) -> Union[Tensor, "Module"]:
+        if "_parameters" in self.__dict__:
+            _parameters = self.__dict__["_parameters"]
+            if name in _parameters:
+                return _parameters[name]
+        if "_buffers" in self.__dict__:
+            _buffers = self.__dict__["_buffers"]
+            if name in _buffers:
+                return _buffers[name]
+        if "_modules" in self.__dict__:
+            modules = self.__dict__["_modules"]
+            if name in modules:
+                return modules[name]
+>       raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
+E       AttributeError: 'ScriptedLM' object has no attribute 'generate'
+
+/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py:1976: AttributeError
+----------------------------- Captured stderr call -----------------------------
+[transformers] ScriptedLM has generative capabilities, as `prepare_inputs_for_generation` is explicitly defined. However, it doesn't directly inherit from `GenerationMixin`. From 👉v4.50👈 onwards, `PreTrainedModel` will NOT inherit from `GenerationMixin`, and this model will lose the ability to call `generate` and other related functions.
+  - If you're using `trust_remote_code=True`, you can get rid of this warning by loading the model with an auto class. See https://huggingface.co/docs/transformers/en/model_doc/auto#auto-classes
+  - If you are the owner of the model architecture code, please modify your model class such that it inherits from `GenerationMixin` (after `PreTrainedModel`, otherwise you'll get an exception).
+  - If you are not the owner of the model architecture class, please contact the model code owner to update it.
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s59_stage2b.py::test_stopping_criterion_returns_a_per_row_booltensor_and_stops_one_row
+1 failed, 15 passed in 4.50s
