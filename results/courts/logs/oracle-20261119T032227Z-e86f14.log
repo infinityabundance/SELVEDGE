@@ -1,0 +1,7 @@
+s57-train: 4567 rows fit in seq_len 2500; 0 examples longer and dropped; 2517931 supervised positions
+s57-train: run_dir=results/stage2/runs/s58-stage2a epochs=2 rows=4567 steps/epoch=4567 steps=9134 tokens=22835000
+s57-train: seq_len=2500 micro=1 accum=1 tokens/step=2500 ckpt-every=400
+s57-train: milestones: step 800 (~2.00M), step 2000 (~5.00M), step 9134 (final, 22835000 tokens)
+s57-train: limits: SELVEDGE_MEM=<unset: required at launch> SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g VRAM=13.5GiB
+s57-train: command:
+  scripts/court --gpu oracle -- python3 oracle/frontier/train.py --arm full --student-dir /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 --student-lock models/FRONTIER-POST-TRAINED.lock.json --student-id Qwen/Qwen3.5-0.8B --student-revision 2fc06364715b967f1860aea9cf38778875588b17 --sft-examples results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl --sft-examples-per-row 1 --sft-overflow drop --objective sft --loss-unit token --length-aware-batching --sft-logits-gather --gradient-checkpointing --kl-weight 0 --tokens 22835000 --seq-len 2500 --micro-batch 1 --grad-accum 1 --lr 1e-5 --optimizer adam8bit --optim-block 256 --optim-numerics stochastic --schedule cosine --min-lr-ratio 0.1 --warmup 200 --grad-clip 1.0 --seed 0 --ckpt-every 400 --keep-checkpoints 10 --log-every 100 --run-dir results/stage2/runs/s58-stage2a --vram-limit-gib 13.5 --abort-update-factor 10.0 --abort-ce-factor 1.5 --abort-ce-baseline-steps 400 --abort-ce-window 100 

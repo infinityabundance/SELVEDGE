@@ -63,8 +63,8 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 repo_root=$(cd -- "$script_dir/.." && pwd -P)
 cd "$repo_root"
 
-examples="results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples.jsonl"
-examples_receipt="results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples-receipt.json"
+examples="results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl"
+examples_receipt="results/artifacts/stage2/s58-combined/stage2a-combined-examples-receipt.json"
 verification="results/stage2/s57-stage2a-verification.json"
 run_dir="results/stage2/runs/s58-stage2a"
 # The stage-2a student is the POST-TRAINED 0.8B (2fc06364...). train.py's

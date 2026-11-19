@@ -312,6 +312,10 @@ def main(argv: list[str]) -> int:
 
     kept_rate = overall["acceptance_kept_over_sampled"] or 0.0
     truncated_rate = overall["truncated_over_sampled"] or 0.0
+    sampled_total = (totals.get("sampled")
+                     or sum((entry.get("sampled") or 0)
+                            for entry in per_dataset_acceptance.values()))
+    acceptance_measured = bool(sampled_total)
     if args.skip_reverification:
         reverification = {"status": "skipped"}
     else:
@@ -322,11 +326,19 @@ def main(argv: list[str]) -> int:
                                      accepted_rel, accepted_sha)
     gates = {
         "acceptance_floor": ACCEPTANCE_FLOOR,
-        "acceptance_measured": kept_rate,
-        "acceptance_passes": kept_rate >= ACCEPTANCE_FLOOR,
+        "acceptance_measured": kept_rate if acceptance_measured else None,
+        "acceptance_passes": (kept_rate >= ACCEPTANCE_FLOOR
+                              if acceptance_measured else None),
         "truncation_ceiling": TRUNCATION_CEILING,
-        "truncation_measured": truncated_rate,
-        "truncation_passes": truncated_rate < TRUNCATION_CEILING,
+        "truncation_measured": truncated_rate if acceptance_measured else None,
+        "truncation_passes": (truncated_rate < TRUNCATION_CEILING
+                              if acceptance_measured else None),
+        "acceptance_gate_basis": (
+            "kept/sampled over every sampled completion" if acceptance_measured
+            else "not_applicable: this receipt has no sampled/kept block (a "
+                 "merged corpus names per-source kept counts but not the "
+                 "per-source sampled denominators); the S55 generation "
+                 "receipts carry those rates"),
         "contamination_fail_closed": contamination.get("fail_closed"),
         "reverification_all_correct": reverification.get("all_correct"),
         "examples_sha256_matches": (examples_block or {}).get("matches"),
@@ -339,11 +351,12 @@ def main(argv: list[str]) -> int:
                     "a completion that hit the cap without EOS is counted "
                     "truncated and can never be a target, so a high kept rate "
                     "beside a high truncated rate would mean the cap is doing "
-                    "the selection. The revertification and examples-hash "
+                    "the selection. The re-verification and examples-hash "
                     "clauses are the S60 training preconditions."),
     }
     gates["corpus_usable"] = bool(
-        gates["acceptance_passes"] and gates["truncation_passes"]
+        gates["acceptance_passes"] is not False
+        and gates["truncation_passes"] is not False
         and not contamination.get("fail_closed", False)
         and not duplicates
         and reverification.get("all_correct") is not False
@@ -384,10 +397,15 @@ def main(argv: list[str]) -> int:
     for source, entry in sources.items():
         sampling = entry["sampling"]
         lengths = entry["solution_tokens"]
+        kept_over = sampling["acceptance_kept_over_sampled"]
+        truncated_over = sampling["truncated_over_sampled"]
+        kept_text = "n/a" if kept_over is None else f"{kept_over:.3f}"
+        truncated_text = ("n/a" if truncated_over is None
+                          else f"{truncated_over:.3f}")
         print(f"s57-verify: {source} rows={entry['rows']} "
               f"prompts={entry['distinct_prompts']} "
-              f"kept/sampled={sampling['acceptance_kept_over_sampled']:.3f} "
-              f"truncated={sampling['truncated_over_sampled']:.3f} "
+              f"kept/sampled={kept_text} "
+              f"truncated={truncated_text} "
               f"mean_len={lengths['mean']:.0f} p90={lengths['p90']:.0f} "
               f"max={lengths['max']} at_cap={lengths['fraction_at_cap']:.3f}")
     print(f"s57-verify: contamination max_jaccard="
