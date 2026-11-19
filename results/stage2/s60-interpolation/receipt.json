@@ -1,0 +1,175 @@
+{
+  "calibration": {
+    "excluded_files": [
+      "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl",
+      "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl"
+    ],
+    "gsm8k_items": 300,
+    "gsm8k_test_used": false,
+    "math500_test_used": false,
+    "math_items": 300,
+    "source": "train split only; the test splits are never read"
+  },
+  "checkpoints": [
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.000-arm.pt",
+      "coefficient": 0.0,
+      "sha256": "829794f7469249b813d893d0a0d0e2e56248ff55f121f6551c3ecb1956bd0361"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.125-arm.pt",
+      "coefficient": 0.125,
+      "sha256": "181b5ccece6c71c98d40cac96fc2ad9b32113cc3b63d69a83c50516efde2bf5a"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.250-arm.pt",
+      "coefficient": 0.25,
+      "sha256": "88e108b5048db3ed461ea11b354b22d383eb195776a2212581053646779632fc"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.375-arm.pt",
+      "coefficient": 0.375,
+      "sha256": "10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.500-arm.pt",
+      "coefficient": 0.5,
+      "sha256": "52689defc3c9bf61b1a7c53c1739e28c7c090c9901fc717154db15c434066248"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.625-arm.pt",
+      "coefficient": 0.625,
+      "sha256": "d5c8a6a2c1e870408f7fb96688614e80339b757dd968f5ac849afd077f0d61a4"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.750-arm.pt",
+      "coefficient": 0.75,
+      "sha256": "054de0ce733a1a4a1c2c5f6a8f551800ac23c8d0e140860d0b99df9df5175fc6"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.875-arm.pt",
+      "coefficient": 0.875,
+      "sha256": "c699ea8e3b91ea2f3e4c609c5f824af0765aeeb7625b446b7a2978c3b53f0d85"
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-1.000-arm.pt",
+      "coefficient": 1.0,
+      "sha256": "edd16f396f5f51acf9be306bc51fecddb1d9702b1e5d6c676584e29c1f036da0"
+    }
+  ],
+  "command": [
+    "scripts/s60_interpolate.py",
+    "--checkpoint",
+    "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+    "--model-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--grid",
+    "0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1.0",
+    "--exclude-ids",
+    "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl",
+    "--exclude-ids",
+    "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "--calibration-limit",
+    "300",
+    "--evaluate",
+    "--out-dir",
+    "results/stage2/s60-interpolation",
+    "--out",
+    "results/stage2/s60-interpolation/receipt.json"
+  ],
+  "created_utc": "2026-11-19T05:44:03Z",
+  "evaluation": [
+    {
+      "coefficient": 0.0,
+      "gsm8k_cal": 0.5266666666666666,
+      "gsm8k_raw": null,
+      "math_cal": 0.34,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.125,
+      "gsm8k_cal": 0.55,
+      "gsm8k_raw": null,
+      "math_cal": 0.34,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.25,
+      "gsm8k_cal": 0.6,
+      "gsm8k_raw": null,
+      "math_cal": 0.35,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.375,
+      "gsm8k_cal": 0.6133333333333333,
+      "gsm8k_raw": null,
+      "math_cal": 0.34,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.5,
+      "gsm8k_cal": 0.6,
+      "gsm8k_raw": null,
+      "math_cal": 0.3466666666666667,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.625,
+      "gsm8k_cal": 0.6133333333333333,
+      "gsm8k_raw": null,
+      "math_cal": 0.33,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.75,
+      "gsm8k_cal": 0.56,
+      "gsm8k_raw": null,
+      "math_cal": 0.29333333333333333,
+      "math_raw": null
+    },
+    {
+      "coefficient": 0.875,
+      "gsm8k_cal": 0.56,
+      "gsm8k_raw": null,
+      "math_cal": 0.25333333333333335,
+      "math_raw": null
+    },
+    {
+      "coefficient": 1.0,
+      "gsm8k_cal": 0.5433333333333333,
+      "gsm8k_raw": null,
+      "math_cal": 0.23666666666666666,
+      "math_raw": null
+    }
+  ],
+  "grid": [
+    0.0,
+    0.125,
+    0.25,
+    0.375,
+    0.5,
+    0.625,
+    0.75,
+    0.875,
+    1.0
+  ],
+  "model_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "revision": "a3ac4d18dcde9cf1826af4b3f744f9b1d664d2e1",
+  "schema": "selvedge/s60-interpolation/v1",
+  "selection": {
+    "basis": "calibration only; ties choose the smaller coefficient",
+    "calibration_gain": 0.043333333333333335,
+    "coefficient": 0.375,
+    "eligible": true,
+    "mmlu_present": false,
+    "provisional": true,
+    "retention_limit": null,
+    "why_provisional": "no MMLU calibration receipts were supplied; the retention bound was not applied, so this is not a final selection"
+  },
+  "source_checkpoint": {
+    "path": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+    "sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6"
+  },
+  "stamp": "20261119T054403Z"
+}

@@ -1,0 +1,278 @@
+{
+  "claims": {
+    "mmlu_is_a_retention_input": true,
+    "provisional": false,
+    "test_split_used_for_selection": false
+  },
+  "created_utc": "2026-11-19T09:25:21Z",
+  "evaluation": [
+    {
+      "coefficient": 0.0,
+      "gsm8k_cal": 0.5266666666666666,
+      "gsm8k_raw": null,
+      "math_cal": 0.34,
+      "math_raw": null,
+      "mmlu_cal": 0.506
+    },
+    {
+      "coefficient": 0.125,
+      "gsm8k_cal": 0.55,
+      "gsm8k_raw": null,
+      "math_cal": 0.34,
+      "math_raw": null,
+      "mmlu_cal": 0.5145
+    },
+    {
+      "coefficient": 0.25,
+      "gsm8k_cal": 0.6,
+      "gsm8k_raw": null,
+      "math_cal": 0.35,
+      "math_raw": null,
+      "mmlu_cal": 0.5235
+    },
+    {
+      "coefficient": 0.375,
+      "gsm8k_cal": 0.6133333333333333,
+      "gsm8k_raw": null,
+      "math_cal": 0.34,
+      "math_raw": null,
+      "mmlu_cal": 0.5195
+    },
+    {
+      "coefficient": 0.5,
+      "gsm8k_cal": 0.6,
+      "gsm8k_raw": null,
+      "math_cal": 0.3466666666666667,
+      "math_raw": null,
+      "mmlu_cal": 0.516
+    },
+    {
+      "coefficient": 0.625,
+      "gsm8k_cal": 0.6133333333333333,
+      "gsm8k_raw": null,
+      "math_cal": 0.33,
+      "math_raw": null,
+      "mmlu_cal": 0.508
+    },
+    {
+      "coefficient": 0.75,
+      "gsm8k_cal": 0.56,
+      "gsm8k_raw": null,
+      "math_cal": 0.29333333333333333,
+      "math_raw": null,
+      "mmlu_cal": 0.505
+    },
+    {
+      "coefficient": 0.875,
+      "gsm8k_cal": 0.56,
+      "gsm8k_raw": null,
+      "math_cal": 0.25333333333333335,
+      "math_raw": null,
+      "mmlu_cal": 0.4945
+    },
+    {
+      "coefficient": 1.0,
+      "gsm8k_cal": 0.5433333333333333,
+      "gsm8k_raw": null,
+      "math_cal": 0.23666666666666666,
+      "math_raw": null,
+      "mmlu_cal": 0.4865
+    }
+  ],
+  "kind": "interpolation-selection-with-mmlu-retention",
+  "mmlu": {
+    "0.000": 0.506,
+    "0.125": 0.5145,
+    "0.250": 0.5235,
+    "0.375": 0.5195,
+    "0.500": 0.516,
+    "0.625": 0.508,
+    "0.750": 0.505,
+    "0.875": 0.4945,
+    "1.000": 0.4865
+  },
+  "mmlu_receipts": [
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.000.json",
+      "sha256": "24db4625772ddf270d9475a190d7d21bc707313acae280d7f7b1077563216848"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.125.json",
+      "sha256": "0a7bc750a57f40bec9a4d3ea38b7254807c34759bbaec529a0c22c8ee8777f72"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.250.json",
+      "sha256": "d282d403dde3d4d8bf498019423b8ecf631d6e77d6a06b788de28634a5cd7f8d"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.375.json",
+      "sha256": "bdecabf4a6d60d29bb5258761f8b44d2e0587d1618e11e27a3f607b9a193c16d"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.500.json",
+      "sha256": "54d0667de02f78b399b1cbab5cfd361f30073f08985ea144458306722627e90c"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.625.json",
+      "sha256": "a874374596862272c9be7d99e29f3c72327357b8d9dd2fd4a5361080f3deb1e4"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.750.json",
+      "sha256": "50e115e23898ba4cd098e37dfebe119eddf78d7f54c9e3528c23ff7933384583"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-0.875.json",
+      "sha256": "f2c34f712c2959443a724aa7b77173772f4b00ab77773ba18f9dc41ed98b4a8a"
+    },
+    {
+      "path": "results/stage2/s60-interpolation/mmlu-1.000.json",
+      "sha256": "eb979044ebba6f330677a037607877f898c061eabb35d731ebbac764e58d4354"
+    }
+  ],
+  "registration": "docs/ws19-stage2-correction-s63-preregistration-v1.json",
+  "revision": "c2eb200bbb6a87c8625a20901752527579707ee8",
+  "schema": "selvedge/s64-interpolation-selection/v1",
+  "selection": {
+    "basis": "calibration only; ties choose the smaller coefficient",
+    "calibration_gain": 0.043333333333333335,
+    "coefficient": 0.375,
+    "eligible": true,
+    "mmlu_present": true,
+    "provisional": false,
+    "retention_limit": 0.01
+  },
+  "selection_rule": "mean gain over the 0.0 endpoint on GSM8K-cal and MATH-cal; a coefficient whose calibration MMLU drop exceeds 1.0 point is ineligible; ties choose the smaller coefficient",
+  "source_receipt": {
+    "path": "results/stage2/s60-interpolation/receipt.json",
+    "revision": "a3ac4d18dcde9cf1826af4b3f744f9b1d664d2e1",
+    "sha256": "ba37b010d8ebcc4736b4a0f66eacc91d5c76915f063a32e944c5639cc569402f",
+    "stamp": "20261119T054403Z"
+  },
+  "stamp": "20261119T092521Z",
+  "trade": {
+    "any_coefficient_retains_full_gain_with_less_math_damage": true,
+    "basis": "GSM8K-cal and MATH-cal are train-split calibration; the condition is gsm8k_cal(t) >= gsm8k_cal(1.0) and math_cal(t) > math_cal(1.0). No test split is read.",
+    "post_coefficient": 0.0,
+    "rows": [
+      {
+        "coefficient": 0.0,
+        "gsm8k_cal": 0.5266666666666666,
+        "gsm8k_delta_vs_post": 0.0,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.34,
+        "math_delta_vs_post": 0.0,
+        "math_delta_vs_s58": 0.10333333333333336,
+        "mmlu_cal": 0.506,
+        "retains_full_s58_gain": false,
+        "retains_gain_with_less_damage": false,
+        "s58_gain_fraction": 0.0
+      },
+      {
+        "coefficient": 0.125,
+        "gsm8k_cal": 0.55,
+        "gsm8k_delta_vs_post": 0.023333333333333428,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.34,
+        "math_delta_vs_post": 0.0,
+        "math_delta_vs_s58": 0.10333333333333336,
+        "mmlu_cal": 0.5145,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 1.4000000000000012
+      },
+      {
+        "coefficient": 0.25,
+        "gsm8k_cal": 0.6,
+        "gsm8k_delta_vs_post": 0.07333333333333336,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.35,
+        "math_delta_vs_post": 0.009999999999999953,
+        "math_delta_vs_s58": 0.11333333333333331,
+        "mmlu_cal": 0.5235,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 4.399999999999988
+      },
+      {
+        "coefficient": 0.375,
+        "gsm8k_cal": 0.6133333333333333,
+        "gsm8k_delta_vs_post": 0.08666666666666667,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.34,
+        "math_delta_vs_post": 0.0,
+        "math_delta_vs_s58": 0.10333333333333336,
+        "mmlu_cal": 0.5195,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 5.199999999999984
+      },
+      {
+        "coefficient": 0.5,
+        "gsm8k_cal": 0.6,
+        "gsm8k_delta_vs_post": 0.07333333333333336,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.3466666666666667,
+        "math_delta_vs_post": 0.006666666666666654,
+        "math_delta_vs_s58": 0.11000000000000001,
+        "mmlu_cal": 0.516,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 4.399999999999988
+      },
+      {
+        "coefficient": 0.625,
+        "gsm8k_cal": 0.6133333333333333,
+        "gsm8k_delta_vs_post": 0.08666666666666667,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.33,
+        "math_delta_vs_post": -0.010000000000000009,
+        "math_delta_vs_s58": 0.09333333333333335,
+        "mmlu_cal": 0.508,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 5.199999999999984
+      },
+      {
+        "coefficient": 0.75,
+        "gsm8k_cal": 0.56,
+        "gsm8k_delta_vs_post": 0.03333333333333344,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.29333333333333333,
+        "math_delta_vs_post": -0.04666666666666669,
+        "math_delta_vs_s58": 0.05666666666666667,
+        "mmlu_cal": 0.505,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 2.0
+      },
+      {
+        "coefficient": 0.875,
+        "gsm8k_cal": 0.56,
+        "gsm8k_delta_vs_post": 0.03333333333333344,
+        "less_math_damage_than_s58": true,
+        "math_cal": 0.25333333333333335,
+        "math_delta_vs_post": -0.08666666666666667,
+        "math_delta_vs_s58": 0.01666666666666669,
+        "mmlu_cal": 0.4945,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": true,
+        "s58_gain_fraction": 2.0
+      },
+      {
+        "coefficient": 1.0,
+        "gsm8k_cal": 0.5433333333333333,
+        "gsm8k_delta_vs_post": 0.01666666666666672,
+        "less_math_damage_than_s58": false,
+        "math_cal": 0.23666666666666666,
+        "math_delta_vs_post": -0.10333333333333336,
+        "math_delta_vs_s58": 0.0,
+        "mmlu_cal": 0.4865,
+        "retains_full_s58_gain": true,
+        "retains_gain_with_less_damage": false,
+        "s58_gain_fraction": 1.0
+      }
+    ],
+    "s58_coefficient": 1.0,
+    "s58_gsm8k_gain_calibration": 0.01666666666666672
+  }
+}
