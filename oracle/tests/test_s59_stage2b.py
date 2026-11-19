@@ -21,7 +21,8 @@ sys.path.insert(0, os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
 
 from s59_student_rollouts import loop_cut_index  # noqa: E402
-from s59_build_corpus import load_rows, subsample_to_tokens  # noqa: E402
+from s59_build_corpus import (  # noqa: E402
+    load_rows, subsample_to_tokens, write_examples)
 
 
 def test_no_cut_on_short_sequence():
@@ -118,3 +119,44 @@ def test_load_rows_excludes_the_holdout_and_dedups_within_a_prompt(tmp_path):
     assert report["excluded_holdout_rows"] == 1
     assert report["duplicate_rows_removed"] == 1
     assert all(row["kind"] == "student" for row in loaded)
+
+
+def test_load_rows_dedups_exactly_across_shards_but_keeps_k_samples(tmp_path):
+    import json
+    shard_a = tmp_path / "a.jsonl"
+    shard_b = tmp_path / "b.jsonl"
+    row = {"id": "p", "dataset": "gsm8k", "prompt_ids": [1],
+           "solution_ids": [7, 8], "solution": "s", "prompt": "q"}
+    other = {"id": "p", "dataset": "gsm8k", "prompt_ids": [1],
+             "solution_ids": [9], "solution": "t", "prompt": "q"}
+    shard_a.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    shard_b.write_text(json.dumps(row) + "\n" + json.dumps(other) + "\n",
+                       encoding="utf-8")
+    seen_global, seen_prompt = set(), {}
+    first, report_a = load_rows(str(shard_a), set(), "student",
+                                seen_global, seen_prompt)
+    second, report_b = load_rows(str(shard_b), set(), "student",
+                                 seen_global, seen_prompt)
+    # the duplicate exact sequence is removed across shards; the second distinct
+    # sample for the same prompt is a legitimate K>1 row and is kept.
+    assert [r["solution_ids"] for r in first] == [[7, 8]]
+    assert [r["solution_ids"] for r in second] == [[9]]
+    assert report_a["duplicate_rows_removed"] == 0
+    assert report_b["duplicate_rows_removed"] == 1
+
+
+def test_write_examples_preserves_the_masked_synthetic_eos(tmp_path):
+    import json
+    path = tmp_path / "examples.jsonl"
+    rows = [
+        {"id": "a", "dataset": "gsm8k", "prompt_ids": [1],
+         "solution_ids": [2, 3]},
+        {"id": "replay", "kind": "replay", "prompt_ids": [],
+         "solution_ids": [4, 5], "supervise_eos": False},
+    ]
+    block = write_examples(str(path), rows)
+    written = [json.loads(line) for line in path.read_text().splitlines()]
+    assert block["rows"] == 2
+    assert "supervise_eos" not in written[0]
+    assert written[1]["supervise_eos"] is False
+    assert written[1]["kind"] == "replay"

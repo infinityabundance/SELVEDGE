@@ -59,6 +59,13 @@ from frontier import rft  # noqa: E402
 SCHEMA = "selvedge/s57-stage2a-verification/v1"
 ACCEPTANCE_FLOOR = 0.40
 TRUNCATION_CEILING = 0.20
+# The stage-2b corpus gate. The registration sets no truncation ceiling for a
+# student-policy pass: a completion that reaches the cap without EOS is counted
+# and can never become a target, so truncation is a reported diagnostic rather
+# than a corpus failure. The acceptance floor is the operator's "too low to
+# train" line (25%); the pilot measured ~50%.
+STAGE2B_ACCEPTANCE_FLOOR = 0.25
+STAGE2B_TRUNCATION_CEILING = None
 
 
 def utcnow() -> str:
@@ -164,12 +171,101 @@ def examples_check(examples: str | None, examples_receipt: str | None,
         block["receipt_sha256"] = sha256_file(receipt_path)
         block["receipt_recorded_sha256"] = recorded
         block["matches"] = bool(recorded) and recorded == actual
-        inputs = built.get("inputs") or []
+        block["declared_inputs"] = _declared_inputs(built)
         block["accepted_input_matches"] = any(
             _relative(os.path.join(ROOT, entry)) == accepted_rel
             and _accepted_sha_for(entry) == accepted_sha
-            for entry in inputs)
+            for entry in block["declared_inputs"])
     return block
+
+
+def _declared_inputs(built: dict) -> list[str]:
+    """Every accepted file a corpus receipt declares as an input.
+
+    The stage-2a builder writes `inputs`; the stage-2b builder records the
+    rollouts under `sources.student`. Both are read here so the examples-hash
+    gate works on either receipt without a second verifier.
+    """
+    declared: list[str] = []
+    for entry in built.get("inputs") or []:
+        if isinstance(entry, str):
+            declared.append(entry)
+    student = (built.get("sources") or {}).get("student") or {}
+    if isinstance(student, dict):
+        if student.get("source"):
+            declared.append(student["source"])
+        for item in student.get("sources") or []:
+            if item.get("source"):
+                declared.append(item["source"])
+    teacher = (built.get("sources") or {}).get("teacher") or {}
+    if isinstance(teacher, dict) and teacher.get("source"):
+        declared.append(teacher["source"])
+    seen: set[str] = set()
+    unique: list[str] = []
+    for path in declared:
+        key = _relative(os.path.join(ROOT, path))
+        if key not in seen:
+            seen.add(key)
+            unique.append(path)
+    return unique
+
+
+def acceptance_block(receipt: dict) -> dict:
+    """The acceptance block of a generation or a built-corpus receipt.
+
+    A single generation receipt carries `acceptance` at the top level. A built
+    stage-2b corpus receipt records the generation receipts it consumed, so the
+    exact per-dataset counts and denominators are re-summed from those files
+    rather than inferred from row counts.
+    """
+    if isinstance(receipt.get("acceptance"), dict):
+        return receipt["acceptance"]
+    entries = (receipt.get("sources") or {}).get("generation_receipts") or []
+    if not entries:
+        return {}
+    by_dataset: dict[str, dict] = {}
+    totals: dict[str, float] = {}
+    for entry in entries:
+        path = os.path.join(ROOT, entry.get("path", ""))
+        if not os.path.isfile(path):
+            continue
+        payload = json.load(open(path, encoding="utf-8"))
+        block = payload.get("acceptance") or {}
+        for name, item in (block.get("by_dataset") or {}).items():
+            target = by_dataset.setdefault(name, {})
+            for key, value in item.items():
+                if key == "solution_lengths":
+                    target.setdefault(key, []).extend(value)
+                elif key == "verdicts":
+                    verdicts = target.setdefault(key, {})
+                    for verdict, count in value.items():
+                        verdicts[verdict] = verdicts.get(verdict, 0) + count
+                elif isinstance(value, (int, float)):
+                    target[key] = target.get(key, 0) + value
+        for key, value in (block.get("totals") or {}).items():
+            if isinstance(value, (int, float)):
+                totals[key] = totals.get(key, 0) + value
+    sampled = totals.get("sampled") or sum(
+        (item.get("sampled") or 0) for item in by_dataset.values())
+    kept = totals.get("kept") or sum(
+        (item.get("kept") or 0) for item in by_dataset.values())
+    truncated = totals.get("truncated") or sum(
+        (item.get("truncated") or 0) for item in by_dataset.values())
+    loop_cut = totals.get("loop_cut") or sum(
+        (item.get("loop_cut") or 0) for item in by_dataset.values())
+    correct = totals.get("correct") or sum(
+        (item.get("correct") or 0) for item in by_dataset.values())
+    return {
+        "by_dataset": by_dataset,
+        "totals": {**totals, "sampled": sampled, "kept": kept,
+                   "correct": correct, "truncated": truncated,
+                   "loop_cut": loop_cut},
+        "kept_rate": (kept / sampled) if sampled else None,
+        "verified_rate": (correct / sampled) if sampled else None,
+        "truncation_rate": (truncated / sampled) if sampled else None,
+        "loop_cut_rate": (loop_cut / sampled) if sampled else None,
+        "reconstructed_from": [entry.get("path") for entry in entries],
+    }
 
 
 def _accepted_sha_for(entry: str) -> str | None:
@@ -192,6 +288,12 @@ def main(argv: list[str]) -> int:
                         help="only for a dry pass over a smoke corpus")
     parser.add_argument("--skip-reverification", action="store_true",
                         help="only for an explicitly labelled smoke pass")
+    parser.add_argument("--corpus-kind", choices=("stage2a", "stage2b"),
+                        default="stage2a",
+                        help="stage2a applies the 40%% acceptance floor and the "
+                             "20%% truncation ceiling; stage2b applies the 25%% "
+                             "floor and reports truncation without a ceiling, "
+                             "because a truncated completion is never a target")
     args = parser.parse_args(argv)
 
     receipt_path = os.path.join(ROOT, args.receipt)
@@ -229,7 +331,7 @@ def main(argv: list[str]) -> int:
         else:
             seen[key] = f"{source}:{row['id']}"
 
-    acceptance = receipt.get("acceptance", {})
+    acceptance = acceptance_block(receipt)
     per_dataset_acceptance = acceptance.get("by_dataset", {})
     sources = {}
     for source, entry in sorted(by_source.items()):
@@ -270,6 +372,7 @@ def main(argv: list[str]) -> int:
                 "kept": kept,
                 "duplicates": generated.get("duplicates"),
                 "truncated_without_eos": truncated,
+                "loop_cut": generated.get("loop_cut"),
                 "acceptance_kept_over_sampled": (
                     kept / generated["sampled"]
                     if generated.get("sampled") else None),
@@ -300,6 +403,9 @@ def main(argv: list[str]) -> int:
         "truncated_over_sampled": (
             totals.get("truncated") / totals.get("sampled")
             if totals.get("sampled") else None),
+        "loop_cut_over_sampled": (
+            totals.get("loop_cut") / totals.get("sampled")
+            if totals.get("sampled") else None),
         "generated_tokens_total": totals.get("generated_tokens"),
     }
 
@@ -312,6 +418,20 @@ def main(argv: list[str]) -> int:
 
     kept_rate = overall["acceptance_kept_over_sampled"] or 0.0
     truncated_rate = overall["truncated_over_sampled"] or 0.0
+    if args.corpus_kind == "stage2b":
+        acceptance_floor = STAGE2B_ACCEPTANCE_FLOOR
+        truncation_ceiling = STAGE2B_TRUNCATION_CEILING
+        gate_basis = ("stage-2b corpus gate: acceptance floor 0.25 (the "
+                      "operator's too-low-to-train line); no truncation "
+                      "ceiling is registered because a completion that hits "
+                      "the cap without EOS is counted and can never be a "
+                      "target; re-verification and the examples hash are the "
+                      "training preconditions")
+    else:
+        acceptance_floor = ACCEPTANCE_FLOOR
+        truncation_ceiling = TRUNCATION_CEILING
+        gate_basis = ("stage-2a corpus gate: acceptance floor 0.40 and "
+                      "truncation ceiling 0.20")
     sampled_total = (totals.get("sampled")
                      or sum((entry.get("sampled") or 0)
                             for entry in per_dataset_acceptance.values()))
@@ -325,20 +445,22 @@ def main(argv: list[str]) -> int:
     examples_block = examples_check(args.examples, args.examples_receipt,
                                      accepted_rel, accepted_sha)
     gates = {
-        "acceptance_floor": ACCEPTANCE_FLOOR,
+        "corpus_kind": args.corpus_kind,
+        "acceptance_floor": acceptance_floor,
         "acceptance_measured": kept_rate if acceptance_measured else None,
-        "acceptance_passes": (kept_rate >= ACCEPTANCE_FLOOR
+        "acceptance_passes": (kept_rate >= acceptance_floor
                               if acceptance_measured else None),
-        "truncation_ceiling": TRUNCATION_CEILING,
+        "truncation_ceiling": truncation_ceiling,
         "truncation_measured": truncated_rate if acceptance_measured else None,
-        "truncation_passes": (truncated_rate < TRUNCATION_CEILING
-                              if acceptance_measured else None),
+        "truncation_passes": ((truncated_rate < truncation_ceiling)
+                              if (acceptance_measured and
+                                  truncation_ceiling is not None) else None),
         "acceptance_gate_basis": (
-            "kept/sampled over every sampled completion" if acceptance_measured
-            else "not_applicable: this receipt has no sampled/kept block (a "
-                 "merged corpus names per-source kept counts but not the "
-                 "per-source sampled denominators); the S55 generation "
-                 "receipts carry those rates"),
+            ("kept/sampled over every sampled completion" if acceptance_measured
+             else "not_applicable: this receipt carries no sampled/kept block; "
+                  "the generation receipts named on the corpus carry those "
+                  "rates")),
+        "gate_basis": gate_basis,
         "contamination_fail_closed": contamination.get("fail_closed"),
         "reverification_all_correct": reverification.get("all_correct"),
         "examples_sha256_matches": (examples_block or {}).get("matches"),
@@ -371,6 +493,9 @@ def main(argv: list[str]) -> int:
         "revision": revision(),
         "receipt": {"path": os.path.relpath(receipt_path, ROOT),
                     "sha256": sha256_file(receipt_path)},
+        "acceptance_reconstructed": (
+            acceptance.get("reconstructed_from") if
+            isinstance(acceptance.get("reconstructed_from"), list) else None),
         "accepted": {"path": os.path.relpath(accepted_path, ROOT),
                      "sha256": sha256_file(accepted_path)},
         "generation": receipt.get("generation"),

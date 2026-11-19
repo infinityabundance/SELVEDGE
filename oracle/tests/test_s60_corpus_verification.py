@@ -93,3 +93,47 @@ def test_a_missing_examples_file_fails_closed(tmp_path, monkeypatch):
         assert "missing" in str(exc)
     else:
         raise AssertionError("a missing examples file must fail closed")
+
+
+def test_declared_inputs_are_read_from_a_stage2b_corpus_receipt():
+    built = {
+        "sources": {
+            "student": {
+                "rows": 3,
+                "sources": [
+                    {"source": "results/a.jsonl", "rows": 2},
+                    {"source": "results/b.jsonl", "rows": 1},
+                ],
+            },
+            "teacher": None,
+        },
+        "examples": {"sha256": "0" * 64},
+    }
+    assert sv._declared_inputs(built) == ["results/a.jsonl", "results/b.jsonl"]
+
+
+def test_acceptance_is_reconstructed_from_the_named_generation_receipts(
+        tmp_path, monkeypatch):
+    first = tmp_path / "first.json"
+    second = tmp_path / "second.json"
+    first.write_text(json.dumps({"acceptance": {
+        "by_dataset": {"gsm8k": {"sampled": 8, "correct": 4, "kept": 4,
+                                  "truncated": 3, "loop_cut": 1,
+                                  "verdicts": {"correct": 4, "wrong": 1}}}},
+        "totals": {"sampled": 8, "correct": 4, "kept": 4,
+                   "truncated": 3, "loop_cut": 1}}))
+    second.write_text(json.dumps({"acceptance": {
+        "by_dataset": {"math": {"sampled": 6, "correct": 2, "kept": 2,
+                                 "truncated": 4, "loop_cut": 0,
+                                 "verdicts": {"correct": 2, "wrong": 2}}}},
+        "totals": {"sampled": 6, "correct": 2, "kept": 2,
+                   "truncated": 4, "loop_cut": 0}}))
+    monkeypatch.setattr(sv, "ROOT", str(tmp_path))
+    block = sv.acceptance_block({"sources": {"generation_receipts": [
+        {"path": "first.json"}, {"path": "second.json"}]}})
+    assert block["totals"]["sampled"] == 14
+    assert block["totals"]["kept"] == 6
+    assert block["totals"]["loop_cut"] == 1
+    assert abs(block["kept_rate"] - 6 / 14) < 1e-12
+    assert abs(block["truncation_rate"] - 7 / 14) < 1e-12
+    assert block["by_dataset"]["gsm8k"]["verdicts"]["correct"] == 4

@@ -90,12 +90,24 @@ def write_json(path: str, payload: dict) -> None:
     os.replace(tmp, path)
 
 
-def load_rows(path: str, excluded: set[str], label: str) -> tuple[list[dict], dict]:
+def load_rows(path: str, excluded: set[str], label: str,
+              seen_global: set[tuple[str, str]] | None = None,
+              seen_prompt: dict[str, set[str]] | None = None
+              ) -> tuple[list[dict], dict]:
+    """Read one accepted file, sharing the dedup sets across shards.
+
+    The same prompt may legitimately contribute several distinct sampled
+    trajectories (K>1); only an exact generated-token sequence is removed. The
+    sets are passed in so a sharded pass is deduplicated across shards exactly
+    as one pass would be.
+    """
+    if seen_global is None:
+        seen_global = set()
+    if seen_prompt is None:
+        seen_prompt = {}
     rows: list[dict] = []
     excluded_rows = 0
     duplicates = 0
-    seen_global: set[tuple[str, str]] = set()
-    seen_prompt: dict[str, set[str]] = {}
     with open(path, "r", encoding="utf-8") as handle:
         for line in handle:
             if not line.strip():
@@ -163,13 +175,34 @@ def subsample_to_tokens(rows: list[dict], target: int,
                               "by smaller absolute deviation"}
 
 
+def write_examples(path: str, rows: list[dict]) -> dict:
+    """Write the trainer's examples file, preserving the replay EOS mask.
+
+    A truncated replay document must reach the packer with
+    `supervise_eos=False`; dropping the flag here would silently re-supervise a
+    synthetic EOS and undo the S60 fix at the last step.
+    """
+    with open(path, "w", encoding="utf-8") as handle:
+        for row in rows:
+            payload = {
+                "id": row.get("id"), "kind": row.get("kind", "teacher"),
+                "dataset": row.get("dataset"),
+                "prompt_ids": row["prompt_ids"],
+                "solution_ids": row["solution_ids"]}
+            if row.get("supervise_eos") is False:
+                payload["supervise_eos"] = False
+            handle.write(json.dumps(payload, sort_keys=True) + "\n")
+    return {"path": path, "sha256": sha256_file(path), "rows": len(rows)}
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", required=True,
                         choices=["rft-only", "rft-teacher-5050",
                                  "control-teacher"])
-    parser.add_argument("--rollouts", default=None,
-                        help="student-policy accepted jsonl")
+    parser.add_argument("--rollouts", action="append", default=None,
+                        help="student-policy accepted jsonl; repeatable, merged "
+                             "in order with cross-shard exact-token dedup")
     parser.add_argument("--rollouts-receipt", action="append", default=[],
                         help="receipt(s) of the generation pass(es) that wrote "
                              "the rollouts; recorded, not re-derived")
@@ -196,8 +229,29 @@ def main(argv: list[str]) -> int:
     if args.arm in ("rft-only", "rft-teacher-5050"):
         if not args.rollouts:
             raise SystemExit(f"s59-corpus: {args.arm} needs --rollouts")
-        student_rows, student_report = load_rows(
-            os.path.join(ROOT, args.rollouts), excluded, "student")
+        seen_global: set[tuple[str, str]] = set()
+        seen_prompt: dict[str, set[str]] = {}
+        per_source = []
+        for raw in args.rollouts:
+            path = raw if os.path.isabs(raw) else os.path.join(ROOT, raw)
+            rows, report = load_rows(path, excluded, "student",
+                                     seen_global, seen_prompt)
+            per_source.append(report)
+            student_rows.extend(rows)
+        student_rows.sort(key=lambda row: (row["dataset"], str(row["id"]),
+                                           int(row.get("sample_index", 0))))
+        student_report = {
+            "sources": per_source,
+            "rows": sum(item["rows"] for item in per_source),
+            "excluded_holdout_rows": sum(
+                item["excluded_holdout_rows"] for item in per_source),
+            "duplicate_rows_removed": sum(
+                item["duplicate_rows_removed"] for item in per_source),
+            "supervised_solution_tokens": sum(
+                item["supervised_solution_tokens"] for item in per_source),
+            "dedup": "shared across sources; exact solution-token sequence "
+                     "within a prompt",
+        }
         if not student_rows:
             raise SystemExit("s59-corpus: no student rows survive")
     teacher_rows: list[dict] = []
@@ -277,13 +331,7 @@ def main(argv: list[str]) -> int:
     out_dir = os.path.join(ROOT, args.out_dir)
     os.makedirs(out_dir, exist_ok=True)
     examples_path = os.path.join(out_dir, f"{args.label}-examples.jsonl")
-    with open(examples_path, "w", encoding="utf-8") as handle:
-        for row in ordered:
-            handle.write(json.dumps({
-                "id": row.get("id"), "kind": row.get("kind", "teacher"),
-                "dataset": row.get("dataset"),
-                "prompt_ids": row["prompt_ids"],
-                "solution_ids": row["solution_ids"]}, sort_keys=True) + "\n")
+    write_examples(examples_path, ordered)
 
     lengths = [len(row["prompt_ids"]) + len(row["solution_ids"]) + 1
                for row in chosen]
@@ -308,6 +356,11 @@ def main(argv: list[str]) -> int:
         entry["prompt_tokens"] += len(row["prompt_ids"])
 
     total_supervised = supervised + replay_tokens
+    supervised_positions_with_eos = sum(
+        len(row["solution_ids"]) + (0 if row.get("supervise_eos") is False
+                                    else 1)
+        for row in ordered)
+    one_epoch_processed_tokens = len(ordered) * args.seq_len
     payload = {
         "schema": SCHEMA,
         "kind": "stage2b-arm-corpus",
@@ -344,6 +397,19 @@ def main(argv: list[str]) -> int:
         "replay": {**replay_report, "contamination": contamination,
                    "supervised_tokens": replay_tokens},
         "length_profile": profile,
+        "training_arithmetic": {
+            "rows": len(ordered),
+            "seq_len": args.seq_len,
+            "one_epoch_processed_tokens": one_epoch_processed_tokens,
+            "supervised_positions_with_eos": supervised_positions_with_eos,
+            "cadence_points_tokens": [500000, 1000000, 2000000, 5000000],
+            "cadence_5m_reachable_in_one_epoch": (
+                one_epoch_processed_tokens >= 5000000),
+            "basis": "processed tokens are rows x seq_len at two rows per "
+                     "optimiser step, the same nominal accounting as the S58 "
+                     "cadence; supervised_positions_with_eos is the actual "
+                     "number of loss positions",
+        },
         "examples": {"path": os.path.relpath(examples_path, ROOT),
                      "sha256": sha256_file(examples_path),
                      "rows": len(ordered),
