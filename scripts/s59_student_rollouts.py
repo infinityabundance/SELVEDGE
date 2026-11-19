@@ -509,7 +509,7 @@ def main(argv: list[str]) -> int:
                     "duplicates": 0, "truncated": 0, "loop_cut": 0,
                     "generated_tokens": 0, "wall_seconds": 0.0,
                     "verdicts": {"correct": 0, "wrong": 0, "ambiguous": 0,
-                                 "unparseable": 0, "truncated": 0},
+                                 "unparseable": 0},
                     "solution_lengths": [],
                 })
                 stats["prompts"] += 1
@@ -528,9 +528,13 @@ def main(argv: list[str]) -> int:
                     entry["loop_cut"] += 1 if detail["loop_cut"] else 0
                     stats["generated_tokens"] += len(solution_ids)
                     if detail["truncated"]:
+                        # A truncated completion is never a training target, but
+                        # it is still verified for the ledger: a correct answer
+                        # boxed before the cap is a verified success for p even
+                        # though its text is discarded. `truncated` stays an
+                        # orthogonal flag, so the verdict counts still sum to
+                        # attempts.
                         entry["truncated"] += 1
-                        stats["verdicts"]["truncated"] += 1
-                        continue
                     text = tokenizer.decode(solution_ids,
                                             skip_special_tokens=True)
                     result = rft.verify(text, task["target"], task["dataset"])
@@ -543,6 +547,8 @@ def main(argv: list[str]) -> int:
                         continue
                     stats["correct"] += 1
                     totals["correct"] += 1
+                    if detail["truncated"]:
+                        continue
                     key = hashlib.sha256(
                         ",".join(str(i) for i in solution_ids).encode()
                     ).hexdigest()
@@ -681,6 +687,11 @@ def main(argv: list[str]) -> int:
             "extractor": "frontier.rft.verify against the train label",
             "kept": "verdict == correct only; wrong, ambiguous, unparseable and "
                     "truncated completions never become a target",
+            "truncated": "a truncated completion is still verified for the "
+                          "ledger (a correct answer boxed before the cap is a "
+                          "verified success for p) but its text is never "
+                          "accepted; the truncated flag is orthogonal to the "
+                          "verdict",
             "deduplication": "within a prompt, exact generated-token-sequence "
                              "SHA-256; across prompts duplicates are counted "
                              "but not removed",

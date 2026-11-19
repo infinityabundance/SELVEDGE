@@ -46,7 +46,7 @@
     },
     "3_pass_rate_ledger": {
       "defect": "The registered recipe used K=8 and p = successes/attempts, but the job ran K=4 and the accepted file contains only deduplicated verified-correct rows. p computed from that file would be successes/kept, not successes/attempts, and failures, truncations and duplicates were absent.",
-      "fix": "Every prompt writes a ledger row (attempts, verified_correct, wrong, ambiguous, unparseable, truncated, loop_cut, duplicates, accepted_rows, accepted_solution_tokens, p, weight_p1mp) even when the non-accepted text is discarded. p is verified_correct/attempts, before deduplication, and w = p(1-p). The receipt summarises the ledger including the p histogram and the p=0 and p=1 counts.",
+      "fix": "Every prompt writes a ledger row (attempts, verified_correct, wrong, ambiguous, unparseable, truncated, loop_cut, duplicates, accepted_rows, accepted_solution_tokens, p, weight_p1mp) even when the non-accepted text is discarded. p is verified_correct/attempts, before deduplication, and w = p(1-p). A truncated completion is verified for p (a correct answer boxed before the cap is a success) but its text is never accepted. The receipt summarises the ledger including the p histogram and the p=0 and p=1 counts.",
       "test": "oracle/tests/test_s59_stage2b.py::test_ledger_p_is_successes_over_attempts_not_accepted_rows and ::test_ledger_row_is_written_with_zero_accepted_rows.",
       "corrected_k": 8,
       "prompt_counts": {
@@ -73,6 +73,7 @@
     "cap_tokens": 2048,
     "stop": "EOS only for termination; the per-row loop cut is a registered decode rule",
     "pass_rate": "p = verified_correct / attempts, attempts = every sampled completion including truncations and duplicates; never the deduplicated accepted rows",
+    "truncated_handling": "a truncated completion is verified for the ledger and counts as a success if it boxes the correct answer before the cap, but it is never accepted as a training target",
     "loss_weight": "w(p) = p(1-p); p=0 and p=1 problems carry w=0 and are recorded, not silently dropped",
     "ledger": "one row per problem per shard, written before any text is discarded; the receipt carries its SHA-256 and summary",
     "holdout_exclusion": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl, unchanged",

@@ -282,6 +282,20 @@ def test_ledger_p_is_successes_over_attempts_not_accepted_rows():
     assert summary["attempts"] == 4
 
 
+def test_truncated_correct_attempt_counts_for_p_but_not_accepted():
+    task = {"id": "cap", "dataset": "math", "samples": 2,
+            "max_new_tokens": 2048}
+    entry = ledger_entry(task)
+    # One attempt boxed the correct answer before the cap but is truncated, so
+    # it is a verified success for p and not an accepted training row.
+    entry.update({"attempts": 2, "verified_correct": 1, "truncated": 1,
+                  "accepted_rows": 0})
+    write_ledger_entry(io.StringIO(), entry)
+    assert entry["p"] == 0.5
+    assert entry["weight_p1mp"] == 0.25
+    assert entry["accepted_rows"] == 0
+
+
 def test_ledger_row_is_written_with_zero_accepted_rows():
     task = {"id": "hard", "dataset": "math", "samples": 2,
             "max_new_tokens": 2048}
