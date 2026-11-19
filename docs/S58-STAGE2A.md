@@ -121,8 +121,8 @@ includes padding and prompt positions by construction.
 ### Row order
 
 The first stream concatenated the teacher rows and then the contiguous replay
-block. That is an implementation artifact, and it broke the run twice (section
-3). The stream now writes a **seeded deterministic permutation**
+block. That is an implementation artifact, and it fired the early-loss tripwire
+(section 3). The stream now writes a **seeded deterministic permutation**
 (`--order seeded-shuffle`, seed 5500) and records the mode, seed and row count in
 the receipt. The trainer still never shuffles; the order is pinned in the file
 and hashed into the run manifest.
