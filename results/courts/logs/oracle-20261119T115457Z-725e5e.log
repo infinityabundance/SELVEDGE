@@ -1,0 +1,23 @@
+s59-rollouts: loading policy /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17
+s59-rollouts: 600 prompts, 4800 rollouts planned
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s59-rollouts: prompts 8/600 sampled=64 kept=20 loop=0 trunc=15 tok/s=537
+s59-rollouts: prompts 48/600 sampled=384 kept=196 loop=0 trunc=36 tok/s=348
+s59-rollouts: prompts 88/600 sampled=704 kept=377 loop=0 trunc=62 tok/s=342
+s59-rollouts: prompts 128/600 sampled=1024 kept=577 loop=0 trunc=94 tok/s=347
+s59-rollouts: prompts 168/600 sampled=1344 kept=737 loop=0 trunc=137 tok/s=355
+s59-rollouts: prompts 208/600 sampled=1664 kept=909 loop=0 trunc=178 tok/s=358
+s59-rollouts: prompts 248/600 sampled=1984 kept=1068 loop=0 trunc=237 tok/s=369
+s59-rollouts: prompts 288/600 sampled=2304 kept=1255 loop=0 trunc=270 tok/s=367
+s59-rollouts: prompts 328/600 sampled=2624 kept=1402 loop=0 trunc=313 tok/s=369
+s59-rollouts: prompts 368/600 sampled=2944 kept=1546 loop=0 trunc=346 tok/s=373
+s59-rollouts: prompts 408/600 sampled=3264 kept=1711 loop=0 trunc=385 tok/s=374
+s59-rollouts: prompts 448/600 sampled=3584 kept=1885 loop=0 trunc=429 tok/s=373
+s59-rollouts: prompts 488/600 sampled=3904 kept=2046 loop=0 trunc=461 tok/s=372
+s59-rollouts: prompts 528/600 sampled=4224 kept=2218 loop=0 trunc=489 tok/s=370
+s59-rollouts: prompts 568/600 sampled=4544 kept=2374 loop=0 trunc=521 tok/s=370
+s59-rollouts: 2486 accepted rows, 1107710 supervised tokens -> /work/results/artifacts/stage2/s64-rollouts/gsm8k-shard1-accepted.jsonl
+s59-rollouts: receipt /work/results/artifacts/stage2/s64-rollouts/gsm8k-shard1-receipt.json
