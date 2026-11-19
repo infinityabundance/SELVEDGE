@@ -83,7 +83,10 @@ MILESTONE_DIR_RE = re.compile(r"^m(\d+)$")
 #: contributes no number rather than a guessed one.
 MILESTONE_SCORE_KEYS = {
     "gsm8k": ("exact_match,flexible-extract", "exact_match,strict-match"),
-    "minerva_math500": ("exact_match,none", "math_verify,none"),
+    # The registered primary is math_verify; exact_match is the secondary
+    # fallback for a receipt that does not declare one. The order was reversed
+    # until S60, which reported 8.8% where the primary is 18.6%.
+    "minerva_math500": ("math_verify,none", "exact_match,none"),
     "mmlu": ("acc,none",),
     "mmlu_pro": ("exact_match,custom-extract", "acc,none"),
 }
@@ -252,17 +255,52 @@ def classify_result(path: str, scored: bool, invalidations: dict,
     return "unscored"
 
 
-def _milestone_score(receipt: dict, task: str) -> float | None:
-    """The task's primary metric value from a milestone eval receipt."""
+def _milestone_metric(receipt: dict, task: str) -> dict:
+    """The task's declared primary metric, its value, and its secondary metrics.
+
+    The eval receipt names the metric it registered as primary
+    (`primary_metric`). A preference list of lm-evaluation-harness metric names
+    is only the fallback for a receipt that does not declare one. Reading the
+    preference list first is what made the status report 8.8% (`exact_match`)
+    for MATH-500 where the receipt's primary is `math_verify` at 18.6%.
+    """
     for entry in receipt.get("tasks") or []:
         if not isinstance(entry, dict) or entry.get("task") != task:
             continue
         metrics = entry.get("all_metrics") or {}
-        for key in MILESTONE_SCORE_KEYS.get(task, ()):
-            value = metrics.get(key)
-            if isinstance(value, (int, float)):
-                return float(value)
-    return None
+        declared = entry.get("primary_metric")
+        primary_name = None
+        primary = None
+        if isinstance(declared, str) and isinstance(metrics.get(declared),
+                                                    (int, float)):
+            primary_name = declared
+            primary = float(metrics[declared])
+        if primary is None:
+            for key in MILESTONE_SCORE_KEYS.get(task, ()):
+                value = metrics.get(key)
+                if isinstance(value, (int, float)):
+                    primary_name = key
+                    primary = float(value)
+                    break
+        secondary = {
+            key: float(metrics[key])
+            for key in MILESTONE_SCORE_KEYS.get(task, ())
+            if key != primary_name and isinstance(metrics.get(key), (int, float))
+        }
+        return {
+            "task": task,
+            "primary_metric": primary_name,
+            "primary": primary,
+            "secondary": secondary,
+            "declared_primary_metric": declared,
+        }
+    return {"task": task, "primary_metric": None, "primary": None,
+            "secondary": {}, "declared_primary_metric": None}
+
+
+def _milestone_score(receipt: dict, task: str) -> float | None:
+    """The task's primary metric value from a milestone eval receipt."""
+    return _milestone_metric(receipt, task)["primary"]
 
 
 def discover_milestones(root: str, eval_root: str, invalidations: dict,
@@ -332,6 +370,8 @@ def discover_milestones(root: str, eval_root: str, invalidations: dict,
             "state": state,
             "scores": {task: _milestone_score(receipt, task)
                        for task in MILESTONE_SCORE_KEYS},
+            "metrics": {task: _milestone_metric(receipt, task)
+                        for task in MILESTONE_SCORE_KEYS},
         })
     milestones.sort(key=lambda item: (
         item["step"] if item["step"] is not None else -1, item["label"]))
@@ -515,20 +555,38 @@ def _percent(value: float | None) -> str:
 
 
 def _milestone_summary(milestones: Sequence[dict]) -> str:
-    """`m5 50.0% / 40.0% ..., m10 ..., m20 ...` for the status block."""
+    """`m5 task `metric` 50.0% [secondary ...] ...` for the status block.
+
+    The metric name is printed beside every number, and a metric the receipt
+    also carries but did not declare primary is labelled `secondary`. A reader
+    can therefore tell 18.6% (`math_verify,none`) from 8.8%
+    (`exact_match,none`) without opening the receipt.
+    """
     parts = []
     for item in milestones:
+        metrics = item.get("metrics") or {}
         scores = item.get("scores") or {}
-        detail = ", ".join(
-            f"{task} {_percent(scores.get(task))}"
-            for task in ("gsm8k", "minerva_math500", "mmlu", "mmlu_pro")
-            if scores.get(task) is not None)
+        details = []
+        for task in ("gsm8k", "minerva_math500", "mmlu", "mmlu_pro"):
+            metric = metrics.get(task) or {}
+            value = metric.get("primary", scores.get(task))
+            if value is None:
+                continue
+            name = metric.get("primary_metric")
+            detail = (f"{task} `{name}` {_percent(value)}" if name
+                      else f"{task} {_percent(value)}")
+            secondary = metric.get("secondary") or {}
+            if secondary:
+                detail += " [secondary " + ", ".join(
+                    f"`{key}` {_percent(secondary[key])}"
+                    for key in sorted(secondary)) + "]"
+            details.append(detail)
         step = f"step `{item['step']}`" if item.get("step") is not None else "step ?"
         tokens = (f" / `{item['tokens']}` tokens"
                   if item.get("tokens") is not None else "")
         parts.append(
             f"`{item['label']}` ({step}{tokens}, stamp `{item.get('stamp')}`"
-            + (f", {detail}" if detail else "") + ")")
+            + (", " + ", ".join(details) if details else "") + ")")
     return "; ".join(parts)
 
 
