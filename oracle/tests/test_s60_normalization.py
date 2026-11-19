@@ -109,3 +109,39 @@ def test_auto_unit_keeps_historical_arms_on_example_average():
     assert train.resolve_loss_unit("auto", "correction") == "example"
     assert train.resolve_loss_unit("example", "sft") == "example"
     assert train.resolve_loss_unit("token", "sft") == "token"
+
+
+def test_length_aware_plan_groups_rows_and_trims_each_microbatch():
+    from types import SimpleNamespace
+
+    from frontier import sft_data
+
+    packed = sft_data.pack_examples(
+        [{"prompt_ids": [1], "solution_ids": [2] * length}
+         for length in (1, 2, 8, 9)],
+        seq_len=16, pad_id=0, eos_id=7)
+    plan = train.length_aware_plan(packed, rows_per_step=2, seed=0)
+    assert plan["steps"] == 2
+    assert plan["leftover_rows"] == 0
+    assert plan["min_group_width"] == 4
+    assert plan["max_group_width"] == 11
+    # The plan is a pure function of the rows and the seed, so a resumed run
+    # rebuilds the same step order.
+    again = train.length_aware_plan(packed, rows_per_step=2, seed=0)
+    assert plan["groups"] == again["groups"]
+
+    args = SimpleNamespace(grad_accum=2, micro_batch=1, seq_len=16)
+    totals = []
+    for step in (0, 1):
+        batches, _cursor, _offset = train.materialise_step(
+            packed, None, step=step, row_cursor=0, offset=0, plan=plan,
+            args=args)
+        assert len(batches) == 2
+        for inputs, targets in batches:
+            # Each microbatch is trimmed to its own width, so no row carries the
+            # full padded 15 positions.
+            assert inputs.shape[1] < 15
+            assert inputs.shape[1] == targets.shape[1]
+        totals.append(train.step_supervised_positions(batches))
+    # supervised positions: (solution length + EOS) per row, grouped in pairs
+    assert sorted(totals) == [2 + 3, 9 + 10]

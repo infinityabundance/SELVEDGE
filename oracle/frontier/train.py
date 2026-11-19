@@ -579,6 +579,18 @@ def run(args) -> int:
         raise SystemExit(
             "train: --loss-unit token is not defined for the correction "
             "objective; the registered corrective arms are example-averaged")
+    plan = None
+    if args.length_aware_batching:
+        if packed is None:
+            raise SystemExit(
+                "train: --length-aware-batching requires --sft-examples; the "
+                "token stream has fixed-length chunks by construction")
+        plan = length_aware_plan(packed, args.grad_accum * args.micro_batch,
+                                 args.seed)
+        print(f"train: length-aware plan {plan['steps']} steps of "
+              f"{plan['rows_per_step']} rows, widths "
+              f"{plan['min_group_width']}..{plan['max_group_width']}, "
+              f"leftover_rows={plan['leftover_rows']}", flush=True)
     torch.cuda.reset_peak_memory_stats()
 
     teacher = None
@@ -740,18 +752,6 @@ def run(args) -> int:
     start_step = 0
     offset = train_offset
     row_cursor = 0
-    plan = None
-    if args.length_aware_batching:
-        if packed is None:
-            raise SystemExit(
-                "train: --length-aware-batching requires --sft-examples; the "
-                "token stream has fixed-length chunks by construction")
-        plan = length_aware_plan(packed, args.grad_accum * args.micro_batch,
-                                 args.seed)
-        print(f"train: length-aware plan {plan['steps']} steps of "
-              f"{plan['rows_per_step']} rows, widths "
-              f"{plan['min_group_width']}..{plan['max_group_width']}, "
-              f"leftover_rows={plan['leftover_rows']}", flush=True)
     if args.resume:
         path = args.resume
         if path == "latest":
