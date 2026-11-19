@@ -92,11 +92,19 @@ def _check_receipt(path: str, receipt: dict) -> dict:
             f"s64-summary: {path}: loop_cut.compute_saved is not false; a "
             "saved-compute claim is not accepted")
     sampling = receipt.get("sampling") or {}
-    for key in ("k_gsm8k", "k_math"):
-        if int(sampling.get(key, 0)) != REGISTERED_K:
+    datasets = set((receipt.get("acceptance") or {}).get("by_dataset") or {})
+    if not datasets:
+        raise SystemExit(f"s64-summary: {path}: no per-dataset acceptance rows")
+    present_to_flag = {"gsm8k": "k_gsm8k", "math": "k_math"}
+    for dataset in datasets:
+        flag = present_to_flag.get(dataset)
+        if flag is None:
             raise SystemExit(
-                f"s64-summary: {path}: {key}={sampling.get(key)} is not the "
-                f"registered K={REGISTERED_K}")
+                f"s64-summary: {path}: unknown dataset {dataset!r}")
+        if int(sampling.get(flag, 0)) != REGISTERED_K:
+            raise SystemExit(
+                f"s64-summary: {path}: {flag}={sampling.get(flag)} is not "
+                f"the registered K={REGISTERED_K} for the {dataset} shard")
     if int(sampling.get("shards", 0)) != REGISTERED_SHARDS:
         raise SystemExit(
             f"s64-summary: {path}: shards={sampling.get('shards')} is not the "

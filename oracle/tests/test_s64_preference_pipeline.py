@@ -410,8 +410,8 @@ def test_shard_commands_carry_k8_shards_and_the_rejected_sidecar():
     assert [cmd[cmd.index("--label") + 1] for cmd in commands] == [
         row[0] for row in window.PLAN]
     for cmd in commands:
-        k_flag = "--k-gsm8k" if "--k-gsm8k" in cmd else "--k-math"
-        assert cmd[cmd.index(k_flag) + 1] == "8"
+        assert cmd[cmd.index("--k-gsm8k") + 1] == "8"
+        assert cmd[cmd.index("--k-math") + 1] == "8"
         assert "--rejected-out" in cmd
         assert cmd[cmd.index("--shards") + 1] == "2"
 
@@ -533,3 +533,10 @@ def test_rollout_summary_merges_shards_and_refuses_a_compute_saved_claim(tmp_pat
     with pytest.raises(SystemExit) as exc:
         rollout_summary.summarise([("k4.json", wrong_k)])
     assert "K=8" in str(exc.value)
+
+    # A GSM8K-only shard records the unused k_math argparse default; only the
+    # K of the dataset actually present is the registered claim.
+    gsm_only = _shard_receipt(tmp_path, "gsm8k-only")
+    gsm_only["sampling"]["k_math"] = 4
+    accepted = rollout_summary.summarise([("gsm.json", gsm_only)])
+    assert accepted["totals"]["prompts"] == 10
