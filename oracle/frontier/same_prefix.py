@@ -43,8 +43,16 @@ def completion_mask(targets: torch.Tensor) -> torch.Tensor:
 
 
 def completion_ce(student_logits: torch.Tensor, targets: torch.Tensor,
-                  vocab_chunk: int = 32) -> torch.Tensor:
+                  vocab_chunk: int = 32,
+                  normaliser: float | None = None) -> torch.Tensor:
     """Mean cross-entropy over supervised positions only.
+
+    `normaliser` is the number of supervised positions over the whole
+    *optimiser step*. With accumulation the caller passes the step total, so
+    every microbatch contributes `sum CE / step positions` and the summed
+    gradient is exactly the gradient of the globally token-normalised CE. The
+    default (None) divides by this microbatch's own count, which weights every
+    example equally regardless of length.
 
     Fails closed when no position is supervised: an all-masked batch would
     otherwise return a silent zero gradient.
@@ -63,13 +71,15 @@ def completion_ce(student_logits: torch.Tensor, targets: torch.Tensor,
             continue
         total = total + F.cross_entropy(
             chunk_logits[chunk_mask], chunk_labels[chunk_mask], reduction="sum")
-    return total / mask.sum()
+    denominator = mask.sum() if normaliser is None else float(normaliser)
+    return total / max(1.0, float(denominator))
 
 
 def same_prefix_teacher_kl(student_logits: torch.Tensor,
                            teacher_logits: torch.Tensor,
                            targets: torch.Tensor, temperature: float,
-                           vocab_chunk: int = 32) -> torch.Tensor:
+                           vocab_chunk: int = 32,
+                           normaliser: float | None = None) -> torch.Tensor:
     """KL(student_T || teacher_T) over supervised positions, same prefix.
 
     Both logit tensors must have the same shape and must have been produced
@@ -103,20 +113,22 @@ def same_prefix_teacher_kl(student_logits: torch.Tensor,
         # state distribution").
         total = total + (log_student.exp()
                          * (log_student - log_teacher)).sum()
-    return total / mask.sum()
+    denominator = mask.sum() if normaliser is None else float(normaliser)
+    return total / max(1.0, float(denominator))
 
 
 def sft_with_same_prefix_kl(student_logits: torch.Tensor,
                             teacher_logits: torch.Tensor,
                             targets: torch.Tensor, temperature: float,
-                            kl_weight: float) -> tuple[torch.Tensor, ...]:
+                            kl_weight: float,
+                            normaliser: float | None = None) -> tuple[torch.Tensor, ...]:
     """The registered stage-2a objective: completion CE + same-prefix KL."""
-    ce = completion_ce(student_logits, targets)
+    ce = completion_ce(student_logits, targets, normaliser=normaliser)
     if kl_weight == 0.0:
         zero = torch.zeros((), device=student_logits.device)
         return ce, ce.detach(), zero
     kl = same_prefix_teacher_kl(student_logits, teacher_logits, targets,
-                                temperature)
+                                temperature, normaliser=normaliser)
     return ce + kl_weight * (temperature ** 2) * kl, ce.detach(), kl.detach()
 
 

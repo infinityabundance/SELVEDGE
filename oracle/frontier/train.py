@@ -39,6 +39,7 @@ import glob
 import json
 import math
 import os
+import random
 import statistics
 import sys
 import time
@@ -54,6 +55,7 @@ ORACLE = os.path.dirname(HERE)
 sys.path.insert(0, ORACLE)
 
 from frontier import arms, corrective, full, matched_controls, memory, optim8bit  # noqa: E402
+from frontier import identity  # noqa: E402
 from frontier import sft_data  # noqa: E402
 from frontier import same_prefix  # noqa: E402
 from frontier.stream import load_stream, sha256_file  # noqa: E402
@@ -64,6 +66,28 @@ STUDENT_DIR = os.path.join(CACHE, "models", "Qwen", "Qwen3.5-0.8B-Base",
 TEACHER_DIR = os.path.join(CACHE, "models", "Qwen", "Qwen3.5-2B-Base",
                            "b1485b2fa6dfa1287294f269f5fb618e03d52d7c")
 GIB = float(1 << 30)
+#: The unit of learning. `example`: each microbatch is averaged, then the
+#: gradient is divided by grad_accum, so every example carries equal weight
+#: regardless of length. `token`: the step's CE is summed over supervised
+#: positions and divided by the step's total supervised positions, so every
+#: supervised token carries equal weight (S60 fix for the stage-2a confound).
+#: `difficulty` (p(1-p)-weighted step) belongs to the on-policy trainer and is
+#: registered in `docs/ws19-post-trained-route-stage2-revised-s60-v1.json`; it
+#: is not implemented by this SFT loop.
+LOSS_UNITS = ("auto", "example", "token")
+
+
+def resolve_loss_unit(requested: str, objective: str) -> str:
+    """Resolve `auto` without changing a historical arm's recipe.
+
+    The completion-masked SFT objectives were the ones whose token accounting
+    did not match their gradient, so they default to `token`. The earlier
+    `ce_kl` and `correction` arms remain `example`, exactly as they ran, so
+    their config hashes and resumes do not move.
+    """
+    if requested != "auto":
+        return requested
+    return "token" if objective in ("sft", "sft-kl") else "example"
 
 
 def utcnow() -> str:
@@ -126,8 +150,16 @@ def cgroup_memory() -> dict:
 
 def token_loss(student_logits: torch.Tensor, teacher_logits: torch.Tensor | None,
                targets: torch.Tensor, temperature: float, kl_weight: float,
-               vocab_chunk: int = 32) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """CE plus full-vocabulary online KL, chunked over positions for memory."""
+               vocab_chunk: int = 32,
+               normaliser: float | None = None) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """CE plus full-vocabulary online KL, chunked over positions for memory.
+
+    `normaliser` is the supervised-position count of the whole optimiser step.
+    When given, every returned term is divided by it, so summing the
+    microbatches of a step yields exactly `sum CE / step supervised positions`.
+    When omitted, each microbatch is normalised by its own count (the historical
+    example-weighted behaviour).
+    """
     flat_student = student_logits.reshape(-1, student_logits.shape[-1])
     flat_targets = targets.reshape(-1)
     ce_total = torch.zeros((), device=student_logits.device)
@@ -139,7 +171,7 @@ def token_loss(student_logits: torch.Tensor, teacher_logits: torch.Tensor | None
         # Completion-only SFT: prompt and padding positions are -100 and are
         # neither a loss nor part of the normalising count.
         positions += int((t != -100).sum())
-    ce = ce_total / max(1, positions)
+    ce = ce_total / max(1.0, float(positions if normaliser is None else normaliser))
     if teacher_logits is None or kl_weight == 0.0:
         zero = torch.zeros((), device=student_logits.device)
         return ce, ce.detach(), zero
@@ -153,7 +185,7 @@ def token_loss(student_logits: torch.Tensor, teacher_logits: torch.Tensor | None
         log_t = F.log_softmax(t, dim=-1)
         total = total + (log_t.exp() * (log_t - log_s)).sum()
         count += s.shape[0]
-    kl = total / max(1, count)
+    kl = total / max(1.0, float(count if normaliser is None else normaliser))
     return ce + kl_weight * (temperature ** 2) * kl, ce.detach(), kl.detach()
 
 
@@ -330,6 +362,86 @@ def next_batch(stream: torch.Tensor, offset: int, seq_len: int) -> tuple[torch.T
     return chunk[None, :], offset + seq_len
 
 
+def length_aware_plan(packed, rows_per_step: int, seed: int) -> dict:
+    """Group complete SFT rows into length-homogeneous optimiser steps.
+
+    Rows are sorted by their true token length and cut into contiguous groups of
+    `rows_per_step`. Each group is one optimiser step, so its microbatches share
+    a similar width and are trimmed to that width before the model call. The
+    group order is a seeded permutation: batches stay homogeneous, while the
+    step sequence still mixes short and long examples instead of teaching a
+    length curriculum by accident. The plan is a pure function of the packed
+    rows and the seed, so a resumed run rebuilds the same order.
+
+    A trailing partial group is not used (the launcher requires the row count
+    to be a multiple of rows/step); it is reported so it cannot disappear.
+    """
+    if rows_per_step <= 0:
+        raise ValueError("rows_per_step must be positive")
+    lengths = sft_data.row_lengths(packed)
+    order = sorted(range(len(lengths)), key=lambda index: (lengths[index], index))
+    usable = (len(order) // rows_per_step) * rows_per_step
+    groups = [order[start:start + rows_per_step]
+              for start in range(0, usable, rows_per_step)]
+    rng = random.Random(seed)
+    rng.shuffle(groups)
+    leftover = order[usable:]
+    return {
+        "groups": groups,
+        "lengths": lengths,
+        "rows_per_step": int(rows_per_step),
+        "steps": len(groups),
+        "leftover_rows": len(leftover),
+        "min_group_width": min((max(lengths[index] for index in group)
+                                for group in groups), default=0),
+        "max_group_width": max((max(lengths[index] for index in group)
+                                for group in groups), default=0),
+        "note": "rows sorted by true length, grouped, then the groups are "
+                "seeded-shuffled; each microbatch is trimmed to its own width",
+    }
+
+
+def materialise_step(packed, stream, *, step: int, row_cursor: int, offset: int,
+                     plan: dict | None, args) -> tuple[list, int, int]:
+    """Build every microbatch of one optimiser step up front.
+
+    Building the step before the forward passes is what makes the global
+    token normaliser exact: the supervised-position count of the whole step is
+    known from the labels alone, with no model call and no extra memory beyond
+    the batch tensors that were about to be built anyway.
+    """
+    batches: list[tuple[torch.Tensor, torch.Tensor]] = []
+    if packed is None:
+        for micro in range(args.grad_accum):
+            batch, _ = next_batch(stream, offset + micro * args.seq_len,
+                                  args.seq_len)
+            batches.append((batch[:, :-1], batch[:, 1:]))
+        return batches, row_cursor, offset + args.micro_batch * args.seq_len * args.grad_accum
+    rows = packed.input_ids.shape[0]
+    if plan is None:
+        for _ in range(args.grad_accum):
+            indices = torch.arange(row_cursor, row_cursor + args.micro_batch) % rows
+            row_cursor += args.micro_batch
+            batches.append((packed.input_ids[indices, :-1],
+                            packed.labels[indices, 1:]))
+        return batches, row_cursor, offset
+    group = plan["groups"][step % plan["steps"]]
+    lengths = plan["lengths"]
+    for micro in range(args.grad_accum):
+        chunk = group[micro * args.micro_batch:(micro + 1) * args.micro_batch]
+        width = max(lengths[index] for index in chunk)
+        indices = torch.tensor(chunk, dtype=torch.long)
+        batches.append((packed.input_ids[indices, :width - 1],
+                        packed.labels[indices, 1:width]))
+    return batches, row_cursor, offset
+
+
+def step_supervised_positions(batches) -> int:
+    """Supervised positions in the step, from labels only."""
+    return sum(int((targets != sft_data.IGNORE_INDEX).sum())
+               for _, targets in batches)
+
+
 def summarise_numerics(records: list[dict]) -> dict | None:
     """Peak-LR and minimum-LR unchanged fractions from measured steps."""
     if not records:
@@ -424,6 +536,21 @@ def run(args) -> int:
                        "stream_sha256": manifest["sha256"],
                        "tokens": int(stream.numel())}
 
+    student_identity = None
+    if args.student_lock:
+        if not args.student_id or not args.student_revision:
+            raise SystemExit(
+                "train: --student-lock requires --student-id and "
+                "--student-revision")
+        try:
+            student_identity = identity.verify_student(
+                args.student_dir, args.student_lock, args.student_id,
+                args.student_revision)
+        except identity.IdentityMismatch as exc:
+            raise SystemExit(f"train: student identity check failed: {exc}")
+        print(f"train: student identity verified {args.student_id}@"
+              f"{args.student_revision[:12]} weight {student_identity['weight_sha256'][:12]}",
+              flush=True)
     print(f"train: loading student {args.student_dir}", flush=True)
     model = arms.load_model(args.student_dir, dtype=torch.bfloat16, device=device)
     if args.arm == "full":
@@ -447,6 +574,11 @@ def run(args) -> int:
         "correction" if args.arm == "corrective" else "ce_kl")
     if objective == "correction" and corrective_module is None:
         raise SystemExit("train: the correction objective requires --arm corrective")
+    loss_unit = resolve_loss_unit(args.loss_unit, objective)
+    if loss_unit == "token" and objective == "correction":
+        raise SystemExit(
+            "train: --loss-unit token is not defined for the correction "
+            "objective; the registered corrective arms are example-averaged")
     torch.cuda.reset_peak_memory_stats()
 
     teacher = None
@@ -518,6 +650,32 @@ def run(args) -> int:
         "completion_only_loss": bool(packed is not None),
         "memory_table_in_active_union": False,
     }
+    if loss_unit != "example" or args.loss_unit != "auto":
+        # Added only when the resolved unit is not the historical example
+        # average (or when the caller stated it explicitly), so the earlier
+        # arms' config hashes and resumes are unchanged.
+        config.update({
+            "loss_unit": loss_unit,
+            "loss_unit_requested": args.loss_unit,
+            "loss_normalisation": (
+                "sum CE over the step's supervised positions / the step's "
+                "supervised positions" if loss_unit == "token" else
+                "microbatch mean / grad_accum: each example has equal weight"),
+        })
+    if student_identity is not None:
+        config["student_identity"] = student_identity
+    if plan is not None:
+        config.update({
+            "length_aware_batching": True,
+            "length_aware_plan": {
+                "steps": plan["steps"],
+                "rows_per_step": plan["rows_per_step"],
+                "leftover_rows": plan["leftover_rows"],
+                "min_group_width": plan["min_group_width"],
+                "max_group_width": plan["max_group_width"],
+                "note": plan["note"],
+            },
+        })
     if args.arm == "full":
         # Added only for the full arm so existing adapter/memory config hashes
         # (and therefore their resumes) are unchanged by this arm's arrival.
@@ -582,6 +740,18 @@ def run(args) -> int:
     start_step = 0
     offset = train_offset
     row_cursor = 0
+    plan = None
+    if args.length_aware_batching:
+        if packed is None:
+            raise SystemExit(
+                "train: --length-aware-batching requires --sft-examples; the "
+                "token stream has fixed-length chunks by construction")
+        plan = length_aware_plan(packed, args.grad_accum * args.micro_batch,
+                                 args.seed)
+        print(f"train: length-aware plan {plan['steps']} steps of "
+              f"{plan['rows_per_step']} rows, widths "
+              f"{plan['min_group_width']}..{plan['max_group_width']}, "
+              f"leftover_rows={plan['leftover_rows']}", flush=True)
     if args.resume:
         path = args.resume
         if path == "latest":
@@ -616,6 +786,7 @@ def run(args) -> int:
     numerics_log: list[dict] = []
     step_time = 0.0
     run_tokens = start_step * tokens_per_step
+    actual_tokens = 0
     ce_history: list[float] = []
     update_max_ever = 0.0
     if start_step and args.abort_ce_factor > 0.0:
@@ -637,19 +808,26 @@ def run(args) -> int:
         loss_sum = 0.0
         objective_sum: dict[str, float] = {}
         step_started = time.time()
-        for micro in range(args.grad_accum):
-            if packed is None:
-                batch, _ = next_batch(stream, offset + micro * args.seq_len,
-                                      args.seq_len)
-                batch = batch.to(device)
-                inputs = batch[:, :-1]
-                targets = batch[:, 1:]
-            else:
-                rows = packed.input_ids.shape[0]
-                indices = torch.arange(row_cursor, row_cursor + args.micro_batch) % rows
-                row_cursor += args.micro_batch
-                inputs = packed.input_ids[indices, :-1].to(device)
-                targets = packed.labels[indices, 1:].to(device)
+        batches, row_cursor, offset = materialise_step(
+            packed, stream, step=step, row_cursor=row_cursor, offset=offset,
+            plan=plan, args=args)
+        supervised_positions = step_supervised_positions(batches)
+        if loss_unit == "token":
+            if supervised_positions == 0:
+                raise SystemExit(
+                    "train: an optimiser step has no supervised positions; a "
+                    "globally normalised loss has no denominator")
+            normaliser: float | None = float(supervised_positions)
+            backward_scale = 1.0
+            log_scale = 1.0
+        else:
+            normaliser = None
+            backward_scale = 1.0 / args.grad_accum
+            log_scale = 1.0 / args.grad_accum
+        for micro, (inputs, targets) in enumerate(batches):
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            actual_tokens += int(inputs.numel())
             teacher_logits = None
             if teacher is not None:
                 with torch.no_grad():
@@ -669,17 +847,20 @@ def run(args) -> int:
                 if keep.numel() == 0:
                     student = model(input_ids=inputs, use_cache=False).logits
                     loss, ce, kl = token_loss(student, None, targets,
-                                              args.temperature, 0.0)
+                                              args.temperature, 0.0,
+                                              normaliser=normaliser)
                 else:
                     student = model(input_ids=inputs, use_cache=False,
                                     logits_to_keep=keep).logits
                     loss, ce, kl = token_loss(student, None, targets[:, keep],
-                                              args.temperature, 0.0)
+                                              args.temperature, 0.0,
+                                              normaliser=normaliser)
             elif objective == "sft":
                 # Verified-solution cross-entropy: no teacher, no KL.
                 student = model(input_ids=inputs, use_cache=False).logits
                 loss, ce, kl = token_loss(student, None, targets,
-                                          args.temperature, 0.0)
+                                          args.temperature, 0.0,
+                                          normaliser=normaliser)
             elif objective == "sft-kl":
                 # The registered stage-2a objective: completion-only CE plus
                 # teacher KL at the SAME causal prefix. `inputs` is the
@@ -697,7 +878,7 @@ def run(args) -> int:
                         f"{tuple(inputs.shape)}")
                 loss, ce, kl = same_prefix.sft_with_same_prefix_kl(
                     student, teacher_logits, targets, args.temperature,
-                    args.kl_weight)
+                    args.kl_weight, normaliser=normaliser)
             elif (corrective_module is not None and objective == "correction"):
                 if teacher_logits is None:
                     raise SystemExit(
@@ -727,15 +908,12 @@ def run(args) -> int:
             else:
                 student = model(input_ids=inputs, use_cache=False).logits
                 loss, ce, kl = token_loss(student, teacher_logits, targets,
-                                          args.temperature, args.kl_weight)
-            (loss / args.grad_accum).backward()
+                                          args.temperature, args.kl_weight,
+                                          normaliser=normaliser)
+            (loss * backward_scale).backward()
             loss_sum += float(loss.detach())
             ce_sum += float(ce)
             kl_sum += float(kl)
-        if packed is not None:
-            offset = row_cursor
-        else:
-            offset = offset + tokens_per_step
         torch.nn.utils.clip_grad_norm_(trainable, args.grad_clip)
         measure = args.optimizer == "adam8bit" and step in measure_at
         if measure:
@@ -758,9 +936,12 @@ def run(args) -> int:
         entry = {
             "step": step + 1,
             "tokens_seen": run_tokens,
-            "loss": loss_sum / args.grad_accum,
-            "ce": ce_sum / args.grad_accum,
-            "kl": kl_sum / args.grad_accum,
+            "loss": loss_sum * log_scale,
+            "ce": ce_sum * log_scale,
+            "kl": kl_sum * log_scale,
+            "loss_unit": loss_unit,
+            "supervised_positions_in_step": supervised_positions,
+            "actual_input_tokens": actual_tokens,
             "lr": lr,
             "step_seconds": round(step_time, 4),
             "tokens_per_second": round(tokens_per_step / step_time, 1),
@@ -934,6 +1115,10 @@ def run(args) -> int:
             "tripped": False,
         } if args.optimizer == "adam8bit" else None),
         "objective": objective,
+        "loss_unit": loss_unit,
+        "actual_input_tokens": actual_tokens,
+        "length_aware_batching": bool(plan is not None),
+        "student_identity": student_identity,
         "correction_gate_final": (
             corrective_module.gate_summary() if corrective_module is not None
             else None),
@@ -982,6 +1167,23 @@ def main(argv: list[str]) -> int:
                         default="error",
                         help="what to do when an example exceeds seq_len; "
                              "error never splits a solution")
+    parser.add_argument("--loss-unit", choices=list(LOSS_UNITS), default="auto",
+                        help="unit of learning: 'token' sums CE over the step's "
+                             "supervised positions and divides by that step total; "
+                             "'example' averages each microbatch and divides by "
+                             "grad_accum; 'auto' selects token for sft/sft-kl and "
+                             "example for the earlier ce_kl/correction arms")
+    parser.add_argument("--length-aware-batching", action="store_true",
+                        help="group complete SFT rows into length-homogeneous "
+                             "optimiser steps and trim each microbatch to its own "
+                             "width, so long examples are preserved without "
+                             "paying full-length activations on short batches")
+    parser.add_argument("--student-lock", default=None,
+                        help="identity lock to verify the student against before "
+                             "loading it (requires --student-id and "
+                             "--student-revision)")
+    parser.add_argument("--student-id", default=None)
+    parser.add_argument("--student-revision", default=None)
     parser.add_argument("--student-dir", default=STUDENT_DIR)
     parser.add_argument("--teacher-dir", default=TEACHER_DIR)
     parser.add_argument("--memory-init", default=None)

@@ -119,6 +119,21 @@ def select_holdout(rows: list[dict], fraction: float, seed: int) -> tuple[list[d
     return kept, holdout
 
 
+def replay_example(ids: list[int], truncated: bool, index: int) -> dict:
+    """One replay row. A truncated document keeps its tokens but not its EOS.
+
+    The trailing EOS is added by `frontier.sft_data.completion_example`. For a
+    document cut at `--replay-max-tokens` that EOS is synthetic: it never
+    occurred in the text, so `supervise_eos=False` masks its label. A complete
+    document keeps the EOS supervised. The replay text is never a solution.
+    """
+    return {"kind": "replay", "prompt_ids": [],
+            "solution_ids": list(ids),
+            "id": f"fineweb-edu:{index}",
+            "supervise_eos": not truncated,
+            "truncated": bool(truncated)}
+
+
 def replay_documents(tokenizer, *, max_tokens: int, target_tokens: int,
                      seed: int) -> tuple[list[dict], dict]:
     """Read the pinned fineweb-edu shard and cut whole documents."""
@@ -141,12 +156,11 @@ def replay_documents(tokenizer, *, max_tokens: int, target_tokens: int,
             ids = tokenizer(text, add_special_tokens=False)["input_ids"]
             if len(ids) < 64:
                 continue
-            if len(ids) > max_tokens:
+            truncated_here = len(ids) > max_tokens
+            if truncated_here:
                 ids = ids[:max_tokens]
                 truncated += 1
-            documents.append({"kind": "replay", "prompt_ids": [],
-                              "solution_ids": ids,
-                              "id": f"fineweb-edu:{considered}"})
+            documents.append(replay_example(ids, truncated_here, considered))
             total += len(ids)
         if total >= target_tokens:
             break
@@ -162,10 +176,52 @@ def replay_documents(tokenizer, *, max_tokens: int, target_tokens: int,
         "supervised_tokens": total,
         "max_tokens_per_document": max_tokens,
         "truncated_documents": truncated,
+        "masked_synthetic_eos": truncated,
         "truncation_policy": "whole-document prefix at a token boundary; replay "
-                             "text is not a solution and carries no answer",
+                             "text is not a solution and carries no answer; the "
+                             "synthetic EOS on a truncated document is masked",
     }
     return documents, report
+
+
+def overflow_profile(rows: list[dict], seq_lens: list[int]) -> dict:
+    """Overflow by dataset and difficulty at each candidate row width.
+
+    This is the measurement the row width is chosen from. `dropped` counts
+    complete examples; `supervised_tokens_dropped` counts the supervised
+    solution positions they carry, because a few long MATH traces can hold a
+    large share of the loss.
+    """
+    profile = {}
+    for seq_len in seq_lens:
+        by_dataset: dict[str, dict] = {}
+        by_difficulty: dict[str, dict] = {}
+        dropped = 0
+        dropped_tokens = 0
+        for row in rows:
+            length = len(row["prompt_ids"]) + len(row["solution_ids"]) + 1
+            if length <= seq_len:
+                continue
+            tokens = len(row["solution_ids"]) + 1
+            dropped += 1
+            dropped_tokens += tokens
+            dataset = row.get("dataset") or "unknown"
+            difficulty = str(row.get("difficulty"))
+            for table, key in ((by_dataset, dataset),
+                               (by_difficulty, f"{dataset}|{difficulty}")):
+                entry = table.setdefault(key, {"examples": 0,
+                                               "supervised_tokens": 0})
+                entry["examples"] += 1
+                entry["supervised_tokens"] += tokens
+        profile[str(seq_len)] = {
+            "examples": len(rows),
+            "dropped": dropped,
+            "dropped_fraction": dropped / len(rows) if rows else 0.0,
+            "supervised_tokens_dropped": dropped_tokens,
+            "by_dataset": by_dataset,
+            "by_dataset_difficulty": by_difficulty,
+        }
+    return profile
 
 
 def main(argv: list[str]) -> int:
@@ -178,6 +234,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--replay-max-tokens", type=int, default=768)
     parser.add_argument("--holdout-fraction", type=float, default=0.02)
     parser.add_argument("--seq-len", type=int, default=768)
+    parser.add_argument("--profile-seq-lens", default="1250,1536,1792,2048,2304,2560",
+                        help="comma-separated row widths to report overflow for; "
+                             "the chosen width is one of these measured points, "
+                             "not a guess")
     parser.add_argument("--seed", type=int, default=5500)
     parser.add_argument(
         "--order", choices=["seeded-shuffle", "teacher-then-replay"],
@@ -230,13 +290,15 @@ def main(argv: list[str]) -> int:
     def write_rows(path: str, rows: list[dict]) -> dict:
         with open(path, "w", encoding="utf-8") as handle:
             for row in rows:
-                handle.write(json.dumps({
+                payload = {
                     "id": row.get("id"),
                     "kind": row.get("kind", "teacher"),
                     "dataset": row.get("dataset"),
                     "prompt_ids": row["prompt_ids"],
-                    "solution_ids": row["solution_ids"]},
-                    sort_keys=True) + "\n")
+                    "solution_ids": row["solution_ids"]}
+                if row.get("supervise_eos") is False:
+                    payload["supervise_eos"] = False
+                handle.write(json.dumps(payload, sort_keys=True) + "\n")
         return {"path": os.path.relpath(path, ROOT), "sha256": sha256_file(path),
                 "rows": len(rows)}
 
@@ -267,6 +329,8 @@ def main(argv: list[str]) -> int:
     }
 
     total_supervised = teacher_tokens + replay_supervised
+    seq_lens = [int(value) for value in args.profile_seq_lens.split(",")
+                if value.strip()]
     payload = {
         "schema": SCHEMA,
         "created_utc": utcnow(),
@@ -320,6 +384,13 @@ def main(argv: list[str]) -> int:
                     "replay CE 2.8 at that boundary"),
         },
         "length_profile": profile,
+        "overflow_profile": {
+            "teacher": overflow_profile(teacher_rows, seq_lens),
+            "all_rows": overflow_profile(ordered, seq_lens),
+            "reading": "complete examples only; supervised tokens include the "
+                       "trailing EOS, so the before (1250) and after (chosen "
+                       "width) columns are directly comparable",
+        },
         "command": sys.argv,
     }
     write_json(os.path.join(out_dir, f"{args.label}-examples-receipt.json"),
@@ -332,6 +403,15 @@ def main(argv: list[str]) -> int:
     print(f"s55-examples: holdout {holdout_meta['rows']} rows; "
           f"overflow at seq_len {args.seq_len}: "
           f"{profile['over_seq_len']}/{profile['examples']}")
+    for seq_len in seq_lens:
+        entry = payload["overflow_profile"]["teacher"][str(seq_len)]
+        print(f"s55-examples: teacher overflow at {seq_len}: "
+              f"{entry['dropped']}/{entry['examples']} examples, "
+              f"{entry['supervised_tokens_dropped']} supervised tokens "
+              f"({entry['dropped_fraction']:.4f})")
+    print(f"s55-examples: replay {len(replay)} docs, "
+          f"{replay_report['truncated_documents']} truncated with the synthetic "
+          f"EOS masked")
     return 0
 
 

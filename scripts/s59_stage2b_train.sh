@@ -38,7 +38,10 @@ cd "$repo_root"
 
 registration="docs/ws19-post-trained-route-stage2b-preregistration-v1.json"
 amendment="docs/ws19-post-trained-route-stage2b-amendment-s59-v2.json"
-student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
+student_id="Qwen/Qwen3.5-0.8B"
+student_revision="2fc06364715b967f1860aea9cf38778875588b17"
+student_lock="models/FRONTIER-POST-TRAINED.lock.json"
+student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/$student_revision"
 arm_label=""
 examples=""
 examples_receipt=""
@@ -105,6 +108,15 @@ case "$student_dir" in
     exit 78
     ;;
 esac
+case "$student_dir" in
+  */"$student_revision") ;;
+  *)
+    printf 's59-train: student %s does not end in the registered revision %s; identity is not provable\n' \
+      "$student_dir" "$student_revision" >&2
+    exit 78
+    ;;
+esac
+[[ -f "$student_lock" ]] || { printf 's59-train: missing identity lock %s\n' "$student_lock" >&2; exit 78; }
 if [[ -d /hf-cache ]]; then
   [[ -f "$student_dir/config.json" ]] || {
     printf 's59-train: student dir %s has no config.json\n' "$student_dir" >&2
@@ -177,10 +189,14 @@ fi
 cmd=(python3 oracle/frontier/train.py
   --arm full
   --student-dir "$student_dir"
+  --student-lock "$student_lock"
+  --student-id "$student_id"
+  --student-revision "$student_revision"
   --sft-examples "$examples"
   --sft-examples-per-row 1
   --sft-overflow drop
   --objective sft
+  --loss-unit token
   --kl-weight 0
   --tokens "$tokens"
   --seq-len "$seq_len"

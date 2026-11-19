@@ -20,15 +20,25 @@
 # per-step token count does not divide 1,000,000. The default below divides it
 # exactly:
 #
-#   seq_len 1250, micro-batch 1, grad-accum 2 -> 2,500 tokens/step
+#   seq_len 2500, micro-batch 1, grad-accum 1 -> 2,500 tokens/step
 #   1,000,000 / 2,500 = 400 steps -> a checkpoint every 1.000M tokens
 #   -> the 2M (step 800) and 5M (step 2000) checkpoints are exact.
 #
-# seq_len 1250 is chosen from the measured total-example length distribution of
-# the merged corpus: 4.8% of examples exceed it and are dropped whole and
-# counted (`overflow=drop`), never split. At seq_len 1000 the drop would be
-# 10.1% of rows but 23.0% of supervised solution tokens, because the long
-# solutions carry most of the loss; 1250 keeps them.
+# S60: the row width is 2500, not 1250, because the measured corpus maximum is
+# 2,273 tokens and S58 dropped 191 MATH examples / 292,068 supervised tokens at
+# 1250. `--length-aware-batching` groups rows by true length and trims each
+# microbatch to its own width, and `--gradient-checkpointing` plus
+# `--sft-logits-gather` keep the activation budget bounded. The first launch of
+# this shape must be a 40-step smoke: 2,500 tokens was not measured before S60,
+# so the VRAM limit is a hypothesis until the smoke receipt exists.
+#
+# The early-loss tripwire's baseline window must cover the warmup. With
+# baseline_steps 100 and warmup 200 the baseline is measured entirely inside
+# the linear ramp (LR <= 5e-6) and the trailing window at full LR, so the
+# comparison is between two learning-rate regimes rather than against a
+# divergence. The first S58 launch aborted at step 218 for exactly that reason
+# (ratio 1.517; results/stage2/runs/s58-stage2a-abort-20261118T181418Z/). The
+# baseline is now 400 steps (warmup plus 200 at full LR) and the window 100.
 #
 # The early-loss tripwire's baseline window must cover the warmup. With
 # baseline_steps 100 and warmup 200 the baseline is measured entirely inside
@@ -55,15 +65,19 @@ cd "$repo_root"
 
 examples="results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples.jsonl"
 examples_receipt="results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples-receipt.json"
+verification="results/stage2/s57-stage2a-verification.json"
 run_dir="results/stage2/runs/s58-stage2a"
 # The stage-2a student is the POST-TRAINED 0.8B (2fc06364...). train.py's
 # default is the Base checkpoint; without this pin the launcher would silently
 # train the wrong model and every downstream comparison would be void.
-student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
+student_id="Qwen/Qwen3.5-0.8B"
+student_revision="2fc06364715b967f1860aea9cf38778875588b17"
+student_lock="models/FRONTIER-POST-TRAINED.lock.json"
+student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/$student_revision"
 epochs=2
-seq_len=1250
+seq_len=2500
 micro_batch=1
-grad_accum=2
+grad_accum=1
 lr="1e-5"
 keep_checkpoints=10
 vram_limit="13.5"
@@ -73,6 +87,7 @@ while (($#)); do
   case "$1" in
     --examples) examples="${2-}"; shift 2 ;;
     --examples-receipt) examples_receipt="${2-}"; shift 2 ;;
+    --verification) verification="${2-}"; shift 2 ;;
     --student-dir) student_dir="${2-}"; shift 2 ;;
     --run-dir) run_dir="${2-}"; shift 2 ;;
     --epochs) epochs="${2-}"; shift 2 ;;
@@ -90,6 +105,7 @@ done
 
 [[ -f "$examples" ]] || { printf 's57-train: missing examples %s\n' "$examples" >&2; exit 78; }
 [[ -f "$examples_receipt" ]] || { printf 's57-train: missing examples receipt %s\n' "$examples_receipt" >&2; exit 78; }
+[[ -f "$student_lock" ]] || { printf 's57-train: missing identity lock %s\n' "$student_lock" >&2; exit 78; }
 if [[ -d /hf-cache ]]; then
   # Host-side pre-flight when the cache is mounted here; inside the court the
   # path is the container's /hf-cache, so this check runs in the launcher only.
@@ -105,6 +121,15 @@ case "$student_dir" in
   *Qwen3.5-0.8B-Base*)
     printf 's57-train: student %s is the BASE checkpoint; stage 2a trains the post-trained 0.8B\n' \
       "$student_dir" >&2
+    exit 78
+    ;;
+esac
+case "$student_dir" in
+  */"$student_revision")
+    ;;
+  *)
+    printf 's57-train: student %s does not end in the registered revision %s; identity is not provable\n' \
+      "$student_dir" "$student_revision" >&2
     exit 78
     ;;
 esac
@@ -169,10 +194,17 @@ fi
 cmd=(python3 oracle/frontier/train.py
   --arm full
   --student-dir "$student_dir"
+  --student-lock "$student_lock"
+  --student-id "$student_id"
+  --student-revision "$student_revision"
   --sft-examples "$examples"
   --sft-examples-per-row 1
   --sft-overflow drop
   --objective sft
+  --loss-unit token
+  --length-aware-batching
+  --sft-logits-gather
+  --gradient-checkpointing
   --kl-weight 0
   --tokens "$tokens"
   --seq-len "$seq_len"
@@ -216,6 +248,11 @@ fi
   printf 's57-train: set SELVEDGE_MEM from the measured peak (floor 13.1g; 14g registered)\n' >&2
   exit 78
 }
+[[ -f "$verification" ]] || {
+  printf 's57-train: missing corpus verification receipt %s; run scripts/s57_verify_stage2a.py with --examples and --examples-receipt first\n' \
+    "$verification" >&2
+  exit 78
+}
 export SELVEDGE_MEM
 mem_bytes=$(python3 -c 'import re,sys; v=sys.argv[1]; n=int(re.match(r"([0-9]+)", v).group(1)); u=v[-1].lower(); print(n*{"k":1024,"m":1048576,"g":1073741824}[u])' "$SELVEDGE_MEM")
 available=$(awk '/MemAvailable/ {print int($2/1048576)}' /proc/meminfo)
@@ -240,11 +277,15 @@ fi
 
 python3 - "$run_dir" "$examples" "$examples_receipt" "$epochs" "$tokens" "$steps" \
   "$ckpt_every" "$milestone_2m" "$milestone_5m" "$SELVEDGE_MEM" "$vram_limit" "$rows" \
-  "$too_long" "$supervised_tokens" "$tokens_per_step" "$student_dir" <<'PY'
+  "$too_long" "$supervised_tokens" "$tokens_per_step" "$student_dir" \
+  "$verification" "$student_id" "$student_revision" "$student_lock" \
+  "$seq_len" "$micro_batch" "$grad_accum" <<'PY'
 import hashlib, json, os, re, sys
 from datetime import datetime, timezone
 (run_dir, examples, receipt, epochs, tokens, steps, ckpt_every, m2m, m5m, mem,
- vram, rows, too_long, supervised, tokens_per_step, student_dir) = sys.argv[1:17]
+ vram, rows, too_long, supervised, tokens_per_step, student_dir,
+ verification, student_id, student_revision, student_lock,
+ seq_len, micro_batch, grad_accum) = sys.argv[1:24]
 
 
 def sha256(path):
@@ -259,6 +300,26 @@ n = int(re.match(r"([0-9]+)", mem).group(1))
 unit = mem[-1].lower()
 mem_bytes = n * {"k": 1024, "m": 1048576, "g": 1073741824}[unit]
 os.makedirs(run_dir, exist_ok=True)
+
+# S60: no training without a passing corpus verification and a byte-identical
+# examples file. The receipt is the verifier's own output, not a recount.
+examples_sha = sha256(examples)
+verified = json.load(open(verification, encoding="utf-8"))
+gates = verified.get("gates") or {}
+reverification = verified.get("reverification") or {}
+verified_examples = (verified.get("examples") or {}).get("sha256")
+problems = []
+if gates.get("corpus_usable") is not True:
+    problems.append("verification gates.corpus_usable is not true")
+if reverification.get("all_correct") is not True:
+    problems.append("the re-verification did not pass every accepted solution")
+if verified_examples != examples_sha:
+    problems.append(
+        f"examples sha256 {examples_sha} != verified {verified_examples}")
+if problems:
+    for problem in problems:
+        print(f"s57-train: corpus verification refused: {problem}", file=sys.stderr)
+    raise SystemExit(78)
 record = {
     "schema": "selvedge/s57-stage2a-launch/v1",
     "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -268,25 +329,42 @@ record = {
         "docs/ws19-post-trained-route-stage2a-amendment-s56-v1.json",
     ],
     "data": {
-        "examples": {"path": examples, "sha256": sha256(examples)},
+        "examples": {"path": examples, "sha256": examples_sha},
         "examples_receipt": {"path": receipt, "sha256": sha256(receipt)},
+        "verification": {
+            "path": verification,
+            "sha256": sha256(verification),
+            "corpus_usable": gates.get("corpus_usable"),
+            "reverification_all_correct": reverification.get("all_correct"),
+            "examples_sha256_matches": verified_examples == examples_sha,
+        },
         "rows_fit": int(rows),
         "examples_longer_than_seq_len_dropped": int(too_long),
         "supervised_positions_in_rows": int(supervised),
         "packing": "one complete example per row; no boundary crossing",
         "completion_only_loss": True,
+        "loss_unit": "token",
+        "length_aware_batching": True,
     },
     "student": {
         "dir": student_dir,
-        "id": "Qwen/Qwen3.5-0.8B",
-        "revision": "2fc06364715b967f1860aea9cf38778875588b17",
-        "note": "post-trained chat checkpoint, not the Base model",
+        "id": student_id,
+        "revision": student_revision,
+        "lock": {"path": student_lock, "sha256": sha256(student_lock)},
+        "note": "post-trained chat checkpoint, not the Base model; the trainer "
+                "re-verifies the revision and the first-shard weight hash "
+                "before loading",
     },
     "recipe": {
         "epochs": int(epochs),
         "tokens_processed": int(tokens),
         "steps": int(steps),
         "tokens_per_step": int(tokens_per_step),
+        "seq_len": int(seq_len),
+        "micro_batch": int(micro_batch),
+        "grad_accum": int(grad_accum),
+        "gradient_checkpointing": True,
+        "sft_logits_gather": True,
         "optimizer": "Adam8bit block 256, int8 first moment, bf16 second moment, "
                      "stochastic weight rounding",
         "lr": 1e-5,

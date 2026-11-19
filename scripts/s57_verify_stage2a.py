@@ -23,10 +23,19 @@ The `verdict` block applies the S57 mission gate: acceptance at or above 40% and
 no evidence that the cap is truncating the solutions being kept. It does not
 gate on a number it did not measure.
 
+S60 adds the two checks the launcher needs before training: `frontier.rft.verify`
+is re-run on **every** accepted solution (a stored `extracted` field is not
+proof, and a generator-side bug would be invisible to a recount), and the
+built examples file is compared byte-for-byte with the SHA-256 its own receipt
+declares. The corpus gate fails closed unless every re-verified solution is
+`correct` and the examples hash matches.
+
 Usage:
     SELVEDGE_MEM=4g scripts/court python -- python3 scripts/s57_verify_stage2a.py \
         --receipt results/artifacts/stage2/s55-stage2a/stage2a-receipt.json \
         --accepted results/artifacts/stage2/s55-stage2a/stage2a-accepted.jsonl \
+        --examples results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl \
+        --examples-receipt results/artifacts/stage2/s58-combined/stage2a-combined-examples-receipt.json \
         --out results/stage2/s57-stage2a-verification.json
 """
 
@@ -88,13 +97,101 @@ def percentile(values: list[int], fraction: float) -> float:
     return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
 
 
+def _relative(path: str) -> str:
+    return os.path.relpath(os.path.abspath(path), ROOT)
+
+
+def reverify(rows: list[dict]) -> dict:
+    """Re-run the verifier on every accepted solution.
+
+    The generator stores an `extracted` value and a `verification_method`; this
+    pass ignores both and recomputes the verdict from the solution text and the
+    train label with `frontier.rft.verify`, the same extractor every score uses.
+    """
+    verdicts: dict[str, int] = {}
+    failures: list[dict] = []
+    for row in rows:
+        dataset = "gsm8k" if row.get("dataset") == "gsm8k" else "math"
+        result = rft.verify(row["solution"], row["target"], dataset)
+        verdict = result["verdict"]
+        verdicts[verdict] = verdicts.get(verdict, 0) + 1
+        stored = row.get("extracted")
+        if verdict != "correct":
+            failures.append({
+                "id": row.get("id"),
+                "dataset": row.get("dataset"),
+                "verdict": verdict,
+                "extracted": result["extracted"],
+                "target": result["target"],
+                "stored_extracted": stored,
+                "reason": result["reason"],
+            })
+    return {
+        "rows": len(rows),
+        "verdicts": verdicts,
+        "all_correct": not failures,
+        "failure_count": len(failures),
+        "failures": failures[:50],
+        "verifier": "frontier.rft.verify, recomputed for every accepted row",
+    }
+
+
+def examples_check(examples: str | None, examples_receipt: str | None,
+                   accepted_rel: str, accepted_sha: str) -> dict | None:
+    """Compare the built examples file with its receipt and the accepted input."""
+    if not examples:
+        return None
+    path = os.path.join(ROOT, examples)
+    if not os.path.isfile(path):
+        raise SystemExit(f"s57-verify: examples file is missing: {examples}")
+    actual = sha256_file(path)
+    block = {
+        "path": _relative(path),
+        "sha256": actual,
+        "receipt": None,
+        "receipt_sha256": None,
+        "matches": None,
+        "accepted_input_matches": None,
+    }
+    if examples_receipt:
+        receipt_path = os.path.join(ROOT, examples_receipt)
+        if not os.path.isfile(receipt_path):
+            raise SystemExit(
+                f"s57-verify: examples receipt is missing: {examples_receipt}")
+        built = json.load(open(receipt_path, encoding="utf-8"))
+        recorded = (built.get("examples") or {}).get("sha256")
+        block["receipt"] = _relative(receipt_path)
+        block["receipt_sha256"] = sha256_file(receipt_path)
+        block["receipt_recorded_sha256"] = recorded
+        block["matches"] = bool(recorded) and recorded == actual
+        inputs = built.get("inputs") or []
+        block["accepted_input_matches"] = any(
+            _relative(os.path.join(ROOT, entry)) == accepted_rel
+            and _accepted_sha_for(entry) == accepted_sha
+            for entry in inputs)
+    return block
+
+
+def _accepted_sha_for(entry: str) -> str | None:
+    path = os.path.join(ROOT, entry)
+    return sha256_file(path) if os.path.isfile(path) else None
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--receipt", required=True)
     parser.add_argument("--accepted", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--examples", default=None,
+                        help="the built SFT examples file; its SHA-256 must match "
+                             "the examples receipt before training")
+    parser.add_argument("--examples-receipt", default=None,
+                        help="the examples builder's receipt (declares "
+                             "examples.sha256 and the accepted inputs)")
     parser.add_argument("--skip-contamination", action="store_true",
                         help="only for a dry pass over a smoke corpus")
+    parser.add_argument("--skip-reverification", action="store_true",
+                        help="only for an explicitly labelled smoke pass")
     args = parser.parse_args(argv)
 
     receipt_path = os.path.join(ROOT, args.receipt)
@@ -215,6 +312,14 @@ def main(argv: list[str]) -> int:
 
     kept_rate = overall["acceptance_kept_over_sampled"] or 0.0
     truncated_rate = overall["truncated_over_sampled"] or 0.0
+    if args.skip_reverification:
+        reverification = {"status": "skipped"}
+    else:
+        reverification = reverify(rows)
+    accepted_rel = _relative(accepted_path)
+    accepted_sha = sha256_file(accepted_path)
+    examples_block = examples_check(args.examples, args.examples_receipt,
+                                     accepted_rel, accepted_sha)
     gates = {
         "acceptance_floor": ACCEPTANCE_FLOOR,
         "acceptance_measured": kept_rate,
@@ -223,6 +328,10 @@ def main(argv: list[str]) -> int:
         "truncation_measured": truncated_rate,
         "truncation_passes": truncated_rate < TRUNCATION_CEILING,
         "contamination_fail_closed": contamination.get("fail_closed"),
+        "reverification_all_correct": reverification.get("all_correct"),
+        "examples_sha256_matches": (examples_block or {}).get("matches"),
+        "examples_accepted_input_matches": (
+            (examples_block or {}).get("accepted_input_matches")),
         "solution_cap_reached_by_kept": {
             source: entry["solution_tokens"]["fraction_at_cap"]
             for source, entry in sources.items()},
@@ -230,12 +339,17 @@ def main(argv: list[str]) -> int:
                     "a completion that hit the cap without EOS is counted "
                     "truncated and can never be a target, so a high kept rate "
                     "beside a high truncated rate would mean the cap is doing "
-                    "the selection"),
+                    "the selection. The revertification and examples-hash "
+                    "clauses are the S60 training preconditions."),
     }
     gates["corpus_usable"] = bool(
         gates["acceptance_passes"] and gates["truncation_passes"]
         and not contamination.get("fail_closed", False)
-        and not duplicates)
+        and not duplicates
+        and reverification.get("all_correct") is not False
+        and (examples_block is None or
+             (examples_block.get("matches") is not False
+              and examples_block.get("accepted_input_matches") is not False)))
 
     payload = {
         "schema": SCHEMA,
@@ -251,6 +365,8 @@ def main(argv: list[str]) -> int:
         "overall": overall,
         "sources": sources,
         "contamination": contamination,
+        "reverification": reverification,
+        "examples": examples_block,
         "gates": gates,
         "command": sys.argv,
     }
@@ -277,6 +393,13 @@ def main(argv: list[str]) -> int:
     print(f"s57-verify: contamination max_jaccard="
           f"{contamination.get('max_jaccard')} fail_closed="
           f"{contamination.get('fail_closed')}")
+    if reverification.get("status") != "skipped":
+        print(f"s57-verify: re-verification {reverification['verdicts']} "
+              f"all_correct={reverification['all_correct']}")
+    if examples_block is not None:
+        print(f"s57-verify: examples sha256 {examples_block['sha256'][:16]}… "
+              f"receipt_match={examples_block['matches']} "
+              f"accepted_input_match={examples_block['accepted_input_matches']}")
     print(f"s57-verify: corpus_usable={gates['corpus_usable']} -> {args.out}")
     return 0 if gates["corpus_usable"] else 2
 

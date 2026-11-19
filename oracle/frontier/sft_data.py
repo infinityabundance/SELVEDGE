@@ -21,6 +21,10 @@ This module makes the SFT unit an **example**, not a chunk:
   boundary-safe option is documented here rather than silently assumed.
 * An example longer than `seq_len` fails closed by default. `overflow="drop"`
   is explicit and counted; there is no silent truncation of a solution.
+* A truncated general-replay document may carry `supervise_eos=False`. The
+  trailing EOS token is still present in `input_ids` but its label is masked,
+  so the model is never trained to end a document that was cut mid-text. A
+  complete solution keeps its EOS supervised.
 
 Later boundary-safe packing option (registered, not implemented here): pack
 several complete examples per row and reset attention at each boundary (a
@@ -58,9 +62,17 @@ def _as_ids(values, name: str) -> list[int]:
     return ids
 
 
-def completion_example(prompt_ids, solution_ids, eos_id: int
+def completion_example(prompt_ids, solution_ids, eos_id: int,
+                       supervise_eos: bool = True
                        ) -> tuple[list[int], list[int]]:
-    """Return `(tokens, labels)` with the prompt masked and the EOS supervised."""
+    """Return `(tokens, labels)` with the prompt masked.
+
+    The trailing EOS is supervised for a complete solution. For a replay
+    document that was truncated at a token boundary, `supervise_eos=False`
+    keeps the EOS in the token stream (so the row length is unchanged) but
+    masks its label: the synthetic end-of-document was never in the text and
+    must not be learned.
+    """
     prompt = _as_ids(prompt_ids, "prompt_ids")
     solution = _as_ids(solution_ids, "solution_ids")
     if not solution:
@@ -69,7 +81,8 @@ def completion_example(prompt_ids, solution_ids, eos_id: int
     if eos < 0:
         raise ValueError("eos_id must be non-negative")
     tokens = prompt + solution + [eos]
-    labels = [IGNORE_INDEX] * len(prompt) + solution + [eos]
+    labels = ([IGNORE_INDEX] * len(prompt) + solution
+              + ([eos] if supervise_eos else [IGNORE_INDEX]))
     return tokens, labels
 
 
@@ -108,6 +121,7 @@ def pack_examples(examples, seq_len: int, pad_id: int, eos_id: int,
         "supervised_tokens": 0,
         "padding_tokens": 0,
         "max_example_tokens": 0,
+        "masked_synthetic_eos": 0,
     }
 
     def flush() -> None:
@@ -122,8 +136,12 @@ def pack_examples(examples, seq_len: int, pad_id: int, eos_id: int,
 
     for example in examples:
         counts["examples"] += 1
+        supervise_eos = bool(example.get("supervise_eos", True))
+        if not supervise_eos:
+            counts["masked_synthetic_eos"] += 1
         tokens, labels = completion_example(
-            example["prompt_ids"], example["solution_ids"], eos_id)
+            example["prompt_ids"], example["solution_ids"], eos_id,
+            supervise_eos=supervise_eos)
         length = len(tokens)
         counts["max_example_tokens"] = max(counts["max_example_tokens"], length)
         if length > seq_len:
@@ -165,6 +183,7 @@ def pack_examples(examples, seq_len: int, pad_id: int, eos_id: int,
             "the boundary-safe option (per-example attention reset) is a later "
             "registered change"),
         "completion_only_loss": True,
+        "masked_synthetic_eos": counts["masked_synthetic_eos"],
         "padding_tokens": counts["padding_tokens"],
         **{key: counts[key] for key in (
             "examples", "packed_examples", "dropped_overflow", "prompt_tokens",
@@ -198,6 +217,21 @@ def load_examples(path: str, vocab_size: int | None = None) -> list[dict]:
     if not examples:
         raise ValueError(f"{path} contains no examples")
     return examples
+
+
+def row_lengths(packed: PackedExamples) -> list[int]:
+    """True token length of every row (last supervised label + 1).
+
+    Padding labels are `IGNORE_INDEX`, so the position of the last supervised
+    label is the end of the example. This is what length-aware batching groups
+    and trims by; it is measured from the packed rows, not recomputed from the
+    source file.
+    """
+    lengths: list[int] = []
+    for row in packed.labels:
+        positions = (row != IGNORE_INDEX).nonzero(as_tuple=True)[0]
+        lengths.append(int(positions[-1].item()) + 1 if positions.numel() else 1)
+    return lengths
 
 
 def example_batches(packed: PackedExamples, micro_batch: int, grad_accum: int,
@@ -237,4 +271,4 @@ def describe_source(path: str) -> dict:
 
 __all__ = ["IGNORE_INDEX", "PackedExamples", "completion_example",
            "pack_examples", "load_examples", "example_batches",
-           "describe_source"]
+           "row_lengths", "describe_source"]
