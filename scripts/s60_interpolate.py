@@ -148,10 +148,14 @@ def _base_arm_state(model, checkpoint_state: dict) -> dict:
     """The checkpoint's keys read from the untrained post-trained model.
 
     The full arm exports only the trainable parameters, keyed relative to the
-    text model. Reading the same keys from the freshly loaded model gives the
-    untrained endpoint on exactly the same parameter set.
+    *text model* (`arms._text_model(model)`), not the outer model. Reading the
+    same names from that submodule gives the untrained endpoint on exactly the
+    same parameter set; using `model.named_parameters()` would prefix every
+    name and fail.
     """
-    parameters = dict(model.named_parameters())
+    from frontier import arms
+
+    parameters = dict(arms._text_model(model).named_parameters())
     state = {}
     missing = []
     for name in checkpoint_state:
@@ -161,7 +165,8 @@ def _base_arm_state(model, checkpoint_state: dict) -> dict:
         state[name] = parameters[name].detach().to("cpu")
     if missing:
         raise SystemExit(
-            f"s60-interpolate: checkpoint keys absent from the model: {missing[:5]}")
+            f"s60-interpolate: checkpoint keys absent from the text model: "
+            f"{missing[:5]}")
     return state
 
 
@@ -420,12 +425,10 @@ def _tokenizer(model_dir: str):
 
 
 def _load_into(model, state: dict) -> None:
-    import torch
-    parameters = dict(model.named_parameters())
-    with torch.no_grad():
-        for name, value in state.items():
-            parameters[name].copy_(value.to(device=parameters[name].device,
-                                             dtype=parameters[name].dtype))
+    """Load an interpolated trainable state through the full-arm contract."""
+    from frontier import full
+
+    full.load_full_state_into(model, state)
 
 
 def _load_mmlu(paths: list[str]) -> dict:

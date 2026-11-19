@@ -94,3 +94,28 @@ def test_selection_ties_choose_the_smaller_coefficient():
     selection = s60.choose_coefficient(rows)
     assert selection["coefficient"] == 0.25
     assert selection["mmlu_present"] is False
+
+
+def test_base_state_uses_text_model_names_not_outer_model_names():
+    import torch.nn as nn
+
+    class Text(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.layers = nn.ModuleList([nn.Linear(2, 2, bias=False)])
+
+    class Outer(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.model = Text()
+
+    model = Outer()
+    state = s60._base_arm_state(model, {"layers.0.weight": model.model.layers[0].weight})
+    assert list(state) == ["layers.0.weight"]
+    assert torch.equal(state["layers.0.weight"], model.model.layers[0].weight)
+    try:
+        s60._base_arm_state(model, {"model.layers.0.weight": torch.zeros(2, 2)})
+    except SystemExit as exc:
+        assert "text model" in str(exc)
+    else:
+        raise AssertionError("an outer-model prefix must fail closed")
