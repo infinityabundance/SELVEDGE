@@ -1,0 +1,49 @@
+F.......                                                                 [100%]
+=================================== FAILURES ===================================
+_________________ test_preference_loss_matches_the_closed_form _________________
+
+    def test_preference_loss_matches_the_closed_form():
+        chosen = torch.tensor(-1.0)
+        rejected = torch.tensor(-2.0)
+        reference_chosen = torch.tensor(-1.5)
+        reference_rejected = torch.tensor(-1.0)
+        beta = 0.5
+        # margin = 0.5 * [(-1 - -2) - (-1.5 - -1.0)] = 0.5 * [1 - -0.5] = 0.75
+>       expected = -torch.logsigmoid(torch.tensor(0.75))
+                    ^^^^^^^^^^^^^^^^
+
+oracle/tests/test_s63_preference.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'logsigmoid'
+
+    def __getattr__(name: str) -> _Any:
+        # Deprecated attrs
+        replacement = _deprecated_attrs.get(name)
+        if replacement is not None:
+            import warnings
+    
+            warnings.warn(
+                f"'{name}' is deprecated, please use '{replacement.__module__}.{replacement.__name__}()'",
+                stacklevel=2,
+            )
+            return replacement()
+    
+        # Lazy modules
+        if name in _lazy_modules:
+            return importlib.import_module(f".{name}", __name__)
+    
+        # set_vital
+        if name == "set_vital":
+            import warnings
+    
+            warnings.warn(f"'{name}' is deprecated, please do not call", stacklevel=2)
+            return lambda *args: None
+    
+>       raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+E       AttributeError: module 'torch' has no attribute 'logsigmoid'
+
+/usr/local/lib/python3.12/site-packages/torch/__init__.py:3468: AttributeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s63_preference.py::test_preference_loss_matches_the_closed_form
+1 failed, 7 passed in 3.61s
