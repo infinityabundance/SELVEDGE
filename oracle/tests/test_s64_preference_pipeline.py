@@ -447,7 +447,7 @@ def _shard_receipt(tmp_path, name, *, compute_saved=False, k=8,
                 "duplicates": 2, "truncated": 3, "loop_cut": loop_cut,
                 "generated_tokens": 1000, "pre_cut_generated_tokens": 1100,
                 "textual_replay_tokens_cut": 10, "wall_seconds": 10.0,
-                "solution_tokens": 500, "rows": 15}},
+                "solution_lengths": [100, 200, 200]}},
             "loop_cut_rate": loop_cut / 80, "truncation_rate": 3 / 80,
         },
         "ledger": {
@@ -523,6 +523,8 @@ def test_rollout_summary_merges_shards_and_refuses_a_compute_saved_claim(tmp_pat
     assert merged["ledger"]["p_histogram"] == {"2/8": 20}
     assert merged["throughput"]["compute_saved"] is False
     assert merged["throughput"]["tokens_per_second"] == 100.0
+    assert merged["by_dataset"]["gsm8k"]["solution_tokens"] == 500
+    assert merged["by_dataset"]["gsm8k"]["rows"] == 3
 
     bad = _shard_receipt(tmp_path, "gsm8k-bad", compute_saved=True)
     with pytest.raises(SystemExit) as exc:

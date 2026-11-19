@@ -141,6 +141,24 @@ def _check_receipt(path: str, receipt: dict) -> dict:
     }
 
 
+def length_profile(lengths: list[int]) -> dict:
+    if not lengths:
+        return {"rows": 0}
+    ordered = sorted(lengths)
+
+    def quantile(fraction: float) -> int:
+        return ordered[min(len(ordered) - 1, int(fraction * len(ordered)))]
+
+    return {
+        "rows": len(ordered),
+        "mean": sum(ordered) / len(ordered),
+        "p50": quantile(0.50),
+        "p90": quantile(0.90),
+        "p99": quantile(0.99),
+        "max": ordered[-1],
+    }
+
+
 def summarise(receipts: list[tuple[str, dict]]) -> dict:
     checked = [_check_receipt(path, receipt) for path, receipt in receipts]
     totals = {"prompts": 0, "sampled": 0, "correct": 0, "kept": 0,
@@ -179,10 +197,14 @@ def summarise(receipts: list[tuple[str, dict]]) -> dict:
                 "prompts": 0, "sampled": 0, "correct": 0, "kept": 0,
                 "duplicates": 0, "truncated": 0, "loop_cut": 0,
                 "generated_tokens": 0, "pre_cut_generated_tokens": 0,
-                "textual_replay_tokens_cut": 0, "wall_seconds": 0.0,
-                "solution_tokens": 0, "rows": 0})
-            for key in entry:
+                "textual_replay_tokens_cut": 0, "solution_lengths": []})
+            for key in ("prompts", "sampled", "correct", "kept",
+                        "duplicates", "truncated", "loop_cut",
+                        "generated_tokens", "pre_cut_generated_tokens",
+                        "textual_replay_tokens_cut"):
                 entry[key] += row.get(key, 0)
+            entry["solution_lengths"].extend(
+                int(value) for value in (row.get("solution_lengths") or []))
         shards.append({
             "receipt": path,
             "stamp": receipt.get("stamp"),
@@ -201,7 +223,10 @@ def summarise(receipts: list[tuple[str, dict]]) -> dict:
             "mean_p": ledger_summary.get("mean_p"),
         })
     for entry in by_dataset.values():
-        entry["solution_length"] = None
+        lengths = entry.pop("solution_lengths")
+        entry["rows"] = len(lengths)
+        entry["solution_tokens"] = sum(lengths)
+        entry["solution_length"] = length_profile(lengths)
     pooled_p = (ledger_verified / ledger_attempts) if ledger_attempts else 0.0
     mean_p = (sum(successes_per_problem) / len(successes_per_problem)
               if successes_per_problem else None)
