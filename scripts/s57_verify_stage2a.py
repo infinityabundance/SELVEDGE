@@ -197,6 +197,9 @@ def _declared_inputs(built: dict) -> list[str]:
         for item in student.get("sources") or []:
             if item.get("source"):
                 declared.append(item["source"])
+        merged = student.get("merged") or {}
+        if isinstance(merged, dict) and merged.get("path"):
+            declared.append(merged["path"])
     teacher = (built.get("sources") or {}).get("teacher") or {}
     if isinstance(teacher, dict) and teacher.get("source"):
         declared.append(teacher["source"])

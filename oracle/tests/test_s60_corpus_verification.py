@@ -100,6 +100,7 @@ def test_declared_inputs_are_read_from_a_stage2b_corpus_receipt():
         "sources": {
             "student": {
                 "rows": 3,
+                "merged": {"path": "results/merged.jsonl"},
                 "sources": [
                     {"source": "results/a.jsonl", "rows": 2},
                     {"source": "results/b.jsonl", "rows": 1},
@@ -109,7 +110,8 @@ def test_declared_inputs_are_read_from_a_stage2b_corpus_receipt():
         },
         "examples": {"sha256": "0" * 64},
     }
-    assert sv._declared_inputs(built) == ["results/a.jsonl", "results/b.jsonl"]
+    assert sv._declared_inputs(built) == [
+        "results/a.jsonl", "results/b.jsonl", "results/merged.jsonl"]
 
 
 def test_acceptance_is_reconstructed_from_the_named_generation_receipts(

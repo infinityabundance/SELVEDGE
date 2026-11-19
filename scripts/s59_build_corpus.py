@@ -242,7 +242,7 @@ def main(argv: list[str]) -> int:
                                            int(row.get("sample_index", 0))))
         student_report = {
             "sources": per_source,
-            "rows": sum(item["rows"] for item in per_source),
+            "rows": len(student_rows),
             "excluded_holdout_rows": sum(
                 item["excluded_holdout_rows"] for item in per_source),
             "duplicate_rows_removed": sum(
@@ -330,6 +330,20 @@ def main(argv: list[str]) -> int:
 
     out_dir = os.path.join(ROOT, args.out_dir)
     os.makedirs(out_dir, exist_ok=True)
+    if student_report is not None and student_rows:
+        merged_accepted_path = os.path.join(
+            out_dir, f"{args.label}-accepted.jsonl")
+        with open(merged_accepted_path, "w", encoding="utf-8") as handle:
+            for row in student_rows:
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
+        student_report["merged"] = {
+            "path": os.path.relpath(merged_accepted_path, ROOT),
+            "sha256": sha256_file(merged_accepted_path),
+            "rows": len(student_rows),
+            "basis": "the deduplicated, hold-out-excluded rows the corpus was "
+                     "built from, with every accepted-row field preserved so "
+                     "the verifier can re-run the answer check",
+        }
     examples_path = os.path.join(out_dir, f"{args.label}-examples.jsonl")
     write_examples(examples_path, ordered)
 
