@@ -475,7 +475,7 @@ def _parse_cadence(text: str) -> tuple[int, ...]:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--arm", choices=ARMS, required=True)
+    parser.add_argument("--arm", choices=ARMS, default=None)
     parser.add_argument("--pairs", default=None,
                         help="on-policy pairs with the reference cache "
                              "(preference and matched-sft)")
@@ -496,9 +496,38 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--max-steps", type=int, default=None)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--vram-limit-gib", type=float, default=13.0)
-    parser.add_argument("--out-dir", required=True)
+    parser.add_argument("--out-dir", default=None)
+    parser.add_argument("--geometry-only", action="store_true",
+                        help="load the student, install the registered LoRA, "
+                             "print the geometry and exit; no pairs needed")
+    parser.add_argument("--geometry-check-merge", action="store_true",
+                        help="with --geometry-only, also snapshot and merge a "
+                             "deep copy and print the exported state contract")
     args = parser.parse_args(argv)
 
+    if args.geometry_only:
+        import torch
+        from frontier import arms
+        if args.device == "cuda":
+            _vram_guard(args.vram_limit_gib)
+        model = arms.load_model(args.student_dir, dtype=torch.bfloat16,
+                                device=args.device)
+        geometry = prepare_registered_lora(
+            model, rank=args.rank, alpha=args.alpha,
+            expected_active_union=preference.REGISTERED_ACTIVE_UNION)
+        if args.geometry_check_merge:
+            state, merge = snapshot_merged_full_state(
+                model, expected_active_union=preference.REGISTERED_ACTIVE_UNION)
+            merge["exported_state_keys"] = len(state)
+            merge["exported_state_elements"] = int(
+                sum(value.numel() for value in state.values()))
+            geometry["merge"] = merge
+            del state
+        print(json.dumps(geometry, indent=2, sort_keys=True))
+        return 0
+
+    if args.arm is None:
+        raise SystemExit("s64-launch: --arm is required for a training run")
     if args.arm == "recovery":
         if not args.recovery_pairs:
             raise SystemExit("s64-launch: the recovery arm needs --recovery-pairs")
@@ -507,6 +536,8 @@ def main(argv: list[str]) -> int:
         if not args.pairs:
             raise SystemExit("s64-launch: this arm needs --pairs")
         pair_path = args.pairs
+    if not args.out_dir:
+        raise SystemExit("s64-launch: --out-dir is required for a training run")
 
     _vram_guard(args.vram_limit_gib)
     import torch

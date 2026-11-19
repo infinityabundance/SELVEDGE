@@ -1,0 +1,31 @@
+{
+  "active_union_after_merge": 752393024,
+  "active_union_basis": "scale * B @ A is folded into weights the base already reads; the adapter adds no deployed identity",
+  "active_union_before_merge": 795683648,
+  "adapter_elements": 43290624,
+  "base_text_elements": 752393024,
+  "lora_alpha": 32.0,
+  "lora_rank": 64,
+  "merge": {
+    "active_union_after_merge": 752393024,
+    "adapter_elements_removed": 43290624,
+    "basis": "scale * B @ A added to each base weight; the adapter parameters cease to be separate deployed identities",
+    "exported_state_elements": 498113344,
+    "exported_state_keys": 319,
+    "frozen_identity_excluded": [
+      "embed_tokens.weight"
+    ],
+    "merge_parity": {
+      "atol": 1e-05,
+      "rtol": 0.0001,
+      "test": "oracle/tests/test_s63_preference.py::test_merge_reproduces_the_adapter_logits_within_tolerance and oracle/tests/test_s64_preference_pipeline.py on a float32 tiny model"
+    },
+    "merged_layers": 186,
+    "merged_text_elements": 752393024,
+    "remaining_lora_modules": 0
+  },
+  "registered_active_union": 752393024,
+  "scaling": 0.5,
+  "targets": "every linear layer of the text tower except the output head",
+  "wrapped_layers": 186
+}
