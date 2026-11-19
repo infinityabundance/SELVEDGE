@@ -1,5 +1,16 @@
 # Shutdown state — 2026-11-18T09:30Z
 
+> **Superseded 2026-11-19T02:35Z by S58.** The corpus was finished, the stream
+> built, the stage-2a arm trained and scored on both registered instruments, and
+> the retention bound was measured. The arm **does not win**: GSM8K improves
+> (+0.0288, 95% interval [+0.0008, +0.0576]) while MATH-500 loses 11.0 points
+> (interval [−0.1540, −0.0660]) and MMLU loses 1.94 points (interval
+> [−0.0276, −0.0113], outside the 1.0-point bound). The full report — corpus
+> counts, stream accounting, training curve, the two aborted launches and their
+> diagnoses, all milestone scores and the price of each registered next route —
+> is `docs/S58-STAGE2A.md`. Nothing below is a claim about the current state; it
+> is the 2026-11-18 snapshot kept for the record.
+
 Written at operator shutdown. Every running job was stopped and its state recorded.
 Nothing below is a capability claim; it is the resume map.
 
