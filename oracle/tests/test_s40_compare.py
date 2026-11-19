@@ -35,6 +35,21 @@ def test_arm_selection_requires_the_reference_to_be_selected():
         s40_compare.selected_arms(args)
 
 
+def test_interpolated_arm_is_its_own_label_and_needs_a_coefficient(tmp_path):
+    import s40_compare
+
+    assert "interpolated" in s40_compare.SCORED_ARMS
+    checkpoint = tmp_path / "interp.pt"
+    torch.save({"arm": "full", "arm_state": {}}, checkpoint)
+
+    class Args:
+        full_checkpoint = str(checkpoint)
+
+    with pytest.raises(SystemExit) as exc:
+        s40_compare._build_named_arm("interpolated", None, Args(), "cpu")
+    assert "interpolation block" in str(exc.value)
+
+
 def test_limit_map_is_per_task_and_refuses_unknown_names():
     import s40_score
 

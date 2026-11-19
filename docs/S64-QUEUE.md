@@ -47,13 +47,24 @@ SELVEDGE_MEM=12g SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g \
 # one MMLU calibration pass per coefficient, serially, then re-apply the bound
 for t in 0.000 0.125 0.250 0.375 0.500 0.625 0.750 0.875 1.000; do
   SELVEDGE_MEM=12g scripts/court --gpu eval -- python3 scripts/s43_score_total_cap.py \
-    --arm "interp-$t" \
+    --arm interpolated \
     --full-checkpoint "results/stage2/s60-interpolation/interp-$t-arm.pt" \
+    --student-dir /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 \
+    --model-id Qwen/Qwen3.5-0.8B \
+    --model-revision 2fc06364715b967f1860aea9cf38778875588b17 \
     --tasks mmlu --total-cap-map mmlu=2000 \
     --registration docs/ws19-anchored-subset-amendment-preregistration-v2.json \
     --out "results/stage2/s60-interpolation/mmlu-$t.json"
 done
 ```
+
+The `interpolated` arm loads the checkpoint through the exact `full-distill`
+contract but labels the receipt with its own arm name and writes
+`interpolation_coefficient`; the S60 queue's earlier `--arm interp-<t>` spelling
+is not accepted by the scorer's arm choices and is superseded by this command.
+The student directory and model identity are the **post-trained** 0.8B, not the
+Base checkpoint: the interpolated checkpoint exports the full-arm trainable
+state and relies on the post-trained embedding.
 
 MMLU is a retention input, not an accuracy objective. A coefficient whose
 calibration MMLU drop exceeds the registered 1.0-point bound is ineligible;

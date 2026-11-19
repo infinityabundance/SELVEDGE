@@ -84,8 +84,14 @@ SCREEN_CORRECTIVE_ARMS = ("corrective-kl-2m-math",
                           "corrective-signed-exp-2m-math",
                           "corrective-signed-true-2m-math")
 SCREEN_MATCHED_CONTROLS = ("adapter-2m-math-matched", "gated-dense-2m-math")
+#: The weight-interpolation diagnostic loads one interpolated full-arm
+#: checkpoint through the exact `full-distill` contract, but is labelled by its
+#: own name so a receipt can never be mistaken for a trained full arm. The
+#: checkpoint carries the coefficient in its `interpolation` block.
+INTERPOLATED_ARM = "interpolated"
 SCORED_ARMS = (ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
-               + SCREEN_CORRECTIVE_ARMS + SCREEN_MATCHED_CONTROLS)
+               + SCREEN_CORRECTIVE_ARMS + SCREEN_MATCHED_CONTROLS
+               + (INTERPOLATED_ARM,))
 REFERENCE_ARM = "full-distill"
 FAMILIES = {"knowledge": ["mmlu_pro", "mmlu"],
             "math": ["gsm8k", "minerva_math500"]}
@@ -293,18 +299,27 @@ def _build_named_arm(name: str, model, args, device: str):
         report["kind"] = "stage2_corrective_arm"
         report["arm_family"] = name
         return model, handles, report
-    if name == "full-distill":
+    if name in ("full-distill", INTERPOLATED_ARM):
         if not args.full_checkpoint:
             raise SystemExit("--full-checkpoint is required for full-distill")
         payload = torch.load(args.full_checkpoint, map_location="cpu",
                              weights_only=False)
         if payload.get("arm") not in (None, "full"):
             raise SystemExit(f"{args.full_checkpoint}: not a full-arm checkpoint")
+        interpolation = None
+        if name == INTERPOLATED_ARM:
+            interpolation = payload.get("interpolation") or {}
+            if "coefficient" not in interpolation:
+                raise SystemExit(
+                    f"{args.full_checkpoint}: the interpolated arm needs an "
+                    "interpolation block with a coefficient")
         arm = full.load_full_state_into(model, payload["arm_state"])
         report = arm.active_parameter_report()
         report.update({"checkpoint": args.full_checkpoint,
                        "checkpoint_sha256": sha256_file(args.full_checkpoint),
                        "checkpoint_step": payload.get("step")})
+        if interpolation is not None:
+            report["interpolation"] = interpolation
         return model, [], report
     raise SystemExit(f"unknown arm {name!r}")
 

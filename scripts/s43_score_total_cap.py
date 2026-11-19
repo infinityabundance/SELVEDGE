@@ -336,6 +336,8 @@ def receipt_base(args, prereg, prereg_digest, commit, version, arm_report,
             "cuda_runtime": torch.version.cuda,
         },
         "arm_report": arm_report,
+        "interpolation_coefficient": (
+            (arm_report.get("interpolation") or {}).get("coefficient")),
         "total_cap_enforcement": enforcement,
         "scored_tasks": sorted(entries),
         "tasks": [entries[name] for name in sorted(entries)],
