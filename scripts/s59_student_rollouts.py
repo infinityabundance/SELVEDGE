@@ -439,6 +439,10 @@ def main(argv: list[str]) -> int:
     receipt_path = os.path.join(out_dir, f"{args.label}-receipt.json")
     ledger_path = os.path.join(out_dir, f"{args.label}-ledger.jsonl")
     rejected_path = None
+    if args.rejected_out:
+        rejected_path = (args.rejected_out
+                         if os.path.isabs(args.rejected_out)
+                         else os.path.join(ROOT, args.rejected_out))
 
     if (not args.receipt_only and os.path.exists(accepted_path)
             and not args.overwrite):
@@ -520,10 +524,7 @@ def main(argv: list[str]) -> int:
         ledger_entries: list[dict] = []
         rejected_handle = None
         rejected_rows = 0
-        if args.rejected_out:
-            rejected_path = (args.rejected_out
-                             if os.path.isabs(args.rejected_out)
-                             else os.path.join(ROOT, args.rejected_out))
+        if rejected_path:
             os.makedirs(os.path.dirname(rejected_path) or ".", exist_ok=True)
             rejected_handle = open(rejected_path, "w", encoding="utf-8")
         for start in range(0, len(tasks), args.batch_prompts):
