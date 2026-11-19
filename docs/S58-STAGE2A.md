@@ -241,23 +241,30 @@ MMLU-Pro moved.
 The S56 cadence scores every registered milestone on the same instrument, and
 that is what found the shape of this run. Receipts:
 `results/stage1/s58-stage2a-m2-nonthinking-greedy.json` (stamp
-`20261119T010711Z`, checkpoint step 800, 2,000,000 tokens seen) and the final
-receipt above.
+`20261119T010711Z`, step 800), `results/stage1/s58-stage2a-m5-nonthinking-greedy.json`
+(stamp `20261119T022441Z`, step 2000) and the final receipt above.
 
-| milestone | processed tokens | GSM8K flexible | MATH-500 flexible | GSM8K truncated | MATH truncated / loop |
+| milestone | processed tokens | GSM8K flexible | MATH-500 flexible | GSM8K trunc / loop | MATH trunc / loop |
 |---|---|---|---|---|---|
-| base | 0 | 0.5421 | 0.3820 | 0.0697 | 0.3200 / — |
-| 2M | 2,000,000 | 0.3101 | 0.1080 | 0.0675 | 0.3080 / 0.1640 |
-| final (ckpt-004000) | 10,000,000 | 0.5709 | 0.2720 | 0.0227 | 0.2100 / 0.0840 |
+| base | 0 | 0.5421 | 0.3820 | 0.0697 / — | 0.3200 / — |
+| 2M | 2,000,000 | 0.3101 | 0.1080 | 0.0675 / 0.0174 | 0.3080 / 0.1640 |
+| 5M | 5,000,000 | 0.4314 | 0.1420 | 0.0394 / 0.0167 | 0.3200 / 0.1560 |
+| final (ckpt-004000) | 10,000,000 | 0.5709 | 0.2720 | 0.0227 / 0.0053 | 0.2100 / 0.0840 |
 
-The 2M checkpoint is catastrophic on both tasks: GSM8K −23.2 points (paired
-interval [−0.2623, −0.2024]) and MATH-500 −27.4 points ([−0.3180, −0.2300]),
-against a held-out CE that is also the worst measured (0.3478). The endpoint
-recovered GSM8K above the base model and recovered MATH only part of the way.
-A run scored only at its endpoint would have hidden this entirely, and the
-trajectory is the strongest evidence in this campaign that lr 1e-5 is too high
-for this objective: the model is thrown far off its optimum early and the
-cosine decay lets it walk part of the way back.
+Paired against the base model, every milestone is below it:
+
+| milestone | GSM8K delta [95% CI] | MATH-500 delta [95% CI] |
+|---|---|---|
+| 2M | −0.2320 [−0.2623, −0.2024] | −0.2740 [−0.3180, −0.2300] |
+| 5M | −0.1107 [−0.1410, −0.0804] | −0.2400 [−0.2860, −0.1980] |
+| final | +0.0288 [+0.0008, +0.0576] | −0.1100 [−0.1540, −0.0660] |
+
+The trajectory is monotone on both tasks (GSM8K 0.31 → 0.43 → 0.57, MATH
+0.11 → 0.14 → 0.27), and the held-out CE is worst exactly at 2M (0.3478). The
+model is thrown far off its optimum early and the cosine decay walks it part of
+the way back; GSM8K crosses the base model, MATH does not. A run scored only at
+its endpoint would have hidden this, and it is the strongest evidence in this
+campaign that lr 1e-5 is too high for this objective.
 
 ## 6. Verdict
 
