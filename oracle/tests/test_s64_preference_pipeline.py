@@ -37,6 +37,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from frontier import preference  # noqa: E402
 import s64_preference_data as data_pass  # noqa: E402
 import s64_preference_launch as launch  # noqa: E402
+import s64_interpolation_mmlu as interp_mmlu  # noqa: E402
 import s64_rollout_summary as rollout_summary  # noqa: E402
 import s64_shard_window as window  # noqa: E402
 
@@ -462,6 +463,51 @@ def _shard_receipt(tmp_path, name, *, compute_saved=False, k=8,
         },
         "preference_data": {"rejected_path": None, "sha256": None},
     }
+
+
+def test_interpolation_selection_applies_mmlu_and_reports_the_trade(tmp_path):
+    receipt = {"evaluation": [
+        {"coefficient": 0.0, "gsm8k_cal": 0.50, "math_cal": 0.34},
+        {"coefficient": 0.5, "gsm8k_cal": 0.54, "math_cal": 0.36},
+        {"coefficient": 0.75, "gsm8k_cal": 0.57, "math_cal": 0.33},
+        {"coefficient": 1.0, "gsm8k_cal": 0.56, "math_cal": 0.30},
+    ]}
+    mmlu = {0.0: 0.50, 0.5: 0.498, 0.75: 0.49, 1.0: 0.48}
+    result = interp_mmlu.apply_selection(receipt, mmlu)
+    selection = result["selection"]
+    # 0.5 and 0.75 tie on the mean calibration gain; the tie goes to the
+    # smaller coefficient. MMLU does not disqualify either.
+    assert selection["coefficient"] == 0.5
+    assert selection["provisional"] is False
+    assert selection["mmlu_present"] is True
+    rows = {row["coefficient"]: row for row in result["trade"]["rows"]}
+    assert rows[0.5]["retains_full_s58_gain"] is False
+    assert rows[0.5]["less_math_damage_than_s58"] is True
+    assert rows[0.75]["retains_full_s58_gain"] is True
+    assert rows[0.75]["less_math_damage_than_s58"] is True
+    assert rows[0.75]["retains_gain_with_less_damage"] is True
+    assert result["trade"][
+        "any_coefficient_retains_full_gain_with_less_math_damage"] is True
+
+    # A large MMLU drop makes a coefficient ineligible even if it wins on the
+    # two accuracy tasks.
+    result = interp_mmlu.apply_selection(
+        receipt, {0.0: 0.50, 0.5: 0.47, 0.75: 0.49, 1.0: 0.48})
+    assert result["selection"]["coefficient"] != 0.5
+
+    # Without MMLU the selection is labelled provisional.
+    provisional = interp_mmlu.apply_selection(receipt, {})
+    assert provisional["selection"]["provisional"] is True
+
+
+def test_interpolation_mmlu_loader_reads_the_coefficient(tmp_path):
+    path = tmp_path / "mmlu-0.500.json"
+    path.write_text(json.dumps({
+        "interpolation_coefficient": 0.5,
+        "tasks": [{"task": "mmlu", "primary_metric": "acc,none",
+                   "all_metrics": {"acc,none": 0.499}}],
+    }), encoding="utf-8")
+    assert interp_mmlu.load_mmlu([str(path)]) == {0.5: 0.499}
 
 
 def test_rollout_summary_merges_shards_and_refuses_a_compute_saved_claim(tmp_path):
