@@ -1,0 +1,46 @@
+...............F.................                                        [100%]
+=================================== FAILURES ===================================
+__________ test_rejected_row_keeps_token_ids_for_the_preference_pass ___________
+
+    def test_rejected_row_keeps_token_ids_for_the_preference_pass():
+        task = {"id": "p", "dataset": "math", "target": "7"}
+>       entry = ledger_entry(task, [1, 2])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+oracle/tests/test_s59_stage2b.py:288: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+task = {'id': 'p', 'dataset': 'math', 'target': '7'}, prompt_ids = [1, 2]
+
+    def ledger_entry(task: dict, prompt_ids=None) -> dict:
+        """One problem's outcome counters, before any sample is inspected.
+    
+        `prompt_ids` is the tokenised shared prefix. It is stored in the ledger even
+        when every completion fails, because the teacher-guided recovery arm needs
+        that prefix to build its preference pair for a p=0 problem.
+        """
+        return {
+            "id": str(task["id"]),
+            "dataset": task["dataset"],
+            "target": task.get("target"),
+            "prompt_ids": [int(value) for value in (prompt_ids or [])],
+            "attempts": 0,
+            "verified_correct": 0,
+            "wrong": 0,
+            "ambiguous": 0,
+            "unparseable": 0,
+            "truncated": 0,
+            "loop_cut": 0,
+            "duplicates": 0,
+            "accepted_rows": 0,
+            "accepted_solution_tokens": 0,
+>           "k": int(task["samples"]),
+                     ^^^^^^^^^^^^^^^
+            "max_new_tokens": int(task["max_new_tokens"]),
+        }
+E       KeyError: 'samples'
+
+scripts/s59_student_rollouts.py:293: KeyError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s59_stage2b.py::test_rejected_row_keeps_token_ids_for_the_preference_pass
+1 failed, 32 passed in 4.62s

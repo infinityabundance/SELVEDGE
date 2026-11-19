@@ -22,7 +22,8 @@ sys.path.insert(0, os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
 
 from s59_student_rollouts import (  # noqa: E402
-    loop_cut_index, ledger_entry, summarise_ledger, write_ledger_entry)
+    loop_cut_index, ledger_entry, rejected_row, summarise_ledger,
+    write_ledger_entry)
 from s59_build_corpus import (  # noqa: E402
     load_rows, plan_mixture, read_budget_receipt, subsample_to_tokens,
     write_examples)
@@ -280,6 +281,21 @@ def test_ledger_p_is_successes_over_attempts_not_accepted_rows():
     summary = summarise_ledger([finalised])
     assert summary["p_basis"].startswith("verified_correct / attempts")
     assert summary["attempts"] == 4
+
+
+def test_rejected_row_keeps_token_ids_for_the_preference_pass():
+    task = {"id": "p", "dataset": "math", "target": "7",
+            "samples": 2, "max_new_tokens": 2048}
+    entry = ledger_entry(task, [1, 2])
+    entry.update({"attempts": 2, "verified_correct": 0, "wrong": 2})
+    write_ledger_entry(io.StringIO(), entry)
+    row = rejected_row(task, [1, 2], 1, [9, 8, 7], "wrong", False, False,
+                       entry)
+    assert row["prompt_ids"] == [1, 2]
+    assert row["solution_ids"] == [9, 8, 7]
+    assert row["verdict"] == "wrong"
+    assert row["provenance"] == "student-failed-continuation"
+    assert row["p"] == 0.0
 
 
 def test_ledger_entry_carries_the_prefix_needed_for_recovery():

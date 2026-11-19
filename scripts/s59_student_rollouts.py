@@ -379,6 +379,28 @@ def write_ledger_entry(handle, entry: dict) -> dict:
     return entry
 
 
+def rejected_row(task: dict, prompt_ids, sample_index: int, solution_ids,
+                 verdict: str, truncated: bool, loop_cut: bool,
+                 entry: dict) -> dict:
+    """One failed continuation as token ids, for the preference pass.
+
+    The accepted corpus keeps only verified-correct text. The preference
+    objective also needs the student's **failed** continuation from the same
+    prefix. This row carries only token ids and the verdict; no decoded failed
+    text is stored. It is written only when `--rejected-out` is requested.
+    """
+    return {
+        "id": str(task["id"]), "dataset": task["dataset"],
+        "target": task.get("target"),
+        "prompt_ids": [int(value) for value in prompt_ids],
+        "solution_ids": [int(value) for value in solution_ids],
+        "sample_index": int(sample_index), "verdict": verdict,
+        "truncated": bool(truncated), "loop_cut": bool(loop_cut),
+        "p": float(entry["p"]), "weight_p1mp": float(entry["weight_p1mp"]),
+        "provenance": "student-failed-continuation",
+    }
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--policy-dir", required=True)
@@ -402,6 +424,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--label", required=True)
     parser.add_argument("--vram-limit-gib", type=float, default=13.0)
+    parser.add_argument("--rejected-out", default=None,
+                        help="optional JSONL of one failed token-id continuation "
+                             "per problem, for the preference pass; carries no "
+                             "decoded failed text and does not change the "
+                             "accepted corpus")
     parser.add_argument("--receipt-only", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args(argv)
@@ -411,6 +438,7 @@ def main(argv: list[str]) -> int:
     accepted_path = os.path.join(out_dir, f"{args.label}-accepted.jsonl")
     receipt_path = os.path.join(out_dir, f"{args.label}-receipt.json")
     ledger_path = os.path.join(out_dir, f"{args.label}-ledger.jsonl")
+    rejected_path = None
 
     if (not args.receipt_only and os.path.exists(accepted_path)
             and not args.overwrite):
@@ -490,6 +518,14 @@ def main(argv: list[str]) -> int:
         handle = open(accepted_path, "w", encoding="utf-8")
         ledger_handle = open(ledger_path, "w", encoding="utf-8")
         ledger_entries: list[dict] = []
+        rejected_handle = None
+        rejected_rows = 0
+        if args.rejected_out:
+            rejected_path = (args.rejected_out
+                             if os.path.isabs(args.rejected_out)
+                             else os.path.join(ROOT, args.rejected_out))
+            os.makedirs(os.path.dirname(rejected_path) or ".", exist_ok=True)
+            rejected_handle = open(rejected_path, "w", encoding="utf-8")
         for start in range(0, len(tasks), args.batch_prompts):
             batch = tasks[start:start + args.batch_prompts]
             rendered = [render_prompt(tokenizer, task["question"])
@@ -522,6 +558,7 @@ def main(argv: list[str]) -> int:
                 stats["prompts"] += 1
                 totals["prompts"] += 1
                 entry = ledger_entry(task, prompt_ids_batch[prompt_index])
+                failed_candidate = None
                 seen: set[str] = set()
                 for sample_index in range(samples):
                     row_index = prompt_index * samples + sample_index
@@ -551,6 +588,11 @@ def main(argv: list[str]) -> int:
                     else:
                         entry[result["verdict"]] += 1
                     if result["verdict"] != "correct":
+                        if failed_candidate is None:
+                            failed_candidate = (sample_index, solution_ids,
+                                                result["verdict"],
+                                                detail["truncated"],
+                                                detail["loop_cut"])
                         continue
                     stats["correct"] += 1
                     totals["correct"] += 1
@@ -593,6 +635,12 @@ def main(argv: list[str]) -> int:
                     entry["accepted_solution_tokens"] += len(solution_ids)
                 write_ledger_entry(ledger_handle, entry)
                 ledger_entries.append(entry)
+                if rejected_handle is not None and failed_candidate is not None:
+                    rejected_handle.write(json.dumps(rejected_row(
+                        task, prompt_ids_batch[prompt_index], *failed_candidate,
+                        entry), sort_keys=True) + "\n")
+                    rejected_handle.flush()
+                    rejected_rows += 1
             if (start // args.batch_prompts) % 5 == 0:
                 print(f"s59-rollouts: prompts {totals['prompts']}/{len(tasks)} "
                       f"sampled={totals['sampled']} kept={totals['kept']} "
@@ -601,6 +649,8 @@ def main(argv: list[str]) -> int:
                       flush=True)
         handle.close()
         ledger_handle.close()
+        if rejected_handle is not None:
+            rejected_handle.close()
         elapsed = time.time() - started_all
         peak_alloc = torch.cuda.max_memory_allocated() / GIB
         peak_reserved = torch.cuda.max_memory_reserved() / GIB
@@ -721,6 +771,20 @@ def main(argv: list[str]) -> int:
                    "trajectories; the ledger holds every problem's attempts, "
                    "verified successes, failures, truncations and duplicates, "
                    "so p is computed from attempts and survives the discard",
+        },
+        "preference_data": {
+            "rejected_path": (os.path.relpath(rejected_path, ROOT)
+                              if rejected_path else None),
+            "sha256": (sha256_file(rejected_path)
+                       if rejected_path and os.path.exists(rejected_path)
+                       else None),
+            "rows": (rejected_rows if not args.receipt_only else None),
+            "basis": "one failed token-id continuation per problem, written "
+                     "only when --rejected-out is given. It carries no decoded "
+                     "failed text and does not change the accepted corpus. "
+                     "The chosen side is a verified teacher continuation from "
+                     "the same prefix; the frozen reference is cached in a "
+                     "separate pass.",
         },
         "accepted": {
             "path": os.path.relpath(accepted_path, ROOT),

@@ -90,6 +90,7 @@
     "beta": 0.1,
     "normalization": "mean log-probability per continuation token, for the student and the frozen reference alike; chosen and rejected token counts are reported. 'sum' is available only as a diagnostic and is not the registered objective.",
     "why_not_reverse_kl": "reverse KL requires sum_y pi_theta(y|h)[log pi_theta(y|h) - log p_T(y|h)]; a cached scalar for one sampled y is not that sum. This registration does not call the preference margin a reverse KL.",
+    "data_contract": "the rollout pass optionally writes one failed token-id continuation per problem (--rejected-out), with no decoded failed text and no change to the accepted corpus; the chosen side is a verified teacher solution from the same prompt prefix. The frozen reference log-probabilities are cached in a separate pass. A p=0 problem has no accepted row, so the ledger carries its prompt ids and target.",
     "implementation": "oracle/frontier/preference.py",
     "tests": "oracle/tests/test_s63_preference.py"
   },
