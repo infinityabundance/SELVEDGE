@@ -36,11 +36,15 @@ class TinyLM(nn.Module):
         self.mlp = nn.Sequential(nn.Linear(hidden, 16), nn.Linear(16, hidden))
         self.lm_head = nn.Linear(hidden, vocab, bias=False)
 
-    def forward(self, input_ids, use_cache: bool = False):
+    def forward(self, input_ids, use_cache: bool = False,
+                logits_to_keep=None):
         hidden = self.embed(input_ids)
         hidden = torch.tanh(self.q_proj(hidden))
         hidden = self.mlp(hidden)
-        return SimpleNamespace(logits=self.lm_head(hidden))
+        logits = self.lm_head(hidden)
+        if logits_to_keep is not None:
+            logits = logits[:, logits_to_keep, :]
+        return SimpleNamespace(logits=logits)
 
 
 def _model(seed: int = 0, rank: int = 4) -> TinyLM:
@@ -156,6 +160,17 @@ def test_registered_lora_geometry_is_all_linear_rank_64_alpha_32():
     assert isinstance(model.q_proj, preference.LoRALinear)
     assert isinstance(model.mlp[0], preference.LoRALinear)
     assert isinstance(model.mlp[1], preference.LoRALinear)
+
+
+def test_lora_parameters_follow_the_base_layer_device():
+    # `install_lora` runs after the backbone is placed, so the adapter must be
+    # allocated on the base layer's device. A meta-device base makes the
+    # invariant visible on CPU: a hard-coded CPU allocation would fail here
+    # and did fail on CUDA with a cross-device matmul in the S65 smoke.
+    base = nn.Linear(4, 4, device="meta")
+    wrapper = preference.LoRALinear(base, rank=2, alpha=1.0)
+    assert wrapper.lora_A.device == base.weight.device
+    assert wrapper.lora_B.device == base.weight.device
 
 
 def test_preference_step_updates_only_the_adapter_and_uses_the_cache():

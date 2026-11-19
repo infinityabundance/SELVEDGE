@@ -55,11 +55,15 @@ class TinyLM(nn.Module):
     def get_input_embeddings(self):
         return self.embed
 
-    def forward(self, input_ids, use_cache: bool = False):
+    def forward(self, input_ids, use_cache: bool = False,
+                logits_to_keep=None):
         hidden = self.embed(input_ids)
         hidden = torch.tanh(self.q_proj(hidden))
         hidden = self.mlp(hidden)
-        return SimpleNamespace(logits=self.lm_head(hidden))
+        logits = self.lm_head(hidden)
+        if logits_to_keep is not None:
+            logits = logits[:, logits_to_keep, :]
+        return SimpleNamespace(logits=logits)
 
 
 def _base(seed: int = 0) -> TinyLM:

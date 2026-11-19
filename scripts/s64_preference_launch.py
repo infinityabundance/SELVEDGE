@@ -366,6 +366,18 @@ def run_arm(model, pairs, *, arm: str,
     geometry = prepare_registered_lora(
         model, rank=rank, alpha=alpha,
         expected_active_union=expected_active_union)
+    # The adapter is trained through the frozen backbone. Activation
+    # checkpointing is what keeps a full-length preference pair (prompt plus
+    # both continuations) inside a 16 GiB card; the flag only takes effect in
+    # training mode, so the model must leave `eval()` for the step.
+    checkpointing = None
+    if hasattr(model, "activation_checkpointing_enable"):
+        model.activation_checkpointing_enable()
+        checkpointing = "activation_checkpointing"
+    elif hasattr(model, "gradient_checkpointing_enable"):
+        model.gradient_checkpointing_enable()
+        checkpointing = "gradient_checkpointing"
+    model.train()
     trainable = preference.lora_parameters(model)
     if not trainable:
         raise ValueError("the arm needs trainable LoRA parameters")
@@ -458,6 +470,7 @@ def run_arm(model, pairs, *, arm: str,
         "mean_loss": (sum(losses) / len(losses)) if losses else None,
         "loss_trace": _subsample(losses),
         "geometry": geometry,
+        "activation_checkpointing": checkpointing,
         "checkpoints": checkpoints,
     }
 

@@ -234,19 +234,21 @@ def sequence_logprob(logprobs: torch.Tensor, normalization: str
     return normalise_logprob(total, int(logprobs.numel()), normalization)
 
 
-def _gather_continuation(logits: torch.Tensor, prompt_length: int,
+def _gather_continuation(logits: torch.Tensor, start: int,
                          continuation_ids: torch.Tensor) -> torch.Tensor:
     """Per-token log-probabilities of a continuation conditioned on a prefix.
 
-    ``logits`` is ``[batch, seq, vocab]`` over ``prompt + continuation[:-1]``.
-    The first continuation token is predicted by the last prompt position.
+    ``logits`` is ``[batch, seq, vocab]`` and `start` is the first position
+    that predicts a continuation token. When the caller asked the model for
+    only the continuation positions, ``start`` is 0 and ``seq`` equals the
+    continuation length.
     """
     count = int(continuation_ids.numel())
-    start = int(prompt_length) - 1
+    start = int(start)
     if start < 0 or start + count > logits.shape[1]:
         raise ValueError(
-            "logits do not cover the continuation: prompt length "
-            f"{prompt_length}, continuation {count}, seq {logits.shape[1]}")
+            "logits do not cover the continuation: start "
+            f"{start}, continuation {count}, seq {logits.shape[1]}")
     selected = logits[:, start:start + count, :].float()
     log_probs = F.log_softmax(selected, dim=-1)
     return log_probs.gather(
@@ -270,9 +272,17 @@ def continuation_logprobs(model, prompt_ids, continuation_ids,
     continuation = _torch.as_tensor(list(continuation_ids), dtype=_torch.long,
                                     device=device).reshape(1, -1)
     inputs = _torch.cat([prompt, continuation[:, :-1]], dim=1)
-    logits = model(input_ids=inputs, use_cache=False).logits
-    per_token = _gather_continuation(logits, prompt.shape[1],
-                                     continuation.reshape(-1))
+    # Only the continuation positions' logits are consumed. Asking the LM head
+    # for exactly those positions is exact (every other position's logits are
+    # multiplied by zero in the loss) and keeps a 1.3k-token row inside the
+    # device: materialising the full [1, seq, 248k] tensor was the S65 smoke's
+    # CUDA OOM.
+    keep = _torch.arange(prompt.shape[1] - 1,
+                         prompt.shape[1] - 1 + continuation.shape[1],
+                         device=inputs.device)
+    logits = model(input_ids=inputs, use_cache=False,
+                   logits_to_keep=keep).logits
+    per_token = _gather_continuation(logits, 0, continuation.reshape(-1))
     return sequence_logprob(per_token, normalization), per_token
 
 
@@ -413,16 +423,27 @@ class LoRALinear(nn.Module):
         self.rank = int(rank)
         self.alpha = float(alpha)
         self.scaling = self.alpha / self.rank
+        # Allocate on the base layer's device: `install_lora` runs after the
+        # model is already placed, so a CPU-allocated adapter would make the
+        # first forward fail with a cross-device matmul.
+        device = base.weight.device
         self.lora_A = nn.Parameter(torch.empty(
-            self.rank, base.in_features, dtype=torch.float32))
+            self.rank, base.in_features, dtype=torch.float32, device=device))
         self.lora_B = nn.Parameter(torch.zeros(
-            base.out_features, self.rank, dtype=torch.float32))
+            base.out_features, self.rank, dtype=torch.float32,
+            device=device))
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         base_out = self.base(x)
-        update = F.linear(F.linear(x.to(self.lora_A.dtype), self.lora_A),
-                          self.lora_B)
+        # Compute in the activation's dtype (bf16 for the real student) while
+        # the master A/B stay float32 for the optimizer. Upcasting every
+        # activation to float32 retained a full-sequence float32 copy at each
+        # of the 186 adapted layers, which is what filled the S65 smoke's card.
+        # For a float32 model this is exactly the previous computation.
+        dtype = x.dtype
+        update = F.linear(F.linear(x, self.lora_A.to(dtype)),
+                          self.lora_B.to(dtype))
         return base_out + (self.scaling * update).to(base_out.dtype)
 
     @torch.no_grad()
