@@ -589,7 +589,13 @@ def main(argv: list[str]) -> int:
                     else:
                         entry[result["verdict"]] += 1
                     if result["verdict"] != "correct":
-                        if failed_candidate is None:
+                        if (failed_candidate is None
+                                or (failed_candidate[3]
+                                    and not detail["truncated"])):
+                            # Prefer a non-truncated failed continuation so the
+                            # preference pair is not dominated by a cap-length
+                            # rejected side; fall back to a truncated one when
+                            # that is all the student produced.
                             failed_candidate = (sample_index, solution_ids,
                                                 result["verdict"],
                                                 detail["truncated"],
