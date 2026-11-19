@@ -1,0 +1,266 @@
+F.......FFF                                                              [100%]
+=================================== FAILURES ===================================
+______ test_teacher_pass_builds_shared_prefix_pairs_and_official_recovery ______
+
+    def test_teacher_pass_builds_shared_prefix_pairs_and_official_recovery():
+        ledger = {
+            "a": _ledger_row("a", [1, 2, 3], 0.25),
+            "b": _ledger_row("b", [4, 5], 0.0),
+            "c": _ledger_row("c", [6, 7], 0.5),
+            "d": _ledger_row("d", [8, 9], 0.5),
+            "e": _ledger_row("e", [10, 11], 0.5),
+            "f": _ledger_row("f", [12, 13], 1.0),
+        }
+        rejected = {
+            "a": _rejected("a", [1, 2, 3], [40, 41]),
+            "b": _rejected("b", [4, 5], [50]),
+            "c": _rejected("c", [6, 7], [60]),
+            "d": _rejected("d", [8, 9], [70]),
+            "e": _rejected("e", [10, 11], [30, 31]),  # identity pair
+            "g": _rejected("g", [99], [1]),  # no ledger row
+        }
+        corpus = {
+            "a": [_teacher("a", [1, 2, 3])],
+            "b": [_teacher("b", [4, 5])],
+            "c": [_teacher("c", [98, 99])],  # prefix mismatch
+            "d": [_teacher("d", [8, 9], ids=(7, 8))],  # unverified
+            "e": [_teacher("e", [10, 11])],
+        }
+        on_policy, recovery, diagnostics = data_pass.build_pairs(
+            ledger, rejected, corpus, decode_fn=_fake_decode,
+            verify_fn=_fake_verify)
+        by_id = {pair.problem_id: pair for pair in on_policy}
+        assert set(by_id) == {"a", "b"}
+        assert by_id["a"].chosen_ids == (30, 31)
+        assert by_id["a"].rejected_ids == (40, 41)
+        assert by_id["a"].weight == pytest.approx(0.1875)
+        assert by_id["a"].provenance == "on-policy"
+        assert by_id["b"].weight == 0.0
+        # p=0 gets one recovery pair with the mean positive on-policy weight.
+        assert len(recovery) == 1
+        assert recovery[0].problem_id == "b"
+        assert recovery[0].provenance == "teacher-recovery"
+        expected_weight = (0.1875 + 0.25 + 0.25) / 3
+>       assert recovery[0].weight == pytest.approx(expected_weight)
+E       assert 0.234375 == 0.22916666666666666 ± 2.3e-07
+E         
+E         comparison failed
+E         Obtained: 0.234375
+E         Expected: 0.22916666666666666 ± 2.3e-07
+
+oracle/tests/test_s64_preference_pipeline.py:148: AssertionError
+_________ test_preference_arm_emits_a_merged_checkpoint_at_the_cadence _________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_preference_arm_emits_a_me0')
+
+    def test_preference_arm_emits_a_merged_checkpoint_at_the_cadence(tmp_path):
+        pairs = _cached_pairs()
+        model = _base(seed=4)
+        budget = 2 * preference.preference_processed_tokens(pairs)
+>       report = launch.run_arm(
+            model, pairs, arm="preference", budget_tokens=budget,
+            cadence=(preference.preference_processed_tokens(pairs),),
+            seed=7, checkpoint_dir=str(tmp_path), expected_active_union=None)
+
+oracle/tests/test_s64_preference_pipeline.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+model = TinyLM(
+  (embed): Embedding(64, 8)
+  (q_proj): Linear(in_features=8, out_features=8, bias=True)
+  (mlp): Sequential(
+...Linear(in_features=16, out_features=8, bias=True)
+  )
+  (lm_head): Linear(in_features=8, out_features=64, bias=False)
+)
+pairs = [PreferencePair(problem_id='p0', prompt_ids=(1, 2, 3), chosen_ids=(4, 5), rejected_ids=(6, 7, 8), weight=0.25, chosen_...3633), rejected_reference_logprobs=(-4.234678268432617, -3.8604896068573, -4.189892768859863), provenance='on-policy')]
+arm = 'preference', budget_tokens = 44, batch_pairs = 1, lr = 0.0001, beta = 0.1
+grad_clip = 1.0, cadence = (22,), seed = 7, device = None
+checkpoint_dir = '/tmp/pytest-of-unknown/pytest-0/test_preference_arm_emits_a_me0'
+config_sha256 = None, expected_active_union = None, rank = 64, alpha = 32
+max_steps = None
+
+    def run_arm(model, pairs, *, arm: str,
+                budget_tokens: int | None,
+                batch_pairs: int = 1, lr: float = 1e-4, beta: float = 0.1,
+                grad_clip: float = 1.0, cadence: tuple[int, ...] = (),
+                seed: int = 0, device: str | None = None,
+                checkpoint_dir: str | None = None,
+                config_sha256: str | None = None,
+                expected_active_union: int | None = None,
+                rank: int = preference.REGISTERED_LORA_RANK,
+                alpha: float = preference.REGISTERED_LORA_ALPHA,
+                max_steps: int | None = None) -> dict:
+        """Train one arm and emit merged checkpoints at the token cadence."""
+        import torch
+        from frontier import arms
+    
+        if arm not in ARMS:
+            raise ValueError(f"unknown arm {arm!r}")
+        if not pairs:
+            raise ValueError("the training arm needs at least one pair")
+        if batch_pairs < 1:
+            raise ValueError("batch_pairs must be >= 1")
+    
+        if budget_tokens is None:
+            budget_tokens = (preference.sft_processed_tokens(pairs)
+                             if arm == "matched-sft"
+                             else preference.preference_processed_tokens(pairs))
+        budget_tokens = int(budget_tokens)
+        if budget_tokens <= 0:
+            raise ValueError("budget_tokens must be positive")
+    
+        trainable = preference.lora_parameters(model)
+        if not trainable:
+>           raise ValueError("the arm needs trainable LoRA parameters")
+E           ValueError: the arm needs trainable LoRA parameters
+
+scripts/s64_preference_launch.py:368: ValueError
+___________ test_matched_sft_control_uses_the_same_pairs_and_budget ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_matched_sft_control_uses_0')
+
+    def test_matched_sft_control_uses_the_same_pairs_and_budget(tmp_path):
+        pairs = _cached_pairs()
+        model = _base(seed=6)
+        budget = preference.preference_processed_tokens(pairs)
+>       report = launch.run_arm(
+            model, pairs, arm="matched-sft", budget_tokens=budget,
+            cadence=(budget,), seed=8, checkpoint_dir=str(tmp_path))
+
+oracle/tests/test_s64_preference_pipeline.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+model = TinyLM(
+  (embed): Embedding(64, 8)
+  (q_proj): Linear(in_features=8, out_features=8, bias=True)
+  (mlp): Sequential(
+...Linear(in_features=16, out_features=8, bias=True)
+  )
+  (lm_head): Linear(in_features=8, out_features=64, bias=False)
+)
+pairs = [PreferencePair(problem_id='p0', prompt_ids=(1, 2, 3), chosen_ids=(4, 5), rejected_ids=(6, 7, 8), weight=0.25, chosen_...3633), rejected_reference_logprobs=(-4.234678268432617, -3.8604896068573, -4.189892768859863), provenance='on-policy')]
+arm = 'matched-sft', budget_tokens = 22, batch_pairs = 1, lr = 0.0001
+beta = 0.1, grad_clip = 1.0, cadence = (22,), seed = 8, device = None
+checkpoint_dir = '/tmp/pytest-of-unknown/pytest-0/test_matched_sft_control_uses_0'
+config_sha256 = None, expected_active_union = None, rank = 64, alpha = 32
+max_steps = None
+
+    def run_arm(model, pairs, *, arm: str,
+                budget_tokens: int | None,
+                batch_pairs: int = 1, lr: float = 1e-4, beta: float = 0.1,
+                grad_clip: float = 1.0, cadence: tuple[int, ...] = (),
+                seed: int = 0, device: str | None = None,
+                checkpoint_dir: str | None = None,
+                config_sha256: str | None = None,
+                expected_active_union: int | None = None,
+                rank: int = preference.REGISTERED_LORA_RANK,
+                alpha: float = preference.REGISTERED_LORA_ALPHA,
+                max_steps: int | None = None) -> dict:
+        """Train one arm and emit merged checkpoints at the token cadence."""
+        import torch
+        from frontier import arms
+    
+        if arm not in ARMS:
+            raise ValueError(f"unknown arm {arm!r}")
+        if not pairs:
+            raise ValueError("the training arm needs at least one pair")
+        if batch_pairs < 1:
+            raise ValueError("batch_pairs must be >= 1")
+    
+        if budget_tokens is None:
+            budget_tokens = (preference.sft_processed_tokens(pairs)
+                             if arm == "matched-sft"
+                             else preference.preference_processed_tokens(pairs))
+        budget_tokens = int(budget_tokens)
+        if budget_tokens <= 0:
+            raise ValueError("budget_tokens must be positive")
+    
+        trainable = preference.lora_parameters(model)
+        if not trainable:
+>           raise ValueError("the arm needs trainable LoRA parameters")
+E           ValueError: the arm needs trainable LoRA parameters
+
+scripts/s64_preference_launch.py:368: ValueError
+________________ test_recovery_arm_trains_on_the_recovery_pairs ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_recovery_arm_trains_on_th0')
+
+    def test_recovery_arm_trains_on_the_recovery_pairs(tmp_path):
+        ledger = {"b": _ledger_row("b", [4, 5], 0.0)}
+        rejected = {"b": _rejected("b", [4, 5], [50])}
+        corpus = {"b": [_teacher("b", [4, 5])]}
+        _, recovery, _ = data_pass.build_pairs(
+            ledger, rejected, corpus, decode_fn=_fake_decode,
+            verify_fn=_fake_verify)
+        assert len(recovery) == 1
+        reference = _base(seed=9)
+        cached = [preference.cache_reference_logprobs(reference, pair)
+                  for pair in recovery]
+        assert cached[0].provenance == "teacher-recovery"
+        model = _base(seed=10)
+        budget = preference.preference_processed_tokens(cached)
+>       report = launch.run_arm(
+            model, cached, arm="recovery", budget_tokens=budget,
+            cadence=(budget,), seed=10, checkpoint_dir=str(tmp_path))
+
+oracle/tests/test_s64_preference_pipeline.py:367: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+model = TinyLM(
+  (embed): Embedding(64, 8)
+  (q_proj): Linear(in_features=8, out_features=8, bias=True)
+  (mlp): Sequential(
+...Linear(in_features=16, out_features=8, bias=True)
+  )
+  (lm_head): Linear(in_features=8, out_features=64, bias=False)
+)
+pairs = [PreferencePair(problem_id='b', prompt_ids=(4, 5), chosen_ids=(30, 31), rejected_ids=(50,), weight=1.0, chosen_referen...38589096069336, -4.008471965789795), rejected_reference_logprobs=(-3.913098096847534,), provenance='teacher-recovery')]
+arm = 'recovery', budget_tokens = 7, batch_pairs = 1, lr = 0.0001, beta = 0.1
+grad_clip = 1.0, cadence = (7,), seed = 10, device = None
+checkpoint_dir = '/tmp/pytest-of-unknown/pytest-0/test_recovery_arm_trains_on_th0'
+config_sha256 = None, expected_active_union = None, rank = 64, alpha = 32
+max_steps = None
+
+    def run_arm(model, pairs, *, arm: str,
+                budget_tokens: int | None,
+                batch_pairs: int = 1, lr: float = 1e-4, beta: float = 0.1,
+                grad_clip: float = 1.0, cadence: tuple[int, ...] = (),
+                seed: int = 0, device: str | None = None,
+                checkpoint_dir: str | None = None,
+                config_sha256: str | None = None,
+                expected_active_union: int | None = None,
+                rank: int = preference.REGISTERED_LORA_RANK,
+                alpha: float = preference.REGISTERED_LORA_ALPHA,
+                max_steps: int | None = None) -> dict:
+        """Train one arm and emit merged checkpoints at the token cadence."""
+        import torch
+        from frontier import arms
+    
+        if arm not in ARMS:
+            raise ValueError(f"unknown arm {arm!r}")
+        if not pairs:
+            raise ValueError("the training arm needs at least one pair")
+        if batch_pairs < 1:
+            raise ValueError("batch_pairs must be >= 1")
+    
+        if budget_tokens is None:
+            budget_tokens = (preference.sft_processed_tokens(pairs)
+                             if arm == "matched-sft"
+                             else preference.preference_processed_tokens(pairs))
+        budget_tokens = int(budget_tokens)
+        if budget_tokens <= 0:
+            raise ValueError("budget_tokens must be positive")
+    
+        trainable = preference.lora_parameters(model)
+        if not trainable:
+>           raise ValueError("the arm needs trainable LoRA parameters")
+E           ValueError: the arm needs trainable LoRA parameters
+
+scripts/s64_preference_launch.py:368: ValueError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_teacher_pass_builds_shared_prefix_pairs_and_official_recovery
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_preference_arm_emits_a_merged_checkpoint_at_the_cadence
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_matched_sft_control_uses_the_same_pairs_and_budget
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_recovery_arm_trains_on_the_recovery_pairs
+4 failed, 7 passed in 1.63s
