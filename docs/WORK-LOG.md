@@ -5161,3 +5161,57 @@ and measured ~582 tok/s; MATH-train had not started.
 Commits: `c8cfcd3` (status discovery), `b7f2daa` (termination), `66e2f96`
 (first-textual-divergence and same-prefix KL), `49ad4be` (rollouts), `e3d56f6`
 (vLLM attempt and queue).
+
+## S63 — four rollout/corpus defects, the preference objective, and the corrected queue
+
+**Per-row stopping.** `LoopCutStopping` returned one bool for the whole batch,
+so a looping row kept decoding until every sibling terminated; transformers
+5.23's `StoppingCriteriaList` expects a per-row BoolTensor. The criterion now
+returns one element per row and keeps the loop-onset index. The test runs a real
+batched `generate` on a tiny scripted model with one looping row and one
+terminating row, and asserts the two generated lengths differ. Because a batched
+generate still advances every row until the slowest stops, the cut's token
+savings are **textual replay only, not compute saved**; the receipt and the GPU
+queue say so, and the running K=4 job's numbers carry that label.
+
+**Control-teacher budget.** `control-teacher` had no student rows of its own, so
+its budget was computed as zero and the control was empty. The arm now requires
+a verified student corpus receipt, checks its schema, arm, positive
+supervised-token count, revision and examples hash, and subsamples the teacher
+rows to that budget. An end-to-end build against the smoke student receipt
+produced a positive control within one row of the receipted budget; the first
+attempt was OOM-killed at its initial container limit and receipted, and the
+rerun used a larger host-checked limit.
+
+**Pass-rate ledger.** Every prompt writes a ledger row with attempts, verified
+successes, failures, truncations, duplicates and the accepted-row count, even
+when the accepted file discards the text. p is successes over attempts, never
+over deduplicated accepted rows, and w = p(1-p). The corrected rollouts use K=8
+in sharded windows (the registration states the prompt counts and the coverage
+trade); the running K=4 job is pilot evidence, not the corrected corpus.
+
+**Preference objective.** A cached scalar teacher log-probability on the fixed
+action cannot implement reverse KL: the KL needs the teacher distribution over
+the vocabulary at each prefix. `oracle/frontier/preference.py` implements a
+reference-anchored, prefix-local preference objective instead: pairs share the
+student prefix, chosen is a verified teacher continuation, rejected is the
+student's failed continuation, and the frozen post-trained reference is
+subtracted. The log-sigmoid margin uses per-token mean normalisation, stated
+explicitly. All-linear rank-64 LoRA (alpha 32) has a merge path; the tests assert
+merge parity within the stated tolerance, the adapter excluded from the active
+union (752,393,024 unchanged), a matched SFT control on the same pairs and
+processed-token budget, and a p=0 recovery pair weighted by the mean positive
+p(1-p).
+
+**Queue and literature.** The corrected stage 2, the interpolation diagnostic
+(first, because it needs no new training) and the CURE intervention screen
+(later, with its own amendment) are registered in
+`docs/ws19-stage2-correction-s63-preregistration-v1.json`. DPO/IPO/CPO,
+sequence- versus token-level preference, length normalisation, LoRA merge,
+teacher-guided recovery and the cached-scalar/ reverse-KL distinction are in
+`docs/S63-LITERATURE.md` with URL, date, claim and evidence label.
+
+**Courts.** The full oracle suite, the rust court, commit identity, prereg
+provenance, status consistency and the generated-number check all pass. Commits:
+`9182ae6`, `6bb3142`, `4a119c0`, `0b9432e`, `69175b6`, `ab50dd2`, `319c112`,
+`8de67cc`.
