@@ -1,0 +1,135 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2-revised-preregistration/v1",
+  "identifier": "STAGE2-REVISED-S60-V1",
+  "registering_session": "S60",
+  "registered_utc": "2026-11-19T03:15:00Z",
+  "registered_revision": "recorded by the commit that first adds this file; the commit is before any screen, rollout, interpolation or score named here",
+  "purpose": "Register the revised stage 2 on-policy recipe before any score: student-policy rollouts with an 8-sample pass-rate estimate and p(1-p) problem weighting, a separate 2B teacher scoring pass over the student's own tokens, a verified-answer reward gate on reverse-KL supervision, loop-onset relay continuations, rank-64 all-linear LoRA merged at the end, a learning rate selected by the fixed-batch KL gate near 10x the full-fine-tuning rate, and a 0.5M/1M/2M/5M scoring cadence. The win bar is unchanged from the stage-1 registration; the retention sample is enlarged because 504 MMLU-Pro items cannot resolve a 1.0-point bound.",
+  "committed_before_any_score": true,
+  "relation_to_existing_registrations": {
+    "stage2a": {
+      "path": "docs/S58-STAGE2A.md",
+      "result": "not a win: GSM8K +2.88 points with an interval barely above zero, MATH-500 -11.0 points with the interval entirely below zero, MMLU -1.94 points outside the retention bound",
+      "relation": "this registration changes the objective, the parameterisation and the cadence in response to a measured failure. It does not rewrite the S58 report or the S55/S56 amendments; it supersedes only the stage-2b training and cadence clauses named in `supersedes`."
+    },
+    "stage2b_v1": {
+      "path": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+      "amendment": "docs/ws19-post-trained-route-stage2b-amendment-s59-v2.json",
+      "relation": "keeps the sampling policy, verifier, loop cut, dedup rule, hold-out exclusion, three-arm attribution and win bar; replaces the full-fine-tune + completion-CE recipe with the on-policy reverse-KL recipe below"
+    },
+    "win_basis": {
+      "path": "docs/ws19-post-trained-route-registration-v1.json",
+      "relation": "the student, the evaluation instrument and the paired problem-level statistics are unchanged"
+    }
+  },
+  "supersedes": [
+    "stage2b_v1.training.arm: 'full text tower' -> rank-64 all-linear LoRA, merged",
+    "stage2b_v1.training.objective: completion CE -> reward-gated reverse KL plus loop-onset relay",
+    "stage2b_v1.training.lr: one screened rate -> the fixed-batch KL gate starting at 1e-4",
+    "stage2b_v1.training.cadence: 2M/5M/final -> 0.5M/1M/2M/5M",
+    "stage2b_v1.win_bar.retention_note: 504 MMLU-Pro items -> a sample large enough, or an explicit unresolved label"
+  ],
+  "student": {
+    "id": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "identity_check": "oracle/frontier/identity.py against models/FRONTIER-POST-TRAINED.lock.json before load; id, revision, snapshot directory name, first-shard weight sha256 and licence sha256; mismatch fails closed",
+    "mode": "non-thinking, the policy's own tokenizer and chat template",
+    "requested_active_union": 752393024,
+    "active_union_reading": "rank-64 LoRA leaves the deployed model a full-weight text tower; after the adapter is merged there are no extra deployed identities, so the unique active union is still 752,393,024"
+  },
+  "rollouts": {
+    "prompts": "GSM8K-train and MATH-train items with an extractable train label, seeded stratified over (source, difficulty, reasoning-length quartile), minus every id in results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl and minus any prompt used by the interpolation calibration split",
+    "cap_tokens": 2048,
+    "k_samples": 8,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "stop": "EOS only; a rollout that reaches the cap without EOS is counted truncated and is not a verified target",
+    "pass_rate": "p = verified-correct samples / K per problem, K=8; p is the empirical pass rate and is never inferred from the teacher",
+    "loss_weight": "w(p) = p(1-p) per problem, the PACED weighting; problems with p in {0, 1} carry w=0 and are counted, not silently dropped",
+    "unit": "difficulty-weighted step: the step objective is sum_i w_i * sum_t KL_i,t / sum_i w_i * n_i, where n_i is the supervised token count of rollout i. This is the explicit third unit of learning (example, token, difficulty-weighted step) and is not the SFT trainer's token unit"
+  },
+  "teacher_pass": {
+    "teacher": "Qwen/Qwen3.5-2B at 15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "access": "separate pass, after the rollout pass has exited; the student and teacher are never co-resident on the device",
+    "conditioning": "the teacher consumes the student's own sampled token ids (same-prefix contract); a shape or id mismatch fails closed",
+    "output": "one log-probability per sampled token (scalar per token), no top-k cache; at bf16 that is 4 bytes per token, ~4 MB per million tokens",
+    "storage_arithmetic": "a 12M-token pass writes ~48 MB of log-probabilities, versus gigabytes for a top-k cache; the receipt records the realised bytes",
+    "objective": "reverse KL(student_T || teacher_T) at T=2.0 on the sampled completion tokens; prompt positions contribute neither CE nor KL",
+    "reward_gate": "only rollouts whose final answer verifies against the train label (frontier.rft.verify == correct) contribute to the reverse-KL loss; the gate is the verified final answer, not a teacher likelihood"
+  },
+  "loop_onset_relay": {
+    "trigger": "a rollout that reached the cap or was classified as a loop by oracle/frontier/termination.py",
+    "cut": "cut at the recorded loop onset (the first token of the first repeated block), keeping the student's prefix",
+    "handoff": "the 2B teacher continues autoregressively from the student's own cut prefix, in the same separate pass",
+    "admission": "only a relay continuation whose final answer verifies against the train label is kept; a relay that does not verify contributes nothing",
+    "supervision": "reverse KL(student_T || teacher_T) on the relay tokens, at the student's own prefix; the student's pre-cut tokens are not re-supervised",
+    "counted": "relay attempts, verified relays, rejected relays and relay tokens are receipted separately from ordinary rollouts",
+    "literature_position": "OLIVE (arXiv:2609.36246) supports teacher continuation from the student's prefix but trains by cross-entropy on teacher tokens, not reverse KL; Relay-OPD (arXiv:2607.26057) supports a teacher handoff but triggers on a failed-prefix asymmetry, not a loop detector. The reverse-KL-on-relay-tokens combination is this registration's hypothesis, not a published result (docs/S60-LITERATURE.md)."
+  },
+  "parameterisation": {
+    "adapter": "LoRA rank 64 on every linear layer (attention q/k/v/o and MLP/MoE gate/up/down), alpha 32, the 1/r scaling already implied by alpha/r; zero-initialised B and uniform A as in the PEFT default",
+    "why_all_linear": "LoRA Without Regret (Thinking Machines, 2025-09-29) finds attention-only LoRA underperforms MLP-only and all-layer LoRA matches full fine-tuning; rank 64 is inside its 1-512 sweep",
+    "merge": "the adapter is merged into the base weights at the end; the deployed checkpoint is a full-weight model, and the active union is unchanged at 752,393,024",
+    "not_frozen": "the tied embedding is part of the base and is not adapted by an MLP/attention LoRA; the merged model still reads all 752,393,024 text-tower elements"
+  },
+  "learning_rate_gate": {
+    "start": 1e-4,
+    "basis": "10x the full-fine-tuning rate (1e-5) that stage 2a used; LoRA Without Regret measures the optimal LoRA LR at ~10x the FullFT LR, and the registration starts there rather than assuming it",
+    "screen": [3e-5, 1e-4, 3e-4],
+    "instrument": "the S50 fixed-batch KL gate: the same fixed batch, the same teacher, the KL at 2M processed tokens",
+    "decision_rule": "choose the largest screened rate whose fixed-batch KL is below the gate threshold recorded by the S50 receipt; if every rate rises, the run does not launch and the screen is reported. Accuracy is not the selection input at the screen",
+    "recorded": "the chosen rate, every screened rate's KL, the fixed-batch hash and the threshold are written before the full run"
+  },
+  "training": {
+    "objective": "difficulty-weighted reward-gated reverse KL plus loop-onset relay reverse KL",
+    "budget": "the corpus is one pass over the student's rollouts; the cadence is expressed in processed student tokens",
+    "seq_len": "the rollout length distribution measured by the pilot, capped at 2048",
+    "micro_batch_and_accum": "chosen from the measured memory peak; the loss unit is the difficulty-weighted step, so the micro-batch partition does not change the objective",
+    "checkpoint_every": "every 0.5M processed tokens, so the 0.5M / 1M / 2M / 5M points are exact",
+    "optimizer": "Adam8bit block 256, int8 first moment, bf16 second moment, stochastic weight rounding",
+    "schedule": "cosine to 10%, warmup 200, grad-clip 1.0, seed 6001",
+    "no_teacher_at_training": "the teacher log-probabilities are read from the separate pass; no teacher weights are loaded during student training",
+    "unregistered_deviation_rule": "any change to these knobs is a new registered amendment before the launch"
+  },
+  "scoring_cadence": {
+    "points": ["0.5M", "1M", "2M", "5M"],
+    "instrument": "scripts/s54_post_trained_eval.py; full GSM8K (1319) and MATH-500 (500), greedy, non-thinking, zero-shot with \\boxed{}, batch 32, cap 4096, three extraction bases side by side",
+    "diagnostics": "termination, truncation and loop rates at every point, from the receipt's own summary",
+    "retention": "MMLU (14,042 items) and MMLU-Pro on a 4,000-item total-cap subset at every point; the 504-item MMLU-Pro sample is retired as a retention instrument because its paired interval cannot resolve the 1.0-point bound",
+    "why_four_points": "S58 found the 2M checkpoint collapsed to 0.3101 GSM8K and recovered monotonically; a 0.5M point makes the early transient visible instead of inferred"
+  },
+  "retention": {
+    "bound": "MMLU and MMLU-Pro each stay within 1.0 point: point drop <= 1.0 and the paired interval lower bound >= -1.0",
+    "mmul_pro_sample": 4000,
+    "mmul_pro_basis": "a seeded total-cap subset of the MMLU-Pro test items, allocated by the S43 largest-remainder rule; the subset and its seed are recorded before the first score",
+    "uncertainty_treatment": "if the paired interval lower bound is below -1.0 while the point estimate is inside 1.0, the clause is reported as `unresolved`, not as a pass; an unresolved retention clause blocks a win claim but does not by itself count as a retention failure",
+    "why_not_504": "504 items give a paired interval of roughly +/-4 points at the observed base accuracy, so the S58 claim could not resolve the bound it tested; the larger sample is the fix"
+  },
+  "win_bar": {
+    "statement": "the arm wins iff (1) greedy GSM8K flexible > 0.5421 AND greedy MATH-500 flexible > 0.3820, with the prompt-level (problem-level) paired 95% interval of each difference entirely above zero, AND (2) the retention bound above holds for both MMLU and MMLU-Pro",
+    "no_softening": "a gain on one task, a maj@16-only gain, a gain shared with the matched control, or an accuracy gain with an unresolved retention clause is not the win",
+    "statistics": "problem-level paired bootstrap, 4,000 resamples, seed 53, against the post-trained 0.8B; the resampling unit is the problem, never the token",
+    "unchanged_from": "docs/ws19-post-trained-route-registration-v1.json; S58 measured 0.5421 and 0.3820 as the bar"
+  },
+  "attribution": {
+    "matched_control": "the same rollouts, budget, optimiser, LoRA rank, LR and cadence with the reward gate off (every sampled rollout, verified or not); the difference isolates the verified-answer gate",
+    "relay_control": "the same rollouts and gate with relay disabled; the difference isolates the loop-onset relay",
+    "not_a_win_condition": "both controls are reported with their own paired intervals and do not change the win bar"
+  },
+  "limits": {
+    "one_gpu_job_at_a_time": true,
+    "teacher_never_co_resident": true,
+    "container_memory": "sized from the measured peak of each phase (rollout, teacher scoring, training) by max(1.5 x peak, peak + 1 GiB), recorded before the launch",
+    "vram": "sized from the same measured peak; a phase whose measured peak is 10.9 GiB must not inherit an 8 GiB limit",
+    "host_reservation": "host MemAvailable must exceed the new limit plus 4 GiB before launch; a serialized second job must not start while its limit plus the running job's measured peak exceeds available memory",
+    "bounded_tmp": "SELVEDGE_TMP is 2g or the phase-specific measured need, whichever is larger"
+  },
+  "what_this_file_does_not_establish": [
+    "that p(1-p) weighting improves this student: PACED supports the weighting in its own setting, the screen is the test here",
+    "that loop-onset relay improves over no relay: the relay control is the test",
+    "that reverse KL on relay tokens is supported by OLIVE: OLIVE trains by cross-entropy on teacher tokens",
+    "that rank-64 all-linear LoRA matches full fine-tuning here: LoRA Without Regret supports the regime, this run measures it",
+    "that the 4,000-item MMLU-Pro subset resolves 1.0 point: its interval is reported, and an unresolved clause is labelled as such",
+    "any score: nothing in this file is a measurement"
+  ]
+}

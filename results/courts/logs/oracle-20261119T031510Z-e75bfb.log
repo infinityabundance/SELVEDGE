@@ -1,0 +1,54 @@
+...........FF......                                                      [100%]
+=================================== FAILURES ===================================
+___________ test_a_directory_named_for_another_revision_fails_closed ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_directory_named_for_ano0')
+
+    def test_a_directory_named_for_another_revision_fails_closed(tmp_path):
+        directory = _model_dir(tmp_path)
+        other = tmp_path / ("1" * 40)
+        other.mkdir()
+        for name in os.listdir(directory):
+            os.replace(os.path.join(directory, name), other / name)
+        with pytest.raises(identity.IdentityMismatch, match="pinned revision"):
+>           identity.verify_student(str(other), _lock(tmp_path, directory),
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                    MODEL_ID, REVISION)
+
+oracle/tests/test_s60_identity.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_a_directory_named_for_ano0')
+directory = '/tmp/pytest-of-unknown/pytest-0/test_a_directory_named_for_ano0/2fc06364715b967f1860aea9cf38778875588b17'
+overrides = {}
+
+    def _lock(tmp_path, directory: str, **overrides) -> str:
+        shard = os.path.join(directory,
+                             "model.safetensors-00001-of-00001.safetensors")
+        entry = {
+            "id": MODEL_ID,
+            "revision": REVISION,
+>           "weight_sha256": hashlib.sha256(open(shard, "rb").read()).hexdigest(),
+                                            ^^^^^^^^^^^^^^^^^
+            "licence_file_sha256": hashlib.sha256(b"Apache-2.0\n").hexdigest(),
+        }
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-unknown/pytest-0/test_a_directory_named_for_ano0/2fc06364715b967f1860aea9cf38778875588b17/model.safetensors-00001-of-00001.safetensors'
+
+oracle/tests/test_s60_identity.py:51: FileNotFoundError
+______________ test_the_launcher_names_the_post_trained_snapshot _______________
+
+    def test_the_launcher_names_the_post_trained_snapshot():
+        script = open(os.path.join(ROOT, "scripts", "s57_stage2a_train.sh"),
+                      encoding="utf-8").read()
+        default = re.search(r'^student_dir="([^"]+)"', script, re.MULTILINE)
+        assert default, "the launcher has no default student_dir"
+>       assert REVISION in default.group(1)
+E       assert '2fc06364715b967f1860aea9cf38778875588b17' in '/hf-cache/models/Qwen/Qwen3.5-0.8B/$student_revision'
+E        +  where '/hf-cache/models/Qwen/Qwen3.5-0.8B/$student_revision' = <built-in method group of re.Match object at 0x7fc26129b910>(1)
+E        +    where <built-in method group of re.Match object at 0x7fc26129b910> = <re.Match object; span=(4270, 4336), match='student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/$>.group
+
+oracle/tests/test_s60_identity.py:102: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s60_identity.py::test_a_directory_named_for_another_revision_fails_closed
+FAILED oracle/tests/test_s60_identity.py::test_the_launcher_names_the_post_trained_snapshot
+2 failed, 17 passed in 1.71s

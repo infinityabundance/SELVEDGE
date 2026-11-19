@@ -1,0 +1,101 @@
+{
+  "schema": "selvedge/ws19-frontier-check-preregistration/v1",
+  "identifier": "FRONTIER-CHECK-S59A-V1",
+  "registering_session": "S60 (registered on behalf of the S59-A queue item)",
+  "registered_utc": "2026-11-19T03:16:00Z",
+  "registered_revision": "recorded by the commit that first adds this file; the commit precedes every measurement named here",
+  "purpose": "Establish the real external frontier for the 0.6B-1B reasoning class before any leadership claim. Qwen3-0.6B, ReasonLite-0.6B and MobileLLM-R1.5-950M are benchmarked under the identical stage-1 protocol where their licences and access permit. The point of the check is that a win over the post-trained 0.8B may be a win over one checkpoint in the class, not the class. No external score is claimed until its receipt exists.",
+  "why_now": "Stage 2a improved GSM8K by 2.88 points against the post-trained 0.8B and lost MATH-500 by 11.0 points. A comparison against a single self-post-trained checkpoint cannot say whether the 0.8B's MATH-500 38.20% is competitive. The external models are the cheapest way to answer that before a leadership claim is written.",
+  "protocol": {
+    "instrument": "scripts/s54_post_trained_eval.py, the same pass used for the post-trained 0.8B and stage 2a",
+    "tasks": "full GSM8K (1,319) and MATH-500 (500)",
+    "decoding": "greedy, non-thinking, zero-shot, the prompt ending in \\boxed{}, batch 32, cap 4096",
+    "extraction": "strict, flexible and exact reported side by side; the win basis is flexible",
+    "model_specific_template": "each checkpoint's own tokenizer and chat template; enable_thinking=false where the template exposes it",
+    "retention": "MMLU and MMLU-Pro only if the accuracy clauses are competitive, on the registered total-cap harness",
+    "statistics": "problem-level paired bootstrap (4,000 resamples, seed 53) against the post-trained 0.8B, and against the best external model",
+    "identical_means": "same prompt content, same cap, same greedy decoding, same extraction, same statistics. A model that cannot be run in this harness is reported as not comparable, not scored with a different protocol"
+  },
+  "models": {
+    "qwen3_0_6b": {
+      "id": "Qwen/Qwen3-0.6B",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "licence": "Apache-2.0",
+      "licence_file_sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "licence_source": "cached LICENSE at /hf-cache/models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca/LICENSE, read 2026-11-19",
+      "access": "public, ungated",
+      "gated": false,
+      "weights_cached": true,
+      "weight_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+      "weight_bytes": 1503300328,
+      "parameters_bf16": 751632384,
+      "architecture": "Qwen3ForCausalLM",
+      "tokenizer": "the checkpoint's own tokenizer and chat template",
+      "note": "the class control: a 0.6B general model, not a reasoning checkpoint"
+    },
+    "reasonlite_0_6b": {
+      "id": "amd/ReasonLite-0.6B",
+      "revision": "3aad22487d65b6e88d99a308762a4550e24854ac",
+      "licence": "AMD OpenRAIL-D (repository metadata `license: openrail`; file LICENSE-AMD-OpenRAIL-D)",
+      "licence_blob_id": "4d371b9eafb015c9aa3625ec845f65a30cd06c4a",
+      "licence_bytes": 14871,
+      "licence_source": "huggingface.co/amd/ReasonLite-0.6B, file list read 2026-11-19; the file's sha256 is recorded when it is first fetched",
+      "access": "public, ungated (`gated: false`)",
+      "gated": false,
+      "weights_cached": false,
+      "weight_sha256": "926a1d80916bdeda1e01718858f53cf74f04a9631920444e77817036d6e3458b",
+      "weight_bytes": 1503300328,
+      "parameters_bf16": 751632384,
+      "architecture": "Qwen3ForCausalLM",
+      "tokenizer": "the checkpoint's own Qwen3 tokenizer and chat template",
+      "licence_permits_evaluation": true,
+      "licence_note": "OpenRAIL-D carries use restrictions but not a field-of-use restriction on evaluation; the licence text is recorded with the fetch receipt",
+      "note": "a reasoning-tuned 0.6B; the closest external peer to the post-trained 0.8B by size"
+    },
+    "mobilellm_r1_5_950m": {
+      "id": "facebook/MobileLLM-R1.5-950M",
+      "revision": null,
+      "licence": "other (repository metadata `license: other`); the exact text is behind the gate",
+      "licence_source": "unread at registration: the model repository is restricted",
+      "access": "gated: an unauthenticated GET of the model file returned HTTP 401 `Access to model facebook/MobileLLM-R1.5-950M is restricted` on 2026-11-19",
+      "gated": true,
+      "weights_cached": false,
+      "weight_sha256": null,
+      "parameters_bf16": null,
+      "architecture": "reported by the repository as llama4_text",
+      "tokenizer": "unknown until the gated files are read",
+      "fetch_policy": "DO NOT FETCH. Access requires an authenticated account and likely licence acceptance on the operator's behalf. Until the operator grants access and the licence text is read and recorded, this model is `not_run: licence/access unresolved` and contributes no number to the frontier table",
+      "note": "the 1.5-class generation of MobileLLM-R1; its inclusion depends on the operator granting access"
+    }
+  },
+  "licence_and_access_rule": [
+    "1. A model is benchmarked only if its licence permits evaluation and its weights are obtainable without accepting terms on the operator's behalf.",
+    "2. A gated model is not fetched. The gate, the HTTP status and the date are recorded, and the model is reported as not comparable until access is granted.",
+    "3. The licence file is hashed into the eval receipt on the first fetch; a model whose licence file cannot be read is not scored.",
+    "4. No external score is compared with an internal score produced under a different prompt, cap or extraction rule."
+  ],
+  "reporting": {
+    "table": "model | parameters | GSM8K flexible | MATH-500 flexible | truncation | loop rate | MMLU | MMLU-Pro | licence | access | receipt",
+    "claims_allowed": "a measured comparison on the identical protocol, with paired problem-level intervals against the post-trained 0.8B",
+    "claims_not_allowed": "a family-wide leadership claim from one checkpoint, an extrapolation from a model that could not be run, or a comparison against a vendor's reported number under a different protocol",
+    "if_below_the_internal_bar": "if the post-trained 0.8B is at or above the best external model on both tasks, the internal result is class-competitive on this instrument and the report says exactly that, with the intervals",
+    "if_above_the_internal_bar": "if an external model is above the bar on either task, the S58/S60 result is not a frontier result and the report says so before any next-route claim"
+  },
+  "cost_arithmetic": {
+    "per_model_eval": "1,819 greedy generations at cap 4096; the stage-1 receipt measured the 0.8B pass at the same instrument, so the per-model cost is the measured pass, not an estimate",
+    "three_models": "three serial passes, one GPU job at a time, each with its own measured memory limit",
+    "retention": "MMLU (14,042) and MMLU-Pro (4,000 total-cap subset) only for a model whose accuracy clause is competitive"
+  },
+  "limits": {
+    "one_gpu_job_at_a_time": true,
+    "memory": "each pass sizes SELVEDGE_MEM from its measured peak by max(1.5 x peak, peak + 1 GiB)",
+    "bounded_tmp": "SELVEDGE_TMP=2g on every pass",
+    "no_weight_fetch_without_a_receipt": true
+  },
+  "what_this_file_does_not_establish": [
+    "that any external model runs under this harness: the passes measure it",
+    "that the external models are the class frontier: they are the three named checks, not an exhaustive survey",
+    "that MobileLLM-R1.5-950M can be evaluated: it is gated and unread",
+    "any score: nothing in this file is a measurement"
+  ]
+}
