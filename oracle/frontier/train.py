@@ -165,7 +165,13 @@ def build_arm(kind: str, model, args, device: str):
     if kind == "full":
         arm = full.FullBackboneArm(model, freeze_embedding=args.freeze_embedding)
         if args.gradient_checkpointing:
-            model.gradient_checkpointing_enable()
+            # transformers 5.x renamed the switch; the old name is deprecated and
+            # is a no-op there, which made this flag silently do nothing (S59
+            # smoke: the peak was byte-identical with and without it).
+            if hasattr(model, "activation_checkpointing_enable"):
+                model.activation_checkpointing_enable()
+            else:
+                model.gradient_checkpointing_enable()
         report = arm.active_parameter_report()
         report["gradient_checkpointing"] = bool(args.gradient_checkpointing)
         report["optimizer"] = args.optimizer
@@ -522,6 +528,7 @@ def run(args) -> int:
             "min_lr_ratio": args.min_lr_ratio,
             "freeze_embedding": bool(args.freeze_embedding),
             "gradient_checkpointing": bool(args.gradient_checkpointing),
+            "sft_logits_gather": bool(args.sft_logits_gather),
             "optimizer_numerics": args.optim_numerics,
             "optimizer_measure_every": int(args.optim_measure_every),
             "max_update_over_lr_factor": float(args.abort_update_factor),
@@ -643,13 +650,34 @@ def run(args) -> int:
                 row_cursor += args.micro_batch
                 inputs = packed.input_ids[indices, :-1].to(device)
                 targets = packed.labels[indices, 1:].to(device)
-            student = model(input_ids=inputs, use_cache=False).logits
             teacher_logits = None
             if teacher is not None:
                 with torch.no_grad():
                     teacher_logits = teacher(input_ids=inputs, use_cache=False).logits
-            if objective == "sft":
+            gather = objective == "sft" and args.sft_logits_gather
+            if gather:
+                # Completion-only CE only needs the logits at supervised
+                # positions. Masked positions contribute zero loss and zero
+                # gradient, so restricting the LM head to them is exact; it is
+                # what keeps a 1,249-position row inside the device when the
+                # desktop already holds part of the card (S59 smoke).
+                if args.micro_batch != 1:
+                    raise SystemExit(
+                        "train: --sft-logits-gather requires --micro-batch 1")
+                keep = (targets[0] != sft_data.IGNORE_INDEX).nonzero(
+                    as_tuple=True)[0]
+                if keep.numel() == 0:
+                    student = model(input_ids=inputs, use_cache=False).logits
+                    loss, ce, kl = token_loss(student, None, targets,
+                                              args.temperature, 0.0)
+                else:
+                    student = model(input_ids=inputs, use_cache=False,
+                                    logits_to_keep=keep).logits
+                    loss, ce, kl = token_loss(student, None, targets[:, keep],
+                                              args.temperature, 0.0)
+            elif objective == "sft":
                 # Verified-solution cross-entropy: no teacher, no KL.
+                student = model(input_ids=inputs, use_cache=False).logits
                 loss, ce, kl = token_loss(student, None, targets,
                                           args.temperature, 0.0)
             elif objective == "sft-kl":
@@ -658,6 +686,7 @@ def run(args) -> int:
                 # student's own prefix, and the teacher consumed exactly those
                 # ids above; the guard fails closed if that ever stops being
                 # true.
+                student = model(input_ids=inputs, use_cache=False).logits
                 if teacher_logits is None:
                     raise SystemExit(
                         "train: sft-kl requires the online teacher")
@@ -673,6 +702,7 @@ def run(args) -> int:
                 if teacher_logits is None:
                     raise SystemExit(
                         "train: the correction objective requires the online teacher")
+                student = model(input_ids=inputs, use_cache=False).logits
                 # The frozen base logits are needed for the advantage and the
                 # preservation term. `bypass` returns exactly zero and does not
                 # advance the convolution state, so this is a clean base pass.
@@ -695,6 +725,7 @@ def run(args) -> int:
                     if isinstance(value, (int, float)):
                         objective_sum[key] = objective_sum.get(key, 0.0) + float(value)
             else:
+                student = model(input_ids=inputs, use_cache=False).logits
                 loss, ce, kl = token_loss(student, teacher_logits, targets,
                                           args.temperature, args.kl_weight)
             (loss / args.grad_accum).backward()
@@ -1004,6 +1035,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--no-freeze-embedding", dest="freeze_embedding",
                         action="store_false")
     parser.add_argument("--gradient-checkpointing", action="store_true")
+    parser.add_argument("--sft-logits-gather", action="store_true",
+                        help="completion-only SFT: compute the LM head only at "
+                             "supervised positions (exact; masked positions "
+                             "contribute no loss or gradient)")
     parser.add_argument("--keep-checkpoints", type=int, default=0,
                         help="keep only the newest N ckpt-*.pt files (0 keeps all)")
     parser.add_argument("--seed", type=int, default=0)

@@ -1,0 +1,71 @@
+{
+  "arm_label": "smoke-gather-full",
+  "cadence": {
+    "checkpoint_every_steps": 400,
+    "final_policy": "epoch ends before the 5M cadence point; the final checkpoint replaces it and the receipt says so",
+    "points": [
+      800,
+      2000,
+      40
+    ],
+    "tokens": [
+      2000000,
+      5000000,
+      100000
+    ]
+  },
+  "created_utc": "2026-11-19T03:03:12Z",
+  "data": {
+    "completion_only_loss": true,
+    "examples": {
+      "path": "results/artifacts/stage2/s59-corpus/smoke-rft-examples.jsonl",
+      "sha256": "b2290917cc24db33eb98752b34ca8b84b45ecff0ec1a64922e682c41f8ef249b"
+    },
+    "examples_longer_than_seq_len_dropped": 17,
+    "examples_receipt": {
+      "path": "results/artifacts/stage2/s59-corpus/smoke-rft-corpus-receipt.json",
+      "sha256": "409aa93237d4db5ea73d122c4c4c73e423530ba00f065ccd39a6284267f1c67b"
+    },
+    "packing": "one complete example per row; no boundary crossing",
+    "replay_fraction": 0.2,
+    "rows_fit": 220,
+    "supervised_positions_in_rows": 105750
+  },
+  "launcher": "scripts/s59_stage2b_train.sh",
+  "limits": {
+    "container_cpus": 8,
+    "container_memory_bytes": 17179869184,
+    "container_memory_swap_bytes": 17179869184,
+    "container_pids": 1024,
+    "container_tmp": "2g",
+    "sizing": "floor peak + 1 GiB from the stage-2a cgroup peak 15,032,385,536 B; 16g minimum enforced by the launcher",
+    "vram_limit_gib": 13.0
+  },
+  "recipe": {
+    "abort_update_factor": 0.0,
+    "epochs": 1,
+    "gradient_checkpointing": true,
+    "gradient_checkpointing_note": "exact recomputation of each block's forward; the S59 smoke measured step-1 loss 0.228619 against 0.228619 ungathered, i.e. equal within 1e-8, not bit-identical (different GEMM shapes)",
+    "kept_checkpoints": 1,
+    "lr": 3e-06,
+    "lr_basis": "registered stage-2b lr screen set {3e-6, 1e-5}; the full run uses the rate with the lower held-out solution CE",
+    "optimizer": "Adam8bit block 256, int8 first moment, bf16 second moment, stochastic weight rounding",
+    "schedule": "cosine to 10%, warmup 200, grad-clip 1.0",
+    "seed": 0,
+    "sft_logits_gather": true,
+    "sft_logits_gather_note": "the LM head emits logits only at supervised positions; masked positions contribute no loss or gradient. The S59 smoke measured step-1 loss 0.22861921042 (gathered) against 0.22861921787 (ungathered), a 7.5e-9 absolute difference from the GEMM shape, not bit-identity",
+    "steps": 40,
+    "tied_embedding": "frozen",
+    "tokens_per_step": 2500,
+    "tokens_processed": 100000
+  },
+  "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+  "run_dir": "results/stage2/runs/s59-smoke",
+  "schema": "selvedge/s59-stage2b-launch/v1",
+  "student": {
+    "dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "id": "Qwen/Qwen3.5-0.8B",
+    "note": "post-trained chat checkpoint, not the Base model",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17"
+  }
+}

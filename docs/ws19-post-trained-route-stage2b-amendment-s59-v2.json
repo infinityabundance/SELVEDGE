@@ -1,0 +1,75 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2b-amendment/v1",
+  "identifier": "STAGE2B-AMENDMENT-S59-V2",
+  "registering_session": "S59",
+  "registered_utc": "2026-11-19T03:05:00Z",
+  "registered_revision": "c9b92fc",
+  "amends": {
+    "path": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+    "rule": "this amendment changes ONLY (i) how the completion-only loss is computed on the device and (ii) the device memory limits. The arms, the sampling policy, the verifier, the corpus construction, the matched-control definition, the lr screen, the cadence, the statistics and the win bar of v1 stand unchanged. It was written and committed before the stage-2b generation pass and before any screen or score."
+  },
+  "why": {
+    "measured_problem": "the v1 recipe (seq_len 1250, micro-batch 1, grad-accum 2, full backbone) OOMed on the live device before step 2, not on the cgroup limit but on VRAM: 12.75 GiB already in use and a 592 MiB allocation failing with 634 MiB free. The stage-2a run of the same shape peaked at 12.728 GiB allocated / 13.086 reserved. The difference is device occupancy outside this experiment: kwin_wayland, sunshine, zed and two browser GPU processes hold 2.39 GiB, leaving 13.60 GiB free on a 16,376 MiB card.",
+    "evidence": [
+      {"what": "OOM with the v1 recipe", "receipt": "results/courts/oracle-20261119T025852Z-0ac47c.json", "stamp": "20261119T025852Z", "exit_code": 1},
+      {"what": "OOM with --gradient-checkpointing calling the deprecated transformers API, which is a no-op in v5", "receipt": "results/courts/oracle-20261119T025925Z-2c1d72.json", "stamp": "20261119T025925Z", "exit_code": 1},
+      {"what": "OOM with the activation-checkpointing API called correctly but without the gathered head", "receipt": "results/courts/oracle-20261119T025951Z-9a94ea.json", "stamp": "20261119T025951Z", "exit_code": 1},
+      {"what": "the smoke that completes with both changes", "receipt": "results/courts/oracle-20261119T030312Z-d685b9.json", "stamp": "20261119T030312Z", "exit_code": 0},
+      {"what": "its run receipt", "receipt": "results/stage2/runs/s59-smoke/receipt.json", "stamp": "20261119T030312Z"}
+    ]
+  },
+  "change_1_sft_logits_gather": {
+    "flag": "--sft-logits-gather",
+    "what": "the completion-only SFT loss asks the model's LM head for logits only at positions whose label is not -100 (`logits_to_keep` with an index tensor), instead of all 1,249 row positions.",
+    "why_it_is_the_same_loss": "a label of -100 contributes neither loss nor gradient by definition, so the CE total, its normalising count and every parameter gradient are unchanged. The gather changes the shape of one GEMM, which changes floating-point association.",
+    "measured_equivalence": {
+      "step_1_loss_gathered": 0.22861921042203903,
+      "step_1_loss_ungathered": 0.22861921787261963,
+      "absolute_difference": 7.450550589872926e-09,
+      "relative_difference": 3.26e-08,
+      "claim": "equal within 3.3e-8 relative; NOT bit-identical, and the receipt says so rather than claiming identity"
+    },
+    "probe": "scripts/s59_probe_logits_keep.py: on CPU with five kept positions the subset logits are bitwise equal to `full[:, keep, :]` (max |difference| 0.0); on the GPU the GEMM is larger and the association differs at the 1e-9 level.",
+    "risk": "none for the objective; the run is deterministic for a fixed flag set, and the stage-2b screen and full run both use the flag, so they are compared to each other and to the base model on the same instrument."
+  },
+  "change_2_activation_checkpointing": {
+    "flag": "--gradient-checkpointing",
+    "what": "train.py now calls `activation_checkpointing_enable()` when the model offers it (transformers 5.x) and falls back to `gradient_checkpointing_enable()` otherwise.",
+    "why_the_flag_was_dead": "transformers 5.23 keeps the old name as a deprecated alias that does nothing; the S59 probe reads `layer.gradient_checkpointing == true` after the new call and the smoke's peak falls only when the gathered head is also used.",
+    "why_it_is_the_same_optimisation": "checkpointing recomputes each decoder block's forward during the backward pass instead of storing its activations. With dropout 0.0 and deterministic algorithms enabled, the recomputation is the same function, so the gradient is the same function of the same inputs.",
+    "not_a_recipe_change": "it is not an objective, optimiser, schedule, data, seed or lr change."
+  },
+  "change_3_vram_limit": {
+    "training_vram_limit_gib": 13.0,
+    "was": 13.5,
+    "why": "the card's free VRAM with the desktop running is 13.60 GiB; a limit above free is refused by the trainer's own check. The measured peak of the amended recipe is 11.594 GiB allocated / 11.953 GiB reserved, i.e. 1.65 GiB below the limit.",
+    "generation_vram_limit_gib": 12.0,
+    "generation_peak_measured": "5.601 GiB allocated / 6.762 GiB reserved at the pilot (batch 16 prompts x K=4, cap 2048)"
+  },
+  "change_4_smoke_tripwire": {
+    "what": "the 40-step smoke runs with --abort-update-factor 0 (the tripwire's documented off value); the screen and full runs keep 10.0.",
+    "why": "a 40-step run under a collapsing warmup schedule is not a divergence test. The smoke exists to prove the plumbing, the memory and the loss equivalence.",
+    "recorded_risk": "on the 220-row pilot smoke corpus the update tripwire measured 10.805 at step 17 (factor 10.0), against stage-2a's measured maximum of 8.93 over 4,376 steps on the real corpus. The real stage-2b runs keep the registered 10.0 factor: if it fires, the run is aborted, its receipt is kept and the event is reported. The factor is NOT raised for a real run without a further amendment."
+  },
+  "measured_smoke": {
+    "run_dir": "results/stage2/runs/s59-smoke",
+    "steps": 40,
+    "tokens_trained": 100000,
+    "tokens_per_second": 2726.2,
+    "wall_seconds": 36.681,
+    "peak_allocated_gib": 11.59429931640625,
+    "peak_reserved_gib": 11.953125,
+    "cgroup_memory_peak_bytes": 7962009600,
+    "cgroup_memory_max_bytes": 17179869184,
+    "oom_kills": 0,
+    "corpus": "191 accepted pilot rollouts + 20% replay, 220 rows after overflow drop"
+  },
+  "cgroup_sizing_note": "the v1 registration requires >= 16g for a training run of this shape from the stage-2a cgroup peak 15,032,385,536 B. This smoke's cgroup peak is 7,962,009,600 B, which is lower because the pilot corpus is small and the cgroup peak is dominated by page cache and staging, not by the model. The 16g floor is retained: it is derived from the longest run of this shape, and a smoke cannot lower a floor.",
+  "does_not_change": [
+    "the student, the policy, the sampling parameters, the loop cut, the verifier and the dedup rule",
+    "the three arms and the matched-control definition",
+    "the lr screen set, its budget, its decision rule and the frozen CE instrument",
+    "the cadence, the evaluation instrument, the statistics and the win bar",
+    "the next route registered for a non-win"
+  ]
+}

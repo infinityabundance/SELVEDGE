@@ -1,0 +1,90 @@
+{
+  "bound_seconds": 16200.0,
+  "chosen": "step-3",
+  "created_utc": "2026-11-19T02:58:15Z",
+  "k_scaling_note": "accepted rows are projected by scaling the pilot's K=4 rate linearly; that is an expectation, and the realised count comes from the pass's own receipt",
+  "measured": {
+    "accepted_rollouts_per_prompt": {
+      "gsm8k": 2.0,
+      "math": 1.1833333333333333
+    },
+    "decode_tokens_per_second": 537.7954114040053,
+    "mean_generated_tokens_per_rollout": {
+      "gsm8k": 736.3583333333333,
+      "math": 1385.3125
+    },
+    "pilot_loop_cut_rate": 0.004166666666666667,
+    "pilot_prompts": 120,
+    "pilot_sampled": 480,
+    "pilot_truncation_rate": 0.3020833333333333
+  },
+  "pilot": {
+    "path": "results/artifacts/stage2/s59-rft/pilot-receipt.json",
+    "revision": "c9b92fcc969fb78561b16d455296087155a4ca56",
+    "stamp": "20261119T025729Z"
+  },
+  "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+  "revision": "c9b92fcc969fb78561b16d455296087155a4ca56",
+  "rule": "the first step whose projected wall time is at or below the bound; if no step qualifies, the smallest registered step is run and the overrun is reported rather than hidden",
+  "schema": "selvedge/s59-stage2b-ladder/v1",
+  "stamp": "20261119T025815Z",
+  "steps": [
+    {
+      "decode_tokens": 12730025,
+      "gsm8k": {
+        "decode_tokens": 4418150,
+        "k": 4,
+        "projected_accepted_rows": 3000,
+        "prompts": 1500
+      },
+      "math": {
+        "decode_tokens": 8311875,
+        "k": 4,
+        "projected_accepted_rows": 1775,
+        "prompts": 1500
+      },
+      "projected_hours": 6.575,
+      "projected_seconds": 23671,
+      "step": "step-1",
+      "within_bound": false
+    },
+    {
+      "decode_tokens": 10652056,
+      "gsm8k": {
+        "decode_tokens": 4418150,
+        "k": 4,
+        "projected_accepted_rows": 3000,
+        "prompts": 1500
+      },
+      "math": {
+        "decode_tokens": 6233906,
+        "k": 3,
+        "projected_accepted_rows": 1331,
+        "prompts": 1500
+      },
+      "projected_hours": 5.502,
+      "projected_seconds": 19807,
+      "step": "step-2",
+      "within_bound": false
+    },
+    {
+      "decode_tokens": 8521645,
+      "gsm8k": {
+        "decode_tokens": 3534520,
+        "k": 4,
+        "projected_accepted_rows": 2400,
+        "prompts": 1200
+      },
+      "math": {
+        "decode_tokens": 4987125,
+        "k": 3,
+        "projected_accepted_rows": 1065,
+        "prompts": 1200
+      },
+      "projected_hours": 4.402,
+      "projected_seconds": 15846,
+      "step": "step-3",
+      "within_bound": true
+    }
+  ]
+}

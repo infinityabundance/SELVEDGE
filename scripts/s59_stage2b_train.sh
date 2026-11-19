@@ -37,6 +37,7 @@ repo_root=$(cd -- "$script_dir/.." && pwd -P)
 cd "$repo_root"
 
 registration="docs/ws19-post-trained-route-stage2b-preregistration-v1.json"
+amendment="docs/ws19-post-trained-route-stage2b-amendment-s59-v2.json"
 student_dir="/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
 arm_label=""
 examples=""
@@ -49,7 +50,10 @@ seq_len=1250
 micro_batch=1
 grad_accum=2
 keep_checkpoints=4
-vram_limit="13.5"
+vram_limit="13.0"
+gradient_checkpointing=1
+abort_update_factor="10.0"
+logits_gather=1
 detach=0
 dry_run=0
 while (($#)); do
@@ -67,6 +71,11 @@ while (($#)); do
     --lr) lr="${2-}"; shift 2 ;;
     --keep-checkpoints) keep_checkpoints="${2-}"; shift 2 ;;
     --vram-limit-gib) vram_limit="${2-}"; shift 2 ;;
+    --gradient-checkpointing) gradient_checkpointing=1; shift ;;
+    --no-gradient-checkpointing) gradient_checkpointing=0; shift ;;
+    --abort-update-factor) abort_update_factor="${2-}"; shift 2 ;;
+    --sft-logits-gather) logits_gather=1; shift ;;
+    --no-sft-logits-gather) logits_gather=0; shift ;;
     --detach) detach=1; shift ;;
     --dry-run) dry_run=1; shift ;;
     -h | --help) sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -75,6 +84,7 @@ while (($#)); do
 done
 
 [[ -f "$registration" ]] || { printf 's59-train: missing registration %s\n' "$registration" >&2; exit 78; }
+[[ -f "$amendment" ]] || { printf 's59-train: missing amendment %s\n' "$amendment" >&2; exit 78; }
 [[ -n "$arm_label" ]] || { printf 's59-train: --arm-label is required\n' >&2; exit 64; }
 [[ -n "$examples" && -f "$examples" ]] || { printf 's59-train: missing examples %s\n' "$examples" >&2; exit 78; }
 [[ -n "$examples_receipt" && -f "$examples_receipt" ]] || { printf 's59-train: missing examples receipt %s\n' "$examples_receipt" >&2; exit 78; }
@@ -190,10 +200,16 @@ cmd=(python3 oracle/frontier/train.py
   --log-every 100
   --run-dir "$run_dir"
   --vram-limit-gib "$vram_limit"
-  --abort-update-factor 10.0
+  --abort-update-factor "$abort_update_factor"
   --abort-ce-factor 1.5
   --abort-ce-baseline-steps 400
   --abort-ce-window 100)
+if ((gradient_checkpointing)); then
+  cmd+=(--gradient-checkpointing)
+fi
+if ((logits_gather)); then
+  cmd+=(--sft-logits-gather)
+fi
 
 if ((dry_run)); then
   printf 's59-train: arm=%s run_dir=%s lr=%s rows=%s steps=%s tokens=%s\n' \
@@ -243,12 +259,15 @@ fi
 python3 - "$run_dir" "$examples" "$examples_receipt" "$epochs" "$tokens" "$steps" \
   "$ckpt_every" "$milestone_2m" "$milestone_5m" "$SELVEDGE_MEM" "$vram_limit" "$rows" \
   "$too_long" "$supervised_tokens" "$tokens_per_step" "$student_dir" "$lr" \
-  "$arm_label" "$registration" "$keep_checkpoints" "$final_policy" <<'PY'
+  "$arm_label" "$registration" "$keep_checkpoints" "$final_policy" \
+  "$gradient_checkpointing" "$logits_gather" "$abort_update_factor" \
+  "$amendment" <<'PY'
 import hashlib, json, os, re, sys
 from datetime import datetime, timezone
 (run_dir, examples, receipt, epochs, tokens, steps, ckpt_every, m2m, m5m, mem,
  vram, rows, too_long, supervised, tokens_per_step, student_dir, lr, arm_label,
- registration, keep, final_policy) = sys.argv[1:22]
+ registration, keep, final_policy, grad_ckpt, logits_gather,
+ abort_update_factor, amendment) = sys.argv[1:26]
 
 
 def sha256(path):
@@ -267,6 +286,7 @@ record = {
     "run_dir": run_dir,
     "arm_label": arm_label,
     "registration": registration,
+    "amendments": [amendment],
     "data": {
         "examples": {"path": examples, "sha256": sha256(examples)},
         "examples_receipt": {"path": receipt, "sha256": sha256(receipt)},
@@ -292,11 +312,26 @@ record = {
                      "moment, stochastic weight rounding",
         "lr": float(lr),
         "lr_basis": "registered stage-2b lr screen set {3e-6, 1e-5}; the full "
-                    "run uses the rate with the lower held-out solution CE",
+                     "run uses the rate with the lower held-out solution CE",
+        "abort_update_factor": float(abort_update_factor),
         "schedule": "cosine to 10%, warmup 200, grad-clip 1.0",
         "seed": 0,
         "tied_embedding": "frozen",
         "kept_checkpoints": int(keep),
+        "gradient_checkpointing": bool(int(grad_ckpt)),
+        "gradient_checkpointing_note": (
+            "exact recomputation of each block's forward; the S59 smoke measured "
+            "step-1 loss 0.228619 against 0.228619 ungathered, i.e. equal "
+            "within 1e-8, not bit-identical (different GEMM shapes)"
+            if int(grad_ckpt) else "off"),
+        "sft_logits_gather": bool(int(logits_gather)),
+        "sft_logits_gather_note": (
+            "the LM head emits logits only at supervised positions; masked "
+            "positions contribute no loss or gradient. The S59 smoke measured "
+            "step-1 loss 0.22861921042 (gathered) against 0.22861921787 "
+            "(ungathered), a 7.5e-9 absolute difference from the GEMM shape, "
+            "not bit-identity"
+            if int(logits_gather) else "off"),
     },
     "cadence": {
         "checkpoint_every_steps": int(ckpt_every),
