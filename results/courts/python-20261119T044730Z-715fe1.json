@@ -1,0 +1,137 @@
+{
+  "argv": [
+    "python3",
+    "-m",
+    "json.tool",
+    "docs/ws19-stage2-correction-s63-preregistration-v1.json"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "37736d7d7aa259a85f19421d2fef165ec82e36199163329ecc674d1c566dae72",
+  "container_name": "selvedge-python-court-20261119T044730Z-715fe1",
+  "court": "python",
+  "duration_ms": 747,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "memory_swap_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "nano_cpus": {
+        "actual": 2000000000,
+        "expected": 2000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 256,
+        "expected": 256
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 268435456,
+        "expected": 268435456
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-19T04:47:31Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.9.3",
+    "uname": "Linux 7.3.5-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:d18aa35d373e47b06f5a14aadaa3a5a96ae9503b595bf07fbf44f7791d9f3a47",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:d18aa35d373e47b06f5a14aadaa3a5a96ae9503b595bf07fbf44f7791d9f3a47",
+  "image_ref": "selvedge/python-court:20261118-3.12-slim-f03542f9bbe7",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "2",
+    "init": true,
+    "memory": "2g",
+    "memory_bytes": 2147483648,
+    "memory_swap": "2g",
+    "memory_swap_bytes": 2147483648,
+    "nano_cpus": 2000000000,
+    "nofile": 65536,
+    "pids": 256,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 268435456,
+    "tmpfs_size": "256m"
+  },
+  "log_path": "results/courts/logs/python-20261119T044730Z-715fe1.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "4a119c03e01b80507c97f1dcf71c15f31f53aa9e",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261119T044730Z",
+  "started_utc": "2026-11-19T04:47:30Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.5-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

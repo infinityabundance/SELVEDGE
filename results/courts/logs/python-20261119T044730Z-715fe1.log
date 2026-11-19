@@ -1,0 +1,176 @@
+{
+    "schema": "selvedge/ws19-stage2-correction-preregistration/v1",
+    "identifier": "STAGE2-CORRECTION-S63-V1",
+    "registering_session": "S63",
+    "registered_utc": "2026-11-19T04:46:36Z",
+    "registered_revision": "recorded by the commit that first adds this file; the commit precedes every run, screen and score named here",
+    "purpose": "Correct four defects found while the S62 student-policy rollout job was still generating, and register the corrected stage 2, the already-implemented weight-interpolation diagnostic as the first queued experiment, and the CURE intervention screen as a later item. The four corrections are: a per-row stopping criterion; a control-teacher corpus budget read from a verified student corpus receipt rather than zero; a per-problem ledger that makes p(1-p) computable from attempts; and a reference-anchored prefix-local preference objective in place of a reverse KL that a cached scalar teacher log-probability cannot implement.",
+    "relation_to_existing_registrations": {
+        "stage2b_v1": {
+            "path": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+            "relation": "keeps the sampler, verifier, loop cut, hold-out exclusion, dedup rule and win bar; corrects the p denominator, the control budget, the K, the stopping criterion and the objective"
+        },
+        "stage2b_amendments": {
+            "paths": [
+                "docs/ws19-post-trained-route-stage2b-amendment-s59-v2.json",
+                "docs/ws19-post-trained-route-stage2b-amendment-s62-v1.json"
+            ],
+            "relation": "the GSM8K-only primary arm and the extension-pass idea stand; the K=4-first-then-K=8 extension is replaced by a registered K=8 design executed in shards"
+        },
+        "stage2_revised_s60": {
+            "path": "docs/ws19-post-trained-route-stage2-revised-preregistration-s60-v1.json",
+            "relation": "keeps the win bar, retention bound, parameter budget and cadence intent; replaces the reward-gated reverse-KL clause, which the teacher cache cannot implement, with the preference objective below, and replaces the cached scalar teacher pass with a cached frozen-reference pass"
+        },
+        "stage2a": {
+            "path": "docs/S58-STAGE2A.md",
+            "relation": "unchanged measured failure that motivates the route"
+        }
+    },
+    "supersedes": [
+        "stage2_revised_s60.teacher_pass.objective: cached scalar teacher log-probs -> not reverse KL; replaced by a frozen-reference preference objective on prefix-local pairs",
+        "stage2_revised_s60.training.objective: difficulty-weighted reverse KL -> difficulty-weighted reference-anchored preference plus teacher-guided recovery",
+        "stage2b_v1.policy_sampling.samples_per_prompt: K=4 first pass then extension -> K=8 in sharded windows",
+        "stage2b_v1.corpora_and_arms.control-teacher: implicit zero budget -> budget read from a verified student corpus receipt"
+    ],
+    "defects_and_fixes": {
+        "1_per_row_stopping": {
+            "defect": "LoopCutStopping.__call__ returned one bool for the whole batch (len(finished) == rows). Transformers' StoppingCriteriaList expects a per-row BoolTensor, so a looping row kept decoding until every sibling terminated and the loop cut was applied only by slicing text afterwards.",
+            "fix": "Return one BoolTensor element per row, keep the finished/looped/eos sets and the loop-onset cut_at index, and inspect only the trailing 144 tokens each step.",
+            "test": "oracle/tests/test_s59_stage2b.py::test_stopping_criterion_returns_a_per_row_booltensor_and_stops_one_row; a real batched generate on a tiny scripted model where row 0 emits a 16-token block four times and row 1 terminates at step 80. Row 0 stops at 64 tokens, row 1 reaches 81, and the generated step counts differ.",
+            "claim_correction": "Any saved-token or throughput claim from the running K=4 rollout job is textual replay only, not compute saved. A batched generate still advances every row until the slowest row stops. The corrected script writes compute_saved=false and token_savings_basis=textual replay only into every receipt."
+        },
+        "2_control_teacher_budget": {
+            "defect": "s59_build_corpus.py computed student_tokens = 0 for control-teacher, so subsample_to_tokens(teacher_rows, 0) produced an empty control. The arm either failed closed or, with any later relaxation, would have been an unmatched zero-token control.",
+            "fix": "control-teacher now requires --budget-receipt naming a previously built student arm's corpus receipt. The reader verifies the schema, the student arm, a positive supervised_solution_tokens count, a named revision, and (when present) the examples file SHA-256. The three-arm mixture planner is shared by all arms.",
+            "test": "oracle/tests/test_s59_stage2b.py::test_all_three_arms_get_matched_supervised_token_budgets builds rft-only, control-teacher and rft-teacher-5050 and asserts a positive control budget within one row of the receipted student budget and matched 50/50 halves; three further tests cover the zero-budget, wrong-arm and stale-hash refusals."
+        },
+        "3_pass_rate_ledger": {
+            "defect": "The registered recipe used K=8 and p = successes/attempts, but the job ran K=4 and the accepted file contains only deduplicated verified-correct rows. p computed from that file would be successes/kept, not successes/attempts, and failures, truncations and duplicates were absent.",
+            "fix": "Every prompt writes a ledger row (attempts, verified_correct, wrong, ambiguous, unparseable, truncated, loop_cut, duplicates, accepted_rows, accepted_solution_tokens, p, weight_p1mp) even when the non-accepted text is discarded. p is verified_correct/attempts, before deduplication, and w = p(1-p). The receipt summarises the ledger including the p histogram and the p=0 and p=1 counts.",
+            "test": "oracle/tests/test_s59_stage2b.py::test_ledger_p_is_successes_over_attempts_not_accepted_rows and ::test_ledger_row_is_written_with_zero_accepted_rows.",
+            "corrected_k": 8,
+            "prompt_counts": {
+                "gsm8k_train": 1200,
+                "gsm8k_shards": [
+                    600,
+                    600
+                ],
+                "math_train": 600,
+                "math_shards": [
+                    300,
+                    300
+                ]
+            },
+            "window": "each shard must project inside the v1 time-ladder bound of 4.5 h from the pilot receipt's realised tokens/sample and aggregate token rate; the launch record recomputes the projection and refuses a shard that does not fit",
+            "trade": "K=8 doubles the attempts per covered problem, so the variance of p is halved and rare successes become visible; to keep each shard inside the window the unique prompts per shard are halved relative to the K=4 pass. The full GSM8K pass still covers 1,200 prompts across two shards, but MATH covers 600 rather than 1,200 prompts. The trade is statistical coverage (fewer unique problems per window) for a better p and p(1-p) per problem. It changes no verifier, dedup, loop-cut or hold-out rule.",
+            "budget_fit": "the launcher compares the realised accepted corpus against the registered 5,000,000 nominal processed-token cadence point and extends with another shard rather than lowering the cadence or running a second epoch"
+        },
+        "4_preference_objective": {
+            "defect": "A cached scalar teacher log-probability on the sampled action at each prefix cannot implement KL(pi_theta || p_T). The KL needs the teacher distribution over the vocabulary at each prefix; one action's likelihood is one unnormalised term, and summing it over a trajectory is a likelihood, not a KL. The registered reverse-KL-on-cached-scalars objective was therefore not implementable as written.",
+            "fix": "Implement oracle/frontier/preference.py: reference-anchored, prefix-local preference pairs with cached frozen-reference per-action log-probabilities. No teacher weights are needed at training time.",
+            "test": "oracle/tests/test_s63_preference.py (nine tests: closed-form loss, explicit length normalisation, cache requirement, merge parity, active-union accounting, matched SFT control, recovery weight)."
+        }
+    },
+    "corrected_rollouts": {
+        "student": "post-trained Qwen/Qwen3.5-0.8B at 2fc06364715b967f1860aea9cf38778875588b17",
+        "k_samples": 8,
+        "temperature": 0.8,
+        "top_p": 0.95,
+        "cap_tokens": 2048,
+        "stop": "EOS only for termination; the per-row loop cut is a registered decode rule",
+        "pass_rate": "p = verified_correct / attempts, attempts = every sampled completion including truncations and duplicates; never the deduplicated accepted rows",
+        "loss_weight": "w(p) = p(1-p); p=0 and p=1 problems carry w=0 and are recorded, not silently dropped",
+        "ledger": "one row per problem per shard, written before any text is discarded; the receipt carries its SHA-256 and summary",
+        "holdout_exclusion": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl, unchanged",
+        "current_job": {
+            "status": "the running K=4 GSM8K job is a pilot and extension-evidence pass, not the corrected corpus",
+            "claims": "its saved-token and throughput numbers are textual replay only; it cannot supply the corrected per-problem ledger or K=8 p"
+        }
+    },
+    "preference_objective": {
+        "name": "reference-anchored prefix-local preference learning",
+        "pair": "pairs share the student prefix h. chosen = a verified-correct teacher continuation from h; rejected = the student's own failed continuation from h.",
+        "reference": "pi_0 is the frozen post-trained 0.8B. Per-action log-probabilities log pi_0(a|h) are cached on the fixed actions; no teacher distribution is cached or claimed.",
+        "loss": "per pair: -log sigmoid(beta * [(log pi_theta(a+|h) - log pi_theta(a-|h)) - (log pi_0(a+|h) - log pi_0(a-|h))]); the batch loss is the pair-weight-weighted mean",
+        "beta": 0.1,
+        "normalization": "mean log-probability per continuation token, for the student and the frozen reference alike; chosen and rejected token counts are reported. 'sum' is available only as a diagnostic and is not the registered objective.",
+        "why_not_reverse_kl": "reverse KL requires sum_y pi_theta(y|h)[log pi_theta(y|h) - log p_T(y|h)]; a cached scalar for one sampled y is not that sum. This registration does not call the preference margin a reverse KL.",
+        "implementation": "oracle/frontier/preference.py",
+        "tests": "oracle/tests/test_s63_preference.py"
+    },
+    "parameterisation": {
+        "lora_rank": 64,
+        "lora_alpha": 32,
+        "scaling": "alpha/rank = 0.5",
+        "targets": "every linear layer except the output head (attention q/k/v/o and MLP gate/up/down on the real model)",
+        "init": "zero-initialised B, Kaiming-uniform A, so the adapter is the identity at step 0",
+        "merge": "scale * B @ A is added to each base weight; the adapter modules are removed. The deployed checkpoint is a full-weight text tower.",
+        "merge_parity": "the merged model reproduces the adapter's logits within atol 1e-5 and rtol 1e-4 on the float32 tiny-model test",
+        "active_union": {
+            "before_merge": "base + adapter elements",
+            "after_merge": 752393024,
+            "basis": "the adapter does not add a deployed identity; its elements are folded into weights the base already reads"
+        }
+    },
+    "arms": {
+        "preference": {
+            "data": "on-policy pairs from the corrected K=8 rollout ledger and the teacher continuations",
+            "weight": "p(1-p) per problem",
+            "purpose": "the route under test"
+        },
+        "matched-sft-control": {
+            "data": "the same pairs, chosen continuations only",
+            "budget": "the same processed-token count as the preference arm; the control may pass over the chosen examples more than once",
+            "purpose": "isolates the preference objective from the data and the budget; it is a control, not a win condition"
+        },
+        "teacher-guided-recovery": {
+            "data": "for problems with p=0, the verified teacher solution against the student's failed continuation from the same prefix",
+            "weight": "the mean positive p(1-p) of the on-policy pairs, so a p=0 problem is neither dropped nor dominant",
+            "purpose": "covers the problems where p(1-p) is exactly zero and the student has no successful trajectory",
+            "control": "reported beside the preference arm with its own paired interval; it is not a win condition"
+        }
+    },
+    "queue": [
+        {
+            "order": 1,
+            "item": "weight-interpolation diagnostic",
+            "status": "already implemented; queue first because it needs no new training",
+            "script": "scripts/s60_interpolate.py",
+            "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json (interpolation clause) and this file",
+            "rule": "grid fixed before the run; coefficient chosen on a train-split calibration set only; test splits are not selection inputs; a coefficient whose calibration MMLU drop exceeds the 1.0-point bound is ineligible; no MMLU receipts makes the selection provisional, not a score",
+            "why_first": "it consumes existing checkpoints and measures whether the S58 update moved along a harmful direction without another training hour"
+        },
+        {
+            "order": 2,
+            "item": "corrected stage 2",
+            "arms": [
+                "preference",
+                "matched-sft-control",
+                "teacher-guided-recovery"
+            ],
+            "status": "objective, LoRA merge path and matched control implemented and CPU-tested; the GPU launcher and its measured memory limit are the next implementation item and must be receipted before launch",
+            "prerequisite": "the corrected K=8 rollouts, the per-problem ledger, and the frozen-reference cache pass"
+        },
+        {
+            "order": 3,
+            "item": "CURE intervention screen",
+            "status": "later item; operator-named protocol whose definition, cost and kill condition must be registered in a separate amendment before any run",
+            "why_later": "it is an intervention experiment, not a correction to the current objective, and no definition or receipt exists yet"
+        }
+    ],
+    "limits": {
+        "one_gpu_job_at_a_time": true,
+        "teacher_never_co_resident": true,
+        "memory_sizing": "each phase uses max(1.5 x its measured peak, measured peak + 1 GiB), recorded before launch; the running rollout job's limit is not reused for a training phase",
+        "bounded_tmp": "SELVEDGE_TMP=2g unless a phase's own measured need is larger",
+        "no_reverse_kl_claim": true
+    },
+    "what_this_file_does_not_establish": [
+        "that K=8 is enough to estimate p near 0 and 1: it halves the variance, it does not remove the boundary problem",
+        "that the preference objective beats matched SFT on this student: the matched control is the test",
+        "that teacher-guided recovery improves p=0 problems: the recovery arm is the test",
+        "that merging rank-64 LoRA matches full fine-tuning here: the merge parity test is mathematical, the capability comparison is the run",
+        "that interpolation will find a point that improves both tasks: the diagnostic is the test, and a segment with no such point is a result",
+        "any score or performance number: nothing in this file is a measurement"
+    ]
+}

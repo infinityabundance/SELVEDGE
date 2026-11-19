@@ -496,6 +496,7 @@ def main(argv: list[str]) -> int:
         "stamp": stamp(),
         "revision": revision(),
         "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+        "corrections_registration": "docs/ws19-stage2-correction-s63-preregistration-v1.json",
         "arm": args.arm,
         "label": args.label,
         "tokenizer_dir": args.tokenizer_dir,

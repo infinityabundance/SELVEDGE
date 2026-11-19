@@ -647,6 +647,7 @@ def main(argv: list[str]) -> int:
         "stamp": stamp(),
         "revision": revision(),
         "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+        "corrections_registration": "docs/ws19-stage2-correction-s63-preregistration-v1.json",
         "policy_dir": args.policy_dir,
         "tokenizer_dir": args.tokenizer_dir,
         "prompt_protocol": ("the policy's own chat template, "
