@@ -5,6 +5,17 @@ The machine-readable registration is
 committed before any screen, rollout, interpolation or score named in it.
 Nothing on this page is a measurement; the queue is `docs/S60-GPU-QUEUE.md`.
 
+> **S63 correction (2026-11-19).** The reverse-KL-on-cached-scalars clause in
+> this summary is superseded. A cached scalar teacher log-probability on the
+> fixed action cannot implement KL(student || teacher): the KL needs the teacher
+> distribution over the vocabulary at each prefix. The corrected objective is a
+> reference-anchored, prefix-local preference loss on pairs that share the
+> student prefix, with cached frozen-reference log-probabilities; rank-64 LoRA
+> and the merge accounting are unchanged. See
+> `docs/ws19-stage2-correction-s63-preregistration-v1.json` and
+> `oracle/frontier/preference.py`. The cached-scalar teacher pass and the
+> reverse-KL relay are not run as registered here.
+
 ## Why the recipe changes
 
 S58 measured a stage-2a arm that learned short, confident answers: GSM8K
