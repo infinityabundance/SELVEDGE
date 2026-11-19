@@ -1,0 +1,59 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2b-amendment/v1",
+  "identifier": "STAGE2B-AMENDMENT-S62-V1",
+  "registering_session": "S62",
+  "registered_utc": "2026-11-19T04:35:00Z",
+  "registered_revision": "e655cbb",
+  "amends": {
+    "path": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+    "chain": [
+      "docs/ws19-post-trained-route-stage2b-amendment-s59-v2.json"
+    ],
+    "rule": "this amendment changes ONLY (i) the source mix of the primary stage-2b arm, (ii) the generation budget needed to fill the registered 5M cadence point, and (iii) the batching flag used to pack complete examples. The student, the sampler, the verifier, the loop cut, the hold-out exclusion, the dedup rule, the optimiser, the learning-rate screen, the evaluation instrument, the statistics and the win bar of v1 stand unchanged. It was written and committed before the extension pass, before any screen and before any score named here."
+  },
+  "why": {
+    "source_mix": "The running generation pass (`scripts/s59_student_rollouts.py`, GSM8K-train, 1,200 prompts x K=4) is the operator's S62 job. The v1 registration described GSM8K-train plus MATH-train rollouts; S62 registers the primary arm on GSM8K-train only, because that is the pass that exists and because a GSM8K-only corpus cannot inflate a MATH-500 gain. The MATH-500 clause is still scored, and a MATH-500 regression is still a failure.",
+    "budget": "The v1 registration requires one epoch of at least 5,000,000 processed tokens before the full run launches, because a corpus that cannot reach the 5M cadence point cannot answer the cadence question. At the measured first-pass acceptance (~52% kept, mean completion ~443 tokens) the first pass produces about 2,500 rows: 2,500 x 1,250 = 3,125,000 processed tokens, below 5M. The registered remedy is to extend generation rather than to lower the cadence or run a second epoch.",
+    "batching": "The v1 geometry keeps one complete example per row. `--length-aware-batching` groups complete rows into length-homogeneous optimiser steps and trims each microbatch to its own width, so no example is split and no short row pays a long row's activations. It changes neither the set of examples nor the nominal `tokens_seen` accounting (`micro_batch * seq_len * grad_accum` per step), so the 2M and 5M points remain exact."
+  },
+  "change_1_source_mix": {
+    "primary_arm": "rft-only",
+    "source": "GSM8K-train verified student rollouts only",
+    "holdout_exclusion": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl, unchanged",
+    "teacher_control": "not run in S62; the control is attribution evidence, not a win condition, and no control number is claimed",
+    "rft_teacher_5050": "not run in S62; no number is claimed"
+  },
+  "change_2_extension_pass": {
+    "trigger": "the first pass's accepted corpus, at one complete example per row and seq_len 1,250, has fewer than 5,000,000 nominal processed tokens",
+    "action": "one extension pass of the same sampler on the same 1,200 GSM8K-train prompts at K=8, with a distinct seed and a distinct out-dir/label, merged with the first pass by exact generated-token-sequence dedup within a prompt",
+    "why_k8_not_more_prompts": "K=8 adds samples per prompt without enlarging the prompt pool that the frozen hold-out already excludes; the merge is token-dedup exact, so overlapping prompts cannot double-count a trajectory",
+    "budget_projection": "the first pass's measured kept rate times the extension's sampled count; the realised count is read from the extension receipt, never typed",
+    "one_gpu_job_at_a_time": true,
+    "cost_statement": "the extension is a second full rollout pass; its wall time is projected from the first pass's measured tokens/second and recorded in the launch record before it starts"
+  },
+  "change_3_batching": {
+    "flag": "--length-aware-batching",
+    "packing": "one complete example per row; no boundary crossing",
+    "optimiser_step": "2 complete rows (micro-batch 1 x grad-accum 2), trimmed to the group's own width",
+    "nominal_tokens_per_step": 2500,
+    "seq_len": 1250,
+    "cadence": ["0.5M", "1M", "2M", "5M"],
+    "leftover_rows": "a trailing partial group is not used; the launcher refuses a row count that is not a multiple of row-per-step"
+  },
+  "unchanged": {
+    "student": "post-trained Qwen/Qwen3.5-0.8B at 2fc06364715b967f1860aea9cf38778875588b17",
+    "objective": "completion-masked cross-entropy (--objective sft, kl_weight 0, --loss-unit token)",
+    "optimizer": "Adam8bit block 256, int8 first moment, bfloat16 second moment, stochastic weight rounding",
+    "lr_screen": {"rates": [3e-06, 1e-05], "budget_each": 2000000,
+                  "decision_inputs": ["held-out solution CE at the 2M checkpoint",
+                                      "GSM8K full 1319-item greedy flexible accuracy at the 2M checkpoint"],
+                  "never": "MATH-500 test accuracy is never a selection input"},
+    "win_bar": "GSM8K > 0.5421 AND MATH-500 > 0.3820, each with a problem-level paired 95% interval above zero, AND MMLU and MMLU-Pro within 1.0 point (or an explicit `unresolved`)",
+    "scores": "nothing in this file is a measurement"
+  },
+  "not_established": [
+    "that the first pass will fall short of 5M; the projection is an expectation and the decision is taken on the realised receipt",
+    "that the K=8 extension reaches 5M; if it does not, the next route is reported and the full run is not launched",
+    "any score"
+  ]
+}

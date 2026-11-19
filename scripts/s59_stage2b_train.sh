@@ -38,6 +38,7 @@ cd "$repo_root"
 
 registration="docs/ws19-post-trained-route-stage2b-preregistration-v1.json"
 amendment="docs/ws19-post-trained-route-stage2b-amendment-s59-v2.json"
+amendment_s62="docs/ws19-post-trained-route-stage2b-amendment-s62-v1.json"
 student_id="Qwen/Qwen3.5-0.8B"
 student_revision="2fc06364715b967f1860aea9cf38778875588b17"
 student_lock="models/FRONTIER-POST-TRAINED.lock.json"
@@ -57,6 +58,7 @@ vram_limit="13.0"
 gradient_checkpointing=1
 abort_update_factor="10.0"
 logits_gather=1
+length_aware=1
 detach=0
 dry_run=0
 while (($#)); do
@@ -79,6 +81,8 @@ while (($#)); do
     --abort-update-factor) abort_update_factor="${2-}"; shift 2 ;;
     --sft-logits-gather) logits_gather=1; shift ;;
     --no-sft-logits-gather) logits_gather=0; shift ;;
+    --length-aware-batching) length_aware=1; shift ;;
+    --no-length-aware-batching) length_aware=0; shift ;;
     --detach) detach=1; shift ;;
     --dry-run) dry_run=1; shift ;;
     -h | --help) sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -88,6 +92,7 @@ done
 
 [[ -f "$registration" ]] || { printf 's59-train: missing registration %s\n' "$registration" >&2; exit 78; }
 [[ -f "$amendment" ]] || { printf 's59-train: missing amendment %s\n' "$amendment" >&2; exit 78; }
+[[ -f "$amendment_s62" ]] || { printf 's59-train: missing amendment %s\n' "$amendment_s62" >&2; exit 78; }
 [[ -n "$arm_label" ]] || { printf 's59-train: --arm-label is required\n' >&2; exit 64; }
 [[ -n "$examples" && -f "$examples" ]] || { printf 's59-train: missing examples %s\n' "$examples" >&2; exit 78; }
 [[ -n "$examples_receipt" && -f "$examples_receipt" ]] || { printf 's59-train: missing examples receipt %s\n' "$examples_receipt" >&2; exit 78; }
@@ -155,25 +160,27 @@ if ((1000000 % tokens_per_step != 0)); then
 fi
 ckpt_every=$((1000000 / tokens_per_step))
 rows_per_step=$((micro_batch * grad_accum))
-if ((rows % rows_per_step != 0)); then
-  printf 's59-train: %s rows is not a multiple of %s rows/step\n' "$rows" "$rows_per_step" >&2
-  exit 78
+usable_rows=$((rows - rows % rows_per_step))
+if ((usable_rows < rows)); then
+  printf 's59-train: %s rows, %s complete rows/step -> %s trailing row(s) unused (reported, not packed)\n' \
+    "$rows" "$rows_per_step" "$((rows - usable_rows))" >&2
 fi
+((usable_rows > 0)) || { printf 's59-train: no complete optimiser step fits\n' >&2; exit 78; }
 
 if [[ -z "$tokens" ]]; then
-  # One epoch: every fitting row exactly once, padded to seq_len.
-  tokens=$((epochs * rows * seq_len))
-  printf 's59-train: %s epoch(s) over %s rows -> %s processed tokens\n' \
-    "$epochs" "$rows" "$tokens"
+  # One epoch: every usable row exactly once, padded to seq_len.
+  tokens=$((epochs * usable_rows * seq_len))
+  printf 's59-train: %s epoch(s) over %s usable rows -> %s processed tokens\n' \
+    "$epochs" "$usable_rows" "$tokens"
 else
   # An explicit budget (the lr screen) must be a whole number of steps.
   if ((tokens % tokens_per_step != 0)); then
     printf 's59-train: --tokens %s is not a multiple of %s\n' "$tokens" "$tokens_per_step" >&2
     exit 78
   fi
-  if ((tokens > rows * seq_len)); then
+  if ((tokens > usable_rows * seq_len)); then
     printf 's59-train: --tokens %s exceeds one epoch (%s tokens); a second pass is not registered\n' \
-      "$tokens" "$((rows * seq_len))" >&2
+      "$tokens" "$((usable_rows * seq_len))" >&2
     exit 78
   fi
 fi
@@ -226,12 +233,16 @@ fi
 if ((logits_gather)); then
   cmd+=(--sft-logits-gather)
 fi
+if ((length_aware)); then
+  cmd+=(--length-aware-batching)
+fi
 
 if ((dry_run)); then
   printf 's59-train: arm=%s run_dir=%s lr=%s rows=%s steps=%s tokens=%s\n' \
     "$arm_label" "$run_dir" "$lr" "$rows" "$steps" "$tokens"
   printf 's59-train: seq_len=%s micro=%s accum=%s ckpt-every=%s milestones: 2M=step %s, 5M=step %s, final=step %s\n' \
     "$seq_len" "$micro_batch" "$grad_accum" "$ckpt_every" "$milestone_2m" "$milestone_5m" "$steps"
+  printf 's59-train: length-aware=%s leftover_rows=%s\n' "$length_aware" "$((rows - usable_rows))"
   printf 's59-train: limits: SELVEDGE_MEM=%s (floor 16g) SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g VRAM=%sGiB\n' \
     "${SELVEDGE_MEM:-<unset: required at launch>}" "$vram_limit"
   printf 's59-train: command:\n  '
@@ -277,13 +288,14 @@ python3 - "$run_dir" "$examples" "$examples_receipt" "$epochs" "$tokens" "$steps
   "$too_long" "$supervised_tokens" "$tokens_per_step" "$student_dir" "$lr" \
   "$arm_label" "$registration" "$keep_checkpoints" "$final_policy" \
   "$gradient_checkpointing" "$logits_gather" "$abort_update_factor" \
-  "$amendment" <<'PY'
+  "$amendment" "$amendment_s62" "$length_aware" "$usable_rows" <<'PY'
 import hashlib, json, os, re, sys
 from datetime import datetime, timezone
 (run_dir, examples, receipt, epochs, tokens, steps, ckpt_every, m2m, m5m, mem,
  vram, rows, too_long, supervised, tokens_per_step, student_dir, lr, arm_label,
  registration, keep, final_policy, grad_ckpt, logits_gather,
- abort_update_factor, amendment) = sys.argv[1:26]
+ abort_update_factor, amendment, amendment_s62, length_aware,
+ usable_rows) = sys.argv[1:27]
 
 
 def sha256(path):
@@ -302,14 +314,20 @@ record = {
     "run_dir": run_dir,
     "arm_label": arm_label,
     "registration": registration,
-    "amendments": [amendment],
+    "amendments": [amendment, amendment_s62],
     "data": {
         "examples": {"path": examples, "sha256": sha256(examples)},
         "examples_receipt": {"path": receipt, "sha256": sha256(receipt)},
         "rows_fit": int(rows),
+        "rows_usable": int(usable_rows),
+        "leftover_rows_not_packed": int(rows) - int(usable_rows),
         "examples_longer_than_seq_len_dropped": int(too_long),
         "supervised_positions_in_rows": int(supervised),
-        "packing": "one complete example per row; no boundary crossing",
+        "packing": ("one complete example per row; no boundary crossing; "
+                    "length-aware grouping trims each microbatch to its own width"
+                    if int(length_aware) else
+                    "one complete example per row; no boundary crossing"),
+        "length_aware_batching": bool(int(length_aware)),
         "completion_only_loss": True,
         "replay_fraction": 0.20,
     },
