@@ -1,0 +1,316 @@
+FFF...................                                                   [100%]
+=================================== FAILURES ===================================
+___________ test_arm_selection_requires_the_reference_to_be_selected ___________
+
+    def test_arm_selection_requires_the_reference_to_be_selected():
+>       import s40_compare
+
+oracle/tests/test_s40_compare.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """Score every stage-2 arm with one instrument and emit one table (S40).
+    
+    Arms, built from their registered artifacts and scored identically:
+    
+        base               frozen Qwen3.5-0.8B-Base, no hook
+        adapter-2m         frozen core + parameter-matched dense adapter
+        memory-2m          trained grafted table, evaluated after the S40 fix
+        memory-ungrafted   the module at its deterministic init (zero value projection)
+        memory-grafted     the step-0 teacher graft, no training
+        full-distill       full-backbone distillation, tied embedding frozen
+    
+    A seventh arm, `adapter-20m`, is the S39 20M-token adapter control. It is not
+    part of the registered six-arm comparison (whose default list is unchanged);
+    it exists so the 10x-token question can be scored by this instrument with an
+    honest label instead of reusing the `adapter-2m` slot. Select it with `--arms`.
+    The reference arm is `full-distill` unless `--reference-arm` names a selected
+    arm, so an intermediate table can be produced before the full arm exists.
+    
+    Two measurements:
+    
+    1. **Held-out CE/KL** on a stream disjoint from training and grafting. The
+       instrument runs every arm over the same non-overlapping token chunks and
+       reports mean CE, mean KL at the registered temperature, their standard errors
+       across chunks, and paired per-chunk deltas against `full-distill`.
+    2. **Anchored harness**, if per-arm receipts exist under `--harness-dir`, using
+       the same task/few-shot/batch/config registration as the S36 anchors. Missing
+       receipts are recorded as `not_scored`, never as zero.
+    
+    The `--self-test` path builds tiny fake checkpoints for all six arms and runs the
+    same code on CPU; it is the test that the instrument works, not a result.
+    
+    Usage (real):
+        SELVEDGE_MEM=12g scripts/court --gpu oracle -- python3 scripts/s40_compare.py \
+            --student-dir /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2... \
+            --teacher-dir /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2f... \
+            --heldout-manifest results/stage2/s40-heldout-<stamp>.json \
+            --memory-init results/stage2/graft/20261116T231451Z/memory-init.pt \
+            --memory-checkpoint results/stage2/runs/memory-2m/ckpt-000976.pt \
+            --adapter-checkpoint results/stage2/runs/adapter-2m/ckpt-000976.pt \
+            --full-checkpoint results/stage2/runs/full-20m/ckpt-009765.pt \
+            --harness-dir results/stage2/eval \
+            --out results/stage2/compare-<stamp>.json
+    
+    Usage (CPU test):
+        scripts/court python -- python3 scripts/s40_compare.py --self-test
+    """
+    
+    from __future__ import annotations
+    
+    import argparse
+    import gc
+    import json
+    import os
+    import sys
+    import tempfile
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+    
+    import numpy as np
+    import torch
+    
+    HERE = os.path.dirname(os.path.abspath(__file__))
+    REPO = os.path.dirname(HERE)
+    sys.path.insert(0, os.path.join(REPO, "oracle"))
+    
+    from frontier import arms, compare, corrective, full, matched_controls, memory  # noqa: E402
+    
+    ARMS = ("base", "adapter-2m", "memory-2m", "memory-ungrafted",
+            "memory-grafted", "full-distill")
+    CONTROL_ARM = "adapter-20m"
+    #: Stage-2b corrective arms. They are scored through the corrective module with
+    #: the trained gate, on the same anchored instrument as the other arms.
+    CORRECTIVE_ARMS = ("corrective-kl-20m-math", "corrective-signed-20m-math",
+                       "corrective-signed-true-20m-math",
+                       "corrective-both-20m-math")
+    #: S47 mandatory matched controls: the same data without the external memory,
+    #: and the same gate over a dense residual instead of the memory.
+    MATCHED_CONTROLS = ("adapter-20m-math-matched", "gated-dense-20m-math")
+    #: S48 screen variants of the same arms at the 2M budget. The names differ so a
+    #: receipt can never be mistaken for a 20M arm's receipt; the construction,
+    #: accounting and installed module are identical.
+    SCREEN_CORRECTIVE_ARMS = ("corrective-kl-2m-math",
+                              "corrective-signed-exp-2m-math",
+                              "corrective-signed-true-2m-math")
+    SCREEN_MATCHED_CONTROLS = ("adapter-2m-math-matched", "gated-dense-2m-math")
+    SCORED_ARMS = (ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
+                   + SCREEN_CORRECTIVE_ARMS + SCREEN_MATCHED_CONTROLS
+>                  + (INTERPOLATED_ARM,))
+                      ^^^^^^^^^^^^^^^^
+E   NameError: name 'INTERPOLATED_ARM' is not defined
+
+scripts/s40_compare.py:89: NameError
+________ test_interpolated_arm_is_its_own_label_and_needs_a_coefficient ________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_interpolated_arm_is_its_o0')
+
+    def test_interpolated_arm_is_its_own_label_and_needs_a_coefficient(tmp_path):
+>       import s40_compare
+
+oracle/tests/test_s40_compare.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """Score every stage-2 arm with one instrument and emit one table (S40).
+    
+    Arms, built from their registered artifacts and scored identically:
+    
+        base               frozen Qwen3.5-0.8B-Base, no hook
+        adapter-2m         frozen core + parameter-matched dense adapter
+        memory-2m          trained grafted table, evaluated after the S40 fix
+        memory-ungrafted   the module at its deterministic init (zero value projection)
+        memory-grafted     the step-0 teacher graft, no training
+        full-distill       full-backbone distillation, tied embedding frozen
+    
+    A seventh arm, `adapter-20m`, is the S39 20M-token adapter control. It is not
+    part of the registered six-arm comparison (whose default list is unchanged);
+    it exists so the 10x-token question can be scored by this instrument with an
+    honest label instead of reusing the `adapter-2m` slot. Select it with `--arms`.
+    The reference arm is `full-distill` unless `--reference-arm` names a selected
+    arm, so an intermediate table can be produced before the full arm exists.
+    
+    Two measurements:
+    
+    1. **Held-out CE/KL** on a stream disjoint from training and grafting. The
+       instrument runs every arm over the same non-overlapping token chunks and
+       reports mean CE, mean KL at the registered temperature, their standard errors
+       across chunks, and paired per-chunk deltas against `full-distill`.
+    2. **Anchored harness**, if per-arm receipts exist under `--harness-dir`, using
+       the same task/few-shot/batch/config registration as the S36 anchors. Missing
+       receipts are recorded as `not_scored`, never as zero.
+    
+    The `--self-test` path builds tiny fake checkpoints for all six arms and runs the
+    same code on CPU; it is the test that the instrument works, not a result.
+    
+    Usage (real):
+        SELVEDGE_MEM=12g scripts/court --gpu oracle -- python3 scripts/s40_compare.py \
+            --student-dir /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2... \
+            --teacher-dir /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2f... \
+            --heldout-manifest results/stage2/s40-heldout-<stamp>.json \
+            --memory-init results/stage2/graft/20261116T231451Z/memory-init.pt \
+            --memory-checkpoint results/stage2/runs/memory-2m/ckpt-000976.pt \
+            --adapter-checkpoint results/stage2/runs/adapter-2m/ckpt-000976.pt \
+            --full-checkpoint results/stage2/runs/full-20m/ckpt-009765.pt \
+            --harness-dir results/stage2/eval \
+            --out results/stage2/compare-<stamp>.json
+    
+    Usage (CPU test):
+        scripts/court python -- python3 scripts/s40_compare.py --self-test
+    """
+    
+    from __future__ import annotations
+    
+    import argparse
+    import gc
+    import json
+    import os
+    import sys
+    import tempfile
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+    
+    import numpy as np
+    import torch
+    
+    HERE = os.path.dirname(os.path.abspath(__file__))
+    REPO = os.path.dirname(HERE)
+    sys.path.insert(0, os.path.join(REPO, "oracle"))
+    
+    from frontier import arms, compare, corrective, full, matched_controls, memory  # noqa: E402
+    
+    ARMS = ("base", "adapter-2m", "memory-2m", "memory-ungrafted",
+            "memory-grafted", "full-distill")
+    CONTROL_ARM = "adapter-20m"
+    #: Stage-2b corrective arms. They are scored through the corrective module with
+    #: the trained gate, on the same anchored instrument as the other arms.
+    CORRECTIVE_ARMS = ("corrective-kl-20m-math", "corrective-signed-20m-math",
+                       "corrective-signed-true-20m-math",
+                       "corrective-both-20m-math")
+    #: S47 mandatory matched controls: the same data without the external memory,
+    #: and the same gate over a dense residual instead of the memory.
+    MATCHED_CONTROLS = ("adapter-20m-math-matched", "gated-dense-20m-math")
+    #: S48 screen variants of the same arms at the 2M budget. The names differ so a
+    #: receipt can never be mistaken for a 20M arm's receipt; the construction,
+    #: accounting and installed module are identical.
+    SCREEN_CORRECTIVE_ARMS = ("corrective-kl-2m-math",
+                              "corrective-signed-exp-2m-math",
+                              "corrective-signed-true-2m-math")
+    SCREEN_MATCHED_CONTROLS = ("adapter-2m-math-matched", "gated-dense-2m-math")
+    SCORED_ARMS = (ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
+                   + SCREEN_CORRECTIVE_ARMS + SCREEN_MATCHED_CONTROLS
+>                  + (INTERPOLATED_ARM,))
+                      ^^^^^^^^^^^^^^^^
+E   NameError: name 'INTERPOLATED_ARM' is not defined
+
+scripts/s40_compare.py:89: NameError
+_____________ test_limit_map_is_per_task_and_refuses_unknown_names _____________
+
+    def test_limit_map_is_per_task_and_refuses_unknown_names():
+>       import s40_score
+
+oracle/tests/test_s40_compare.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/s40_score.py:39: in <module>
+    import s40_compare as comparison  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """Score every stage-2 arm with one instrument and emit one table (S40).
+    
+    Arms, built from their registered artifacts and scored identically:
+    
+        base               frozen Qwen3.5-0.8B-Base, no hook
+        adapter-2m         frozen core + parameter-matched dense adapter
+        memory-2m          trained grafted table, evaluated after the S40 fix
+        memory-ungrafted   the module at its deterministic init (zero value projection)
+        memory-grafted     the step-0 teacher graft, no training
+        full-distill       full-backbone distillation, tied embedding frozen
+    
+    A seventh arm, `adapter-20m`, is the S39 20M-token adapter control. It is not
+    part of the registered six-arm comparison (whose default list is unchanged);
+    it exists so the 10x-token question can be scored by this instrument with an
+    honest label instead of reusing the `adapter-2m` slot. Select it with `--arms`.
+    The reference arm is `full-distill` unless `--reference-arm` names a selected
+    arm, so an intermediate table can be produced before the full arm exists.
+    
+    Two measurements:
+    
+    1. **Held-out CE/KL** on a stream disjoint from training and grafting. The
+       instrument runs every arm over the same non-overlapping token chunks and
+       reports mean CE, mean KL at the registered temperature, their standard errors
+       across chunks, and paired per-chunk deltas against `full-distill`.
+    2. **Anchored harness**, if per-arm receipts exist under `--harness-dir`, using
+       the same task/few-shot/batch/config registration as the S36 anchors. Missing
+       receipts are recorded as `not_scored`, never as zero.
+    
+    The `--self-test` path builds tiny fake checkpoints for all six arms and runs the
+    same code on CPU; it is the test that the instrument works, not a result.
+    
+    Usage (real):
+        SELVEDGE_MEM=12g scripts/court --gpu oracle -- python3 scripts/s40_compare.py \
+            --student-dir /hf-cache/models/Qwen/Qwen3.5-0.8B-Base/dc7cdfe2... \
+            --teacher-dir /hf-cache/models/Qwen/Qwen3.5-2B-Base/b1485b2f... \
+            --heldout-manifest results/stage2/s40-heldout-<stamp>.json \
+            --memory-init results/stage2/graft/20261116T231451Z/memory-init.pt \
+            --memory-checkpoint results/stage2/runs/memory-2m/ckpt-000976.pt \
+            --adapter-checkpoint results/stage2/runs/adapter-2m/ckpt-000976.pt \
+            --full-checkpoint results/stage2/runs/full-20m/ckpt-009765.pt \
+            --harness-dir results/stage2/eval \
+            --out results/stage2/compare-<stamp>.json
+    
+    Usage (CPU test):
+        scripts/court python -- python3 scripts/s40_compare.py --self-test
+    """
+    
+    from __future__ import annotations
+    
+    import argparse
+    import gc
+    import json
+    import os
+    import sys
+    import tempfile
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+    
+    import numpy as np
+    import torch
+    
+    HERE = os.path.dirname(os.path.abspath(__file__))
+    REPO = os.path.dirname(HERE)
+    sys.path.insert(0, os.path.join(REPO, "oracle"))
+    
+    from frontier import arms, compare, corrective, full, matched_controls, memory  # noqa: E402
+    
+    ARMS = ("base", "adapter-2m", "memory-2m", "memory-ungrafted",
+            "memory-grafted", "full-distill")
+    CONTROL_ARM = "adapter-20m"
+    #: Stage-2b corrective arms. They are scored through the corrective module with
+    #: the trained gate, on the same anchored instrument as the other arms.
+    CORRECTIVE_ARMS = ("corrective-kl-20m-math", "corrective-signed-20m-math",
+                       "corrective-signed-true-20m-math",
+                       "corrective-both-20m-math")
+    #: S47 mandatory matched controls: the same data without the external memory,
+    #: and the same gate over a dense residual instead of the memory.
+    MATCHED_CONTROLS = ("adapter-20m-math-matched", "gated-dense-20m-math")
+    #: S48 screen variants of the same arms at the 2M budget. The names differ so a
+    #: receipt can never be mistaken for a 20M arm's receipt; the construction,
+    #: accounting and installed module are identical.
+    SCREEN_CORRECTIVE_ARMS = ("corrective-kl-2m-math",
+                              "corrective-signed-exp-2m-math",
+                              "corrective-signed-true-2m-math")
+    SCREEN_MATCHED_CONTROLS = ("adapter-2m-math-matched", "gated-dense-2m-math")
+    SCORED_ARMS = (ARMS + (CONTROL_ARM,) + CORRECTIVE_ARMS + MATCHED_CONTROLS
+                   + SCREEN_CORRECTIVE_ARMS + SCREEN_MATCHED_CONTROLS
+>                  + (INTERPOLATED_ARM,))
+                      ^^^^^^^^^^^^^^^^
+E   NameError: name 'INTERPOLATED_ARM' is not defined
+
+scripts/s40_compare.py:89: NameError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s40_compare.py::test_arm_selection_requires_the_reference_to_be_selected
+FAILED oracle/tests/test_s40_compare.py::test_interpolated_arm_is_its_own_label_and_needs_a_coefficient
+FAILED oracle/tests/test_s40_compare.py::test_limit_map_is_per_task_and_refuses_unknown_names
+3 failed, 19 passed in 3.62s

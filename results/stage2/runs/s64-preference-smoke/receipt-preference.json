@@ -1,0 +1,146 @@
+{
+  "adapter": {
+    "path": "/work/results/stage2/runs/s64-preference-smoke/adapter-preference-000020.pt",
+    "sha256": "ce4b0ca3f58c8f86a2df167333fa620be77af77287f81a27faa97a5c19627bb6"
+  },
+  "arm": "preference",
+  "budget": {
+    "basis": "processed forward-token positions; the matched SFT control gets the same budget on the same chosen pairs",
+    "cadence": [
+      5000000
+    ],
+    "tokens": 5000000
+  },
+  "cgroup_memory": {
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory_max": "10737418240",
+    "memory_peak": "4881076224",
+    "memory_swap_peak": "0"
+  },
+  "claims": {
+    "active_union_after_merge": 752393024,
+    "all_linear_except_output_head": true,
+    "base_frozen": true,
+    "lora_alpha": 32,
+    "lora_rank": 64,
+    "merge_parity_unit_test": "oracle/tests/test_s63_preference.py and oracle/tests/test_s64_preference_pipeline.py",
+    "merged_checkpoints": true,
+    "reference_loaded": false,
+    "score_used_for_selection": false,
+    "teacher_loaded": false
+  },
+  "command": [
+    "scripts/s64_preference_launch.py",
+    "--arm",
+    "preference",
+    "--pairs",
+    "results/artifacts/stage2/s64-preference/pairs-corpus-with-reference.jsonl",
+    "--student-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--budget-tokens",
+    "5000000",
+    "--cadence",
+    "5000000",
+    "--max-steps",
+    "20",
+    "--out-dir",
+    "results/stage2/runs/s64-preference-smoke",
+    "--vram-limit-gib",
+    "12.5"
+  ],
+  "created_utc": "2026-11-19T21:35:10Z",
+  "geometry": {
+    "active_union_after_merge": 752393024,
+    "active_union_basis": "scale * B @ A is folded into weights the base already reads; the adapter adds no deployed identity",
+    "active_union_before_merge": 795683648,
+    "adapter_elements": 43290624,
+    "base_text_elements": 752393024,
+    "lora_alpha": 32.0,
+    "lora_rank": 64,
+    "registered_active_union": 752393024,
+    "scaling": 0.5,
+    "targets": "every linear layer of the text tower except the output head",
+    "wrapped_layers": 186
+  },
+  "kind": "preference-arm-run",
+  "pairs": {
+    "normalization": "mean",
+    "path": "results/artifacts/stage2/s64-preference/pairs-corpus-with-reference.jsonl",
+    "rows": 434,
+    "sha256": "b7477eb5fc3de6d1fe34f7a2e51df4ee8fe974e52d062d2e9a03d7817ede04a8"
+  },
+  "peak_allocated_gib": 9.787957191467285,
+  "peak_reserved_gib": 12.84375,
+  "registration": "docs/ws19-stage2-correction-s63-preregistration-v1.json",
+  "revision": "5000414c9d0865a1552484d67661f1100728b707",
+  "schema": "selvedge/s64-preference-run/v1",
+  "stamp": "20261119T213510Z",
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "training": {
+    "activation_checkpointing": "activation_checkpointing",
+    "batch_pairs": 1,
+    "beta": 0.1,
+    "budget_tokens": 5000000,
+    "checkpoints": [
+      {
+        "cadence_tokens": null,
+        "merge": {
+          "active_union_after_merge": 752393024,
+          "adapter_elements_removed": 43290624,
+          "basis": "scale * B @ A added to each base weight; the adapter parameters cease to be separate deployed identities",
+          "exported_state_elements": 498113344,
+          "exported_state_keys": 319,
+          "frozen_identity_excluded": [
+            "embed_tokens.weight"
+          ],
+          "merge_parity": {
+            "atol": 1e-05,
+            "rtol": 0.0001,
+            "test": "oracle/tests/test_s63_preference.py::test_merge_reproduces_the_adapter_logits_within_tolerance and oracle/tests/test_s64_preference_pipeline.py on a float32 tiny model"
+          },
+          "merged_layers": 186,
+          "merged_text_elements": 752393024,
+          "remaining_lora_modules": 0
+        },
+        "path": "/work/results/stage2/runs/s64-preference-smoke/ckpt-000020.pt",
+        "processed_tokens": 31601,
+        "sha256": "edf573d3a65df92068011da4b12093d61871468467f4c3f4832328d88028d2d7",
+        "step": 20
+      }
+    ],
+    "final_loss": 0.6897200345993042,
+    "first_loss": 0.6931471824645996,
+    "grad_clip": 1.0,
+    "kind": "preference",
+    "loss_trace": [
+      0.6931471824645996,
+      0.0,
+      0.6925067901611328,
+      0.6926650404930115,
+      0.6896149516105652,
+      0.6935551762580872,
+      0.6945993304252625,
+      0.6929795145988464,
+      0.6916399598121643,
+      0.6902338266372681,
+      0.6869125366210938,
+      0.0,
+      0.0,
+      0.6931666731834412,
+      0.6929278373718262,
+      0.6899309754371643,
+      0.6867775917053223,
+      0.6941694617271423,
+      0.6946757435798645,
+      0.6897200345993042
+    ],
+    "lr": 0.0001,
+    "mean_loss": 0.5879611313343048,
+    "normalization": "mean",
+    "processed_tokens": 31601,
+    "processed_tokens_per_second": 2245.2867489439195,
+    "steps": 20,
+    "supervised_chosen_tokens": 10761,
+    "wall_seconds": 14.074371576309204
+  }
+}

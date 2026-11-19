@@ -1,0 +1,124 @@
+{
+  "checkpoint": {
+    "arm": "full",
+    "arm_state_elements": 498113344,
+    "arm_state_keys": 319,
+    "interpolation_block": {
+      "base": "post-trained 0.8B (untrained endpoint)",
+      "candidate": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+      "candidate_sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6",
+      "coefficient": 0.375
+    },
+    "path": "results/stage2/s65-interp-selected/ckpt-t0.375-full.pt",
+    "schema": "selvedge/stage2-ckpt/v1",
+    "sha256": "10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a"
+  },
+  "claims": {
+    "checkpoint_sha256_matches_source": true,
+    "coefficient_matches_selected_receipt": true,
+    "lossy_fallback": false,
+    "merged_full_arm": true,
+    "test_split_used_for_selection": false
+  },
+  "created_utc": "2026-11-19T21:28:53Z",
+  "full_test_evaluation": {
+    "gsm8k": {
+      "baseline_flexible": 0.5420773313115997,
+      "candidate_exact": 0.6542835481425322,
+      "candidate_flexible": 0.6489764973464746,
+      "candidate_strict": 0.6489764973464746,
+      "ci95": [
+        0.0803639120545868,
+        0.13419257012888552
+      ],
+      "delta": 0.1068991660348749,
+      "paired_receipt": "results/stage1/s65-paired-interp-0.375-vs-post.json",
+      "receipt": "results/stage1/s65-interp-0.375-nonthinking-greedy.json",
+      "receipt_sha256": "19d4deb55ab44045a9ad6ca253885156e473a493ba386fd26f11bca6fc2e935d"
+    },
+    "math500": {
+      "baseline_flexible": 0.382,
+      "candidate_exact": 0.452,
+      "candidate_flexible": 0.428,
+      "candidate_strict": 0.428,
+      "ci95": [
+        0.006,
+        0.086
+      ],
+      "delta": 0.046,
+      "paired_receipt": "results/stage1/s65-paired-interp-0.375-vs-post.json",
+      "receipt": "results/stage1/s65-interp-0.375-nonthinking-greedy.json"
+    },
+    "mmlu": {
+      "baseline": 0.5048426150121066,
+      "candidate": 0.5174476570289133,
+      "ci95": [
+        0.0063381284717276744,
+        0.018658310781939896
+      ],
+      "delta": 0.012605042016806723,
+      "paired_receipt": "results/stage2/s65-eval/paired-retention-interp-0.375-vs-post.json",
+      "receipt": "results/stage2/s65-eval/interp-0.375-mmlu.json"
+    },
+    "mmlu_pro": {
+      "baseline": 0.22420634920634921,
+      "candidate": 0.251984126984127,
+      "ci95": [
+        -0.005952380952380952,
+        0.06547619047619048
+      ],
+      "delta": 0.027777777777777776,
+      "paired_receipt": "results/stage2/s65-eval/paired-retention-interp-0.375-vs-post.json",
+      "receipt": "results/stage2/s65-eval/interp-0.375-mmlu.json"
+    },
+    "protocol": "greedy, non-thinking, zero-shot CoT, \\boxed{}, max_new_tokens 4096, EOS-only stop, identical to the post-trained baseline receipt"
+  },
+  "kind": "merged-full-arm-interpolated-checkpoint",
+  "loading_contract": {
+    "embedding_source": "the post-trained snapshot (frozen, identical at both endpoints)",
+    "eval_instrument": "scripts/s54_post_trained_eval.py --full-checkpoint for GSM8K/MATH-500; scripts/s43_score_total_cap.py --arm interpolated for MMLU/MMLU-Pro",
+    "steps": [
+      "load Qwen/Qwen3.5-0.8B at revision 2fc06364715b967f1860aea9cf38778875588b17",
+      "torch.load the checkpoint with map_location='cpu' and weights_only=False",
+      "frontier.full.load_full_state_into(model, payload['arm_state'])"
+    ]
+  },
+  "schema": "selvedge/s65-interpolated-checkpoint-identity/v1",
+  "selection": {
+    "basis": "calibration only (GSM8K-cal, MATH-cal, MMLU-cal), chosen before any test split was read",
+    "coefficient": 0.375,
+    "grid_receipt": {
+      "path": "results/stage2/s60-interpolation/receipt.json",
+      "revision": "a3ac4d18dcde9cf1826af4b3f744f9b1d664d2e1",
+      "sha256": "ba37b010d8ebcc4736b4a0f66eacc91d5c76915f063a32e944c5639cc569402f",
+      "stamp": "20261119T054403Z"
+    },
+    "retention_limit": 0.01,
+    "selected_receipt": {
+      "path": "results/stage2/s60-interpolation/selected-receipt.json",
+      "revision": "c2eb200bbb6a87c8625a20901752527579707ee8",
+      "sha256": "249a998f457f40c4f4a288191b8b48db1cfb1d043ac32c2c1334e23b14240745",
+      "stamp": "20261119T092521Z"
+    },
+    "selection_rule": "mean gain over the 0.0 endpoint on GSM8K-cal and MATH-cal; a coefficient whose calibration MMLU drop exceeds 1.0 point is ineligible; ties choose the smaller coefficient"
+  },
+  "source_weights": {
+    "base_endpoint": {
+      "model": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "role": "post-trained endpoint; coefficient 0.0",
+      "weight_sha256_first_shard": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696"
+    },
+    "candidate_endpoint": {
+      "path": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+      "role": "S58 stage-2a full-arm checkpoint; coefficient 1.0",
+      "sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6",
+      "step": 4000,
+      "tokens_seen": 10000000
+    },
+    "coefficient": 0.375,
+    "formula": "theta(t) = (1 - t) * theta_post_trained + t * theta_s58_stage2a",
+    "scope": "the trainable text-tower parameters exported by the full arm; the tied embedding is frozen and identical at both endpoints, so it is inherited from the post-trained snapshot"
+  },
+  "stamp": "20261119T212853Z"
+}
