@@ -19,6 +19,7 @@ parts the GPU jobs depend on and that a GPU hour cannot cheaply re-check:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -36,6 +37,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from frontier import preference  # noqa: E402
 import s64_preference_data as data_pass  # noqa: E402
 import s64_preference_launch as launch  # noqa: E402
+import s64_rollout_summary as rollout_summary  # noqa: E402
 import s64_shard_window as window  # noqa: E402
 
 
@@ -411,3 +413,77 @@ def test_shard_commands_carry_k8_shards_and_the_rejected_sidecar():
         assert cmd[cmd.index(k_flag) + 1] == "8"
         assert "--rejected-out" in cmd
         assert cmd[cmd.index("--shards") + 1] == "2"
+
+
+# ---------------------------------------------------------------------------
+# the corrected-rollout summary
+
+
+def _shard_receipt(tmp_path, name, *, compute_saved=False, k=8,
+                   successes=2, attempts=8, loop_cut=1):
+    ledger = tmp_path / f"{name}-ledger.jsonl"
+    ledger.write_text("{\"id\": \"a\"}\n", encoding="utf-8")
+    digest = hashlib.sha256(ledger.read_bytes()).hexdigest()
+    dataset = "gsm8k" if name.startswith("gsm") else "math"
+    shard_index = int(name[-1]) if name[-1].isdigit() else 0
+    return {
+        "stamp": "20260101T000000Z", "revision": "deadbeef",
+        "sampling": {"k_gsm8k": k, "k_math": k, "shards": 2,
+                     "shard_index": shard_index},
+        "loop_cut": {"compute_saved": compute_saved},
+        "generation": {"tokens_per_second": 100.0,
+                       "textual_replay_tokens_cut": 10,
+                       "textual_replay_token_fraction": 0.1},
+        "acceptance": {
+            "totals": {"prompts": 10, "sampled": 80, "correct": 20,
+                       "kept": 15, "duplicates": 2, "truncated": 3,
+                       "loop_cut": loop_cut, "generated_tokens": 1000,
+                       "pre_cut_generated_tokens": 1100,
+                       "textual_replay_tokens_cut": 10,
+                       "wall_seconds": 10.0},
+            "by_dataset": {dataset: {
+                "prompts": 10, "sampled": 80, "correct": 20, "kept": 15,
+                "duplicates": 2, "truncated": 3, "loop_cut": loop_cut,
+                "generated_tokens": 1000, "pre_cut_generated_tokens": 1100,
+                "textual_replay_tokens_cut": 10, "wall_seconds": 10.0,
+                "solution_tokens": 500, "rows": 15}},
+            "loop_cut_rate": loop_cut / 80, "truncation_rate": 3 / 80,
+        },
+        "ledger": {
+            "path": str(ledger), "sha256": digest, "rows": 10,
+            "summary": {
+                "attempts": attempts, "verified_correct": successes,
+                "sum_weight_p1mp": 0.25, "zero_p_problems": 1,
+                "one_p_problems": 0,
+                "p_histogram": {f"{successes}/{attempts}": 10},
+                "successes_per_problem": [successes] * 10,
+                "mean_p": successes / attempts,
+            },
+        },
+        "preference_data": {"rejected_path": None, "sha256": None},
+    }
+
+
+def test_rollout_summary_merges_shards_and_refuses_a_compute_saved_claim(tmp_path):
+    first = _shard_receipt(tmp_path, "gsm8k-shard0")
+    second = _shard_receipt(tmp_path, "math-shard1")
+    merged = rollout_summary.summarise(
+        [("a.json", first), ("b.json", second)])
+    assert merged["totals"]["prompts"] == 20
+    assert merged["totals"]["sampled"] == 160
+    assert merged["ledger"]["attempts"] == 16
+    assert merged["ledger"]["verified_correct"] == 4
+    assert merged["ledger"]["pooled_p_from_attempts"] == 0.25
+    assert merged["ledger"]["p_histogram"] == {"2/8": 20}
+    assert merged["throughput"]["compute_saved"] is False
+    assert merged["throughput"]["tokens_per_second"] == 100.0
+
+    bad = _shard_receipt(tmp_path, "gsm8k-bad", compute_saved=True)
+    with pytest.raises(SystemExit) as exc:
+        rollout_summary.summarise([("bad.json", bad)])
+    assert "compute_saved" in str(exc.value)
+
+    wrong_k = _shard_receipt(tmp_path, "gsm8k-k4", k=4)
+    with pytest.raises(SystemExit) as exc:
+        rollout_summary.summarise([("k4.json", wrong_k)])
+    assert "K=8" in str(exc.value)
