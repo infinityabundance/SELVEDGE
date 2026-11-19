@@ -620,8 +620,9 @@ def main(argv: list[str]) -> int:
         for line in handle:
             if line.strip():
                 rows.append(json.loads(line))
-    if not rows:
-        raise SystemExit("s59-rollouts: no accepted rows; nothing to receipt")
+    if not rows and not ledger_entries:
+        raise SystemExit("s59-rollouts: no accepted rows and no ledger rows; "
+                         "nothing to receipt")
     supervised = sum(len(row["solution_ids"]) for row in rows)
     prompt_tokens = sum(len(row["prompt_ids"]) for row in rows)
     by_dataset: dict[str, dict] = {}
