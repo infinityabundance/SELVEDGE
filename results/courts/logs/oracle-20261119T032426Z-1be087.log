@@ -1,0 +1,17 @@
+F............................                                            [100%]
+=================================== FAILURES ===================================
+______________ test_reverification_accepts_every_correct_solution ______________
+
+    def test_reverification_accepts_every_correct_solution():
+        rows = [
+            _row("gsm8k-train:1", "gsm8k", "The answer is 72.\n#### 72", "72"),
+            _row("math-train:1", "math", "so \\boxed{\\frac{1}{2}}", "1/2"),
+        ]
+        result = sv.reverify(rows)
+>       assert result["all_correct"] is True
+E       assert False is True
+
+oracle/tests/test_s60_corpus_verification.py:48: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s60_corpus_verification.py::test_reverification_accepts_every_correct_solution
+1 failed, 28 passed in 1.70s

@@ -56,6 +56,31 @@ explicit `unresolved` treatment.
   mode result. The termination cadence is still required, but the paper does
   not predict a non-thinking stopping regression.
 
+## The long-example share (measured, not asserted)
+
+`results/stage2/s60-long-example-share.json` (stamp `20261119T032353Z`,
+revision `9c179e3`) joins the built examples file to
+the accepted corpus by `id` (the accepted file carries `difficulty`; the
+examples file drops it) and reports the overflow by dataset and difficulty at
+each candidate row width. The source is the S58 combined examples file
+(sha256 recorded in the receipt), so these are the rows S58 actually trained
+on, not a re-generation.
+
+| row width | dropped examples | dropped supervised tokens | share of teacher tokens |
+| --- | --- | --- | --- |
+| 1250 | 191 | 292,068 | 0.1333 |
+| 2048 | 11 | 21,688 | 0.0099 |
+| 2500 | 0 | 0 | 0 |
+
+Every dropped example is MATH. At 1250 the difficulty profile is level 1: 6,
+level 2: 23, level 3: 39, level 4: 56, level 5: 67 (103,213 supervised tokens);
+at 2048 only five level-5 traces (9,630 tokens) remain. The long traces are
+therefore not a tail to discard: they are 13.3% of the teacher supervision and
+skew to the hardest MATH problems, which is the task S58 lost 11.0 points on.
+The launcher's 2500-token row preserves all of them; the 2500-token row width
+is a measured threshold, and the smoke in `docs/S60-GPU-QUEUE.md` §1 is what
+establishes that it fits.
+
 ## Controls
 
 - **Gate off:** the same rollouts and recipe with every sampled rollout

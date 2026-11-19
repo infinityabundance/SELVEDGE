@@ -19,7 +19,9 @@ awk '/MemAvailable/ {printf "MemAvailable %.1f GiB\n", $2/1048576}' /proc/meminf
 ## 1. Long-row smoke for the S60 SFT geometry (first, because it is unknown)
 
 S60 changed the launcher's default row width from 1250 to 2500 to preserve the
-11 MATH examples longer than 2048 tokens and all 191 longer than 1250. A 2500-
+11 MATH examples longer than 2048 tokens and all 191 longer than 1250
+(`results/stage2/s60-long-example-share.json`, stamp `20261119T032353Z`,
+revision `9c179e3`; 13.3% of teacher supervised tokens). A 2500-
 token row with activation checkpointing and the gathered LM head has **not** been
 measured on this card. The smoke exists to size the real run, not to prove the
 loss.
@@ -56,8 +58,8 @@ memory limit being guessed upward.
 
 ```sh
 SELVEDGE_MEM=4g SELVEDGE_CPUS=4 SELVEDGE_PIDS=1024 SELVEDGE_TMP=1g \
-  scripts/court python -- python3 scripts/s57_verify_stage2a.py \
-    --receipt results/artifacts/stage2/s58-combined/stage2a-accepted-combined-examples-receipt.json \
+  scripts/court oracle -- python3 scripts/s57_verify_stage2a.py \
+    --receipt results/artifacts/stage2/s58-combined/stage2a-accepted-combined-receipt.json \
     --accepted results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl \
     --examples results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl \
     --examples-receipt results/artifacts/stage2/s58-combined/stage2a-combined-examples-receipt.json \
