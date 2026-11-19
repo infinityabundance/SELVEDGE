@@ -170,7 +170,9 @@ def main(argv: list[str]) -> int:
                                  "control-teacher"])
     parser.add_argument("--rollouts", default=None,
                         help="student-policy accepted jsonl")
-    parser.add_argument("--rollouts-receipt", default=None)
+    parser.add_argument("--rollouts-receipt", action="append", default=[],
+                        help="receipt(s) of the generation pass(es) that wrote "
+                             "the rollouts; recorded, not re-derived")
     parser.add_argument("--teacher", default=TEACHER_SOURCE)
     parser.add_argument("--holdout", default=(
         "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl"))
@@ -318,7 +320,17 @@ def main(argv: list[str]) -> int:
         "tokenizer_dir": args.tokenizer_dir,
         "holdout_excluded": {"path": args.holdout, "ids": len(excluded)},
         "sources": {"student": student_report, "teacher": teacher_report,
-                    "teacher_default": TEACHER_SOURCE},
+                    "teacher_default": TEACHER_SOURCE,
+                    "generation_receipts": [
+                        {"path": path,
+                         "stamp": json.load(open(os.path.join(ROOT, path),
+                                                 encoding="utf-8")).get("stamp"),
+                         "revision": json.load(open(os.path.join(ROOT, path),
+                                                    encoding="utf-8")).get("revision"),
+                         "acceptance_totals": json.load(open(
+                             os.path.join(ROOT, path),
+                             encoding="utf-8")).get("acceptance", {}).get("totals")}
+                        for path in args.rollouts_receipt]},
         "mixture": mix_report,
         "by_kind": by_kind,
         "supervised_solution_tokens": supervised,

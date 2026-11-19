@@ -1,0 +1,24 @@
+train: packed 220 examples into 220 rows of 1250; supervised_tokens=105750
+train: loading student /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+train: step 1/40 loss=0.2286 ce=0.2286 kl=0.0000 1433 tok/s peak=11.33GiB
+[W1119 03:02:50.077995794 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 132448256, total: 16765091840).
+[W1119 03:02:50.088177455 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 134545408, total: 16765091840).
+Traceback (most recent call last):
+  File "/work/oracle/frontier/train.py", line 1062, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier/train.py", line 1058, in main
+    return run(args)
+           ^^^^^^^^^
+  File "/work/oracle/frontier/train.py", line 731, in run
+    (loss / args.grad_accum).backward()
+  File "/usr/local/lib/python3.12/site-packages/torch/_tensor.py", line 623, in backward
+    torch.autograd.backward(
+  File "/usr/local/lib/python3.12/site-packages/torch/autograd/__init__.py", line 395, in backward
+    _engine_run_backward(
+  File "/usr/local/lib/python3.12/site-packages/torch/autograd/graph.py", line 1113, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 592.00 MiB. GPU 0 has a total capacity of 15.61 GiB of which 668.31 MiB is free. Including non-PyTorch memory, this process has 12.75 GiB memory in use. Of the allocated memory 12.15 GiB is allocated by PyTorch, and 293.88 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
