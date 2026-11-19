@@ -302,8 +302,9 @@ def finalise_ledger_entry(entry: dict) -> dict:
     p = (correct / attempts) if attempts else 0.0
     entry["p"] = p
     entry["weight_p1mp"] = p * (1.0 - p)
-    entry["p_basis"] = "verified_correct / attempts (attempts include truncations "
-    "and duplicates; accepted rows are never the denominator)"
+    entry["p_basis"] = ("verified_correct / attempts (attempts include "
+                        "truncations and duplicates; accepted rows are never "
+                        "the denominator)")
     return entry
 
 

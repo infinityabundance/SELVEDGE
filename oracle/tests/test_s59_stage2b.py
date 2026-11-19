@@ -276,6 +276,7 @@ def test_ledger_p_is_successes_over_attempts_not_accepted_rows():
     finalised = write_ledger_entry(io.StringIO(), entry)
     assert finalised["p"] == 0.5
     assert finalised["weight_p1mp"] == 0.25
+    assert "duplicates" in finalised["p_basis"]
     summary = summarise_ledger([finalised])
     assert summary["p_basis"].startswith("verified_correct / attempts")
     assert summary["attempts"] == 4

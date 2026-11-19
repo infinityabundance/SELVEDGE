@@ -8,6 +8,16 @@ an explicit `SELVEDGE_MEM`; none is launched without one.
 Companion documents: `docs/S60-STAGE2-REVISED.md` (the registered recipe),
 `docs/S60-LITERATURE.md`, `docs/S60-VLLM-AND-DISK.md`.
 
+**S63 correction (2026-11-19).** The rollout job that is running was launched
+with the old stopping criterion and K=4. Its saved-token and throughput numbers
+are **textual replay only, not compute saved**: a batched `generate` advances
+every row until the slowest row stops, so cutting one row's text does not reduce
+the batch's forward cost. Its accepted file also has no per-problem ledger, so
+its rows cannot supply the corrected p = successes/attempts or the K=8 p(1-p)
+weights. The corrected K=8 design and the queue order (interpolation first,
+corrected preference stage second, CURE later) are registered in
+`docs/ws19-stage2-correction-s63-preregistration-v1.json`.
+
 ## 0. Gate: wait for the rollout pass
 
 ```sh

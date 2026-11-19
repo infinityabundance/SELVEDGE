@@ -187,6 +187,25 @@ def test_matched_sft_control_runs_on_the_same_examples_and_budget():
     assert math.isfinite(report["final_loss"])
 
 
+def test_recovery_arm_is_built_from_the_ledger_at_p_zero():
+    ledger = [
+        {"id": "a", "p": 0.0, "weight_p1mp": 0.0,
+         "prompt_ids": [1, 2]},
+        {"id": "b", "p": 0.25, "weight_p1mp": 0.1875,
+         "prompt_ids": [3]},
+        {"id": "c", "p": 0.0, "weight_p1mp": 0.0,
+         "prompt_ids": [4]},
+    ]
+    pairs, report = preference.build_recovery_arm(
+        ledger, {"a": [9, 10], "c": [11]}, {"a": [12]})
+    assert report["zero_p_problems"] == 2
+    assert report["recovery_pairs"] == 1
+    assert report["missing_failed_continuation"] == ["c"]
+    assert pairs[0].problem_id == "a"
+    assert pairs[0].prompt_ids == (1, 2)
+    assert pairs[0].weight == 0.1875
+
+
 def test_recovery_pair_carries_the_mean_positive_weight_at_p_zero():
     assert preference.difficulty_weight(0.0) == 0.0
     assert preference.difficulty_weight(1.0) == 0.0

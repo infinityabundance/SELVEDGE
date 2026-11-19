@@ -164,6 +164,53 @@ def recovery_pair(problem_id: str, prompt_ids, teacher_ids, failed_ids,
         provenance="teacher-recovery")
 
 
+def build_recovery_arm(ledger_entries, teacher_by_id, failed_by_id
+                       ) -> tuple[list[PreferencePair], dict]:
+    """Build the recovery pairs from the per-problem ledger.
+
+    `ledger_entries` is the rollout ledger (each row has `id`, `p` and the
+    attempt counters). `teacher_by_id` maps a problem id to a verified teacher
+    solution token list and `failed_by_id` to the student's failed continuation
+    token list. Only problems with p == 0 are candidates; a missing teacher or
+    failed continuation is counted, never invented. The weight is the mean
+    positive p(1-p) of the on-policy problems.
+    """
+    entries = list(ledger_entries)
+    positive = [float(entry.get("weight_p1mp", 0.0)) for entry in entries]
+    pairs: list[PreferencePair] = []
+    missing_teacher = []
+    missing_failed = []
+    for entry in entries:
+        if float(entry.get("p", 0.0)) != 0.0:
+            continue
+        problem_id = str(entry.get("id"))
+        teacher = teacher_by_id.get(problem_id)
+        failed = failed_by_id.get(problem_id)
+        if not teacher:
+            missing_teacher.append(problem_id)
+            continue
+        if not failed:
+            missing_failed.append(problem_id)
+            continue
+        prompt = entry.get("prompt_ids")
+        if not prompt:
+            raise ValueError(
+                f"ledger row {problem_id!r} has no prompt_ids; the recovery "
+                "pair needs the shared prefix")
+        pairs.append(recovery_pair(problem_id, prompt, teacher, failed, 0.0,
+                                   positive))
+    zero = sum(1 for entry in entries if float(entry.get("p", 0.0)) == 0.0)
+    return pairs, {
+        "zero_p_problems": zero,
+        "recovery_pairs": len(pairs),
+        "missing_teacher": missing_teacher,
+        "missing_failed_continuation": missing_failed,
+        "matched_weight": recovery_weight(positive),
+        "basis": "p=0 problems receive the mean positive p(1-p) weight; "
+                 "missing data is counted, not fabricated",
+    }
+
+
 # ---------------------------------------------------------------------------
 # log-probabilities and the loss
 
@@ -213,6 +260,11 @@ def continuation_logprobs(model, prompt_ids, continuation_ids,
     """Return ``(normalised log-prob, per-token log-probabilities)``."""
     import torch as _torch
 
+    if device is None:
+        try:
+            device = next(model.parameters()).device
+        except (AttributeError, StopIteration):
+            device = None
     prompt = _torch.as_tensor(list(prompt_ids), dtype=_torch.long,
                               device=device).reshape(1, -1)
     continuation = _torch.as_tensor(list(continuation_ids), dtype=_torch.long,
@@ -298,6 +350,10 @@ def pair_loss(model, pair: PreferencePair, beta: float = 0.1,
     r_chosen = reference_logprob(pair.chosen_reference_logprobs, normalization)
     r_rejected = reference_logprob(pair.rejected_reference_logprobs,
                                    normalization)
+    # The cache is built on CPU; move it to the student's device before the
+    # subtraction. The values themselves are unchanged.
+    r_chosen = r_chosen.to(s_chosen.device)
+    r_rejected = r_rejected.to(s_rejected.device)
     loss = preference_loss(s_chosen, s_rejected, r_chosen, r_rejected, beta)
     margin = beta * ((s_chosen - s_rejected) - (r_chosen - r_rejected))
     return loss, {
@@ -577,7 +633,8 @@ __all__ = [
     "REGISTERED_ACTIVE_UNION", "REGISTERED_NORMALIZATION",
     "MERGE_ATOL", "MERGE_RTOL", "NORMALIZATIONS", "PreferencePair",
     "assert_shared_prefix", "make_pair", "difficulty_weight",
-    "recovery_weight", "recovery_pair", "normalise_logprob",
+    "recovery_weight", "recovery_pair", "build_recovery_arm",
+    "normalise_logprob",
     "sequence_logprob", "continuation_logprobs", "cache_reference_logprobs",
     "reference_logprob", "preference_loss", "pair_loss",
     "preference_batch_loss", "LoRALinear", "default_linear_target",
