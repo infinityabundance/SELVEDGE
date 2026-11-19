@@ -1,0 +1,206 @@
+{
+  "schema": "selvedge/ws19-post-trained-route-stage2b-preregistration/v1",
+  "identifier": "STAGE2B-RFT-S59-V1",
+  "registering_session": "S59",
+  "registered_utc": "2026-11-19T02:40:00Z",
+  "registered_revision": "bbd6e5084d9f11e92c097b650eb274a2fcc14e08",
+  "purpose": "Register stage 2b: student-policy rejection-sampling self-distillation (RFT) of the post-trained 0.8B with a gentler recipe, its matched teacher-data control, the learning-rate screen that precedes the full run, and the win bar that scores it. Nothing here is scored before this file is committed. The registration fixes the sampling policy, the verifier, the deduplication rule, the loop-cut rule, the corpus construction, the three arms, the optimiser, the cadence, the statistics and the decision rule.",
+  "relation_to_existing_registrations": {
+    "stage2a": {
+      "path": "docs/ws19-post-trained-route-stage2a-amendment-s55-v1.json",
+      "result": "docs/S58-STAGE2A.md",
+      "relation": "stage 2a is the measured failure this route answers: teacher-solution SFT on the same student proposed GSM8K +2.88 points with an interval barely above zero and MATH-500 −11.0 points with the interval entirely below zero, and raised held-out teacher-solution CE at every checkpoint. Stage 2b keeps stage 2a's optimiser, geometry and evaluation instrument and changes (i) the data to the student's own verified trajectories, (ii) the learning rate, chosen by a measured screen this time."
+    },
+    "onpolicy_rft": {
+      "path": "docs/ws19-onpolicy-rft-preregistration-v1.json",
+      "relation": "the S45 registration registered student-policy rejection sampling for the Base student at 512 tokens and lr 1e-4. This amendment carries the same verifier and rejection-sampling discipline to the post-trained student at the 2048 cap, with the loop cut, the three-arm attribution and the lr screen the S58 result showed are necessary. It does not alter the S45 arms; those were a different student and a different budget."
+    },
+    "win_basis": {
+      "path": "docs/ws19-post-trained-route-registration-v1.json",
+      "relation": "the student, the evaluation instrument, the retention bound and the paired statistics are unchanged."
+    }
+  },
+  "measured_state_that_motivates_it": {
+    "post_trained_baseline": {
+      "gsm8k_flexible": 0.5421,
+      "math500_flexible": 0.3820,
+      "receipt": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json",
+      "stamp": "20261118T033841Z",
+      "revision": "863b3309de8e101600455fc734a207036c0b4a59"
+    },
+    "stage2a_result": {
+      "gsm8k_flexible": 0.5709,
+      "math500_flexible": 0.2720,
+      "paired_gsm8k_ci": [0.0008, 0.0576],
+      "paired_math500_ci": [-0.1540, -0.0660],
+      "heldout_solution_ce_base": 0.2495,
+      "heldout_solution_ce_final": 0.3087,
+      "receipt": "results/stage1/s58-stage2a-final-nonthinking-greedy.json",
+      "stamp": "20261118T220558Z",
+      "revision": "b1f9c1c0c83f0666e6a759c9fc3ca73a51644705",
+      "ce_receipt": "results/stage2/s58-stage2a-heldout-ce.json",
+      "ce_stamp": "20261118T210346Z",
+      "failure_mode": "the arm learned short, confident answers: it boxes more MATH answers (0.788 vs 0.682), truncates less (0.210 vs 0.320), and is wrong more often. The supervised corpus was dominated by short GSM8K solutions and the objective was plain completion CE on a distribution whose supervised headroom was already ~0.25 nats/token."
+    },
+    "why_student_policy_data": "RFT literature (Yuan et al. 2023, \"Self-Rewarding Language Models\" and \"Reinforced Self-Training\"; Singh et al. 2023, \"ReST\"; Zelikman et al. 2022, \"STaR\") reports that filtering a model's own verified trajectories improves it more reliably than imitating a stronger model's text, especially when the student is weaker than the teacher and the corpus distribution is the student's own. The mechanism this route tests is distributional: the supervised tokens are trajectories the student actually produces, so no token in the corpus is one the student cannot emit.",
+    "why_gentler_lr": "the S58 cadence showed the 2M checkpoint collapsed to 0.3101 GSM8K and recovered monotonically to 0.5709, with held-out CE worst at exactly 2M. That is the signature of steps that are too large for this objective, not of bad data. Stage 2b therefore screens lr 3e-6 and 1e-5 at 2M tokens and does not launch the full run when both degrade held-out solution CE."
+  },
+  "policy_sampling": {
+    "policy": "post-trained Qwen/Qwen3.5-0.8B at 2fc06364715b967f1860aea9cf38778875588b17 (the same revision the win bar is measured against, not a stage-2a descendant)",
+    "tokenizer_and_template": "the policy's own tokenizer and chat template; add_generation_prompt=True, enable_thinking=False; the prompt string is the one stage 1 scores",
+    "user_template": "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{}.",
+    "prompts": "GSM8K-train and MATH-train items with an extractable train label (frontier.rft.load_items), selected by seeded stratified selection over (source, difficulty bucket, reasoning-length quartile); 1500 GSM8K prompts and 1500 MATH prompts, seed 5900",
+    "holdout_exclusion": "every prompt id in results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl is removed from sampling and from every training corpus of every arm, so the frozen stage-2a hold-out remains a clean cross-arm CE instrument for the same prompts rather than leaked text",
+    "samples_per_prompt": 4,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 2048,
+    "stop": "EOS only",
+    "seed": 5900,
+    "batch_prompts": 16,
+    "shards": "the pass may be split into disjoint prompt shards; each shard writes its own receipt and the merge is exact-token deduplicated",
+    "loop_cut": {
+      "why": "a 2048-token cap costs full decode time on a degenerate repetition that can never verify. Cutting it early is a registered decode rule, not a post-hoc filter.",
+      "rule_a": "the trailing 64 generated tokens are 4 consecutive copies of the same 16-token block",
+      "rule_b": "the trailing 144 generated tokens are 3 consecutive copies of the same 48-token block",
+      "action": "stop that sequence at the first token of the first repeated copy; the retained text is everything before the cut; the row records loop_cut=true and loop_cut_at=index",
+      "per_sequence": "the criterion tracks each sequence independently; a cut sequence stops generating while the rest of the batch continues (a sequence stops when it reaches EOS or its own cut)",
+      "verification_after_cut": "frontier.rft.verify runs on the retained text, so a trajectory that boxes a verifiable answer before looping is still accepted and a trajectory that never reaches an answer is not",
+      "counted": "loop_cut is reported per dataset beside truncation; it is never silently conflated with truncation"
+    },
+    "verification": "frontier.rft.verify against the train label; only verdict == correct is kept. wrong, ambiguous, unparseable, truncated and loop-cut-without-a-verified-answer contribute nothing",
+    "deduplication": "within a prompt, exact generated-token-sequence SHA-256; a duplicate trajectory is dropped and counted. Duplicates are not removed across prompts because two distinct problems may legitimately share a short solution.",
+    "receipt_fields": "prompts, sampled, correct, kept, duplicates, truncated, loop_cut, verdict counts, generated tokens, wall seconds, tokens/s, per-dataset solution-length profile, peak VRAM, cgroup memory; the accepted rows carry prompt_ids and solution_ids taken from the generated token ids themselves"
+  },
+  "cost_arithmetic": {
+    "full_pass_rollouts": 12000,
+    "full_pass_formula": "3000 prompts x K=4",
+    "mean_generated_tokens_assumption": 1000,
+    "projected_decode_tokens": 12000000,
+    "throughput_anchor": {
+      "measured": 619.0,
+      "unit": "tokens/s",
+      "what": "post-trained 2B sampling at the 2048 cap, batch 32 prompts, K=1",
+      "receipt": "results/stage2/data/s58-math-2048-receipt-20261118T175815Z.json",
+      "revision": "9ea15c9"
+    },
+    "projection_at_anchor": "12,000,000 / 619 = 19,386 s = 5.4 h. The 0.8B policy is a lower bound on speed, so this is an upper bound on the pass; the pilot's measured 0.8B token rate replaces the projection before the full pass is launched.",
+    "pilot": {
+      "size": "120 prompts (60 GSM8K + 60 MATH) x K=4 at the registered parameters",
+      "measures": "0.8B decode tokens/s, acceptance, truncation, loop-cut rate, VRAM and cgroup peak",
+      "sizing_rule": "the container limit for the full pass is max(1.5 x pilot cgroup peak, pilot peak + 1 GiB), rounded up to whole GiB; it is recorded before the launch"
+    },
+    "time_ladder": [
+      "1. K=4 on 1500+1500 prompts, as registered.",
+      "2. if the pilot's rate projects the full pass above 4.5 h, drop MATH to K=3 (the GSM8K trajectory is short and cheap; the MATH one is long and the source of the loop cuts). The realised token count and the realised acceptance are receipted.",
+      "3. if step 2 still projects above 4.5 h, reduce each source to 1200 prompts. No other parameter changes."
+    ],
+    "training_arithmetic": "one epoch over the accepted corpus plus 20% replay, at 2,500 processed tokens/step; the stage-2a run measured 2,081 processed tokens/s on the same shape (receipt results/stage2/runs/s58-stage2a/receipt.json, stamp 20261118T210038Z, revision e5381f5), so a 6,000-row corpus (7.5M processed tokens) is ~1 h of training. Generation dominates."
+  },
+  "corpora_and_arms": {
+    "common": {
+      "replay": "fineweb-edu sample/10BT/013_00000.parquet at revision 87f09149ef4734204d70ed1d046ddc9ca3f2b8f9, 20% of supervised tokens, 5-word-shingle Jaccard screen against the GSM8K test and MATH-500 items at the registered 0.2 discard / 0.5 fail thresholds, whole-document truncation at 768 tokens",
+      "holdout_exclusion": "the 82 rows of results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl are excluded from every arm's training rows",
+      "ce_instrument": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl, the frozen stage-2a hold-out, evaluated completion-only at every saved checkpoint; its base CE is 0.2495 (receipt results/stage2/s58-stage2a-heldout-ce.json, stamp 20261118T210346Z, revision e5381f5). This instrument is not drawn from any stage-2b corpus, so it is the same distribution for all three arms.",
+      "order": "seeded deterministic shuffle (seed 5900) written into the examples file; the trainer never shuffles"
+    },
+    "arms": {
+      "rft-only": {
+        "data": "the student's verified-correct trajectories only",
+        "purpose": "the route under test",
+        "run_dir": "results/stage2/runs/s59-stage2b-rft-only"
+      },
+      "rft-teacher-5050": {
+        "data": "student verified trajectories and stage-2a teacher solutions, mixed 50/50 by supervised solution tokens; the larger source is deterministically subsampled by seeded hash order to match the smaller, so the mixture is exact rather than approximate",
+        "teacher_source": "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl",
+        "purpose": "regression test of S58's hypothesis that the teacher corpus's length distribution is what taught the wrong answer length: if 50% self-generated data restores MATH while keeping the GSM8K gain, the data is the cause; if both arms fail, the objective is",
+        "run_dir": "results/stage2/runs/s59-stage2b-rft-teacher-5050"
+      },
+      "control-teacher": {
+        "data": "stage-2a teacher solutions only, subsampled to the same number of supervised solution tokens as rft-only",
+        "purpose": "matched control: same token count, same optimiser, same geometry, same replay fraction, same lr; the only difference from rft-only is that none of the data is self-generated. A gain over this arm is attributable to student-policy data; a gain over the post-trained baseline only, shared with this arm, is attributable to the recipe.",
+        "run_dir": "results/stage2/runs/s59-stage2b-control-teacher"
+      }
+    },
+    "matched_definition": "matched means identical supervised solution-token count (to within one row), identical processed-token budget, identical seq_len, micro-batch, grad-accum, optimiser numerics, warmup, schedule, grad-clip, seed, replay fraction and lr. It does not mean identical prompt sets."
+  },
+  "lr_screen": {
+    "corpus": "rft-only, at the registered mix",
+    "rates": [3e-06, 1e-05],
+    "budget_each": 2000000,
+    "decision_inputs": {
+      "primary": "held-out solution CE on the frozen stage-2a hold-out at the 2M checkpoint (and at base for the paired reference)",
+      "secondary": "GSM8K full 1319-item greedy flexible accuracy at the 2M checkpoint, on the same instrument as every score in this program",
+      "reported": "termination, truncation and loop rates at the 2M checkpoint"
+    },
+    "decision_rule": [
+      "1. Compute held-out solution CE for both rates at exactly 2M processed tokens.",
+      "2. Let min_ce = the smaller of the two, and let base_ce = the post-trained 0.8B on the same instrument (0.2495, receipt named above).",
+      "3. If min_ce >= base_ce, the screen fails for both rates: stage 2b stops, the failure is reported with both CE numbers and both GSM8K numbers, and the registered next route (consensus self-distillation) is the one registered and costed.",
+      "4. If min_ce < base_ce, the full run uses the rate with the smaller CE. A GSM8K discrepancy does not override CE; GSM8K is the reported early signal, not the selection criterion, because at 2M tokens the stage-2a measurement showed GSM8K is still inside its recovery transient."
+    ],
+    "screen_run_dirs": {
+      "3e-6": "results/stage2/runs/s59-screen-rft-lr3e-6",
+      "1e-5": "results/stage2/runs/s59-screen-rft-lr1e-5"
+    }
+  },
+  "training": {
+    "student": "post-trained Qwen/Qwen3.5-0.8B at 2fc06364715b967f1860aea9cf38778875588b17",
+    "arm": "full text tower, tied embedding frozen (498,113,344 of 752,393,024 text-tower elements trained)",
+    "objective": "completion-masked cross-entropy (--objective sft, kl_weight 0)",
+    "optimizer": "Adam8bit block 256, int8 first moment, bfloat16 second moment, stochastic weight rounding",
+    "schedule": "cosine to 10%, warmup 200, grad-clip 1.0, seed 0",
+    "seq_len": 1250,
+    "micro_batch": 1,
+    "grad_accum": 2,
+    "tokens_per_step": 2500,
+    "checkpoint_every_steps": 400,
+    "epochs": "exactly 1 epoch over the accepted corpus plus replay at the chosen rate; the trainer's row cycling is bounded by the token budget so a second pass cannot occur",
+    "cadence": {"points": ["2M", "5M", "final"], "note": "a checkpoint every 1,000,000 processed tokens; 2M is step 800, 5M is step 2000, final is the epoch end. If the corpus is smaller than 5M processed tokens the run is not launched: the registered lr screen has already told us whether the data can move the model, and a corpus that cannot reach the cadence point cannot answer the cadence question."},
+    "no_teacher_at_training": "no teacher is loaded, so the co-residency problem that blocks same-prefix teacher KL (student 12.7 GiB + teacher 3.8 GiB over the 16,376 MiB card) does not arise. Same-prefix KL is not attempted and is not part of this registration.",
+    "unregistered_deviation_rule": "any change to these knobs is a new registered amendment, recorded before the launch"
+  },
+  "evaluation": {
+    "instrument": "scripts/s54_post_trained_eval.py, the stage-1 instrument: full GSM8K (1319) and MATH-500 (500), greedy, non-thinking, zero-shot with \\boxed{}, batch 32, cap 4096, three extraction bases side by side",
+    "retention": "MMLU (14,042 items) and MMLU-Pro (504) through scripts/s43_score_total_cap.py on the registered total-cap harness, only for an arm that satisfies the accuracy clauses",
+    "statistics": "prompt-level paired bootstrap (4,000 resamples, seed 53) against the post-trained 0.8B via scripts/s57_paired.py; the resampling unit is the problem",
+    "milestones": "2M, 5M and final are each scored on GSM8K and MATH-500 with termination, truncation and loop rates from the receipt's own summary",
+    "attribution": "rft-only minus control-teacher is computed on the same instrument with the same paired bootstrap, and is reported with its own interval; it is not a win condition"
+  },
+  "win_bar": {
+    "statement": "stage 2b wins iff (1) greedy GSM8K flexible > 0.5421 AND greedy MATH-500 flexible > 0.3820, with the prompt-level paired 95% interval of each difference above zero, AND (2) MMLU and MMLU-Pro each stay within the 1.0-point general-capability preservation bound (point drop <= 1.0 and paired interval lower bound >= -1.0).",
+    "no_softening": "a gain on one task, a family-mean tie, a maj@16-only gain, a gain shared with the control that does not exceed the control, or an accuracy gain that violates the retention bound is not the win. The control having the same gain is reported as evidence that the recipe, not the self-generated data, is doing the work.",
+    "retention_note": "MMLU-Pro has 504 items and the S58 measurement showed its paired interval cannot resolve a 1-point bound; the point clause is applied and the interval clause is reported with that limitation restated."
+  },
+  "decision_rule": [
+    "1. Register and commit this file before any generation, screen or score.",
+    "2. Run the pilot; size the generation container from its measured peak; record the realised rate and ladder step.",
+    "3. Run the full student-policy pass; receipt acceptance, truncation, loop-cut and deduplication.",
+    "4. Build the three corpora with exact supervised-token matching for the control and 50/50 mixture for the second arm.",
+    "5. Run the two 2M lr screens; apply the screen rule. If it fails, stop stage 2b and register consensus self-distillation instead.",
+    "6. Run the full stage-2b for rft-only at the chosen rate, scoring 2M, 5M and final.",
+    "7. Run the two attribution arms (rft-teacher-5050 and control-teacher) at the same rate and budget, and score them on the same instrument.",
+    "8. Apply the win bar to rft-only. Report the control and 50/50 arms as attribution evidence; if either also satisfies the bar, say so and say which clause the control shares.",
+    "9. If no arm wins, report the measured failure mode (accuracy, CE, termination, truncation, loop rates, length distribution) and register the next route with its own cost arithmetic. Do not silently stop."
+  ],
+  "next_route_if_not_a_win": {
+    "name": "consensus self-distillation",
+    "definition": "maj@16 majority answer on train prompts, used as a label-verified filter; the student is trained on its own trajectories that reach the consensus answer, which converts the 18-point maj@16 headroom on both tasks into a training signal without a stronger teacher",
+    "cost_arithmetic": "16 rollouts per prompt is 4x this pass's decode: 3,000 prompts x 16 = 48,000 rollouts. At the pilot's measured 0.8B rate the pass is 4x the stage-2b pass, and it is only run if stage-2b fails.",
+    "registration_status": "not registered yet; it is named here so the failure path is fixed in advance, and its own registration must precede its first score"
+  },
+  "limits": {
+    "training_container": "SELVEDGE_MEM >= 16g. Justification: the stage-2a run of this exact shape measured a cgroup peak of 15,032,385,536 bytes at a 14g limit (receipt results/stage2/runs/s58-stage2a/receipt.json, stamp 20261118T210038Z, revision e5381f5) and reached the limit. The floor is peak + 1 GiB = 15.0 GiB, rounded up to 16g, and no run of this shape may be given less.",
+    "vram": "13.5 GiB for training (the S58 measured peak was 12.728 GiB allocated / 13.086 GiB reserved); generation is sized from its own pilot",
+    "generation_container": "derived from the pilot's cgroup peak by max(1.5 x peak, peak + 1 GiB), recorded in the launch receipt",
+    "general": "one GPU job at a time; host MemAvailable must exceed the new limit plus 4 GiB before launch; SELVEDGE_CPUS=8, SELVEDGE_PIDS=1024, SELVEDGE_TMP=2g on every job"
+  },
+  "what_this_file_does_not_establish": [
+    "that the student-policy acceptance rate is high enough to build the corpus: that is what the pass measures",
+    "that a 0.8B decodes faster than the 619 tokens/s anchor: the pilot measures it",
+    "that the loop-cut rule removes only degenerate text: the retained-text verification is reported, so a cut that removes a correct answer is visible as a lost accept",
+    "that a gentler lr preserves MATH: the screen is the test",
+    "that 50/50 self-generated data restores MATH: the arm is the test",
+    "that consensus self-distillation fits this compute: its arithmetic is stated and it is not run here"
+  ]
+}
