@@ -1,0 +1,14 @@
+/work/scripts/s62_lr_gate.py:728: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  first = float(loss) if first is None else first
+Traceback (most recent call last):
+  File "/work/scripts/s62_lr_gate.py", line 838, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s62_lr_gate.py", line 799, in main
+    return self_test()
+           ^^^^^^^^^^^
+  File "/work/scripts/s62_lr_gate.py", line 744, in self_test
+    assert decision["chosen"] == 3e-5 and decision["launch"], decision
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'rows': [{'rate': 3e-05, 'init_kl': 0.5, 'final_kl': 0.4, 'kl_delta': -0.09999999999999998, 'direction': 'fall', 'tripwire': False, 'eligible': True, 'receipt': None}, {'rate': 0.0001, 'init_kl': 0.5, 'final_kl': 0.45, 'kl_delta': -0.04999999999999999, 'direction': 'fall', 'tripwire': False, 'eligible': True, 'receipt': None}], 'chosen': 0.0001, 'launch': True, 'rule': 'the largest screened rate whose fixed-batch KL fell and whose update guard did not trip; if no rate qualifies, the full run does not launch and the screen is reported', 'start': 0.0001, 'start_eligible': True}

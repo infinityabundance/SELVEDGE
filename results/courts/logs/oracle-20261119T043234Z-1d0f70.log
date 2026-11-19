@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/work/scripts/s62_lr_gate.py", line 844, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s62_lr_gate.py", line 805, in main
+    return self_test()
+           ^^^^^^^^^^^
+  File "/work/scripts/s62_lr_gate.py", line 695, in self_test
+    installed = inject_lora(model, ("q_proj", "down_proj"), rank=4, alpha=8.0)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s62_lr_gate.py", line 211, in inject_lora
+    setattr(module, child_name, wrapper)
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 2029, in __setattr__
+    raise TypeError(
+TypeError: cannot assign '__main__.LoraLinear' as child module 'q_proj' (torch.nn.Module or None expected)
