@@ -190,29 +190,42 @@ def generate(model, tokenizer, prompts: list[str], *, samples: int,
     truncated = 0
     loop_cut = 0
     tokens = 0
+    pre_cut_tokens = 0
+    replay_cut_tokens = 0
     details: list[dict] = []
     for index, row in enumerate(generated):
         ids = row.tolist()
-        raw_length = len(ids)
         while ids and ids[-1] == pad:
+            # Pads are appended only after a row has finished; strip them
+            # before measuring what the row actually emitted.
             ids.pop()
+        raw_length = len(ids)
         terminated = criterion.emitted_eos(index)
+        cut_tokens = 0
         if index in criterion.looped:
             cut = criterion.cut_at[index]
+            cut_tokens = max(0, raw_length - cut)
             ids = ids[:cut]
             loop_cut += 1
         elif not terminated and raw_length >= max_new_tokens:
             truncated += 1
         tokens += len(ids)
+        pre_cut_tokens += raw_length
+        replay_cut_tokens += cut_tokens
         rows.append(ids)
         details.append({"loop_cut": index in criterion.looped,
                         "cut_at": criterion.cut_at.get(index),
+                        "pre_cut_length": raw_length,
+                        "emitted_length": len(ids),
+                        "cut_tokens": cut_tokens,
                         "truncated": (index not in criterion.looped
                                       and not terminated
                                       and raw_length >= max_new_tokens)})
     return rows, {
         "wall_seconds": wall,
         "generated_tokens": tokens,
+        "pre_cut_generated_tokens": pre_cut_tokens,
+        "textual_replay_tokens_cut": replay_cut_tokens,
         "truncated": truncated,
         "loop_cut": loop_cut,
         "details": details,
@@ -516,7 +529,9 @@ def main(argv: list[str]) -> int:
 
         totals = {"prompts": 0, "sampled": 0, "correct": 0, "kept": 0,
                   "duplicates": 0, "truncated": 0, "loop_cut": 0,
-                  "generated_tokens": 0, "wall_seconds": 0.0}
+                  "generated_tokens": 0, "pre_cut_generated_tokens": 0,
+                  "textual_replay_tokens_cut": 0,
+                  "wall_seconds": 0.0}
         per_dataset: dict[str, dict] = {}
         started_all = time.time()
         handle = open(accepted_path, "w", encoding="utf-8")
@@ -545,13 +560,20 @@ def main(argv: list[str]) -> int:
                 device=device)
             totals["wall_seconds"] += gen_stats["wall_seconds"]
             totals["generated_tokens"] += gen_stats["generated_tokens"]
+            totals["pre_cut_generated_tokens"] += gen_stats[
+                "pre_cut_generated_tokens"]
+            totals["textual_replay_tokens_cut"] += gen_stats[
+                "textual_replay_tokens_cut"]
             totals["truncated"] += gen_stats["truncated"]
             totals["loop_cut"] += gen_stats["loop_cut"]
             for prompt_index, task in enumerate(batch):
                 stats = per_dataset.setdefault(task["dataset"], {
                     "prompts": 0, "sampled": 0, "correct": 0, "kept": 0,
                     "duplicates": 0, "truncated": 0, "loop_cut": 0,
-                    "generated_tokens": 0, "wall_seconds": 0.0,
+                    "generated_tokens": 0,
+                    "pre_cut_generated_tokens": 0,
+                    "textual_replay_tokens_cut": 0,
+                    "wall_seconds": 0.0,
                     "verdicts": {"correct": 0, "wrong": 0, "ambiguous": 0,
                                  "unparseable": 0},
                     "solution_lengths": [],
@@ -572,6 +594,10 @@ def main(argv: list[str]) -> int:
                     stats["loop_cut"] += 1 if detail["loop_cut"] else 0
                     entry["loop_cut"] += 1 if detail["loop_cut"] else 0
                     stats["generated_tokens"] += len(solution_ids)
+                    stats["pre_cut_generated_tokens"] += detail[
+                        "pre_cut_length"]
+                    stats["textual_replay_tokens_cut"] += detail[
+                        "cut_tokens"]
                     if detail["truncated"]:
                         # A truncated completion is never a training target, but
                         # it is still verified for the ledger: a correct answer
@@ -665,6 +691,11 @@ def main(argv: list[str]) -> int:
             "elapsed_seconds": elapsed,
             "sampling_wall_seconds": totals["wall_seconds"],
             "generated_tokens": totals["generated_tokens"],
+            "pre_cut_generated_tokens": totals["pre_cut_generated_tokens"],
+            "textual_replay_tokens_cut": totals["textual_replay_tokens_cut"],
+            "textual_replay_token_fraction": (
+                totals["textual_replay_tokens_cut"]
+                / max(totals["pre_cut_generated_tokens"], 1)),
             "tokens_per_second": (totals["generated_tokens"]
                                   / max(totals["wall_seconds"], 1e-9)),
             "peak_allocated_gib": peak_alloc,
@@ -741,6 +772,10 @@ def main(argv: list[str]) -> int:
             "per_sequence": True,
             "criterion_output": "one BoolTensor element per row; the criterion "
                                 "is a transformers StoppingCriteriaList member",
+            "per_row_stopping": (
+                "each row stops at its own EOS or loop cut; the cut ends that "
+                "row's token emission, but a batched generate still advances "
+                "every row until the slowest row stops"),
             "compute_saved": False,
             "saved_token_claim": (
                 "textual replay only. A batched generate advances every row "
@@ -815,6 +850,13 @@ def main(argv: list[str]) -> int:
             totals["truncated"] / totals["sampled"] if totals["sampled"] else 0.0)
         payload["acceptance"]["loop_cut_rate"] = (
             totals["loop_cut"] / totals["sampled"] if totals["sampled"] else 0.0)
+        payload["acceptance"]["pre_cut_generated_tokens"] = totals[
+            "pre_cut_generated_tokens"]
+        payload["acceptance"]["textual_replay_tokens_cut"] = totals[
+            "textual_replay_tokens_cut"]
+        payload["acceptance"]["textual_replay_token_fraction"] = (
+            totals["textual_replay_tokens_cut"]
+            / max(totals["pre_cut_generated_tokens"], 1))
     write_json(receipt_path, payload)
     print(f"s59-rollouts: {len(rows)} accepted rows, {supervised} supervised "
           f"tokens -> {accepted_path}")

@@ -1,0 +1,21 @@
+............F                                                            [100%]
+=================================== FAILURES ===================================
+_________ test_shard_commands_carry_k8_shards_and_the_rejected_sidecar _________
+
+    def test_shard_commands_carry_k8_shards_and_the_rejected_sidecar():
+        commands = [window.command(label, dataset, select_flag, selected,
+                                   shards_count, shard_index, k, cap)
+                    for (label, dataset, select_flag, selected, shards_count,
+                         shard_index, k, cap) in window.PLAN]
+        assert [cmd[cmd.index("--label") + 1] for cmd in commands] == [
+            row[0] for row in window.PLAN]
+        for cmd in commands:
+>           assert cmd[cmd.index("--k-gsm8k") + 1] == "8" or \
+                       ^^^^^^^^^^^^^^^^^^^^^^
+                cmd[cmd.index("--k-math") + 1] == "8"
+E           ValueError: '--k-gsm8k' is not in list
+
+oracle/tests/test_s64_preference_pipeline.py:410: ValueError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_shard_commands_carry_k8_shards_and_the_rejected_sidecar
+1 failed, 12 passed in 3.60s

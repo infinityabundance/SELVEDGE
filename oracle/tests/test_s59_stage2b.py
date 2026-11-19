@@ -189,6 +189,11 @@ def _scripted_model():
 
         def __init__(self, vocab_size=256, **kwargs):
             self.vocab_size = int(vocab_size)
+            # Some transformers generation paths read these even for a scripted
+            # model; one layer of width 8 is enough for the control test.
+            self.num_hidden_layers = 1
+            self.num_attention_heads = 1
+            self.hidden_size = 8
             super().__init__(pad_token_id=0, eos_token_id=1, bos_token_id=2,
                              **kwargs)
 
@@ -263,6 +268,48 @@ def test_stopping_criterion_returns_a_per_row_booltensor_and_stops_one_row():
     assert row0 == 64
     assert row1 == 81
     assert row1 != row0
+
+
+def test_generate_reports_textual_replay_tokens_not_compute_saved():
+    """The cut's token effect is measured, and labelled as textual replay."""
+    from s59_student_rollouts import generate
+
+    config, ScriptedLM = _scripted_model()
+    model = ScriptedLM(config).eval()
+    block = list(range(20, 36))
+    model.script = {
+        10: lambda n: block[n % 16],
+        11: lambda n: 1 if n >= 80 else 100 + n,
+    }
+    model.prompt_width = 1
+
+    class FakeTokenizer:
+        eos_token_id = 1
+        pad_token_id = 0
+
+        def __call__(self, prompts, return_tensors=None, padding=None,
+                     add_special_tokens=None):
+            import torch
+            ids = torch.tensor([[10], [11]], dtype=torch.long)
+            return {"input_ids": ids,
+                    "attention_mask": torch.ones_like(ids)}
+
+        def decode(self, ids, skip_special_tokens=True):
+            return "x"
+
+    rows, stats = generate(
+        model, FakeTokenizer(), ["a", "b"], samples=1,
+        max_new_tokens=100, temperature=0.8, top_p=0.95, device="cpu")
+    # Row 0 emitted a 64-token loop, cut at its first token (0 -> 64 cut).
+    # Row 1 emitted 80 filler tokens plus EOS (81).
+    assert stats["loop_cut"] == 1
+    assert stats["pre_cut_generated_tokens"] == 64 + 81
+    assert stats["textual_replay_tokens_cut"] == 64
+    assert stats["generated_tokens"] == 81
+    assert rows[0] == []
+    assert len(rows[1]) == 81
+    assert stats["compute_saved"] is False
+    assert "textual replay" in stats["token_savings_basis"]
 
 
 def test_ledger_p_is_successes_over_attempts_not_accepted_rows():

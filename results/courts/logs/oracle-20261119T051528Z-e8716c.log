@@ -1,0 +1,106 @@
+..............F....................                                      [100%]
+=================================== FAILURES ===================================
+________ test_generate_reports_textual_replay_tokens_not_compute_saved _________
+
+    def test_generate_reports_textual_replay_tokens_not_compute_saved():
+        """The cut's token effect is measured, and labelled as textual replay."""
+        from s59_student_rollouts import generate
+    
+        config, ScriptedLM = _scripted_model()
+        model = ScriptedLM(config).eval()
+        block = list(range(20, 36))
+        model.script = {
+            10: lambda n: block[n % 16],
+            11: lambda n: 1 if n >= 80 else 100 + n,
+        }
+        model.prompt_width = 1
+    
+        class FakeTokenizer:
+            eos_token_id = 1
+            pad_token_id = 0
+    
+            def __call__(self, prompts, return_tensors=None, padding=None,
+                         add_special_tokens=None):
+                import torch
+                ids = torch.tensor([[10], [11]], dtype=torch.long)
+                return {"input_ids": ids,
+                        "attention_mask": torch.ones_like(ids)}
+    
+            def decode(self, ids, skip_special_tokens=True):
+                return "x"
+    
+>       rows, stats = generate(
+            model, FakeTokenizer(), ["a", "b"], samples=1,
+            max_new_tokens=100, temperature=0.8, top_p=0.95, device="cpu")
+
+oracle/tests/test_s59_stage2b.py:295: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/s59_student_rollouts.py:180: in generate
+    output = model.generate(
+/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py:158: in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py:2969: in generate
+    self._prepare_cache_for_generation(
+/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py:2325: in _prepare_cache_for_generation
+    model_kwargs[cache_name] = DynamicCache(**dynamic_cache_kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/transformers/cache_utils.py:2014: in __init__
+    layer_types, per_layer_kwargs = get_layer_types_and_kwargs(decoder_config)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/transformers/cache_utils.py:1922: in get_layer_types_and_kwargs
+    for layer_config in layer_configs:
+                        ^^^^^^^^^^^^^
+<frozen _collections_abc>:1026: in __iter__
+    ???
+/usr/local/lib/python3.12/site-packages/transformers/integrations/heterogeneity/configuration_utils.py:252: in __getitem__
+    if layer_idx < 0 or layer_idx >= len(self):
+                                     ^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/transformers/integrations/heterogeneity/configuration_utils.py:216: in __len__
+    return self._config.num_hidden_layers
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/site-packages/transformers/configuration_utils.py:661: in __getattribute__
+    return super().__getattribute__(key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ScriptedConfig {
+  "bos_token_id": 2,
+  "eos_token_id": 1,
+  "model_type": "s63_scripted",
+  "pad_token_id": 0,
+  "transformers_version": "5.23.0",
+  "vocab_size": 256
+}
+
+key = 'num_hidden_layers'
+
+    def __getattribute__(self, key: str) -> Any:
+        # In heterogeneous configs, per-layer attributes are ambiguous on the global config.
+        # Callers must read them from a concrete layer unless they explicitly opt into the global value.
+        heterogeneity_spec = super().__getattribute__("__dict__").get("_heterogeneity_spec")
+        if heterogeneity_spec is not None:
+            if key in heterogeneity_spec.per_layer_attributes:
+                if not super().__getattribute__("allow_global_per_layer_attribute_access"):
+                    raise AmbiguousGlobalPerLayerAttributeError(
+                        f"'{key}' is a per-layer attribute and may vary across layers. Access it via the individual layer "
+                        f"configs instead (e.g. config.per_layer_config[i].{key}). To read the global config value from "
+                        f"config.{key} anyway, set `allow_global_per_layer_attribute_access` to `True` on the config. "
+                        f"Warning: only do this if the caller can safely handle heterogeneous configs; code that assumes "
+                        f"a homogeneous model may use the global value incorrectly."
+                    )
+    
+                logger.warning_once(
+                    f"Reading global config value for per-layer attribute `{key}` on a heterogeneous config. "
+                    "Only do this if the caller can safely handle heterogeneous configs; code that assumes a homogeneous "
+                    "model may use the global value incorrectly."
+                )
+    
+>       return super().__getattribute__(key)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ScriptedConfig' object has no attribute 'num_hidden_layers'
+
+/usr/local/lib/python3.12/site-packages/transformers/integrations/heterogeneity/configuration_utils.py:312: AttributeError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s59_stage2b.py::test_generate_reports_textual_replay_tokens_not_compute_saved
+1 failed, 34 passed in 4.77s

@@ -36,6 +36,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from frontier import preference  # noqa: E402
 import s64_preference_data as data_pass  # noqa: E402
 import s64_preference_launch as launch  # noqa: E402
+import s64_shard_window as window  # noqa: E402
 
 
 class TinyLM(nn.Module):
@@ -370,3 +371,43 @@ def test_recovery_arm_trains_on_the_recovery_pairs(tmp_path):
     assert report["processed_tokens"] >= budget
     assert report["steps"] > 0
     assert report["checkpoints"]
+
+
+# ---------------------------------------------------------------------------
+# the registered shard-window projection
+
+
+def test_shard_window_projects_and_refuses_from_the_pilot_only():
+    pilot = {
+        "generation": {"tokens_per_second": 500.0},
+        "acceptance": {"by_dataset": {
+            "gsm8k": {"sampled": 240, "generated_tokens": 240 * 500},
+            "math": {"sampled": 240, "generated_tokens": 240 * 1000},
+        }},
+    }
+    fits = window.project(pilot, bound_hours=4.5)
+    assert fits["all_fit"]
+    by_label = {row["label"]: row for row in fits["shards"]}
+    assert by_label["gsm8k-shard0"]["prompts"] == 600
+    assert by_label["gsm8k-shard0"]["samples"] == 4800
+    assert by_label["math-shard0"]["prompts"] == 300
+    assert by_label["math-shard0"]["samples"] == 2400
+    # 4800 samples * 500 tok/sample / 500 tok/s = 4800 s = 1.333 h
+    assert by_label["gsm8k-shard0"]["projected_hours"] == pytest.approx(4 / 3)
+    refused = window.project(pilot, bound_hours=1.0)
+    assert refused["all_fit"] is False
+    assert all(not row["fits"] for row in refused["shards"])
+
+
+def test_shard_commands_carry_k8_shards_and_the_rejected_sidecar():
+    commands = [window.command(label, dataset, select_flag, selected,
+                               shards_count, shard_index, k, cap)
+                for (label, dataset, select_flag, selected, shards_count,
+                     shard_index, k, cap) in window.PLAN]
+    assert [cmd[cmd.index("--label") + 1] for cmd in commands] == [
+        row[0] for row in window.PLAN]
+    for cmd in commands:
+        k_flag = "--k-gsm8k" if "--k-gsm8k" in cmd else "--k-math"
+        assert cmd[cmd.index(k_flag) + 1] == "8"
+        assert "--rejected-out" in cmd
+        assert cmd[cmd.index("--shards") + 1] == "2"
