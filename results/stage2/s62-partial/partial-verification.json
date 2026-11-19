@@ -1,0 +1,132 @@
+{
+  "acceptance_reconstructed": null,
+  "accepted": {
+    "path": "results/stage2/s62-partial/partial-accepted.jsonl",
+    "sha256": "e03828314595c7a2a5672f7fe5f7ae1bb28261ba9d557552fdc7c52aa2ae8b08"
+  },
+  "command": [
+    "scripts/s57_verify_stage2a.py",
+    "--receipt",
+    "results/stage2/s62-partial/partial-corpus-receipt.json",
+    "--accepted",
+    "results/stage2/s62-partial/partial-accepted.jsonl",
+    "--examples",
+    "results/stage2/s62-partial/partial-examples.jsonl",
+    "--examples-receipt",
+    "results/stage2/s62-partial/partial-corpus-receipt.json",
+    "--corpus-kind",
+    "stage2b",
+    "--out",
+    "results/stage2/s62-partial/partial-verification.json"
+  ],
+  "contamination": {
+    "at_or_above_discard": 0,
+    "at_or_above_fail": 0,
+    "discard_jaccard": 0.2,
+    "examples": [],
+    "fail_closed": false,
+    "fail_jaccard": 0.5,
+    "items": 1430,
+    "max_jaccard": 0.028688524590163935,
+    "shingle_width": 5,
+    "test_items": 1819
+  },
+  "created_utc": "2026-11-19T04:36:03Z",
+  "examples": {
+    "accepted_input_matches": true,
+    "declared_inputs": [
+      "/work/results/stage2/s62-partial/partial-accepted.jsonl"
+    ],
+    "matches": true,
+    "path": "results/stage2/s62-partial/partial-examples.jsonl",
+    "receipt": "results/stage2/s62-partial/partial-corpus-receipt.json",
+    "receipt_recorded_sha256": "8a41b1e9b9e419ad3dbcc1c013094435fc436a8d5557c6e39047c062cfd7b5f0",
+    "receipt_sha256": "adf611381a21a36c1958439fc4abd4d4b27b674f754c24eca84b18830fa6b27b",
+    "sha256": "8a41b1e9b9e419ad3dbcc1c013094435fc436a8d5557c6e39047c062cfd7b5f0"
+  },
+  "gates": {
+    "acceptance_floor": 0.25,
+    "acceptance_gate_basis": "not_applicable: this receipt carries no sampled/kept block; the generation receipts named on the corpus carry those rates",
+    "acceptance_measured": null,
+    "acceptance_passes": null,
+    "contamination_fail_closed": false,
+    "corpus_kind": "stage2b",
+    "corpus_usable": true,
+    "examples_accepted_input_matches": true,
+    "examples_sha256_matches": true,
+    "gate_basis": "stage-2b corpus gate: acceptance floor 0.25 (the operator's too-low-to-train line); no truncation ceiling is registered because a completion that hits the cap without EOS is counted and can never be a target; re-verification and the examples hash are the training preconditions",
+    "reading": "acceptance is kept/sampled over every sampled completion; a completion that hit the cap without EOS is counted truncated and can never be a target, so a high kept rate beside a high truncated rate would mean the cap is doing the selection. The re-verification and examples-hash clauses are the S60 training preconditions.",
+    "reverification_all_correct": true,
+    "solution_cap_reached_by_kept": {
+      "gsm8k": 0.0
+    },
+    "truncation_ceiling": null,
+    "truncation_measured": null,
+    "truncation_passes": null
+  },
+  "generation": null,
+  "overall": {
+    "acceptance_correct_over_sampled": null,
+    "acceptance_kept_over_sampled": null,
+    "distinct_prompts": 538,
+    "duplicates_across_sources": [],
+    "generated_tokens_total": null,
+    "loop_cut_over_sampled": null,
+    "prompt_tokens_accepted": 118307,
+    "rows": 1430,
+    "solution_tokens_accepted": 631632,
+    "supervised_positions_with_eos": 633062,
+    "truncated_over_sampled": null
+  },
+  "receipt": {
+    "path": "results/stage2/s62-partial/partial-corpus-receipt.json",
+    "sha256": "adf611381a21a36c1958439fc4abd4d4b27b674f754c24eca84b18830fa6b27b"
+  },
+  "reverification": {
+    "all_correct": true,
+    "failure_count": 0,
+    "failures": [],
+    "rows": 1430,
+    "verdicts": {
+      "correct": 1430
+    },
+    "verifier": "frontier.rft.verify, recomputed for every accepted row"
+  },
+  "revision": "35c892495f43ebf4b19e7f07ed2ec7f11ba468ba",
+  "sampling": null,
+  "schema": "selvedge/s57-stage2a-verification/v1",
+  "sources": {
+    "gsm8k": {
+      "distinct_prompts": 538,
+      "prompt_tokens_accepted": 118307,
+      "rows": 1430,
+      "sampling": {
+        "acceptance_kept_over_sampled": null,
+        "completions_sampled": null,
+        "correct": null,
+        "correct_over_sampled": null,
+        "duplicates": null,
+        "generated_tokens": null,
+        "kept": null,
+        "loop_cut": null,
+        "prompts_generated": null,
+        "prompts_with_a_kept_solution": 538,
+        "truncated_over_sampled": null,
+        "truncated_without_eos": null,
+        "verdicts": null
+      },
+      "solution_tokens": {
+        "cap": 2048,
+        "fraction_at_cap": 0.0,
+        "fraction_at_or_above_90_percent_of_cap": 0.0048951048951048955,
+        "max": 2018,
+        "mean": 441.7006993006993,
+        "p50": 373.0,
+        "p90": 654.0,
+        "p99": 1758.8400000000001
+      },
+      "solution_tokens_accepted": 631632
+    }
+  },
+  "stamp": "20261119T043603Z"
+}

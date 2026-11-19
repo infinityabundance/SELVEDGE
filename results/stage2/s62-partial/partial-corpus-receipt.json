@@ -1,0 +1,132 @@
+{
+  "arm": "rft-only",
+  "by_kind": {
+    "student": {
+      "prompt_tokens": 118307,
+      "rows": 1430,
+      "solution_tokens": 631632
+    }
+  },
+  "command": [
+    "scripts/s59_build_corpus.py",
+    "--arm",
+    "rft-only",
+    "--rollouts",
+    "results/stage2/s62-partial/partial-accepted.jsonl",
+    "--holdout",
+    "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "--tokenizer-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--label",
+    "partial",
+    "--out-dir",
+    "results/stage2/s62-partial",
+    "--seq-len",
+    "1250"
+  ],
+  "created_utc": "2026-11-19T04:35:55Z",
+  "examples": {
+    "order": "seeded shuffle, seed 5900",
+    "path": "results/stage2/s62-partial/partial-examples.jsonl",
+    "rows": 1709,
+    "sha256": "8a41b1e9b9e419ad3dbcc1c013094435fc436a8d5557c6e39047c062cfd7b5f0"
+  },
+  "holdout_excluded": {
+    "ids": 82,
+    "path": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl"
+  },
+  "kind": "stage2b-arm-corpus",
+  "label": "partial",
+  "length_profile": {
+    "max_example_tokens": 2109,
+    "mean_example_tokens": 525.4328671328672,
+    "over_seq_len": 51,
+    "over_seq_len_fraction": 0.03566433566433566,
+    "over_seq_len_supervised_tokens": 79799,
+    "rows": 1430,
+    "seq_len": 1250
+  },
+  "mix": {
+    "achieved_replay_fraction": 0.2003322074068072,
+    "basis": "supervised positions after prompt masking",
+    "requested_replay_fraction": 0.2,
+    "total_supervised_tokens": 789868
+  },
+  "mixture": {
+    "basis": "student rows only",
+    "student_tokens": 631632,
+    "teacher_tokens": 0
+  },
+  "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
+  "replay": {
+    "contamination": {
+      "at_or_above_discard": 0,
+      "at_or_above_fail": 0,
+      "discard_jaccard": 0.2,
+      "examples": [],
+      "fail_closed": false,
+      "fail_jaccard": 0.5,
+      "items": 279,
+      "max_jaccard": 0.012698412698412698,
+      "shingle_width": 5,
+      "test_items": 1819
+    },
+    "documents": 279,
+    "files": [
+      "results/artifacts/train-corpus/fineweb-edu-sample-10bt/sample/10BT/013_00000.parquet"
+    ],
+    "masked_synthetic_eos": 119,
+    "max_tokens_per_document": 768,
+    "rows_considered": 279,
+    "source": "results/artifacts/train-corpus/fineweb-edu-sample-10bt",
+    "supervised_tokens": 158236,
+    "truncated_documents": 119,
+    "truncation_policy": "whole-document prefix at a token boundary; replay text is not a solution and carries no answer; the synthetic EOS on a truncated document is masked"
+  },
+  "revision": "35c892495f43ebf4b19e7f07ed2ec7f11ba468ba",
+  "schema": "selvedge/s59-stage2b-corpus/v1",
+  "sources": {
+    "generation_receipts": [],
+    "student": {
+      "dedup": "shared across sources; exact solution-token sequence within a prompt",
+      "duplicate_rows_removed": 0,
+      "excluded_holdout_rows": 0,
+      "merged": {
+        "basis": "the deduplicated, hold-out-excluded rows the corpus was built from, with every accepted-row field preserved so the verifier can re-run the answer check",
+        "path": "results/stage2/s62-partial/partial-accepted.jsonl",
+        "rows": 1430,
+        "sha256": "e03828314595c7a2a5672f7fe5f7ae1bb28261ba9d557552fdc7c52aa2ae8b08"
+      },
+      "rows": 1430,
+      "sources": [
+        {
+          "duplicate_rows_removed": 0,
+          "excluded_holdout_rows": 0,
+          "rows": 1430,
+          "source": "/work/results/stage2/s62-partial/partial-accepted.jsonl",
+          "supervised_solution_tokens": 631632
+        }
+      ],
+      "supervised_solution_tokens": 631632
+    },
+    "teacher": null,
+    "teacher_default": "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl"
+  },
+  "stamp": "20261119T043555Z",
+  "supervised_solution_tokens": 631632,
+  "tokenizer_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "training_arithmetic": {
+    "basis": "processed tokens are rows x seq_len at two rows per optimiser step, the same nominal accounting as the S58 cadence; supervised_positions_with_eos is the actual number of loss positions",
+    "cadence_5m_reachable_in_one_epoch": false,
+    "cadence_points_tokens": [
+      500000,
+      1000000,
+      2000000,
+      5000000
+    ],
+    "one_epoch_processed_tokens": 2136250,
+    "rows": 1709,
+    "seq_len": 1250,
+    "supervised_positions_with_eos": 791458
+  }
+}
