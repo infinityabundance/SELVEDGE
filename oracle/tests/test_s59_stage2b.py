@@ -282,6 +282,16 @@ def test_ledger_p_is_successes_over_attempts_not_accepted_rows():
     assert summary["attempts"] == 4
 
 
+def test_ledger_entry_carries_the_prefix_needed_for_recovery():
+    task = {"id": "p", "dataset": "gsm8k", "target": "4",
+            "samples": 2, "max_new_tokens": 10}
+    entry = ledger_entry(task, [11, 12, 13])
+    # A p=0 problem has no accepted row, so the ledger is the only place the
+    # shared prefix survives for the teacher-guided recovery pair.
+    assert entry["prompt_ids"] == [11, 12, 13]
+    assert entry["target"] == "4"
+
+
 def test_truncated_correct_attempt_counts_for_p_but_not_accepted():
     task = {"id": "cap", "dataset": "math", "samples": 2,
             "max_new_tokens": 2048}

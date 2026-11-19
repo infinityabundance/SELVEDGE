@@ -268,11 +268,18 @@ def length_profile(lengths: list[int]) -> dict:
     }
 
 
-def ledger_entry(task: dict) -> dict:
-    """One problem's outcome counters, before any sample is inspected."""
+def ledger_entry(task: dict, prompt_ids=None) -> dict:
+    """One problem's outcome counters, before any sample is inspected.
+
+    `prompt_ids` is the tokenised shared prefix. It is stored in the ledger even
+    when every completion fails, because the teacher-guided recovery arm needs
+    that prefix to build its preference pair for a p=0 problem.
+    """
     return {
         "id": str(task["id"]),
         "dataset": task["dataset"],
+        "target": task.get("target"),
+        "prompt_ids": [int(value) for value in (prompt_ids or [])],
         "attempts": 0,
         "verified_correct": 0,
         "wrong": 0,
@@ -514,7 +521,7 @@ def main(argv: list[str]) -> int:
                 })
                 stats["prompts"] += 1
                 totals["prompts"] += 1
-                entry = ledger_entry(task)
+                entry = ledger_entry(task, prompt_ids_batch[prompt_index])
                 seen: set[str] = set()
                 for sample_index in range(samples):
                     row_index = prompt_index * samples + sample_index
