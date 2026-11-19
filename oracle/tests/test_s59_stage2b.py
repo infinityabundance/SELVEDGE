@@ -24,7 +24,8 @@ sys.path.insert(0, os.path.join(REPO, "scripts"))
 from s59_student_rollouts import (  # noqa: E402
     loop_cut_index, ledger_entry, summarise_ledger, write_ledger_entry)
 from s59_build_corpus import (  # noqa: E402
-    load_rows, subsample_to_tokens, write_examples)
+    load_rows, plan_mixture, read_budget_receipt, subsample_to_tokens,
+    write_examples)
 
 
 def test_no_cut_on_short_sequence():
@@ -295,3 +296,96 @@ def test_ledger_row_is_written_with_zero_accepted_rows():
     assert row["accepted_rows"] == 0
     assert row["p"] == 0.0
     assert row["weight_p1mp"] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# S63: the control-teacher budget comes from a separate corpus receipt
+
+
+def _receipt(tmp_path, budget=1000, arm="rft-only"):
+    import json
+    path = tmp_path / "rft-only-corpus-receipt.json"
+    path.write_text(json.dumps({
+        "schema": "selvedge/s59-stage2b-corpus/v1",
+        "arm": arm,
+        "supervised_solution_tokens": budget,
+        "revision": "testrevision",
+        "stamp": "20261119T000000Z",
+    }), encoding="utf-8")
+    return path
+
+
+def test_all_three_arms_get_matched_supervised_token_budgets(tmp_path):
+    """The control-teacher arm must not be subsampled to a zero budget.
+
+    This is the defect: `control-teacher` had no student rows of its own, so
+    `student_tokens` was 0 and `subsample_to_tokens(teacher, 0)` produced an
+    empty control. The budget now comes from the separately receipted student
+    corpus, and all three arms are built from the same planner.
+    """
+    receipt = read_budget_receipt(str(_receipt(tmp_path, budget=1000)))
+    budget = receipt["supervised_solution_tokens"]
+    assert budget == 1000
+
+    student = [_row(f"s{i}", "gsm8k", 100, sample=i) for i in range(10)]
+    teacher = [_row(f"t{i}", "gsm8k", 100, sample=i) for i in range(20)]
+
+    rft, rft_report = plan_mixture("rft-only", student, teacher, budget, 5900)
+    control, control_report = plan_mixture(
+        "control-teacher", [], teacher, budget, 5900)
+    mixed, mixed_report = plan_mixture(
+        "rft-teacher-5050", student, teacher, sum(
+            len(row["solution_ids"]) for row in student), 5900)
+
+    def tokens(rows):
+        return sum(len(row["solution_ids"]) for row in rows)
+
+    assert tokens(rft) == 1000
+    assert tokens(control) > 0, "zero-token control is the defect"
+    assert abs(tokens(control) - budget) <= 100
+    assert control_report["teacher_tokens"] == tokens(control)
+    # The 50/50 arm matches its two halves to each other by whole rows.
+    assert mixed_report["student_tokens"] == mixed_report["teacher_tokens"]
+    assert abs(tokens(mixed) - 2000) <= 200
+    assert len(mixed) > 0
+
+
+def test_control_teacher_refuses_a_zero_token_budget_receipt(tmp_path):
+    try:
+        read_budget_receipt(str(_receipt(tmp_path, budget=0)))
+    except SystemExit as exc:
+        assert "positive budget" in str(exc)
+    else:
+        raise AssertionError("a zero-token budget receipt must fail closed")
+
+
+def test_budget_receipt_must_name_a_student_arm(tmp_path):
+    try:
+        read_budget_receipt(str(_receipt(tmp_path, budget=1000,
+                                        arm="control-teacher")))
+    except SystemExit as exc:
+        assert "student arm" in str(exc)
+    else:
+        raise AssertionError("a control-teacher receipt is not a budget source")
+
+
+def test_budget_receipt_checks_the_recorded_examples_hash(tmp_path):
+    import hashlib
+    import json
+
+    examples = tmp_path / "examples.jsonl"
+    examples.write_text("{}\n", encoding="utf-8")
+    digest = hashlib.sha256(examples.read_bytes()).hexdigest()
+    path = _receipt(tmp_path, budget=1000)
+    payload = json.loads(path.read_text())
+    payload["examples"] = {"path": str(examples), "sha256": digest}
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert read_budget_receipt(str(path))["supervised_solution_tokens"] == 1000
+
+    examples.write_text("{}\n{}\n", encoding="utf-8")
+    try:
+        read_budget_receipt(str(path))
+    except SystemExit as exc:
+        assert "sha256" in str(exc)
+    else:
+        raise AssertionError("a stale examples hash must fail closed")
