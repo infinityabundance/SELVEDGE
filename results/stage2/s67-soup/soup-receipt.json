@@ -1,0 +1,74 @@
+{
+  "artifacts": [
+    {
+      "bytes": 996329198,
+      "coefficient": 0.0,
+      "path": "results/stage2/s67-soup/interp-0.000-arm.pt",
+      "sha256": "e157a9c9c2825b7b6f6f423885d66b88d8aa95f09f88c4ec95b6a40dd042a0ac"
+    },
+    {
+      "bytes": 996329198,
+      "coefficient": 0.25,
+      "path": "results/stage2/s67-soup/interp-0.250-arm.pt",
+      "sha256": "9b05417f21de048d0235686fa90574a4aee2a604e71d285705a66982e69655a5"
+    },
+    {
+      "bytes": 996329198,
+      "coefficient": 0.375,
+      "path": "results/stage2/s67-soup/interp-0.375-arm.pt",
+      "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab"
+    },
+    {
+      "bytes": 996329198,
+      "coefficient": 0.5,
+      "path": "results/stage2/s67-soup/interp-0.500-arm.pt",
+      "sha256": "b9abb31a7f65b1a42f11da1ec21b9db306f105824e206b85bc6268a9bb9a6f93"
+    },
+    {
+      "bytes": 996329198,
+      "coefficient": 0.625,
+      "path": "results/stage2/s67-soup/interp-0.625-arm.pt",
+      "sha256": "f9209a689446eba6bbe5efad815dfbd624e26c277b9cafd23f840a0e179b4d7e"
+    }
+  ],
+  "base": {
+    "config_sha256": "897989f1ef08f153196285c8b7a6a7e733eac413f90c31a688f5f761a10a4fa7",
+    "endpoint": "post-trained Qwen3.5-0.8B (untrained endpoint)"
+  },
+  "claims": {
+    "arithmetic": "float32 sum of deltas divided by seed count; base + alpha * delta_bar rounded to bf16",
+    "reads_no_test_split": true,
+    "selection_performed": false
+  },
+  "created_utc": "2026-11-20T06:34:40Z",
+  "diagnostics": "results/stage2/s67-soup/delta-diagnostics.json",
+  "formula": "theta_soup(alpha) = theta_0 + alpha * mean_s(theta_s - theta_0)",
+  "frozen_elements_inherited": "tied embedding/output projection is not mixed; it is inherited from the post-trained snapshot",
+  "grid": [
+    0.0,
+    0.25,
+    0.375,
+    0.5,
+    0.625
+  ],
+  "kind": "seed-delta-soup",
+  "model_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "revision": "ddcd187edd9d68ae0518901270ae24d2c60b11db",
+  "schema": "selvedge/s67-soup/v1",
+  "seeds": [
+    {
+      "checkpoint": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+      "checkpoint_sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6"
+    },
+    {
+      "checkpoint": "results/stage2/runs/s66-stage2a-seed1-guard20/ckpt-004000.pt",
+      "checkpoint_sha256": "8122cca88f139cf96b2d605e856f4d0536283312057b6e245041d333846c28c5"
+    },
+    {
+      "checkpoint": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-004000.pt",
+      "checkpoint_sha256": "20710d8f53db424bf3698ff08aeb6efed25b6135353f978974af33866fcf8440"
+    }
+  ],
+  "stamp": "20261120T063440Z",
+  "state_elements": 498113344
+}
