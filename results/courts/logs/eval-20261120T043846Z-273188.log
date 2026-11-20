@@ -1,0 +1,15 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s66-large-cal: t=0.375 gsm8k-cal=0.7000 math-cal=0.8000 old300=n/a
+Traceback (most recent call last):
+  File "/work/scripts/s66_large_calibration.py", line 230, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s66_large_calibration.py", line 169, in main
+    selection = choose_coefficient(rows)
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s60_interpolate.py", line 233, in choose_coefficient
+    raise ValueError("the grid must contain coefficient 0.0")
+ValueError: the grid must contain coefficient 0.0

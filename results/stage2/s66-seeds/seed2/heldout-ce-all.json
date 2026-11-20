@@ -1,0 +1,252 @@
+{
+  "command": [
+    "scripts/s55_heldout_ce.py",
+    "--student-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--holdout",
+    "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "--run-dir",
+    "results/stage2/runs/s66-stage2a-seed2-guard20",
+    "--seq-len",
+    "1250",
+    "--vram-limit-gib",
+    "12.0",
+    "--out",
+    "results/stage2/s66-seeds/seed2/heldout-ce-all.json"
+  ],
+  "created_utc": "2026-11-20T04:36:13Z",
+  "elapsed_seconds": 94.52107834815979,
+  "holdout": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+  "packing": {
+    "boundary_safe": true,
+    "boundary_safe_note": "one complete example per row: no example attends to another",
+    "completion_only_loss": true,
+    "dropped_overflow": 3,
+    "eos_id": 248046,
+    "examples": 82,
+    "examples_per_row": 1,
+    "kind": "sft_example_packing",
+    "masked_synthetic_eos": 0,
+    "max_example_tokens": 1649,
+    "overflow": "drop",
+    "packed_examples": 79,
+    "pad_id": 248044,
+    "padding_tokens": 51680,
+    "prompt_tokens": 6875,
+    "rows": 79,
+    "seq_len": 1250,
+    "supervised_tokens": 40195
+  },
+  "peak_allocated_gib": 3.7715539932250977,
+  "peak_reserved_gib": 5.146484375,
+  "results": [
+    {
+      "ce": 0.2494520254476361,
+      "label": "base",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.24944726376523496,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.24945797661781047,
+          "positions": 17866
+        }
+      },
+      "positions": 40195
+    },
+    {
+      "ce": 0.3468855604995833,
+      "label": "ckpt-000800.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.3323589878387801,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.36504093052886105,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-000800.pt",
+      "step": 800,
+      "tokens_seen": 2000000
+    },
+    {
+      "ce": 0.3462654196745604,
+      "label": "ckpt-001200.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.33171149802447775,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3644549705826929,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-001200.pt",
+      "step": 1200,
+      "tokens_seen": 3000000
+    },
+    {
+      "ce": 0.33164558251492776,
+      "label": "ckpt-001600.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.3123369396036918,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3557776035361404,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-001600.pt",
+      "step": 1600,
+      "tokens_seen": 4000000
+    },
+    {
+      "ce": 0.3172644982412553,
+      "label": "ckpt-002000.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.2968980150303718,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3427186124031169,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-002000.pt",
+      "step": 2000,
+      "tokens_seen": 5000000
+    },
+    {
+      "ce": 0.32434396046358266,
+      "label": "ckpt-002400.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.3043835487486012,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.34929056480612275,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-002400.pt",
+      "step": 2400,
+      "tokens_seen": 6000000
+    },
+    {
+      "ce": 0.31930703948229106,
+      "label": "ckpt-002800.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.2964438553818264,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3478815406453536,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-002800.pt",
+      "step": 2800,
+      "tokens_seen": 7000000
+    },
+    {
+      "ce": 0.3168332614738173,
+      "label": "ckpt-003200.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.2958776482620329,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3430236727245692,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-003200.pt",
+      "step": 3200,
+      "tokens_seen": 8000000
+    },
+    {
+      "ce": 0.31365934688914743,
+      "label": "ckpt-003600.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.29294529954873566,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.33954784812412186,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-003600.pt",
+      "step": 3600,
+      "tokens_seen": 9000000
+    },
+    {
+      "ce": 0.3116392051861056,
+      "label": "ckpt-004000.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.2897652091048689,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.3389774151098677,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-004000.pt",
+      "step": 4000,
+      "tokens_seen": 10000000
+    },
+    {
+      "ce": 0.31224963061609157,
+      "label": "ckpt-004376.pt",
+      "per_dataset": {
+        "gsm8k": {
+          "ce": 0.2911547943960248,
+          "positions": 22329
+        },
+        "math": {
+          "ce": 0.338614043353015,
+          "positions": 17866
+        }
+      },
+      "positions": 40195,
+      "sha256_path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-004376.pt",
+      "step": 4376,
+      "tokens_seen": 10940000
+    }
+  ],
+  "revision": "2d6756e1163284d0bea05d33420e2ea0b1c4dbc6",
+  "schema": "selvedge/s55-stage2a-heldout-ce/v1",
+  "selected": {
+    "base_ce": 0.2494520254476361,
+    "ce": 0.3116392051861056,
+    "checkpoint": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-004000.pt",
+    "delta": 0.06218717973846952,
+    "rule": "minimum held-out supervised-position CE across saved checkpoints",
+    "step": 4000
+  },
+  "seq_len": 1250,
+  "stamp": "20261120T043613Z",
+  "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17"
+}

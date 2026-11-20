@@ -94,6 +94,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--grid", default="0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1.0")
     parser.add_argument("--max-new-tokens", type=int, default=2048)
     parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--limit", type=int, default=None,
+                        help="smoke-only item limit per task; omit for the full split")
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
 
@@ -107,6 +109,9 @@ def main(argv: list[str]) -> int:
         row["task"] = "gsm8k"
     for row in math:
         row["task"] = "math500"
+    if args.limit is not None:
+        gsm = gsm[:args.limit]
+        math = math[:args.limit]
 
     selection_receipt = json.load(open(os.path.join(
         ROOT, "results/stage2/s60-interpolation/selected-receipt.json"),
@@ -153,19 +158,29 @@ def main(argv: list[str]) -> int:
         if coefficient in mmlu:
             row["mmlu_cal"] = mmlu[coefficient]
         rows.append(row)
+        old_gsm_value = row['gsm8k_cal_300']['accuracy']
+        old_math_value = row['math_cal_300']['accuracy']
+        old_text = ("n/a" if old_gsm_value is None or old_math_value is None else
+                    f"({old_gsm_value:.4f},{old_math_value:.4f})")
         print(f"s66-large-cal: t={coefficient:.3f} "
               f"gsm8k-cal={row['gsm8k_cal']:.4f} "
-              f"math-cal={row['math_cal']:.4f} "
-              f"old300=({row['gsm8k_cal_300']['accuracy']:.4f},"
-              f"{row['math_cal_300']['accuracy']:.4f})", flush=True)
+              f"math-cal={row['math_cal']:.4f} old300={old_text}", flush=True)
 
-    selection = choose_coefficient(rows)
-    old_selection = choose_coefficient([
+    selection = (choose_coefficient(rows)
+                 if any(row["coefficient"] == 0.0 for row in rows)
+                 else None)
+    old_selection = None
+    old_rows = [
         {"coefficient": row["coefficient"],
          "gsm8k_cal": row["gsm8k_cal_300"]["accuracy"],
          "math_cal": row["math_cal_300"]["accuracy"],
          **({"mmlu_cal": row["mmlu_cal"]} if "mmlu_cal" in row else {})}
-        for row in rows])
+        for row in rows]
+    if (len(rows) > 1 and all(row["gsm8k_cal"] is not None
+                              and row["math_cal"] is not None
+                              for row in old_rows)
+            and any(row["coefficient"] == 0.0 for row in old_rows)):
+        old_selection = choose_coefficient(old_rows)
     payload = {
         "schema": SCHEMA,
         "kind": "large-calibration-grid",
@@ -178,6 +193,7 @@ def main(argv: list[str]) -> int:
             "gsm8k_sha256": registration["splits"]["gsm8k_cal"]["sha256"],
             "math_sha256": registration["splits"]["math_cal"]["sha256"],
             "items_per_task": len(gsm),
+            "limit": args.limit,
         },
         "instrument": {
             "tasks": "GSM8K-cal and MATH-cal",
@@ -190,7 +206,8 @@ def main(argv: list[str]) -> int:
         "rows": rows,
         "selection": selection,
         "selection_300": old_selection,
-        "stable": selection["coefficient"] == old_selection["coefficient"],
+        "stable": (selection["coefficient"] == old_selection["coefficient"]
+                   if selection is not None and old_selection is not None else None),
         "claims": {
             "test_split_used_for_selection": False,
             "calibration_is_train_split_only": True,
@@ -204,8 +221,10 @@ def main(argv: list[str]) -> int:
         json.dump(payload, handle, indent=2, sort_keys=True)
         handle.write("\n")
     os.replace(tmp, out)
-    print(f"s66-large-cal: selection 1000={selection['coefficient']} "
-          f"300={old_selection['coefficient']} stable={payload['stable']}")
+    print(f"s66-large-cal: selection 1000="
+          f"{selection['coefficient'] if selection else None} "
+          f"300={old_selection['coefficient'] if old_selection else None} "
+          f"stable={payload['stable']}")
     print(f"s66-large-cal: -> {args.out}")
     return 0
 

@@ -1,0 +1,226 @@
+{
+  "alpha_reselected": false,
+  "coefficient": 0.375,
+  "created_utc": "2026-11-20T04:36:36Z",
+  "kind": "three-seed-interpolation-replication",
+  "revision": "2d6756e1163284d0bea05d33420e2ea0b1c4dbc6",
+  "schema": "selvedge/s66-three-seed/v1",
+  "seeds": [
+    {
+      "candidate_checkpoint": {
+        "path": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+        "role": "S58 stage-2a full-arm checkpoint; coefficient 1.0",
+        "sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6",
+        "step": 4000,
+        "tokens_seen": 10000000
+      },
+      "coefficient": 0.375,
+      "gsm8k": {
+        "accuracy": 0.6489764973464746,
+        "baseline": 0.5420773313115997,
+        "ci95": [
+          0.0803639120545868,
+          0.13419257012888552
+        ],
+        "delta": 0.1068991660348749,
+        "interval_above_zero": true
+      },
+      "interpolated_checkpoint": {
+        "arm": "full",
+        "arm_state_elements": 498113344,
+        "arm_state_keys": 319,
+        "interpolation_block": {
+          "base": "post-trained 0.8B (untrained endpoint)",
+          "candidate": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+          "candidate_sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6",
+          "coefficient": 0.375
+        },
+        "path": "results/stage2/s65-interp-selected/ckpt-t0.375-full.pt",
+        "schema": "selvedge/stage2-ckpt/v1",
+        "sha256": "10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a"
+      },
+      "math500": {
+        "accuracy": 0.428,
+        "baseline": 0.382,
+        "ci95": [
+          0.006,
+          0.086
+        ],
+        "delta": 0.046,
+        "interval_above_zero": true
+      },
+      "mmlu": {
+        "accuracy": 0.5174476570289133,
+        "baseline": 0.5048426150121066,
+        "ci95": [
+          0.0063381284717276744,
+          0.018658310781939896
+        ],
+        "delta": 0.012605042016806723,
+        "pass": true
+      },
+      "receipts": {
+        "paired_math": "results/stage1/s65-paired-interp-0.375-vs-post.json",
+        "retention": "results/stage2/s65-eval/paired-retention-interp-0.375-vs-post.json",
+        "stage1": "results/stage1/s65-interp-0.375-nonthinking-greedy.json"
+      },
+      "seed": 0,
+      "source": "results/stage2/s65-interp-selected/identity.json"
+    },
+    {
+      "candidate_checkpoint": {
+        "path": "results/stage2/runs/s66-stage2a-seed1-guard20/ckpt-004000.pt",
+        "sha256": "8122cca88f139cf96b2d605e856f4d0536283312057b6e245041d333846c28c5"
+      },
+      "coefficient": 0.375,
+      "gsm8k": {
+        "accuracy": 0.6186504927975739,
+        "baseline": 0.5420773313115997,
+        "ci95": [
+          0.050037907505686124,
+          0.10462471569370735
+        ],
+        "delta": 0.07657316148597422,
+        "interval_above_zero": true,
+        "loop_fraction": 0.003032600454890068,
+        "truncation_rate": 0.034874905231235785
+      },
+      "interpolated_checkpoint": {
+        "path": "results/stage2/s66-seeds/seed1/interp/interp-0.375-arm.pt",
+        "sha256": "f83da06ef971f9537bed2c5b599c92633eccb48d9d1a637b201612c4b7fab78f"
+      },
+      "math500": {
+        "accuracy": 0.4,
+        "baseline": 0.382,
+        "ci95": [
+          -0.022,
+          0.056
+        ],
+        "delta": 0.018,
+        "interval_above_zero": false,
+        "loop_fraction": 0.056,
+        "truncation_rate": 0.276
+      },
+      "mmlu": {
+        "accuracy": 0.5163082182025353,
+        "baseline": 0.5048426150121066,
+        "ci95": [
+          0.005483549351944167,
+          0.017235792622133605
+        ],
+        "delta": 0.011465603190428714,
+        "pass": true
+      },
+      "receipts": {
+        "mmlu": "results/stage2/s66-seeds/seed1/mmlu.json",
+        "paired_math": "results/stage2/s66-seeds/seed1/paired-math-vs-post.json",
+        "retention": "results/stage2/s66-seeds/seed1/paired-retention-vs-post.json",
+        "stage1": "results/stage2/s66-seeds/seed1/stage1-gsm8k-math500.json"
+      },
+      "seed": 1,
+      "source": "results/stage2/s66-seeds/seed1/result.json"
+    },
+    {
+      "candidate_checkpoint": {
+        "path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-004000.pt",
+        "sha256": "20710d8f53db424bf3698ff08aeb6efed25b6135353f978974af33866fcf8440"
+      },
+      "coefficient": 0.375,
+      "gsm8k": {
+        "accuracy": 0.6345716451857468,
+        "baseline": 0.5420773313115997,
+        "ci95": [
+          0.06595905989385899,
+          0.12054586808188023
+        ],
+        "delta": 0.09249431387414708,
+        "interval_above_zero": true,
+        "loop_fraction": 0.001516300227445034,
+        "truncation_rate": 0.034874905231235785
+      },
+      "interpolated_checkpoint": {
+        "path": "results/stage2/s66-seeds/seed2/interp/interp-0.375-arm.pt",
+        "sha256": "66642c18495cc30890c820d0eb30a6a33d0b08d041b1ec3d7921796c1e67bf21"
+      },
+      "math500": {
+        "accuracy": 0.416,
+        "baseline": 0.382,
+        "ci95": [
+          -0.006,
+          0.072
+        ],
+        "delta": 0.034,
+        "interval_above_zero": false,
+        "loop_fraction": 0.066,
+        "truncation_rate": 0.286
+      },
+      "mmlu": {
+        "accuracy": 0.5203674690215069,
+        "baseline": 0.5048426150121066,
+        "ci95": [
+          0.009400370317618574,
+          0.02136625836775389
+        ],
+        "delta": 0.01552485400940037,
+        "pass": true
+      },
+      "receipts": {
+        "mmlu": "results/stage2/s66-seeds/seed2/mmlu.json",
+        "paired_math": "results/stage2/s66-seeds/seed2/paired-math-vs-post.json",
+        "retention": "results/stage2/s66-seeds/seed2/paired-retention-vs-post.json",
+        "stage1": "results/stage2/s66-seeds/seed2/stage1-gsm8k-math500.json"
+      },
+      "seed": 2,
+      "source": "results/stage2/s66-seeds/seed2/result.json"
+    }
+  ],
+  "stamp": "20261120T043636Z",
+  "summary": {
+    "gsm8k": {
+      "all_intervals_above_zero": true,
+      "all_seeds_above_zero": true,
+      "deltas": [
+        0.1068991660348749,
+        0.07657316148597422,
+        0.09249431387414708
+      ],
+      "max_delta": 0.1068991660348749,
+      "mean_delta": 0.09198888046499874,
+      "min_delta": 0.07657316148597422,
+      "sample_sd": 0.015169318876380003
+    },
+    "math500": {
+      "all_intervals_above_zero": false,
+      "all_seeds_above_zero": true,
+      "deltas": [
+        0.046,
+        0.018,
+        0.034
+      ],
+      "max_delta": 0.046,
+      "mean_delta": 0.03266666666666667,
+      "min_delta": 0.018,
+      "sample_sd": 0.014047538337136985
+    },
+    "mmlu": {
+      "all_intervals_above_zero": true,
+      "all_seeds_above_zero": true,
+      "deltas": [
+        0.012605042016806723,
+        0.011465603190428714,
+        0.01552485400940037
+      ],
+      "max_delta": 0.01552485400940037,
+      "mean_delta": 0.013198499738878601,
+      "min_delta": 0.011465603190428714,
+      "sample_sd": 0.0020936865462015974
+    }
+  },
+  "test_split_used_for_selection": false,
+  "verdict": {
+    "both_math_clauses_positive_across_seeds": false,
+    "note": "per-seed paired intervals, not a pooled interval; the seed-level mean/spread is descriptive and is not used to select any coefficient",
+    "retention_passes_across_seeds": true,
+    "seed_level_win": false
+  }
+}

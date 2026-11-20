@@ -238,14 +238,80 @@ the MATH damage is gone. That is the measured result; it does not establish that
 `t = 0.375` is the best coefficient for a different seed, a different corpus or a
 different model.
 
-## 8. Stability checks
+## 8. Seed replication at the fixed coefficient
+
+Seeds 1 and 2 retrain the **exact S58 stage-2a recipe** and interpolate each
+selected checkpoint at the fixed `t = 0.375`. No coefficient was re-selected on
+a test split. The recipe holds S58's two known defects constant on purpose:
+
+* example-normalised loss (current `train.py` defaults `auto` to the token
+  unit, so the launcher passes `--loss-unit example` explicitly);
+* `seq_len` 1,250, micro-batch 1, grad-accum 2, no length-aware batching,
+  no gradient checkpointing, no SFT logits gather.
+
+The corrected recipe (token-normalised loss and the 2,500 window) is a separate
+future experiment and was not mixed in. Only the seed, run directory and one
+safety guard differ.
+
+**Guard-only deviation.** The S58 update guard (`max|update|/lr <= 10`) fires
+deterministically for seed 1 at step 73 with `11.759` (two identical launches,
+receipts `results/stage2/runs/s66-stage2a-seed1/abort.json` and
+`...-seed1-r2/abort.json`). Seed 2 reaches `14.357`. The guard is a fail-safe,
+not a data or optimiser knob; it was relaxed to `20.0` under
+`docs/s66-replication-guard-amendment-v1.json`. The CE tripwire remains at 1.5.
+This is a guard deviation, not a recipe change, and is labelled as such.
+
+Receipts: `results/stage2/s66-seeds/three-seed.json` (stamp
+`20261120T043635Z`, revision `2d6756e`), per-seed `result.json`, and the
+training receipts under `results/stage2/runs/s66-stage2a-seed{1,2}-guard20/`.
+
+| seed | GSM8K flexible | delta GSM8K | 95% interval | MATH-500 flexible | delta MATH-500 | 95% interval | MMLU | delta MMLU | 95% interval |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 (S65) | 64.90% | **+10.69** | **[+8.04, +13.42]** | 42.80% | **+4.60** | **[+0.60, +8.60]** | 51.74% | +1.26 | [+0.63, +1.87] |
+| 1 | 61.87% | +7.66 | [+5.00, +10.46] | 40.00% | +1.80 | [−2.20, +5.60] | 51.63% | +1.15 | [+0.55, +1.72] |
+| 2 | 63.46% | +9.25 | [+6.60, +12.05] | 41.60% | +3.40 | [−0.60, +7.20] | 52.04% | +1.55 | [+0.94, +2.14] |
+| **seed mean** | 63.41% | **+9.20** | SD 1.52 | 41.47% | **+3.27** | SD 1.40 | 51.80% | +1.32 | SD 0.21 |
+
+Per-seed paired bootstrap: 4,000 resamples, seed 53, unit = distinct problem.
+The seed-level mean and sample SD are descriptive; no coefficient is selected
+from them.
+
+**Verdict: the seeds do not hold.** All three point estimates are positive on
+both math tasks, and GSM8K's interval is above zero for every seed. But
+MATH-500's paired interval is above zero only for seed 0. Seed 1's lower bound
+is `−2.20` and seed 2's is `−0.60`; both include zero. MATH-500's lower bound is
+the clause that fails. MMLU retention passes for every seed, and its improvement
+is stable (+1.15 to +1.55 points, all intervals above zero).
+
+Because both math clauses do not remain above zero across seeds, the registered
+seed-level win is **not met** and the conditional soup and depth-ramp
+experiments in the task were not started.
+
+### 8.1 Training-run facts
+
+| seed | selected step | held-out CE | base CE | tokens | wall | guard max |
+|---|---|---|---|---|---|---|
+| 0 | 4000 | 0.30868 | 0.24945 | 10,940,000 | 5,257 s | 8.93 |
+| 1 | 4000 | 0.30978 | 0.24945 | 10,940,000 | 5,634 s | 14.27 |
+| 2 | 4000 | 0.31164 | 0.24945 | 10,940,000 | 5,799 s | 14.36 |
+
+Every selected checkpoint is the step-4000 checkpoint, the same early-stop rule
+as S58. All three runs are worse than the post-trained model on the held-out
+teacher-solution CE, exactly as S58 was; this is the recipe's known negative and
+is not repaired by interpolation.
+
+## 9. Enlarged calibration split
 
 The calibration split was enlarged from 300 to 1,000 items per task from unused
 train problems, disjoint from S58 training/holdout and from every test split
 (`docs/s66-calibration-splits-v1.json`, stamp `20261119T220027Z`, revision
-`41875e1`). The enlarged split is a strict superset of the 300-item split. The
-alpha grid re-run on the enlarged split is reported in the seed block below
-when its receipt exists. No test split was read to build the enlarged split.
+`41875e1`). The enlarged split is a strict superset of the 300-item split. No
+test split was read to build it.
 
-Seed replication at the fixed `t = 0.375` (no re-selection) and the seed table
-are added in §9 once the runs and their receipts exist.
+The alpha grid re-run on the enlarged split is written to
+`results/stage2/s66-calibration/large-grid.json` when the run exits. The grid was reduced to the
+five coefficients that could change the maximum — `0, 0.25, 0.375, 0.5,
+0.625` — because the full nine-point grid at 1,000 items per task exceeds the
+available GPU budget; the four omitted points were dominated by more than half a
+calibration point already at 300 items. This is a stability check, not a new
+selection: no test split is read and no coefficient is adopted from it.

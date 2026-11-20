@@ -1,0 +1,55 @@
+{
+  "claims": {
+    "calibration_is_train_split_only": true,
+    "enlarged_split_is_superset": true,
+    "test_split_used_for_selection": false
+  },
+  "created_utc": "2026-11-20T04:41:45Z",
+  "grid": [
+    0.375
+  ],
+  "instrument": {
+    "batch_size": 4,
+    "decoding": "greedy non-thinking",
+    "max_new_tokens": 2048,
+    "tasks": "GSM8K-cal and MATH-cal",
+    "test_split_read": false
+  },
+  "kind": "large-calibration-grid",
+  "registration": {
+    "gsm8k_sha256": "b9af82fef9f253d42ced8b50528889e61b051c8e6d11253eb52037b4072cbeb3",
+    "items_per_task": 10,
+    "limit": 10,
+    "math_sha256": "27d118f5c3b56fa3af16daa2fa66e13fa95aed5cc4e3bb467322289c13f09298",
+    "path": "docs/s66-calibration-splits-v1.json",
+    "sha256": "9158aa238d91859151d60a96658f132c71fd1cfc5b886daf6b5ee88009f80cd1"
+  },
+  "revision": "2d6756e1163284d0bea05d33420e2ea0b1c4dbc6",
+  "rows": [
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.375-arm.pt",
+      "checkpoint_sha256": "10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a",
+      "coefficient": 0.375,
+      "gsm8k_cal": 0.7,
+      "gsm8k_cal_300": {
+        "accuracy": null,
+        "correct": 0,
+        "items": 0
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.8,
+      "math_cal_300": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "items": 3
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.5195
+    }
+  ],
+  "schema": "selvedge/s66-large-calibration/v1",
+  "selection": null,
+  "selection_300": null,
+  "stable": null,
+  "stamp": "20261120T044145Z"
+}

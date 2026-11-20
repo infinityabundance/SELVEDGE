@@ -60,6 +60,7 @@ WS19_EVAL = "results/stage2/eval/full-20m-math/eval.json"
 WS19_SELECTED = "results/stage2/runs/full-20m-math-s49-selected.json"
 WS19_AMENDED_EVAL = "results/stage2/eval/full-20m-math-s49/m20/eval.json"
 S65_IDENTITY = "results/stage2/s65-interp-selected/identity.json"
+S66_THREE_SEED = "results/stage2/s66-seeds/three-seed.json"
 # S51: the live bar is the corrected-optimiser rerun. It is named by its own
 # launch receipt, so the status block does not have to infer it from an
 # invalidated selection marker.
@@ -660,6 +661,35 @@ def _s65_result_line() -> str | None:
     )
 
 
+def _s66_seed_line() -> str | None:
+    """The seed-replication verdict, derived from its aggregate receipt."""
+    payload = read_json(os.path.join(root_for_status(), S66_THREE_SEED))
+    if payload is None:
+        return None
+    summary = payload.get("summary") or {}
+    verdict = payload.get("verdict") or {}
+    math = summary.get("math500") or {}
+    gsm = summary.get("gsm8k") or {}
+    if not (math and gsm):
+        return None
+    bounds = ", ".join(
+        f"seed {row['seed']} [{100.0 * row['math500']['ci95'][0]:+.2f},"
+        f"{100.0 * row['math500']['ci95'][1]:+.2f}]"
+        for row in payload.get("seeds") or [])
+    return (
+        "- **S66 seed replication at the fixed alpha 0.375: "
+        f"`{'holds' if verdict.get('both_math_clauses_positive_across_seeds') else 'does not hold'}`** "
+        f"— seed-mean GSM8K delta `{100.0 * gsm['mean_delta']:+.2f}` points "
+        f"(SD {100.0 * gsm['sample_sd']:.2f}), MATH-500 delta "
+        f"`{100.0 * math['mean_delta']:+.2f}` (SD "
+        f"{100.0 * math['sample_sd']:.2f}); MATH-500 intervals: {bounds}. "
+        "The MATH-500 lower bound includes zero for seeds 1 and 2, so the "
+        "seed-level win is not met and the conditional soup/depth-ramp work "
+        "was not started. Receipt: "
+        f"`{S66_THREE_SEED}`."
+    )
+
+
 def root_for_status() -> str:
     """The repository root; `read_json` callers pass relative paths."""
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -758,6 +788,9 @@ def render_readme_status(facts: dict) -> str:
         s65_line = _s65_result_line()
         if s65_line:
             lines.append(s65_line)
+        seed_line = _s66_seed_line()
+        if seed_line:
+            lines.append(seed_line)
         if ws19["amended"] and ws19["amended_invalidated"]:
             recipe = (ws19["selected"] or {}).get("lr")
             lines.append(
@@ -878,6 +911,9 @@ def render_report_status(facts: dict) -> str:
     s65_line = _s65_result_line()
     if s65_line:
         lines.append(s65_line)
+    seed_line = _s66_seed_line()
+    if seed_line:
+        lines.append(seed_line)
     lines.append(tail)
     return "\n".join(lines)
 
