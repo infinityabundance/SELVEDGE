@@ -29,6 +29,12 @@
       "coefficient": 0.625,
       "path": "results/stage2/s67-soup/interp-0.625-arm.pt",
       "sha256": "f9209a689446eba6bbe5efad815dfbd624e26c277b9cafd23f840a0e179b4d7e"
+    },
+    {
+      "bytes": 996329198,
+      "coefficient": 0.75,
+      "path": "results/stage2/s67-soup/interp-0.750-arm.pt",
+      "sha256": "09f069b3ed126d872f8239cec464108180590d95c0f27a3cbfa8b11144fa544c"
     }
   ],
   "base": {
@@ -40,7 +46,7 @@
     "reads_no_test_split": true,
     "selection_performed": false
   },
-  "created_utc": "2026-11-20T06:34:40Z",
+  "created_utc": "2026-11-20T06:43:04Z",
   "diagnostics": "results/stage2/s67-soup/delta-diagnostics.json",
   "formula": "theta_soup(alpha) = theta_0 + alpha * mean_s(theta_s - theta_0)",
   "frozen_elements_inherited": "tied embedding/output projection is not mixed; it is inherited from the post-trained snapshot",
@@ -49,11 +55,12 @@
     0.25,
     0.375,
     0.5,
-    0.625
+    0.625,
+    0.75
   ],
   "kind": "seed-delta-soup",
   "model_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
-  "revision": "ddcd187edd9d68ae0518901270ae24d2c60b11db",
+  "revision": "44b0e13b05d3f2de12a2c1ee85868b56a8063888",
   "schema": "selvedge/s67-soup/v1",
   "seeds": [
     {
@@ -69,6 +76,6 @@
       "checkpoint_sha256": "20710d8f53db424bf3698ff08aeb6efed25b6135353f978974af33866fcf8440"
     }
   ],
-  "stamp": "20261120T063440Z",
+  "stamp": "20261120T064304Z",
   "state_elements": 498113344
 }
