@@ -1,0 +1,22 @@
+.................F.........                                              [100%]
+=================================== FAILURES ===================================
+______________ test_merge_parity_and_the_registered_active_union _______________
+
+    def test_merge_parity_and_the_registered_active_union():
+        base = _base(seed=2)
+        base_elements = preference.unique_active_elements(base)
+        model = _adapted(seed=2)
+        adapter_elements = preference.adapter_element_count(model)
+        input_ids = torch.randint(0, 64, (2, 6),
+                                  generator=torch.Generator().manual_seed(9))
+        with torch.no_grad():
+            adapted_logits = model(input_ids).logits.clone()
+        state, report = launch.snapshot_merged_full_state(model)
+        assert report["remaining_lora_modules"] == 0
+>       assert report["merged_text_elements"] == base_elements
+E       assert 1632 == 1376
+
+oracle/tests/test_s64_preference_pipeline.py:265: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_merge_parity_and_the_registered_active_union
+1 failed, 26 passed in 3.57s

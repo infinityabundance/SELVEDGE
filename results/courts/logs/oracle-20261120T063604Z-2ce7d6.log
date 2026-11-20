@@ -1,0 +1,63 @@
+.................F.F.......                                              [100%]
+=================================== FAILURES ===================================
+______________ test_merge_parity_and_the_registered_active_union _______________
+
+    def test_merge_parity_and_the_registered_active_union():
+        base = _base(seed=2)
+        base_elements = preference.unique_active_elements(base)
+        model = _adapted(seed=2)
+        adapter_elements = preference.adapter_element_count(model)
+        input_ids = torch.randint(0, 64, (2, 6),
+                                  generator=torch.Generator().manual_seed(9))
+        with torch.no_grad():
+            adapted_logits = model(input_ids).logits.clone()
+        state, report = launch.snapshot_merged_full_state(model)
+        assert report["remaining_lora_modules"] == 0
+>       assert report["merged_text_elements"] == base_elements
+E       assert 1632 == 1376
+
+oracle/tests/test_s64_preference_pipeline.py:265: AssertionError
+_________ test_preference_arm_emits_a_merged_checkpoint_at_the_cadence _________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_preference_arm_emits_a_me0')
+
+    def test_preference_arm_emits_a_merged_checkpoint_at_the_cadence(tmp_path):
+        pairs = _cached_pairs()
+        model = _base(seed=4)
+        budget = 2 * preference.preference_processed_tokens(pairs)
+        report = launch.run_arm(
+            model, pairs, arm="preference", budget_tokens=budget,
+            cadence=(preference.preference_processed_tokens(pairs),),
+            seed=7, checkpoint_dir=str(tmp_path), expected_active_union=None)
+        assert report["processed_tokens"] >= budget
+        assert report["steps"] > 0
+        assert all(math.isfinite(value) for value in report["loss_trace"])
+        assert report["geometry"]["lora_rank"] == 64
+        assert len(report["checkpoints"]) >= 1
+        checkpoint = torch.load(report["checkpoints"][0]["path"],
+                                map_location="cpu", weights_only=False)
+        assert checkpoint["arm"] == "full"
+        assert checkpoint["schema"] == "selvedge/stage2-ckpt/v1"
+        assert checkpoint["step"] == report["checkpoints"][0]["step"]
+        # The merged state is the text tower minus the frozen embedding.
+        canonical = _base(seed=5)
+        embedding_pointer = canonical.get_input_embeddings().weight.data_ptr()
+        expected_names = {name for name, parameter in canonical.named_parameters()
+                          if parameter.data_ptr() != embedding_pointer}
+>       assert set(checkpoint["arm_state"]) == expected_names
+E       AssertionError: assert {'lm_head.wei...se.bias', ...} == {'lm_head.wei...oj.bias', ...}
+E         
+E         Extra items in the left set:
+E         'q_proj.base.bias'
+E         'mlp.1.base.bias'
+E         'mlp.0.base.bias'
+E         Extra items in the right set:
+E         'mlp.0.bias'...
+E         
+E         ...Full output truncated, use '-vv' to show
+
+oracle/tests/test_s64_preference_pipeline.py:341: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_merge_parity_and_the_registered_active_union
+FAILED oracle/tests/test_s64_preference_pipeline.py::test_preference_arm_emits_a_merged_checkpoint_at_the_cadence
+2 failed, 25 passed in 3.52s

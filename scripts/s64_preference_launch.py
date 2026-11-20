@@ -17,10 +17,13 @@ The objective, the LoRA geometry and the merge path live in
   base text tower, 752,393,024 elements. The float32 tiny-model merge parity
   is pinned by `oracle/tests/test_s63_preference.py` and exercised end to end
   by `oracle/tests/test_s64_preference_pipeline.py`;
-* the three arms are `preference` (w = p(1-p)), `matched-sft` (the same pairs,
-  chosen continuations only, the same processed-token budget) and `recovery`
-  (the p=0 teacher pairs with the matched mean positive weight). One arm per
-  invocation; the queue runs them serially.
+* the three arms are `preference` (w = p(1-p)), `matched-sft` (the same
+  positive-weight pairs, chosen continuations only, the same processed-token
+  budget) and `recovery` (the p=0 teacher pairs with the matched mean positive
+  weight). Weight-<=0 pairs are dropped from the normal and matched arms
+  before budgeting, so both train on the identical effective problem set; the
+  recovery arm is the only arm that keeps them. One arm per invocation; the
+  queue runs them serially.
 
 No teacher weights are loaded here. No reference model is loaded here. The
 reference cache is consumed from the pair rows.
@@ -41,7 +44,6 @@ Usage (GPU; size `SELVEDGE_MEM` from the measured peak before launch)
 from __future__ import annotations
 
 import argparse
-import copy
 import hashlib
 import json
 import os
@@ -217,27 +219,27 @@ def _embedding_parameter_names(model) -> set[str]:
 def snapshot_merged_full_state(model, *,
                                expected_active_union: int | None = None
                                ) -> tuple[dict, dict]:
-    """Deep-copy the text tower, merge the adapter, export the full-arm state.
+    """Export the merged text tower without a second copy of the model.
 
-    The copy is moved to CPU before it is merged so the training model keeps
-    its GPU placement and the extra GPU residency is only the copy itself.
+    The adapter is folded into CPU copies of each base weight by
+    ``preference.merged_state_from_model``. The training model keeps its GPU
+    placement and is neither copied nor mutated, so the merge no longer needs
+    a second full model's worth of device memory.
     """
     from frontier import arms
 
     text = arms._text_model(model)
     embedding_names = _embedding_parameter_names(model)
-    text_copy = copy.deepcopy(text).to("cpu")
-    merge_report = preference.merge_lora(text_copy)
-    merged_elements = preference.unique_active_elements(text_copy)
+    merged_elements = sum(
+        int(parameter.numel())
+        for name, parameter in text.named_parameters()
+        if not (name.endswith(".lora_A") or name.endswith(".lora_B")))
+    state, merge_report = preference.merged_state_from_model(
+        text, exclude_names=embedding_names)
     if expected_active_union is not None and merged_elements != expected_active_union:
         raise SystemExit(
             f"s64-launch: merged text tower is {merged_elements} elements, "
             f"expected {expected_active_union}")
-    state = {
-        name: parameter.detach().to("cpu").clone()
-        for name, parameter in text_copy.named_parameters()
-        if name not in embedding_names
-    }
     report = {
         **merge_report,
         "merged_text_elements": int(merged_elements),
@@ -355,6 +357,26 @@ def run_arm(model, pairs, *, arm: str,
     if batch_pairs < 1:
         raise ValueError("batch_pairs must be >= 1")
 
+    # The on-policy file carries p=0 rows with weight 0 next to the positive
+    # pairs. A zero-weight pair contributes nothing to the preference loss but
+    # still consumes a batch slot, and the matched SFT control previously
+    # trained on its chosen continuation. Drop it from the normal and matched
+    # arms so both use the identical effective problem set; the recovery arm
+    # is the only arm that keeps it, by construction of its own file.
+    pairs_loaded = len(pairs)
+    dropped_zero_weight: list[str] = []
+    if arm in ("preference", "matched-sft"):
+        dropped_zero_weight = sorted(pair.problem_id for pair in pairs
+                                     if pair.weight <= 0)
+        pairs = [pair for pair in pairs if pair.weight > 0]
+        if not pairs:
+            raise ValueError(
+                f"{arm}: every pair has weight 0; the effective problem set "
+                "is empty")
+    effective_ids = sorted(pair.problem_id for pair in pairs)
+    effective_ids_sha256 = hashlib.sha256(
+        "\n".join(effective_ids).encode("utf-8")).hexdigest()
+
     if budget_tokens is None:
         budget_tokens = (preference.sft_processed_tokens(pairs)
                          if arm == "matched-sft"
@@ -456,6 +478,11 @@ def run_arm(model, pairs, *, arm: str,
         "kind": arm,
         "steps": step,
         "budget_tokens": budget_tokens,
+        "pairs_loaded": pairs_loaded,
+        "effective_pairs": len(pairs),
+        "zero_weight_pairs_dropped": len(dropped_zero_weight),
+        "zero_weight_problem_ids": dropped_zero_weight,
+        "effective_problem_ids_sha256": effective_ids_sha256,
         "processed_tokens": processed,
         "supervised_chosen_tokens": supervised,
         "lr": lr,
@@ -602,7 +629,19 @@ def main(argv: list[str]) -> int:
         "pairs": {
             "path": os.path.relpath(os.path.abspath(pair_path), ROOT),
             "sha256": sha256_file(os.path.abspath(pair_path)),
-            "rows": len(pairs),
+            "loaded_rows": report.get("pairs_loaded"),
+            "effective_rows": report.get("effective_pairs"),
+            "zero_weight_pairs_dropped": report.get(
+                "zero_weight_pairs_dropped"),
+            "zero_weight_problem_ids": report.get(
+                "zero_weight_problem_ids"),
+            "effective_problem_ids_sha256": report.get(
+                "effective_problem_ids_sha256"),
+            "effective_set_rule": (
+                "preference and matched-sft drop weight<=0 pairs before "
+                "budgeting and training, so both arms use the identical "
+                "effective problem set; the recovery arm is the only arm "
+                "that keeps the p=0 pairs"),
             "normalization": preference.REGISTERED_NORMALIZATION,
         },
         "budget": {

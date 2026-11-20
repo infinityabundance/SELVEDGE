@@ -342,6 +342,68 @@ def test_preference_arm_emits_a_merged_checkpoint_at_the_cadence(tmp_path):
     assert checkpoint["merge"]["remaining_lora_modules"] == 0
 
 
+def test_zero_weight_pairs_are_dropped_from_the_normal_and_sft_arms_only():
+    import dataclasses
+
+    pairs = _cached_pairs(n=2)
+    zero = dataclasses.replace(pairs[1], problem_id="p-zero", weight=0.0)
+    mixed = [pairs[0], zero]
+
+    preference_report = launch.run_arm(
+        _base(seed=12), mixed, arm="preference",
+        budget_tokens=preference.preference_processed_tokens([pairs[0]]),
+        seed=12)
+    sft_report = launch.run_arm(
+        _base(seed=13), mixed, arm="matched-sft",
+        budget_tokens=preference.sft_processed_tokens([pairs[0]]),
+        seed=13)
+    recovery_report = launch.run_arm(
+        _base(seed=14), mixed, arm="recovery",
+        budget_tokens=preference.preference_processed_tokens(mixed),
+        seed=14)
+
+    for report in (preference_report, sft_report):
+        assert report["pairs_loaded"] == 2
+        assert report["effective_pairs"] == 1
+        assert report["zero_weight_pairs_dropped"] == 1
+        assert report["zero_weight_problem_ids"] == ["p-zero"]
+    # The matched SFT control is the same effective problem set, not merely
+    # the same source file.
+    assert (preference_report["effective_problem_ids_sha256"]
+            == sft_report["effective_problem_ids_sha256"])
+    # The recovery arm is the only arm that keeps the zero-weight pair.
+    assert recovery_report["zero_weight_pairs_dropped"] == 0
+    assert recovery_report["effective_pairs"] == 2
+
+
+def test_merge_exports_cpu_state_without_copying_or_mutating_the_model():
+    model = _adapted(seed=15)
+    wrapped = {name for name, module in model.named_modules()
+               if isinstance(module, preference.LoRALinear)}
+    assert wrapped
+    pointers = {name: parameter.data_ptr()
+                for name, parameter in model.named_parameters()}
+    probe = torch.tensor([[1, 2, 3]])
+    with torch.no_grad():
+        before = model(probe).logits.clone()
+
+    state, report = launch.snapshot_merged_full_state(model)
+
+    # The training model was neither replaced nor mutated: every adapter is
+    # still installed, pointing at the same storage, and still computes the
+    # adapted logits.
+    assert {name for name, module in model.named_modules()
+            if isinstance(module, preference.LoRALinear)} == wrapped
+    assert {name: parameter.data_ptr()
+            for name, parameter in model.named_parameters()} == pointers
+    with torch.no_grad():
+        after = model(probe).logits
+    assert torch.equal(before, after)
+    assert report["remaining_lora_modules"] == 0
+    assert not any(name.endswith((".lora_A", ".lora_B")) for name in state)
+    assert not any(".base." in name for name in state)
+
+
 def test_matched_sft_control_uses_the_same_pairs_and_budget(tmp_path):
     pairs = _cached_pairs()
     model = _base(seed=6)

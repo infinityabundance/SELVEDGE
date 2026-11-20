@@ -520,6 +520,70 @@ def merge_lora(model: nn.Module) -> dict:
                      "parameters cease to be separate deployed identities"}
 
 
+def merged_state_from_model(model: nn.Module,
+                            exclude_names=()) -> tuple[dict, dict]:
+    """Export the merged full-arm state on CPU without copying the model.
+
+    The previous path deep-copied the text tower on its own device and then
+    moved the copy to CPU, which doubled GPU residency for the whole merge.
+    Here each base weight and its rank-``r`` factors are moved to CPU one
+    layer at a time and the update ``scale * B @ A`` is folded there; the
+    training model is never copied and never mutated.
+
+    Keys are returned in the unmounted model's namespace
+    (``...q_proj.weight``), exactly what ``merge_lora`` produces, and the
+    ``lora_A``/``lora_B`` parameters are not exported. ``exclude_names`` drops
+    frozen shared parameters (the tied embedding) from the state without
+    changing the element accounting.
+    """
+    import torch
+
+    excluded = set(exclude_names)
+    state: dict = {}
+    merged = 0
+    adapter_elements = 0
+    wrapped = {name for name, module in model.named_modules()
+               if isinstance(module, LoRALinear)}
+    for name, parameter in model.named_parameters():
+        if name.endswith(".lora_A") or name.endswith(".lora_B"):
+            adapter_elements += int(parameter.numel())
+            continue
+        if ".base." in name:
+            module_name, suffix = name.split(".base.", 1)
+            module = dict(model.named_modules()).get(module_name)
+            if not isinstance(module, LoRALinear):
+                raise RuntimeError(
+                    f"{name}: base parameter without a LoRALinear wrapper")
+            if suffix == "weight":
+                base_cpu = parameter.detach().to("cpu").clone()
+                factors_a = module.lora_A.detach().to("cpu").float()
+                factors_b = module.lora_B.detach().to("cpu").float()
+                update = factors_b @ factors_a
+                merged_weight = (base_cpu.float()
+                                 + module.scaling * update).to(base_cpu.dtype)
+                state[f"{module_name}.{suffix}"] = merged_weight
+                merged += 1
+                wrapped.discard(module_name)
+            elif name not in excluded:
+                state[f"{module_name}.{suffix}"] = (
+                    parameter.detach().to("cpu").clone())
+            continue
+        if name in excluded:
+            continue
+        state[name] = parameter.detach().to("cpu").clone()
+    if wrapped:
+        raise RuntimeError(
+            f"{len(wrapped)} LoRA modules were not exported "
+            f"(first {sorted(wrapped)[:3]})")
+    report = {"merged_layers": merged,
+              "adapter_elements_removed": adapter_elements,
+              "remaining_lora_modules": 0,
+              "basis": "scale * B @ A folded into CPU copies of each base "
+                       "weight; the training model is not copied and the "
+                       "adapter is not exported as a deployed identity"}
+    return state, report
+
+
 def active_union_after_merge(base_elements: int,
                              adapter_elements: int) -> int:
     """The unique active union after the adapter is folded into the base.
