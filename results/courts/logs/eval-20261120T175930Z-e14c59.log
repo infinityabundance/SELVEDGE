@@ -1,0 +1,7 @@
+s54-stage1: loaded full checkpoint results/stage2/s67-soup/interp-0.375-arm.pt step=4000 tokens_seen=None
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s54-stage1: gsm8k-non-thinking-greedy acc=0.6338 strict=0.6323 flexible=0.6338 exact=0.6414 tokens/s=262.6 truncated=0.0485 loop=0.0053 mean_tokens=626.0
+s54-stage1: math500-non-thinking-greedy acc=0.4060 strict=0.4060 flexible=0.4060 exact=0.4320 tokens/s=726.0 truncated=0.3160 loop=0.0840 mean_tokens=1919.8
