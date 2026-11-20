@@ -1,0 +1,83 @@
+{
+  "claims": {
+    "no_approximate_decoder": true,
+    "test_split_is_the_canonical_hendrycks_math_test": true,
+    "train_split_not_downloaded": true
+  },
+  "corpus": {
+    "bytes": 4415210,
+    "path": "results/artifacts/math-test/math-test-5000.jsonl",
+    "sha256": "65f4ced3b205ac2cb751c4b86030f4354f3c3cfb690632d881d56f94e1288396"
+  },
+  "created_utc": "2026-11-20T06:38:41Z",
+  "files": [
+    {
+      "bytes": 353114,
+      "file": "results/artifacts/math-test/algebra.parquet",
+      "path": "algebra/test-00000-of-00001.parquet",
+      "sha256": "0e04a850dac9cfc758eac0c80afd2d0cc65e29ea72f916c8ac1045b12af937f5"
+    },
+    {
+      "bytes": 175032,
+      "file": "results/artifacts/math-test/counting_and_probability.parquet",
+      "path": "counting_and_probability/test-00000-of-00001.parquet",
+      "sha256": "c324818949c75a6227c0328a8499d58023cbbf6757cfc1736f5ab24cc8d87966"
+    },
+    {
+      "bytes": 263835,
+      "file": "results/artifacts/math-test/geometry.parquet",
+      "path": "geometry/test-00000-of-00001.parquet",
+      "sha256": "98720f3a8134ad9784fd8951195245264495df03ffc5c9485a9a54ff5ae2431a"
+    },
+    {
+      "bytes": 394797,
+      "file": "results/artifacts/math-test/intermediate_algebra.parquet",
+      "path": "intermediate_algebra/test-00000-of-00001.parquet",
+      "sha256": "e859f72486c951c2017da880541ca729940eaa986b0364eb23e238983df9bfeb"
+    },
+    {
+      "bytes": 182003,
+      "file": "results/artifacts/math-test/number_theory.parquet",
+      "path": "number_theory/test-00000-of-00001.parquet",
+      "sha256": "ba156c9c9fa2040836ba12135fd964e6e67d6bccd8c469ec4a3ad941f8f6fbe9"
+    },
+    {
+      "bytes": 267729,
+      "file": "results/artifacts/math-test/prealgebra.parquet",
+      "path": "prealgebra/test-00000-of-00001.parquet",
+      "sha256": "301e5d8ade5c7b5038032532e498bdc9dca799e7f1061a63f2e7d980803240cc"
+    },
+    {
+      "bytes": 242241,
+      "file": "results/artifacts/math-test/precalculus.parquet",
+      "path": "precalculus/test-00000-of-00001.parquet",
+      "sha256": "da37474ba3761ae5727af3844a7ba963a735bd6a14c65e6137593669a4fe3b9c"
+    }
+  ],
+  "gold_rule": "last balanced boxed answer in the reference solution; validated against the MATH-500 answer field on the 500 overlapping problems; a missing box is a hard error, never a dropped problem",
+  "items": 5000,
+  "kind": "math-test-corpus",
+  "overlap_validation": {
+    "available": true,
+    "disagreement_count": 0,
+    "disagreements": [],
+    "items": 500,
+    "matched": 500,
+    "missing": [],
+    "missing_count": 0,
+    "path": "../hf-cache/datasets/HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow"
+  },
+  "repo_id": "EleutherAI/hendrycks_math",
+  "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+  "schema": "selvedge/s67-math-test-fetch/v1",
+  "split": "test",
+  "subjects": {
+    "algebra": 1187,
+    "counting_and_probability": 474,
+    "geometry": 479,
+    "intermediate_algebra": 903,
+    "number_theory": 540,
+    "prealgebra": 871,
+    "precalculus": 546
+  }
+}

@@ -81,12 +81,19 @@ GSM8K_TEST = os.path.join(
 MATH500_TEST = os.path.join(
     CACHE, "datasets", "HuggingFaceH4___math-500", "default", "0.0.0",
     "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be", "math-500-test.arrow")
+#: The full Hendrycks MATH test split, pinned by
+#: `results/datasets/math-test-fetch.json`. The S67 resolution instrument is
+#: scored from this corpus; MATH-500 is a 500-problem subset of it.
+MATH_TEST_CORPUS = os.environ.get(
+    "SELVEDGE_MATH_TEST",
+    os.path.join(ROOT, "results", "artifacts", "math-test",
+                 "math-test-5000.jsonl"))
 
 SYSTEM_PROMPT = None
 USER_TEMPLATE = "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{{}}."
 MODES = ("non-thinking", "thinking")
 DECODINGS = ("greedy", "maj16")
-TASKS = ("gsm8k", "math500")
+TASKS = ("gsm8k", "math500", "math_full")
 MAX_NEW_TOKENS = 4096
 MAJ_K = 16
 MAJ_TEMPERATURE = 0.8
@@ -227,6 +234,26 @@ def load_task(task: str, limit: int | None) -> list[dict]:
                 "subject": row.get("subject"),
                 "level": row.get("level"),
             })
+    elif task == "math_full":
+        if not os.path.isfile(MATH_TEST_CORPUS):
+            raise SystemExit(
+                f"s54-stage1: missing MATH test corpus {MATH_TEST_CORPUS}; run "
+                "scripts/s67_fetch_math_test.py")
+        with open(MATH_TEST_CORPUS, "r", encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                items.append({
+                    "problem_id": row["problem_id"],
+                    "task": "math_full",
+                    "question": row["question"],
+                    "gold": str(row["gold"]),
+                    "gold_source": "last boxed answer in the reference "
+                                   "solution (validated against MATH-500)",
+                    "subject": row.get("subject"),
+                    "level": row.get("level"),
+                })
     else:
         raise SystemExit(f"s54-stage1: unknown task {task!r}")
     if limit is not None:

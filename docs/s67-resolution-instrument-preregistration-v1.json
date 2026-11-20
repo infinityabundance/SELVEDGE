@@ -1,0 +1,108 @@
+{
+  "schema": "selvedge/s67-resolution-instrument/v1",
+  "identifier": "S67-RESOLUTION-INSTRUMENT-V1",
+  "created_utc": "2026-11-20T06:40:00Z",
+  "registered_utc": "2026-11-20T06:40:00Z",
+  "status": "registered",
+  "purpose": "Resolve the MATH clause of the registered capability win at a sample size chosen from the S66 replication's own interval half-width, on an instrument that is scored exactly once for the final claim and never for coefficient selection.",
+  "context": {
+    "prior_result": "results/stage2/s66-seeds/three-seed.json",
+    "prior_verdict": "seed_level_win=false; both_math_clauses_positive_across_seeds=false",
+    "why_unresolved": "At n=500 the MATH-500 paired intervals are +4.60 [+0.60,+8.60] (seed 0), +1.80 [-2.20,+5.60] (seed 1) and +3.40 [-0.60,+7.20] (seed 2). Every point estimate is positive; only seed 0's interval excludes zero. The clause that fails is interval width at n=500, not the sign of the effect.",
+    "observed_math500": {
+      "seed_mean_delta_points": 3.27,
+      "seed_sample_sd_points": 1.40,
+      "approx_95_half_width_points": 3.9,
+      "source": "results/stage2/s66-seeds/three-seed.json"
+    }
+  },
+  "instrument": {
+    "name": "Hendrycks MATH test split, all 5,000 problems",
+    "repo_id": "EleutherAI/hendrycks_math",
+    "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+    "split": "test",
+    "items": 5000,
+    "subjects": {
+      "algebra": 1187,
+      "counting_and_probability": 474,
+      "geometry": 479,
+      "intermediate_algebra": 903,
+      "number_theory": 540,
+      "prealgebra": 871,
+      "precalculus": 546
+    },
+    "corpus": {
+      "path": "results/artifacts/math-test/math-test-5000.jsonl",
+      "sha256": "65f4ced3b205ac2cb751c4b86030f4354f3c3cfb690632d881d56f94e1288396",
+      "bytes": 4415210
+    },
+    "fetch_receipt": "results/datasets/math-test-fetch.json",
+    "gold_rule": "last balanced \\boxed{} in the reference solution; the rule reproduces the MATH-500 answer field on all 500 overlapping problems with zero disagreements (results/datasets/math-test-fetch.json overlap_validation)",
+    "overlap_disclosure": "MATH-500 is a 500-problem subset of these 5,000 problems. Scoring the full set therefore includes the 500 problems already scored during S65/S66. That is disclosed, not hidden: the resolution claim is made on the full-set paired interval, and the 500-item subset is reported separately rather than pooled with it.",
+    "not_used_for_selection": true
+  },
+  "protocol": {
+    "engine": "transformers 5.23.0 / torch 2.15.0+cu132, bf16, SDPA attention",
+    "harness": "scripts/s54_post_trained_eval.py",
+    "task": "math_full",
+    "mode": "non-thinking",
+    "decoding": "greedy",
+    "shot": "zero-shot",
+    "prompt": "the S54 user template ending in 'Put the final answer in \\boxed{}'",
+    "max_new_tokens": 4096,
+    "batch_size": 32,
+    "primary_basis": "flexible (the receipt's registered extraction); strict and exact are reported beside it and never substituted",
+    "statistic": "paired problem-level bootstrap over the 5,000 distinct problems, 4,000 resamples, seed 53, percentile 2.5/97.5",
+    "comparison": "candidate minus post-trained Qwen3.5-0.8B on the same problems under the same protocol; the baseline is scored on the full set too so the paired CI is computable",
+    "baseline_identity": "Qwen/Qwen3.5-0.8B at revision 2fc06364715b967f1860aea9cf38778875588b17"
+  },
+  "power_arithmetic": {
+    "observed_se_at_n500": 1.99,
+    "observed_se_basis": "3.9-point 95% half-width / 1.96",
+    "n_multiplier": 10,
+    "standard_error_reduction_factor": 3.1623,
+    "se_reduction_basis": "sqrt(10); the estimator is a mean of per-problem paired differences and the bootstrap resamples problems, so SE scales as 1/sqrt(n) under exchangeability",
+    "expected_se_at_n5000": 0.629,
+    "expected_95_half_width_points_at_n5000": 1.233,
+    "expected_interval_if_effect_is_3_27_points": [2.04, 4.50],
+    "minimum_detectable_effect_points_at_80_percent_power": 1.76,
+    "conclusion": "At 5,000 problems an effect of the observed +3.27 points is expected to resolve with a paired interval above zero, and the instrument resolves any true effect at or above about +1.8 points at 80% power. A true effect below that would still be unresolved, and that outcome will be reported as unresolved rather than as a win.",
+    "caveat": "The expected interval is arithmetic from the S66 receipts, not a promise about the measured result. Problems are not guaranteed exchangeable across subjects; the bootstrap's resampling unit is the problem and is unchanged."
+  },
+  "single_use_discipline": {
+    "scored_once": true,
+    "used_for_coefficient_selection": false,
+    "coefficient_selection_precedes_scoring": true,
+    "selection_instrument": "results/stage2/s67-soup calibration on the 1,000-item train-split GSM8K-cal and MATH-cal splits, with MMLU-cal retention as a filter",
+    "no_post_hoc_enlargement": "If the paired interval at n=5,000 includes zero, the MATH clause stays unresolved and the complete registered win stays unmet. The instrument will not be enlarged again after seeing this result."
+  },
+  "retention_instruments": {
+    "mmlu_full": {
+      "items": 14042,
+      "protocol": "lm-evaluation-harness, 5-shot, identical for candidate and baseline",
+      "split": "all items partitioned into the 2,000 items the S60 coefficient selection read and the 12,042 never-used items (scripts/s66_retention_audit.py)",
+      "bound": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound"
+    },
+    "mmlu_pro_registered": {
+      "items": 4000,
+      "subset": "the deterministic 4,000-item total-cap allocation",
+      "protocol": "lm-evaluation-harness, 5-shot, identical for candidate and baseline",
+      "bound": "same drop bound as MMLU",
+      "status_before_scoring": "the 504-item retired sample is not admitted; this is the registered instrument and has not been scored for any model yet"
+    }
+  },
+  "verdict_definitions": {
+    "replicated_gsm8k_win": "GSM8K paired interval above zero on all three seeds (already established by S66).",
+    "math_effect_resolved_at_larger_n": "the full-MATH paired interval is entirely above zero under this protocol.",
+    "complete_registered_win": "GSM8K and MATH both resolved (full-MATH interval above zero) AND retention passes on full MMLU, the 12,042 unused MMLU items, and the 4,000-item MMLU-Pro instrument.",
+    "soup_beats_s65_seed0": "the soup's paired interval against the S65 seed-0 checkpoint is above zero on at least one registered instrument; reported per instrument, not pooled.",
+    "soup_beats_post_trained": "the soup's paired intervals against the post-trained 0.8B are above zero on GSM8K and on full MATH."
+  },
+  "scored_receipts": [],
+  "claims": {
+    "no_test_split_used_for_selection": true,
+    "registered_before_scoring": true,
+    "deterministic_gold_rule": true,
+    "no_approximate_decoder": true
+  }
+}
