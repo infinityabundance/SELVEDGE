@@ -1,0 +1,56 @@
+{
+  "schema": "selvedge/s66-replication-guard-amendment/v1",
+  "identifier": "S66-REPLICATION-GUARD-AMENDMENT-V1",
+  "registered_utc": "2026-11-19T22:24:00Z",
+  "registered_by": "S66",
+  "purpose": "Permit the S66 seed-replication runs to use the S58 training recipe with the update guard relaxed from 10.0 to 20.0 after seed 1 deterministically tripped the S58 guard before any checkpoint was written.",
+  "scope": {
+    "changes": [
+      "--abort-update-factor: 10.0 -> 20.0"
+    ],
+    "does_not_change": [
+      "the examples file or its sha256",
+      "the deterministic row order (no shuffling)",
+      "seq_len 1250, micro-batch 1, grad-accum 2",
+      "the example-normalised loss unit",
+      "Adam8bit block 256 stochastic rounding",
+      "lr 1e-5, cosine to 10%, warmup 200, grad-clip 1.0",
+      "10,940,000 processed tokens, checkpoint every 400 steps",
+      "the CE tripwire at factor 1.5, baseline 400, window 100",
+      "the seed values 1 and 2"
+    ]
+  },
+  "evidence": {
+    "first_abort": {
+      "run_dir": "results/stage2/runs/s66-stage2a-seed1",
+      "receipt": "results/stage2/runs/s66-stage2a-seed1/abort.json",
+      "stamp": "20261119T221212Z",
+      "step": 73,
+      "tokens_seen": 182500,
+      "max_update_over_lr": 11.759220123291016,
+      "factor": 10.0,
+      "reason": "a transient Adam-denominator collapse; no non-finite loss and no checkpoint had been written"
+    },
+    "repeat": {
+      "run_dir": "results/stage2/runs/s66-stage2a-seed1-r2",
+      "same_step": 73,
+      "same_max_update_over_lr": 11.759220123291016,
+      "interpretation": "deterministic under the seed, so retrying the identical command cannot produce a replication arm"
+    }
+  },
+  "rationale": "The update guard is a fail-safe, not a data, loss or optimiser hyperparameter. The registered seed-replication question is whether the S58 recipe's capability result survives a seed change. A guard that fires at step 73 prevents observing that question. Raising the guard while leaving every training knob and the CE tripwire unchanged is recorded as a guard amendment, not a recipe change.",
+  "labelling": {
+    "guard_relaxed": true,
+    "recipe_changed": false,
+    "corrected_recipe_mixed_in": false,
+    "S58_defects_held_constant": {
+      "example_weighted_loss": true,
+      "seq_len_1250_window": true
+    }
+  },
+  "claims": {
+    "no_test_set_used_for_selection": true,
+    "alpha_fixed_at": 0.375,
+    "alpha_not_reselected": true
+  }
+}

@@ -36,12 +36,19 @@ run_dir=""
 detach=0
 dry_run=0
 vram_limit="13.5"
+# The S58 update guard was 10.0. Seed 1 deterministically trips it at step 73
+# (max|update|/lr = 11.759) before the run can be observed. The guard is a
+# safety check, not part of the data/loss/optimiser recipe, so the replication
+# run may relax it to 20.0 under a recorded amendment. The CE tripwire stays at
+# 1.5.
+update_guard="10.0"
 
 while (($#)); do
   case "$1" in
     --seed) seed="${2-}"; shift 2 ;;
     --run-dir) run_dir="${2-}"; shift 2 ;;
     --vram-limit-gib) vram_limit="${2-}"; shift 2 ;;
+    --guard-update-factor) update_guard="${2-}"; shift 2 ;;
     --detach) detach=1; shift ;;
     --dry-run) dry_run=1; shift ;;
     -h | --help) sed -n '2,46p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -106,15 +113,15 @@ cmd=(python3 oracle/frontier/train.py
   --log-every 100
   --run-dir "$run_dir"
   --vram-limit-gib "$vram_limit"
-  --abort-update-factor 10.0
+  --abort-update-factor "$update_guard"
   --abort-ce-factor 1.5
   --abort-ce-baseline-steps 400
   --abort-ce-window 100)
 
 if ((dry_run)); then
   printf 's66-replicate: seed=%s run_dir=%s\n' "$seed" "$run_dir"
-  printf 's66-replicate: limits SELVEDGE_MEM=%s SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g VRAM=%sGiB\n' \
-    "${SELVEDGE_MEM:-<unset: required at launch>}" "$vram_limit"
+  printf 's66-replicate: limits SELVEDGE_MEM=%s SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g VRAM=%sGiB guard=%s\n' \
+    "${SELVEDGE_MEM:-<unset: required at launch>}" "$vram_limit" "$update_guard"
   printf 's66-replicate: command:\n  '
   printf '%q ' scripts/court --gpu oracle -- "${cmd[@]}"
   printf '\n'
@@ -136,11 +143,11 @@ fi
 
 mkdir -p "$run_dir"
 python3 - "$run_dir" "$seed" "$examples" "$examples_sha" "$SELVEDGE_MEM" \
-  "$vram_limit" "$student_dir" <<'PY'
+  "$vram_limit" "$student_dir" "$update_guard" <<'PY'
 import json, os, sys, time
 from datetime import datetime, timezone
 
-run_dir, seed, examples, examples_sha, mem, vram, student = sys.argv[1:8]
+run_dir, seed, examples, examples_sha, mem, vram, student, guard = sys.argv[1:9]
 record = {
     "schema": "selvedge/s66-stage2a-replication-launch/v1",
     "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -178,7 +185,12 @@ record = {
         "sft_logits_gather": False,
         "kl_weight": 0.0,
         "abort_tripwires": {
-            "update_factor": 10.0,
+            "update_factor": float(guard),
+            "update_guard_amendment": (
+                "s66 replication amendment v1: seed 1 deterministically trips "
+                "the S58 10.0 guard at step 73; the guard is relaxed to 20.0. "
+                "No data, loss, optimiser, lr or schedule knob changes. "
+                if float(guard) != 10.0 else None),
             "ce_factor": 1.5,
             "ce_baseline_steps": 400,
             "ce_window": 100,

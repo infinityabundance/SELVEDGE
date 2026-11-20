@@ -1,0 +1,65 @@
+{
+  "created_utc": "2026-11-19T22:10:33Z",
+  "data": {
+    "examples": {
+      "path": "results/artifacts/stage2/s58-combined/stage2a-combined-examples.jsonl",
+      "sha256": "9426e36d92f8d09ed62289b8b97d79ce4971b37090754eeb6eed038330d275b7"
+    },
+    "grad_accum": 2,
+    "loss_unit": "example",
+    "micro_batch": 1,
+    "row_order": "deterministic row order, cycled; no shuffling",
+    "seq_len": 1250,
+    "tokens_per_step": 2500
+  },
+  "known_defects_held_constant": {
+    "example_weighted_loss": true,
+    "seq_len_1250_window": true,
+    "why": "the replication must change only the seed; the S60 token-unit and length-aware-window corrections belong to a separate future experiment and are not mixed in"
+  },
+  "launcher": "scripts/s66_replicate_stage2a.sh",
+  "limits": {
+    "container_cpus": 8,
+    "container_memory": "14g",
+    "container_memory_swap": "14g",
+    "container_pids": 1024,
+    "container_tmp": "2g",
+    "sizing": "S58 measured cgroup memory.max 15,032,385,536 and peak 12.73 GiB allocated / 13.09 GiB reserved; 14g is the registered arm limit",
+    "vram_limit_gib": 13.5
+  },
+  "purpose": "seed replication of the exact S58 stage-2a recipe; only the random seed changes",
+  "recipe": {
+    "abort_tripwires": {
+      "ce_baseline_steps": 400,
+      "ce_factor": 1.5,
+      "ce_window": 100,
+      "update_factor": 10.0
+    },
+    "checkpoint_every_steps": 400,
+    "gradient_checkpointing": false,
+    "kl_weight": 0.0,
+    "length_aware_batching": false,
+    "lr": 1e-05,
+    "optimizer": "Adam8bit block 256, int8 first moment, bf16 second moment, stochastic weight rounding",
+    "schedule": "cosine to 10%, warmup 200, grad-clip 1.0",
+    "seed": 1,
+    "sft_logits_gather": false,
+    "steps": 4376,
+    "tied_embedding": "frozen",
+    "tokens": 10940000
+  },
+  "run_dir": "results/stage2/runs/s66-stage2a-seed1",
+  "schema": "selvedge/s66-stage2a-replication-launch/v1",
+  "source_run": {
+    "receipt": "results/stage2/runs/s58-stage2a/receipt.json",
+    "receipt_sha256": "fecccb350120a38b046f3943f9d85d0f9f303a61f2b6801af98e7e9ec11cf8a5",
+    "run_dir": "results/stage2/runs/s58-stage2a",
+    "selected_checkpoint": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+    "selected_checkpoint_sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6"
+  },
+  "student": {
+    "dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "id": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17"
+  }
+}
