@@ -1,0 +1,159 @@
+{
+  "argv": [
+    "python3",
+    "scripts/s43_score_total_cap.py",
+    "--arm",
+    "interpolated",
+    "--full-checkpoint",
+    "results/stage2/s67-soup/interp-0.750-arm.pt",
+    "--student-dir",
+    "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "--model-id",
+    "Qwen/Qwen3.5-0.8B",
+    "--model-revision",
+    "2fc06364715b967f1860aea9cf38778875588b17",
+    "--tasks",
+    "mmlu",
+    "--total-cap-map",
+    "mmlu=2000",
+    "--prereg",
+    "docs/anchor-preregistration-v1.json",
+    "--registration",
+    "docs/ws19-post-trained-route-stage2-revised-preregistration-s60-v1.json",
+    "--vram-limit-gib",
+    "13.0",
+    "--out",
+    "results/stage2/s67-soup/mmlu-0.750.json"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "8c55809c68bca96df98447e7e7e0615b8ba63e956d01431a295ec2916bcef473",
+  "container_name": "selvedge-eval-court-20261120T093741Z-a4f4ac",
+  "court": "eval",
+  "duration_ms": 106266,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 12884901888,
+        "expected": 12884901888
+      },
+      "memory_swap_bytes": {
+        "actual": 12884901888,
+        "expected": 12884901888
+      },
+      "nano_cpus": {
+        "actual": 8000000000,
+        "expected": 8000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 1024,
+        "expected": 1024
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-20T09:39:28Z",
+  "gpu": {
+    "detail": "--gpus all unavailable: docker: Error response from daemon: failed to discover GPU vendor from CDI: no known GPU vendor found  Run 'docker run --help' for more information",
+    "mode": "device-passthrough"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.10.0",
+    "uname": "Linux 7.3.5-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:e0ac15b7ce4d8936f783ea3d4c2fc10d55419ddebde9e691df8cdc0b0b769b74",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:e0ac15b7ce4d8936f783ea3d4c2fc10d55419ddebde9e691df8cdc0b0b769b74",
+  "image_ref": "selvedge/eval-court:20261118-3.12-slim-eval-a3355bb4d070",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "8",
+    "init": true,
+    "memory": "12g",
+    "memory_bytes": 12884901888,
+    "memory_swap": "12g",
+    "memory_swap_bytes": 12884901888,
+    "nano_cpus": 8000000000,
+    "nofile": 65536,
+    "pids": 1024,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 2147483648,
+    "tmpfs_size": "2g"
+  },
+  "log_path": "results/courts/logs/eval-20261120T093741Z-a4f4ac.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target",
+    "/home/one/.cache/selvedge/hf:/hf-cache",
+    "/home/one/.cache/selvedge/hf/datasets:/datasets-cache"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "0c71d9cd0a82c7d32e1d4abcd770c53bcbb51dac",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261120T093741Z",
+  "started_utc": "2026-11-20T09:37:41Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "absent",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.5-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.23.0"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": true
+}

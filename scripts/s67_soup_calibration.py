@@ -123,6 +123,13 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--max-new-tokens", type=int, default=2048)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--base-row", default=None,
+                        help="receipt containing an already-scored alpha=0 row "
+                             "on the same 1,000-item splits")
+    parser.add_argument("--verify-base-equivalence", default=None,
+                        help="checkpoint the base row was scored from; it must "
+                             "be tensor-for-tensor equal to the soup alpha=0 "
+                             "checkpoint before the row is reused")
     parser.add_argument("--out", default="results/stage2/s67-soup/calibration.json")
     args = parser.parse_args(argv)
 
@@ -154,6 +161,52 @@ def main(argv: list[str]) -> int:
         print(f"s67-cal: resumed {len(done)} coefficient(s); remaining {grid}",
               flush=True)
 
+    if args.base_row and not any(float(row["coefficient"]) == 0.0
+                                 for row in rows):
+        external = json.load(open(os.path.join(ROOT, args.base_row),
+                                  encoding="utf-8"))
+        base_rows = [row for row in external.get("rows") or []
+                     if float(row["coefficient"]) == 0.0]
+        if not base_rows:
+            raise SystemExit(f"s67-cal: {args.base_row} has no alpha=0 row")
+        external_base = dict(base_rows[0])
+        external_items = (external.get("registration") or {}).get(
+            "items_per_task")
+        row_items = external_base.get("gsm8k_items")
+        if external_items != 1000 or (row_items is not None and row_items != 1000):
+            raise SystemExit(
+                "s67-cal: the external alpha=0 row was not scored on the "
+                f"registered 1,000-item splits (items_per_task={external_items}, "
+                f"row items={row_items})")
+        external_sha = (external.get("registration") or {}).get("sha256")
+        if external_sha != sha256_file(os.path.join(ROOT, args.registration)):
+            raise SystemExit(
+                "s67-cal: the external alpha=0 row used a different "
+                "calibration registration; refusing to mix rows")
+        if not args.verify_base_equivalence:
+            raise SystemExit(
+                "s67-cal: reusing an external alpha=0 row requires "
+                "--verify-base-equivalence")
+        import torch
+
+        ours_path = os.path.join(soup_dir, "interp-0.000-arm.pt")
+        ours = torch_load(ours_path)["arm_state"]
+        theirs = torch_load(os.path.join(ROOT, args.verify_base_equivalence))[
+            "arm_state"]
+        if sorted(ours) != sorted(theirs):
+            raise SystemExit("s67-cal: base checkpoints have different keys")
+        for key in ours:
+            if not torch.equal(ours[key], theirs[key]):
+                raise SystemExit(
+                    f"s67-cal: {key} differs between the reused base "
+                    "checkpoint and the soup alpha=0 checkpoint; refusing "
+                    "to mix rows")
+        external_base["source"] = args.base_row
+        external_base["verified_tensor_equal_to"] = args.verify_base_equivalence
+        rows.append(external_base)
+        print(f"s67-cal: reused verified alpha=0 row from {args.base_row}",
+              flush=True)
+
     if grid:
         import torch
         from transformers import AutoModelForCausalLM
@@ -176,7 +229,7 @@ def main(argv: list[str]) -> int:
                                   args.max_new_tokens, args.batch_size, device)
             math_result = evaluate(model, tokenizer, math, "math500",
                                    args.max_new_tokens, args.batch_size, device)
-            rows.append({
+            row = {
                 "coefficient": alpha,
                 "checkpoint": os.path.relpath(checkpoint, ROOT),
                 "checkpoint_sha256": sha256_file(checkpoint),
@@ -190,10 +243,8 @@ def main(argv: list[str]) -> int:
                                  + math_result.get("wall_seconds", 0)),
                 "generated_tokens": (gsm_result.get("generated_tokens", 0)
                                      + math_result.get("generated_tokens", 0)),
-            })
-            print(f"s67-cal: alpha={alpha:.3f} "
-                  f"gsm8k-cal={row['gsm8k_cal']:.4f} "
-                  f"math-cal={row['math_cal']:.4f}", flush=True)
+            }
+            rows.append(row)
             write_json(partial_path, {
                 "schema": SCHEMA,
                 "kind": "soup-calibration-partial",
@@ -202,6 +253,9 @@ def main(argv: list[str]) -> int:
                     os.path.join(ROOT, args.registration)),
                 "rows": rows,
             })
+            print(f"s67-cal: alpha={alpha:.3f} "
+                  f"gsm8k-cal={row['gsm8k_cal']:.4f} "
+                  f"math-cal={row['math_cal']:.4f}", flush=True)
 
     mmlu = load_mmlu(soup_dir)
     for row in rows:

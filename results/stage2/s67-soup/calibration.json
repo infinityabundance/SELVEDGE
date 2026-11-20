@@ -1,0 +1,129 @@
+{
+  "calibration_registration": {
+    "items_per_task": 1000,
+    "path": "docs/s66-calibration-splits-v1.json",
+    "sha256": "9158aa238d91859151d60a96658f132c71fd1cfc5b886daf6b5ee88009f80cd1",
+    "source": "train split only; no test split read"
+  },
+  "claims": {
+    "mmlu_is_a_retention_filter": true,
+    "selection_rule_is_registered": true,
+    "test_split_used_for_selection": false
+  },
+  "created_utc": "2026-11-20T12:44:59Z",
+  "instrument": {
+    "batch_size": 32,
+    "decoding": "greedy non-thinking",
+    "max_new_tokens": 2048,
+    "tasks": "GSM8K-cal and MATH-cal (1,000 each)",
+    "test_split_read": false
+  },
+  "kind": "soup-calibration",
+  "preregistration": {
+    "path": "docs/s67-resolution-instrument-preregistration-v1.json",
+    "sha256": "0a40d489355e2e5a90d254268f5bedf483481e98fd24f101887499e7894a46e2"
+  },
+  "revision": "0c71d9cd0a82c7d32e1d4abcd770c53bcbb51dac",
+  "rows": [
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.000-arm.pt",
+      "checkpoint_sha256": "829794f7469249b813d893d0a0d0e2e56248ff55f121f6551c3ecb1956bd0361",
+      "coefficient": 0.0,
+      "gsm8k_cal": 0.522,
+      "gsm8k_cal_300": {
+        "accuracy": 0.5366666666666666,
+        "correct": 161,
+        "items": 300
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.322,
+      "math_cal_300": {
+        "accuracy": 0.31333333333333335,
+        "correct": 94,
+        "items": 300
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.506,
+      "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.000.json",
+      "mmlu_cal_receipt_sha256": "2c4422a28f60d819a5ec135b38ee3f1ad9fefb875dd48701e20ee2fd47c0e09a",
+      "source": "results/stage2/s66-calibration/large-grid.json",
+      "verified_tensor_equal_to": "results/stage2/s60-interpolation/interp-0.000-arm.pt"
+    },
+    {
+      "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+      "checkpoint_sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+      "coefficient": 0.375,
+      "generated_tokens": 1806060,
+      "gsm8k_cal": 0.609,
+      "gsm8k_correct": 609,
+      "gsm8k_items": 1000,
+      "math_cal": 0.326,
+      "math_correct": 326,
+      "math_items": 1000,
+      "mmlu_cal": 0.5215,
+      "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.375.json",
+      "mmlu_cal_receipt_sha256": "01a0369dc6e666c4719a069eef25838c71e7638dc752323bb5f06e3a6ea11a26",
+      "wall_seconds": 2264.6
+    },
+    {
+      "checkpoint": "results/stage2/s67-soup/interp-0.500-arm.pt",
+      "checkpoint_sha256": "b9abb31a7f65b1a42f11da1ec21b9db306f105824e206b85bc6268a9bb9a6f93",
+      "coefficient": 0.5,
+      "generated_tokens": 1818071,
+      "gsm8k_cal": 0.607,
+      "gsm8k_correct": 607,
+      "gsm8k_items": 1000,
+      "math_cal": 0.307,
+      "math_correct": 307,
+      "math_items": 1000,
+      "mmlu_cal": 0.521,
+      "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.500.json",
+      "mmlu_cal_receipt_sha256": "26d26cfbbbcd087ea55c1c6337f430c124a51a4b66ba28d7652d409442f0bcbf",
+      "wall_seconds": 2209.8
+    },
+    {
+      "checkpoint": "results/stage2/s67-soup/interp-0.625-arm.pt",
+      "checkpoint_sha256": "f9209a689446eba6bbe5efad815dfbd624e26c277b9cafd23f840a0e179b4d7e",
+      "coefficient": 0.625,
+      "generated_tokens": 1782684,
+      "gsm8k_cal": 0.603,
+      "gsm8k_correct": 603,
+      "gsm8k_items": 1000,
+      "math_cal": 0.298,
+      "math_correct": 298,
+      "math_items": 1000,
+      "mmlu_cal": 0.5105,
+      "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.625.json",
+      "mmlu_cal_receipt_sha256": "d273e269d14ac9d30ea34393c234199b1a3751fd72a08ee91be4868f3fd23679",
+      "wall_seconds": 2206.3999999999996
+    },
+    {
+      "checkpoint": "results/stage2/s67-soup/interp-0.750-arm.pt",
+      "checkpoint_sha256": "09f069b3ed126d872f8239cec464108180590d95c0f27a3cbfa8b11144fa544c",
+      "coefficient": 0.75,
+      "generated_tokens": 1822883,
+      "gsm8k_cal": 0.576,
+      "gsm8k_correct": 576,
+      "gsm8k_items": 1000,
+      "math_cal": 0.273,
+      "math_correct": 273,
+      "math_items": 1000,
+      "mmlu_cal": 0.5095,
+      "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.750.json",
+      "mmlu_cal_receipt_sha256": "368bac7858df01177b6c99df33ae188d93be5ed3af1579e83b674d4e93ea768d",
+      "wall_seconds": 2126.6000000000004
+    }
+  ],
+  "schema": "selvedge/s67-soup-calibration/v1",
+  "selection": {
+    "basis": "calibration only; ties choose the smaller coefficient",
+    "calibration_gain": 0.045499999999999985,
+    "coefficient": 0.375,
+    "eligible": true,
+    "mmlu_present": true,
+    "objective": "mean gain over alpha=0 on GSM8K-cal and MATH-cal; MMLU-cal drop > 1.0 point ineligible",
+    "retention_limit": 0.01,
+    "retention_required": true
+  },
+  "stamp": "20261120T124459Z"
+}

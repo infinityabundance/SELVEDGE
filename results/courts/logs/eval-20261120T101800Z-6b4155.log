@@ -1,0 +1,11 @@
+s67-cal: reused verified alpha=0 row from results/stage2/s66-calibration/large-grid.json
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s67-cal: alpha=0.375 gsm8k-cal=0.6090 math-cal=0.3260
+Timeout during comparison
+s67-cal: alpha=0.500 gsm8k-cal=0.6070 math-cal=0.3070
+s67-cal: alpha=0.625 gsm8k-cal=0.6030 math-cal=0.2980
+s67-cal: alpha=0.750 gsm8k-cal=0.5760 math-cal=0.2730
+s67-cal: selected alpha=0.375 gain=0.045499999999999985 -> results/stage2/s67-soup/calibration.json
