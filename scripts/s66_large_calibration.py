@@ -96,6 +96,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--limit", type=int, default=None,
                         help="smoke-only item limit per task; omit for the full split")
+    parser.add_argument("--resume", action="store_true",
+                        help="reuse completed rows from <out>.partial")
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
 
@@ -129,9 +131,22 @@ def main(argv: list[str]) -> int:
     model.eval()
     tokenizer = _tokenizer(args.model_dir)
 
-    grid = sorted({float(part) for part in args.grid.split(",") if part.strip()})
+    requested_grid = sorted({float(part) for part in args.grid.split(",")
+                             if part.strip()})
+    grid = list(requested_grid)
     interp_dir = os.path.join(ROOT, args.interp_dir)
     rows = []
+    partial_path = os.path.join(ROOT, args.out) + ".partial"
+    if args.resume and os.path.exists(partial_path):
+        partial = json.load(open(partial_path, encoding="utf-8"))
+        if (partial.get("registration_sha256")
+                == sha256_file(os.path.join(ROOT, args.registration))
+                and partial.get("items_per_task") == len(gsm)):
+            rows = list(partial.get("rows") or [])
+            done = {float(row["coefficient"]) for row in rows}
+            grid = [value for value in grid if value not in done]
+            print(f"s66-large-cal: resumed {len(done)} coefficient(s); "
+                  f"remaining {grid}", flush=True)
     for coefficient in grid:
         checkpoint = os.path.join(interp_dir, f"interp-{coefficient:.3f}-arm.pt")
         if not os.path.exists(checkpoint):
@@ -165,6 +180,20 @@ def main(argv: list[str]) -> int:
         print(f"s66-large-cal: t={coefficient:.3f} "
               f"gsm8k-cal={row['gsm8k_cal']:.4f} "
               f"math-cal={row['math_cal']:.4f} old300={old_text}", flush=True)
+        partial = {
+            "schema": SCHEMA,
+            "kind": "large-calibration-partial",
+            "created_utc": utcnow(),
+            "registration_sha256": sha256_file(
+                os.path.join(ROOT, args.registration)),
+            "items_per_task": len(gsm),
+            "rows": rows,
+        }
+        tmp_partial = partial_path + ".tmp"
+        with open(tmp_partial, "w", encoding="utf-8") as handle:
+            json.dump(partial, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        os.replace(tmp_partial, partial_path)
 
     selection = (choose_coefficient(rows)
                  if any(row["coefficient"] == 0.0 for row in rows)
@@ -202,7 +231,7 @@ def main(argv: list[str]) -> int:
             "batch_size": args.batch_size,
             "test_split_read": False,
         },
-        "grid": grid,
+        "grid": requested_grid,
         "rows": rows,
         "selection": selection,
         "selection_300": old_selection,
