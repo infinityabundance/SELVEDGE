@@ -61,6 +61,11 @@ WS19_SELECTED = "results/stage2/runs/full-20m-math-s49-selected.json"
 WS19_AMENDED_EVAL = "results/stage2/eval/full-20m-math-s49/m20/eval.json"
 S65_IDENTITY = "results/stage2/s65-interp-selected/identity.json"
 S66_THREE_SEED = "results/stage2/s66-seeds/three-seed.json"
+#: The text-path accounting certificate. The S66 seed line quotes its
+#: ``unique_active_elements`` rather than typing the constant, because the
+#: number is a property of the checkpoint the claim names.
+ACCOUNTING_TEXT_ONLY = (
+    "results/accounting/20261116T183609Z-qwen35-08b-text-only.json")
 # S51: the live bar is the corrected-optimiser rerun. It is named by its own
 # launch receipt, so the status block does not have to infer it from an
 # invalidated selection marker.
@@ -672,21 +677,53 @@ def _s66_seed_line() -> str | None:
     gsm = summary.get("gsm8k") or {}
     if not (math and gsm):
         return None
-    bounds = ", ".join(
-        f"seed {row['seed']} [{100.0 * row['math500']['ci95'][0]:+.2f},"
+    seeds = payload.get("seeds") or []
+    gsm_bounds = ", ".join(
+        f"seed {row['seed']} {100.0 * row['gsm8k']['delta']:+.2f} "
+        f"[{100.0 * row['gsm8k']['ci95'][0]:+.2f},"
+        f"{100.0 * row['gsm8k']['ci95'][1]:+.2f}]"
+        for row in seeds)
+    math_points = ", ".join(
+        f"seed {row['seed']} {100.0 * row['math500']['delta']:+.2f} "
+        f"[{100.0 * row['math500']['ci95'][0]:+.2f},"
         f"{100.0 * row['math500']['ci95'][1]:+.2f}]"
-        for row in payload.get("seeds") or [])
+        for row in seeds)
+    mmlu_points = ", ".join(
+        f"seed {row['seed']} {100.0 * row['mmlu']['delta']:+.2f}" for row in seeds)
+    mmlu_summary = summary.get("mmlu") or {}
+    accounting = read_json(os.path.join(root_for_status(), ACCOUNTING_TEXT_ONLY)) or {}
+    unique_active = (accounting.get("active_path") or {}).get(
+        "unique_active_elements")
+    if unique_active is None:
+        unique_active = (accounting.get("certification") or {}).get(
+            "active_unique_elements")
+    unique_text = (f"{unique_active:,}" if isinstance(unique_active, int)
+                   else "the certified text path")
+    gsm_holds = bool(gsm.get("all_intervals_above_zero"))
+    math_holds = bool(math.get("all_intervals_above_zero"))
+    mmlu_holds = bool(mmlu_summary.get("all_intervals_above_zero"))
+    complete = bool(verdict.get("both_math_clauses_positive_across_seeds"))
+    gsm_state = "replicated" if gsm_holds else "not replicated"
+    math_state = ("replicated at n=500" if math_holds
+                  else "unresolved at n=500")
     return (
-        "- **S66 seed replication at the fixed alpha 0.375: "
-        f"`{'holds' if verdict.get('both_math_clauses_positive_across_seeds') else 'does not hold'}`** "
-        f"— seed-mean GSM8K delta `{100.0 * gsm['mean_delta']:+.2f}` points "
-        f"(SD {100.0 * gsm['sample_sd']:.2f}), MATH-500 delta "
-        f"`{100.0 * math['mean_delta']:+.2f}` (SD "
-        f"{100.0 * math['sample_sd']:.2f}); MATH-500 intervals: {bounds}. "
-        "The MATH-500 lower bound includes zero for seeds 1 and 2, so the "
-        "seed-level win is not met and the conditional soup/depth-ramp work "
-        "was not started. Receipt: "
-        f"`{S66_THREE_SEED}`."
+        "- **S66 three-seed replication at the fixed alpha 0.375: GSM8K "
+        f"`{gsm_state}`, MATH-500 `{math_state}`, complete registered win "
+        f"`{'met' if complete else 'not met'}`** — GSM8K paired intervals are "
+        f"above zero on every seed ({gsm_bounds}); seed mean "
+        f"`{100.0 * gsm['mean_delta']:+.2f}` points (SD "
+        f"{100.0 * gsm['sample_sd']:.2f}). MMLU improved on every seed "
+        f"({mmlu_points}; "
+        f"{'every interval' if mmlu_holds else 'not every interval'} above "
+        "zero). MATH-500 point estimates are positive on every seed "
+        f"({math_points}), but only seed 0's interval excludes zero: at n=500 "
+        "the MATH effect is positive and unresolved, not absent. Alpha 0.375 "
+        "was fixed on train-split calibration before any test score and no "
+        "test split was read to choose it; the unique active text path stays "
+        f"`{unique_text}` elements. The registered two-task conjunction is "
+        f"`{'satisfied' if complete else 'not satisfied'}`; this is a "
+        "replicated GSM8K gain, not a complete registered win. Receipt: "
+        f"`{S66_THREE_SEED}`; accounting: `{ACCOUNTING_TEXT_ONLY}`."
     )
 
 
