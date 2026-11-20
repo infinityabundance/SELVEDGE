@@ -61,6 +61,10 @@ WS19_SELECTED = "results/stage2/runs/full-20m-math-s49-selected.json"
 WS19_AMENDED_EVAL = "results/stage2/eval/full-20m-math-s49/m20/eval.json"
 S65_IDENTITY = "results/stage2/s65-interp-selected/identity.json"
 S66_THREE_SEED = "results/stage2/s66-seeds/three-seed.json"
+#: The S67 resolution verdict. When it exists, the status block reports the
+#: soup scores, the resolution flags and the retained coefficient, all read
+#: from the receipt.
+S67_VERDICT = "results/stage2/s67-final/verdict.json"
 #: The text-path accounting certificate. The S66 seed line quotes its
 #: ``unique_active_elements`` rather than typing the constant, because the
 #: number is a property of the checkpoint the claim names.
@@ -727,6 +731,49 @@ def _s66_seed_line() -> str | None:
     )
 
 
+def _s67_resolution_line() -> str | None:
+    """The S67 resolution result, derived from its verdict receipt."""
+    payload = read_json(os.path.join(root_for_status(), S67_VERDICT))
+    if payload is None:
+        return None
+    flags = payload.get("verdict") or {}
+    scores = payload.get("scores") or {}
+    selection = payload.get("selection") or {}
+    retention = (payload.get("retention") or {}).get("verdict") or {}
+    gsm = scores.get("gsm8k") or {}
+    math500 = scores.get("math500") or {}
+    full = scores.get("math_full") or {}
+    if not (gsm and math500 and full):
+        return None
+
+    def block(row: dict) -> str:
+        delta = row.get("delta")
+        ci = row.get("ci95")
+        if delta is None or ci is None:
+            return "n/a"
+        return (f"{100.0 * delta:+.2f} "
+                f"[{100.0 * ci[0]:+.2f},{100.0 * ci[1]:+.2f}]")
+
+    return (
+        "- **S67 resolution at the pre-registered coefficient "
+        f"`{selection.get('coefficient')}`** — the seed-delta soup against the "
+        f"post-trained 0.8B: GSM8K `{block(gsm)}`, MATH-500 `{block(math500)}`, "
+        f"full MATH (5,000) `{block(full)}` (paired problem-level bootstrap, "
+        "4,000 resamples, seed 53). Verdict: replicated GSM8K gain "
+        f"`{str(flags.get('replicated_gsm8k_win')).lower()}`, MATH effect "
+        "resolved at the larger n "
+        f"`{str(flags.get('math_effect_resolved_at_larger_n')).lower()}`, "
+        "retention "
+        f"`{'pass' if retention.get('retention_pass') else retention.get('retention_pass')}`, "
+        "complete registered win "
+        f"`{str(flags.get('complete_registered_win')).lower()}`. The "
+        "coefficient was selected on the 1,000-item train-split calibration "
+        "before the full MATH instrument was scored; the full MATH set was "
+        "used once for this claim. Verdict receipt: "
+        f"`{S67_VERDICT}`."
+    )
+
+
 def root_for_status() -> str:
     """The repository root; `read_json` callers pass relative paths."""
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -828,6 +875,9 @@ def render_readme_status(facts: dict) -> str:
         seed_line = _s66_seed_line()
         if seed_line:
             lines.append(seed_line)
+        resolution_line = _s67_resolution_line()
+        if resolution_line:
+            lines.append(resolution_line)
         if ws19["amended"] and ws19["amended_invalidated"]:
             recipe = (ws19["selected"] or {}).get("lr")
             lines.append(
@@ -951,6 +1001,9 @@ def render_report_status(facts: dict) -> str:
     seed_line = _s66_seed_line()
     if seed_line:
         lines.append(seed_line)
+    resolution_line = _s67_resolution_line()
+    if resolution_line:
+        lines.append(resolution_line)
     lines.append(tail)
     return "\n".join(lines)
 
