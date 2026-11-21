@@ -1,0 +1,221 @@
+{
+  "schema": "selvedge/s69-preference-from-champion-preregistration/v1",
+  "identifier": "S69-PREFERENCE-FROM-CHAMPION-PREREGISTRATION-V1",
+  "created_utc": "2026-11-21T23:48:47Z",
+  "registered_utc": "2026-11-21T23:48:47Z",
+  "status": "registered",
+  "revision": "9bd2a2894930a296813eb15a19641042d702a7cd",
+  "purpose": "Test the registered reference-anchored prefix-local preference mechanism initialised from the S67 soup champion, with rollouts from the soup's own policy and the frozen reference also the soup. Selection is calibration-only; the one-shot test asks whether the selected preference checkpoint beats the soup champion on MATH while holding GSM8K and MMLU retention.",
+  "champion": {
+    "kind": "S67 seed-delta soup, constant alpha = 0.375",
+    "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+    "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+    "step": 4000,
+    "state_elements": 498113344,
+    "active_union_elements": 752393024,
+    "calibration": {
+      "receipt": "results/stage2/s67-soup/calibration.json",
+      "gsm8k_cal": 0.609,
+      "math_cal": 0.326,
+      "mmlu_cal": 0.5215,
+      "items_per_task": 1000,
+      "mmlu_items": 2000
+    },
+    "test": {
+      "stage1_receipt": "results/stage2/s67-final/soup-stage1.json",
+      "retention_receipt": "results/stage2/s67-final/soup-retention.json",
+      "gsm8k": 0.6338134950720242,
+      "math500": 0.406,
+      "math_full": 0.4212,
+      "mmlu": 0.52072354365475,
+      "mmlu_pro": 0.2675
+    }
+  },
+  "policy": {
+    "rollout_policy": "the soup champion itself, loaded from the champion checkpoint over the post-trained model directory",
+    "model_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+    "base": "Qwen/Qwen3.5-0.8B (post-trained endpoint)",
+    "base_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "reference_policy": "the soup champion itself; the frozen reference pi_ref is the same checkpoint the student is initialised from, so the initial preference margin is zero",
+    "prompt_protocol": "the policy's own chat template, add_generation_prompt=True, enable_thinking=False, the S55/S59 user template"
+  },
+  "prompts": {
+    "sources": ["gsm8k-train", "math-train"],
+    "counts": {"gsm8k": 400, "math": 250},
+    "selection": "frontier.rft.stratified_select over the full train split after exclusion, seed 6900, strata (source, difficulty bucket, reasoning-length quartile)",
+    "exclude": [
+      {
+        "path": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+        "sha256": "ac34011607eeefcb61ab6ffdc2d8bf8b0cb810b6385cc23c43f4402a87f6196c",
+        "why": "the frozen S58 stage-2a hold-out"
+      },
+      {
+        "path": "results/stage2/s66-calibration/gsm8k-cal-1000.jsonl",
+        "sha256": "b9af82fef9f253d42ced8b50528889e61b051c8e6d11253eb52037b4072cbeb3",
+        "why": "the registered GSM8K calibration split, kept unseen by the training arm"
+      },
+      {
+        "path": "results/stage2/s66-calibration/math-cal-1000.jsonl",
+        "sha256": "27d118f5c3b56fa3af16daa2fa66e13fa95aed5cc4e3bb467322289c13f09298",
+        "why": "the registered MATH calibration split, kept unseen by the training arm"
+      }
+    ],
+    "test_split_read_for_selection": false
+  },
+  "rollouts": {
+    "k": 4,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 2048,
+    "stopping": "EOS plus the registered per-row loop cut (trailing 64 = 4x16 or trailing 144 = 3x48); the cut is per sequence and the retained prefix is still verified",
+    "batch_prompts": 16,
+    "seed": 6900,
+    "verification": "frontier.rft.verify against the train label; verdict in {correct, wrong, ambiguous, unparseable}",
+    "pass_rate": "p = verified_correct / attempts, attempts counting every sampled completion including truncations and duplicates",
+    "weight": "w(p) = p(1-p)",
+    "rejected_side": "one failed continuation per problem as token ids only, preferring a non-truncated failure; no decoded failed text is stored",
+    "ledger": "one row per problem with attempts, p, truncation, loop-cut and duplicate counters; written even when every completion fails"
+  },
+  "pairs": {
+    "chosen": "a verified-correct teacher continuation conditioned on the student's exact token-identical prefix",
+    "rejected": "the student's own failed continuation from that same prefix",
+    "prefix_rule": "frontier.preference.assert_shared_prefix; a token mismatch fails closed instead of pairing two different prompts",
+    "teacher_corpus": {
+      "path": "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl",
+      "sha256": "066c1480f3b59e586bf3fd947fae1f9f76f1b989c708238326d0539859486d24",
+      "reuse_rule": "reused only when the corpus row's prompt_ids are token-identical to the rollout prompt_ids; verified before the run on a 200-row sample with 200/200 exact matches"
+    },
+    "teacher_generation": {
+      "condition": "only when the corpus has no usable teacher row for the problem",
+      "teacher_dir": "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "max_new_tokens": 2048,
+      "seed": 6400,
+      "verification": "re-verified with frontier.rft.verify; a generated continuation that does not verify is counted, never used"
+    },
+    "identity_pairs_dropped": true,
+    "normal_arm": "pairs with weight <= 0 are dropped before budgeting, so the preference arm and the matched SFT control use the identical effective problem set",
+    "recovery_arm": "p = 0 problems receive their verified teacher continuation paired with the student's failed continuation, at the mean positive p(1-p) weight of the on-policy pairs"
+  },
+  "reference": {
+    "model": "the soup champion checkpoint, loaded over the post-trained model directory",
+    "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+    "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+    "cache": "per-token log-probabilities for the fixed chosen and rejected actions, one vector per side",
+    "normalisation": "mean (the registered token-length normalisation)",
+    "teacher_co_resident": false
+  },
+  "lora": {
+    "rank": 64,
+    "alpha": 32,
+    "targets": "every linear layer of the text tower except the output head",
+    "base_frozen": true,
+    "merge": "scale * B @ A folded into CPU copies of each base weight; the exported checkpoint is a merged full-weight text tower and the adapter is not a deployed identity",
+    "initialisation": "the student is initialised from the soup champion checkpoint before the adapter is installed",
+    "active_union_after_merge": 752393024
+  },
+  "training": {
+    "objective": "reference-anchored prefix-local preference: -log sigmoid(beta * [(s+ - s-) - (r+ - r-)]) with mean-normalised sequence log-probabilities",
+    "beta": 0.1,
+    "lr": 0.0001,
+    "grad_clip": 1.0,
+    "budget_processed_tokens": 2000000,
+    "cadence": [500000, 1000000, 2000000],
+    "batch_pairs": 1,
+    "seed": 6900,
+    "arms": {
+      "preference": "the normal arm on the positive-weight pairs, w = p(1-p)",
+      "matched-sft": "completion CE on the chosen continuations of the identical effective problem set, same cadence and processed-token budget; attribution control",
+      "recovery": "the p = 0 teacher-guided pairs at the matched mean positive weight; trained only if at least 8 recovery pairs exist"
+    },
+    "zero_weight_pairs_dropped_from_normal_and_control": true,
+    "identical_effective_problem_set_required": true,
+    "checkpoint_schema": "selvedge/stage2-ckpt/v1, arm=full, merged text-tower state"
+  },
+  "calibration_selection": {
+    "instrument": {
+      "gsm8k_cal": {
+        "path": "results/stage2/s66-calibration/gsm8k-cal-1000.jsonl",
+        "items": 1000,
+        "sha256": "b9af82fef9f253d42ced8b50528889e61b051c8e6d11253eb52037b4072cbeb3"
+      },
+      "math_cal": {
+        "path": "results/stage2/s66-calibration/math-cal-1000.jsonl",
+        "items": 1000,
+        "sha256": "27d118f5c3b56fa3af16daa2fa66e13fa95aed5cc4e3bb467322289c13f09298"
+      },
+      "mmlu_cal": {
+        "items": 2000,
+        "source": "the registered 2,000-item MMLU selection partition, 5-shot lm-evaluation-harness"
+      },
+      "protocol": "greedy, non-thinking, zero-shot, S54 user template, max_new_tokens 2048",
+      "test_split_read_for_selection": false
+    },
+    "milestones_scored": [500000, 1000000, 2000000],
+    "selection_rule": "highest MATH-cal among the preference milestones; tie-break higher GSM8K-cal, then the earlier cadence",
+    "retention_filter": "the selected milestone's MMLU-cal must not be more than 1.0 point below the soup's 0.5215; if it is, the next-best MATH-cal milestone is considered",
+    "adoption_gate": "the selected milestone's MATH-cal must be strictly greater than the soup's 0.3260 and its GSM8K-cal must not be more than 1.0 point below the soup's 0.609; otherwise the arm is recorded as a calibration-level failure and no test split is read",
+    "control_scoring": "the matched SFT control is scored on GSM8K-cal and MATH-cal at the preference-selected cadence",
+    "recovery_scoring": "the recovery arm is scored on GSM8K-cal and MATH-cal at the preference-selected cadence only if the preference arm is adopted"
+  },
+  "one_shot_test": {
+    "condition": "only if the calibration adoption gate passes",
+    "checkpoint": "the selected preference milestone",
+    "instruments": [
+      {
+        "task": "gsm8k test",
+        "items": 1319,
+        "protocol": "S54, greedy, non-thinking, max_new_tokens 4096"
+      },
+      {
+        "task": "MATH-500",
+        "items": 500,
+        "protocol": "S54, greedy, non-thinking, max_new_tokens 4096"
+      },
+      {
+        "task": "full MATH",
+        "items": 5000,
+        "instrument": "the pre-registered S67 resolution instrument, revision 21a5633873b6a120296cce3e2df9d5550074f4a3, scored once"
+      },
+      {
+        "task": "full MMLU",
+        "items": 14042,
+        "protocol": "5-shot lm-evaluation-harness, total cap 14042"
+      },
+      {
+        "task": "MMLU-Pro",
+        "items": 4000,
+        "protocol": "5-shot lm-evaluation-harness, total cap 4000"
+      }
+    ],
+    "comparison": "paired at problem or item level against the stored S67 soup raw dumps, 4,000 resamples, seed 53; the soup is not rescored",
+    "control_attribution": "if the preference arm is adopted, the matched SFT control at the same cadence is scored once on MATH-500 and GSM8K test; it is not given a full-MATH run",
+    "no_enlargement": "the full-MATH instrument is not enlarged or re-scored on the basis of the result"
+  },
+  "win_bar": {
+    "matching": "candidate - soup, paired problem-level bootstrap, 4,000 resamples, seed 53, flexible basis",
+    "requires": {
+      "math500": "delta > 0 and 95% interval above zero",
+      "math_full": "delta > 0 and 95% interval above zero",
+      "gsm8k": "point delta >= -1.0 and 95% interval lower bound >= -1.0",
+      "mmlu": "point delta >= -1.0 and 95% interval lower bound >= -1.0"
+    },
+    "mmlu_pro": "reported as a secondary retention instrument; it is not part of the win bar",
+    "no_frontier_claim": "no external system is compared in this experiment"
+  },
+  "fallback_route": {
+    "condition": "the preference arm fails the calibration adoption gate or the test win bar",
+    "route": "the corrected stage-2 recipe (token-normalised objective, long MATH at cap 2500, LoRA) followed by interpolation back toward the post-trained endpoint",
+    "cost_arithmetic": "emitted to the verdict receipt from measured throughput on this host; no cost number is asserted in this registration"
+  },
+  "claims": {
+    "registered_before_any_score": true,
+    "rollouts_are_on_policy_from_the_champion": true,
+    "reference_is_the_champion": true,
+    "selection_is_calibration_only": true,
+    "matched_control_uses_the_identical_effective_problem_set": true,
+    "no_test_split_used_for_selection": true,
+    "weights_are_a_merged_full_tower_not_a_new_architecture": true
+  }
+}
