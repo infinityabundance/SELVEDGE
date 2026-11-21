@@ -1,0 +1,159 @@
+{
+  "schema": "selvedge/disk-prune-receipt/v1",
+  "kind": "s68-disk-hygiene",
+  "stamp": "20261121T030659Z",
+  "created_utc": "2026-11-21T03:06:59Z",
+  "revision": "cfbca09124311387f0d1659933269e9e562d17dc",
+  "branch": "staging",
+  "filesystem": "/dev/nvme1n1p1",
+  "mount": "/mnt/1tb_kingston",
+  "avail_bytes_before": 38877110272,
+  "avail_bytes_after": 83696939008,
+  "freed_bytes": 44819828736,
+  "method": "sha256sum computed over every deleted file immediately before rm; sidecar hashes were also available and agree. Files were removed as individual paths; no directory, receipt, manifest, summary, sidecar or tracked file was deleted.",
+  "reasons": {
+    "debug_one_step": "Development one-step checkpoint from the 2026-11-15 training-loop bring-up (dev-A/B/C variants and second-moment retries). The run-meta.json, summary.json, train.jsonl, zero-point.json and step-000001.pt.sha256 sidecars are retained; the binary is a superseded intermediate.",
+    "pre_final_milestone": "Step-001000 dump for a T2 arm whose declared endpoint is step-001024 (latest.json points at 001024 and the T2 branch is terminal and fully evaluated). The final checkpoint for every arm is retained.",
+    "duplicate_final": "s58-stage2a/latest.pt is a second serialisation of the same step-4000 state as ckpt-004000.pt. The canonical ckpt-004000.pt (the post-trained source named by the S65 release recipe and the S67 soup receipt) is retained.",
+    "smoke": "s64-preference-smoke is the smoke invocation (step 20) of the S64 preference arm. Its launch, manifest and receipt are retained; the smoke weights are superseded by the registered full run."
+  },
+  "deleted": [
+    {
+      "path": "results/artifacts/train/dev-A3/step-000001.pt",
+      "bytes": 143231481,
+      "sha256": "95fa32288b7b813a4fa5af9750ae51c6d803c9141a73d434e1679c5866e3386f",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-A-m2/step-000001.pt",
+      "bytes": 143231481,
+      "sha256": "847e799162836255556b254ad2431c4359f676e084be232fa49ae5a1e19cc51c",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-B/step-000001.pt",
+      "bytes": 4230746153,
+      "sha256": "ad7ba349007da15b01068679d7afc72ce8d08e93c24665ad5a761275a1d41af1",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-B2/step-000001.pt",
+      "bytes": 4230746153,
+      "sha256": "4c0c237554bd2f22d656f7d606b79897ab2e9376fdefa4758e6dac1b3af0ac76",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-B3/step-000001.pt",
+      "bytes": 4230746153,
+      "sha256": "127b9985a66cacaf4f35da726c6961f61f260de5aef30ff37f2f70d24abac88b",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-B-m2/step-000001.pt",
+      "bytes": 4230746153,
+      "sha256": "6ac32480b3d7aa14ef4f33c8d578f3bdaf46c37a137f3d0961debbfba36ce643",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-C/step-000001.pt",
+      "bytes": 2114029497,
+      "sha256": "8c45060b16d0375e592275d58bb3d3653f1dcfa0985ebb07102f24fed2949665",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/dev-C-m2/step-000001.pt",
+      "bytes": 2114029497,
+      "sha256": "1c80aed2258f56be6174e83a1d8b613bfa3cb473dd802601ba8d48ca77e33822",
+      "reason": "debug_one_step"
+    },
+    {
+      "path": "results/artifacts/train/t2/D/step-001000.pt",
+      "bytes": 2114029497,
+      "sha256": "35a83f24b39e038cc44f07d182c17d77b98f080b64f2705423bf99a360febd3f",
+      "reason": "pre_final_milestone"
+    },
+    {
+      "path": "results/artifacts/train/t2/H/step-001000.pt",
+      "bytes": 5866590113,
+      "sha256": "84003ce6748d0a2f9915210d5fd42d12a245ed9af22f8caf98523560692c52c5",
+      "reason": "pre_final_milestone"
+    },
+    {
+      "path": "results/artifacts/train/t2/Hstar/step-001000.pt",
+      "bytes": 5866590113,
+      "sha256": "ddbde669b55ee5a6b50f68bcf8ed097661eb52b3b296a7746d0b52946c7d6f60",
+      "reason": "pre_final_milestone"
+    },
+    {
+      "path": "results/artifacts/train/t2/M/step-001000.pt",
+      "bytes": 1635842957,
+      "sha256": "8fca3644f3b0c67de78f0efb160b2e83ec636ed06dd1286b4b3629198f3a2fb1",
+      "reason": "pre_final_milestone"
+    },
+    {
+      "path": "results/artifacts/train/t2/X/step-001000.pt",
+      "bytes": 4230746153,
+      "sha256": "cf8921ec0984b6ce9e86f2e7f9cb25bb6c85b20e22affddf0337004900d3c3ff",
+      "reason": "pre_final_milestone"
+    },
+    {
+      "path": "results/stage2/runs/s58-stage2a/latest.pt",
+      "bytes": 2498774229,
+      "sha256": "d447e7a3ebd929beaef52416428b8816c02cc48d4aef6c75543fc4e831a020bc",
+      "reason": "duplicate_final"
+    },
+    {
+      "path": "results/stage2/runs/s64-preference-smoke/ckpt-000020.pt",
+      "bytes": 996328149,
+      "sha256": "edf573d3a65df92068011da4b12093d61871468467f4c3f4832328d88028d2d7",
+      "reason": "smoke"
+    },
+    {
+      "path": "results/stage2/runs/s64-preference-smoke/adapter-preference-000020.pt",
+      "bytes": 173288875,
+      "sha256": "ce4b0ca3f58c8f86a2df167333fa620be77af77287f81a27faa97a5c19627bb6",
+      "reason": "smoke"
+    }
+  ],
+  "deleted_total_bytes": 44819828736,
+  "retained_deliberately": [
+    {
+      "path": "results/stage2/runs/s58-stage2a/ckpt-004000.pt",
+      "role": "post-trained source and soup seed 0; named by the S65 release recipe",
+      "sha256": "33ee31ae5586799b2544ce4b888ae09c4f2654ab11b03301d05720ddb0bb7fc6"
+    },
+    {
+      "path": "results/stage2/runs/s66-stage2a-seed1-guard20/ckpt-004000.pt",
+      "role": "S58 seed 1 final checkpoint; soup seed 1",
+      "sha256": "8122cca88f139cf96b2d605e856f4d0536283312057b6e245041d333846c28c5"
+    },
+    {
+      "path": "results/stage2/runs/s66-stage2a-seed2-guard20/ckpt-004000.pt",
+      "role": "S58 seed 2 final checkpoint; soup seed 2",
+      "sha256": "20710d8f53db424bf3698ff08aeb6efed25b6135353f978974af33866fcf8440"
+    },
+    {
+      "path": "results/stage2/s67-soup/interp-0.375-arm.pt",
+      "role": "the selected soup (alpha 0.375); whole selection grid also retained",
+      "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab"
+    },
+    {
+      "path": "results/stage2/s65-interp-selected/ckpt-t0.375-full.pt",
+      "role": "the S65 released seed-0 checkpoint referenced by docs/S65-RELEASE.md",
+      "sha256": "10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a"
+    },
+    {
+      "path": "results/artifacts/train/t2/Hstar/utility-labels.pt",
+      "role": "retained: it is a named input of the tracked T2 H* diagnostics receipts and oracle/eval defaults",
+      "sha256": "9e41d6049766f69ae1483867b5bdc895383be6dfd94993d2c38949caa1b7bf14"
+    }
+  ],
+  "no_moves": "No referenced path moved, so docs/S65-RELEASE.md and docs/S67-RESULT.md require no path update.",
+  "claims": {
+    "tracked_files_deleted": 0,
+    "receipts_deleted": 0,
+    "sidecars_deleted": 0,
+    "invalidated_run_checkpoints_deleted": 0,
+    "note": "Invalidated stage-2b runs (full-20m-math, full-20m-math-s49) carry an explicit 'checkpoints retained verbatim' marker and were left untouched. s50 bar/revalidation runs were left untouched."
+  }
+}
