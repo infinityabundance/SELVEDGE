@@ -36,24 +36,29 @@ def main(argv: list[str]) -> int:
 
     index = {}
     for root in args.roots:
-        raw_dir = os.path.join(root, "raw")
-        if not os.path.isdir(raw_dir):
-            continue
-        for name in sorted(os.listdir(raw_dir)):
-            if not name.endswith(".json"):
+        raw_dirs = [os.path.join(root, "raw")]
+        if os.path.isdir(root):
+            raw_dirs.extend(sorted(
+                os.path.join(root, name) for name in os.listdir(root)
+                if name.endswith("-raw") and os.path.isdir(os.path.join(root, name))))
+        for raw_dir in raw_dirs:
+            if not os.path.isdir(raw_dir):
                 continue
-            path = os.path.join(raw_dir, name)
-            gz_path = path + ".gz"
-            if not os.path.exists(gz_path):
-                with open(path, "rb") as source, \
-                        gzip.open(gz_path, "wb", compresslevel=9) as target:
-                    for block in iter(lambda: source.read(1 << 22), b""):
-                        target.write(block)
-            for candidate in (path, gz_path):
-                index[os.path.relpath(candidate, ".")] = {
-                    "bytes": os.path.getsize(candidate),
-                    "sha256": sha256_file(candidate),
-                }
+            for name in sorted(os.listdir(raw_dir)):
+                if not (name.endswith(".json") or name.endswith(".jsonl")):
+                    continue
+                path = os.path.join(raw_dir, name)
+                gz_path = path + ".gz"
+                if not os.path.exists(gz_path):
+                    with open(path, "rb") as source, \
+                            gzip.open(gz_path, "wb", compresslevel=9) as target:
+                        for block in iter(lambda: source.read(1 << 22), b""):
+                            target.write(block)
+                for candidate in (path, gz_path):
+                    index[os.path.relpath(candidate, ".")] = {
+                        "bytes": os.path.getsize(candidate),
+                        "sha256": sha256_file(candidate),
+                    }
         # The per-task receipts beside raw/ are tracked too.
         for name in sorted(os.listdir(root)):
             path = os.path.join(root, name)

@@ -1,0 +1,1393 @@
+{
+  "claims": {
+    "no_reselection_after_scoring": true,
+    "paired_unit_is_the_problem": true,
+    "single_use_of_resolution_instrument": true
+  },
+  "created_utc": "2026-11-21T02:57:30Z",
+  "distinctions": {
+    "complete_registered_win": "replicated GSM8K AND resolved full-MATH AND retention on full MMLU plus the 4,000-item MMLU-Pro instrument",
+    "math_effect_resolved_at_larger_n": "the full-MATH paired interval above zero at n=5,000; this is the clause the S66 verdict left unresolved at n=500",
+    "replicated_gsm8k_win": "GSM8K interval above zero on all three S66 seeds; already established and unchanged by this run"
+  },
+  "kind": "s67-final-verdict",
+  "preregistration": {
+    "path": "docs/s67-resolution-instrument-preregistration-v1.json",
+    "sha256": "0a40d489355e2e5a90d254268f5bedf483481e98fd24f101887499e7894a46e2"
+  },
+  "retention": {
+    "claims": {
+      "no_item_is_counted_in_both_partitions": true,
+      "selection_items_are_a_subset_of_full": true,
+      "unused_partition_is_the_complement": true
+    },
+    "created_utc": "2026-11-21T02:57:10Z",
+    "inputs": {
+      "baseline_mmlu": "results/stage2/eval/s58-post-0.8b-baseline-mmlu/raw/20261118T222909Z-mmlu.json",
+      "baseline_mmlu_pro": "results/stage2/s67-final/raw/20261120T175901Z-mmlu_pro.json",
+      "baseline_mmlu_pro_sha256": "16a94e3359cb3adb76e42ae1cafdd5ad2cb2b5b88a1d8d598835c37c96262e36",
+      "baseline_mmlu_sha256": "55f28cdcc6f84594c9cb77ba8df08fff2a9aadb1aab78d1d8568711fd14d540f",
+      "candidate_mmlu": "results/stage2/s67-final/raw/20261120T125553Z-mmlu.json",
+      "candidate_mmlu_pro": "results/stage2/s67-final/raw/20261120T151153Z-mmlu_pro.json",
+      "candidate_mmlu_pro_sha256": "bd9b4c0f2c4abbd7d2b24abbfb7d46ade193b7aec520e9f3637f97388a4c2960",
+      "candidate_mmlu_sha256": "5c73adfb39e0c8d27c687d77cf24fa4fda8fe311f1488cc1c4c05b23fab91e11",
+      "selection_mmlu": "results/stage2/s60-interpolation/raw/20261119T091650Z-mmlu.json",
+      "selection_mmlu_sha256": "d5273e93c35ff4544aa0a42b6a035884a631b20b6d93c6282c07c9bae58f5694"
+    },
+    "kind": "retention-audit",
+    "metric": "MMLU acc; MMLU-Pro exact_match; paired bootstrap over items",
+    "mmlu": {
+      "counts": {
+        "full": 14042,
+        "selection": 2000,
+        "unused": 12042
+      },
+      "full": {
+        "baseline_correct": 7089,
+        "baseline_score": 0.5048426150121066,
+        "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+        "candidate_correct": 7312,
+        "candidate_score": 0.52072354365475,
+        "ci95": [
+          0.009756444950861701,
+          0.021578122774533543
+        ],
+        "delta": 0.015880928642643496,
+        "items": 14042,
+        "metric": "acc",
+        "resamples": 4000,
+        "seed": 53,
+        "verdict": {
+          "interval_lower_within_bound": true,
+          "legacy_abs_delta_rule_would_say": "fail",
+          "point_drop_within_bound": true,
+          "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+          "state": "pass"
+        }
+      },
+      "selection": {
+        "baseline_correct": 1013,
+        "baseline_score": 0.5065,
+        "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+        "candidate_correct": 1044,
+        "candidate_score": 0.522,
+        "ci95": [
+          -0.001,
+          0.0315
+        ],
+        "delta": 0.0155,
+        "items": 2000,
+        "metric": "acc",
+        "resamples": 4000,
+        "seed": 53,
+        "verdict": {
+          "interval_lower_within_bound": true,
+          "legacy_abs_delta_rule_would_say": "fail",
+          "point_drop_within_bound": true,
+          "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+          "state": "pass"
+        }
+      },
+      "unused": {
+        "baseline_correct": 6076,
+        "baseline_score": 0.504567347616675,
+        "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+        "candidate_correct": 6268,
+        "candidate_score": 0.5205115429330676,
+        "ci95": [
+          0.009715994020926755,
+          0.022589686098654718
+        ],
+        "delta": 0.015944195316392625,
+        "items": 12042,
+        "metric": "acc",
+        "resamples": 4000,
+        "seed": 53,
+        "verdict": {
+          "interval_lower_within_bound": true,
+          "legacy_abs_delta_rule_would_say": "fail",
+          "point_drop_within_bound": true,
+          "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+          "state": "pass"
+        }
+      }
+    },
+    "mmlu_pro": {
+      "baseline_correct": 937,
+      "baseline_score": 0.23425,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_correct": 1070,
+      "candidate_score": 0.2675,
+      "ci95": [
+        0.02,
+        0.04625
+      ],
+      "delta": 0.03325,
+      "items": 4000,
+      "metric": "exact_match",
+      "registered_instrument_present": true,
+      "registered_sample_size": 4000,
+      "resamples": 4000,
+      "sample_size": 4000,
+      "seed": 53,
+      "verdict": {
+        "interval_lower_within_bound": true,
+        "legacy_abs_delta_rule_would_say": "fail",
+        "point_drop_within_bound": true,
+        "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+        "state": "pass"
+      }
+    },
+    "preregistration": {
+      "path": "docs/s67-resolution-instrument-preregistration-v1.json",
+      "sha256": "0a40d489355e2e5a90d254268f5bedf483481e98fd24f101887499e7894a46e2"
+    },
+    "revision": "bacb13e2b7a518ffa543d9c3d9bad6d5ad42a89b",
+    "schema": "selvedge/s67-retention-audit/v1",
+    "stamp": "20261121T025710Z",
+    "verdict": {
+      "mmlu_pass": true,
+      "mmlu_pro_4000_pass": true,
+      "retention_pass": true,
+      "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point, on full MMLU, the 12,042 unused MMLU items, and the 4,000-item MMLU-Pro instrument"
+    }
+  },
+  "revision": "bacb13e2b7a518ffa543d9c3d9bad6d5ad42a89b",
+  "schema": "selvedge/s67-verdict/v1",
+  "scores": {
+    "gsm8k": {
+      "baseline_accuracy": 0.5420773313115997,
+      "baseline_correct": 715,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_accuracy": 0.6338134950720242,
+      "candidate_correct": 836,
+      "ci95": [
+        0.06595905989385899,
+        0.1197877179681577
+      ],
+      "delta": 0.09173616376042457,
+      "interval_above_zero": true,
+      "problems": 1319,
+      "resamples": 4000,
+      "seed": 53
+    },
+    "math500": {
+      "baseline_accuracy": 0.382,
+      "baseline_correct": 191,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_accuracy": 0.406,
+      "candidate_correct": 203,
+      "ci95": [
+        -0.016,
+        0.064
+      ],
+      "delta": 0.024,
+      "interval_above_zero": false,
+      "problems": 500,
+      "resamples": 4000,
+      "seed": 53
+    },
+    "math_full": {
+      "baseline_accuracy": 0.396,
+      "baseline_correct": 1980,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_accuracy": 0.4212,
+      "candidate_correct": 2106,
+      "ci95": [
+        0.012,
+        0.03780500000000002
+      ],
+      "delta": 0.0252,
+      "interval_above_zero": true,
+      "problems": 5000,
+      "resamples": 4000,
+      "seed": 53
+    }
+  },
+  "selection": {
+    "calibration_only": true,
+    "coefficient": 0.375,
+    "receipt": {
+      "calibration_registration": {
+        "items_per_task": 1000,
+        "path": "docs/s66-calibration-splits-v1.json",
+        "sha256": "9158aa238d91859151d60a96658f132c71fd1cfc5b886daf6b5ee88009f80cd1",
+        "source": "train split only; no test split read"
+      },
+      "claims": {
+        "mmlu_is_a_retention_filter": true,
+        "selection_rule_is_registered": true,
+        "test_split_used_for_selection": false
+      },
+      "created_utc": "2026-11-20T12:44:59Z",
+      "instrument": {
+        "batch_size": 32,
+        "decoding": "greedy non-thinking",
+        "max_new_tokens": 2048,
+        "tasks": "GSM8K-cal and MATH-cal (1,000 each)",
+        "test_split_read": false
+      },
+      "kind": "soup-calibration",
+      "preregistration": {
+        "path": "docs/s67-resolution-instrument-preregistration-v1.json",
+        "sha256": "0a40d489355e2e5a90d254268f5bedf483481e98fd24f101887499e7894a46e2"
+      },
+      "revision": "0c71d9cd0a82c7d32e1d4abcd770c53bcbb51dac",
+      "rows": [
+        {
+          "checkpoint": "results/stage2/s60-interpolation/interp-0.000-arm.pt",
+          "checkpoint_sha256": "829794f7469249b813d893d0a0d0e2e56248ff55f121f6551c3ecb1956bd0361",
+          "coefficient": 0.0,
+          "gsm8k_cal": 0.522,
+          "gsm8k_cal_300": {
+            "accuracy": 0.5366666666666666,
+            "correct": 161,
+            "items": 300
+          },
+          "gsm8k_raw": null,
+          "math_cal": 0.322,
+          "math_cal_300": {
+            "accuracy": 0.31333333333333335,
+            "correct": 94,
+            "items": 300
+          },
+          "math_raw": null,
+          "mmlu_cal": 0.506,
+          "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.000.json",
+          "mmlu_cal_receipt_sha256": "2c4422a28f60d819a5ec135b38ee3f1ad9fefb875dd48701e20ee2fd47c0e09a",
+          "source": "results/stage2/s66-calibration/large-grid.json",
+          "verified_tensor_equal_to": "results/stage2/s60-interpolation/interp-0.000-arm.pt"
+        },
+        {
+          "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+          "checkpoint_sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+          "coefficient": 0.375,
+          "generated_tokens": 1806060,
+          "gsm8k_cal": 0.609,
+          "gsm8k_correct": 609,
+          "gsm8k_items": 1000,
+          "math_cal": 0.326,
+          "math_correct": 326,
+          "math_items": 1000,
+          "mmlu_cal": 0.5215,
+          "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.375.json",
+          "mmlu_cal_receipt_sha256": "01a0369dc6e666c4719a069eef25838c71e7638dc752323bb5f06e3a6ea11a26",
+          "wall_seconds": 2264.6
+        },
+        {
+          "checkpoint": "results/stage2/s67-soup/interp-0.500-arm.pt",
+          "checkpoint_sha256": "b9abb31a7f65b1a42f11da1ec21b9db306f105824e206b85bc6268a9bb9a6f93",
+          "coefficient": 0.5,
+          "generated_tokens": 1818071,
+          "gsm8k_cal": 0.607,
+          "gsm8k_correct": 607,
+          "gsm8k_items": 1000,
+          "math_cal": 0.307,
+          "math_correct": 307,
+          "math_items": 1000,
+          "mmlu_cal": 0.521,
+          "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.500.json",
+          "mmlu_cal_receipt_sha256": "26d26cfbbbcd087ea55c1c6337f430c124a51a4b66ba28d7652d409442f0bcbf",
+          "wall_seconds": 2209.8
+        },
+        {
+          "checkpoint": "results/stage2/s67-soup/interp-0.625-arm.pt",
+          "checkpoint_sha256": "f9209a689446eba6bbe5efad815dfbd624e26c277b9cafd23f840a0e179b4d7e",
+          "coefficient": 0.625,
+          "generated_tokens": 1782684,
+          "gsm8k_cal": 0.603,
+          "gsm8k_correct": 603,
+          "gsm8k_items": 1000,
+          "math_cal": 0.298,
+          "math_correct": 298,
+          "math_items": 1000,
+          "mmlu_cal": 0.5105,
+          "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.625.json",
+          "mmlu_cal_receipt_sha256": "d273e269d14ac9d30ea34393c234199b1a3751fd72a08ee91be4868f3fd23679",
+          "wall_seconds": 2206.3999999999996
+        },
+        {
+          "checkpoint": "results/stage2/s67-soup/interp-0.750-arm.pt",
+          "checkpoint_sha256": "09f069b3ed126d872f8239cec464108180590d95c0f27a3cbfa8b11144fa544c",
+          "coefficient": 0.75,
+          "generated_tokens": 1822883,
+          "gsm8k_cal": 0.576,
+          "gsm8k_correct": 576,
+          "gsm8k_items": 1000,
+          "math_cal": 0.273,
+          "math_correct": 273,
+          "math_items": 1000,
+          "mmlu_cal": 0.5095,
+          "mmlu_cal_receipt": "results/stage2/s67-soup/mmlu-0.750.json",
+          "mmlu_cal_receipt_sha256": "368bac7858df01177b6c99df33ae188d93be5ed3af1579e83b674d4e93ea768d",
+          "wall_seconds": 2126.6000000000004
+        }
+      ],
+      "schema": "selvedge/s67-soup-calibration/v1",
+      "selection": {
+        "basis": "calibration only; ties choose the smaller coefficient",
+        "calibration_gain": 0.045499999999999985,
+        "coefficient": 0.375,
+        "eligible": true,
+        "mmlu_present": true,
+        "objective": "mean gain over alpha=0 on GSM8K-cal and MATH-cal; MMLU-cal drop > 1.0 point ineligible",
+        "retention_limit": 0.01,
+        "retention_required": true
+      },
+      "stamp": "20261120T124459Z"
+    },
+    "test_split_read_for_selection": false
+  },
+  "soup_vs_post_trained": {
+    "soup_vs_post_gsm8k": {
+      "baseline_items": 1319,
+      "baseline_only": 0,
+      "bases": {
+        "exact": {
+          "baseline_accuracy": 0.5489006823351024,
+          "baseline_correct": 724,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.6413949962092494,
+          "candidate_correct": 846,
+          "ci95": [
+            0.06595905989385899,
+            0.1197877179681577
+          ],
+          "delta": 0.09249431387414708,
+          "interval_above_zero": true,
+          "problems": 1319,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "flexible": {
+          "baseline_accuracy": 0.5420773313115997,
+          "baseline_correct": 715,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.6338134950720242,
+          "candidate_correct": 836,
+          "ci95": [
+            0.06595905989385899,
+            0.1197877179681577
+          ],
+          "delta": 0.09173616376042457,
+          "interval_above_zero": true,
+          "problems": 1319,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "strict": {
+          "baseline_accuracy": 0.5405610310841547,
+          "baseline_correct": 713,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.6322971948445792,
+          "candidate_correct": 834,
+          "ci95": [
+            0.06520090978013647,
+            0.11904852160727832
+          ],
+          "delta": 0.09173616376042457,
+          "interval_above_zero": true,
+          "problems": 1319,
+          "resamples": 4000,
+          "seed": 53
+        }
+      },
+      "candidate_items": 1319,
+      "candidate_only": 0,
+      "mode": "non-thinking",
+      "paired_problems": 1319,
+      "task": "gsm8k",
+      "termination": {
+        "baseline": null,
+        "candidate": {
+          "cross_tab": {
+            "terminated_clean": 1255,
+            "terminated_loop": 0,
+            "truncated_clean": 57,
+            "truncated_loop": 7
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.00530705079605762,
+          "loop_classified_samples": 7,
+          "loop_reasons": {
+            "compressed_repetitive_tail": 6,
+            "exact_period_tail": 1,
+            "no_loop": 1296,
+            "repetitive_but_not_compressed": 16
+          },
+          "mean_new_tokens": {
+            "all": 626.0030326004548,
+            "clean": 607.4893292682926,
+            "loop": 4096.0,
+            "terminated": 449.0470119521912,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.6645418326693228,
+              "correct": 834,
+              "problems": 1255
+            },
+            "any_truncated": {
+              "accuracy": 0.03125,
+              "correct": 2,
+              "problems": 64
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.6338134950720242,
+              "correct": 836,
+              "mean_new_tokens": 626.0030326004548,
+              "samples": 1319,
+              "stderr": 0.013265068920941888
+            },
+            "clean": {
+              "accuracy": 0.6371951219512195,
+              "correct": 836,
+              "mean_new_tokens": 607.4893292682926,
+              "samples": 1312,
+              "stderr": 0.013274123762845284
+            },
+            "loop": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 7,
+              "stderr": 0.0
+            },
+            "terminated": {
+              "accuracy": 0.6645418326693228,
+              "correct": 834,
+              "mean_new_tokens": 449.0470119521912,
+              "samples": 1255,
+              "stderr": 0.013327800537701839
+            },
+            "truncated": {
+              "accuracy": 0.03125,
+              "correct": 2,
+              "mean_new_tokens": 4096.0,
+              "samples": 64,
+              "stderr": 0.02174907954230477
+            }
+          },
+          "samples": 1319,
+          "truncated_samples": 64,
+          "truncation_rate": 0.04852160727824109
+        }
+      }
+    },
+    "soup_vs_post_math500": {
+      "baseline_items": 500,
+      "baseline_only": 0,
+      "bases": {
+        "exact": {
+          "baseline_accuracy": 0.406,
+          "baseline_correct": 203,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.432,
+          "candidate_correct": 216,
+          "ci95": [
+            -0.016,
+            0.068
+          ],
+          "delta": 0.026,
+          "interval_above_zero": false,
+          "problems": 500,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "flexible": {
+          "baseline_accuracy": 0.382,
+          "baseline_correct": 191,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.406,
+          "candidate_correct": 203,
+          "ci95": [
+            -0.016,
+            0.064
+          ],
+          "delta": 0.024,
+          "interval_above_zero": false,
+          "problems": 500,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "strict": {
+          "baseline_accuracy": 0.382,
+          "baseline_correct": 191,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.406,
+          "candidate_correct": 203,
+          "ci95": [
+            -0.016,
+            0.064
+          ],
+          "delta": 0.024,
+          "interval_above_zero": false,
+          "problems": 500,
+          "resamples": 4000,
+          "seed": 53
+        }
+      },
+      "candidate_items": 500,
+      "candidate_only": 0,
+      "mode": "non-thinking",
+      "paired_problems": 500,
+      "task": "math500",
+      "termination": {
+        "baseline": null,
+        "candidate": {
+          "cross_tab": {
+            "terminated_clean": 342,
+            "terminated_loop": 0,
+            "truncated_clean": 116,
+            "truncated_loop": 42
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.084,
+          "loop_classified_samples": 42,
+          "loop_reasons": {
+            "compressed_but_not_repetitive": 6,
+            "compressed_repetitive_tail": 36,
+            "exact_period_tail": 6,
+            "no_loop": 434,
+            "repetitive_but_not_compressed": 18
+          },
+          "mean_new_tokens": {
+            "all": 1919.79,
+            "clean": 1720.2248908296942,
+            "loop": 4096.0,
+            "terminated": 914.406432748538,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.5935672514619883,
+              "correct": 203,
+              "problems": 342
+            },
+            "any_truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "problems": 158
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.406,
+              "correct": 203,
+              "mean_new_tokens": 1919.79,
+              "samples": 500,
+              "stderr": 0.021961967125009547
+            },
+            "clean": {
+              "accuracy": 0.4432314410480349,
+              "correct": 203,
+              "mean_new_tokens": 1720.2248908296942,
+              "samples": 458,
+              "stderr": 0.023212391788965826
+            },
+            "loop": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 42,
+              "stderr": 0.0
+            },
+            "terminated": {
+              "accuracy": 0.5935672514619883,
+              "correct": 203,
+              "mean_new_tokens": 914.406432748538,
+              "samples": 342,
+              "stderr": 0.026559277707068694
+            },
+            "truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 158,
+              "stderr": 0.0
+            }
+          },
+          "samples": 500,
+          "truncated_samples": 158,
+          "truncation_rate": 0.316
+        }
+      }
+    },
+    "soup_vs_post_math_full": {
+      "baseline_items": 5000,
+      "baseline_only": 0,
+      "bases": {
+        "exact": {
+          "baseline_accuracy": 0.4222,
+          "baseline_correct": 2111,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.4484,
+          "candidate_correct": 2242,
+          "ci95": [
+            0.0128,
+            0.0394
+          ],
+          "delta": 0.0262,
+          "interval_above_zero": true,
+          "problems": 5000,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "flexible": {
+          "baseline_accuracy": 0.396,
+          "baseline_correct": 1980,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.4212,
+          "candidate_correct": 2106,
+          "ci95": [
+            0.012,
+            0.03780500000000002
+          ],
+          "delta": 0.0252,
+          "interval_above_zero": true,
+          "problems": 5000,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "strict": {
+          "baseline_accuracy": 0.396,
+          "baseline_correct": 1980,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.4212,
+          "candidate_correct": 2106,
+          "ci95": [
+            0.012,
+            0.03780500000000002
+          ],
+          "delta": 0.0252,
+          "interval_above_zero": true,
+          "problems": 5000,
+          "resamples": 4000,
+          "seed": 53
+        }
+      },
+      "candidate_items": 5000,
+      "candidate_only": 0,
+      "mode": "non-thinking",
+      "paired_problems": 5000,
+      "task": "math_full",
+      "termination": {
+        "baseline": {
+          "cross_tab": {
+            "terminated_clean": 3389,
+            "terminated_loop": 0,
+            "truncated_clean": 1163,
+            "truncated_loop": 448
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.0896,
+          "loop_classified_samples": 448,
+          "loop_reasons": {
+            "compressed_but_not_repetitive": 59,
+            "compressed_repetitive_tail": 402,
+            "exact_period_tail": 46,
+            "no_loop": 4204,
+            "repetitive_but_not_compressed": 289
+          },
+          "mean_new_tokens": {
+            "all": 1930.3452,
+            "clean": 1717.2051845342708,
+            "loop": 4096.0,
+            "terminated": 900.8763647093538,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.5818825612275007,
+              "correct": 1972,
+              "problems": 3389
+            },
+            "any_truncated": {
+              "accuracy": 0.004965859714463066,
+              "correct": 8,
+              "problems": 1611
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.396,
+              "correct": 1980,
+              "mean_new_tokens": 1930.3452,
+              "samples": 5000,
+              "stderr": 0.00691641525647499
+            },
+            "clean": {
+              "accuracy": 0.43409490333919154,
+              "correct": 1976,
+              "mean_new_tokens": 1717.2051845342708,
+              "samples": 4552,
+              "stderr": 0.007346204593661036
+            },
+            "loop": {
+              "accuracy": 0.008928571428571428,
+              "correct": 4,
+              "mean_new_tokens": 4096.0,
+              "samples": 448,
+              "stderr": 0.004444311181366822
+            },
+            "terminated": {
+              "accuracy": 0.5818825612275007,
+              "correct": 1972,
+              "mean_new_tokens": 900.8763647093538,
+              "samples": 3389,
+              "stderr": 0.008472879445165372
+            },
+            "truncated": {
+              "accuracy": 0.004965859714463066,
+              "correct": 8,
+              "mean_new_tokens": 4096.0,
+              "samples": 1611,
+              "stderr": 0.0017513318425397195
+            }
+          },
+          "samples": 5000,
+          "truncated_samples": 1611,
+          "truncation_rate": 0.3222
+        },
+        "candidate": {
+          "cross_tab": {
+            "terminated_clean": 3646,
+            "terminated_loop": 1,
+            "truncated_clean": 1053,
+            "truncated_loop": 300
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.0602,
+          "loop_classified_samples": 301,
+          "loop_reasons": {
+            "compressed_but_not_repetitive": 48,
+            "compressed_repetitive_tail": 278,
+            "exact_period_tail": 23,
+            "no_loop": 4478,
+            "repetitive_but_not_compressed": 173
+          },
+          "mean_new_tokens": {
+            "all": 1801.324,
+            "clean": 1654.8514577569695,
+            "loop": 4087.9501661129566,
+            "terminated": 950.0224842336166,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.5774609267891417,
+              "correct": 2106,
+              "problems": 3647
+            },
+            "any_truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "problems": 1353
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.4212,
+              "correct": 2106,
+              "mean_new_tokens": 1801.324,
+              "samples": 5000,
+              "stderr": 0.006982700910106346
+            },
+            "clean": {
+              "accuracy": 0.4479676526920621,
+              "correct": 2105,
+              "mean_new_tokens": 1654.8514577569695,
+              "samples": 4699,
+              "stderr": 0.007254422883992116
+            },
+            "loop": {
+              "accuracy": 0.0033222591362126247,
+              "correct": 1,
+              "mean_new_tokens": 4087.9501661129566,
+              "samples": 301,
+              "stderr": 0.0033167358420584142
+            },
+            "terminated": {
+              "accuracy": 0.5774609267891417,
+              "correct": 2106,
+              "mean_new_tokens": 950.0224842336166,
+              "samples": 3647,
+              "stderr": 0.008179501903566557
+            },
+            "truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 1353,
+              "stderr": 0.0
+            }
+          },
+          "samples": 5000,
+          "truncated_samples": 1353,
+          "truncation_rate": 0.2706
+        }
+      }
+    }
+  },
+  "soup_vs_s65_seed0": {
+    "gsm8k": {
+      "baseline_items": 1319,
+      "baseline_only": 0,
+      "bases": {
+        "exact": {
+          "baseline_accuracy": 0.6542835481425322,
+          "baseline_correct": 863,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.6413949962092494,
+          "candidate_correct": 846,
+          "ci95": [
+            -0.03411675511751327,
+            0.0075815011372251705
+          ],
+          "delta": -0.01288855193328279,
+          "interval_above_zero": false,
+          "problems": 1319,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "flexible": {
+          "baseline_accuracy": 0.6489764973464746,
+          "baseline_correct": 856,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.6338134950720242,
+          "candidate_correct": 836,
+          "ci95": [
+            -0.03639120545868082,
+            0.00530705079605762
+          ],
+          "delta": -0.015163002274450341,
+          "interval_above_zero": false,
+          "problems": 1319,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "strict": {
+          "baseline_accuracy": 0.6489764973464746,
+          "baseline_correct": 856,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.6322971948445792,
+          "candidate_correct": 834,
+          "ci95": [
+            -0.037149355572403335,
+            0.0037907505686125853
+          ],
+          "delta": -0.016679302501895376,
+          "interval_above_zero": false,
+          "problems": 1319,
+          "resamples": 4000,
+          "seed": 53
+        }
+      },
+      "candidate_items": 1319,
+      "candidate_only": 0,
+      "mode": "non-thinking",
+      "paired_problems": 1319,
+      "task": "gsm8k",
+      "termination": {
+        "baseline": {
+          "cross_tab": {
+            "terminated_clean": 1276,
+            "terminated_loop": 0,
+            "truncated_clean": 42,
+            "truncated_loop": 1
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.000758150113722517,
+          "loop_classified_samples": 1,
+          "loop_reasons": {
+            "compressed_but_not_repetitive": 2,
+            "compressed_repetitive_tail": 1,
+            "no_loop": 1302,
+            "repetitive_but_not_compressed": 14
+          },
+          "mean_new_tokens": {
+            "all": 594.6626231993935,
+            "clean": 592.0060698027314,
+            "loop": 4096.0,
+            "terminated": 476.6708463949843,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.670846394984326,
+              "correct": 856,
+              "problems": 1276
+            },
+            "any_truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "problems": 43
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.6489764973464746,
+              "correct": 856,
+              "mean_new_tokens": 594.6626231993935,
+              "samples": 1319,
+              "stderr": 0.01314196131716445
+            },
+            "clean": {
+              "accuracy": 0.6494688922610015,
+              "correct": 856,
+              "mean_new_tokens": 592.0060698027314,
+              "samples": 1318,
+              "stderr": 0.013142704844396048
+            },
+            "loop": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 1,
+              "stderr": 0.0
+            },
+            "terminated": {
+              "accuracy": 0.670846394984326,
+              "correct": 856,
+              "mean_new_tokens": 476.6708463949843,
+              "samples": 1276,
+              "stderr": 0.013154838356856807
+            },
+            "truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 43,
+              "stderr": 0.0
+            }
+          },
+          "samples": 1319,
+          "truncated_samples": 43,
+          "truncation_rate": 0.032600454890068235
+        },
+        "candidate": {
+          "cross_tab": {
+            "terminated_clean": 1255,
+            "terminated_loop": 0,
+            "truncated_clean": 57,
+            "truncated_loop": 7
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.00530705079605762,
+          "loop_classified_samples": 7,
+          "loop_reasons": {
+            "compressed_repetitive_tail": 6,
+            "exact_period_tail": 1,
+            "no_loop": 1296,
+            "repetitive_but_not_compressed": 16
+          },
+          "mean_new_tokens": {
+            "all": 626.0030326004548,
+            "clean": 607.4893292682926,
+            "loop": 4096.0,
+            "terminated": 449.0470119521912,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.6645418326693228,
+              "correct": 834,
+              "problems": 1255
+            },
+            "any_truncated": {
+              "accuracy": 0.03125,
+              "correct": 2,
+              "problems": 64
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.6338134950720242,
+              "correct": 836,
+              "mean_new_tokens": 626.0030326004548,
+              "samples": 1319,
+              "stderr": 0.013265068920941888
+            },
+            "clean": {
+              "accuracy": 0.6371951219512195,
+              "correct": 836,
+              "mean_new_tokens": 607.4893292682926,
+              "samples": 1312,
+              "stderr": 0.013274123762845284
+            },
+            "loop": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 7,
+              "stderr": 0.0
+            },
+            "terminated": {
+              "accuracy": 0.6645418326693228,
+              "correct": 834,
+              "mean_new_tokens": 449.0470119521912,
+              "samples": 1255,
+              "stderr": 0.013327800537701839
+            },
+            "truncated": {
+              "accuracy": 0.03125,
+              "correct": 2,
+              "mean_new_tokens": 4096.0,
+              "samples": 64,
+              "stderr": 0.02174907954230477
+            }
+          },
+          "samples": 1319,
+          "truncated_samples": 64,
+          "truncation_rate": 0.04852160727824109
+        }
+      }
+    },
+    "math500": {
+      "baseline_items": 500,
+      "baseline_only": 0,
+      "bases": {
+        "exact": {
+          "baseline_accuracy": 0.452,
+          "baseline_correct": 226,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.432,
+          "candidate_correct": 216,
+          "ci95": [
+            -0.06,
+            0.018
+          ],
+          "delta": -0.02,
+          "interval_above_zero": false,
+          "problems": 500,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "flexible": {
+          "baseline_accuracy": 0.428,
+          "baseline_correct": 214,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.406,
+          "candidate_correct": 203,
+          "ci95": [
+            -0.06,
+            0.014050000000000182
+          ],
+          "delta": -0.022,
+          "interval_above_zero": false,
+          "problems": 500,
+          "resamples": 4000,
+          "seed": 53
+        },
+        "strict": {
+          "baseline_accuracy": 0.428,
+          "baseline_correct": 214,
+          "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+          "candidate_accuracy": 0.406,
+          "candidate_correct": 203,
+          "ci95": [
+            -0.06,
+            0.014050000000000182
+          ],
+          "delta": -0.022,
+          "interval_above_zero": false,
+          "problems": 500,
+          "resamples": 4000,
+          "seed": 53
+        }
+      },
+      "candidate_items": 500,
+      "candidate_only": 0,
+      "mode": "non-thinking",
+      "paired_problems": 500,
+      "task": "math500",
+      "termination": {
+        "baseline": {
+          "cross_tab": {
+            "terminated_clean": 361,
+            "terminated_loop": 0,
+            "truncated_clean": 108,
+            "truncated_loop": 31
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.062,
+          "loop_classified_samples": 31,
+          "loop_reasons": {
+            "compressed_but_not_repetitive": 7,
+            "compressed_repetitive_tail": 27,
+            "exact_period_tail": 4,
+            "no_loop": 447,
+            "repetitive_but_not_compressed": 15
+          },
+          "mean_new_tokens": {
+            "all": 1838.248,
+            "clean": 1689.0149253731342,
+            "loop": 4096.0,
+            "terminated": 968.9196675900278,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.592797783933518,
+              "correct": 214,
+              "problems": 361
+            },
+            "any_truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "problems": 139
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.428,
+              "correct": 214,
+              "mean_new_tokens": 1838.248,
+              "samples": 500,
+              "stderr": 0.022127629787213995
+            },
+            "clean": {
+              "accuracy": 0.4562899786780384,
+              "correct": 214,
+              "mean_new_tokens": 1689.0149253731342,
+              "samples": 469,
+              "stderr": 0.022999463887143558
+            },
+            "loop": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 31,
+              "stderr": 0.0
+            },
+            "terminated": {
+              "accuracy": 0.592797783933518,
+              "correct": 214,
+              "mean_new_tokens": 968.9196675900278,
+              "samples": 361,
+              "stderr": 0.025858584696089662
+            },
+            "truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 139,
+              "stderr": 0.0
+            }
+          },
+          "samples": 500,
+          "truncated_samples": 139,
+          "truncation_rate": 0.278
+        },
+        "candidate": {
+          "cross_tab": {
+            "terminated_clean": 342,
+            "terminated_loop": 0,
+            "truncated_clean": 116,
+            "truncated_loop": 42
+          },
+          "detector": {
+            "decoding_unchanged": true,
+            "kind": "zlib_tail_compression_plus_word_ngram_repetition",
+            "min_chars": 400,
+            "ngram_n": 6,
+            "ngram_repeat_min": 0.2,
+            "period_chars_max": 160,
+            "period_repeats_min": 3,
+            "tail_chars": 2000,
+            "tail_over_full_max": 0.78
+          },
+          "loop_classified_fraction": 0.084,
+          "loop_classified_samples": 42,
+          "loop_reasons": {
+            "compressed_but_not_repetitive": 6,
+            "compressed_repetitive_tail": 36,
+            "exact_period_tail": 6,
+            "no_loop": 434,
+            "repetitive_but_not_compressed": 18
+          },
+          "mean_new_tokens": {
+            "all": 1919.79,
+            "clean": 1720.2248908296942,
+            "loop": 4096.0,
+            "terminated": 914.406432748538,
+            "truncated": 4096.0
+          },
+          "problem_level": {
+            "all_terminated": {
+              "accuracy": 0.5935672514619883,
+              "correct": 203,
+              "problems": 342
+            },
+            "any_truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "problems": 158
+            }
+          },
+          "sample_level": {
+            "all": {
+              "accuracy": 0.406,
+              "correct": 203,
+              "mean_new_tokens": 1919.79,
+              "samples": 500,
+              "stderr": 0.021961967125009547
+            },
+            "clean": {
+              "accuracy": 0.4432314410480349,
+              "correct": 203,
+              "mean_new_tokens": 1720.2248908296942,
+              "samples": 458,
+              "stderr": 0.023212391788965826
+            },
+            "loop": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 42,
+              "stderr": 0.0
+            },
+            "terminated": {
+              "accuracy": 0.5935672514619883,
+              "correct": 203,
+              "mean_new_tokens": 914.406432748538,
+              "samples": 342,
+              "stderr": 0.026559277707068694
+            },
+            "truncated": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "mean_new_tokens": 4096.0,
+              "samples": 158,
+              "stderr": 0.0
+            }
+          },
+          "samples": 500,
+          "truncated_samples": 158,
+          "truncation_rate": 0.316
+        }
+      }
+    }
+  },
+  "soup_vs_s65_seed0_math_full": {
+    "scored": false,
+    "why": "the S65 seed-0 checkpoint was never scored on the full 5,000-problem MATH test, and this session does not spend another full-instrument pass on it; the direct comparison is reported on GSM8K and MATH-500 only"
+  },
+  "stamp": "20261121T025730Z",
+  "throughput": {
+    "baseline_math_full": {
+      "decode_wall_seconds": 13859.776301145554,
+      "generated_tokens": 9651726,
+      "items": 5000,
+      "tokens_per_second": 696.3839668322969,
+      "wall_seconds": 13879.2
+    },
+    "soup": {
+      "gsm8k": {
+        "decode_wall_seconds": 3144.647463321686,
+        "generated_tokens": 825698,
+        "items": 1319,
+        "tokens_per_second": 262.5725171519915,
+        "wall_seconds": 3149.4
+      },
+      "math500": {
+        "decode_wall_seconds": 1322.0816640853882,
+        "generated_tokens": 959895,
+        "items": 500,
+        "tokens_per_second": 726.0481905738042,
+        "wall_seconds": 1324.2
+      },
+      "math_full": {
+        "decode_wall_seconds": 13475.433190822601,
+        "generated_tokens": 9006620,
+        "items": 5000,
+        "tokens_per_second": 668.3733185018444,
+        "wall_seconds": 13495.5
+      }
+    }
+  },
+  "verdict": {
+    "complete_registered_win": true,
+    "math_effect_resolved_at_larger_n": true,
+    "replicated_gsm8k_win": true,
+    "retention_pass": true,
+    "soup_beats_post_trained_gsm8k": true,
+    "soup_beats_post_trained_math500": false,
+    "soup_beats_post_trained_math_full": true,
+    "soup_beats_s65_seed0_gsm8k": false,
+    "soup_beats_s65_seed0_math500": false
+  }
+}

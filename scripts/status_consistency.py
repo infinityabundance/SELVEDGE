@@ -746,6 +746,9 @@ def _s67_resolution_line() -> str | None:
     if not (gsm and math500 and full):
         return None
 
+    def yes(value) -> str:
+        return "yes" if value else "no"
+
     def block(row: dict) -> str:
         delta = row.get("delta")
         ci = row.get("ci95")
@@ -760,17 +763,45 @@ def _s67_resolution_line() -> str | None:
         f"post-trained 0.8B: GSM8K `{block(gsm)}`, MATH-500 `{block(math500)}`, "
         f"full MATH (5,000) `{block(full)}` (paired problem-level bootstrap, "
         "4,000 resamples, seed 53). Verdict: replicated GSM8K gain "
-        f"`{str(flags.get('replicated_gsm8k_win')).lower()}`, MATH effect "
+        f"`{yes(flags.get('replicated_gsm8k_win'))}`, MATH effect "
         "resolved at the larger n "
-        f"`{str(flags.get('math_effect_resolved_at_larger_n')).lower()}`, "
+        f"`{yes(flags.get('math_effect_resolved_at_larger_n'))}`, "
         "retention "
-        f"`{'pass' if retention.get('retention_pass') else retention.get('retention_pass')}`, "
+        f"`{'pass' if retention.get('retention_pass') else 'not pass'}`, "
         "complete registered win "
-        f"`{str(flags.get('complete_registered_win')).lower()}`. The "
-        "coefficient was selected on the 1,000-item train-split calibration "
-        "before the full MATH instrument was scored; the full MATH set was "
-        "used once for this claim. Verdict receipt: "
+        f"`{'met' if flags.get('complete_registered_win') else 'not met'}`. "
+        "The coefficient was selected on the 1,000-item train-split "
+        "calibration before the full MATH instrument was scored; the full "
+        "MATH set was used once for this claim. This is a capability win for "
+        "this intervention, not a frontier advantage. Verdict receipt: "
         f"`{S67_VERDICT}`."
+    )
+
+
+def _s67_seed0_line() -> str | None:
+    """The soup's direct comparison with the S65 seed-0 checkpoint."""
+    payload = read_json(os.path.join(root_for_status(), S67_VERDICT))
+    if payload is None:
+        return None
+    comparisons = payload.get("soup_vs_s65_seed0") or {}
+    gsm = ((comparisons.get("gsm8k") or {}).get("bases") or {}).get("flexible")
+    math = ((comparisons.get("math500") or {}).get("bases") or {}).get(
+        "flexible")
+    if not (gsm and math):
+        return None
+    beat = (gsm.get("interval_above_zero") or math.get("interval_above_zero"))
+    return (
+        "- **S67 soup does not beat the S65 seed-0 checkpoint directly** — "
+        "the soup is below the single seed on both instruments it was "
+        "compared on, and both intervals include zero: GSM8K "
+        f"`{100.0 * gsm['delta']:+.2f} "
+        f"[{100.0 * gsm['ci95'][0]:+.2f},{100.0 * gsm['ci95'][1]:+.2f}]`, "
+        "MATH-500 "
+        f"`{100.0 * math['delta']:+.2f} "
+        f"[{100.0 * math['ci95'][0]:+.2f},{100.0 * math['ci95'][1]:+.2f}]`. "
+        f"The seed-0 checkpoint was not scored on full MATH, so that direct "
+        "comparison is not claimed. Beating the seed zero would be "
+        f"`{('yes' if beat else 'no')}`. Receipt: `{S67_VERDICT}`."
     )
 
 
@@ -878,6 +909,9 @@ def render_readme_status(facts: dict) -> str:
         resolution_line = _s67_resolution_line()
         if resolution_line:
             lines.append(resolution_line)
+        seed0_line = _s67_seed0_line()
+        if seed0_line:
+            lines.append(seed0_line)
         if ws19["amended"] and ws19["amended_invalidated"]:
             recipe = (ws19["selected"] or {}).get("lr")
             lines.append(
@@ -1004,6 +1038,9 @@ def render_report_status(facts: dict) -> str:
     resolution_line = _s67_resolution_line()
     if resolution_line:
         lines.append(resolution_line)
+    seed0_line = _s67_seed0_line()
+    if seed0_line:
+        lines.append(seed0_line)
     lines.append(tail)
     return "\n".join(lines)
 

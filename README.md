@@ -85,6 +85,8 @@ hand.
 - **WS19 stage-2b milestone receipts:** `m5` (step `2441` / `4999168` tokens, stamp `20261118T005244Z`, gsm8k `exact_match,strict-match` 29.5% [secondary `exact_match,flexible-extract` 29.9%], minerva_math500 `math_verify,none` 12.8% [secondary `exact_match,none` 3.2%], mmlu `acc,none` 46.0%, mmlu_pro `exact_match,custom-extract` 18.1%); `m10` (step `4882` / `9998336` tokens, stamp `20261118T013503Z`, gsm8k `exact_match,strict-match` 37.1% [secondary `exact_match,flexible-extract` 37.4%], minerva_math500 `math_verify,none` 14.2% [secondary `exact_match,none` 12.6%], mmlu `acc,none` 46.6%, mmlu_pro `exact_match,custom-extract` 18.3%); `m20` (step `9765` / `19998720` tokens, stamp `20261118T021549Z`, gsm8k `exact_match,strict-match` 41.7% [secondary `exact_match,flexible-extract` 41.7%], minerva_math500 `math_verify,none` 18.6% [secondary `exact_match,none` 8.8%], mmlu `acc,none` 47.0%, mmlu_pro `exact_match,custom-extract` 23.0%). The scored endpoint is `m20` at step `9765` / `19998720` tokens (`results/stage2/eval/s50-bar-20m-lr1e-5/m20/eval.json`); no eligible milestone is marked invalidated.
 - **S65 weight-space interpolation (WiSE-FT) at alpha `0.375`** — full GSM8K `64.90%` (delta `+10.69 [+8.04,+13.42]` points), MATH-500 `42.80%` (delta `+4.60 [+0.60,+8.60]`), MMLU `51.74%` (delta `+1.26 [+0.63,+1.87]`), MMLU-Pro `25.20%` (delta `+2.78 [-0.60,+6.55]`; 504 items, registered 4,000-item instrument absent -> retention clause unresolved). The coefficient was selected on train-split calibration only; alpha 0.25 was scored after selection and is a sensitivity point, never adopted. Checkpoint `10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a`; the capability claim rests on the text-path accounting certificate, not a per-token executed-set audit (P19.0 kernels). Receipt: `results/stage2/s65-interp-selected/identity.json`.
 - **S66 three-seed replication at the fixed alpha 0.375: GSM8K `replicated`, MATH-500 `unresolved at n=500`, complete registered win `not met`** — GSM8K paired intervals are above zero on every seed (seed 0 +10.69 [+8.04,+13.42], seed 1 +7.66 [+5.00,+10.46], seed 2 +9.25 [+6.60,+12.05]); seed mean `+9.20` points (SD 1.52). MMLU improved on every seed (seed 0 +1.26, seed 1 +1.15, seed 2 +1.55; every interval above zero). MATH-500 point estimates are positive on every seed (seed 0 +4.60 [+0.60,+8.60], seed 1 +1.80 [-2.20,+5.60], seed 2 +3.40 [-0.60,+7.20]), but only seed 0's interval excludes zero: at n=500 the MATH effect is positive and unresolved, not absent. Alpha 0.375 was fixed on train-split calibration before any test score and no test split was read to choose it; the unique active text path stays `752,393,024` elements. The registered two-task conjunction is `not satisfied`; this is a replicated GSM8K gain, not a complete registered win. Receipt: `results/stage2/s66-seeds/three-seed.json`; accounting: `results/accounting/20261116T183609Z-qwen35-08b-text-only.json`.
+- **S67 resolution at the pre-registered coefficient `0.375`** — the seed-delta soup against the post-trained 0.8B: GSM8K `+9.17 [+6.60,+11.98]`, MATH-500 `+2.40 [-1.60,+6.40]`, full MATH (5,000) `+2.52 [+1.20,+3.78]` (paired problem-level bootstrap, 4,000 resamples, seed 53). Verdict: replicated GSM8K gain `yes`, MATH effect resolved at the larger n `yes`, retention `pass`, complete registered win `met`. The coefficient was selected on the 1,000-item train-split calibration before the full MATH instrument was scored; the full MATH set was used once for this claim. This is a capability win for this intervention, not a frontier advantage. Verdict receipt: `results/stage2/s67-final/verdict.json`.
+- **S67 soup does not beat the S65 seed-0 checkpoint directly** — the soup is below the single seed on both instruments it was compared on, and both intervals include zero: GSM8K `-1.52 [-3.64,+0.53]`, MATH-500 `-2.20 [-6.00,+1.41]`. The seed-0 checkpoint was not scored on full MATH, so that direct comparison is not claimed. Beating the seed zero would be `no`. Receipt: `results/stage2/s67-final/verdict.json`.
 - **Result eligibility:** `currently_eligible`: `results/stage2/eval/s50-bar-20m-lr1e-5/m10/eval.json`, `results/stage2/eval/s50-bar-20m-lr1e-5/m20/eval.json`, `results/stage2/eval/s50-bar-20m-lr1e-5/m5/eval.json`; 18 artefact(s) are **`invalidated`**, including the anchored scores `results/stage2/eval/full-20m-math`, `results/stage2/eval/full-20m-math-s49`; they are retained as `historically_scored` evidence only and may not be cited as the current bar, baseline or eligible result (master record `results/stage2/s50-invalidation-20261117T205855Z.json`).
 - **Registered T2 outcome: `error_direction_not_supported`** — K15–K19: K15 FAIL, K16 FAIL, K17 PASS, K18 FAIL, K19 FAIL; verdict receipt stamp `20261116T134706Z`, revision `afe554692985…` (`results/t2-verdict.json`).
 - **Verified-task comparison: `conditional_capacity_not_supported_on_verified_tasks`** — receipt stamp `20261116T134342Z`, revision `afe554692985…` (`results/capability/runs/t2-comparison.json`). A floor on the instrument is not a ranking of arms; the diagnosis is in `docs/CAPABILITY-COURT.md` §12.
@@ -131,18 +133,16 @@ the verdict is `results/T2-VERDICT.md`, rendered from `results/t2-verdict.json` 
    suite reaches, so the primary endpoint becomes an absolute effect with a
    pre-registered minimum, with candidate-ranking accuracy registered as the
    discrimination endpoint and never pooled with it (§7.3 of the same document).
-2. **A stage that wins, in full.** A *replicated* capability gain now exists:
-   weight-space interpolation at the registered coefficient improves GSM8K on
-   all three seeds with every paired interval above zero, and improves MMLU on
-   every seed; the numbers and their receipts are in the generated status block
-   above. What does not exist is a **complete registered win**. The registered
-   two-task conjunction is not satisfied because the MATH-500 paired interval
-   excludes zero on only one of the three seeds at n=500. The MATH effect is
-   positive on every seed and unresolved at that sample size; the registered
-   resolution is a larger MATH instrument used once, not another 500-item
-   rerun. No frontier advantage exists either. The frontier program's six stages
-   each carry a named win condition and a concrete next route if they miss; a
-   miss is a route change, not a verdict on the mechanism.
+2. **A stage that wins, in full.** The registered capability win is now met for
+   the seed-delta soup: the pre-registered 5,000-problem MATH instrument resolves
+   the effect that the 500-problem sample left open, GSM8K stays above zero, and
+   retention passes on full MMLU and the registered 4,000-item MMLU-Pro
+   instrument; the numbers and their receipts are in the generated status block
+   above. This is a capability win for that intervention, not a frontier
+   advantage, and it is not an improvement over the S65 seed-0 checkpoint, which
+   the soup does not beat directly. The frontier program's six stages each carry
+   a named win condition and a concrete next route if they miss; a miss is a
+   route change, not a verdict on the mechanism.
 3. **The pre-scaling blockers** (`docs/PROGRAM-PLAN.md` P12.15): the routed-overflow
    mask defect is measured and has a registered sensitivity (`docs/P12.1-DISPATCH-AUDIT.md`),
    and the `H*` target/deployment mismatch is measured and registered as P12.17.
