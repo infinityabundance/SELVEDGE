@@ -1,0 +1,15 @@
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s68-ramp: ramp-s0.150-d0.375 gsm8k-cal=0.5810 math-cal=0.3230
+s68-ramp: ramp-s0.150-d0.500 gsm8k-cal=0.6030 math-cal=0.3410
+s68-ramp: ramp-s0.150-d0.625 gsm8k-cal=0.6060 math-cal=0.3300
+Timeout during comparison
+s68-ramp: ramp-s0.250-d0.375 gsm8k-cal=0.5870 math-cal=0.3280
+s68-ramp: ramp-s0.250-d0.500 gsm8k-cal=0.5920 math-cal=0.3240
+s68-ramp: ramp-s0.250-d0.625 gsm8k-cal=0.6080 math-cal=0.3280
+s68-ramp: ramp-s0.375-d0.375 gsm8k-cal=0.6090 math-cal=0.3260
+s68-ramp: ramp-s0.375-d0.500 gsm8k-cal=0.6150 math-cal=0.3270
+s68-ramp: ramp-s0.375-d0.625 gsm8k-cal=0.6080 math-cal=0.3150
+s68-ramp: calibration -> results/stage2/s68-ramp/calibration.json
