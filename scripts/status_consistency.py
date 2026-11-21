@@ -790,18 +790,21 @@ def _s67_seed0_line() -> str | None:
     if not (gsm and math):
         return None
     beat = (gsm.get("interval_above_zero") or math.get("interval_above_zero"))
+    headline = ("beats the S65 seed-0 checkpoint on at least one instrument"
+                if beat
+                else "does not beat the S65 seed-0 checkpoint directly")
     return (
-        "- **S67 soup does not beat the S65 seed-0 checkpoint directly** — "
-        "the soup is below the single seed on both instruments it was "
-        "compared on, and both intervals include zero: GSM8K "
+        f"- **S67 soup {headline}** — "
+        "soup minus seed 0: GSM8K "
         f"`{100.0 * gsm['delta']:+.2f} "
         f"[{100.0 * gsm['ci95'][0]:+.2f},{100.0 * gsm['ci95'][1]:+.2f}]`, "
         "MATH-500 "
         f"`{100.0 * math['delta']:+.2f} "
         f"[{100.0 * math['ci95'][0]:+.2f},{100.0 * math['ci95'][1]:+.2f}]`. "
-        f"The seed-0 checkpoint was not scored on full MATH, so that direct "
-        "comparison is not claimed. Beating the seed zero would be "
-        f"`{('yes' if beat else 'no')}`. Receipt: `{S67_VERDICT}`."
+        f"{'At least one interval is above zero.' if beat else 'Both intervals include zero.'} "
+        "The seed-0 checkpoint was not scored on full MATH, so that direct "
+        "comparison is not claimed. Receipt: "
+        f"`{S67_VERDICT}`."
     )
 
 
