@@ -1,0 +1,105 @@
+{
+  "schema": "selvedge/s68-depth-ramp-preregistration/v1",
+  "identifier": "S68-DEPTH-RAMP-PREREGISTRATION-V1",
+  "created_utc": "2026-11-21T03:10:10Z",
+  "registered_utc": "2026-11-21T03:10:10Z",
+  "status": "registered",
+  "revision": "3026e62f0357f9a780c2e5fa6d2d7fb4b7237588",
+  "purpose": "Test whether a depth-ramped interpolation coefficient improves train-split calibration over the registered constant coefficient, before any test split is read. This is a calibration experiment, not a new claim instrument.",
+  "prior_result": {
+    "constant_soup_calibration": "results/stage2/s67-soup/calibration.json",
+    "constant_coefficient": 0.375,
+    "constant_calibration": {
+      "gsm8k_cal": 0.609,
+      "math_cal": 0.326,
+      "mmlu_cal": 0.5215,
+      "items_per_task": 1000,
+      "mmlu_items": 2000
+    },
+    "soup_source": "results/stage2/s67-soup/soup-receipt.json"
+  },
+  "model": {
+    "base": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "layers": 24,
+    "layers_source": "config.text_config.num_hidden_layers",
+    "trainable_text_elements": 498113344,
+    "unique_active_text_elements": 752393024
+  },
+  "formula": {
+    "definition": "alpha(l) = alpha_shallow + (alpha_deep - alpha_shallow) * l / (L - 1)",
+    "l_index": "the numeric suffix of `layers.<l>.` in the arm_state key, 0-based",
+    "L": 24,
+    "state": "theta_ramp(key in layer l) = theta_0(key) + alpha(l) * delta_bar(key), where delta_bar = mean over the three S66 seed deltas and theta_0 is the post-trained 0.8B endpoint",
+    "non_layer_parameters": "norm.weight (the final norm) has no layer index and is mixed at alpha_deep; the receipt lists every such key",
+    "arithmetic": "float32 accumulation, rounded back to the base tensor dtype (bf16)",
+    "tied_embedding": "the tied embedding/output projection is frozen and inherited from the post-trained snapshot, exactly as in S67"
+  },
+  "grid": {
+    "shallow": [0.15, 0.25, 0.375],
+    "deep": [0.375, 0.5, 0.625],
+    "arms": 9,
+    "identity": "every (alpha_shallow, alpha_deep) pair is built and scored, including alpha_shallow == alpha_deep, which is a constant check",
+    "control": {
+      "kind": "constant alpha = 0.375",
+      "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+      "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+      "reused_calibration": "results/stage2/s67-soup/calibration.json"
+    },
+    "base": {
+      "kind": "constant alpha = 0",
+      "checkpoint": "results/stage2/s67-soup/interp-0.000-arm.pt",
+      "sha256": "e157a9c9c2825b7b6f6f423885d66b88d8aa95f09f88c4ec95b6a40dd042a0ac",
+      "reused_calibration": "results/stage2/s67-soup/calibration.json",
+      "equivalence_check": "the soup alpha=0 checkpoint must be tensor-for-tensor equal to results/stage2/s60-interpolation/interp-0.000-arm.pt before its row is reused"
+    }
+  },
+  "instrument": {
+    "gsm8k_cal": {
+      "path": "results/stage2/s66-calibration/gsm8k-cal-1000.jsonl",
+      "items": 1000,
+      "split": "gsm8k train, registered S66 calibration split",
+      "sha256_source": "docs/s66-calibration-splits-v1.json"
+    },
+    "math_cal": {
+      "path": "results/stage2/s66-calibration/math-cal-1000.jsonl",
+      "items": 1000,
+      "split": "Hendrycks MATH train, registered S66 calibration split",
+      "sha256_source": "docs/s66-calibration-splits-v1.json"
+    },
+    "mmlu_cal": {
+      "items": 2000,
+      "split": "the registered 2,000-item MMLU selection partition, 5-shot lm-evaluation-harness",
+      "role": "retention filter, never an accuracy objective"
+    },
+    "protocol": "greedy, non-thinking, zero-shot, S54 user template, max_new_tokens 2048 for the two generation tasks; MMLU via scripts/s43_score_total_cap.py with --total-cap-map mmlu=2000",
+    "test_split_read_for_selection": false
+  },
+  "selection_rule": {
+    "admissible_set": "the nine depth-ramped arms (the constant control is not a selection candidate)",
+    "objective": "mean gain over the alpha = 0 row on GSM8K-cal and MATH-cal",
+    "retention": "an arm whose calibration MMLU is more than 1.0 point below the alpha = 0 row is ineligible",
+    "tie_break": "smaller mean coefficient (alpha_shallow + alpha_deep) / 2, then smaller alpha_deep, then lexicographic arm tag",
+    "adoption_test": "the selected ramp arm is adopted only if its calibration mean over GSM8K-cal and MATH-cal is strictly greater than the constant alpha = 0.375 control's mean on the same splits; otherwise the result is recorded as negative and the constant-alpha soup is retained",
+    "cost_discipline": "MMLU-cal may be run after the two generation splits; an arm that cannot beat the control on the mean is ineligible before MMLU can change anything"
+  },
+  "one_shot_test_scoring": {
+    "condition": "only if the selected ramp arm is adopted by the calibration rule above",
+    "instruments": [
+      "GSM8K test, 1,319 problems, S54 protocol",
+      "MATH-500, 500 problems, S54 protocol",
+      "full MATH, 5,000 problems, the pre-registered S67 resolution instrument, scored once",
+      "full MMLU, 14,042 items, 5-shot lm-evaluation-harness",
+      "MMLU-Pro, registered 4,000-item total-cap allocation, 5-shot lm-evaluation-harness"
+    ],
+    "comparison": "the post-trained Qwen3.5-0.8B baseline under the same instruments and protocol, paired at problem/item level, 4,000 resamples, seed 53",
+    "no_enlargement": "the full-MATH instrument is not re-scored or enlarged on the basis of a ramp result; it is a one-shot test that either resolves or does not",
+    "no_frontier_claim": "no external system is compared; a ramp result is a capability statement for this intervention only"
+  },
+  "claims": {
+    "registered_before_calibration_scoring": true,
+    "no_test_split_used_for_selection": true,
+    "constant_control_reused_from_same_instrument": true,
+    "weights_are_interpolation_not_a_new_architecture": true
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "selvedge/s68-depth-ramp-equivalence/v1",
+  "kind": "constant-ramp-equivalence-check",
+  "stamp": "20261121T031228Z",
+  "created_utc": "2026-11-21T03:12:28Z",
+  "revision": "3026e62f0357f9a780c2e5fa6d2d7fb4b7237588",
+  "command": "SELVEDGE_MEM=8g scripts/court oracle -- python3 -c \"torch.load both arm states; compare every key with torch.equal\"",
+  "court_receipt": "results/courts/oracle-20261121T031228Z-34ccda.json",
+  "left": {
+    "path": "results/stage2/s68-ramp/ramp-s0.375-d0.375-arm.pt",
+    "sha256": "cc2e3dcb5fd90e2a1bb2319783b91a1f501176979f8045f4527dff09e29a0b2f"
+  },
+  "right": {
+    "path": "results/stage2/s67-soup/interp-0.375-arm.pt",
+    "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab"
+  },
+  "keys": 319,
+  "torch_equal_mismatches": 0,
+  "conclusion": "The depth-ramp builder with alpha_shallow == alpha_deep == 0.375 reproduces the S67 constant-alpha soup checkpoint tensor for tensor. The per-layer arithmetic is therefore consistent with the registered constant interpolator on the degenerate arm.",
+  "claims": {
+    "compared_every_key": true,
+    "tolerance": "exact (torch.equal), not approximate"
+  }
+}
