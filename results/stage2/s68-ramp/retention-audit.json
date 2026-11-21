@@ -1,0 +1,137 @@
+{
+  "claims": {
+    "no_item_is_counted_in_both_partitions": true,
+    "selection_items_are_a_subset_of_full": true,
+    "unused_partition_is_the_complement": true
+  },
+  "created_utc": "2026-11-21T18:03:36Z",
+  "inputs": {
+    "baseline_mmlu": "results/stage2/eval/s58-post-0.8b-baseline-mmlu/raw/20261118T222909Z-mmlu.json",
+    "baseline_mmlu_pro": "results/stage2/s67-final/raw/20261120T175901Z-mmlu_pro.json",
+    "baseline_mmlu_pro_sha256": "16a94e3359cb3adb76e42ae1cafdd5ad2cb2b5b88a1d8d598835c37c96262e36",
+    "baseline_mmlu_sha256": "55f28cdcc6f84594c9cb77ba8df08fff2a9aadb1aab78d1d8568711fd14d540f",
+    "candidate_mmlu": "results/stage2/s68-ramp/raw/20261121T151210Z-mmlu.json",
+    "candidate_mmlu_pro": "results/stage2/s68-ramp/raw/20261121T173437Z-mmlu_pro.json",
+    "candidate_mmlu_pro_sha256": "7175970e8c5463aa90babbe6b898adcbe471a77c4330756fc73df054f3a50f47",
+    "candidate_mmlu_sha256": "fb8f378f64611f053696ea0a32a1a559d8be21d4c34384a0f3425045fcd5b82c",
+    "selection_mmlu": "results/stage2/s60-interpolation/raw/20261119T091650Z-mmlu.json",
+    "selection_mmlu_sha256": "d5273e93c35ff4544aa0a42b6a035884a631b20b6d93c6282c07c9bae58f5694"
+  },
+  "kind": "retention-audit",
+  "metric": "MMLU acc; MMLU-Pro exact_match; paired bootstrap over items",
+  "mmlu": {
+    "counts": {
+      "full": 14042,
+      "selection": 2000,
+      "unused": 12042
+    },
+    "full": {
+      "baseline_correct": 7089,
+      "baseline_score": 0.5048426150121066,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_correct": 7257,
+      "candidate_score": 0.5168067226890757,
+      "ci95": [
+        0.006694203104970802,
+        0.017020367469021507
+      ],
+      "delta": 0.011964107676969093,
+      "items": 14042,
+      "metric": "acc",
+      "resamples": 4000,
+      "seed": 53,
+      "verdict": {
+        "interval_lower_within_bound": true,
+        "legacy_abs_delta_rule_would_say": "fail",
+        "point_drop_within_bound": true,
+        "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+        "state": "pass"
+      }
+    },
+    "selection": {
+      "baseline_correct": 1013,
+      "baseline_score": 0.5065,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_correct": 1036,
+      "candidate_score": 0.518,
+      "ci95": [
+        -0.0035,
+        0.026
+      ],
+      "delta": 0.0115,
+      "items": 2000,
+      "metric": "acc",
+      "resamples": 4000,
+      "seed": 53,
+      "verdict": {
+        "interval_lower_within_bound": true,
+        "legacy_abs_delta_rule_would_say": "fail",
+        "point_drop_within_bound": true,
+        "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+        "state": "pass"
+      }
+    },
+    "unused": {
+      "baseline_correct": 6076,
+      "baseline_score": 0.504567347616675,
+      "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+      "candidate_correct": 6221,
+      "candidate_score": 0.516608536787909,
+      "ci95": [
+        0.00639428666334496,
+        0.017856253114100655
+      ],
+      "delta": 0.012041189171234014,
+      "items": 12042,
+      "metric": "acc",
+      "resamples": 4000,
+      "seed": 53,
+      "verdict": {
+        "interval_lower_within_bound": true,
+        "legacy_abs_delta_rule_would_say": "fail",
+        "point_drop_within_bound": true,
+        "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+        "state": "pass"
+      }
+    }
+  },
+  "mmlu_pro": {
+    "baseline_correct": 937,
+    "baseline_score": 0.23425,
+    "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+    "candidate_correct": 1058,
+    "candidate_score": 0.2645,
+    "ci95": [
+      0.018,
+      0.04275
+    ],
+    "delta": 0.03025,
+    "items": 4000,
+    "metric": "exact_match",
+    "registered_instrument_present": true,
+    "registered_sample_size": 4000,
+    "resamples": 4000,
+    "sample_size": 4000,
+    "seed": 53,
+    "verdict": {
+      "interval_lower_within_bound": true,
+      "legacy_abs_delta_rule_would_say": "fail",
+      "point_drop_within_bound": true,
+      "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point; an improvement is inside the bound",
+      "state": "pass"
+    }
+  },
+  "preregistration": {
+    "path": "docs/s67-resolution-instrument-preregistration-v1.json",
+    "sha256": "0a40d489355e2e5a90d254268f5bedf483481e98fd24f101887499e7894a46e2"
+  },
+  "revision": "e0c1e87ec033a3e09a223329db272bba3f22f183",
+  "schema": "selvedge/s67-retention-audit/v1",
+  "stamp": "20261121T180336Z",
+  "verdict": {
+    "mmlu_pass": true,
+    "mmlu_pro_4000_pass": true,
+    "retention_pass": true,
+    "rule": "point drop <= 1.0 point and paired interval lower bound >= -1.0 point, on full MMLU, the 12,042 unused MMLU items, and the 4,000-item MMLU-Pro instrument"
+  }
+}

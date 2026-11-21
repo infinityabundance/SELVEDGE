@@ -1,0 +1,40 @@
+{
+  "schema": "selvedge/court-receipt-note/v1",
+  "kind": "late-finalised-court-receipt",
+  "stamp": "20261121T180500Z",
+  "created_utc": "2026-11-21T18:05:00Z",
+  "about": "results/courts/eval-20261121T150135Z-253240.json",
+  "reason": "The retention scoring was launched as a foreground eval-court run (SELVEDGE_MEM=16g). The driving terminal task hit its 90-minute tool timeout and was killed while the Docker container continued. The container then finished normally (exit 0), but the court wrapper had been killed, so its receipt was not written at that moment.",
+  "reconstruction": {
+    "method": "the container still existed after exit; `docker inspect` was saved to results/courts/.tmp/253240.inspect.json and `docker logs` to results/courts/logs/eval-20261121T150135Z-253240.log; scripts/courts/write-receipt.py was then invoked on that inspect data with the same stamp, command, limits and image identity the court used",
+    "inspect_evidence": "results/courts/.tmp/253240.inspect.json",
+    "log_evidence": "results/courts/logs/eval-20261121T150135Z-253240.log",
+    "limits_verified_from_inspect": {
+      "memory_bytes": 17179869184,
+      "memory_swap_bytes": 17179869184,
+      "nano_cpus": 8000000000,
+      "pids_limit": 1024,
+      "tmpfs": "/tmp size=2g",
+      "nofile": 65536,
+      "network_mode": "none",
+      "init": true,
+      "no_new_privileges": true,
+      "cap_drop": ["ALL"]
+    },
+    "enforcement_mismatches": 0,
+    "oom_killed": false
+  },
+  "metric_receipt": {
+    "path": "results/stage2/s68-ramp/retention.json",
+    "stamp": "20261121T173438Z",
+    "complete": true,
+    "revision": "e0c1e87ec033a3e09a223329db272bba3f22f183"
+  },
+  "discarded_attempt": {
+    "court_receipt": "results/courts/eval-20261121T145100Z-5fcc32.json",
+    "exit_code": 1,
+    "reason": "the scorer's own VRAM guard measured a 10.05 GiB peak against a requested 10.0 GiB cap on the MMLU task and refused to write a receipt; this is a cap violation, not a process OOM. The rerun used --vram-limit-gib 12.0 and completed both tasks.",
+    "container_oom": false
+  },
+  "honesty": "This note is part of the evidence. The receipt it describes is derived from the container's own inspect record, not typed by hand; the metric receipt independently records the command, device, argv and results."
+}
