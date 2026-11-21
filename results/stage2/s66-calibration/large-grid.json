@@ -1,0 +1,153 @@
+{
+  "claims": {
+    "calibration_is_train_split_only": true,
+    "enlarged_split_is_superset": true,
+    "test_split_used_for_selection": false
+  },
+  "created_utc": "2026-11-20T09:29:25Z",
+  "grid": [
+    0.0,
+    0.25,
+    0.375,
+    0.5,
+    0.625
+  ],
+  "instrument": {
+    "batch_size": 32,
+    "decoding": "greedy non-thinking",
+    "max_new_tokens": 2048,
+    "tasks": "GSM8K-cal and MATH-cal",
+    "test_split_read": false
+  },
+  "kind": "large-calibration-grid",
+  "registration": {
+    "gsm8k_sha256": "b9af82fef9f253d42ced8b50528889e61b051c8e6d11253eb52037b4072cbeb3",
+    "items_per_task": 1000,
+    "limit": null,
+    "math_sha256": "27d118f5c3b56fa3af16daa2fa66e13fa95aed5cc4e3bb467322289c13f09298",
+    "path": "docs/s66-calibration-splits-v1.json",
+    "sha256": "9158aa238d91859151d60a96658f132c71fd1cfc5b886daf6b5ee88009f80cd1"
+  },
+  "revision": "0c71d9cd0a82c7d32e1d4abcd770c53bcbb51dac",
+  "rows": [
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.000-arm.pt",
+      "checkpoint_sha256": "829794f7469249b813d893d0a0d0e2e56248ff55f121f6551c3ecb1956bd0361",
+      "coefficient": 0.0,
+      "gsm8k_cal": 0.522,
+      "gsm8k_cal_300": {
+        "accuracy": 0.5366666666666666,
+        "correct": 161,
+        "items": 300
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.322,
+      "math_cal_300": {
+        "accuracy": 0.31333333333333335,
+        "correct": 94,
+        "items": 300
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.506
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.250-arm.pt",
+      "checkpoint_sha256": "88e108b5048db3ed461ea11b354b22d383eb195776a2212581053646779632fc",
+      "coefficient": 0.25,
+      "gsm8k_cal": 0.573,
+      "gsm8k_cal_300": {
+        "accuracy": 0.5833333333333334,
+        "correct": 175,
+        "items": 300
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.342,
+      "math_cal_300": {
+        "accuracy": 0.36666666666666664,
+        "correct": 110,
+        "items": 300
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.5235
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.375-arm.pt",
+      "checkpoint_sha256": "10ba2357beef052a434735c682009726b380866e450661de719eb437a5558e0a",
+      "coefficient": 0.375,
+      "gsm8k_cal": 0.585,
+      "gsm8k_cal_300": {
+        "accuracy": 0.5833333333333334,
+        "correct": 175,
+        "items": 300
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.331,
+      "math_cal_300": {
+        "accuracy": 0.35333333333333333,
+        "correct": 106,
+        "items": 300
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.5195
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.500-arm.pt",
+      "checkpoint_sha256": "52689defc3c9bf61b1a7c53c1739e28c7c090c9901fc717154db15c434066248",
+      "coefficient": 0.5,
+      "gsm8k_cal": 0.602,
+      "gsm8k_cal_300": {
+        "accuracy": 0.5966666666666667,
+        "correct": 179,
+        "items": 300
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.308,
+      "math_cal_300": {
+        "accuracy": 0.31333333333333335,
+        "correct": 94,
+        "items": 300
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.516
+    },
+    {
+      "checkpoint": "results/stage2/s60-interpolation/interp-0.625-arm.pt",
+      "checkpoint_sha256": "d5c8a6a2c1e870408f7fb96688614e80339b757dd968f5ac849afd077f0d61a4",
+      "coefficient": 0.625,
+      "gsm8k_cal": 0.585,
+      "gsm8k_cal_300": {
+        "accuracy": 0.5866666666666667,
+        "correct": 176,
+        "items": 300
+      },
+      "gsm8k_raw": null,
+      "math_cal": 0.297,
+      "math_cal_300": {
+        "accuracy": 0.29333333333333333,
+        "correct": 88,
+        "items": 300
+      },
+      "math_raw": null,
+      "mmlu_cal": 0.508
+    }
+  ],
+  "schema": "selvedge/s66-large-calibration/v1",
+  "selection": {
+    "basis": "calibration only; ties choose the smaller coefficient",
+    "calibration_gain": 0.035999999999999976,
+    "coefficient": 0.375,
+    "eligible": true,
+    "mmlu_present": true,
+    "retention_limit": 0.01
+  },
+  "selection_300": {
+    "basis": "calibration only; ties choose the smaller coefficient",
+    "calibration_gain": 0.05000000000000002,
+    "coefficient": 0.25,
+    "eligible": true,
+    "mmlu_present": true,
+    "retention_limit": 0.01
+  },
+  "stable": false,
+  "stamp": "20261120T092925Z"
+}

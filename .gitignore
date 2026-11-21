@@ -65,3 +65,8 @@ results/stage2/eval/**/raw/*.json
 
 # Raw evaluator output is tracked gzipped; see nearby raw/INDEX.json
 results/**/raw/*.json
+# S67 keeps the lossless .jsonl.gz and the INDEX digests; the uncompressed
+# per-problem dumps stay local.
+results/stage2/s67-final/*-raw/*.jsonl
+# Resumable-run scratch files are never evidence.
+results/**/*.partial
