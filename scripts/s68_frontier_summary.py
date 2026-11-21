@@ -121,7 +121,12 @@ def main(argv: list[str]) -> int:
         }
         identity = identities.get(model_id) or {}
         entry["license"] = identity.get("license")
+        entry["license_sha256"] = identity.get("license_sha256") or (
+            (identity.get("license_files") or [{}])[0].get("sha256"))
         entry["gated"] = identity.get("gated", False)
+        weights = identity.get("weight_files") or []
+        entry["weight_sha256"] = weights[0].get("sha256") if weights else None
+        entry["pinned_revision"] = identity.get("revision")
         for task in TASKS:
             row = task_row(receipt, task)
             if row is None:

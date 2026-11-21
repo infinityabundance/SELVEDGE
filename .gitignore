@@ -68,5 +68,11 @@ results/**/raw/*.json
 # S67 keeps the lossless .jsonl.gz and the INDEX digests; the uncompressed
 # per-problem dumps stay local.
 results/stage2/s67-final/*-raw/*.jsonl
+# S68: the same rule for the depth-ramp test dumps and the external frontier
+# dumps; each receipt pins the uncompressed SHA-256 in `raw_sha256`.
+results/stage2/s68-ramp/test-raw/*.jsonl
+results/stage2/s68-frontier/*-raw/*.jsonl
+# Detached-court state files are transient launcher state, never evidence.
+results/courts/pending/
 # Resumable-run scratch files are never evidence.
 results/**/*.partial

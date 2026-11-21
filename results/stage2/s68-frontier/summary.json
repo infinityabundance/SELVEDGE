@@ -1,0 +1,213 @@
+{
+  "created_utc": "2026-11-21T23:42:01Z",
+  "inventory": {
+    "path": "results/models/s68-frontier-inventory.json",
+    "sha256": "a0a678194d4ec1f623243d5649ad06a418ab8e08418c7654aab12104b154eef5"
+  },
+  "kind": "external-frontier-position-check",
+  "notes": [
+    "These are SELVEDGE S54 numbers (greedy, non-thinking, zero-shot CoT, 4096-token cap, the S54 extraction).",
+    "Published vendor numbers for these checkpoints use different prompts, shots, decoding, sampling and extraction; this table is our instrument only and is not a reproduction of any vendor claim.",
+    "Intervals are Wilson binomial intervals; the models are different, so no paired interval is computed across them."
+  ],
+  "protocol": {
+    "batch_size": {
+      "champion_and_post_trained": 32,
+      "external_0.6b_models": 8,
+      "why": "Qwen3-0.6B and ReasonLite-0.6B use full attention; at 8 sequences x 4096 tokens the KV cache already uses several GiB, and batch 32 hit a CUDA OOM in the first attempt. Batch size is an execution parameter, not part of the decoding protocol; prompts, greedy decoding, the 4096-token cap, the non-thinking mode and the extraction are identical. The champion and post-trained rows were scored at batch 32 in S67/S54."
+    },
+    "decoding": "greedy (temperature 0, top_p 1)",
+    "engine": "transformers 5.23.0 / torch 2.15.0+cu132, bf16, SDPA, one RTX 4080 SUPER",
+    "extraction": "the S54 strict / flexible / exact bases; flexible is the registered primary, never substituted",
+    "instrument": "SELVEDGE S54 stage-1",
+    "max_new_tokens": 4096,
+    "mode": "non-thinking (each checkpoint's own chat template with enable_thinking=false)",
+    "note": "Published vendor numbers for these checkpoints use different prompts, shot counts, decoding, sampling and answer extraction. The table produced from this inventory is our instrument only and is not a like-for-like reproduction of any vendor claim.",
+    "prompt": "zero-shot CoT, the S54 user template ending in 'Put the final answer in \\boxed{}'",
+    "tasks": {
+      "gsm8k": 1319,
+      "math500": 500
+    }
+  },
+  "revision": "782ec209838f4749254cb6d8bbfb0041455378a8",
+  "rows": [
+    {
+      "gated": false,
+      "label": "champion-soup",
+      "license": "Apache-2.0",
+      "license_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pinned_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "receipt": "results/stage2/s67-final/soup-stage1.json",
+      "receipt_revision": "bacb13e2b7a518ffa543d9c3d9bad6d5ad42a89b",
+      "receipt_sha256": "fd57172522d48bea53dedd947f6fed5532e581e4e2164b8cd89cdf1815496e85",
+      "receipt_stamp": "20261120T225912Z",
+      "tasks": {
+        "gsm8k": {
+          "accuracy": 0.6338134950720242,
+          "correct": 836,
+          "exact_accuracy": 0.6413949962092494,
+          "generated_tokens": 825698,
+          "items": 1319,
+          "strict_accuracy": 0.6322971948445792,
+          "tokens_per_second": 262.5725171519915,
+          "wall_seconds": 3149.4,
+          "wilson95": [
+            0.6074607200565383,
+            0.6593890960315494
+          ]
+        },
+        "math500": {
+          "accuracy": 0.406,
+          "correct": 203,
+          "exact_accuracy": 0.432,
+          "generated_tokens": 959895,
+          "items": 500,
+          "strict_accuracy": 0.406,
+          "tokens_per_second": 726.0481905738042,
+          "wall_seconds": 1324.2,
+          "wilson95": [
+            0.3638304421340635,
+            0.4496029338727085
+          ]
+        }
+      },
+      "weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696"
+    },
+    {
+      "gated": false,
+      "label": "post-trained-0.8b",
+      "license": "Apache-2.0",
+      "license_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pinned_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "receipt": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json",
+      "receipt_revision": "863b3309de8e101600455fc734a207036c0b4a59",
+      "receipt_sha256": "f9f6a4191ad941cd232fd8d44e6058f365a39c153fb46c1bc07e9f780c339f1d",
+      "receipt_stamp": "20261118T033841Z",
+      "tasks": {
+        "gsm8k": {
+          "accuracy": 0.5420773313115997,
+          "correct": 715,
+          "exact_accuracy": 0.5489006823351024,
+          "generated_tokens": 952632,
+          "items": 1319,
+          "strict_accuracy": 0.5405610310841547,
+          "tokens_per_second": 283.2291311441652,
+          "wall_seconds": 3367.5,
+          "wilson95": [
+            0.5151063098540185,
+            0.5688039722586664
+          ]
+        },
+        "math500": {
+          "accuracy": 0.382,
+          "correct": 191,
+          "exact_accuracy": 0.406,
+          "generated_tokens": 948607,
+          "items": 500,
+          "strict_accuracy": 0.382,
+          "tokens_per_second": 703.1660269078471,
+          "wall_seconds": 1350.9,
+          "wilson95": [
+            0.3404646252341933,
+            0.4253347191147331
+          ]
+        }
+      },
+      "weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696"
+    },
+    {
+      "gated": false,
+      "label": "qwen3-0.6b",
+      "license": "Apache-2.0",
+      "license_sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "model_id": "Qwen/Qwen3-0.6B",
+      "model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "pinned_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "receipt": "results/stage2/s68-frontier/qwen3-0.6b.json",
+      "receipt_revision": "4550ae79fde5bc529ee32c9f60c031fc148fb643",
+      "receipt_sha256": "03ea4dee20b142b69d7f080cca634f9c6d49ce7d30911bd9144c3d1e33051260",
+      "receipt_stamp": "20261121T192906Z",
+      "tasks": {
+        "gsm8k": {
+          "accuracy": 0.6125852918877938,
+          "correct": 808,
+          "exact_accuracy": 0.6277482941622441,
+          "generated_tokens": 350809,
+          "items": 1319,
+          "strict_accuracy": 0.6118271417740713,
+          "tokens_per_second": 476.6397653836022,
+          "wall_seconds": 738.5,
+          "wilson95": [
+            0.5860041253329339,
+            0.6385125754550606
+          ]
+        },
+        "math500": {
+          "accuracy": 0.488,
+          "correct": 244,
+          "exact_accuracy": 0.52,
+          "generated_tokens": 369633,
+          "items": 500,
+          "strict_accuracy": 0.488,
+          "tokens_per_second": 194.4089164102417,
+          "wall_seconds": 1903.6,
+          "wilson95": [
+            0.4444452370209479,
+            0.5317377471501294
+          ]
+        }
+      },
+      "weight_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b"
+    },
+    {
+      "gated": false,
+      "label": "reasonlite-0.6b",
+      "license": "OpenRAIL-D (LICENSE-AMD-OpenRAIL-D; Hub card tag 'openrail')",
+      "license_sha256": "9bb465fe3a486cd56e1fe565a9556c432e98edfe38494c15ff5a8fd75ca9e329",
+      "model_id": "amd/ReasonLite-0.6B",
+      "model_revision": "3aad22487d65b6e88d99a308762a4550e24854ac",
+      "pinned_revision": "3aad22487d65b6e88d99a308762a4550e24854ac",
+      "receipt": "results/stage2/s68-frontier/reasonlite-0.6b.json",
+      "receipt_revision": "782ec209838f4749254cb6d8bbfb0041455378a8",
+      "receipt_sha256": "5a2faaf367abcbbb17226543d53140b89a8f974b46042b8f85ac94413d9fe144",
+      "receipt_stamp": "20261121T233653Z",
+      "tasks": {
+        "gsm8k": {
+          "accuracy": 0.30932524639878695,
+          "correct": 408,
+          "exact_accuracy": 0.33434420015163,
+          "generated_tokens": 2879133,
+          "items": 1319,
+          "strict_accuracy": 0.30022744503411675,
+          "tokens_per_second": 276.1397309078829,
+          "wall_seconds": 10430.2,
+          "wilson95": [
+            0.2849648125448394,
+            0.3347930982418229
+          ]
+        },
+        "math500": {
+          "accuracy": 0.36,
+          "correct": 180,
+          "exact_accuracy": 0.38,
+          "generated_tokens": 1211950,
+          "items": 500,
+          "strict_accuracy": 0.36,
+          "tokens_per_second": 289.94120560846017,
+          "wall_seconds": 4181.6,
+          "wilson95": [
+            0.3191414324050707,
+            0.40299338292416403
+          ]
+        }
+      },
+      "weight_sha256": "926a1d80916bdeda1e01718858f53cf74f04a9631920444e77817036d6e3458b"
+    }
+  ],
+  "schema": "selvedge/s68-frontier-summary/v1",
+  "stamp": "20261121T234201Z"
+}

@@ -19,7 +19,11 @@
     "decoding": "greedy (temperature 0, top_p 1)",
     "mode": "non-thinking (each checkpoint's own chat template with enable_thinking=false)",
     "max_new_tokens": 4096,
-    "batch_size": 32,
+    "batch_size": {
+      "champion_and_post_trained": 32,
+      "external_0.6b_models": 8,
+      "why": "Qwen3-0.6B and ReasonLite-0.6B use full attention; at 8 sequences x 4096 tokens the KV cache already uses several GiB, and batch 32 hit a CUDA OOM in the first attempt. Batch size is an execution parameter, not part of the decoding protocol; prompts, greedy decoding, the 4096-token cap, the non-thinking mode and the extraction are identical. The champion and post-trained rows were scored at batch 32 in S67/S54."
+    },
     "extraction": "the S54 strict / flexible / exact bases; flexible is the registered primary, never substituted",
     "engine": "transformers 5.23.0 / torch 2.15.0+cu132, bf16, SDPA, one RTX 4080 SUPER",
     "note": "Published vendor numbers for these checkpoints use different prompts, shot counts, decoding, sampling and answer extraction. The table produced from this inventory is our instrument only and is not a like-for-like reproduction of any vendor claim."
@@ -81,6 +85,27 @@
           "sha256_matches_lfs_oid": true
         }
       ]
+    },
+    {
+      "id": "Qwen/Qwen3.5-0.8B",
+      "role": "champion base and post-trained baseline (not an external checkpoint)",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "license": "Apache-2.0",
+      "license_sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+      "gated": false,
+      "fetched": "already cached (S54/S65/S66/S67)",
+      "cache_relative_dir": "models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+      "weight_bytes": 1746942600,
+      "weight_files": [
+        {
+          "path": "model.safetensors-00001-of-00001.safetensors",
+          "bytes": 1746942600,
+          "sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696"
+        }
+      ],
+      "verification": {
+        "source": "docs/S65-RELEASE.md names the same first-shard weight sha256"
+      }
     },
     {
       "id": "facebook/MobileLLM-R1.5-950M",
