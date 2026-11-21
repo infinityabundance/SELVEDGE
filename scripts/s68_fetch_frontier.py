@@ -153,6 +153,7 @@ def fetch_one(repo: str, pin: str, cache_dir: str) -> dict:
     wanted = [entry for entry in files
               if (entry["path"].endswith(".safetensors")
                   or entry["path"].endswith(".json")
+                  or entry["path"].endswith(".jinja")
                   or entry["path"].startswith("LICENSE")
                   or entry["path"] == "README.md")]
     directory = os.path.join(cache_dir, "models", repo, pin)
