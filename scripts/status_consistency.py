@@ -676,7 +676,6 @@ def _s66_seed_line() -> str | None:
     if payload is None:
         return None
     summary = payload.get("summary") or {}
-    verdict = payload.get("verdict") or {}
     math = summary.get("math500") or {}
     gsm = summary.get("gsm8k") or {}
     if not (math and gsm):
@@ -706,28 +705,27 @@ def _s66_seed_line() -> str | None:
     gsm_holds = bool(gsm.get("all_intervals_above_zero"))
     math_holds = bool(math.get("all_intervals_above_zero"))
     mmlu_holds = bool(mmlu_summary.get("all_intervals_above_zero"))
-    complete = bool(verdict.get("both_math_clauses_positive_across_seeds"))
     gsm_state = "replicated" if gsm_holds else "not replicated"
     math_state = ("replicated at n=500" if math_holds
-                  else "unresolved at n=500")
+                  else "positive but unresolved at n=500")
     return (
         "- **S66 three-seed replication at the fixed alpha 0.375: GSM8K "
-        f"`{gsm_state}`, MATH-500 `{math_state}`, complete registered win "
-        f"`{'met' if complete else 'not met'}`** — GSM8K paired intervals are "
+        f"`{gsm_state}` (intervals above zero on every seed), MATH-500 "
+        f"`{math_state}`** — GSM8K paired intervals are "
         f"above zero on every seed ({gsm_bounds}); seed mean "
         f"`{100.0 * gsm['mean_delta']:+.2f}` points (SD "
         f"{100.0 * gsm['sample_sd']:.2f}). MMLU improved on every seed "
         f"({mmlu_points}; "
         f"{'every interval' if mmlu_holds else 'not every interval'} above "
         "zero). MATH-500 point estimates are positive on every seed "
-        f"({math_points}), but only seed 0's interval excludes zero: at n=500 "
-        "the MATH effect is positive and unresolved, not absent. Alpha 0.375 "
-        "was fixed on train-split calibration before any test score and no "
-        "test split was read to choose it; the unique active text path stays "
-        f"`{unique_text}` elements. The registered two-task conjunction is "
-        f"`{'satisfied' if complete else 'not satisfied'}`; this is a "
-        "replicated GSM8K gain, not a complete registered win. Receipt: "
-        f"`{S66_THREE_SEED}`; accounting: `{ACCOUNTING_TEXT_ONLY}`."
+        f"({math_points}), but not every seed's interval excludes zero: at "
+        "n=500 the MATH effect is positive and unresolved, not absent. Alpha "
+        "0.375 was fixed on train-split calibration before any test score "
+        "and no test split was read to choose it; the unique active text path "
+        f"stays `{unique_text}` elements. This line is the seed-level GSM8K "
+        "replication only; the MATH question is resolved separately, on the "
+        "pre-registered 5,000-problem instrument, in the S67 line below. "
+        f"Receipt: `{S66_THREE_SEED}`; accounting: `{ACCOUNTING_TEXT_ONLY}`."
     )
 
 
@@ -739,15 +737,28 @@ def _s67_resolution_line() -> str | None:
     flags = payload.get("verdict") or {}
     scores = payload.get("scores") or {}
     selection = payload.get("selection") or {}
-    retention = (payload.get("retention") or {}).get("verdict") or {}
+    retention = payload.get("retention") or {}
+    retention_verdict = retention.get("verdict") or {}
+    mmlu_full = ((retention.get("mmlu") or {}).get("full")) or {}
+    mmlu_pro = retention.get("mmlu_pro") or {}
     gsm = scores.get("gsm8k") or {}
     math500 = scores.get("math500") or {}
     full = scores.get("math_full") or {}
-    if not (gsm and math500 and full):
+    if not (gsm and math500 and full and mmlu_full and mmlu_pro):
         return None
-
-    def yes(value) -> str:
-        return "yes" if value else "no"
+    seeds = read_json(os.path.join(root_for_status(), S66_THREE_SEED)) or {}
+    seed_summary = seeds.get("summary") or {}
+    gsm_replicated = bool((seed_summary.get("gsm8k") or {}).get(
+        "all_intervals_above_zero"))
+    accounting = read_json(
+        os.path.join(root_for_status(), ACCOUNTING_TEXT_ONLY)) or {}
+    unique_active = (accounting.get("active_path") or {}).get(
+        "unique_active_elements")
+    if unique_active is None:
+        unique_active = (accounting.get("certification") or {}).get(
+            "active_unique_elements")
+    unique_text = (f"{unique_active:,}" if isinstance(unique_active, int)
+                   else "the certified text path")
 
     def block(row: dict) -> str:
         delta = row.get("delta")
@@ -757,24 +768,48 @@ def _s67_resolution_line() -> str | None:
         return (f"{100.0 * delta:+.2f} "
                 f"[{100.0 * ci[0]:+.2f},{100.0 * ci[1]:+.2f}]")
 
+    gsm_state = ("replicated across three seeds (intervals above zero)"
+                 if gsm_replicated else
+                 "not replicated across three seeds")
+    math500_state = ("resolved at n=500"
+                     if math500.get("interval_above_zero") else
+                     "positive but unresolved at n=500")
+    math500_alone = ("MATH-500 alone is resolved at n=500"
+                     if math500.get("interval_above_zero") else
+                     "MATH-500 alone remains unresolved at n=500")
+    full_state = ("resolved" if full.get("interval_above_zero")
+                  else "not resolved")
+    win_state = ("`met`" if flags.get("complete_registered_win")
+                 else "`not met`")
+    mmlu_state = (((retention.get("mmlu") or {}).get("full") or {}).get(
+        "verdict") or {}).get("state") or "unresolved"
+    pro_state = (mmlu_pro.get("verdict") or {}).get("state") or "unresolved"
     return (
-        "- **S67 resolution at the pre-registered coefficient "
-        f"`{selection.get('coefficient')}`** — the seed-delta soup against the "
-        f"post-trained 0.8B: GSM8K `{block(gsm)}`, MATH-500 `{block(math500)}`, "
-        f"full MATH (5,000) `{block(full)}` (paired problem-level bootstrap, "
-        "4,000 resamples, seed 53). Verdict: replicated GSM8K gain "
-        f"`{yes(flags.get('replicated_gsm8k_win'))}`, MATH effect "
-        "resolved at the larger n "
-        f"`{yes(flags.get('math_effect_resolved_at_larger_n'))}`, "
-        "retention "
-        f"`{'pass' if retention.get('retention_pass') else 'not pass'}`, "
-        "complete registered win "
-        f"`{'met' if flags.get('complete_registered_win') else 'not met'}`. "
-        "The coefficient was selected on the 1,000-item train-split "
-        "calibration before the full MATH instrument was scored; the full "
-        "MATH set was used once for this claim. This is a capability win for "
-        "this intervention, not a frontier advantage. Verdict receipt: "
-        f"`{S67_VERDICT}`."
+        "- **S67 registered claim block, coefficient "
+        f"`{selection.get('coefficient')}`: the method is weight interpolation "
+        "(WiSE-FT), not a new architecture** — the released model is the "
+        "float32 weight-space interpolation between Qwen3.5-0.8B and its "
+        "post-trained endpoint, averaged over three seed deltas (a seed-delta "
+        "soup); it introduces no new architecture. Against the post-trained "
+        "0.8B, on our instrument only: GSM8K `"
+        f"{gsm_state}` (soup {block(gsm)} at n={gsm.get('problems')}); "
+        f"MATH-500 `{math500_state}` ({block(math500)} at "
+        f"n={math500.get('problems')}); the MATH effect is `{full_state}` on "
+        "the pre-registered full 5,000-problem test "
+        f"(`{block(full)}` at n={full.get('problems')}); MMLU retention "
+        f"`{mmlu_state}` (`{block(mmlu_full)}`) and the registered 4,000-item "
+        f"MMLU-Pro retention `{pro_state}` (`{block(mmlu_pro)}`). The complete "
+        f"registered win is {win_state} under the registered resolution "
+        f"instrument, and {math500_alone}; these "
+        "are two separate statements and neither is presented as the other. "
+        f"The unique active text path is `{unique_text}` elements. No "
+        "frontier-leadership claim is made: no external system was compared, "
+        "so this is a capability win for this intervention on this "
+        "instrument, not a frontier advantage. The coefficient was selected "
+        "on the 1,000-item train-split calibration before the full MATH "
+        "instrument was scored; the full MATH set was used once for this "
+        f"claim. Retention rule: {retention_verdict.get('rule', 'n/a')}. "
+        f"Verdict receipt: `{S67_VERDICT}`."
     )
 
 
