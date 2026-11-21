@@ -1,0 +1,95 @@
+{
+  "schema": "selvedge/s68-frontier-inventory/v1",
+  "kind": "external-frontier-inventory",
+  "stamp": "20261121T031700Z",
+  "created_utc": "2026-11-21T03:17:00Z",
+  "revision": "b23c395ce5f01bc6e60d0d91fde4b35d1bed41eb",
+  "purpose": "Pin the two ungated external 0.6B reasoning checkpoints and record the gated one, before scoring them on the SELVEDGE instrument.",
+  "fetch_receipt": {
+    "path": "results/models/s68-frontier-fetch.json",
+    "stamp": "20261121T031516Z"
+  },
+  "protocol": {
+    "instrument": "SELVEDGE S54 stage-1",
+    "tasks": {
+      "gsm8k": 1319,
+      "math500": 500
+    },
+    "prompt": "zero-shot CoT, the S54 user template ending in 'Put the final answer in \\boxed{}'",
+    "decoding": "greedy (temperature 0, top_p 1)",
+    "mode": "non-thinking (each checkpoint's own chat template with enable_thinking=false)",
+    "max_new_tokens": 4096,
+    "batch_size": 32,
+    "extraction": "the S54 strict / flexible / exact bases; flexible is the registered primary, never substituted",
+    "engine": "transformers 5.23.0 / torch 2.15.0+cu132, bf16, SDPA, one RTX 4080 SUPER",
+    "note": "Published vendor numbers for these checkpoints use different prompts, shot counts, decoding, sampling and answer extraction. The table produced from this inventory is our instrument only and is not a like-for-like reproduction of any vendor claim."
+  },
+  "models": [
+    {
+      "id": "Qwen/Qwen3-0.6B",
+      "role": "external frontier, ungated",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "license": "Apache-2.0",
+      "license_sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "gated": false,
+      "fetched": "already cached and verified offline",
+      "cache_relative_dir": "models/Qwen/Qwen3-0.6B/c1899de289a04d12100db370d81485cdf75e47ca",
+      "weight_bytes": 1503300328,
+      "weight_files": [
+        {
+          "path": "model.safetensors",
+          "bytes": 1503300328,
+          "sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+          "hf_lfs_oid": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b"
+        }
+      ],
+      "verification": {
+        "lock": "models/MODELS.lock.json",
+        "offline_receipt": "results/models/fetch-20261121T031333Z.json",
+        "command": "SELVEDGE_MEM=4g scripts/fetch-models.sh --verify-only"
+      }
+    },
+    {
+      "id": "amd/ReasonLite-0.6B",
+      "role": "external frontier, ungated",
+      "revision": "3aad22487d65b6e88d99a308762a4550e24854ac",
+      "license": "OpenRAIL-D (LICENSE-AMD-OpenRAIL-D; Hub card tag 'openrail')",
+      "license_files": [
+        {
+          "path": "LICENSE-AMD-OpenRAIL-D",
+          "bytes": 14871,
+          "sha256": "9bb465fe3a486cd56e1fe565a9556c432e98edfe38494c15ff5a8fd75ca9e329"
+        }
+      ],
+      "gated": false,
+      "fetched": true,
+      "cache_relative_dir": "models/amd/ReasonLite-0.6B/3aad22487d65b6e88d99a308762a4550e24854ac",
+      "weight_bytes": 1503300328,
+      "hub_reported_parameters": 751632384,
+      "weight_files": [
+        {
+          "path": "model.safetensors",
+          "bytes": 1503300328,
+          "sha256": "926a1d80916bdeda1e01718858f53cf74f04a9631920444e77817036d6e3458b",
+          "hf_lfs_oid": "926a1d80916bdeda1e01718858f53cf74f04a9631920444e77817036d6e3458b",
+          "sha256_matches_lfs_oid": true
+        }
+      ]
+    },
+    {
+      "id": "facebook/MobileLLM-R1.5-950M",
+      "role": "external frontier, gated",
+      "revision": "d4af70ac985faa1d504b3446d8a7448fedf91194",
+      "license": "fair-noncommercial-research",
+      "gated": "manual",
+      "fetched": false,
+      "gate_probe": {
+        "url": "https://huggingface.co/facebook/MobileLLM-R1.5-950M/resolve/d4af70ac985faa1d504b3446d8a7448fedf91194/config.json",
+        "status": 401,
+        "detail": "Access to model facebook/MobileLLM-R1.5-950M is restricted. You must have access to it and be authenticated to access it. Please log in."
+      },
+      "hub_reported_parameters": 949685760,
+      "not_fetched_reason": "manual gate; the program holds no acceptance credentials and did not attempt to bypass the gate"
+    }
+  ]
+}
