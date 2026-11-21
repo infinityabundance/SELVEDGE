@@ -251,6 +251,12 @@ def cgroup_memory() -> dict:
 
 
 def load_excluded(path: str | None) -> set[str]:
+    """Ids in a jsonl exclusion file.
+
+    A row may carry the problem id as ``id`` (corpus/ledger rows) or as
+    ``problem_id`` (the registered calibration splits). Both are read so a
+    calibration file can be passed without a rewrite.
+    """
     if not path:
         return set()
     ids = set()
@@ -258,8 +264,9 @@ def load_excluded(path: str | None) -> set[str]:
         for line in handle:
             if line.strip():
                 row = json.loads(line)
-                if row.get("id"):
-                    ids.add(str(row["id"]))
+                value = row.get("id") or row.get("problem_id")
+                if value:
+                    ids.add(str(value))
     return ids
 
 
@@ -431,9 +438,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--seed", type=int, default=5900)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--shards", type=int, default=1)
-    parser.add_argument("--exclude-ids", default=None,
-                        help="jsonl whose `id` field is removed from the prompt "
-                             "pool (the frozen stage-2a hold-out)")
+    parser.add_argument("--exclude-ids", action="append", default=None,
+                        help="jsonl whose `id`/`problem_id` field is removed "
+                             "from the prompt pool; repeatable (the frozen "
+                             "stage-2a hold-out, the calibration splits)")
+    parser.add_argument("--policy-checkpoint", default=None,
+                        help="a stage-2 full-backbone checkpoint (`arm: full`) "
+                             "loaded over --policy-dir before sampling; the "
+                             "receipt records its path, sha256 and step")
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--label", required=True)
     parser.add_argument("--vram-limit-gib", type=float, default=13.0)
@@ -448,6 +460,7 @@ def main(argv: list[str]) -> int:
 
     out_dir = os.path.join(ROOT, args.out_dir)
     os.makedirs(out_dir, exist_ok=True)
+    policy_checkpoint = None
     accepted_path = os.path.join(out_dir, f"{args.label}-accepted.jsonl")
     receipt_path = os.path.join(out_dir, f"{args.label}-receipt.json")
     ledger_path = os.path.join(out_dir, f"{args.label}-ledger.jsonl")
@@ -464,7 +477,9 @@ def main(argv: list[str]) -> int:
             "writer truncates. Pass --overwrite deliberately or use a new "
             "--out-dir/--label and merge by token dedup")
 
-    excluded = load_excluded(args.exclude_ids)
+    excluded: set[str] = set()
+    for path in args.exclude_ids or []:
+        excluded |= load_excluded(path)
 
     import torch
 
@@ -484,6 +499,30 @@ def main(argv: list[str]) -> int:
         from frontier import arms
         model = arms.load_model(args.policy_dir, dtype=torch.bfloat16,
                                 device=device)
+        policy_checkpoint = None
+        if args.policy_checkpoint:
+            from frontier import full
+
+            checkpoint_path = os.path.join(ROOT, args.policy_checkpoint)
+            payload = torch.load(checkpoint_path, map_location="cpu",
+                                 weights_only=False)
+            if payload.get("arm") not in (None, "full"):
+                raise SystemExit(
+                    "s59-rollouts: --policy-checkpoint is not a full-arm "
+                    f"checkpoint (arm={payload.get('arm')!r})")
+            full.load_full_state_into(model, payload["arm_state"])
+            policy_checkpoint = {
+                "path": args.policy_checkpoint,
+                "sha256": sha256_file(checkpoint_path),
+                "step": payload.get("step"),
+                "tokens_seen": payload.get("tokens_seen"),
+                "arm": "full",
+            }
+            print(f"s59-rollouts: loaded policy checkpoint "
+                  f"{args.policy_checkpoint} step={payload.get('step')}",
+                  flush=True)
+        else:
+            policy_checkpoint = None
         for parameter in model.parameters():
             parameter.requires_grad_(False)
         model.eval()
@@ -523,6 +562,20 @@ def main(argv: list[str]) -> int:
                     "subject": item.get("subject")})
         if not tasks:
             raise SystemExit("s59-rollouts: no prompts selected")
+        # Durable manifest of the selected prompt set: the selection is seeded,
+        # but the manifest lets a reader verify exactly which prompts the arm
+        # trained on without re-running the selection.
+        prompts_path = os.path.join(out_dir, f"{args.label}-prompts.jsonl")
+        with open(prompts_path, "w", encoding="utf-8") as prompt_handle:
+            for task in tasks:
+                prompt_handle.write(json.dumps({
+                    "id": task["id"], "dataset": task["dataset"],
+                    "question": task["question"],
+                    "difficulty": task["difficulty"],
+                    "subject": task["subject"],
+                    "samples": task["samples"],
+                    "max_new_tokens": task["max_new_tokens"],
+                }, sort_keys=True) + "\n")
         print(f"s59-rollouts: {len(tasks)} prompts, "
               f"{sum(task['samples'] for task in tasks)} rollouts planned",
               flush=True)
@@ -752,6 +805,7 @@ def main(argv: list[str]) -> int:
         "registration": "docs/ws19-post-trained-route-stage2b-preregistration-v1.json",
         "corrections_registration": "docs/ws19-stage2-correction-s63-preregistration-v1.json",
         "policy_dir": args.policy_dir,
+        "policy_checkpoint": policy_checkpoint,
         "tokenizer_dir": args.tokenizer_dir,
         "prompt_protocol": ("the policy's own chat template, "
                             "add_generation_prompt=True, enable_thinking=False"),
@@ -797,9 +851,17 @@ def main(argv: list[str]) -> int:
                              "but not removed",
         },
         "holdout_exclusion": {
-            "path": args.exclude_ids,
+            "paths": args.exclude_ids or [],
             "ids": len(excluded),
+            "id_field": "id or problem_id",
             "excluded_from_pool": excluded_counts if not args.receipt_only else {},
+        },
+        "prompt_manifest": {
+            "path": (os.path.relpath(prompts_path, ROOT)
+                     if not args.receipt_only else None),
+            "sha256": (sha256_file(prompts_path)
+                       if not args.receipt_only else None),
+            "rows": (len(tasks) if not args.receipt_only else None),
         },
         "selection": selection_report if not args.receipt_only else {},
         "ledger": {

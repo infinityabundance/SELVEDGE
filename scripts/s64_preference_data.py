@@ -620,6 +620,28 @@ def run_reference(args) -> int:
     del tokenizer  # only the ids are needed; decode is never used here
     model = arms.load_model(args.reference_dir, dtype=torch.bfloat16,
                             device=device)
+    reference_checkpoint = None
+    if args.reference_checkpoint:
+        from frontier import full
+
+        checkpoint_path = _resolve(args.reference_checkpoint)
+        payload = torch.load(checkpoint_path, map_location="cpu",
+                             weights_only=False)
+        if payload.get("arm") not in (None, "full"):
+            raise SystemExit(
+                "s64-data: --reference-checkpoint is not a full-arm checkpoint "
+                f"(arm={payload.get('arm')!r})")
+        full.load_full_state_into(model, payload["arm_state"])
+        model.eval()
+        reference_checkpoint = {
+            "path": args.reference_checkpoint,
+            "sha256": sha256_file(checkpoint_path),
+            "step": payload.get("step"),
+            "tokens_seen": payload.get("tokens_seen"),
+            "arm": "full",
+        }
+        print(f"s64-data: reference checkpoint {args.reference_checkpoint} "
+              f"step={payload.get('step')}", flush=True)
     torch.cuda.reset_peak_memory_stats()
 
     cached = []
@@ -652,7 +674,12 @@ def run_reference(args) -> int:
         "command": sys.argv,
         "reference": {
             "dir": args.reference_dir,
-            "identity": "frozen post-trained Qwen/Qwen3.5-0.8B; pi_0",
+            "checkpoint": reference_checkpoint,
+            "identity": (
+                "frozen soup champion loaded from --reference-checkpoint; "
+                "pi_ref is the policy the student is initialised from"
+                if reference_checkpoint else
+                "frozen post-trained Qwen/Qwen3.5-0.8B; pi_0"),
             "normalisation": args.normalization,
             "registered_normalisation": preference.REGISTERED_NORMALIZATION,
             "teacher_co_resident": False,
@@ -712,6 +739,10 @@ def main(argv: list[str]) -> int:
                                help="cache the frozen-reference log-probs")
     reference.add_argument("--pairs", action="append", required=True)
     reference.add_argument("--reference-dir", required=True)
+    reference.add_argument("--reference-checkpoint", default=None,
+                           help="a stage-2 full-arm checkpoint loaded over "
+                                "--reference-dir; the receipt records its "
+                                "path, sha256 and step")
     reference.add_argument("--tokenizer-dir", required=True)
     reference.add_argument("--normalization", default="mean",
                            choices=preference.NORMALIZATIONS)

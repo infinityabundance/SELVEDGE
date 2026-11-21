@@ -523,6 +523,10 @@ def main(argv: list[str]) -> int:
                         help="teacher-guided recovery pairs with the reference "
                              "cache (recovery)")
     parser.add_argument("--student-dir", required=True)
+    parser.add_argument("--init-checkpoint", default=None,
+                        help="a stage-2 full-arm checkpoint loaded over "
+                             "--student-dir before the adapter is installed; "
+                             "the receipt records its path, sha256 and step")
     parser.add_argument("--budget-tokens", type=int, default=5_000_000)
     parser.add_argument("--cadence", default="500000,1000000,2000000,5000000")
     parser.add_argument("--batch-pairs", type=int, default=1)
@@ -586,6 +590,30 @@ def main(argv: list[str]) -> int:
     device = args.device
     model = arms.load_model(args.student_dir, dtype=torch.bfloat16,
                             device=device)
+    init_checkpoint = None
+    if args.init_checkpoint:
+        from frontier import full
+
+        checkpoint_path = os.path.join(ROOT, args.init_checkpoint)
+        payload = torch.load(checkpoint_path, map_location="cpu",
+                             weights_only=False)
+        if payload.get("arm") not in (None, "full"):
+            raise SystemExit(
+                "s64-launch: --init-checkpoint is not a full-arm checkpoint "
+                f"(arm={payload.get('arm')!r})")
+        full.load_full_state_into(model, payload["arm_state"])
+        for parameter in model.parameters():
+            parameter.requires_grad_(False)
+        model.eval()
+        init_checkpoint = {
+            "path": args.init_checkpoint,
+            "sha256": sha256_file(checkpoint_path),
+            "step": payload.get("step"),
+            "tokens_seen": payload.get("tokens_seen"),
+            "arm": "full",
+        }
+        print(f"s64-launch: initialised the student from "
+              f"{args.init_checkpoint} step={payload.get('step')}", flush=True)
     pairs = load_pairs(pair_path)
     out_dir = (args.out_dir if os.path.isabs(args.out_dir)
                else os.path.join(ROOT, args.out_dir))
@@ -626,6 +654,7 @@ def main(argv: list[str]) -> int:
         "command": sys.argv,
         "arm": args.arm,
         "student_dir": args.student_dir,
+        "init_checkpoint": init_checkpoint,
         "pairs": {
             "path": os.path.relpath(os.path.abspath(pair_path), ROOT),
             "sha256": sha256_file(os.path.abspath(pair_path)),
