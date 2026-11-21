@@ -1,0 +1,77 @@
+Traceback (most recent call last):
+  File "/work/scripts/s54_post_trained_eval.py", line 931, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/work/scripts/s54_post_trained_eval.py", line 794, in main
+    result = evaluate_task(
+             ^^^^^^^^^^^^^^
+  File "/work/scripts/s54_post_trained_eval.py", line 506, in evaluate_task
+    completions, stats = generate_batch(
+                         ^^^^^^^^^^^^^^^
+  File "/work/scripts/s54_post_trained_eval.py", line 461, in generate_batch
+    output = model.generate(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 158, in no_grad
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py", line 3007, in generate
+    result = decoding_method(
+             ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/generation/utils.py", line 3235, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 469, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+                                       ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 361, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 405, in forward
+    hidden_states = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/modeling_layers.py", line 121, in forward_with_checkpointing
+    return forward(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 299, in forward
+    hidden_states, _ = self.self_attn(
+                       ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 252, in forward
+    key_states, value_states = past_key_values.update(key_states, value_states, self.layer_idx)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/cache_utils.py", line 1570, in update
+    keys, values = self.layers[layer_idx].update(key_states, value_states, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/cache_utils.py", line 137, in update
+    self.values = torch.cat([self.values, value_states], dim=-2)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 190.00 MiB. GPU 0 has a total capacity of 15.61 GiB of which 2.32 GiB is free. Including non-PyTorch memory, this process has 12.12 GiB memory in use. 12.00 GiB allowed; Of the allocated memory 11.43 GiB is allocated by PyTorch, and 396.64 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
