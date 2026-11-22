@@ -107,8 +107,8 @@ and Qwen3-0.6B's (484) equal the recon's last-boxed method counts; and the soup'
 soup's 158 truncated rows contains a correct answer, and only one contains a box
 at all. So H-a, read as "the 4,096 prefix already held the right answer and
 extraction threw it away", is **false at 4,096 by construction**. The dominant
-fault in the soup's truncations is that no answer is emitted (116 rows, 73.4%),
-with degenerate loops second (42 rows, 26.6%); "answered and then did not stop"
+fault in the soup's truncations is that no answer is emitted (116 rows, 73.4%
+= 116/158), with degenerate loops second (42 rows, 26.6% = 42/158); "answered and did not stop"
 is zero rows. The leader's 18 truncated rows and the baseline's 160 behave the
 same way (zero correct boxes). The teacher is the exception: 4 of its 115
 truncated rows already contain a correct box and are already scored correct, so
