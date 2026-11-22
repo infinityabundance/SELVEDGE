@@ -86,7 +86,9 @@ the same problems. Intervals are 95% percentile intervals on the paired delta.
 MMLU-cal is not re-scored for the new cadences: no MMLU row exists for them and
 this probe does not create one. The 2M rows remain the only MMLU evidence
 (`matched-sft` 0.5185, `matched-sft-weighted` 0.514, `preference` 0.470, soup
-0.5215).
+0.5215; `results/stage2/s69-calibration/table.json`, stamp
+`20261122T084104Z`, revision `9c7e6c0`, reading the `mmlu-*.json` receipts in the
+same directory).
 
 ## 4. Generation behaviour
 
