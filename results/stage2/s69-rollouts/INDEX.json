@@ -1,0 +1,99 @@
+{
+  "files": {
+    "soup-accepted.jsonl": {
+      "bytes": 7678477,
+      "citations": [
+        {
+          "matches": true,
+          "pointer": "/accepted",
+          "receipt": "results/stage2/s69-rollouts/raw/soup-receipt.json.gz",
+          "recorded_rows": 1471,
+          "recorded_sha256": "2b7cfd3dc21ca00340b08022da46f55751d6e3f96e8a60c93dc73d213c50783d"
+        }
+      ],
+      "gz_bytes": 1122212,
+      "gz_sha256": "48534cad10aef33712562f04ce59cd4f476e0684c3c1d798e7b6574228ffd667",
+      "kind": "rows",
+      "rows": 1471,
+      "sha256": "2b7cfd3dc21ca00340b08022da46f55751d6e3f96e8a60c93dc73d213c50783d",
+      "source": "results/artifacts/stage2/s69-rollouts/soup-accepted.jsonl",
+      "stored": "results/stage2/s69-rollouts/raw/soup-accepted.jsonl.gz"
+    },
+    "soup-ledger.jsonl": {
+      "bytes": 645682,
+      "citations": [
+        {
+          "matches": true,
+          "pointer": "/ledger",
+          "receipt": "results/stage2/s69-rollouts/raw/soup-receipt.json.gz",
+          "recorded_rows": 650,
+          "recorded_sha256": "766d53db976a1a4f2ae9fd644f33ca17b7677a34f357026dd0907c0b825f110e"
+        }
+      ],
+      "gz_bytes": 75926,
+      "gz_sha256": "8ed8bcd5c8ff3d2778b021807750f34e2d58d53e93ecc6f64bc2599a4c2e9ae6",
+      "kind": "rows",
+      "rows": 650,
+      "sha256": "766d53db976a1a4f2ae9fd644f33ca17b7677a34f357026dd0907c0b825f110e",
+      "source": "results/artifacts/stage2/s69-rollouts/soup-ledger.jsonl",
+      "stored": "results/stage2/s69-rollouts/raw/soup-ledger.jsonl.gz"
+    },
+    "soup-prompts.jsonl": {
+      "bytes": 242470,
+      "citations": [
+        {
+          "matches": true,
+          "pointer": "/prompt_manifest",
+          "receipt": "results/stage2/s69-rollouts/raw/soup-receipt.json.gz",
+          "recorded_rows": 650,
+          "recorded_sha256": "9ed8f59bf7de6a69a51402d1b51038ecf7e3323699cbd215b7e40a8813acf18e"
+        }
+      ],
+      "gz_bytes": 60912,
+      "gz_sha256": "a4357ff31c75cd5c5b8a4322785279b7f0a426f457ea502a4bd49cb003fb0fb8",
+      "kind": "rows",
+      "rows": 650,
+      "sha256": "9ed8f59bf7de6a69a51402d1b51038ecf7e3323699cbd215b7e40a8813acf18e",
+      "source": "results/artifacts/stage2/s69-rollouts/soup-prompts.jsonl",
+      "stored": "results/stage2/s69-rollouts/raw/soup-prompts.jsonl.gz"
+    },
+    "soup-receipt.json": {
+      "bytes": 43944,
+      "citations": [],
+      "gz_bytes": 7861,
+      "gz_sha256": "a0fae6903439b4391c3bdcb46d9716f80cee36e0d67d3190124ee5c4bcfbb0be",
+      "kind": "receipt",
+      "rows": null,
+      "sha256": "8dc8445f9198efa0c20011fa777cc0468a40fd6827f07503dc6409962c59961b",
+      "source": "results/artifacts/stage2/s69-rollouts/soup-receipt.json",
+      "stored": "results/stage2/s69-rollouts/raw/soup-receipt.json.gz"
+    },
+    "soup-rejected.jsonl": {
+      "bytes": 2449209,
+      "citations": [
+        {
+          "matches": true,
+          "pointer": "/preference_data",
+          "receipt": "results/stage2/s69-rollouts/raw/soup-receipt.json.gz",
+          "recorded_rows": 424,
+          "recorded_sha256": "d41f6b915817e18a59af427d45ebd23a158e6ae553a7a41074f4e5640378ece5"
+        }
+      ],
+      "gz_bytes": 399301,
+      "gz_sha256": "355731033b8f3343c70f2b1c24e9806d27d1c0cd7518169783b79d06828e86fe",
+      "kind": "rows",
+      "rows": 424,
+      "sha256": "d41f6b915817e18a59af427d45ebd23a158e6ae553a7a41074f4e5640378ece5",
+      "source": "results/artifacts/stage2/s69-rollouts/soup-rejected.jsonl",
+      "stored": "results/stage2/s69-rollouts/raw/soup-rejected.jsonl.gz"
+    }
+  },
+  "generated_by": "scripts/s69_evidence.py pack",
+  "group": "s69-rollouts",
+  "note": "The uncompressed artifacts live under the gitignored results/artifacts/ tree. These gzip -9 archives are lossless; every digest here is the SHA-256 of the uncompressed bytes and is compared with the digest the cited receipt records. `python3 scripts/s69_evidence.py verify` recomputes the whole chain from tracked files.",
+  "schema": "selvedge/s69-evidence-index/v1",
+  "source_dir": "results/artifacts/stage2/s69-rollouts",
+  "stored_dir": "results/stage2/s69-rollouts/raw",
+  "total_bytes": 11059782,
+  "total_gz_bytes": 1666212
+}

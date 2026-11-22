@@ -5,6 +5,9 @@ both completion-CE controls, and a cadence probe that partly rescues the
 controls but not the arm.** No test split was read. Nothing was adopted.
 The failure is attributed to the objective and the update regime, not to corpus
 construction. This document is a report of measurement; it registers no arm.
+The raw rollout and preference corpus these receipts read is now tracked,
+losslessly compressed and hash-indexed; `docs/S69-EVIDENCE.md` explains how to
+verify the chain end to end with `python3 scripts/s69_evidence.py verify`.
 
 Every number below is a quotation from the receipt named beside it, with that
 receipt's stamp and the revision recorded inside it. Nothing here is
