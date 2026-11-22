@@ -1,0 +1,313 @@
+{
+ "schema": "selvedge/s72-teacher-qualification-preregistration/v1",
+ "identifier": "S72-STAGE0-TEACHER-QUALIFICATION-PREREGISTRATION-V1",
+ "created_utc": "2026-11-22T13:10:00Z",
+ "registered_utc": "2026-11-22T13:10:00Z",
+ "status": "registered",
+ "revision": "1511d097e84c720f19ee8c7d615dd516ef7f7dd2",
+ "scope": "Stage 0 only: teacher qualification. This file does not register Stage 1 (trace generation), Stage 2 (training arms) or Stage 3 (the alpha/rank ladder), and it authorises no generation of training data and no test scoring.",
+ "purpose": "Before spending 18-45 GPU-hours generating traces, measure whether a locally cached teacher solves a fresh, seeded sample of MATH-train and GSM8K-train at our own protocol (greedy, non-thinking, zero-shot CoT, max_new_tokens=4096, \\boxed{}, flexible basis with strict and exact reported alongside). The published headline numbers for larger teachers are at their own generation settings, not at 4,096 tokens with our template.",
+ "provenance": {
+  "recon_receipts": [
+   {
+    "path": "results/stage2/s72-recon/teacher-recon.json",
+    "sha256": "a7bb2812da4af8b41a7745c3596b18c68e83ab2dbf70f699eeb049c71913f5ac",
+    "kind": "receipt-recon of every existing per-task accuracy in the tree"
+   },
+   {
+    "path": "results/stage2/s72-recon/corpus-audit.json",
+    "sha256": "114ccbaa89655e14c4909bc1758799b18b53d522f08d9089b61ca4cbe99e8ceb",
+    "kind": "corpus counts, token lengths and MATH-train coverage"
+   },
+   {
+    "path": "results/stage2/s72-recon/stage0-sample.json",
+    "sha256": "375b7f7fba4ff5329aa0924a57c501dac8db053d500621c35170d1db091dd6cc",
+    "kind": "the frozen Stage 0 sample receipt"
+   }
+  ],
+  "scripts": [
+   "scripts/s72_teacher_recon.py",
+   "scripts/s72_corpus_audit.py",
+   "scripts/s72_stage0_sample.py"
+  ],
+  "input_is_s71": "docs/S71-LITERATURE.md section H.1 defines this stage; this file fixes the instrument and the gate it left open."
+ },
+ "reads_no_test_score": {
+  "statement": "Stage 0 scores no test item and reads no test score. The sample builder opened the MATH test corpus, MATH-500 and the GSM8K test split only to compute an exact-normalised-question disjointness filter, so the sample cannot overlap a test instrument through a duplicated row. That filter removed one MATH-train item and zero GSM8K-train items (results/stage2/s72-recon/stage0-sample.json). It is a contamination exclusion, not a selection on test performance; no test receipt, score or per-problem verdict entered any decision in this file.",
+  "test_files_read_for_disjointness_only": [
+   "results/artifacts/math-test/math-test-5000.jsonl",
+   "/hf-cache/datasets/HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+   "/hf-cache/datasets/openai___gsm8k/main/0.0.0/740312add88f781978c0658806c59bc2815b9866/gsm8k-test.arrow"
+  ]
+ },
+ "candidates": [
+  {
+   "order": 1,
+   "label": "T1",
+   "model_id": "Qwen/Qwen3.5-2B",
+   "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+   "role": "primary candidate; the teacher the S58 corpus was generated from",
+   "weights_confirmed": true,
+   "weights_path": "/hf-cache/models/Qwen/Qwen3.5-2B/15852e8c16360a2fea060d615a32b45270f8a8fc/model.safetensors-00001-of-00001.safetensors",
+   "weights_bytes": 4548221488,
+   "download_required": false,
+   "gate_eligible": true,
+   "prior_measurement": {
+    "receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+    "stamp": "20261118T045605Z",
+    "protocol": "identical: greedy, non-thinking, zero-shot CoT, max_new_tokens=4096, S54 extraction",
+    "math500_flexible": 0.658,
+    "math500_strict": 0.658,
+    "math500_exact": 0.702,
+    "math500_items": 500,
+    "math500_truncated_samples": 115,
+    "gsm8k_flexible": 0.7839272175890827,
+    "gsm8k_items": 1319,
+    "gsm8k_truncated_samples": 36,
+    "full_math": "unknown - never scored under any protocol",
+    "mmlu_in_our_protocol": "unknown - never scored under any protocol",
+    "note": "65.80 MATH-500 is below this stage's 70 gate and 23.0% of its MATH-500 completions hit the 4,096 cap. Stage 0 exists to test whether that is a MATH-500 difficulty effect or the teacher's own ceiling."
+   }
+  },
+  {
+   "order": 2,
+   "label": "T2",
+   "model_id": "Qwen/Qwen3-1.7B",
+   "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+   "role": "secondary candidate: cached, instruction-tuned, no download. It is smaller than T1, so it can never replace T1 as the G1 teacher; it is scored as a second point on the same sample.",
+   "weights_confirmed": true,
+   "weights_path": "/hf-cache/models/Qwen/Qwen3-1.7B/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e/model-00001-of-00002.safetensors plus model-00002-of-00002.safetensors",
+   "weights_bytes": 4063515592,
+   "download_required": false,
+   "gate_eligible": false,
+   "prior_measurement": {
+    "score": "unknown - the checkpoint is cached and has never been scored in our protocol"
+   }
+  }
+ ],
+ "not_candidates": [
+  {
+   "model_id": "Qwen/Qwen3.5-4B",
+   "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+   "weights_confirmed": false,
+   "weights_path": "/hf-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+   "reason": "config.json, tokenizer.json and chat template are cached but no *.safetensors file is present. Qualifying it requires a download, which Stage 0 does not authorise."
+  },
+  {
+   "model_id": "Qwen/Qwen3.5-9B",
+   "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+   "weights_confirmed": false,
+   "reason": "config and tokenizer only; no weights on disk; no download authorised in Stage 0."
+  },
+  {
+   "model_id": "Qwen/Qwen3-4B",
+   "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+   "weights_confirmed": false,
+   "reason": "never downloaded; recorded in docs/MODELS.md as reference only."
+  },
+  {
+   "model_id": "Qwen/Qwen2.5-Math-7B-Instruct",
+   "weights_confirmed": false,
+   "reason": "not present in /hf-cache and no pinned revision is recorded in the tree; obtaining it is out of Stage 0 scope."
+  },
+  {
+   "model_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+   "weights_confirmed": false,
+   "reason": "not present in /hf-cache and no pinned revision is recorded in the tree."
+  },
+  {
+   "model_id": "Qwen/Qwen3-0.6B",
+   "weights_confirmed": true,
+   "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+   "reason": "already measured at 48.80 MATH-500 and 61.26 GSM8K in our protocol (results/stage2/s68-frontier/qwen3-0.6b.json). It fails the MATH gate by 21.2 points on an easier instrument, so re-scoring it cannot qualify it; it stays an external position row, not a teacher."
+  }
+ ],
+ "instrument": {
+  "sample_path": "results/artifacts/stage2/s72-stage0/sample-250x2.jsonl",
+  "sample_sha256": "1c4aa39fc1a25ce9b45671a4966d0ffc8636100d72dae470fa0ffaa40433b838",
+  "sample_bytes": 337777,
+  "fixed_before_any_teacher_score": true,
+  "counts": {
+   "math": 250,
+   "gsm8k": 250
+  },
+  "seed": {
+   "math": 7200,
+   "gsm8k": 7201,
+   "rule": "restrict to the eligible pool, sort by id, random.Random(seed).shuffle, take the first N, sort by id"
+  },
+  "pools": {
+   "math_train_parseable": 7472,
+   "math_eligible": 6442,
+   "math_removed_by_excluded_id": 1029,
+   "math_removed_by_test_question": 1,
+   "gsm8k_train_parseable": 7473,
+   "gsm8k_eligible": 6420,
+   "gsm8k_removed_by_excluded_id": 1053,
+   "gsm8k_removed_by_test_question": 0
+  },
+  "exclusions": {
+   "files": [
+    "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "results/stage2/s66-calibration/gsm8k-cal-1000.jsonl",
+    "results/stage2/s66-calibration/math-cal-1000.jsonl"
+   ],
+   "rule": "every id in any exclusion file is removed before sampling, and any train question whose exact normalised text matches a test question is removed",
+   "claim": "no sampled problem is in the S58 holdout or either 1,000-item calibration split, and no sampled problem is a test item"
+  },
+  "sample_profile": {
+   "math_by_level": {
+    "1": 24,
+    "2": 40,
+    "3": 56,
+    "4": 59,
+    "5": 71
+   },
+   "gsm8k_by_calculator_steps": {
+    "0": 1,
+    "1": 19,
+    "2": 77,
+    "3": 73,
+    "4": 45,
+    "5": 21,
+    "6": 5,
+    "7": 8,
+    "8": 1
+   }
+  },
+  "diagnostic_training_overlap": {
+   "math_sample_ids_with_an_s58_teacher_trace": 58,
+   "gsm8k_sample_ids_with_an_s58_teacher_trace": 105,
+   "note": "not an exclusion; the S58 corpus is training data, not a calibration or test set. It tells a reader how much of the sample the student has already seen as a trace."
+  },
+  "protocol": {
+   "system": null,
+   "user_template": "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{}.",
+   "chat_template": "each checkpoint's own tokenizer/chat template with enable_thinking=false",
+   "decoding": "greedy (temperature 0, top_p 1)",
+   "mode": "non-thinking",
+   "max_new_tokens": 4096,
+   "stop": "EOS only",
+   "samples_per_problem": 1,
+   "batch_prompts": 32,
+   "engine": "transformers, bf16, SDPA, one RTX 4080 SUPER, the S54 stage-1 script",
+   "primary_basis": "flexible",
+   "also_reported": ["strict", "exact"],
+   "verifier": "frontier.rft.verify against the train label, plus math_verify 0.9.0 for the exact basis if the image carries it",
+   "note": "documented S71 H.1 says a system instruction 'Please reason step by step, and put your final answer within \\boxed{}.' Our eval receipts use system=null. This registration uses the receipt protocol, not the prose of the review, because the gate must be comparable to the 65.80 and 48.80 rows it is judged against."
+  }
+ },
+ "gate": {
+  "math_flexible_at_least": 0.70,
+  "gsm8k_flexible_at_least": 0.90,
+  "items": {
+   "math": 250,
+   "gsm8k": 250
+  },
+  "rule": "a candidate qualifies iff its flexible-basis point estimate is >= 0.70 on the 250 MATH-train problems AND >= 0.90 on the 250 GSM8K-train problems. The Wilson 95% interval is reported beside each point estimate but does not move, soften or widen the gate.",
+  "no_softening": "The gate is fixed at registration. A candidate at 0.696 is a fail. A candidate at 0.70 exactly is a pass. Changing the threshold, the sample, the seed, the cap, the template or the basis after seeing a score is a new registration.",
+  "retries": "none. The sample is read once per candidate. A crashed or OOM-killed run is receipted as a failure, the OOM limit is recomputed from the failure's own cgroup/VRAM evidence, and the run is repeated on the identical sample; no sample is redrawn."
+ },
+ "decision_rule": {
+  "case_T1_passes_both": {
+   "condition": "T1 MATH >= 0.70 and T1 GSM8K >= 0.90",
+   "action": "T1 is the qualified teacher. Stage 1 may be registered separately on T1 with the S71 H.2 data plan, at the token budget Stage 0's measured rate permits. This stage still produces no capability claim and changes no win bar."
+  },
+  "case_T1_ceiling": {
+   "condition": "T1 GSM8K >= 0.90 and T1 MATH < 0.70, and the existing 65.80 MATH-500 point lies inside the new sample's Wilson 95% interval (i.e. the fresh train sample is statistically consistent with 65.80)",
+   "action": "Record the finding as: the 2B teacher is already near its own ceiling on MATH under this protocol. Then a 2B-teacher distillation cannot reach MATH-500 50 by trace quality alone: the teacher's own MATH accuracy bounds what its traces contain, our soup is at 40.60 MATH-500 and 42.12 full MATH against a teacher at 65.80, and reaching 50.0 would require closing 37.3% of the teacher's 25.20-point margin ((50.0 - 40.60) / (65.80 - 40.60) = 0.373). Do not fund another 2B trace run. The named next route is a stronger teacher (Stage 0b, which requires a weights download and an operator-approved disk and GPU budget) or G2/G4. Stage 0 is recorded as failed."
+  },
+  "case_T1_below_its_own_level": {
+   "condition": "T1 GSM8K >= 0.90 and T1 MATH < 0.70, and the sample's Wilson 95% interval excludes 65.80 (the sample is materially harder or the execution differs)",
+   "action": "Stage 0 fails. The binding constraint is the instrument or the execution, not the teacher's published level. The named next experiment is the S71 H.1 cap/format study (the 23.0% MATH-500 truncation at 4,096 is the evidence that the cap may be binding), not a distillation run. No threshold moves."
+  },
+  "case_T1_fails_gsm8k": {
+   "condition": "T1 GSM8K < 0.90",
+   "action": "T1 is not a qualified teacher for either task, whatever its MATH score. Stage 0 fails, and the failure is recorded as a protocol failure (template, chat mode or truncation), because a 2B checkpoint measured at 78.39% on full GSM8K cannot plausibly fall below 90% of a 250-item train sample for a capability reason alone. The next experiment is a protocol diagnosis on the same sample, not a new teacher."
+  },
+  "case_only_T2_passes": {
+   "condition": "T1 fails and T2 (Qwen3-1.7B) passes both gates",
+   "action": "The stage still fails its primary gate. T2 is recorded as a control point and cannot be substituted for T1, because T2 is smaller than the teacher G1 tests and substituting it would make the hypothesis untestable. No distillation run is funded on this outcome."
+  },
+  "case_nobody_passes": {
+   "condition": "no candidate reaches 0.70 MATH",
+   "action": "Stage 0 fails as a stage. The named fallback is the S71 H.1 cap/format study. If the sample also shows a MATH truncation fraction above 0.20 at 4,096, the cap/format study is not an option but the required next experiment. No win bar and no gate changes."
+  },
+  "case_protocol_contradiction": {
+   "condition": "any candidate's strict-basis score is materially below its flexible-basis score on MATH (the flexible fallback is doing the work)",
+   "action": "Report both, and state that the qualified number is not a pure \\boxed{} number. The 48.80 external row has flexible == strict on MATH-500 with zero fallback rescues (results/stage2/s72-recon/teacher-recon.json), so any teacher row that depends on the fallback is not comparable to it and must not be quoted as such."
+  }
+ },
+ "no_win_bar_change": {
+  "statement": "Stage 0 changes no win bar. The registered test bars remain MATH-500 >= 50.0 and full MATH >= 50.0 with paired 95% intervals above zero, GSM8K >= 62.38 and MMLU >= 51.07 (docs/S71-LITERATURE.md H.4). Stage 0 reads no test split and cannot move, relax or reinterpret any of them.",
+  "two_scales_one_test": "MATH-500 and full MATH are two scales of one test set, not independent replication: MATH-500 is a 500-problem subset of the 5,000-problem Hendrycks MATH test split and its answer field agrees with the full-corpus gold on all 500 overlapping problems (docs/S67-RESULT.md section 3). A result on both is one result at two precisions."
+ },
+ "cost": {
+  "throughput_inputs": {
+   "receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+   "stamp": "20261118T045605Z",
+   "math500_tokens_per_second": 528.7907338171025,
+   "math500_mean_new_tokens": 1692.46,
+   "gsm8k_tokens_per_second": 260.2966904254505,
+   "gsm8k_mean_new_tokens": 576.4571645185747,
+   "note": "measured on the same checkpoint, protocol, cap and card; these are the numbers used for the arithmetic below"
+  },
+  "expected_tokens": {
+   "math": 423115,
+   "gsm8k": 144114,
+   "total": 567229
+  },
+  "expected_gpu_seconds_t1": 1353.8,
+  "expected_gpu_hours_t1": 0.376,
+  "budget_with_1_5_slack_hours_t1": 0.564,
+  "total_gpu_hours_ceiling_both_candidates": 2.0,
+  "arithmetic": "423115/528.7907 + 144114/260.2967 = 1353.8 s = 0.376 GPU-hours for T1 at its own measured rates; x1.5 = 0.564 h. T2 is smaller and cannot be slower per token on the same shape, so the two candidates plus two 3-item smokes are budgeted at a 2.0 GPU-hour ceiling. This replaces S71 H.1's 4-6 h estimate with a derived bound, not a hand-written number.",
+  "disk_for_weights": {
+   "additional_bytes_required": 0,
+   "t1_bytes_on_disk": 4548221488,
+   "t2_bytes_on_disk": 4063515592,
+   "note": "both candidates are already cached under /hf-cache/models; Stage 0 downloads nothing. A 4B/9B candidate would need a fetch and a disk check recorded as a separate registration."
+  },
+  "oom_limit_basis": {
+   "rule": "smoke first on the identical shape, then set the container and GPU budget to max(1.5 x measured peak, measured peak + 1 GiB). Any other limit is a defect.",
+   "smoke": "3 MATH-train sample items and 3 GSM8K-train sample items, batch 32, cap 4096, one candidate at a time; the smoke receipt records cgroup memory.peak and GPU peak VRAM before the 500-item run is allowed to start",
+   "prior_shape_reference": {
+    "receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+    "peak_vram_gib": 7.781913757324219,
+    "peak_vram_reserved_gib": 8.306640625,
+    "container_cgroup_peak_bytes": 1532653568,
+    "implication": "max(1.5 x 7.78, 7.78 + 1) = 11.67 GiB of GPU budget. The smoke must confirm this on the exact batch-32 sample shape before the scored run; the 2g CPU-court default is far too small and must not be inherited.",
+    "fail_closed": "if the smoke's reserved peak + 1 GiB exceeds 15.5 GiB, reduce batch size and re-smoke; batch size is an execution parameter, decoding and extraction are not touched"
+   }
+  }
+ },
+ "receipt_requirements": {
+  "per_candidate": [
+   "model id and revision, weight sha256 of the first shard, tokenizer and chat-template sha256",
+   "sample path and sample sha256 (must equal the value in this file)",
+   "per-problem extraction value, method and status for strict and flexible; exact basis and its library version",
+   "per-problem correctness on all three bases",
+   "generated tokens, new_tokens per problem, truncation flag, wall seconds, tokens/second",
+   "peak VRAM, peak reserved VRAM, cgroup memory.peak and memory.events",
+   "the gate arithmetic: correct/250 for both tasks and the pass/fail booleans",
+   "the selected teacher or the recorded failure"
+  ],
+  "naming": "the receipt must name this registration by path and sha256 so prereg_provenance can order the commit against the first score"
+ },
+ "limits_derived_from": [
+  "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+  "results/stage2/s68-frontier/qwen3-0.6b.json",
+  "results/stage2/s67-final/soup-stage1.json",
+  "results/stage2/s72-recon/teacher-recon.json",
+  "results/stage2/s72-recon/corpus-audit.json",
+  "results/stage2/s72-recon/stage0-sample.json"
+ ],
+ "execution_blocked": {
+  "blocked": true,
+  "reason": "the GPU driver is broken: kernel module 620.70.06 against userspace 620.73, nvidia-smi fails with 'Driver/library version mismatch'. No root access, so the driver cannot be reloaded. Stage 0 requires the GPU and must not run until the operator reloads the driver.",
+  "cpu_work_completed": "the receipt recon, the corpus audit and the frozen sample were computed on CPU through scripts/court with explicit limits (SELVEDGE_MEM=4g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g); no model was loaded and no CUDA call was made."
+ },
+ "retrospective": {
+  "is_retrospective": false
+ }
+}
