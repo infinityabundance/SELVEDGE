@@ -1,0 +1,127 @@
+{
+ "ci_basis": "Wilson 95% intervals from the stored per-problem rows; the scorer emits no paired interval and the S67 soup receipt does not store per-problem calibration rows, so these are per-arm intervals, not paired deltas",
+ "created_utc": "2026-11-22T08:41:04Z",
+ "kind": "s69-calibration-table",
+ "rows": [
+  {
+   "arm": "preference",
+   "cadence": 500000,
+   "generated_tokens": 4096000,
+   "gsm8k_cal": 0.0,
+   "gsm8k_cal_ci": [
+    2.168404344971009e-19,
+    0.0038267584855551234
+   ],
+   "math_cal": 0.0,
+   "math_cal_ci": [
+    2.168404344971009e-19,
+    0.0038267584855551234
+   ],
+   "mmlu_cal": 0.37,
+   "mmlu_cal_items": null,
+   "step": 326
+  },
+  {
+   "arm": "preference",
+   "cadence": 1000000,
+   "generated_tokens": 4096000,
+   "gsm8k_cal": 0.0,
+   "gsm8k_cal_ci": [
+    2.168404344971009e-19,
+    0.0038267584855551234
+   ],
+   "math_cal": 0.0,
+   "math_cal_ci": [
+    2.168404344971009e-19,
+    0.0038267584855551234
+   ],
+   "mmlu_cal": 0.354,
+   "mmlu_cal_items": null,
+   "step": 649
+  },
+  {
+   "arm": "preference",
+   "cadence": 2000000,
+   "generated_tokens": 4096000,
+   "gsm8k_cal": 0.043,
+   "gsm8k_cal_ci": [
+    0.03207865341171336,
+    0.057419003844084014
+   ],
+   "math_cal": 0.006,
+   "math_cal_ci": [
+    0.0027526691418763745,
+    0.01302816824185209
+   ],
+   "mmlu_cal": 0.47,
+   "mmlu_cal_items": null,
+   "step": 1294
+  },
+  {
+   "arm": "matched-sft",
+   "cadence": 2000000,
+   "generated_tokens": 2084944,
+   "gsm8k_cal": 0.591,
+   "gsm8k_cal_ci": [
+    0.560235954911328,
+    0.6210675750443009
+   ],
+   "math_cal": 0.265,
+   "math_cal_ci": [
+    0.23858325625975632,
+    0.2932153202284546
+   ],
+   "mmlu_cal": 0.5185,
+   "mmlu_cal_items": null,
+   "step": 2935
+  },
+  {
+   "arm": "matched-sft-weighted",
+   "cadence": 2000000,
+   "generated_tokens": 2206286,
+   "gsm8k_cal": 0.573,
+   "gsm8k_cal_ci": [
+    0.5421204037602065,
+    0.6033208895009023
+   ],
+   "math_cal": 0.269,
+   "math_cal_ci": [
+    0.24243819128491245,
+    0.297329771135414
+   ],
+   "mmlu_cal": 0.514,
+   "mmlu_cal_items": null,
+   "step": 2935
+  },
+  {
+   "arm": "recovery",
+   "cadence": 2000000,
+   "generated_tokens": 4096000,
+   "gsm8k_cal": 0.024,
+   "gsm8k_cal_ci": [
+    0.016180168466636995,
+    0.03546290561161149
+   ],
+   "math_cal": 0.003,
+   "math_cal_ci": [
+    0.0010207838811386186,
+    0.008783014053503173
+   ],
+   "mmlu_cal": 0.4715,
+   "mmlu_cal_items": null,
+   "step": 909
+  }
+ ],
+ "schema": "selvedge/s69-calibration-table/v1",
+ "scope": "the preference arm is scored at all three registered cadences; the three controls are scored at 2M (the highest MATH-cal preference cadence) for attribution only, not selection. The registered recovery_scoring clause conditions recovery scoring on adoption; it is reported here because the operator asked for the three-arm table.",
+ "soup": {
+  "arm": "soup-champion",
+  "cadence": null,
+  "gsm8k_cal": 0.609,
+  "math_cal": 0.326,
+  "mmlu_cal": 0.5215,
+  "source": "docs/s69-preference-from-champion-preregistration-v1.json",
+  "step": 4000
+ },
+ "test_split_read": false
+}
