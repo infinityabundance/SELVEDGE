@@ -47,7 +47,6 @@ import argparse
 import hashlib
 import json
 import os
-import random
 import sys
 import time
 
@@ -302,13 +301,30 @@ def save_adapter(model, path: str, *, step: int) -> str:
 # training
 
 
+def pair_schedule(pairs, *, seed: int = 0, pair_order: str = "shuffled",
+                  batch_pairs: int = 1):
+    """Yield ``(step, batch)`` forever from the run's deterministic order.
+
+    This is the single ordering source for a training run. `s69_control_budget.py`
+    replays the same order with its own loop over `preference.pair_stream`; the
+    two implementations are compared element for element by
+    `oracle/tests/test_s70_preference_weighting.py`.
+    """
+    stream = preference.pair_stream(pairs, seed=seed, order=pair_order)
+    step = 0
+    while True:
+        step += 1
+        yield step, [pairs[next(stream)] for _ in range(batch_pairs)]
+
+
 def _batch_tokens(arm: str, batch) -> int:
     if arm == "matched-sft":
         return preference.sft_processed_tokens(batch)
     return preference.preference_processed_tokens(batch)
 
 
-def _batch_loss(model, arm: str, batch, beta: float, device):
+def _batch_loss(model, arm: str, batch, beta: float, device,
+                weight_normalizer: float | None = None):
     import torch
 
     if arm == "matched-sft":
@@ -320,7 +336,8 @@ def _batch_loss(model, arm: str, batch, beta: float, device):
             "chosen_tokens": sum(len(pair.chosen_ids) for pair in batch),
             "loss": float(losses.detach().mean()),
         }
-    loss, detail = preference.preference_batch_loss(model, batch, beta, device)
+    loss, detail = preference.preference_batch_loss(
+        model, batch, beta, device, weight_normalizer=weight_normalizer)
     detail["arm"] = arm
     return loss, detail
 
@@ -345,7 +362,9 @@ def run_arm(model, pairs, *, arm: str,
             expected_active_union: int | None = None,
             rank: int = preference.REGISTERED_LORA_RANK,
             alpha: float = preference.REGISTERED_LORA_ALPHA,
-            max_steps: int | None = None) -> dict:
+            max_steps: int | None = None,
+            pair_order: str = "shuffled",
+            weight_normalization: str = "corpus") -> dict:
     """Train one arm and emit merged checkpoints at the token cadence."""
     import torch
     from frontier import arms
@@ -356,6 +375,11 @@ def run_arm(model, pairs, *, arm: str,
         raise ValueError("the training arm needs at least one pair")
     if batch_pairs < 1:
         raise ValueError("batch_pairs must be >= 1")
+    if pair_order not in preference.PAIR_ORDERS:
+        raise ValueError(f"unknown pair order {pair_order!r}")
+    if weight_normalization not in ("corpus", "batch"):
+        raise ValueError(
+            f"unknown weight normalization {weight_normalization!r}")
 
     # The on-policy file carries p=0 rows with weight 0 next to the positive
     # pairs. A zero-weight pair contributes nothing to the preference loss but
@@ -404,10 +428,16 @@ def run_arm(model, pairs, *, arm: str,
     if not trainable:
         raise ValueError("the arm needs trainable LoRA parameters")
     optimizer = torch.optim.AdamW(trainable, lr=lr)
-    rng = random.Random(seed)
-    order = list(range(len(pairs)))
-    rng.shuffle(order)
-    cursor = 0
+    schedule = pair_schedule(pairs, seed=seed, pair_order=pair_order,
+                             batch_pairs=batch_pairs)
+    # One corpus-level denominator, computed once from the filtered pair file.
+    # `corpus` makes the registered w = p(1-p) real; `batch` is the pre-S70
+    # denominator, which is identically 1 at batch_pairs = 1 and therefore
+    # leaves the weight inert. The choice is recorded in the receipt.
+    corpus_mean_weight = preference.corpus_mean_weight(pairs)
+    weight_normalizer = (corpus_mean_weight
+                         if weight_normalization == "corpus" else None)
+    sampled_weights: list[float] = []
 
     cadence = tuple(sorted(int(value) for value in cadence if int(value) > 0))
     pending = list(cadence)
@@ -419,20 +449,13 @@ def run_arm(model, pairs, *, arm: str,
     started = time.time()
 
     while processed < budget_tokens and (max_steps is None or step < max_steps):
-        batch = []
-        while len(batch) < batch_pairs:
-            if cursor >= len(order):
-                rng.shuffle(order)
-                cursor = 0
-            batch.append(pairs[order[cursor]])
-            cursor += 1
+        step, batch = next(schedule)
         optimizer.zero_grad(set_to_none=True)
-        loss, detail = _batch_loss(model, arm, batch, beta, device)
+        loss, detail = _batch_loss(model, arm, batch, beta, device,
+                                   weight_normalizer=weight_normalizer)
         loss.backward()
-        if grad_clip and grad_clip > 0:
-            torch.nn.utils.clip_grad_norm_(trainable, grad_clip)
         optimizer.step()
-        step += 1
+        sampled_weights.extend(float(pair.weight) for pair in batch)
         processed += _batch_tokens(arm, batch)
         supervised += sum(len(pair.chosen_ids) for pair in batch)
         losses.append(float(loss.detach()))
@@ -490,6 +513,20 @@ def run_arm(model, pairs, *, arm: str,
         "batch_pairs": batch_pairs,
         "grad_clip": grad_clip,
         "normalization": preference.REGISTERED_NORMALIZATION,
+        "pair_order": pair_order,
+        "weight_normalization": weight_normalization,
+        "corpus_mean_weight": corpus_mean_weight,
+        "weight_scale_basis": (
+            "corpus mean weight over the positive-weight pairs"
+            if weight_normalizer is not None else
+            "batch weight sum (the pre-S70 denominator; identically 1 at "
+            "batch_pairs = 1, so the weight is inert)"),
+        "realized_mean_weight": (
+            sum(sampled_weights) / len(sampled_weights)
+            if sampled_weights else None),
+        "realized_mean_weight_over_mean": (
+            (sum(sampled_weights) / len(sampled_weights)) / corpus_mean_weight
+            if sampled_weights else None),
         "wall_seconds": wall,
         "processed_tokens_per_second": (processed / wall if wall > 0 else None),
         "first_loss": losses[0] if losses else None,
@@ -537,6 +574,20 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--alpha", type=float,
                         default=preference.REGISTERED_LORA_ALPHA)
     parser.add_argument("--seed", type=int, default=6400)
+    parser.add_argument("--pair-order", choices=preference.PAIR_ORDERS,
+                        default="shuffled",
+                        help="`shuffled` reproduces every pre-S70 run from its "
+                             "seed; `weighted` draws a deterministic "
+                             "difficulty-proportional permutation per epoch, "
+                             "which is the mechanism that makes w = p(1-p) "
+                             "change realized updates under AdamW")
+    parser.add_argument("--weight-normalization",
+                        choices=("corpus", "batch"), default="corpus",
+                        help="the preference-loss denominator: `corpus` "
+                             "divides by the mean weight over the positive-"
+                             "weight pairs, computed once and recorded; "
+                             "`batch` keeps the pre-S70 batch weight sum, "
+                             "which is identically 1 at batch_pairs = 1")
     parser.add_argument("--max-steps", type=int, default=None)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--vram-limit-gib", type=float, default=13.0)
@@ -635,7 +686,9 @@ def main(argv: list[str]) -> int:
         seed=args.seed, device=device, checkpoint_dir=out_dir,
         config_sha256=None,
         expected_active_union=preference.REGISTERED_ACTIVE_UNION,
-        rank=args.rank, alpha=args.alpha, max_steps=args.max_steps)
+        rank=args.rank, alpha=args.alpha, max_steps=args.max_steps,
+        pair_order=args.pair_order,
+        weight_normalization=args.weight_normalization)
 
     adapter_path = os.path.join(
         out_dir, f"adapter-{args.arm}-{report['steps']:06d}.pt")
@@ -672,6 +725,13 @@ def main(argv: list[str]) -> int:
                 "effective problem set; the recovery arm is the only arm "
                 "that keeps the p=0 pairs"),
             "normalization": preference.REGISTERED_NORMALIZATION,
+            "pair_order": report.get("pair_order"),
+            "weight_normalization": report.get("weight_normalization"),
+            "corpus_mean_weight": report.get("corpus_mean_weight"),
+            "weight_scale_basis": report.get("weight_scale_basis"),
+            "realized_mean_weight": report.get("realized_mean_weight"),
+            "realized_mean_weight_over_mean": report.get(
+                "realized_mean_weight_over_mean"),
         },
         "budget": {
             "tokens": args.budget_tokens,

@@ -66,7 +66,10 @@ separate, receipted job.
 
 from __future__ import annotations
 
+import json
 import math
+import os
+import random
 from dataclasses import dataclass, replace
 
 import torch
@@ -83,6 +86,11 @@ MERGE_ATOL = 1e-5
 MERGE_RTOL = 1e-4
 
 NORMALIZATIONS = ("mean", "sum")
+
+#: How a run consumes the pair set. `shuffled` reproduces every run before S70
+#: exactly (the same `random.Random(seed).shuffle` stream); `weighted` draws a
+#: difficulty-proportional permutation without replacement inside each epoch.
+PAIR_ORDERS = ("shuffled", "weighted")
 
 
 # ---------------------------------------------------------------------------
@@ -209,6 +217,74 @@ def build_recovery_arm(ledger_entries, teacher_by_id, failed_by_id
         "basis": "p=0 problems receive the mean positive p(1-p) weight; "
                  "missing data is counted, not fabricated",
     }
+
+
+# ---------------------------------------------------------------------------
+# the difficulty weight, made real
+
+
+def corpus_mean_weight(pairs) -> float:
+    """The mean weight over the positive-weight pairs, computed once.
+
+    This is the fixed denominator of the corpus-normalised objective. It is a
+    property of the pair file, not of a batch, so it is identical for every
+    step and can be written into the run receipt before training starts.
+    """
+    values = [float(pair.weight) for pair in pairs if float(pair.weight) > 0.0]
+    if not values:
+        raise ValueError("the corpus mean weight needs a positive-weight pair")
+    return sum(values) / len(values)
+
+
+def weighted_permutation(weights, rng: random.Random) -> list[int]:
+    """A deterministic weighted permutation without replacement.
+
+    Efraimidis-Spirakis keys in log form: draw ``u_i`` uniformly and sort by
+    ``log(1 - u_i) / w_i`` descending. The first element is drawn with
+    probability ``w_i / sum(w)``, and the whole permutation is a sample without
+    replacement proportional to ``w``, so over many epochs each pair is visited
+    in proportion to its weight. Exactly one raw draw is consumed per index, in
+    ascending index order, so an independent implementation that does the same
+    reproduces the order element for element.
+    """
+    keyed: list[tuple[float, int]] = []
+    for index, weight in enumerate(weights):
+        value = float(weight)
+        if not value > 0.0:
+            raise ValueError(
+                "a weighted permutation needs strictly positive weights; the "
+                "launcher drops weight <= 0 before ordering")
+        # ``1 - u`` keeps the argument of log in (0, 1], so a draw of exactly
+        # 1.0 is the best key instead of a -inf sentinel.
+        keyed.append((math.log(1.0 - rng.random()) / value, index))
+    keyed.sort(key=lambda item: (-item[0], item[1]))
+    return [index for _, index in keyed]
+
+
+def pair_stream(pairs, *, seed: int, order: str = "shuffled"):
+    """Yield pair indices forever, one epoch at a time.
+
+    ``shuffled`` is the pre-S70 rule and is bit-identical to it: one
+    ``random.Random(seed)``, one ``shuffle`` per epoch, so an old run is
+    reproducible from its seed. ``weighted`` draws a fresh weighted permutation
+    per epoch from the same generator, so the two modes differ only in how each
+    epoch is ordered.
+    """
+    if order not in PAIR_ORDERS:
+        raise ValueError(f"unknown pair order {order!r}")
+    if not pairs:
+        raise ValueError("a pair stream needs at least one pair")
+    rng = random.Random(seed)
+    weights = [float(pair.weight) for pair in pairs]
+    epoch = list(range(len(pairs)))
+    while True:
+        if order == "shuffled":
+            # In place, exactly like the pre-S70 launcher: the second epoch
+            # shuffles the first epoch's permutation, not the identity list.
+            rng.shuffle(epoch)
+        else:
+            epoch = weighted_permutation(weights, rng)
+        yield from epoch
 
 
 # ---------------------------------------------------------------------------
@@ -380,9 +456,20 @@ def pair_loss(model, pair: PreferencePair, beta: float = 0.1,
 
 def preference_batch_loss(model, pairs, beta: float = 0.1,
                           device: str | None = None,
-                          normalization: str = REGISTERED_NORMALIZATION
+                          normalization: str = REGISTERED_NORMALIZATION,
+                          weight_normalizer: float | None = None
                           ) -> tuple[torch.Tensor, dict]:
-    """Weighted batch loss over pairs, with per-pair diagnostics."""
+    """Weighted batch loss over pairs, with per-pair diagnostics.
+
+    ``weight_normalizer=None`` keeps the pre-S70 denominator, the batch's own
+    weight sum. At ``batch_pairs = 1`` that denominator is the single pair's
+    weight, so the weight cancels exactly and the objective is unweighted: the
+    registered ``w = p(1-p)`` is inert. Supplying the corpus mean weight (see
+    :func:`corpus_mean_weight`) divides by a constant instead, so a pair with
+    ``w < mean_w`` contributes proportionally less and a pair with ``w > mean_w``
+    proportionally more. The supplied normaliser is never replaced by the
+    batch's own sum.
+    """
     losses, weights, diagnostics = [], [], []
     for pair in pairs:
         loss, detail = pair_loss(model, pair, beta, device, normalization)
@@ -393,9 +480,27 @@ def preference_batch_loss(model, pairs, beta: float = 0.1,
     weight_tensor = torch.tensor(weights, dtype=torch.float32,
                                  device=losses[0].device)
     stacked = torch.stack(losses)
-    loss = (stacked * weight_tensor).sum() / weight_tensor.sum().clamp_min(1e-12)
+    weight_sum = float(weight_tensor.sum())
+    if weight_normalizer is None:
+        denominator = weight_tensor.sum().clamp_min(1e-12)
+        normalizer = None
+        basis = ("batch weight sum (the S64 behaviour; at batch_pairs = 1 the "
+                 "weight cancels and the objective is unweighted)")
+    else:
+        normalizer = float(weight_normalizer)
+        if not normalizer > 0.0:
+            raise ValueError("weight_normalizer must be positive when supplied")
+        denominator = normalizer
+        basis = "corpus mean weight over the positive-weight pairs"
+    scaled = stacked * weight_tensor
+    loss = scaled.sum() / denominator
+    for detail, weight in zip(diagnostics, weights):
+        detail["weight_scale"] = (weight / normalizer if normalizer
+                                  else weight / weight_sum)
     return loss, {"pairs": len(pairs),
-                  "weight_sum": float(weight_tensor.sum()),
+                  "weight_sum": weight_sum,
+                  "weight_normalizer": normalizer,
+                  "weight_normalizer_basis": basis,
                   "mean_loss": float(loss.detach()),
                   "diagnostics": diagnostics,
                   "normalization": normalization}
@@ -713,11 +818,146 @@ def run_preference(model, pairs, steps: int, lr: float = 1e-4,
     }
 
 
+# ---------------------------------------------------------------------------
+# realized-update telemetry
+
+
+def grad_norm(parameters) -> float:
+    """L2 norm of the parameter gradients (zero if there is no gradient)."""
+    total = 0.0
+    for parameter in parameters:
+        if parameter.grad is not None:
+            total += float(parameter.grad.detach().double().pow(2).sum())
+    return math.sqrt(total)
+
+
+def parameter_delta_l2(parameters, snapshot) -> float:
+    """L2 norm of ``parameters - snapshot``, accumulated in float64."""
+    if len(snapshot) != len(list(parameters)):
+        raise ValueError("the snapshot does not match the parameter list")
+    total = 0.0
+    for parameter, before in zip(parameters, snapshot):
+        delta = (parameter.detach().double() - before.double())
+        total += float(delta.pow(2).sum())
+    return math.sqrt(total)
+
+
+class UpdateTelemetry:
+    """Per-step evidence that the difficulty weight changes realized updates.
+
+    A loss-value change is not evidence: AdamW's per-parameter normalisation
+    cancels a constant rescale of the gradient, and clipping can cancel the
+    rest. This recorder captures, for every optimizer step, the pre-clip and
+    post-clip gradient norms and the L2 norm of the parameter delta the step
+    actually produced, tagged with the batch's weight. A weighted run whose
+    ``update_l2`` and parameter trajectory match an unweighted run on the same
+    pairs is inert whatever its loss curve says.
+
+    It copies the trainable parameters once per step, so it is opt-in: the
+    caller passes a trace path only when the evidence is wanted. The trace has
+    no timestamps, so the same seed reproduces it byte for byte.
+    """
+
+    SCHEMA = "selvedge/s70-update-trace/v1"
+
+    def __init__(self, *, grad_clip: float | None = None,
+                 lr: float | None = None) -> None:
+        self.grad_clip = grad_clip
+        self.lr = lr
+        self.rows: list[dict] = []
+        self._snapshot: list = []
+        self._current: list = []
+
+    def begin(self, parameters) -> None:
+        self._snapshot = [parameter.detach().clone() for parameter in parameters]
+
+    def row(self, *, step: int, arm: str, problem_ids, weights, loss: float,
+            mean_weight: float | None = None,
+            weight_normalizer: float | None = None,
+            pre_clip_grad_norm: float = 0.0,
+            post_clip_grad_norm: float = 0.0) -> dict:
+        if not self._current or not self._snapshot:
+            raise RuntimeError("call bind() before recording a row")
+        update = parameter_delta_l2(self._current, self._snapshot)
+        row = {
+            "step": int(step),
+            "arm": arm,
+            "problem_ids": list(problem_ids),
+            "weights": [float(weight) for weight in weights],
+            "weight": (float(weights[0]) if len(weights) == 1 else None),
+            "weight_normalized": (
+                float(weights[0]) / float(weight_normalizer)
+                if len(weights) == 1 and weight_normalizer else None),
+            "loss": float(loss),
+            "pre_clip_grad_norm": float(pre_clip_grad_norm),
+            "post_clip_grad_norm": float(post_clip_grad_norm),
+            "update_l2": update,
+            "clipping_active": bool(
+                self.grad_clip and pre_clip_grad_norm > float(self.grad_clip)),
+        }
+        self.rows.append(row)
+        self.begin(self._current)
+        return row
+
+    def bind(self, parameters) -> None:
+        """Fix the parameter list the rows are measured against."""
+        self._current = list(parameters)
+        self.begin(self._current)
+
+    def summary(self) -> dict:
+        if not self.rows:
+            return {"steps": 0, "realized_mean_weight": None,
+                    "clipping_active_steps": 0, "mean_update_l2": None}
+        weights = [float(row["weights"][0]) for row in self.rows
+                   if len(row["weights"]) == 1]
+        updates = [row["update_l2"] for row in self.rows]
+        return {
+            "steps": len(self.rows),
+            "realized_mean_weight": (sum(weights) / len(weights)
+                                     if weights else None),
+            "realized_weight_min": min(weights) if weights else None,
+            "realized_weight_max": max(weights) if weights else None,
+            "clipping_active_steps": sum(1 for row in self.rows
+                                         if row["clipping_active"]),
+            "mean_update_l2": sum(updates) / len(updates),
+            "unique_pairs": len({tuple(row["problem_ids"])
+                                 for row in self.rows}),
+        }
+
+    def payload(self) -> dict:
+        return {
+            "schema": self.SCHEMA,
+            "kind": "realized-update-trace",
+            "grad_clip": self.grad_clip,
+            "lr": self.lr,
+            "rows": self.rows,
+            "summary": self.summary(),
+            "basis": (
+                "pre_clip_grad_norm is clip_grad_norm_'s return value; "
+                "post_clip_grad_norm is measured after clipping; update_l2 is "
+                "the L2 norm of the parameter delta the optimizer step "
+                "actually applied; clipping_active compares the pre-clip norm "
+                "with grad_clip"),
+        }
+
+    def write(self, path: str) -> str:
+        os.makedirs(os.path.dirname(os.path.abspath(path)) or ".",
+                    exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as handle:
+            json.dump(self.payload(), handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        os.replace(tmp, path)
+        return path
+
+
 __all__ = [
     "REGISTERED_LORA_RANK", "REGISTERED_LORA_ALPHA",
     "REGISTERED_ACTIVE_UNION", "REGISTERED_NORMALIZATION",
-    "MERGE_ATOL", "MERGE_RTOL", "NORMALIZATIONS", "PreferencePair",
+    "MERGE_ATOL", "MERGE_RTOL", "NORMALIZATIONS", "PAIR_ORDERS",
+    "PreferencePair",
     "assert_shared_prefix", "make_pair", "difficulty_weight",
+    "corpus_mean_weight", "weighted_permutation", "pair_stream",
     "recovery_weight", "recovery_pair", "build_recovery_arm",
     "normalise_logprob",
     "sequence_logprob", "continuation_logprobs", "cache_reference_logprobs",
@@ -727,4 +967,5 @@ __all__ = [
     "active_union_after_merge", "unique_active_elements", "sft_control_loss",
     "preference_processed_tokens", "sft_processed_tokens",
     "run_matched_sft_control", "run_preference",
+    "UpdateTelemetry", "grad_norm", "parameter_delta_l2",
 ]
