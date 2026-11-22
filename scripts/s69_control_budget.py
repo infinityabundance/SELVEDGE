@@ -33,10 +33,13 @@ see the compute gap without re-running the script. It reads no score and writes
 no model; it is a CPU receipt.
 
 Usage:
-    SELVEDGE_MEM=4g scripts/court python -- python3 scripts/s69_control_budget.py \
+    SELVEDGE_MEM=4g scripts/court oracle -- python3 scripts/s69_control_budget.py \
       --pairs results/artifacts/stage2/s69-preference/soup-with-reference.jsonl \
       --budget-tokens 2000000 --seed 6900 --basis compute \
       --out results/stage2/s69-calibration/control-budget.json
+
+The oracle court is required: the script imports ``frontier.preference``, which
+imports torch. The python court has no torch and refuses at import time.
 """
 
 from __future__ import annotations
