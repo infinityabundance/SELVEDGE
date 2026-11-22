@@ -1,0 +1,300 @@
+{
+ "schema": "selvedge/s73-truncation-ceiling-preregistration/v1",
+ "identifier": "s73-truncation-ceiling",
+ "created_utc": "2026-11-22T13:19:00Z",
+ "registered_utc": "2026-11-22T13:19:00Z",
+ "status": "registered, not run; blocked on the GPU driver",
+ "revision": "d1283db96b26fe8d7d4d732187ba08d0e5bf7870",
+ "scope": "A cap-ladder diagnostic on the already-spent MATH-500 instrument, plus a CPU-only classifier of the truncations. No training, no trace generation, no new claim protocol, no new split.",
+ "purpose": "Measure whether the 8.20-point MATH-500 gap between the S67 soup and Qwen3-0.6B is a termination artefact, by re-generating the identical 500 problems at 8,192 and 16,384 tokens with every compared model and counting how many of the 158 soup rows truncated at 4,096 become correct.",
+
+ "finding_that_motivates_it": {
+  "source": "results/stage2/s72-recon/teacher-recon.json",
+  "sha256": "a7bb2812da4af8b41a7745c3596b18c68e83ab2dbf70f699eeb049c71913f5ac",
+  "stamp": "20261122T130947Z",
+  "rows": [
+   {"model": "S67 soup", "task": "math500", "flexible_correct": 203, "items": 500, "truncated_samples": 158, "receipt": "results/stage2/s67-final/soup-stage1.json", "stamp": "20261120T225912Z"},
+   {"model": "Qwen/Qwen3.5-0.8B post-trained", "task": "math500", "flexible_correct": 191, "items": 500, "truncated_samples": 160, "receipt": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json", "stamp": "20261118T033841Z"},
+   {"model": "Qwen/Qwen3-0.6B", "task": "math500", "flexible_correct": 244, "items": 500, "truncated_samples": 18, "receipt": "results/stage2/s68-frontier/qwen3-0.6b.json", "stamp": "20261121T192906Z"},
+   {"model": "Qwen/Qwen3.5-2B", "task": "math500", "flexible_correct": 329, "items": 500, "truncated_samples": 115, "receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json", "stamp": "20261118T045605Z"}
+  ],
+  "gap_rows": 41,
+  "gap_arithmetic": "244 - 203 = 41 problems on the identical 500 problems; 48.80% - 40.60% = 8.20 points",
+  "note": "The recon replayed stored completions; it did not regenerate. The exact scores above are quantised to the receipt's per-task flexible counts, not copied from prose."
+ },
+
+ "provenance": {
+  "recon_receipts": [
+   {"path": "results/stage2/s72-recon/teacher-recon.json", "sha256": "a7bb2812da4af8b41a7745c3596b18c68e83ab2dbf70f699eeb049c71913f5ac"},
+   {"path": "results/stage2/s72-recon/corpus-audit.json"}
+  ],
+  "classifier_receipts": [
+   {"path": "results/stage2/s73-truncation/soup-math500.json", "sha256": "fe57385d66c139786ed63d88f77c27047eb7c5fd8ba2cf51e5b764a899a1f245", "label": "soup_math500"},
+   {"path": "results/stage2/s73-truncation/baseline-08b-math500.json", "sha256": "2f93a49192d10cef11f9c52245060ab535445e4b7388db02763de95d2a4f90f1", "label": "baseline08b_math500"},
+   {"path": "results/stage2/s73-truncation/qwen3-06b-math500.json", "sha256": "0d9980ae838d43afafaf3aa54b763388aa1eff91e9e68cefffd36b4d060d8e9b", "label": "qwen3_06b_math500"},
+   {"path": "results/stage2/s73-truncation/teacher-2b-math500.json", "sha256": "64baa08d9ecee5dbeef8b2340b842ff6292694e86ae84f3a348555fe37edc4ba", "label": "teacher2b_math500"}
+  ],
+  "stored_inputs_replayed": [
+   {"path": "results/stage2/s67-final/soup-raw/math500-non-thinking-greedy.jsonl", "sha256": "3a01b932df9e52ee490acf80bd3128c54885dbbb53af000bcbf34e5c8c233e43", "note": "sha256 quoted by teacher-recon.json soup_math500_audit"},
+   {"path": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy-raw/math500-non-thinking-greedy.jsonl"},
+   {"path": "results/stage2/s68-frontier/qwen3-0.6b-raw/math500-non-thinking-greedy.jsonl", "sha256": "ea32d66bde113ab9b6e8ac490bde9405537cb0d5238d06010841dd7783bfc8de"},
+   {"path": "results/stage1/s54-stage1-post-2b-nonthinking-greedy-raw/math500-non-thinking-greedy.jsonl"}
+  ],
+  "scripts": [
+   {"path": "oracle/frontier/truncation.py", "sha256": "f2b1c07cbd65125d3e16882a8adf9e74b47e2d7456fcf3067513f33d058e19f9"},
+   {"path": "scripts/s73_truncation_probe.py", "sha256": "3cfef07c69193b904baf074aeaf090245fc83744c6f33d15c846ceed6754443a"},
+   {"path": "oracle/tests/test_s73_truncation.py", "sha256": "0d02eff587be720a54981780f2bf66a80dcc94b97ff76a34261ba0be9de642dc"}
+  ]
+ },
+
+ "registered_primary_protocol": {
+  "unchanged": true,
+  "instrument": "S54 stage-1 greedy non-thinking MATH-500",
+  "max_new_tokens_at_which_the_claim_is_made": 4096,
+  "primary_statistic": "flexible accuracy on the 500 MATH-500 problems at max_new_tokens = 4096",
+  "soup_value": {"correct": 203, "items": 500, "fraction": 0.406, "receipt": "results/stage2/s67-final/soup-stage1.json", "stamp": "20261120T225912Z"},
+  "leader_value": {"model": "Qwen/Qwen3-0.6B", "correct": 244, "items": 500, "fraction": 0.488, "receipt": "results/stage2/s68-frontier/qwen3-0.6b.json", "stamp": "20261121T192906Z"},
+  "statement": "The registered protocol stays at 4,096. Nothing in this probe changes the basis on which a capability claim is made; the 8,192 and 16,384 generations are a diagnostic instrument and may not be quoted as a new claim protocol."
+ },
+
+ "diagnostic_instrument": {
+  "caps": [4096, 8192, 16384],
+  "primary_statistic": "recovered_flexible_correct: the number of the 158 soup rows that were not flexible-correct at 4,096 and are flexible-correct at the diagnostic cap",
+  "strict_basis": "reported beside it for every cap; on MATH-500 the S67 flexible basis equals strict (zero fallback rescues in the recon), so a divergence is itself a finding",
+  "per_model_delta": "for each compared model, (flexible_correct at cap c) - (flexible_correct at 4,096), on the identical 500 problems",
+  "cap_must_be_stated": true,
+  "generation_rule": "identical prompt template, zero-shot, greedy temperature 0.0 / top_p 1.0, non-thinking, EOS-only stop, same extractor; only max_new_tokens changes",
+  "validity_check": "for every model and cap, the first 4,096 generated tokens must reproduce the stored 4,096 completion token-for-token; a mismatch voids that ladder rung for that model and is receipted, because otherwise the diagnostic is not attributable to the cap"
+ },
+
+ "models": [
+  {"label": "S67 soup", "role": "our champion; the model whose truncation is the subject", "weights_reference": "results/stage2/s67-final/soup-stage1.json", "stamp": "20261120T225912Z", "baseline_receipt": "results/stage2/s67-final/soup-stage1.json"},
+  {"label": "Qwen/Qwen3.5-0.8B post-trained", "role": "the baseline the soup is built from", "weights_snapshot": "2fc06364715b967f1860aea9cf38778875588b17", "baseline_receipt": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json"},
+  {"label": "Qwen/Qwen3-0.6B", "role": "the model we must beat; the ladder's fixed point", "weights_snapshot": "c1899de289a04d12100db370d81485cdf75e47ca", "baseline_receipt": "results/stage2/s68-frontier/qwen3-0.6b.json"},
+  {"label": "Qwen/Qwen3.5-2B", "role": "the distillation teacher; C9 depends on its ceiling", "weights_snapshot": "15852e8c16360a2fea060d615a32b45270f8a8fc", "baseline_receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json"}
+ ],
+
+ "fairness_rule": {
+  "statement": "Any future claim at a higher cap must be evaluated at that cap for every compared model, on the identical problems, with the identical prompt, decoding and extractor, and must state the cap in the claim. A row at 16,384 for one model beside a row at 4,096 for another is not a comparison and may not be reported as one.",
+  "applies_to": "every model in this registration and every future model added to the comparison",
+  "no_retroactive_rung": "a model added later must be run at every cap quoted in the comparison, including 4,096"
+ },
+
+ "classifier": {
+  "module": "oracle/frontier/truncation.py",
+  "sha256": "f2b1c07cbd65125d3e16882a8adf9e74b47e2d7456fcf3067513f33d058e19f9",
+  "version": "s73-truncation-v1",
+  "script": "scripts/s73_truncation_probe.py",
+  "reuses": [
+   "frontier.rft._boxed_answers (boxed-answer extraction)",
+   "frontier.rft.answers_equal (answer equality)",
+   "frontier.rft.extract (flexible fallback chain)",
+   "frontier.termination.classify (S56 loop detector, calibrated operating point)"
+  ],
+  "strict_mirror_equivalence_test": "oracle/tests/test_s73_truncation.py::test_strict_and_flexible_match_the_registered_s54_scorer",
+  "box_then_continued_min_nonspace": 20,
+  "classes": ["loop_degenerate", "no_box", "boxed_then_continued", "other"],
+  "precedence": ["loop_degenerate", "no_box", "boxed_then_continued", "other"],
+  "hash_pinned_by_test": "oracle/tests/test_s73_truncation.py::test_registered_classifier_hash_matches_the_file",
+  "statement": "The classifier is frozen and hashed before any ladder run. Changing the module, the threshold or the class order requires a new registration, not an edit."
+ },
+
+ "pre_declared_breakdown": {
+  "pool": "the 158 soup rows whose stored completion hit max_new_tokens = 4096 at 4,096",
+  "partition": "exclusive, in the declared precedence loop_degenerate > no_box > boxed_then_continued > other",
+  "definitions": {
+   "loop_degenerate": "frontier.termination.classify fires on the stored text; degeneration is the mechanism and is named whether or not a box appeared",
+   "no_box": "no balanced \\boxed{} answer anywhere and not a loop; a \\boxed{ cut off by the cap counts as no box because no answer was emitted",
+   "boxed_then_continued": "a balanced boxed answer exists, at least 20 non-whitespace characters follow the closing brace of the last box, and the text is not degenerate",
+   "other": "a box with fewer than 20 non-whitespace characters after it and no loop"
+  },
+  "also_reported_per_row": [
+   "boxed_present",
+   "boxed_count",
+   "tail_after_last_box_nonspace",
+   "loop and loop_reason",
+   "strict and flexible verdicts",
+   "correct_box_anywhere: any balanced boxed answer equals gold under frontier.rft.answers_equal"
+  ],
+  "overlap_rule": "a row in loop_degenerate may also carry a box; boxed_present_by_class and correct_box_anywhere_by_class report that overlap, so the partition never hides it"
+ },
+
+ "pre_run_estimate": {
+  "label": "PRE-RUN ESTIMATE, measured on stored 4,096 completions before any ladder run; not a result of this probe",
+  "source_receipts": [
+   "results/stage2/s73-truncation/soup-math500.json",
+   "results/stage2/s73-truncation/baseline-08b-math500.json",
+   "results/stage2/s73-truncation/qwen3-06b-math500.json",
+   "results/stage2/s73-truncation/teacher-2b-math500.json"
+  ],
+  "per_model": {
+   "soup_math500": {"rows": 500, "truncated": 158, "truncated_by_class": {"loop_degenerate": 42, "no_box": 116, "boxed_then_continued": 0, "other": 0}, "truncated_boxed_present": 1, "truncated_correct_box_anywhere": 0, "truncated_flexible_correct": 0, "all_flexible_correct": 203, "all_boxed_present": 343},
+   "baseline08b_math500": {"rows": 500, "truncated": 160, "truncated_by_class": {"loop_degenerate": 42, "no_box": 115, "boxed_then_continued": 3, "other": 0}, "truncated_boxed_present": 3, "truncated_correct_box_anywhere": 0, "truncated_flexible_correct": 0, "all_flexible_correct": 191, "all_boxed_present": 343},
+   "qwen3_06b_math500": {"rows": 500, "truncated": 18, "truncated_by_class": {"loop_degenerate": 6, "no_box": 11, "boxed_then_continued": 1, "other": 0}, "truncated_boxed_present": 2, "truncated_correct_box_anywhere": 0, "truncated_flexible_correct": 0, "all_flexible_correct": 244, "all_boxed_present": 484},
+   "teacher2b_math500": {"rows": 500, "truncated": 115, "truncated_by_class": {"loop_degenerate": 16, "no_box": 96, "boxed_then_continued": 3, "other": 0}, "truncated_boxed_present": 7, "truncated_correct_box_anywhere": 4, "truncated_flexible_correct": 4, "all_flexible_correct": 329, "all_boxed_present": 392}
+  },
+  "consistency_checks": [
+   "sum of the four exclusive classes equals the truncated count for every model",
+   "all_flexible_correct equals the stored receipt's flexible correct count for every model: 203, 191, 244, 329",
+   "all_boxed_present equals the recon's last-boxed method count where the recon reports it: soup 343, Qwen3-0.6B 484",
+   "soup no-box rows across all 500 = 500 - 343 = 157, matching the recon's flexible method 'none' of 157"
+  ],
+  "reading": "At 4,096, not one of the soup's 158 truncated rows contains a correct boxed answer, and only one contains a box at all. The 'answered and then would not stop' mechanism is therefore falsified for the 4,096 prefix: the soup's truncated rows are dominated by never emitting an answer (116) and by degenerate loops (42). A higher cap can only help through tokens 4,097 and later, and the ladder measures exactly that. The same holds for the leader's 18 truncated rows (zero correct boxes) and the baseline's 160 (zero). The teacher is the exception: 4 of its 115 truncated rows already contain a correct box and are scored correct, so the teacher's truncation is partly a last-box/extraction problem, not only a length problem."
+ },
+
+ "falsification": {
+  "statement": "If fewer than 22 of the 158 soup rows truncated at 4,096 become flexible-correct at 16,384, termination is not the binding constraint and the next experiment returns to the teacher/data route; C12 is not opened.",
+  "X": 22,
+  "pool": 158,
+  "X_over_pool": 0.13924050632911392,
+  "gap_rows": 41,
+  "arithmetic": [
+   "gap_rows = 244 - 203 = 41 problems on the identical 500 problems at 4,096",
+   "noise floor: p = 203/500 = 0.406, binomial standard error = sqrt(0.406 * 0.594 / 500) = 0.021962; 1.96 * se * 500 = 21.52 rows; ceil = 22 rows",
+   "half-gap floor: ceil(41 / 2) = 21 rows",
+   "X = max(22, 21) = 22 rows, which is 22 / 158 = 13.92% of the truncated pool",
+   "feasibility: the pool is 158 rows, 7.18 times X, so the threshold is reachable and not trivially met",
+   "full-gap recovery would be 41 of 158 = 25.95%, and 203 + 41 = 244/500 = 48.80%, exactly tying Qwen3-0.6B at 4,096",
+   "recovering X = 22 rows gives 203 + 22 = 225/500 = 45.00%, still 19 problems below the leader"
+  ],
+  "why_this_is_not_a_desired_outcome": "The threshold is the larger of the instrument's own 95% noise floor and half the measured gap, both computed from measured counts, and it is stated before the ladder runs. It is stricter than either floor alone would require, and passing it still does not produce a win.",
+  "pre_run_is_consistent_with_falsification": "The pre-run estimate shows 0 of 158 truncated rows already hold a correct answer at 4,096, so all 22 would have to come from tokens generated after the cap. That is possible and is what the ladder tests; it is not assumed."
+ },
+
+ "decision_rule": {
+  "validity_first": "If the 4,096-token prefix of a model's higher-cap generation does not reproduce its stored 4,096 completion token-for-token, that rung is void for that model: receipt it and do not quote the row. Re-run before scoring.",
+  "case_below_X": {
+   "condition": "soup recovered_flexible_correct at 16,384 < 22",
+   "action": "Record termination as not the binding constraint. The next experiment returns to the teacher/data route (C9/C10 or a stronger teacher). C12 is not opened. Quote the measured recovery with its interval and the cap."
+  },
+  "case_between_X_and_gap": {
+   "condition": "22 <= soup recovered_flexible_correct at 16,384 <= 40",
+   "action": "Record termination as a material but not sole constraint (it closes at least half, not all, of the 41-problem gap). Open C12 (termination/length-control training) as the primary target, keep the teacher/data route open as a separate non-competing item. No claim at 16,384 as a new protocol; the 4,096 primary is unchanged."
+  },
+  "case_at_or_above_gap": {
+   "condition": "soup recovered_flexible_correct at 16,384 >= 41",
+   "action": "Record termination as explaining the observed 4,096 gap to Qwen3-0.6B. C12 becomes the primary target. The 4,096 primary claim is still unchanged and no new win bar is created."
+  },
+  "case_leader_gains_evenly": {
+   "condition": "the soup's gain at the diagnostic cap minus Qwen3-0.6B's gain at the same cap is <= 0",
+   "action": "Record that the cap helps both models equally (or the leader more): no gain, no claim. The gap is not a termination artefact, whatever the absolute recovery; termination is not the target and the teacher/data route remains."
+  },
+  "case_leader_gains_far_less": {
+   "condition": "the soup's gain minus Qwen3-0.6B's gain at the same cap is >= 22 problems (X)",
+   "action": "Record that the cap helps us far more than the leader: termination is the target and C12 opens even if the absolute soup recovery is below 22, because the differential, not the absolute, is the evidence of a termination-specific deficit."
+  },
+  "case_model_specific": {
+   "condition": "a rung is affordable for some models but not others",
+   "action": "Do not compare across caps. Report only the caps at which every compared model was run, per the fairness rule, and name the missing rung as unaffordable with its cost arithmetic."
+  },
+  "no_post_hoc_retuning": "No cap, threshold, class definition or statistic may be changed after the first ladder score. A changed rule is a new, dated registration."
+ },
+
+ "cost": {
+  "measured_throughput_inputs": [
+   {"model": "S67 soup", "task": "math500", "tokens_per_second": 726.0481905738042, "mean_new_tokens": 1919.79, "generated_tokens": 959895, "receipt": "results/stage2/s67-final/soup-stage1.json", "stamp": "20261120T225912Z"},
+   {"model": "Qwen/Qwen3.5-0.8B post-trained", "task": "math500", "tokens_per_second": 703.1660269078471, "mean_new_tokens": 1897.214, "generated_tokens": 948607, "receipt": "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json", "stamp": "20261118T033841Z"},
+   {"model": "Qwen/Qwen3-0.6B", "task": "math500", "tokens_per_second": 194.4089164102417, "mean_new_tokens": 739.266, "generated_tokens": 369633, "receipt": "results/stage2/s68-frontier/qwen3-0.6b.json", "stamp": "20261121T192906Z"},
+   {"model": "Qwen/Qwen3.5-2B", "task": "math500", "tokens_per_second": 528.7907338171025, "mean_new_tokens": 1692.46, "generated_tokens": 846230, "receipt": "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json", "stamp": "20261118T045605Z"}
+  ],
+  "no_new_work_at_4096": "all four models already have stored 4,096 MATH-500 completions; the 4,096 rung is a replay, not a generation",
+  "new_tokens_per_cap_arithmetic": {
+   "method": "tokens(cap) = generated_tokens(4096) - truncated_samples * 4096 + truncated_samples * cap, i.e. keep the finished rows at their measured length and run every truncated row to the new cap",
+   "at_8192_tokens": {"soup": 1607063, "baseline": 1603967, "qwen3_06b": 443361, "teacher_2b": 1317270, "total": 4971661},
+   "at_16384_tokens": {"soup": 2901399, "baseline": 2914687, "qwen3_06b": 590817, "teacher_2b": 2259350, "total": 8666253}
+  },
+  "gpu_hours_at_measured_throughput": {
+   "at_8192": 2.574,
+   "at_16384": 4.292,
+   "total_point_estimate": 6.866,
+   "upper_bound_tokens": "500 * cap per model per cap; 33.568 GPU-hours for both caps at the measured 4,096 rates if every row runs to the cap",
+   "caveat": "the 4,096 tokens/s rates are optimistic at longer contexts; the real rate must be measured by the pre-launch smoke and the stage ceiling re-derived from it, never assumed"
+  },
+  "registered_stage_ceiling_gpu_hours": {"8192_rung": 16, "16384_rung": 32, "whole_ladder": 48},
+  "stage_stop_rule": "Each rung is gated on a 3-item smoke at that cap. If the smoke-projected time for a rung exceeds its registered ceiling, that rung is not launched for any model; the ladder ends at the last completed cap and the missing rung is recorded as unaffordable with the arithmetic. A rung is never run for a subset of the models."
+ },
+
+ "memory": {
+  "rule": "max(1.5 * measured peak, measured peak + 1 GiB) from a 3-item smoke at that cap, per AGENTS.md; never inherit the 2g CPU-court default",
+  "prior_shape_reference": {
+   "soup_4096_peak_vram_gib": 5.468221664428711,
+   "soup_4096_peak_vram_reserved_gib": 6.05078125,
+   "teacher_2b_4096_peak_vram_gib": 7.781913757324219,
+   "teacher_2b_4096_peak_vram_reserved_gib": 8.306640625,
+   "qwen3_06b_4096_peak_vram_reserved_gib": 5.533203125,
+   "receipts": ["results/stage2/s67-final/soup-stage1.json", "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json", "results/stage2/s68-frontier/qwen3-0.6b.json"]
+  },
+  "kv_cache_arithmetic_at_16384": [
+   "Qwen3.5-2B and Qwen3.5-0.8B: 24 layers, 6 of them full attention (full_attention_interval 4), 2 key/value heads, head_dim 256, bf16 -> 6 * 2 * 256 * 2 * 2 = 12288 bytes/token -> 0.1875 GiB at 16,384 tokens; the 18 linear-attention layers keep a constant-size state",
+   "Qwen3-0.6B: 28 layers, 8 key/value heads, head_dim 128, bf16 -> 28 * 8 * 128 * 2 * 2 = 114688 bytes/token -> 1.75 GiB at 16,384 tokens",
+   "config paths: ~/.cache/selvedge/hf/models/Qwen/Qwen3.5-2B/15852e8c.../config.json, Qwen3.5-0.8B/2fc06364.../config.json, Qwen3-0.6B/c1899de2.../config.json",
+   "assumption stated: batch = 1. If the launcher batches prompts, the KV term multiplies by the batch size and the limit comes from the smoke, not from this arithmetic"
+  ],
+  "fail_closed": "if the smoke's reserved peak + 1 GiB exceeds 15.5 GiB, reduce batch size and re-smoke; decoding and extraction are not parameters of that change"
+ },
+
+ "disk": {
+  "measured_free": {"command": "df -h /work", "avail": "36G", "receipt": "results/courts/io-20261122T131807Z-e2ca1c.json"},
+  "measured_bytes_per_token": 2.652734934550133,
+  "bytes_per_token_source": "results/stage2/s67-final/soup-raw/math500-non-thinking-greedy.jsonl is 2546347 bytes for 959895 generated tokens",
+  "raw_output_upper_bound_mb": {"at_8192": 43.46, "at_16384": 86.92, "both_rungs_all_four_models": 130.38},
+  "registered_ceiling_mb": 250,
+  "note": "includes room for the per-row receipts and compressed copies; the raw per-problem dumps follow the existing gitignore rule and are pinned by sha256 in the receipt"
+ },
+
+ "no_win_bar_change": {
+  "statement": "No win bar moves. The registered test bars stay MATH-500 >= 50.0 and full MATH >= 50.0 with paired intervals above zero, GSM8K >= 62.38 and MMLU >= 51.07 (docs/S71-LITERATURE.md H.4). This probe creates no claim and cannot create one at a higher cap.",
+  "primary_protocol_stays": 4096
+ },
+
+ "two_scales_one_test": {
+  "statement": "MATH-500 and full MATH are two scales of one test set, not independent replication: MATH-500 is a 500-problem subset of the 5,000-problem Hendrycks MATH test split, and docs/S67-RESULT.md §3 records that the full-corpus gold agrees with the MATH-500 answer field on all 500 overlapping problems.",
+  "this_probe_reads": "MATH-500 only"
+ },
+
+ "splits": {
+  "touched": ["MATH-500 (already spent by the S67 and S68 receipts)"],
+  "not_touched": ["full MATH", "GSM8K test", "MMLU", "the 1,000-item S69 calibration splits", "the S66 calibration splits", "MATH-train", "GSM8K-train"],
+  "statement": "No test-adjacent split is read that was not already spent, and the diagnostic caps do not authorise a claim on any split."
+ },
+
+ "does_not_do": [
+  "No training, no trace generation, no preference data, no weight change.",
+  "No change to the prompt template, decoding, stop rule or extractor.",
+  "No new win bar, no new claim protocol, no new test split.",
+  "No comparison across caps: a claim must name the cap and every compared model must be measured at it.",
+  "No redrawing of problems: the 500 MATH-500 problems are fixed by the stored receipts."
+ ],
+
+ "what_would_make_this_wrong": [
+  "The stored 4,096 completions already show that the soup never emits an answer in 73.4% of its truncated rows (116/158), so a difficulty that needs more derivation room and a stopping failure are observationally similar at 4,096. If the extra tokens are more of the same rambling, the ladder will recover few rows and correctly falsify the termination story.",
+  "Greedy decoding is deterministic in exact arithmetic but not in floating point; a batched or otherwise reimplemented engine can change the first 4,096 tokens. The prefix-reproduction check exists because a ladder whose 4,096 prefix differs is not measuring the cap at all.",
+  "Qwen3-0.6B truncates only 18 of 500 rows, so its gain from a higher cap is bounded near 18 by its own ceiling; a differential in our favour is partly arithmetic, not evidence of a defect unique to the soup. The decision rule handles this by requiring a differential of at least X, but a reader should not read the bound as a mechanism.",
+  "The 2B teacher's 4 truncated-but-correct rows show that truncation and wrongness are not the same failure. A cap increase can improve the *reported* score by changing which box is last, without any change in reasoning.",
+  "'Termination' covers two different faults: not stopping after an answer (falsified at 4,096 for the soup) and never reaching an answer (the dominant class). Length-control training may target the second only indirectly."
+ ],
+
+ "execution_blocked": {
+  "blocked": true,
+  "reason": "The GPU driver is broken: kernel module 620.70.06 against userspace 620.73, nvidia-smi fails with a driver/library version mismatch, and there is no root to reload it. No GPU court, CUDA call or model load may run until the operator reloads the driver.",
+  "cpu_work_completed": [
+   "the classifier module, its script and its tests, run through the oracle court",
+   "the classification of all four models' stored 4,096 completions, run through the oracle court",
+   "disk measured through the io court",
+   "cost, memory and disk arithmetic from measured receipts and on-disk configs"
+  ]
+ },
+
+ "limits_derived_from": [
+  "results/stage2/s73-truncation/soup-math500.json",
+  "results/stage2/s73-truncation/baseline-08b-math500.json",
+  "results/stage2/s73-truncation/qwen3-06b-math500.json",
+  "results/stage2/s73-truncation/teacher-2b-math500.json",
+  "results/stage2/s72-recon/teacher-recon.json",
+  "results/stage2/s67-final/soup-stage1.json",
+  "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json",
+  "results/stage2/s68-frontier/qwen3-0.6b.json",
+  "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+  "results/courts/io-20261122T131807Z-e2ca1c.json"
+ ]
+}
