@@ -92,9 +92,32 @@ hand.
 - **Verified-task comparison: `conditional_capacity_not_supported_on_verified_tasks`** — receipt stamp `20261116T134342Z`, revision `afe554692985…` (`results/capability/runs/t2-comparison.json`). A floor on the instrument is not a ranking of arms; the diagnosis is in `docs/CAPABILITY-COURT.md` §12.
 <!-- END GENERATED: readme-status -->
 
-Those evaluations are *likelihood* measurements plus one verified-task floor; no
-arm produced a capability win. The M1/M2 negatives stand unchanged and are quoted
-as negatives, not as the program's result.
+Within the program's own instruments the established result is a **within-model
+improvement**, not a frontier result. The S67 champion — the three-seed delta
+soup, a float32 weight-space interpolation between Qwen3.5-0.8B and its
+post-trained endpoint at the coefficient the registered rule selected (WiSE-FT)
+— beats the post-trained 0.8B baseline on GSM8K with paired intervals above zero
+on every seed, on the pre-registered full MATH instrument, and on full MMLU and
+the registered MMLU-Pro retention instrument, each with a paired interval above
+zero. MATH-500 is the exception: at its registered scale the effect is positive
+but *unresolved*, because the interval includes zero. That is a separate
+statement from the resolved full-MATH one and is not presented as it. The unique
+active text path is unchanged from the post-trained model, and the winning
+mechanism is weight-space interpolation, not this program's distinctive
+architecture. Every delta, interval, stamp and the unique-active count is
+emitted from `results/stage2/s67-final/verdict.json` in the generated status
+block above; none is typed here.
+
+What is **not** established: frontier leadership on any external instrument, and
+any attribution of the gain to an architectural mechanism of this program.
+Neither is claimed. The S69 arms trained from this champion added no win: both
+completion-CE controls degraded calibration performance and the preference arm
+collapsed (`docs/S69-RESULT.md`).
+
+The next measurement is the two registered probes, S72 and S73; both are
+GPU-blocked (`docs/S72-STAGE0-PLAN.md`, `docs/S73-TRUNCATION-PROBE.md`). The
+M1/M2 negatives stand unchanged and are quoted as negatives, not as the
+program's result.
 
 ## 3. Current activity
 

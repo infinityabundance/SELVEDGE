@@ -464,16 +464,21 @@ about which code produced which receipt.
 - **No capability claim.** The frontier measures next-token distributions on
   pinned text. KL on Wikipedia is not a code, math, reasoning or factuality
   benchmark. See `docs/LIMITATIONS.md`.
-- **Not: a capability win or any frontier advantage.** All five trained arms
-  (`D`, `M`, `X`, `H`, `H*`) finished training, were evaluated on the registered T2
-  instrument and were scored on the verified-task suite, and every one of them
-  floored at zero on that suite — an instrument floor that cannot rank arms. So
-  there is a capability *measurement* and no capability *claim*, and no frontier
-  advantage in either the likelihood or the correctness sense. The M2 result still
-  bounds post-hoc inference-only selection, not sparsity in general: a model
-  trained or upcycled to tolerate the sparse FFN is the T2 branch, and a distilled
-  smaller teacher, quantisation and a learned memory layer at scale remain
-  untested.
+- **Not: a frontier advantage, and no capability win from the T2 arms.** All
+  five T2 trained arms (`D`, `M`, `X`, `H`, `H*`) finished training, were
+  evaluated on the registered T2 instrument and were scored on the verified-task
+  suite, and every one of them floored at zero on that suite — an instrument
+  floor that cannot rank arms. The T2 branch therefore yields a capability
+  *measurement* from its own arms and no capability *claim*, and no frontier
+  advantage in either the likelihood or the correctness sense. This bound is
+  about the T2 arms, not about everything the program has measured: the one
+  established within-model win is the S67 weight-interpolation result stated in
+  the generated status block above — a within-model improvement over the
+  post-trained baseline on this program's instruments, not a frontier advantage,
+  and not produced by a T2 arm. The M2 result still bounds post-hoc
+  inference-only selection, not sparsity in general: a model trained or upcycled
+  to tolerate the sparse FFN is the T2 branch, and a distilled smaller teacher,
+  quantisation and a learned memory layer at scale remain untested.
 - **No end-to-end model latency and no hardware-counter FLOPs.** FLOP values
   are derived from realized channel counts, not hardware counters. Arm wall
   clock is a cost observation, not a benchmark. M3 part 1 does measure
