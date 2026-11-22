@@ -1,0 +1,90 @@
+{
+  "cgroup_peak_bytes": 2478874624,
+  "cgroup_peak_gib": 2.3086318969726562,
+  "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+  "checkpoint_sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+  "created_utc": "2026-11-22T08:57:57Z",
+  "instrument": {
+    "attention": "sdpa",
+    "batch_size": 32,
+    "decoding": "greedy non-thinking",
+    "max_new_tokens": 2048,
+    "tasks": "MATH-cal prefix",
+    "test_split_read": false
+  },
+  "kind": "s71-overshoot-smoke",
+  "label": "diagnostic",
+  "model_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+  "results": [
+    {
+      "batch": 0,
+      "cgroup": {
+        "memory_events": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0,
+          "sock_throttled": 0
+        },
+        "memory_max": "15032385536",
+        "memory_peak": "2474672128",
+        "memory_swap_peak": "0"
+      },
+      "generated_tokens": 35752,
+      "kind": "natural",
+      "max_sequence_tokens": 2048,
+      "peak_vram_gib": 3.977670669555664,
+      "wall_seconds": 38.99
+    },
+    {
+      "batch": 1,
+      "cgroup": {
+        "memory_events": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0,
+          "sock_throttled": 0
+        },
+        "memory_max": "15032385536",
+        "memory_peak": "2478653440",
+        "memory_swap_peak": "0"
+      },
+      "generated_tokens": 24205,
+      "kind": "natural",
+      "max_sequence_tokens": 2048,
+      "peak_vram_gib": 5.223844528198242,
+      "wall_seconds": 41.0
+    },
+    {
+      "batch": 2,
+      "cgroup": {
+        "memory_events": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0,
+          "sock_throttled": 0
+        },
+        "memory_max": "15032385536",
+        "memory_peak": "2478874624",
+        "memory_swap_peak": "0"
+      },
+      "generated_tokens": 65536,
+      "kind": "forced_cap",
+      "max_sequence_tokens": 2048,
+      "peak_vram_gib": 3.751919746398926,
+      "wall_seconds": 39.51
+    }
+  ],
+  "revision": "15fe95f7b6b7d69b64953b562c86714b048d830e",
+  "schema": "selvedge/s71-probe-smoke/v1",
+  "stamp": "20261122T085757Z",
+  "test_read": false
+}
