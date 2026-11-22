@@ -71,8 +71,9 @@ by the batch sum. At one pair per optimizer step those are the same number, so
 the registered weight never entered the update. Correcting this makes the run
 implement the registration; it does not move the registration.
 
-**Nothing scored existed at the fix.** The receipts in the tree at the time are
-data-construction and instrument receipts: rollouts
+**Nothing scored existed at the fix.** The receipts present at the time are
+data-construction and instrument receipts, held in the working directory
+(`results/artifacts/` is gitignored): rollouts
 (`results/artifacts/stage2/s69-rollouts/soup-receipt.json`), pairs and recovery
 (`results/artifacts/stage2/s69-preference/soup-receipt.json`), and the frozen
 reference caches
