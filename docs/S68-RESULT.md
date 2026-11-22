@@ -65,7 +65,14 @@ diagnostics), and the invalidated stage-2b runs, which carry an explicit
 
 ## 3. Depth-ramped interpolation (calibration only, then one test pass)
 
-Registration: `docs/s68-depth-ramp-preregistration-v1.json`. The ramp is
+Registration: `docs/s68-depth-ramp-preregistration-v1.json`. The file carries a
+`retrospective` label: it was first committed at `2026-11-21T03:12:54Z`, thirty
+seconds after the builder receipt that names it (`2026-11-21T03:12:24Z`). The
+label quotes that ordering and its evidence, and the `prereg_provenance` court
+tolerates it only because the verdict records that the ramp did not beat the
+soup champion and changed no selection (§3.2 below). The registration's
+substantive content is unchanged; the label is appended, not substituted. The
+ramp is
 
     alpha(l) = alpha_shallow + (alpha_deep - alpha_shallow) * l / (L - 1)
 

@@ -6,6 +6,48 @@
   "status": "registered",
   "revision": "3026e62f0357f9a780c2e5fa6d2d7fb4b7237588",
   "purpose": "Test whether a depth-ramped interpolation coefficient improves train-split calibration over the registered constant coefficient, before any test split is read. This is a calibration experiment, not a new claim instrument.",
+  "retrospective": {
+    "is_retrospective": true,
+    "reason": "This file was first added by commit b23c395ce5f01bc6e60d0d91fde4b35d1bed41eb at 2026-11-21T03:12:54Z, while the first non-smoke receipt that names it, results/stage2/s68-ramp/build.json, has stamp 20261121T031224Z and created_utc 2026-11-21T03:12:24Z: the receipt existed 30 s before the file entered the repository. The label is therefore retrospective. What preceded the commit is the depth-ramp builder receipt (kind depth-ramp-build), not a calibration or test score: the first calibration score has stamp 20261121T085502Z and the one-shot test receipt has stamp 20261121T180406Z, both later than the commit. The file's substantive content is unchanged; only this label, the evidence block and the disposition were appended.",
+    "observed": {
+      "first_add_commit": "b23c395ce5f01bc6e60d0d91fde4b35d1bed41eb",
+      "first_add_committed_utc": "2026-11-21T03:12:54Z",
+      "first_scoring_receipt": "results/stage2/s68-ramp/build.json",
+      "first_scoring_receipt_stamp": "20261121T031224Z"
+    },
+    "evidence_paths": [
+      "results/stage2/s68-ramp/build.json",
+      "results/stage2/s68-ramp/calibration.json",
+      "results/stage2/s68-ramp/selection.json",
+      "results/stage2/s68-ramp/verdict.json",
+      "docs/S68-RESULT.md"
+    ],
+    "content_sha256_before_label": "7d56e96af1ccfc8c4090019cf9eb2ea73aa10a2502f08f3cf7d953303bf172fd",
+    "substantive_content_changed": false,
+    "disposition": {
+      "verdict_receipts": [
+        "results/stage2/s68-ramp/verdict.json"
+      ],
+      "adoption_indicators": [
+        {
+          "receipt": "results/stage2/s68-ramp/verdict.json",
+          "field": "verdict.beats_soup_champion_gsm8k"
+        },
+        {
+          "receipt": "results/stage2/s68-ramp/verdict.json",
+          "field": "verdict.beats_soup_champion_math500"
+        },
+        {
+          "receipt": "results/stage2/s68-ramp/verdict.json",
+          "field": "verdict.beats_soup_champion_math_full"
+        }
+      ],
+      "adopted_if": "any of the three champion-comparison indicators in the verdict receipt is true",
+      "selection_changed": false,
+      "champion_retained": "S67 constant-alpha soup (alpha = 0.375), results/stage2/s67-soup",
+      "reason": "the verdict records beats_soup_champion false on GSM8K, MATH-500 and full MATH; the constant-alpha soup remains the champion (docs/S68-RESULT.md section 3.2), so the ramp changed no selection and no adoption outside its own calibration gate"
+    }
+  },
   "prior_result": {
     "constant_soup_calibration": "results/stage2/s67-soup/calibration.json",
     "constant_coefficient": 0.375,

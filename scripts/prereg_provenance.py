@@ -24,6 +24,53 @@ Checked, per registration file (`docs/*preregistration*.json`):
    `smoke_runs_without_receipts`. A registration that claims to precede the
    measurements it derived its limits from is mis-stating its own provenance.
 
+## The retrospective label
+
+An ordering defect can also be *labelled* rather than excused. A registration may
+carry a block
+
+```json
+"retrospective": {
+  "is_retrospective": true,
+  "reason": "<prose that quotes the first-add and first-score instants>",
+  "observed": {
+    "first_add_commit": "<40 hex chars>",
+    "first_add_committed_utc": "<the commit instant>",
+    "first_scoring_receipt": "<path>",
+    "first_scoring_receipt_stamp": "<stamp>"
+  },
+  "evidence_paths": ["<paths that must exist>"],
+  "content_sha256_before_label": "<the sha256 every earlier receipt cites>",
+  "substantive_content_changed": false,
+  "disposition": {
+    "verdict_receipts": ["<receipts>"],
+    "adoption_indicators": [{"receipt": "<receipt>", "field": "a.b.c"}],
+    "adopted_if": "any indicator is true",
+    "selection_changed": false
+  }
+}
+```
+
+Such a label excuses **only** `committed_before_first_score`, and only when all
+of the following hold; every other check still applies and any failure below
+fails closed:
+
+* the reason quotes both the first-add and the first-score instants (ISO or
+  compact stamp), so the label carries the evidence rather than asserting it;
+* `observed` equals what git and the receipts say *now* — a label that drifts
+  from the history is a defect, not an excuse;
+* every `evidence_paths` entry exists, and `disposition.selection_changed` is
+  false;
+* every `adoption_indicators` field is **present and falsy** in its receipt. A
+  missing field fails closed: non-adoption must be proven, not assumed. If any
+  indicator is true the registration produced an adopted result, and a
+  retrospective registration that changed a selection is exactly the case this
+  court exists to reject.
+
+A registration whose ordering is already correct must not carry the label: a
+retrospective label on a compliant registration is itself a misstatement and
+fails closed.
+
 Historical exceptions are *named* in `HISTORICAL_EXCEPTIONS` with their evidence,
 are printed on every run, and cover only the checks named for them. The anchor is
 the one WS19 entry; the court's first run also found three older capability
@@ -49,8 +96,9 @@ import re
 import subprocess
 import sys
 
-SCHEMA = "selvedge/prereg-provenance/v1"
+SCHEMA = "selvedge/prereg-provenance/v2"
 STAMP_RE = re.compile(r"(\d{8}T\d{6}Z)")
+ISO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2}))")
 
 #: Registrations whose ordering defect is history, not a live violation. Each
 #: names the exact checks it is excused from and the evidence for the excuse.
@@ -178,6 +226,30 @@ def parse_iso(value: str) -> dt.datetime | None:
         return None
 
 
+def instants_in(text: str) -> set[dt.datetime]:
+    """Every UTC instant quoted in a string, in either accepted notation."""
+    found: set[dt.datetime] = set()
+    for match in ISO_RE.finditer(text or ""):
+        moment = parse_iso(match.group(1))
+        if moment is not None:
+            found.add(moment)
+    for match in STAMP_RE.finditer(text or ""):
+        moment = parse_stamp(match.group(1))
+        if moment is not None:
+            found.add(moment)
+    return found
+
+
+def resolve_field(document: dict, dotted: str) -> tuple[object, bool]:
+    """Resolve a dotted path in a receipt; ``(value, present)``."""
+    value: object = document
+    for part in dotted.split("."):
+        if not isinstance(value, dict) or part not in value:
+            return None, False
+        value = value[part]
+    return value, True
+
+
 def sha256_file(path: str) -> str:
     digest = hashlib.sha256()
     with open(path, "rb") as handle:
@@ -265,6 +337,122 @@ def named_inputs(registration: dict) -> list[str]:
     return paths
 
 
+def check_retrospective(repo: str, document: dict, add, first_score,
+                        order_ok: bool) -> dict:
+    """Validate a retrospective label; fail closed unless non-adoption is proven."""
+    block = document.get("retrospective")
+    labelled = isinstance(block, dict) and block.get("is_retrospective") is True
+    if not labelled:
+        return {"labelled": False, "ok": True, "problems": [],
+                "adopted": [], "detail": "not labelled retrospective"}
+
+    problems: list[str] = []
+    adopted: list[str] = []
+    if add is None:
+        problems.append("labelled retrospective but the file has no first-add commit")
+    if first_score is None:
+        problems.append(
+            "labelled retrospective but no non-smoke receipt names it yet, so "
+            "there is no ordering for the label to describe")
+    if order_ok:
+        problems.append(
+            "labelled retrospective but the file was committed before its first "
+            "score; a retrospective label on a compliant registration is a "
+            "misstatement")
+
+    observed = block.get("observed")
+    if not isinstance(observed, dict):
+        observed = {}
+        problems.append("no `observed` block, so the label cannot be checked "
+                        "against the history")
+    reason = block.get("reason")
+    if not isinstance(reason, str) or not reason.strip():
+        problems.append("no `reason`, so the label carries no evidence")
+
+    if add is not None and first_score is not None:
+        add_instant = parse_iso(add[1])
+        quoted = instants_in(reason or "")
+        for name, instant in (("first add", add_instant),
+                              ("first score", first_score["when"])):
+            if instant is None or instant not in quoted:
+                problems.append(
+                    f"the reason does not quote the {name} instant "
+                    f"({instant.isoformat() if instant else 'n/a'})")
+        expected = {
+            "first_add_commit": add[0],
+            "first_add_committed_utc": add[1],
+            "first_scoring_receipt": first_score.get("receipt"),
+            "first_scoring_receipt_stamp": first_score.get("stamp"),
+        }
+        for key, value in expected.items():
+            if observed.get(key) != value:
+                problems.append(
+                    f"observed.{key} is {observed.get(key)!r} but the repository "
+                    f"says {value!r}")
+
+    evidence = block.get("evidence_paths")
+    if not isinstance(evidence, list) or not evidence:
+        problems.append("no `evidence_paths`, so the label names no evidence")
+    else:
+        for rel_path in evidence:
+            if not isinstance(rel_path, str) or not os.path.exists(
+                    os.path.join(repo, rel_path)):
+                problems.append(f"evidence path {rel_path!r} does not exist")
+
+    disposition = block.get("disposition")
+    if not isinstance(disposition, dict):
+        disposition = {}
+        problems.append("no `disposition`, so non-adoption cannot be shown")
+    if disposition.get("selection_changed") is not False:
+        problems.append(
+            "disposition.selection_changed must be declared false; a "
+            "retrospective registration is tolerated only when it changed no "
+            "selection")
+    indicators = disposition.get("adoption_indicators")
+    if not isinstance(indicators, list) or not indicators:
+        problems.append(
+            "the disposition names no adoption indicators, so non-adoption "
+            "cannot be shown")
+        indicators = []
+    for indicator in indicators:
+        if not isinstance(indicator, dict):
+            problems.append(f"malformed adoption indicator {indicator!r}")
+            continue
+        receipt_rel = indicator.get("receipt")
+        field = indicator.get("field")
+        if not isinstance(receipt_rel, str) or not isinstance(field, str):
+            problems.append(f"malformed adoption indicator {indicator!r}")
+            continue
+        receipt_document = load_receipt(os.path.join(repo, receipt_rel))
+        if not isinstance(receipt_document, dict):
+            problems.append(f"adoption indicator receipt {receipt_rel!r} is not "
+                            "readable JSON")
+            continue
+        value, present = resolve_field(receipt_document, field)
+        if not present:
+            problems.append(
+                f"adoption indicator {field!r} is absent from {receipt_rel}; "
+                "non-adoption cannot be proven from a missing field")
+        elif value:
+            adopted.append(f"{field}={value!r} in {receipt_rel}")
+
+    if adopted:
+        problems.append(
+            "the retrospective registration produced an adopted result: "
+            + "; ".join(adopted))
+
+    return {
+        "labelled": True,
+        "ok": not problems,
+        "problems": problems,
+        "adopted": adopted,
+        "detail": (
+            "retrospective and not adopted; "
+            f"adoption would require: {disposition.get('adopted_if') or 'any adoption indicator true'}"
+            if not problems else "; ".join(problems)),
+    }
+
+
 def check_registration(repo: str, rel: str, extra: list[str]) -> dict:
     path = os.path.join(repo, rel)
     document = load_receipt(path)
@@ -301,22 +489,28 @@ def check_registration(repo: str, rel: str, extra: list[str]) -> dict:
     )
 
     if first_score is None:
-        record(
-            "committed_before_first_score",
-            True,
-            "no non-smoke scoring receipt names this registration yet",
-        )
+        order_ok = True
+        order_detail = "no non-smoke scoring receipt names this registration yet"
     else:
         order_ok = add is not None and parse_iso(add[1]) < first_score["when"]
-        record(
-            "committed_before_first_score",
-            order_ok,
-            (
-                f"first add {add[1]} vs first score "
-                f"{first_score['when'].isoformat() if first_score else 'n/a'} "
-                f"({first_score['receipt']})"
-            ),
+        order_detail = (
+            f"first add {add[1]} vs first score "
+            f"{first_score['when'].isoformat() if first_score else 'n/a'} "
+            f"({first_score['receipt']})"
         )
+
+    retrospective = check_retrospective(repo, document, add, first_score, order_ok)
+    if retrospective["labelled"]:
+        record("retrospective_not_adopted", retrospective["ok"],
+               retrospective["detail"])
+    record(
+        "committed_before_first_score",
+        order_ok or (retrospective["labelled"] and retrospective["ok"]),
+        order_detail if order_ok else (
+            order_detail + "; retrospectively labelled and not adopted"
+            if retrospective["labelled"] and retrospective["ok"]
+            else order_detail),
+    )
 
     if add is not None:
         record(
@@ -366,6 +560,7 @@ def check_registration(repo: str, rel: str, extra: list[str]) -> dict:
             if first_score
             else None
         ),
+        "retrospective": retrospective,
         "checks": checks,
         "ok": all(item["ok"] for item in checks),
     }
@@ -426,6 +621,10 @@ def main(argv: list[str] | None = None) -> int:
                 f"prereg_provenance: {state} {entry['registration']} "
                 f"(declared {entry.get('declared_utc') or 'absent'}, added {added}, first score {when})"
             )
+            retro = entry.get("retrospective") or {}
+            if retro.get("labelled") and retro.get("ok"):
+                print("  retrospective: not adopted "
+                      "(the ordering check is labelled, not excused)")
             for item in entry["checks"]:
                 if not item["ok"]:
                     print(f"  FAIL {item['check']}: {item['detail']}")
