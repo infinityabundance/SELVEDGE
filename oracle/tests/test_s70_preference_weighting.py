@@ -322,6 +322,59 @@ def test_ordering_matters_when_the_budget_does_not_complete_a_whole_epoch():
     assert weighted_partial > corpus_mean * 1.05
 
 
+def test_update_trace_records_pre_and_post_clip_norms_and_the_delta(tmp_path):
+    """The trace is the evidence that weighting changes realized updates."""
+    model = TwoParamLM()
+    pairs = [_pair("high", W_HIGH), _pair("low", W_LOW)]
+    trainable = [p for p in model.parameters() if p.requires_grad]
+    optimizer = torch.optim.AdamW(trainable, lr=0.05)
+    trace = preference.UpdateTelemetry(grad_clip=1e-9, lr=0.05)
+    trace.bind(trainable)
+    schedule = launch.pair_schedule(pairs, seed=5, pair_order="weighted")
+    for _ in range(3):
+        step, batch = next(schedule)
+        optimizer.zero_grad(set_to_none=True)
+        loss, _ = preference.preference_batch_loss(
+            model, batch, weight_normalizer=MEAN)
+        loss.backward()
+        pre_clip = torch.nn.utils.clip_grad_norm_(trainable, 1e-9)
+        post_clip = preference.grad_norm(trainable)
+        optimizer.step()
+        trace.row(step=step, arm="preference",
+                  problem_ids=[pair.problem_id for pair in batch],
+                  weights=[pair.weight for pair in batch],
+                  loss=float(loss.detach()), mean_weight=MEAN,
+                  weight_normalizer=MEAN,
+                  pre_clip_grad_norm=float(pre_clip),
+                  post_clip_grad_norm=float(post_clip))
+
+    path = trace.write(str(tmp_path / "trace.json"))
+    payload = json.loads(open(path, encoding="utf-8").read())
+    assert payload["schema"] == preference.UpdateTelemetry.SCHEMA
+    assert len(payload["rows"]) == 3
+    for row in payload["rows"]:
+        assert row["pre_clip_grad_norm"] > 0.0
+        # grad_clip = 1e-9 is always exceeded, so every step was clipped and
+        # the post-clip norm is pinned at the clip value.
+        assert row["clipping_active"] is True
+        assert row["pre_clip_grad_norm"] > row["post_clip_grad_norm"]
+        assert row["post_clip_grad_norm"] == pytest.approx(1e-9, rel=0.02)
+        assert row["update_l2"] > 0.0
+        assert row["weight"] in (W_HIGH, W_LOW)
+        assert row["weight_normalized"] == pytest.approx(
+            row["weight"] / MEAN, rel=1e-6)
+    summary = payload["summary"]
+    assert summary["steps"] == 3
+    assert summary["clipping_active_steps"] == 3
+    assert summary["mean_update_l2"] > 0.0
+    # Three steps are not a whole epoch, so the realized mean is the mean of
+    # the three sampled weights and need not equal the corpus mean.
+    row_weights = [row["weight"] for row in payload["rows"]]
+    assert summary["realized_mean_weight"] == pytest.approx(
+        sum(row_weights) / len(row_weights))
+    assert W_LOW <= summary["realized_mean_weight"] <= W_HIGH
+
+
 def _mean_trajectory_distance(a, b):
     differences = [float((x - y).norm()) for x, y in zip(a, b)]
     return sum(differences) / len(differences), differences[-1]

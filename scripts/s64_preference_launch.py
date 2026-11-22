@@ -364,7 +364,8 @@ def run_arm(model, pairs, *, arm: str,
             alpha: float = preference.REGISTERED_LORA_ALPHA,
             max_steps: int | None = None,
             pair_order: str = "shuffled",
-            weight_normalization: str = "corpus") -> dict:
+            weight_normalization: str = "corpus",
+            trace_path: str | None = None) -> dict:
     """Train one arm and emit merged checkpoints at the token cadence."""
     import torch
     from frontier import arms
@@ -437,6 +438,10 @@ def run_arm(model, pairs, *, arm: str,
     corpus_mean_weight = preference.corpus_mean_weight(pairs)
     weight_normalizer = (corpus_mean_weight
                          if weight_normalization == "corpus" else None)
+    telemetry = (preference.UpdateTelemetry(grad_clip=grad_clip, lr=lr)
+                 if trace_path else None)
+    if telemetry is not None:
+        telemetry.bind(trainable)
     sampled_weights: list[float] = []
 
     cadence = tuple(sorted(int(value) for value in cadence if int(value) > 0))
@@ -454,8 +459,24 @@ def run_arm(model, pairs, *, arm: str,
         loss, detail = _batch_loss(model, arm, batch, beta, device,
                                    weight_normalizer=weight_normalizer)
         loss.backward()
+        pre_clip = (torch.nn.utils.clip_grad_norm_(trainable, grad_clip)
+                    if grad_clip and grad_clip > 0
+                    else None)
+        if pre_clip is None:
+            pre_clip = preference.grad_norm(trainable)
+        post_clip = preference.grad_norm(trainable)
         optimizer.step()
         sampled_weights.extend(float(pair.weight) for pair in batch)
+        if telemetry is not None:
+            telemetry.row(
+                step=step, arm=arm,
+                problem_ids=[pair.problem_id for pair in batch],
+                weights=[pair.weight for pair in batch],
+                loss=float(loss.detach()),
+                mean_weight=corpus_mean_weight,
+                weight_normalizer=weight_normalizer,
+                pre_clip_grad_norm=float(pre_clip),
+                post_clip_grad_norm=float(post_clip))
         processed += _batch_tokens(arm, batch)
         supervised += sum(len(pair.chosen_ids) for pair in batch)
         losses.append(float(loss.detach()))
@@ -497,6 +518,10 @@ def run_arm(model, pairs, *, arm: str,
         del state, merge_report
 
     wall = time.time() - started
+    trace = None
+    if telemetry is not None:
+        telemetry.write(trace_path)
+        trace = {"path": trace_path, "summary": telemetry.summary()}
     return {
         "kind": arm,
         "steps": step,
@@ -527,6 +552,7 @@ def run_arm(model, pairs, *, arm: str,
         "realized_mean_weight_over_mean": (
             (sum(sampled_weights) / len(sampled_weights)) / corpus_mean_weight
             if sampled_weights else None),
+        "trace": trace,
         "wall_seconds": wall,
         "processed_tokens_per_second": (processed / wall if wall > 0 else None),
         "first_loss": losses[0] if losses else None,
@@ -588,6 +614,12 @@ def main(argv: list[str]) -> int:
                              "weight pairs, computed once and recorded; "
                              "`batch` keeps the pre-S70 batch weight sum, "
                              "which is identically 1 at batch_pairs = 1")
+    parser.add_argument("--trace-out", default=None,
+                        help="write the realized-update trace JSON here "
+                             "(pre/post-clip gradient norms and the parameter "
+                             "delta L2 per step, tagged with the pair weight); "
+                             "off by default because it copies the trainable "
+                             "parameters once per step")
     parser.add_argument("--max-steps", type=int, default=None)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--vram-limit-gib", type=float, default=13.0)
@@ -688,7 +720,10 @@ def main(argv: list[str]) -> int:
         expected_active_union=preference.REGISTERED_ACTIVE_UNION,
         rank=args.rank, alpha=args.alpha, max_steps=args.max_steps,
         pair_order=args.pair_order,
-        weight_normalization=args.weight_normalization)
+        weight_normalization=args.weight_normalization,
+        trace_path=(os.path.join(ROOT, args.trace_out)
+                    if args.trace_out and not os.path.isabs(args.trace_out)
+                    else args.trace_out))
 
     adapter_path = os.path.join(
         out_dir, f"adapter-{args.arm}-{report['steps']:06d}.pt")
@@ -732,6 +767,7 @@ def main(argv: list[str]) -> int:
             "realized_mean_weight": report.get("realized_mean_weight"),
             "realized_mean_weight_over_mean": report.get(
                 "realized_mean_weight_over_mean"),
+            "update_trace": report.get("trace"),
         },
         "budget": {
             "tokens": args.budget_tokens,
