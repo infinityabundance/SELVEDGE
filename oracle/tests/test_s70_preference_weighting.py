@@ -125,6 +125,31 @@ def test_per_pair_contributions_are_in_ratio_to_their_weights():
         == [round(W_HIGH / MEAN, 6), round(W_LOW / MEAN, 6)]
 
 
+def test_gradients_from_two_weighted_pairs_are_scaled_by_w_over_mean():
+    """A1's acceptance: two pairs with different w scale the gradient by w/mean."""
+    model = TwoParamLM()
+    pair = _pair("shared", W_HIGH)
+    low = preference.replace(pair, weight=W_LOW)
+
+    def gradient(pair, normalizer):
+        for parameter in model.parameters():
+            parameter.grad = None
+        loss, _ = preference.preference_batch_loss(
+            model, [pair], weight_normalizer=normalizer)
+        loss.backward()
+        parameters = [p for p in model.parameters() if p.requires_grad]
+        return torch.cat([p.grad.reshape(-1) for p in parameters])
+
+    high_grad = gradient(pair, MEAN)
+    low_grad = gradient(low, MEAN)
+    assert float((high_grad / low_grad).min()) == pytest.approx(4.0, rel=1e-5)
+    assert float((high_grad / low_grad).max()) == pytest.approx(4.0, rel=1e-5)
+    # The pre-S70 denominator cancels the weight, so the gradients are equal.
+    old_high = gradient(pair, None)
+    old_low = gradient(low, None)
+    assert torch.allclose(old_high, old_low, rtol=1e-6, atol=1e-9)
+
+
 def test_a_single_pair_below_the_mean_loses_less_than_at_the_mean():
     model = TwoParamLM()
     at_mean = _pair("at-mean", MEAN)

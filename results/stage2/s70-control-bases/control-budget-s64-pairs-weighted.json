@@ -1,0 +1,99 @@
+{
+  "bases": [
+    {
+      "compute": {
+        "matched_sft": {
+          "basis": "matched_sft",
+          "budget_tokens_for_control": 2001034,
+          "forward_positions": 2001034,
+          "max_steps_for_control": 3476,
+          "overshoot_positions": 704,
+          "pairs": 3476,
+          "steps": 3476
+        },
+        "preference": {
+          "basis": "preference",
+          "forward_positions": 2000330,
+          "pairs": 1488,
+          "preference_forward_positions": 2000330,
+          "sft_forward_positions": 854717,
+          "steps": 1488
+        }
+      },
+      "preference_step": 1488,
+      "steps": {
+        "matched_sft": {
+          "basis": "matched_sft",
+          "budget_tokens_for_control": 854717,
+          "forward_positions": 854717,
+          "max_steps_for_control": 1488,
+          "pairs": 1488,
+          "steps": 1488
+        },
+        "preference": {
+          "basis": "preference",
+          "forward_positions": 2000330,
+          "pairs": 1488,
+          "preference_forward_positions": 2000330,
+          "sft_forward_positions": 854717,
+          "steps": 1488
+        }
+      }
+    }
+  ],
+  "basis_requested": "compute",
+  "batch_pairs": 1,
+  "budget_tokens": 2000000,
+  "claims": {
+    "compute_is_matched_only_under_basis_compute": true,
+    "no_score_read": true,
+    "same_order_mode_asked_for": "weighted",
+    "same_order_rule_as_launcher": true,
+    "same_pair_filter_as_launcher": true
+  },
+  "compute_basis_rule": "sft_steps = min{k : sum(prompt+chosen over steps 1..k) >= sum(2*prompt+chosen+rejected over steps 1..N)}; the counts come from the pair file, not from a per-token estimate",
+  "created_utc": "2026-11-22T02:41:33Z",
+  "kind": "matched-sft-control-budget",
+  "matched_sft": {
+    "budget_basis": "the chosen SFT step count whose total processed forward positions cover the preference arm's; each SFT step forwards prompt + chosen once, while a preference step forwards the prompt twice plus both continuations",
+    "full_processed_tokens": 854717,
+    "launch_for_selected_basis": {
+      "basis": "matched_sft",
+      "budget_tokens_for_control": 2001034,
+      "forward_positions": 2001034,
+      "max_steps_for_control": 3476,
+      "overshoot_positions": 704,
+      "pairs": 3476,
+      "steps": 3476
+    },
+    "selected": [
+      {
+        "compute_ratio": 2.336021505376344,
+        "processed_tokens": 2000330,
+        "sft_forward_positions_for_matched_compute": 2001034,
+        "sft_steps_for_matched_compute": 3476,
+        "step": 1488,
+        "supervised_budget_for_matched_steps": 854717,
+        "supervised_tokens": 854717
+      }
+    ],
+    "selected_basis": "compute"
+  },
+  "pair_order": "weighted",
+  "pairs": {
+    "mean_weight": 0.18715191831683167,
+    "path": "results/artifacts/stage2/s64-preference/pairs-corpus-with-reference.jsonl",
+    "positive_weight_rows": 404,
+    "sha256": "b7477eb5fc3de6d1fe34f7a2e51df4ee8fe974e52d062d2e9a03d7817ede04a8"
+  },
+  "preference": {
+    "basis": "2*prompt + chosen + rejected per pair (the launcher)",
+    "processed_tokens": 2000330,
+    "steps": 1488
+  },
+  "revision": "40b2a11d12beaa8d57aea4bdbb6260bdec039fa7",
+  "schedule": null,
+  "schema": "selvedge/s69-control-budget/v2",
+  "seed": 6900,
+  "stamp": "20261122T024133Z"
+}
