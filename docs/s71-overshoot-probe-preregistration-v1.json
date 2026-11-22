@@ -1,0 +1,223 @@
+{
+  "schema": "selvedge/s71-overshoot-probe-preregistration/v1",
+  "identifier": "S71-OVERSHOOT-PROBE-PREREGISTRATION-V1",
+  "created_utc": "2026-11-22T08:55:00Z",
+  "registered_utc": "2026-11-22T08:55:00Z",
+  "status": "registered",
+  "revision": "9c7e6c0ce8bf94ad4637fb81c60ae518bdd3e36f",
+  "label": "diagnostic",
+  "purpose": "Test one hypothesis about the S69 LoRA arms: the update direction is useful but the applied magnitude is too large. If that is true, an earlier training cadence of the same arm should score better on the registered calibration splits than that arm's 2M-token endpoint, because the same direction was applied for fewer steps. The probe scores the two unscored cadences of each S69 completion-CE control and one soup re-score on the existing calibration instrument. It reads no test split, selects nothing, adopts nothing, and retrains nothing.",
+  "hypothesis": {
+    "statement": "The S69 update direction carries usable capability signal, but the 2M-token cadence overshoots: the same LoRA direction applied for fewer processed tokens (500k, 1M) leaves the model closer to the S67 soup champion and scores higher on MATH-cal and GSM8K-cal than the 2M endpoint.",
+    "origin": "S65 found overshoot in weight space along the interpolation path between the post-trained endpoint and S58 stage-2a: capability rose to a maximum and then fell as the interpolation coefficient grew (docs/S65-RESULT.md). The S69 arms are trained in the same weight space from the S67 soup champion, so the same overshoot-with-magnitude shape is the working explanation for the CE controls' small degradation and for the preference arm's collapse.",
+    "predictions_for_the_unscored_cadences": {
+      "P1": "Within each CE arm, MATH-cal(500k) >= MATH-cal(1M) >= MATH-cal(2M).",
+      "P2": "At least one earlier CE cadence has MATH-cal strictly above that arm's 2M endpoint.",
+      "P3": "At least one earlier CE cadence reaches or exceeds the soup's MATH-cal point estimate 0.326.",
+      "P4": "GSM8K-cal does not fall by more than 1.0 point relative to the arm's own 2M endpoint at any earlier cadence that satisfies P2."
+    },
+    "already_scored_rows_not_re_registered": "The preference arm's three cadences (500k/1M/2M) are already scored in results/stage2/s69-calibration/preference.json and the two CE arms' 2M endpoints are already scored in results/stage2/s69-calibration/matched-sft.json and matched-sft-weighted.json. Those rows are inputs to this probe, not tests of the hypothesis: the probe adds the four unscored CE cadence rows and the soup's per-problem rows."
+  },
+  "arms_under_test": [
+    {
+      "arm": "matched-sft",
+      "role": "completion-CE control on the chosen continuations of the identical effective problem set; uniform weight",
+      "receipt": "results/stage2/s69-preference/matched-sft/receipt-matched-sft.json",
+      "receipt_sha256": "f23fa1ecf7b480687d5b2ea6558a4e0df5f0121a214f4e6faa7c6e4ac9c2088e",
+      "init_checkpoint": {
+        "path": "results/stage2/s67-soup/interp-0.375-arm.pt",
+        "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+        "step": 4000
+      },
+      "cadence_to_step_map": [
+        {
+          "cadence_tokens": 500000,
+          "step": 742,
+          "processed_tokens": 500133,
+          "checkpoint": "results/stage2/s69-preference/matched-sft/ckpt-000742.pt",
+          "checkpoint_sha256": "08cd917789b53b10402da266461065c67f98fd98d2e10caaecfa7a1526cbcade",
+          "status_before_this_probe": "unscored"
+        },
+        {
+          "cadence_tokens": 1000000,
+          "step": 1468,
+          "processed_tokens": 1000670,
+          "checkpoint": "results/stage2/s69-preference/matched-sft/ckpt-001468.pt",
+          "checkpoint_sha256": "c6a114ec240fd9012c118534c1b2a44a5c9062d4c6da1a2be068f5af075909c5",
+          "status_before_this_probe": "unscored"
+        },
+        {
+          "cadence_tokens": 2000000,
+          "step": 2935,
+          "processed_tokens": 2000859,
+          "checkpoint": "results/stage2/s69-preference/matched-sft/ckpt-002935.pt",
+          "checkpoint_sha256": "56b4cf344c97e18c23ca1396e083721a01ac129150514584b211709bb1a22963",
+          "status_before_this_probe": "scored; results/stage2/s69-calibration/matched-sft.json"
+        }
+      ]
+    },
+    {
+      "arm": "matched-sft-weighted",
+      "role": "completion-CE control on the same chosen continuations with the corpus-mean-normalised difficulty weight; attribution control for the S69 difficulty weighting",
+      "receipt": "results/stage2/s69-preference/matched-sft-weighted/receipt-matched-sft-weighted.json",
+      "receipt_sha256": "489ab31c9c6eb36255aa664694efa8936c777922b287ef78353e77669ae695f6",
+      "init_checkpoint": {
+        "path": "results/stage2/s67-soup/interp-0.375-arm.pt",
+        "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+        "step": 4000
+      },
+      "cadence_to_step_map": [
+        {
+          "cadence_tokens": 500000,
+          "step": 742,
+          "processed_tokens": 500133,
+          "checkpoint": "results/stage2/s69-preference/matched-sft-weighted/ckpt-000742.pt",
+          "checkpoint_sha256": "39c88015e3eb23f3c875a860188d8dee0519d15c4f7d47da50f3332e2009dfc1",
+          "status_before_this_probe": "unscored"
+        },
+        {
+          "cadence_tokens": 1000000,
+          "step": 1468,
+          "processed_tokens": 1000670,
+          "checkpoint": "results/stage2/s69-preference/matched-sft-weighted/ckpt-001468.pt",
+          "checkpoint_sha256": "77a9a77df6f8f20f3144a07eaa72b539985f8a0242d58ba2421f06de6e1c65bd",
+          "status_before_this_probe": "unscored"
+        },
+        {
+          "cadence_tokens": 2000000,
+          "step": 2935,
+          "processed_tokens": 2000859,
+          "checkpoint": "results/stage2/s69-preference/matched-sft-weighted/ckpt-002935.pt",
+          "checkpoint_sha256": "663141076aa4ff8ae2cd38ac0ebaf2a0c4da66ebd72fdb36ef1d1b504096b058",
+          "status_before_this_probe": "scored; results/stage2/s69-calibration/matched-sft-weighted.json"
+        }
+      ]
+    },
+    {
+      "arm": "preference",
+      "role": "the arm under attribution; all three cadences are already scored and are quoted as a known reference, never re-scored by this probe",
+      "receipt": "results/stage2/s69-preference/preference/receipt-preference.json",
+      "receipt_sha256": "d65c5359924f777103ceec25b803659dd6c75ffebffecea2292664a16db4df71",
+      "cadence_to_step_map": [
+        {"cadence_tokens": 500000, "step": 326, "processed_tokens": 501330,
+         "checkpoint": "results/stage2/s69-preference/preference/ckpt-000326.pt",
+         "checkpoint_sha256": "a14706678e53f42a5d3c431b481feae220ec07f660e85203baf3dac2fe94f68a",
+         "status_before_this_probe": "scored; results/stage2/s69-calibration/preference.json"},
+        {"cadence_tokens": 1000000, "step": 649, "processed_tokens": 1000903,
+         "checkpoint": "results/stage2/s69-preference/preference/ckpt-000649.pt",
+         "checkpoint_sha256": "c05283772af9e64b563fdbf3ea346181f5078feb5dd5ee969891f51d0c254ab4",
+         "status_before_this_probe": "scored; results/stage2/s69-calibration/preference.json"},
+        {"cadence_tokens": 2000000, "step": 1294, "processed_tokens": 2001022,
+         "checkpoint": "results/stage2/s69-preference/preference/ckpt-001294.pt",
+         "checkpoint_sha256": "5fcf5b9baf49f871251f2c1a2425fe934660af82f90d013fa3110d9b0d7b4231",
+         "status_before_this_probe": "scored; results/stage2/s69-calibration/preference.json"}
+      ]
+    }
+  ],
+  "soup_reference": {
+    "role": "the paired reference for every scored row; the S67 soup champion, alpha = 0.375",
+    "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+    "checkpoint_sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+    "step": 4000,
+    "stored_point_estimates": {
+      "receipt": "results/stage2/s67-soup/calibration.json",
+      "receipt_sha256": "6f91f51e51a0344757feb7f7e0c31df316a5e647fa0cba55183eacc18bff8dad",
+      "gsm8k_cal": 0.609,
+      "math_cal": 0.326,
+      "mmlu_cal": 0.5215,
+      "items_per_task": 1000
+    },
+    "why_rescored": "The S67 soup receipt stores point estimates only; it has no per-problem calibration rows (results/stage2/s69-calibration/table.json, field ci_basis, says the same). A paired problem-level bootstrap against the soup is therefore impossible from the stored receipt alone. The soup is re-scored once on the identical splits with the identical scorer to produce those rows. The re-score is a new receipt at results/stage2/s71-overshoot/soup-calibration.json; it does not overwrite results/stage2/s67-soup/calibration.json, and its flexible-accuracy point estimates must agree with the stored estimates for the pairing to be used. If they disagree the probe reports the disagreement and does not substitute one for the other."
+  },
+  "instrument": {
+    "splits": {
+      "gsm8k_cal": {
+        "path": "results/stage2/s66-calibration/gsm8k-cal-1000.jsonl",
+        "sha256": "b9af82fef9f253d42ced8b50528889e61b051c8e6d11253eb52037b4072cbeb3",
+        "items": 1000
+      },
+      "math_cal": {
+        "path": "results/stage2/s66-calibration/math-cal-1000.jsonl",
+        "sha256": "27d118f5c3b56fa3af16daa2fa66e13fa95aed5cc4e3bb467322289c13f09298",
+        "items": 1000
+      },
+      "registration": {
+        "path": "docs/s66-calibration-splits-v1.json",
+        "sha256": "9158aa238d91859151d60a96658f132c71fd1cfc5b886daf6b5ee88009f80cd1"
+      },
+      "source": "train split only; no test split read"
+    },
+    "scorer": {
+      "path": "scripts/s69_milestone_calibration.py",
+      "sha256": "b02018728ee146631d6b81437882090c45be7f51d71dd67e894822176f6f4a15",
+      "subcommand": "score",
+      "why": "this is the exact scorer that produced the existing 2M rows in results/stage2/s69-calibration/, so the new cadence rows are produced by the same code, the same splits, the same extraction and the same decoding as the rows they are compared with",
+      "model_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+      "protocol": "greedy, non-thinking, zero-shot, S54 user template, max_new_tokens 2048, batch 32, sdpa attention, bf16",
+      "per_problem_rows": "kept in the receipt, so the paired comparison is computed from stored rows without regeneration"
+    },
+    "generation_diagnostics": {
+      "path": "scripts/s71_generation_diagnostics.py (to be written for this probe)",
+      "sample": "the first 96 items of each calibration split (three complete greedy batches of 32), so the batch composition is identical to the first three batches of the scored run",
+      "loop_helper": "scripts/s59_student_rollouts.py::loop_cut_index, imported, never reimplemented",
+      "parity_requirement": "for every sampled problem the diagnostic run's flexible correctness must equal the stored row's flexible_correct for that problem; any mismatch fails closed and the diagnostics are not reported"
+    }
+  },
+  "statistic": {
+    "primary": "per-problem paired bootstrap of the flexible-correctness delta (arm - soup), computed separately for GSM8K-cal and MATH-cal, using scripts/s54_post_trained_eval.py::paired_prompt_bootstrap with its registered defaults (4000 resamples, seed 53, resampling unit = the problem, 95% percentile interval). The two arms are paired on the identical problem ids because both are scored on the same split.",
+    "within_arm": "the same paired bootstrap for the delta (earlier cadence - that arm's 2M endpoint), paired on the identical 1000 problems; this is the quantity the hypothesis is about",
+    "reporting_only": [
+      "per-arm Wilson 95% intervals already emitted by results/stage2/s69-calibration/table.json, quoted for continuity and not used to decide the falsification",
+      "MMLU-cal is not re-scored by this probe: no MMLU row exists for the 500k/1M cadences and this probe does not create one; the reported MMLU numbers remain the 2M rows only"
+    ],
+    "unpaired_fallback": "not used. The soup's per-problem rows are produced by this probe, so every comparison is paired. If the soup re-score fails to run, the probe reports the failure and no paired interval is claimed."
+  },
+  "falsification": {
+    "condition": "If every earlier cadence is worse than its 2M endpoint, the magnitude hypothesis is not supported by this corpus.",
+    "operationalisation": "For each CE arm A in {matched-sft, matched-sft-weighted} and each earlier cadence c in {500000, 1000000}, compute d(A, c) = math_cal(A, c) - math_cal(A, 2000000) on the identical 1,000 MATH-cal problems. The hypothesis is falsified when d(A, c) <= 0 for all four (A, c) pairs: no earlier cadence beats its own 2M endpoint even on the point estimate.",
+    "not_falsified_by": "any single d(A, c) > 0, i.e. one earlier cadence strictly above its arm's 2M endpoint",
+    "interval_role": "the paired 95% intervals are reported for every comparison but are not a second bar; the condition above is evaluated on the point estimates as written, so the verdict cannot be moved after seeing the intervals",
+    "secondary_series": "GSM8K-cal deltas are reported and cannot rescue or overturn the MATH-cal condition",
+    "if_falsified": "the corpus does not support the magnitude explanation; the failure is then attributed to the objective and the update regime, and the report says so instead of proposing an earlier stop as a fix"
+  },
+  "collapse_diagnostic": {
+    "question": "Is the preference arm's collapse consistent with margin saturation of -log sigmoid(beta * margin) on 214 pairs over about 6 epochs, and can the observed chosen/rejected separation be achieved by suppressing the specific rejected sequences rather than by learning a transferable correction?",
+    "evidence_to_report": [
+      "the per-step training loss trajectory from results/stage2/s69-preference/preference/trace-preference.json: first-step loss, the step at which loss first falls below 0.05, and the final loss",
+      "the implied mean-normalised margin m = log((1 - loss)/loss) / beta at the final step, with beta = 0.1 as registered",
+      "the number of distinct pairs (214) and the number of optimization steps at each cadence, hence the epoch count over the same 214 pairs",
+      "clipping-active fraction and pre-clip gradient-norm quantiles from results/stage2/s69-preference/telemetry-summary.json, which is a receipt and is quoted, not recomputed",
+      "per-cadence generated tokens, fraction of sampled sequences that hit the 2048 cap, EOS presence and loop-cut status from the generation diagnostics"
+    ],
+    "what_the_data_cannot_show": "There is no held-out pair set: every pair used for training is also the pair the loss is measured on. The probe therefore cannot measure the margin on unseen (prompt, chosen, rejected) triples, and it cannot separate 'learned a transferable correction' from 'suppressed these 214 specific rejected sequences' by any margin measurement. It reports what it can measure (loss and margin on the training pairs, generation behaviour, and the capability and retention deltas), states the limitation, and does not claim a mechanism it did not test.",
+    "ce_controls_role": "the two CE controls are trained on the identical chosen-side corpus at the identical cadence and budget but optimise a different objective; if the same corpus produces a small, uniform degradation under CE and a catastrophic collapse only under the preference objective, the collapse is attributed to the objective and the update regime rather than to corpus construction"
+  },
+  "outputs": {
+    "soup_calibration": "results/stage2/s71-overshoot/soup-calibration.json",
+    "matched_sft_cadences": "results/stage2/s69-calibration/matched-sft.json (rows appended for 500000 and 1000000; the 2000000 row is retained unchanged)",
+    "matched_sft_weighted_cadences": "results/stage2/s69-calibration/matched-sft-weighted.json (rows appended for 500000 and 1000000; the 2000000 row is retained unchanged)",
+    "generation_diagnostics": "results/stage2/s71-overshoot/generation-diagnostics.json",
+    "analysis": "results/stage2/s71-overshoot/analysis.json",
+    "report": "docs/S69-RESULT.md"
+  },
+  "commands": {
+    "soup": "SELVEDGE_MEM=<sized from the smoke peak> scripts/court --gpu eval -- python3 scripts/s69_milestone_calibration.py score --model-dir /hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17 --checkpoints 4000=results/stage2/s67-soup/interp-0.375-arm.pt --out results/stage2/s71-overshoot/soup-calibration.json",
+    "matched_sft": "SELVEDGE_MEM=<sized> scripts/court --gpu eval -- python3 scripts/s69_milestone_calibration.py score --resume --model-dir <same> --checkpoints 500000=results/stage2/s69-preference/matched-sft/ckpt-000742.pt,1000000=results/stage2/s69-preference/matched-sft/ckpt-001468.pt --out results/stage2/s69-calibration/matched-sft.json",
+    "matched_sft_weighted": "SELVEDGE_MEM=<sized> scripts/court --gpu eval -- python3 scripts/s69_milestone_calibration.py score --resume --model-dir <same> --checkpoints 500000=results/stage2/s69-preference/matched-sft-weighted/ckpt-000742.pt,1000000=results/stage2/s69-preference/matched-sft-weighted/ckpt-001468.pt --out results/stage2/s69-calibration/matched-sft-weighted.json",
+    "diagnostics": "SELVEDGE_MEM=<sized> scripts/court --gpu eval -- python3 scripts/s71_generation_diagnostics.py --arm <arm> --checkpoints <cadence=path,...> --official <receipt> --out results/stage2/s71-overshoot/generation-diagnostics.json",
+    "analysis": "SELVEDGE_MEM=2g SELVEDGE_CPUS=2 SELVEDGE_PIDS=512 SELVEDGE_TMP=1g scripts/court python -- python3 scripts/s71_overshoot_analysis.py --out results/stage2/s71-overshoot/analysis.json"
+  },
+  "cost": {
+    "gpu_runs": 5,
+    "basis": "each calibration score run is 64 greedy batches of 32 (two tasks × 1000 items) with a 2048 cap; the S69 2M runs took 2319-2375 s each, so five runs are about 3.3 hours of wall clock, run one at a time",
+    "memory": "sized from a measured smoke peak plus headroom per AGENTS.md; the S69 calibration court ran at 14g with no OOM kill"
+  },
+  "constraints": {
+    "test_split_read": false,
+    "selection": false,
+    "adopted": false,
+    "no_retraining": true,
+    "no_threshold_moves": true,
+    "not_a_registered_arm": "this probe scores existing checkpoints; it registers no new arm, no win bar and no adoption gate"
+  }
+}
