@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/work/scripts/s72_corpus_audit.py", line 254, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/work/scripts/s72_corpus_audit.py", line 183, in main
+    universe = rft.load_items("math-train")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/oracle/frontier/rft.py", line 287, in load_items
+    import pyarrow.parquet as pq
+ModuleNotFoundError: No module named 'pyarrow'

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/work/scripts/s72_stage0_sample.py", line 289, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/work/scripts/s72_stage0_sample.py", line 185, in main
+    excluded_ids, exclusion_record = exclusion_ids()
+                                     ^^^^^^^^^^^^^^^
+  File "/work/scripts/s72_stage0_sample.py", line 134, in exclusion_ids
+    ids.setdefault(dataset, set()).add(row["id"])
+                                       ~~~^^^^^^
+KeyError: 'id'

@@ -1,0 +1,124 @@
+{
+ "created_utc": "2026-11-22T13:09:56Z",
+ "diagnostic_training_overlap": {
+  "gsm8k_sample_ids_in_teacher_corpus": 105,
+  "math_sample_ids_in_teacher_corpus": 58,
+  "note": "not an exclusion: the S58 accepted corpus is training data, not a calibration or test set. Reported so a reader knows how much of the qualification sample the 0.8B student has already seen as a trace.",
+  "paths": [
+   "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl"
+  ]
+ },
+ "exclusions": {
+  "files": [
+   {
+    "path": "results/artifacts/stage2/s58-combined/stage2a-combined-holdout.jsonl",
+    "rows": 82,
+    "sha256": "ac34011607eeefcb61ab6ffdc2d8bf8b0cb810b6385cc23c43f4402a87f6196c"
+   },
+   {
+    "path": "results/stage2/s66-calibration/gsm8k-cal-1000.jsonl",
+    "rows": 1000,
+    "sha256": "b9af82fef9f253d42ced8b50528889e61b051c8e6d11253eb52037b4072cbeb3"
+   },
+   {
+    "path": "results/stage2/s66-calibration/math-cal-1000.jsonl",
+    "rows": 1000,
+    "sha256": "27d118f5c3b56fa3af16daa2fa66e13fa95aed5cc4e3bb467322289c13f09298"
+   }
+  ],
+  "gsm8k_pool": {
+   "eligible": 6420,
+   "removed_by_id": 1053,
+   "removed_by_test_question": 0,
+   "train_items": 7473
+  },
+  "math_pool": {
+   "eligible": 6442,
+   "removed_by_id": 1029,
+   "removed_by_test_question": 1,
+   "train_items": 7472
+  },
+  "test_overlap_check": {
+   "gsm8k_test": {
+    "exists": true,
+    "path": "/hf-cache/datasets/openai___gsm8k/main/0.0.0/740312add88f781978c0658806c59bc2815b9866/gsm8k-test.arrow",
+    "questions": 1319
+   },
+   "math500": {
+    "exists": true,
+    "path": "/hf-cache/datasets/HuggingFaceH4___math-500/default/0.0.0/6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be/math-500-test.arrow",
+    "questions": 500
+   },
+   "math_test_corpus": {
+    "exists": true,
+    "path": "results/artifacts/math-test/math-test-5000.jsonl",
+    "questions": 5000
+   }
+  }
+ },
+ "gsm8k_sample_profile": {
+  "by_level": {
+   "0": 1,
+   "1": 19,
+   "2": 77,
+   "3": 73,
+   "4": 45,
+   "5": 21,
+   "6": 5,
+   "7": 8,
+   "8": 1
+  },
+  "by_subject": {
+   "None": 250
+  },
+  "items": 250
+ },
+ "kind": "stage0-qualification-sample",
+ "math_sample_profile": {
+  "by_level": {
+   "1": 24,
+   "2": 40,
+   "3": 56,
+   "4": 59,
+   "5": 71
+  },
+  "by_subject": {
+   "algebra": 54,
+   "counting_and_probability": 24,
+   "geometry": 29,
+   "intermediate_algebra": 41,
+   "number_theory": 33,
+   "prealgebra": 49,
+   "precalculus": 20
+  },
+  "items": 250
+ },
+ "protocol": {
+  "also_reported": [
+   "strict",
+   "exact"
+  ],
+  "decoding": "greedy (temperature 0, top_p 1)",
+  "max_new_tokens": 4096,
+  "mode": "non-thinking",
+  "primary_basis": "flexible",
+  "stop": "EOS only",
+  "system": null,
+  "user_template": "{question}\n\nSolve the problem step by step. Put the final answer in \\boxed{{}}."
+ },
+ "sample": {
+  "bytes": 337777,
+  "gsm8k_rows": 250,
+  "math_rows": 250,
+  "path": "results/artifacts/stage2/s72-stage0/sample-250x2.jsonl",
+  "rows": 500,
+  "sha256": "1c4aa39fc1a25ce9b45671a4966d0ffc8636100d72dae470fa0ffaa40433b838"
+ },
+ "schema": "selvedge/s72-stage0-sample/v1",
+ "seed": {
+  "gsm8k": 7201,
+  "math": 7200,
+  "rule": "sort pool by id, random.Random(seed).shuffle, take N, sort by id"
+ },
+ "stamp": "20261122T130956Z"
+}
