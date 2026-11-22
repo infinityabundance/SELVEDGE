@@ -1,0 +1,87 @@
+....F.FF...                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_weighted_order_selects_in_proportion_to_weight ______________
+
+    def test_weighted_order_selects_in_proportion_to_weight():
+        pairs = [_pair("high", W_HIGH), _pair("low", W_LOW)]
+        epochs = 4000
+        stream = preference.pair_stream(pairs, seed=6900, order="weighted")
+        first_position = [next(stream) for _ in range(epochs)]
+        # The index drawn first in each epoch is drawn with probability w_i / sum.
+        high = first_position.count(0)
+        low = first_position.count(1)
+        assert high + low == epochs
+        ratio = high / low
+        # Expected 4.0. The tolerance is far tighter than the value a uniform
+        # shuffle would produce (1.0), so this test fails if sampling is uniform.
+>       assert ratio == pytest.approx(4.0, abs=0.5)
+E       assert 1.0 == 4.0 ± 0.5
+E         
+E         comparison failed
+E         Obtained: 1.0
+E         Expected: 4.0 ± 0.5
+
+oracle/tests/test_s70_preference_weighting.py:192: AssertionError
+_____ test_adamw_trajectory_differs_between_uniform_and_weighted_training ______
+
+    def test_adamw_trajectory_differs_between_uniform_and_weighted_training():
+        uniform, uniform_summary = _trajectory("shuffled", "batch")
+        weighted, weighted_summary = _trajectory("weighted", "corpus")
+        assert len(uniform) == len(weighted) == 40
+    
+        differences = [float((a - b).norm()) for a, b in zip(uniform, weighted)]
+        final_difference = differences[-1]
+        mean_difference = sum(differences) / len(differences)
+        # Stated tolerance: a real effect, not float noise.
+        assert final_difference > 1e-3, (final_difference, differences)
+        assert mean_difference > 1e-3, (mean_difference, differences)
+        # Both runs move the parameters; the difference is not "one arm is frozen".
+        assert float((uniform[-1] - uniform[0]).norm()) > 1e-3
+        assert float((weighted[-1] - weighted[0]).norm()) > 1e-3
+        # The weighted run does see the high-weight pair more often.
+>       assert weighted_summary["realized_mean_weight"] > \
+            uniform_summary["realized_mean_weight"]
+E       assert 0.15625 > 0.15625
+
+oracle/tests/test_s70_preference_weighting.py:268: AssertionError
+_________ test_a_pure_loss_rescale_alone_is_mostly_cancelled_by_adamw __________
+
+    def test_a_pure_loss_rescale_alone_is_mostly_cancelled_by_adamw():
+        """The measured reason the ordering, not the normalizer, is the mechanism.
+    
+        Same order, same pairs, same AdamW; only the loss scale differs (the corpus
+        normaliser on or off). AdamW normalises each parameter's update by its own
+        gradient history, so a rescale moves the trajectory far less than changing
+        which pair each step sees. This is not exactly zero when the per-step scale
+        varies (the Adam moments mix differently-scaled gradients), which is why the
+        normaliser is kept as the mathematical statement while the ordering is the
+        primary mechanism. The assertion is relative: the rescale-only difference
+        must be small compared with the ordering difference.
+        """
+        unweighted, _ = _trajectory("shuffled", "batch")
+        rescaled, _ = _trajectory("shuffled", "corpus")
+        weighted, _ = _trajectory("weighted", "corpus")
+        rescale_differences = [float((a - b).norm())
+                               for a, b in zip(unweighted, rescaled)]
+        ordering_differences = [float((a - b).norm())
+                                for a, b in zip(unweighted, weighted)]
+        rescale = sum(rescale_differences) / len(rescale_differences)
+        ordering = sum(ordering_differences) / len(ordering_differences)
+        assert ordering > 1e-3
+>       assert rescale < 0.5 * ordering, (rescale, ordering)
+E       AssertionError: (0.14454502287679763, 0.14141036813506336)
+E       assert 0.14454502287679763 < (0.5 * 0.14141036813506336)
+
+oracle/tests/test_s70_preference_weighting.py:295: AssertionError
+=============================== warnings summary ===============================
+oracle/tests/test_s70_preference_weighting.py::test_per_pair_contributions_are_in_ratio_to_their_weights
+  /work/oracle/tests/test_s70_preference_weighting.py:112: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert float(high_loss) > 0.0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s70_preference_weighting.py::test_weighted_order_selects_in_proportion_to_weight
+FAILED oracle/tests/test_s70_preference_weighting.py::test_adamw_trajectory_differs_between_uniform_and_weighted_training
+FAILED oracle/tests/test_s70_preference_weighting.py::test_a_pure_loss_rescale_alone_is_mostly_cancelled_by_adamw
+3 failed, 8 passed, 1 warning in 3.87s

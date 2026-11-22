@@ -1,0 +1,32 @@
+.......F....                                                             [100%]
+=================================== FAILURES ===================================
+____ test_ordering_matters_when_the_budget_does_not_complete_a_whole_epoch _____
+
+    def test_ordering_matters_when_the_budget_does_not_complete_a_whole_epoch():
+        """A complete epoch is a permutation under either order, so ordering only
+        changes *timing* there. A budget that ends mid-epoch changes *coverage*:
+        the weighted permutation puts the high-weight pairs into the partial epoch
+        first. The real S69 budget is about 1.5 epochs, so this is its regime."""
+        pairs = [
+            _pair("p0", 0.25, prompt=(1, 2), chosen=(6, 7), rejected=(0, 1)),
+            _pair("p1", 0.20, prompt=(2, 3), chosen=(5, 6), rejected=(0, 2)),
+            _pair("p2", 0.15, prompt=(3, 4), chosen=(4, 5), rejected=(1, 3)),
+            _pair("p3", 0.10, prompt=(4, 5), chosen=(3, 4), rejected=(2, 4)),
+            _pair("p4", 0.05, prompt=(5, 6), chosen=(2, 3), rejected=(3, 5)),
+        ]
+        steps = 87  # 17 whole epochs plus two pairs of the eighteenth
+        base = _trajectory("shuffled", "batch", steps=steps, pairs=pairs)
+        order = _trajectory("weighted", "batch", steps=steps, pairs=pairs)
+        both = _trajectory("weighted", "corpus", steps=steps, pairs=pairs)
+        order_mean, order_final = _mean_trajectory_distance(base[0], order[0])
+        both_mean, both_final = _mean_trajectory_distance(base[0], both[0])
+        assert order_mean > 1e-3, order_mean
+        assert both_mean > 1e-3, both_mean
+        # The weighted run sees the high-weight pairs in its partial epoch.
+>       assert both[1]["realized_mean_weight"] > base[1]["realized_mean_weight"]
+E       assert 0.15 > 0.1517241379310345
+
+oracle/tests/test_s70_preference_weighting.py:304: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s70_preference_weighting.py::test_ordering_matters_when_the_budget_does_not_complete_a_whole_epoch
+1 failed, 11 passed in 4.58s

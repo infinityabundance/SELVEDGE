@@ -1,0 +1,7 @@
+s64-launch: initialised the student from results/stage2/s67-soup/interp-0.375-arm.pt step=4000
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+s64-launch: preference 20 steps, 29154 tokens -> /work/results/stage2/s69-preference/preference/smoke
+s64-launch: receipt /work/results/stage2/s69-preference/preference/smoke/receipt-preference.json
+s64-launch: milestone plan next:
+  SELVEDGE_MEM=4g scripts/court oracle -- python3 scripts/s62_score_milestones.py --plan --run-dir results/stage2/s69-preference/preference/smoke --milestones final=20

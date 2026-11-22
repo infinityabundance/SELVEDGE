@@ -1,0 +1,62 @@
+........F....                                                            [100%]
+=================================== FAILURES ===================================
+_______ test_update_trace_records_pre_and_post_clip_norms_and_the_delta ________
+
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_update_trace_records_pre_0')
+
+    def test_update_trace_records_pre_and_post_clip_norms_and_the_delta(tmp_path):
+        """The trace is the evidence that weighting changes realized updates."""
+        model = TwoParamLM()
+        pairs = [_pair("high", W_HIGH), _pair("low", W_LOW)]
+        trainable = [p for p in model.parameters() if p.requires_grad]
+        optimizer = torch.optim.AdamW(trainable, lr=0.05)
+        trace = preference.UpdateTelemetry(grad_clip=1e-9, lr=0.05)
+        trace.bind(trainable)
+        schedule = launch.pair_schedule(pairs, seed=5, pair_order="weighted")
+        for _ in range(3):
+            step, batch = next(schedule)
+            optimizer.zero_grad(set_to_none=True)
+            loss, _ = preference.preference_batch_loss(
+                model, batch, weight_normalizer=MEAN)
+            loss.backward()
+            pre_clip = torch.nn.utils.clip_grad_norm_(trainable, 1e-9)
+            post_clip = preference.grad_norm(trainable)
+            optimizer.step()
+            trace.row(step=step, arm="preference",
+                      problem_ids=[pair.problem_id for pair in batch],
+                      weights=[pair.weight for pair in batch],
+                      loss=float(loss.detach()), mean_weight=MEAN,
+                      weight_normalizer=MEAN,
+                      pre_clip_grad_norm=float(pre_clip),
+                      post_clip_grad_norm=float(post_clip))
+    
+        path = trace.write(str(tmp_path / "trace.json"))
+        payload = json.loads(open(path, encoding="utf-8").read())
+        assert payload["schema"] == preference.UpdateTelemetry.SCHEMA
+        assert len(payload["rows"]) == 3
+        for row in payload["rows"]:
+            assert row["pre_clip_grad_norm"] > 0.0
+            # grad_clip = 1e-9 is always exceeded, so every step was clipped and
+            # the post-clip norm is pinned at the clip value.
+            assert row["clipping_active"] is True
+            assert row["pre_clip_grad_norm"] > row["post_clip_grad_norm"]
+            assert row["post_clip_grad_norm"] == pytest.approx(1e-9, rel=0.02)
+            assert row["update_l2"] > 0.0
+            assert row["weight"] in (W_HIGH, W_LOW)
+            assert row["weight_normalized"] == pytest.approx(
+                row["weight"] / MEAN, rel=1e-6)
+        summary = payload["summary"]
+        assert summary["steps"] == 3
+        assert summary["clipping_active_steps"] == 3
+        assert summary["mean_update_l2"] > 0.0
+>       assert summary["realized_mean_weight"] == pytest.approx(MEAN)
+E       assert 0.1875 == 0.15625 ± 1.6e-07
+E         
+E         comparison failed
+E         Obtained: 0.1875
+E         Expected: 0.15625 ± 1.6e-07
+
+oracle/tests/test_s70_preference_weighting.py:370: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s70_preference_weighting.py::test_update_trace_records_pre_and_post_clip_norms_and_the_delta
+1 failed, 12 passed in 4.65s
