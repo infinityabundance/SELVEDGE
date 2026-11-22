@@ -9,7 +9,7 @@ construction. This document is a report of measurement; it registers no arm.
 Every number below is a quotation from the receipt named beside it, with that
 receipt's stamp and the revision recorded inside it. Nothing here is
 hand-computed from a log. `results/stage2/s71-overshoot/analysis.json` (stamp
-`20261122T124614Z`, revision `0b44f9f`) is the single receipt that carries all
+`20261122T124848Z`, revision `d9f08ba`) is the single receipt that carries all
 the derived statistics; the raw rows are in the calibration receipts it reads.
 
 | artifact | receipt | stamp | revision |
@@ -20,7 +20,7 @@ the derived statistics; the raw rows are in the calibration receipts it reads.
 | matched-sft-weighted 500k/1M | `results/stage2/s69-calibration/matched-sft-weighted.json` | `20261122T123744Z` | `0b44f9f` |
 | preference 500k/1M/2M (already scored) | `results/stage2/s69-calibration/preference.json` | `20261122T062926Z` | `bdd8ae7` |
 | arm receipts and update traces | `results/stage2/s69-preference/<arm>/receipt-<arm>.json`, `trace-<arm>.json` | arm-local stamps | `bdd8ae7` |
-| analysis, falsification, training statistics | `results/stage2/s71-overshoot/analysis.json` | `20261122T124614Z` | `0b44f9f` |
+| analysis, falsification, training statistics | `results/stage2/s71-overshoot/analysis.json` | `20261122T124848Z` | `d9f08ba` |
 | S69 selection and verdict | `results/stage2/s69-calibration/selection.json`, `results/stage2/s69-final/verdict.json` | `20261122T063627Z`, `20261122T075921Z` | `bdd8ae7` |
 
 ## 1. What ran

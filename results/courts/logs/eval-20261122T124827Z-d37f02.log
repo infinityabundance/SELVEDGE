@@ -1,0 +1,57 @@
+{
+ "condition": "if every earlier cadence is worse than its 2M endpoint, the magnitude hypothesis is not supported by this corpus",
+ "comparisons": [
+  {
+   "arm": "matched-sft",
+   "cadence": 500000,
+   "math_cal": 0.3,
+   "endpoint_math_cal": 0.265,
+   "delta_vs_endpoint": 0.034999999999999976,
+   "strictly_better_than_endpoint": true,
+   "paired_interval": [
+    0.009,
+    0.061
+   ]
+  },
+  {
+   "arm": "matched-sft",
+   "cadence": 1000000,
+   "math_cal": 0.291,
+   "endpoint_math_cal": 0.265,
+   "delta_vs_endpoint": 0.025999999999999968,
+   "strictly_better_than_endpoint": true,
+   "paired_interval": [
+    -2.4999999999991473e-05,
+    0.051
+   ]
+  },
+  {
+   "arm": "matched-sft-weighted",
+   "cadence": 500000,
+   "math_cal": 0.302,
+   "endpoint_math_cal": 0.269,
+   "delta_vs_endpoint": 0.032999999999999974,
+   "strictly_better_than_endpoint": true,
+   "paired_interval": [
+    0.007,
+    0.058
+   ]
+  },
+  {
+   "arm": "matched-sft-weighted",
+   "cadence": 1000000,
+   "math_cal": 0.286,
+   "endpoint_math_cal": 0.269,
+   "delta_vs_endpoint": 0.01699999999999996,
+   "strictly_better_than_endpoint": true,
+   "paired_interval": [
+    -0.008,
+    0.043
+   ]
+  }
+ ],
+ "earlier_cadences_strictly_better": 4,
+ "falsified": false,
+ "evaluated_on": "MATH-cal point estimates on the identical 1,000 problems"
+}
+s71: wrote -> results/stage2/s71-overshoot/analysis.json

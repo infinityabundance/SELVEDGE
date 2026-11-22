@@ -241,6 +241,8 @@ def main(argv: list[str]) -> int:
         for cadence in sorted(rows):
             row = rows[cadence]
             cadence_entry = {
+                "label": ("diagnostic" if (arm != "preference" and cadence != 2000000)
+                          else "scored under S69; quoted unchanged"),
                 "checkpoint": row["checkpoint"],
                 "checkpoint_step": row["checkpoint_step"],
                 "checkpoint_processed_tokens": row.get("checkpoint_processed_tokens"),
@@ -303,6 +305,7 @@ def main(argv: list[str]) -> int:
         "soup": {
             "receipt": SOUP,
             "receipt_sha256": sha256_file(os.path.join(ROOT, SOUP)),
+            "label": "diagnostic",
             "checkpoint": soup_row["checkpoint"],
             "checkpoint_sha256": soup_row["checkpoint_sha256"],
             "cadence": soup_row["cadence"],
