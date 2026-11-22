@@ -187,6 +187,13 @@ sha256 `1c4aa39fc1a25ce9b45671a4966d0ffc8636100d72dae470fa0ffaa40433b838`,
   already have an S58 teacher trace, so roughly a quarter of the MATH sample
   overlaps the student's training data.
 
+**Deviation from S71 H.1, stated plainly.** H.1 asks for "the first 250
+MATH-train and 250 GSM8K-train problems after the same exclusions". A prefix
+cannot be hashed before scoring in a way a reader can verify, so this
+registration uses a seeded shuffle instead and records the profile of the draw.
+The exclusion set is the one H.1 names plus the test-question filter; every other
+part of the instrument is unchanged.
+
 **Disclosure.** The sample builder opened the MATH test corpus, MATH-500 and the
 GSM8K test split *only* to compute the exact-question disjointness filter. No
 test score, receipt or per-problem verdict was read, and no test item is scored
