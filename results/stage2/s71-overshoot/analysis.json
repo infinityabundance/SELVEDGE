@@ -1,0 +1,1074 @@
+{
+  "adopted": false,
+  "claims": {
+    "diagnostic_only": true,
+    "no_test_split_read": true,
+    "nothing_adopted": true,
+    "selection_is_calibration_only": true
+  },
+  "created_utc": "2026-11-22T12:46:14Z",
+  "falsification": {
+    "comparisons": [
+      {
+        "arm": "matched-sft",
+        "cadence": 500000,
+        "delta_vs_endpoint": 0.034999999999999976,
+        "endpoint_math_cal": 0.265,
+        "math_cal": 0.3,
+        "paired_interval": [
+          0.009,
+          0.061
+        ],
+        "strictly_better_than_endpoint": true
+      },
+      {
+        "arm": "matched-sft",
+        "cadence": 1000000,
+        "delta_vs_endpoint": 0.025999999999999968,
+        "endpoint_math_cal": 0.265,
+        "math_cal": 0.291,
+        "paired_interval": [
+          -2.4999999999991473e-05,
+          0.051
+        ],
+        "strictly_better_than_endpoint": true
+      },
+      {
+        "arm": "matched-sft-weighted",
+        "cadence": 500000,
+        "delta_vs_endpoint": 0.032999999999999974,
+        "endpoint_math_cal": 0.269,
+        "math_cal": 0.302,
+        "paired_interval": [
+          0.007,
+          0.058
+        ],
+        "strictly_better_than_endpoint": true
+      },
+      {
+        "arm": "matched-sft-weighted",
+        "cadence": 1000000,
+        "delta_vs_endpoint": 0.01699999999999996,
+        "endpoint_math_cal": 0.269,
+        "math_cal": 0.286,
+        "paired_interval": [
+          -0.008,
+          0.043
+        ],
+        "strictly_better_than_endpoint": true
+      }
+    ],
+    "condition": "if every earlier cadence is worse than its 2M endpoint, the magnitude hypothesis is not supported by this corpus",
+    "earlier_cadences_strictly_better": 4,
+    "evaluated_on": "MATH-cal point estimates on the identical 1,000 problems",
+    "falsified": false
+  },
+  "kind": "s71-overshoot-analysis",
+  "label": "diagnostic",
+  "preregistration": {
+    "path": "docs/s71-overshoot-probe-preregistration-v1.json",
+    "sha256": "6e865737306cbaef1c8ec5c6582c4ab9193f6a1ab051836a480b5fcb10a14d3f"
+  },
+  "results": {
+    "matched-sft": {
+      "cadences": {
+        "500000": {
+          "checkpoint": "results/stage2/s69-preference/matched-sft/ckpt-000742.pt",
+          "checkpoint_processed_tokens": 500133,
+          "checkpoint_step": 742,
+          "generated_tokens": 2106574,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.596,
+              "correct": 596,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.088,
+                "cap_hit_samples": 88,
+                "eos_presence_fraction": 0.912,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 596,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.026,
+                  0.035
+                ],
+                "delta": 0.005,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 591,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 596,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.044,
+                  0.017
+                ],
+                "delta": -0.013,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.3,
+              "correct": 300,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.518,
+                "cap_hit_samples": 518,
+                "eos_presence_fraction": 0.482,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 300,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  0.009,
+                  0.061
+                ],
+                "delta": 0.035,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 265,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 300,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.053,
+                  0.002
+                ],
+                "delta": -0.026,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2362.7
+        },
+        "1000000": {
+          "checkpoint": "results/stage2/s69-preference/matched-sft/ckpt-001468.pt",
+          "checkpoint_processed_tokens": 1000670,
+          "checkpoint_step": 1468,
+          "generated_tokens": 2059068,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.592,
+              "correct": 592,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.09,
+                "cap_hit_samples": 90,
+                "eos_presence_fraction": 0.91,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 592,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.028,
+                  0.03002500000000009
+                ],
+                "delta": 0.001,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 591,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 592,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.047,
+                  0.012
+                ],
+                "delta": -0.017,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.291,
+              "correct": 291,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.487,
+                "cap_hit_samples": 487,
+                "eos_presence_fraction": 0.513,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 291,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -2.4999999999991473e-05,
+                  0.051
+                ],
+                "delta": 0.026,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 265,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 291,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.062,
+                  -0.01
+                ],
+                "delta": -0.035,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2312.4
+        },
+        "2000000": {
+          "checkpoint": "results/stage2/s69-preference/matched-sft/ckpt-002935.pt",
+          "checkpoint_processed_tokens": 2000859,
+          "checkpoint_step": 2935,
+          "generated_tokens": 2084944,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.591,
+              "correct": 591,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.072,
+                "cap_hit_samples": 72,
+                "eos_presence_fraction": 0.928,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": null,
+              "vs_soup": {
+                "arm_correct": 591,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.04802499999999999,
+                  0.012
+                ],
+                "delta": -0.018,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.265,
+              "correct": 265,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.522,
+                "cap_hit_samples": 522,
+                "eos_presence_fraction": 0.478,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": null,
+              "vs_soup": {
+                "arm_correct": 265,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.088,
+                  -0.035
+                ],
+                "delta": -0.061,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2319.4
+        }
+      },
+      "preregistration": {
+        "path": "docs/s69-preference-from-champion-preregistration-v1.json",
+        "sha256": "7487587a51d14460b331d8f1be56ae42044499b72101afd3902e1488984ef35e"
+      },
+      "receipt": "results/stage2/s69-calibration/matched-sft.json",
+      "receipt_sha256": "3e5092d0abb3fa1809c09320cb6ffa2dbb1960877885c94c875cb5322d1f6e79"
+    },
+    "matched-sft-weighted": {
+      "cadences": {
+        "500000": {
+          "checkpoint": "results/stage2/s69-preference/matched-sft-weighted/ckpt-000742.pt",
+          "checkpoint_processed_tokens": 500133,
+          "checkpoint_step": 742,
+          "generated_tokens": 2077051,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.595,
+              "correct": 595,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.103,
+                "cap_hit_samples": 103,
+                "eos_presence_fraction": 0.897,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 595,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.01,
+                  0.054
+                ],
+                "delta": 0.022,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 573,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 595,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.044,
+                  0.016
+                ],
+                "delta": -0.014,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.302,
+              "correct": 302,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.493,
+                "cap_hit_samples": 493,
+                "eos_presence_fraction": 0.507,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 302,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  0.007,
+                  0.058
+                ],
+                "delta": 0.033,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 269,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 302,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.051,
+                  0.002
+                ],
+                "delta": -0.024,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2310.4
+        },
+        "1000000": {
+          "checkpoint": "results/stage2/s69-preference/matched-sft-weighted/ckpt-001468.pt",
+          "checkpoint_processed_tokens": 1000670,
+          "checkpoint_step": 1468,
+          "generated_tokens": 2005251,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.542,
+              "correct": 542,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.082,
+                "cap_hit_samples": 82,
+                "eos_presence_fraction": 0.918,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 542,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.062025,
+                  0.0
+                ],
+                "delta": -0.031,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 573,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 542,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.098,
+                  -0.037
+                ],
+                "delta": -0.067,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.286,
+              "correct": 286,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.464,
+                "cap_hit_samples": 464,
+                "eos_presence_fraction": 0.536,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 286,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.008,
+                  0.043
+                ],
+                "delta": 0.017,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 269,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 286,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.067,
+                  -0.01397499999999991
+                ],
+                "delta": -0.04,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2291.5
+        },
+        "2000000": {
+          "checkpoint": "results/stage2/s69-preference/matched-sft-weighted/ckpt-002935.pt",
+          "checkpoint_processed_tokens": 2000859,
+          "checkpoint_step": 2935,
+          "generated_tokens": 2206286,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.573,
+              "correct": 573,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.118,
+                "cap_hit_samples": 118,
+                "eos_presence_fraction": 0.882,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": null,
+              "vs_soup": {
+                "arm_correct": 573,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.067,
+                  -0.004
+                ],
+                "delta": -0.036,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.269,
+              "correct": 269,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 0.556,
+                "cap_hit_samples": 556,
+                "eos_presence_fraction": 0.44399999999999995,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": null,
+              "vs_soup": {
+                "arm_correct": 269,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.084,
+                  -0.032
+                ],
+                "delta": -0.057,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2375.2
+        }
+      },
+      "preregistration": {
+        "path": "docs/s69-preference-from-champion-preregistration-v1.json",
+        "sha256": "7487587a51d14460b331d8f1be56ae42044499b72101afd3902e1488984ef35e"
+      },
+      "receipt": "results/stage2/s69-calibration/matched-sft-weighted.json",
+      "receipt_sha256": "3e0694d5244d7e9c57efe98b760be78dc3eebb1340fe945e0bb99f58f74cfd5b"
+    },
+    "preference": {
+      "cadences": {
+        "500000": {
+          "checkpoint": "results/stage2/s69-preference/preference/ckpt-000326.pt",
+          "checkpoint_processed_tokens": 501330,
+          "checkpoint_step": 326,
+          "generated_tokens": 4096000,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 1.0,
+                "cap_hit_samples": 1000,
+                "eos_presence_fraction": 0.0,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.056,
+                  -0.031
+                ],
+                "delta": -0.043,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 43,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.639,
+                  -0.579
+                ],
+                "delta": -0.609,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 1.0,
+                "cap_hit_samples": 1000,
+                "eos_presence_fraction": 0.0,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.011,
+                  -0.002
+                ],
+                "delta": -0.006,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 6,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.355,
+                  -0.298
+                ],
+                "delta": -0.326,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2370.2
+        },
+        "1000000": {
+          "checkpoint": "results/stage2/s69-preference/preference/ckpt-000649.pt",
+          "checkpoint_processed_tokens": 1000903,
+          "checkpoint_step": 649,
+          "generated_tokens": 4096000,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 1.0,
+                "cap_hit_samples": 1000,
+                "eos_presence_fraction": 0.0,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.056,
+                  -0.031
+                ],
+                "delta": -0.043,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 43,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.639,
+                  -0.579
+                ],
+                "delta": -0.609,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.0,
+              "correct": 0,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 1.0,
+                "cap_hit_samples": 1000,
+                "eos_presence_fraction": 0.0,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.011,
+                  -0.002
+                ],
+                "delta": -0.006,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 6,
+                "resamples": 4000,
+                "seed": 53
+              },
+              "vs_soup": {
+                "arm_correct": 0,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.355,
+                  -0.298
+                ],
+                "delta": -0.326,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2329.5
+        },
+        "2000000": {
+          "checkpoint": "results/stage2/s69-preference/preference/ckpt-001294.pt",
+          "checkpoint_processed_tokens": 2001022,
+          "checkpoint_step": 1294,
+          "generated_tokens": 4096000,
+          "tasks": {
+            "gsm8k": {
+              "accuracy": 0.043,
+              "correct": 43,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 1.0,
+                "cap_hit_samples": 1000,
+                "eos_presence_fraction": 0.0,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": null,
+              "vs_soup": {
+                "arm_correct": 43,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.597,
+                  -0.534
+                ],
+                "delta": -0.566,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 609,
+                "resamples": 4000,
+                "seed": 53
+              }
+            },
+            "math500": {
+              "accuracy": 0.006,
+              "correct": 6,
+              "generation": {
+                "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+                "cap_hit_fraction": 1.0,
+                "cap_hit_samples": 1000,
+                "eos_presence_fraction": 0.0,
+                "samples": 1000
+              },
+              "items": 1000,
+              "vs_own_2m_endpoint": null,
+              "vs_soup": {
+                "arm_correct": 6,
+                "basis": "prompt-level paired bootstrap; the resampling unit is the distinct problem, never the continuation",
+                "ci95": [
+                  -0.349,
+                  -0.291
+                ],
+                "delta": -0.32,
+                "items": 1000,
+                "problems": 1000,
+                "reference_correct": 326,
+                "resamples": 4000,
+                "seed": 53
+              }
+            }
+          },
+          "wall_seconds": 2330.3
+        }
+      },
+      "preregistration": {
+        "path": "docs/s69-preference-from-champion-preregistration-v1.json",
+        "sha256": "7487587a51d14460b331d8f1be56ae42044499b72101afd3902e1488984ef35e"
+      },
+      "receipt": "results/stage2/s69-calibration/preference.json",
+      "receipt_sha256": "bb5719006ce6888b997fbdccfb035d69d66d99b46a360835d96e8e033fa79ff0"
+    }
+  },
+  "revision": "0b44f9f712fbb236b871e844bd3ca27893fbb6b7",
+  "schema": "selvedge/s71-overshoot-analysis/v1",
+  "soup": {
+    "agreement_with_stored_point_estimates": {
+      "gsm8k": {
+        "agrees": true,
+        "delta": 0.0,
+        "rescored": 0.609,
+        "stored_point_estimate": 0.609
+      },
+      "math500": {
+        "agrees": true,
+        "delta": 0.0,
+        "rescored": 0.326,
+        "stored_point_estimate": 0.326
+      }
+    },
+    "cadence": 4000,
+    "checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+    "checkpoint_sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+    "receipt": "results/stage2/s71-overshoot/soup-calibration.json",
+    "receipt_sha256": "ca841aae91d862d0908f34a97d94d2fbab743ab340998ed1fe76ca048ca3de0b",
+    "tasks": {
+      "gsm8k": {
+        "accuracy": 0.609,
+        "correct": 609,
+        "generation": {
+          "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+          "cap_hit_fraction": 0.05,
+          "cap_hit_samples": 50,
+          "eos_presence_fraction": 0.95,
+          "samples": 1000
+        },
+        "items": 1000
+      },
+      "math500": {
+        "accuracy": 0.326,
+        "correct": 326,
+        "generation": {
+          "basis": "truncated_samples / samples; greedy single sample per problem, generation stops at EOS or the cap",
+          "cap_hit_fraction": 0.403,
+          "cap_hit_samples": 403,
+          "eos_presence_fraction": 0.597,
+          "samples": 1000
+        },
+        "items": 1000
+      }
+    }
+  },
+  "stamp": "20261122T124614Z",
+  "test_read": false,
+  "training": {
+    "gradients": {
+      "matched-sft": {
+        "clipping_active_fraction": 0.023509369676320273,
+        "clipping_active_steps": 69,
+        "grad_clip": 1.0,
+        "post_clip_grad_norm": {
+          "max": 0.9999995505661963,
+          "median": 0.3396303180971252,
+          "p90": 0.7273020610610064
+        },
+        "pre_clip_grad_norm": {
+          "max": 1.6677629947662354,
+          "median": 0.3396303057670593,
+          "min": 0.007758400868624449,
+          "p10": 0.05767766311764718,
+          "p25": 0.15121788531541824,
+          "p75": 0.5370505154132843,
+          "p90": 0.7273020386695861
+        },
+        "steps": 2935,
+        "trace": "results/stage2/s69-preference/matched-sft/trace-matched-sft.json",
+        "trace_sha256": "19291e7c6ac2bcfdad38218a7fe0cea19b3a95329a3250669ecab5405c37ca5b",
+        "update_l2": {
+          "max": 0.5047474917292392,
+          "median": 0.1430342100792968,
+          "p90": 0.1818899747319548
+        }
+      },
+      "matched-sft-weighted": {
+        "clipping_active_fraction": 0.032708688245315164,
+        "clipping_active_steps": 96,
+        "grad_clip": 1.0,
+        "post_clip_grad_norm": {
+          "max": 0.9999995645758597,
+          "median": 0.33599814345629936,
+          "p90": 0.7621257734050706
+        },
+        "pre_clip_grad_norm": {
+          "max": 1.9527673721313477,
+          "median": 0.33599814772605896,
+          "min": 0.004824927542358637,
+          "p10": 0.061060371249914175,
+          "p25": 0.14762279391288757,
+          "p75": 0.5378667712211609,
+          "p90": 0.7621257901191711
+        },
+        "steps": 2935,
+        "trace": "results/stage2/s69-preference/matched-sft-weighted/trace-matched-sft-weighted.json",
+        "trace_sha256": "6280a8f9eb6a498ccf4dfd17b96c4bca3f8ec5702db2a29db8cd863dfb67e59f",
+        "update_l2": {
+          "max": 0.504645923107604,
+          "median": 0.14203931700710157,
+          "p90": 0.18398021499987421
+        }
+      },
+      "preference": {
+        "clipping_active_fraction": 0.20865533230293662,
+        "clipping_active_steps": 270,
+        "grad_clip": 1.0,
+        "post_clip_grad_norm": {
+          "max": 1.0000000900367065,
+          "median": 0.02242240128708329,
+          "p90": 0.9999997915647965
+        },
+        "pre_clip_grad_norm": {
+          "max": 95.53156280517578,
+          "median": 0.02242240123450756,
+          "min": 1.5404182704514824e-05,
+          "p10": 0.0005231101822573693,
+          "p25": 0.0022157144267112017,
+          "p75": 0.5787481665611267,
+          "p90": 4.243308973312384
+        },
+        "steps": 1294,
+        "trace": "results/stage2/s69-preference/preference/trace-preference.json",
+        "trace_sha256": "bad92eac22fd1ee8d0f70796ba0be7702de482b8823a63398d3dab1b7297d558",
+        "update_l2": {
+          "max": 0.4952225152699839,
+          "median": 0.0800543312368084,
+          "p90": 0.21394140502805
+        }
+      },
+      "recovery": {
+        "clipping_active_fraction": 0.06050605060506051,
+        "clipping_active_steps": 55,
+        "grad_clip": 1.0,
+        "post_clip_grad_norm": {
+          "max": 1.0000000256751624,
+          "median": 0.0028451951166762407,
+          "p90": 0.1938768966471549
+        },
+        "pre_clip_grad_norm": {
+          "max": 28.073009490966797,
+          "median": 0.00284519512206316,
+          "min": 0.00021989298693370074,
+          "p10": 0.000758156192023307,
+          "p25": 0.0012833335204049945,
+          "p75": 0.013994487002491951,
+          "p90": 0.19387688636779837
+        },
+        "steps": 909,
+        "trace": "results/stage2/s69-preference/recovery/trace-recovery.json",
+        "trace_sha256": "9063eb9c57598f93c08d7bccc4fc459e0188d902899f73111cfeac33c7b06ff4",
+        "update_l2": {
+          "max": 0.49753905670420956,
+          "median": 0.002020067801423142,
+          "p90": 0.19280403103648888
+        }
+      }
+    },
+    "loss_trajectory": {
+      "matched-sft": {
+        "clipping_active_fraction": 0.023509369676320273,
+        "clipping_active_steps": 69,
+        "epochs_over_pairs": 13.714953271028037,
+        "final_implied_margin_beta": 43.034637864728644,
+        "final_loss": 0.013341246172785759,
+        "first_step_below_threshold": 186,
+        "first_step_loss": 0.1567070484161377,
+        "fraction_steps_below_threshold": 0.7993185689948893,
+        "margin_formula": "m = log((1 - loss) / loss) / beta, with the loss read as -log sigmoid(beta * m) and beta = 0.1",
+        "mean_update_l2": 0.1400954067563588,
+        "min_loss": 0.00024509208742529154,
+        "schema": "selvedge/s70-update-trace/v1",
+        "steps": 2935,
+        "steps_above_threshold": 589,
+        "threshold": 0.05,
+        "trace": "results/stage2/s69-preference/matched-sft/trace-matched-sft.json",
+        "trace_sha256": "19291e7c6ac2bcfdad38218a7fe0cea19b3a95329a3250669ecab5405c37ca5b",
+        "unique_pairs": 214
+      },
+      "matched-sft-weighted": {
+        "clipping_active_fraction": 0.032708688245315164,
+        "clipping_active_steps": 96,
+        "epochs_over_pairs": 13.714953271028037,
+        "final_implied_margin_beta": 49.23136816855867,
+        "final_loss": 0.007223709020763636,
+        "first_step_below_threshold": 186,
+        "first_step_loss": 0.14209876954555511,
+        "fraction_steps_below_threshold": 0.7931856899488927,
+        "margin_formula": "m = log((1 - loss) / loss) / beta, with the loss read as -log sigmoid(beta * m) and beta = 0.1",
+        "mean_update_l2": 0.14087069422789406,
+        "min_loss": 0.00021530866797547787,
+        "schema": "selvedge/s70-update-trace/v1",
+        "steps": 2935,
+        "steps_above_threshold": 607,
+        "threshold": 0.05,
+        "trace": "results/stage2/s69-preference/matched-sft-weighted/trace-matched-sft-weighted.json",
+        "trace_sha256": "6280a8f9eb6a498ccf4dfd17b96c4bca3f8ec5702db2a29db8cd863dfb67e59f",
+        "unique_pairs": 214
+      },
+      "preference": {
+        "clipping_active_fraction": 0.20865533230293662,
+        "clipping_active_steps": 270,
+        "epochs_over_pairs": 6.046728971962617,
+        "final_implied_margin_beta": 97.46414888521687,
+        "final_loss": 5.850060915690847e-05,
+        "first_step_below_threshold": 61,
+        "first_step_loss": 0.6285317540168762,
+        "fraction_steps_below_threshold": 0.7333848531684699,
+        "margin_formula": "m = log((1 - loss) / loss) / beta, with the loss read as -log sigmoid(beta * m) and beta = 0.1",
+        "mean_update_l2": 0.09355334399239863,
+        "min_loss": 2.474991106282687e-06,
+        "schema": "selvedge/s70-update-trace/v1",
+        "steps": 1294,
+        "steps_above_threshold": 345,
+        "threshold": 0.05,
+        "trace": "results/stage2/s69-preference/preference/trace-preference.json",
+        "trace_sha256": "bad92eac22fd1ee8d0f70796ba0be7702de482b8823a63398d3dab1b7297d558",
+        "unique_pairs": 214
+      },
+      "recovery": {
+        "clipping_active_fraction": 0.06050605060506051,
+        "clipping_active_steps": 55,
+        "epochs_over_pairs": 18.551020408163264,
+        "final_implied_margin_beta": 89.94728080925883,
+        "final_loss": 0.00012404673907440156,
+        "first_step_below_threshold": 70,
+        "first_step_loss": 0.6931471228599548,
+        "fraction_steps_below_threshold": 0.8756875687568757,
+        "margin_formula": "m = log((1 - loss) / loss) / beta, with the loss read as -log sigmoid(beta * m) and beta = 0.1",
+        "mean_update_l2": 0.04649722445706517,
+        "min_loss": 8.356499893125147e-05,
+        "schema": "selvedge/s70-update-trace/v1",
+        "steps": 909,
+        "steps_above_threshold": 113,
+        "threshold": 0.05,
+        "trace": "results/stage2/s69-preference/recovery/trace-recovery.json",
+        "trace_sha256": "9063eb9c57598f93c08d7bccc4fc459e0188d902899f73111cfeac33c7b06ff4",
+        "unique_pairs": 49
+      }
+    },
+    "telemetry_receipt": "results/stage2/s69-preference/telemetry-summary.json",
+    "telemetry_receipt_sha256": "3f1b0b07cc698e0e3bcc415fb7a04c0ffcf0e10879ab3e20f9e8b58d0fd3844c"
+  }
+}

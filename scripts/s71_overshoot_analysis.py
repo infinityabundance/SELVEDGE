@@ -72,6 +72,28 @@ def per_problem(row: dict, key: str) -> dict[str, bool]:
             for item in row[key]}
 
 
+def cap_statistics(row: dict, key: str) -> dict:
+    """Cap-hit and EOS-presence fractions from the stored per-problem rows.
+
+    The scorer's ``truncated_samples`` counts sequences that reached the
+    2048-token cap without emitting EOS (``len >= cap and last != eos``). Greedy
+    decoding emits exactly one sample per problem and generation stops only at
+    EOS or the cap, so the EOS-presence fraction is ``1 - cap fraction``. Loop
+    status cannot be recovered from these rows: it needs the generated ids, and
+    the calibration scorer stores no ids.
+    """
+    samples = sum(int(item["samples"]) for item in row[key])
+    truncated = sum(int(item["truncated_samples"]) for item in row[key])
+    return {
+        "samples": samples,
+        "cap_hit_samples": truncated,
+        "cap_hit_fraction": (truncated / samples) if samples else None,
+        "eos_presence_fraction": (1.0 - truncated / samples) if samples else None,
+        "basis": ("truncated_samples / samples; greedy single sample per "
+                  "problem, generation stops at EOS or the cap"),
+    }
+
+
 def paired(arm_flags: dict[str, bool], reference_flags: dict[str, bool],
            arm: str, reference: str) -> dict:
     if set(arm_flags) != set(reference_flags):
@@ -229,6 +251,7 @@ def main(argv: list[str]) -> int:
             for task, key in TASKS.items():
                 flags = per_problem(row, key)
                 task_entry = accuracy(flags)
+                task_entry["generation"] = cap_statistics(row, key)
                 task_entry["vs_soup"] = paired(flags, soup[task], arm, "soup")
                 if endpoint is not None and cadence != 2000000:
                     task_entry["vs_own_2m_endpoint"] = paired(
@@ -283,7 +306,9 @@ def main(argv: list[str]) -> int:
             "checkpoint": soup_row["checkpoint"],
             "checkpoint_sha256": soup_row["checkpoint_sha256"],
             "cadence": soup_row["cadence"],
-            "tasks": {task: accuracy(soup[task]) for task in TASKS},
+            "tasks": {task: {**accuracy(soup[task]),
+                            "generation": cap_statistics(soup_row, key)}
+                      for task, key in TASKS.items()},
             "agreement_with_stored_point_estimates": soup_agreement,
         },
         "results": results,
