@@ -1,0 +1,136 @@
+{
+  "argv": [
+    "python3",
+    "-c",
+    "import json,os;names=[\"oracle-20261121T234752Z-1a87c8\",\"oracle-20261121T235026Z-033256\",\"oracle-20261121T235031Z-10a62f\",\"oracle-20261121T235037Z-4b19f2\",\"oracle-20261121T235105Z-7c0b06\",\"oracle-20261122T000149Z-01d9d5\",\"oracle-20261122T011701Z-23ccb4\",\"python-20261122T000145Z-860e53\"];req=(\"schema\",\"court\",\"exit_code\",\"log_path\",\"started_utc\",\"finished_utc\",\"revision\",\"limits\",\"enforcement\",\"argv\");[(lambda n: (lambda r: (print(\"===\",n,\"OK\" if all(k in r for k in req) and r.get(\"enforcement\",{}).get(\"ok\") and os.path.exists(r.get(\"log_path\",\"\")) and os.path.getsize(r.get(\"log_path\",\"\"))>0 else \"PROBLEM\",\"schema\",r.get(\"schema\"),\"court\",r.get(\"court\"),\"exit\",r.get(\"exit_code\"),\"oom\",r.get(\"oom_killed\"),\"enforce\",r.get(\"enforcement\",{}).get(\"ok\"),\"revision\",r.get(\"revision\"),\"log\",r.get(\"log_path\"),\"logbytes\",os.path.getsize(r[\"log_path\"]) if os.path.exists(r.get(\"log_path\",\"\")) else None,\"started\",r.get(\"started_utc\"),\"finished\",r.get(\"finished_utc\")),print(\"  argv:\",json.dumps(r.get(\"argv\"))[:300]),print(\"  logtail:\",json.dumps(open(r[\"log_path\"]).read()[-300:]) if os.path.exists(r.get(\"log_path\",\"\")) else None)))(json.load(open(\"results/courts/\"+n+\".json\"))))(n) for n in names]"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "6ce31027c61f663a5e9fdc80ebd8ecc491ab8b8645f1a110ac6e92e83dca0c9a",
+  "container_name": "selvedge-python-court-20261122T021041Z-22ae65",
+  "court": "python",
+  "duration_ms": 793,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "memory_swap_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "nano_cpus": {
+        "actual": 2000000000,
+        "expected": 2000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 512,
+        "expected": 512
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 1073741824,
+        "expected": 1073741824
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-22T02:10:42Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.10.0",
+    "uname": "Linux 7.3.5-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:d18aa35d373e47b06f5a14aadaa3a5a96ae9503b595bf07fbf44f7791d9f3a47",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:d18aa35d373e47b06f5a14aadaa3a5a96ae9503b595bf07fbf44f7791d9f3a47",
+  "image_ref": "selvedge/python-court:20261118-3.12-slim-f03542f9bbe7",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "2",
+    "init": true,
+    "memory": "2g",
+    "memory_bytes": 2147483648,
+    "memory_swap": "2g",
+    "memory_swap_bytes": 2147483648,
+    "nano_cpus": 2000000000,
+    "nofile": 65536,
+    "pids": 512,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 1073741824,
+    "tmpfs_size": "1g"
+  },
+  "log_path": "results/courts/logs/python-20261122T021041Z-22ae65.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "2edcccd69f565adeb6f737e3d141aba7c46322e6",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261122T021041Z",
+  "started_utc": "2026-11-22T02:10:41Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.5-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": false
+}

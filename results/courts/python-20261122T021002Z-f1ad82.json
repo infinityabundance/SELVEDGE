@@ -1,0 +1,136 @@
+{
+  "argv": [
+    "python3",
+    "-c",
+    "import json;base=\"results/artifacts/stage2/s69-rollouts\";r=json.load(open(base+\"/soup-receipt.json\"));a=r[\"acceptance\"];print(\"TOTALS\",json.dumps(a[\"totals\"],sort_keys=True));print(\"ACC\",json.dumps({k:a[k] for k in (\"kept_rate\",\"truncation_rate\",\"verified_rate\",\"loop_cut_rate\",\"textual_replay_token_fraction\")},sort_keys=True));print(\"BYDS\",json.dumps({d:{k:a[\"by_dataset\"][d][k] for k in (\"prompts\",\"sampled\",\"correct\",\"kept\",\"duplicates\",\"truncated\",\"loop_cut\",\"generated_tokens\",\"verdicts\")} for d in a[\"by_dataset\"]},sort_keys=True));print(\"SAMP\",json.dumps(r[\"sampling\"],sort_keys=True));print(\"GEN\",json.dumps({k:v for k,v in r[\"generation\"].items() if k!=\"cgroup_memory\"},sort_keys=True));print(\"CGROUP\",json.dumps(r[\"generation\"].get(\"cgroup_memory\"),sort_keys=True));print(\"LS\",json.dumps({k:v for k,v in r[\"ledger\"][\"summary\"].items() if k!=\"successes_per_problem\"},sort_keys=True));print(\"POL\",json.dumps(r[\"policy_checkpoint\"],sort_keys=True));print(\"PREF\",json.dumps(r[\"preference_data\"],sort_keys=True));print(\"HOLDOUT\",json.dumps(r[\"holdout_exclusion\"],sort_keys=True));print(\"STAGE\",r.get(\"stage\"),\"REV\",r.get(\"revision\"));names=(\"soup-ledger.jsonl\",\"soup-accepted.jsonl\",\"soup-prompts.jsonl\",\"soup-rejected.jsonl\");[(print(\"FILE\",n,\"rows\",sum(1 for l in open(base+\"/\"+n) if l.strip()),\"keys\",sorted(json.loads(open(base+\"/\"+n).readline()).keys())),print(\"EX\",json.dumps(json.loads(open(base+\"/\"+n).readline()),sort_keys=True)[:1200])) for n in names]"
+  ],
+  "container_env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+  },
+  "container_exit_code": 0,
+  "container_id": "eddd02dcad97be701ca3b50b3a6193b231d5f2f2d14571f15b6848d053db146b",
+  "container_name": "selvedge-python-court-20261122T021002Z-f1ad82",
+  "court": "python",
+  "duration_ms": 777,
+  "enforcement": {
+    "mismatches": [],
+    "observed": {
+      "init": {
+        "actual": true,
+        "expected": true
+      },
+      "memory_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "memory_swap_bytes": {
+        "actual": 2147483648,
+        "expected": 2147483648
+      },
+      "nano_cpus": {
+        "actual": 2000000000,
+        "expected": 2000000000
+      },
+      "network_mode": {
+        "actual": "none",
+        "expected": "none"
+      },
+      "no_new_privileges": {
+        "actual": true,
+        "expected": true
+      },
+      "nofile": {
+        "actual": {
+          "hard": 65536,
+          "soft": 65536
+        },
+        "expected": {
+          "hard": 65536,
+          "soft": 65536
+        }
+      },
+      "pids_limit": {
+        "actual": 512,
+        "expected": 512
+      },
+      "readonly_rootfs": false,
+      "tmpfs_bytes": {
+        "actual": 1073741824,
+        "expected": 1073741824
+      },
+      "user": {
+        "actual": "1000:1000",
+        "expected": "1000:1000"
+      }
+    },
+    "ok": true
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-22T02:10:03Z",
+  "gpu": {
+    "detail": null,
+    "mode": "none"
+  },
+  "host": {
+    "cgroup_version": "2",
+    "docker_client": "29.1.5",
+    "docker_server": "29.10.0",
+    "uname": "Linux 7.3.5-1-cachyos x86_64"
+  },
+  "image_digest": "sha256:d18aa35d373e47b06f5a14aadaa3a5a96ae9503b595bf07fbf44f7791d9f3a47",
+  "image_digest_source": "image-id (locally built, never pushed to a registry)",
+  "image_id": "sha256:d18aa35d373e47b06f5a14aadaa3a5a96ae9503b595bf07fbf44f7791d9f3a47",
+  "image_ref": "selvedge/python-court:20261118-3.12-slim-f03542f9bbe7",
+  "limits": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "cpus": "2",
+    "init": true,
+    "memory": "2g",
+    "memory_bytes": 2147483648,
+    "memory_swap": "2g",
+    "memory_swap_bytes": 2147483648,
+    "nano_cpus": 2000000000,
+    "nofile": 65536,
+    "pids": 512,
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "tmpfs": "/tmp",
+    "tmpfs_bytes": 1073741824,
+    "tmpfs_size": "1g"
+  },
+  "log_path": "results/courts/logs/python-20261122T021002Z-f1ad82.log",
+  "mounts": [
+    "/mnt/1tb_kingston/SELVEDGE:/work",
+    "/home/one/.cache/selvedge/cargo:/cargo",
+    "/mnt/1tb_kingston/SELVEDGE/target:/work/target"
+  ],
+  "network_mode": "none",
+  "network_requested": false,
+  "oom_killed": false,
+  "revision": "2edcccd69f565adeb6f737e3d141aba7c46322e6",
+  "schema": "selvedge/court-receipt/v1",
+  "stamp": "20261122T021002Z",
+  "started_utc": "2026-11-22T02:10:02Z",
+  "toolchain": {
+    "cargo": "absent",
+    "cc": "cc (Debian 14.2.0-19) 14.2.0",
+    "git": "git version 2.47.3",
+    "kernel_release": "7.3.5-1-cachyos",
+    "machine": "x86_64",
+    "nproc": "16",
+    "numpy": "2.5.4",
+    "pip3": "pip 25.0.1 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+    "python3": "Python 3.12.16",
+    "rustc": "absent",
+    "safetensors": "absent",
+    "tokenizers": "absent",
+    "torch": "absent",
+    "transformers": "absent"
+  },
+  "toolchain_probe": "probe-ok",
+  "user": "1000:1000",
+  "worktree_dirty": false
+}
