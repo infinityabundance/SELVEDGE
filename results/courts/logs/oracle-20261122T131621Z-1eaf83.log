@@ -1,0 +1,19 @@
+...F..........s                                                          [100%]
+=================================== FAILURES ===================================
+_______________ test_repetition_loop_without_box_is_class_three ________________
+
+    def test_repetition_loop_without_box_is_class_three():
+        signal = termination.classify(LOOP_NO_BOX)
+        assert signal["loop"] is True
+        result = truncation.classify_completion(LOOP_NO_BOX, "1", truncated=True)
+        assert result["boxed_present"] is False
+>       assert result["class"] == "loop_degenerate"
+E       AssertionError: assert 'no_box' == 'loop_degenerate'
+E         
+E         - loop_degenerate
+E         + no_box
+
+oracle/tests/test_s73_truncation.py:88: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s73_truncation.py::test_repetition_loop_without_box_is_class_three
+1 failed, 13 passed, 1 skipped in 1.66s
