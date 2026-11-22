@@ -129,7 +129,11 @@ computed by `scripts/s72_corpus_audit.py` through `scripts/court oracle` with
   intermediate algebra 150, number theory 158, prealgebra 290, precalculus 114.
 * `solution_ids` (the 0.8B tokenizer's own ids stored at generation time, so no
   tokenizer was loaded): p50 456, p90 915, p99 1,736, max 2,046 over all 4,084
-  rows; MATH-only p50 700, p90 1,324, p99 1,951, max 2,046.
+  rows; MATH-only p50 700, p90 1,324, p99 1,951, max 2,046. The identity is
+  checked, not assumed: `Qwen/Qwen3.5-0.8B`, `Qwen/Qwen3.5-2B` and the soup
+  receipt all record the same `tokenizer.json` (12,807,982 B, sha256
+  `5f9e4d49…`), so the stored ids are byte-identical to what the 0.8B would
+  produce.
 * `prompt_ids`: overall p50 78, p90 113, p99 204, max 831; MATH p50 68, p90 115,
   p99 324, max 831; GSM8K p50 82, p90 113, p99 152, max 200. These are the
   measured prompt lengths (the generator's own tokenisation), not an assumption.

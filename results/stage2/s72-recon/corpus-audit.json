@@ -1,5 +1,5 @@
 {
- "created_utc": "2026-11-22T13:09:52Z",
+ "created_utc": "2026-11-22T13:12:10Z",
  "kind": "corpus-audit",
  "math_coverage": {
   "covered_by_level": {
@@ -700,5 +700,27 @@
   "sha256": "c3efe8804181cadfd069c7c445904076698d953179eb552f57ac093010768f66"
  },
  "schema": "selvedge/s72-corpus-audit/v1",
- "stamp": "20261122T130952Z"
+ "stamp": "20261122T131210Z",
+ "tokenizer_identity": {
+  "all_identical": true,
+  "claim": "the corpora store prompt_ids/solution_ids produced at generation time; this block proves the 0.8B checkpoint the soup scores with ships a byte-identical tokenizer.json, so those ids are the 0.8B tokenizer's own ids and no tokenizer had to be loaded or re-applied",
+  "receipts": {
+   "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json": {
+    "bytes": 12807982,
+    "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+   },
+   "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json": {
+    "bytes": 12807982,
+    "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+   },
+   "results/stage2/s67-final/soup-stage1.json": {
+    "bytes": 12807982,
+    "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+   }
+  },
+  "tokenizer_json": {
+   "bytes": 12807982,
+   "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+  }
+ }
 }

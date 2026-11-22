@@ -48,6 +48,35 @@ _spec.loader.exec_module(rft)
 
 PRIMARY = "results/artifacts/stage2/s58-combined/stage2a-accepted-combined.jsonl"
 CAPS = (2048, 2500, 3072, 4096)
+TOKENIZER_RECEIPTS = [
+    "results/stage1/s54-stage1-post-0.8b-nonthinking-greedy.json",
+    "results/stage1/s54-stage1-post-2b-nonthinking-greedy.json",
+    "results/stage2/s67-final/soup-stage1.json",
+]
+
+
+def tokenizer_identity() -> dict:
+    """Prove the stored ids are the 0.8B tokenizer's own output."""
+    rows = {}
+    for rel in TOKENIZER_RECEIPTS:
+        path = os.path.join(ROOT, rel)
+        if not os.path.isfile(path):
+            raise SystemExit(f"s72-corpus: missing tokenizer receipt {rel}")
+        with open(path, encoding="utf-8") as handle:
+            payload = json.load(handle)
+        model = payload.get("model") or {}
+        rows[rel] = (model.get("bundle") or {}).get("tokenizer.json")
+    distinct = {json.dumps(value, sort_keys=True) for value in rows.values()
+                if value is not None}
+    return {
+        "receipts": rows,
+        "all_identical": len(distinct) == 1,
+        "tokenizer_json": json.loads(distinct.pop()) if len(distinct) == 1 else None,
+        "claim": "the corpora store prompt_ids/solution_ids produced at generation "
+                 "time; this block proves the 0.8B checkpoint the soup scores with "
+                 "ships a byte-identical tokenizer.json, so those ids are the 0.8B "
+                 "tokenizer's own ids and no tokenizer had to be loaded or re-applied",
+    }
 
 
 def sha256_file(path: str) -> str:
@@ -232,6 +261,7 @@ def main() -> int:
             "path": args.primary,
             "sha256": sha256_file(os.path.join(ROOT, args.primary)),
         },
+        "tokenizer_identity": tokenizer_identity(),
         "primary_stats": corpus_stats(primary, "s58-combined"),
         "other_corpora": {
             rel: {
