@@ -44,6 +44,24 @@ for a workload-sized run.
 is free. It is run when its dependency's receipt exists and the GPU/RAM budget
 is reserved for it, per `AGENTS.md`.
 
+## S69 — registration, corpus and amendment (pre-score)
+
+* Registration: `docs/s69-preference-from-champion-preregistration-v1.json`;
+  plan: `docs/S69-PREFERENCE-PLAN.md`.
+* Pre-score amendment 1 (weight realization): `docs/S69-AMENDMENT-1.md` and
+  `docs/s69-amendment-1-weight-realization-v1.json`. It records that the
+  registered `w = p(1-p)` was inert at `batch_pairs = 1`, that it is now
+  realized by a corpus-mean denominator, and that `shuffled` order remains the
+  primary. No threshold, budget, selection rule or win bar moves.
+* Corpus receipts (gitignored under `results/artifacts/`; hashes are in the
+  amendment): rollouts `results/artifacts/stage2/s69-rollouts/soup-receipt.json`,
+  pairs/recovery `results/artifacts/stage2/s69-preference/soup-receipt.json`,
+  frozen reference caches
+  `results/artifacts/stage2/s69-preference/pairs-with-reference-receipt.json`
+  and `…/recovery-with-reference-receipt.json`.
+* Status: **no S69 arm, calibration or test score exists.** B1 is not done
+  until an arm receipt exists at the path it names.
+
 ## A. Integrity and bookkeeping
 
 | ID | Item | Acceptance (what proves it done) | Depends on | Status |
@@ -59,8 +77,8 @@ is reserved for it, per `AGENTS.md`.
 
 | ID | Item | Acceptance (what proves it done) | Depends on | Status |
 |---|---|---|---|---|
-| **B1** | Run preference training from the S67 soup champion (never the post-trained baseline): rank-64 all-linear LoRA, frozen-reference log-probs from the same init, teacher continuation on the student's exact prefix as chosen, student failure as rejected; merge, then verify the merged round trip. | `results/stage2/s69-preference/receipt-preference.json` names the init checkpoint and its SHA-256 (matching the registration), the geometry, the effective pair set and the zero-weight drop list; every exported checkpoint carries the merge report; a round-trip test reloads the merged full state and reproduces the adapter's logits within the registered tolerance. | A1, teacher pass, reference pass | `BLOCKED` |
-| **B2** | Score the chosen checkpoint **once** on the test instruments; select only on the 1,000-item calibration splits. Win bar: beat the S67 soup on MATH-500 **and** full MATH with paired 95% intervals, with no GSM8K or MMLU regression. | `results/stage2/s69-calibration/` selection receipt (MATH-cal first, GSM8K-cal tie-break, MMLU-cal filter) exists before any test read; the one-shot verdict cites paired problem-level bootstrap against the stored soup dumps and reports MATH-500, full MATH, GSM8K and MMLU separately. A failed gate produces a calibration-level failure receipt and no test read. | B1 | `BLOCKED` |
+| **B1** | Run preference training from the S67 soup champion (never the post-trained baseline): rank-64 all-linear LoRA, frozen-reference log-probs from the same init, teacher continuation on the student's exact prefix as chosen, student failure as rejected; merge, then verify the merged round trip. | `results/stage2/s69-preference/preference/receipt-preference.json` names the init checkpoint and its SHA-256 (matching the registration), the geometry, the effective pair set and the zero-weight drop list, `weight_normalization`, `corpus_mean_weight` and the realized weight; every exported checkpoint carries the merge report; a round-trip test reloads the merged full state and reproduces the adapter's logits within the registered tolerance. Inputs: pairs `results/artifacts/stage2/s69-preference/soup-pairs.jsonl` (receipt `…/soup-receipt.json`), reference cache `…/pairs-with-reference.jsonl` (receipt and court `results/courts/oracle-20261122T025052Z-8b49d0.json`), rollouts `results/artifacts/stage2/s69-rollouts/soup-receipt.json`. | A1, teacher corpus (`soup-receipt.json`), reference cache (`pairs-with-reference-receipt.json`) | `BLOCKED` — the corpus and both reference caches exist; no arm receipt exists yet. Run plan: `docs/S69-AMENDMENT-1.md` §5. |
+| **B2** | Score the chosen checkpoint **once** on the test instruments; select only on the 1,000-item calibration splits. Win bar: beat the S67 soup on MATH-500 **and** full MATH with paired 95% intervals, with no GSM8K or MMLU regression. | `results/stage2/s69-calibration/` selection receipt (MATH-cal first, GSM8K-cal tie-break, MMLU-cal filter) exists before any test read; the one-shot verdict cites paired problem-level bootstrap against the stored soup dumps and reports MATH-500, full MATH, GSM8K and MMLU separately. A failed gate produces a calibration-level failure receipt and no test read. The corpus is 263 positive-weight pairs and 49 recovery pairs (`…/soup-receipt.json`); the win bar is demanding relative to it, and a null is reported with its interval per `docs/S69-AMENDMENT-1.md` §4. | B1 | `BLOCKED` |
 | **B3** | Adaptive rollout budget: after K initial attempts, add attempts on uncertain or apparently-unsolvable problems, to reduce the false-"unsolvable" rate at `p = 0.2, K = 4` (quote the current rate from the S69 rollout analysis receipt; do not restate it here). Record the sampling policy in the per-problem ledger. | A rerun rollout receipt shows the adaptive policy, the extra-attempt counts, and the reduced false-unsolvable rate computed from the ledger; the ledger's `sampling_policy` field distinguishes initial and top-up attempts. | B4 | `READY` |
 | **B4** | Per-problem ledger with `p` computed from attempts (not the deduplicated accepted count), storing attempts, verified successes, failures, truncations, duplicate successes and the sampling policy. | A ledger-schema test (`scripts/s59_student_rollouts.py` and its oracle test) asserts every field is present on every row, that `p = verified_correct / attempts` includes truncations and duplicates, and that failures are aggregated without collapsing verdict types. Existing rows already carry attempts/`p`/truncation/duplicate counters; the missing fields are `sampling_policy`, an aggregate `failures`, and an explicit `duplicate_successes`. | — | `READY` |
 

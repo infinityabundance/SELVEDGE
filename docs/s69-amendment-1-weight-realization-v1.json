@@ -1,0 +1,308 @@
+{
+  "schema": "selvedge/s69-amendment-weight-realization/v1",
+  "identifier": "S69-AMENDMENT-1-WEIGHT-REALIZATION-V1",
+  "created_utc": "2026-11-22T02:56:00Z",
+  "registered_utc": "2026-11-22T02:56:00Z",
+  "registering_session": "S70, pre-score, CPU documentation and provenance only",
+  "status": "registered_pre_score",
+  "revision": "cdf43853ebcc75abf180e9b37d9d1b3ec03568d1",
+  "prose": "docs/S69-AMENDMENT-1.md",
+  "purpose": "Record, before any S69 calibration or test score, that the registered difficulty weight w = p(1-p) was inert at batch_pairs = 1, and that it is now realized by a corpus-mean denominator (weight-normalization corpus) with the shuffled order retained as the primary and difficulty-proportional ordering recorded as an implemented sensitivity knob, plus per-step realized-update telemetry. No objective, hyperparameter, budget, selection rule, win bar or scoring rule changes.",
+  "amends": {
+    "path": "docs/s69-preference-from-champion-preregistration-v1.json",
+    "sha256": "7487587a51d14460b331d8f1be56ae42044499b72101afd3902e1488984ef35e",
+    "committed_in": "9bd2a2894930a296813eb15a19641042d702a7cd",
+    "rule": "the registered file is not edited; this amendment records only the realization of the weight it already registers, the corpus now built for it, and the launch commands",
+    "amends_sections": [
+      "training.objective (realization of the weight only; the functional form is unchanged)",
+      "training.batch_pairs (the denominator that made the weight inert)",
+      "training.arms.preference"
+    ]
+  },
+  "defect": {
+    "where": [
+      "oracle/frontier/preference.py (pre-S70 batch loss divided by the batch weight sum)",
+      "scripts/s64_preference_launch.py:427 (pre-S70 call site, batch_pairs = 1)"
+    ],
+    "mechanism": "the batch loss was (sum_i w_i L_i) / (sum_i w_i); at one pair per optimizer step the denominator is that pair's own w_i, so the ratio is L_i and the registered weight cancels exactly",
+    "consequence": "w(p) = p(1-p) had no effect on the loss, gradient or update in any pre-S70 run, including every S63/S64 preference run; the launcher already drops w <= 0 before budgeting, so no zero-weight pair masked it",
+    "found_before_any_score": true,
+    "scores_existing_at_discovery": {
+      "calibration": false,
+      "test": false,
+      "arm_receipt": false,
+      "what_existed": "rollout, pair-construction and frozen-reference-cache receipts only; no calibration or test score"
+    }
+  },
+  "changes": {
+    "weight_normalization": {
+      "flag": "--weight-normalization corpus",
+      "default": "corpus",
+      "rule": "divide sum_i w_i L_i by the corpus mean weight over the positive-weight pairs, computed once from the filtered pair file and recorded in the arm receipt",
+      "pre_s70_comparator": {
+        "flag": "--weight-normalization batch",
+        "status": "retained only to reproduce pre-S70 runs; must not be used for an S69 score"
+      }
+    },
+    "pair_order": {
+      "primary": "--pair-order shuffled",
+      "default": "shuffled",
+      "sensitivity_knob": {
+        "flag": "--pair-order weighted",
+        "status": "implemented and tested; not part of the primary run; not used to select a checkpoint, cadence or arm"
+      },
+      "why_primary_is_shuffled": "it reproduces the pre-S70 stream from the seed, so the only realized difference in the primary arm is the denominator"
+    },
+    "realized_update_telemetry": {
+      "flag": "--trace-out",
+      "per_step_fields": [
+        "problem_ids",
+        "weight",
+        "weight_normalized",
+        "pre_clip_grad_norm",
+        "post_clip_grad_norm",
+        "update_l2",
+        "clipping_active",
+        "loss"
+      ],
+      "summary_fields": ["steps", "clipping_active_steps", "mean_update_l2", "realized_mean_weight"],
+      "receipt_fields": [
+        "pairs.corpus_mean_weight",
+        "pairs.weight_normalization",
+        "pairs.weight_scale_basis",
+        "pairs.realized_mean_weight",
+        "pairs.realized_mean_weight_over_mean",
+        "pairs.update_trace"
+      ],
+      "why": "AdamW's per-parameter normalization cancels a constant gradient rescale; a loss value alone does not show that the weight is realized, and a per-step update norm tagged with the pair weight does"
+    }
+  },
+  "unchanged_by_this_amendment": [
+    "the objective functional form: -log sigmoid(beta * [(s+ - s-) - (r+ - r-)])",
+    "mean token-length normalization of sequence log-probabilities",
+    "beta = 0.1",
+    "lr = 1e-4",
+    "grad_clip = 1.0",
+    "LoRA rank 64, alpha 32, every text-tower linear layer except the output head, base frozen",
+    "processed-token budget 2000000 forward-token positions",
+    "cadence 500000, 1000000, 2000000",
+    "batch_pairs = 1",
+    "the identical-effective-problem-set rule for the preference arm and the matched SFT control (drop w <= 0 before budgeting)",
+    "the recovery arm's matched mean positive weight",
+    "calibration-only selection: highest MATH-cal, tie-break higher GSM8K-cal then earlier cadence",
+    "the MMLU-cal retention filter and the adoption gate",
+    "the win bar: MATH-500 and full MATH paired 95% intervals above zero; GSM8K and MMLU point delta and interval lower bound not worse than -1.0",
+    "the one-shot test scoring rule and the no-enlargement clause",
+    "the frozen reference identity (pi_ref is the S67 soup champion)",
+    "the fallback route"
+  ],
+  "implementation": {
+    "commits": {
+      "aed2b56": "corpus normalizer and difficulty-proportional pair order",
+      "40b2a11": "per-step realized-update telemetry and launcher flags",
+      "5f78e58": "matched-compute control basis (A2, adjacent bookkeeping, not part of the weight fix)",
+      "cdf4385": "control-budget replay in the oracle court (A2, adjacent bookkeeping, not part of the weight fix)"
+    },
+    "fix_range_ends_at": "cdf43853ebcc75abf180e9b37d9d1b3ec03568d1",
+    "files": [
+      "oracle/frontier/preference.py",
+      "scripts/s64_preference_launch.py"
+    ],
+    "tests": {
+      "path": "oracle/tests/test_s70_preference_weighting.py",
+      "sha256": "54c722ee3f83b188341eb24b3b6b0d191b1c8db4add9a9d6bb8fca0bd034f8af",
+      "pre_versus_post_realization": "test_both_knobs_change_the_realized_adamw_update",
+      "full_epoch_comparison": "test_adamw_trajectory_differs_between_uniform_and_weighted_training",
+      "mid_epoch_ordering": "test_ordering_matters_when_the_budget_does_not_complete_a_whole_epoch",
+      "trace_schema": "test_update_trace_records_pre_and_post_clip_norms_and_the_delta",
+      "control_replay": "test_control_budget_reproduces_the_launcher_pair_order"
+    },
+    "court_receipt": {
+      "path": "results/courts/oracle-20261122T023758Z-3450fa.json",
+      "stamp": "20261122T023758Z",
+      "revision": "40b2a11d12beaa8d57aea4bdbb6260bdec039fa7",
+      "log": "results/courts/logs/oracle-20261122T023758Z-3450fa.log",
+      "result": "fourteen tests passed"
+    },
+    "measurement_claim": "the pre-fix configuration (shuffled, batch) and the primary post-fix configuration (shuffled, corpus) produce different parameter trajectories under torch.optim.AdamW with clip_grad_norm_(1.0), by the test's stated tolerance; the test and its receipt carry the magnitudes, and none is restated in prose",
+    "precision": "a constant gradient rescale alone is cancelled by AdamW; the realized difference in the primary arm exists because the sampled pair's weight varies from step to step, so the optimiser moments mix differently-scaled gradients. The weighted order is a second, independent knob and is not active in the primary run."
+  },
+  "would_have_been_wrong": [
+    "re-selecting any threshold, win-bar clause, retention bound, sample limit or cadence",
+    "changing the calibration adoption gate or the tie-break rule",
+    "reading any test split, or any calibration item, before the correction was committed",
+    "adopting or re-selecting the soup coefficient alpha after seeing test results",
+    "switching the primary order to weighted, which changes which pair each step sees and is a different experiment",
+    "scoring an S69 arm with --weight-normalization batch and calling it the registered objective",
+    "rebuilding the corpus with different filters or weights to make the fix look cleaner",
+    "presenting the correction as a change to the hypothesis, or as a result"
+  ],
+  "corpus": {
+    "rollouts": {
+      "receipt": "results/artifacts/stage2/s69-rollouts/soup-receipt.json",
+      "stamp": "20261122T011302Z",
+      "problems": 650,
+      "k": 4,
+      "p_histogram_field": "ledger.summary.p_histogram",
+      "zero_p_problems": 155,
+      "one_p_problems": 226,
+      "ledger": {
+        "path": "results/artifacts/stage2/s69-rollouts/soup-ledger.jsonl",
+        "rows": 650,
+        "sha256": "766d53db976a1a4f2ae9fd644f33ca17b7677a34f357026dd0907c0b825f110e",
+        "sha256_source": "ledger.sha256 in results/artifacts/stage2/s69-rollouts/soup-receipt.json, re-hashed on disk before this amendment was written"
+      }
+    },
+    "pairs": {
+      "path": "results/artifacts/stage2/s69-preference/soup-pairs.jsonl",
+      "rows": 263,
+      "sha256": "ef32d4de4a8716816c608fc14498919cd5fcf10fc395818f380471d0b90012fc",
+      "weight_basis": "p(1-p)",
+      "normalisation": "mean",
+      "receipt": "results/artifacts/stage2/s69-preference/soup-receipt.json",
+      "stamp": "20261122T022911Z",
+      "receipt_fields": {
+        "ledger_problems": 650,
+        "preference_processed_tokens_per_pass": 439164,
+        "matched_recovery_weight_field": "diagnostics.matched_recovery_weight",
+        "verdicts_field": "diagnostics.verdicts"
+      }
+    },
+    "recovery": {
+      "path": "results/artifacts/stage2/s69-preference/soup-recovery.jsonl",
+      "rows": 49,
+      "sha256": "726b03238562dcaa0b8ffda191e513590e0316ec03bdd84b183ef84dba9f0495",
+      "weight_basis": "mean positive p(1-p) of the on-policy problems"
+    },
+    "frozen_reference_caches": {
+      "reference_checkpoint": {
+        "path": "results/stage2/s67-soup/interp-0.375-arm.pt",
+        "sha256": "072b89463c284ac8346b666527eb678f284165ae93f6abf55685fdaf35a1d6ab",
+        "step": 4000
+      },
+      "pairs": {
+        "path": "results/artifacts/stage2/s69-preference/pairs-with-reference.jsonl",
+        "rows": 263,
+        "sha256": "27ad1907bb33c825358e70cef9d78686c0438a9d1f017f093a25959d482177c9",
+        "receipt": "results/artifacts/stage2/s69-preference/pairs-with-reference-receipt.json",
+        "stamp": "20261122T025132Z",
+        "court_receipt": "results/courts/oracle-20261122T025052Z-8b49d0.json"
+      },
+      "recovery": {
+        "path": "results/artifacts/stage2/s69-preference/recovery-with-reference.jsonl",
+        "rows": 49,
+        "sha256": "8744a431e276c32e7a8de7fe3a07b01fcd515c7a5cbe51d6160918d6dfc5e175",
+        "receipt": "results/artifacts/stage2/s69-preference/recovery-with-reference-receipt.json",
+        "stamp": "20261122T025151Z",
+        "court_receipt": "results/courts/oracle-20261122T025135Z-f37919.json"
+      },
+      "normalisation": "mean",
+      "identity": "pi_ref is the checkpoint the student is initialised from"
+    }
+  },
+  "statistical_limitation": {
+    "recorded_before_the_run": true,
+    "positive_weight_pairs": 263,
+    "recovery_pairs": 49,
+    "win_bar_demanding_relative_to_the_corpus": true,
+    "power_calculation": null,
+    "no_expectation_of_clearing_the_bar": "no power calculation justifies an expectation that the win bar is cleared; none is offered",
+    "null_reporting_rule": "a null result is reported as a null result with its interval, its width and the corpus size that produced it; it is not re-framed as underpowered, not rescued by re-scoring a different split, and not replaced by a favourable secondary instrument",
+    "effective_set_note": "the normal arm's effective problem set is the subset with p > 0; the 155 p = 0 problems are the recovery arm's source only, and many p = 1 problems contribute no preference contrast"
+  },
+  "reference_identity_disclosure": {
+    "pi_ref_is_the_init": true,
+    "reference_checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+    "initial_margin": "exactly zero, because the student and the reference are the same weights at step zero",
+    "consequences": [
+      "the DPO margin is a displacement from the start point, not a preference between two independently trained policies",
+      "the reference term is an anchor to the champion; it bounds drift and cannot distinguish movement toward the chosen side from distance from the champion",
+      "the reward difference is not identifiable as an external judge's preference",
+      "the chosen side is a verified-correct teacher continuation and the rejected side is the student's own failure, so part of the margin is teacher-versus-student quality",
+      "a win is attributable to the pair construction, the objective and the anchor-to-start, not to the choice of an independent reference model"
+    ],
+    "reverse_kl_claimed": false
+  },
+  "run_plan": {
+    "one_arm_per_invocation": true,
+    "court": "scripts/court --gpu oracle",
+    "cpu_limits": "SELVEDGE_CPUS=8 SELVEDGE_PIDS=1024 SELVEDGE_TMP=2g",
+    "memory_sizing": {
+      "rule": "SELVEDGE_MEM = max(1.5 x peak, peak + 1 GiB), where peak = max(peak_reserved_gib, peak_allocated_gib, cgroup memory_peak in GiB) from the arm's own smoke receipt",
+      "smoke_bound": "20g is a bound, not a measurement",
+      "pre_smoke_prior": "results/stage2/runs/s64-preference/receipt-preference.json (identical launcher geometry)",
+      "recorded_in": "the launch record and the arm receipt's cgroup_memory block"
+    },
+    "shared_arguments": {
+      "student_dir": "/hf-cache/models/Qwen/Qwen3.5-0.8B/2fc06364715b967f1860aea9cf38778875588b17",
+      "init_checkpoint": "results/stage2/s67-soup/interp-0.375-arm.pt",
+      "budget_tokens": 2000000,
+      "cadence": "500000,1000000,2000000",
+      "batch_pairs": 1,
+      "lr": 0.0001,
+      "beta": 0.1,
+      "grad_clip": 1.0,
+      "rank": 64,
+      "alpha": 32,
+      "seed": 6900,
+      "pair_order": "shuffled",
+      "weight_normalization": "corpus"
+    },
+    "arms": [
+      {
+        "arm": "preference",
+        "pairs": "results/artifacts/stage2/s69-preference/pairs-with-reference.jsonl",
+        "out_dir": "results/stage2/s69-preference/preference",
+        "receipt": "results/stage2/s69-preference/preference/receipt-preference.json",
+        "trace": "results/stage2/s69-preference/preference/trace-preference.json",
+        "role": "the registered primary"
+      },
+      {
+        "arm": "matched-sft",
+        "pairs": "results/artifacts/stage2/s69-preference/pairs-with-reference.jsonl",
+        "out_dir": "results/stage2/s69-preference/matched-sft",
+        "receipt": "results/stage2/s69-preference/matched-sft/receipt-matched-sft.json",
+        "trace": "results/stage2/s69-preference/matched-sft/trace-matched-sft.json",
+        "role": "attribution control on the identical effective problem set"
+      },
+      {
+        "arm": "recovery",
+        "recovery_pairs": "results/artifacts/stage2/s69-preference/recovery-with-reference.jsonl",
+        "out_dir": "results/stage2/s69-preference/recovery",
+        "receipt": "results/stage2/s69-preference/recovery/receipt-recovery.json",
+        "trace": "results/stage2/s69-preference/recovery/trace-recovery.json",
+        "role": "the p = 0 teacher pairs at the matched mean positive weight"
+      }
+    ],
+    "per_arm_directories_reason": "the merged checkpoint filenames ckpt-<step>.pt are not arm-tagged, so a shared out-dir could silently overwrite one arm's checkpoint with another's",
+    "court_receipts": "results/courts/oracle-<stamp>-<id>.json, written by the court"
+  },
+  "scoring_receipts": [],
+  "limits_derived_from": [
+    "results/artifacts/stage2/s69-preference/pairs-with-reference-receipt.json",
+    "results/artifacts/stage2/s69-preference/recovery-with-reference-receipt.json",
+    "results/stage2/runs/s64-preference/receipt-preference.json",
+    "results/courts/oracle-20261122T023758Z-3450fa.json"
+  ],
+  "provenance_notes": {
+    "registered_before_first_score": "no receipt with a preregistration block naming this file or the S69 registration exists; the corpus receipts are data-construction receipts",
+    "prereg_provenance_scope": "scripts/prereg_provenance.py scans docs/*preregistration*.json by default and this filename does not match that glob; the court is run with --registration docs/s69-amendment-1-weight-realization-v1.json to check it, and the parent registration docs/s69-preference-from-champion-preregistration-v1.json is scanned by default",
+    "corpus_artifacts_are_gitignored": "results/artifacts/ is gitignored; the corpus receipts cited here exist locally and their content hashes are recorded above, but the files themselves do not travel with the tree. Publication is tracked as A3 in docs/TODO.md.",
+    "arm_receipt_registration_field": "scripts/s64_preference_launch.py writes registration = docs/ws19-stage2-correction-s63-preregistration-v1.json in its arm receipts; the S69 provenance of an arm receipt is carried by init_checkpoint.sha256 and pairs.sha256, not by that field",
+    "stamps_absent_from_filenames": "results/artifacts/ receipt filenames carry no stamp; the stamp is inside the file (soup receipts) or in the court receipt name (reference caches)"
+  },
+  "claims": {
+    "no_threshold_changed": true,
+    "no_win_bar_change": true,
+    "no_test_split_read": true,
+    "no_calibration_item_read": true,
+    "alpha_not_reselected": true,
+    "registered_objective_now_implemented": true,
+    "primary_run_uses_shuffled_order": true,
+    "weighted_order_is_a_sensitivity_knob_only": true,
+    "corpus_size_recorded_before_the_run": true,
+    "null_will_be_reported_as_null": true,
+    "reference_is_the_initialisation": true,
+    "reverse_kl_not_claimed": true
+  }
+}
