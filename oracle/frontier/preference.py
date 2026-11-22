@@ -66,6 +66,7 @@ separate, receipted job.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -567,8 +568,26 @@ def default_linear_target(name: str, module: nn.Module) -> bool:
 
 
 def install_lora(model: nn.Module, rank: int = REGISTERED_LORA_RANK,
-                 alpha: float = REGISTERED_LORA_ALPHA, target=None) -> list:
-    """Replace every targeted ``nn.Linear`` in-place with ``LoRALinear``."""
+                 alpha: float = REGISTERED_LORA_ALPHA, target=None,
+                 seed: int | None = None) -> list:
+    """Replace every targeted ``nn.Linear`` in-place with ``LoRALinear``.
+
+    ``seed`` is applied to ``random``, ``numpy`` (when importable) and
+    ``torch`` immediately before the randomly initialised ``A`` factors are
+    drawn, so the initial adapter state is reproducible and can be hashed.
+    Pair ordering uses its own seed and is not affected by this global seed.
+    """
+    if seed is not None:
+        seed = int(seed)
+        random.seed(seed)
+        try:
+            import numpy as _numpy
+            _numpy.random.seed(seed % (2 ** 32))
+        except Exception:  # numpy is optional for the adapter init
+            pass
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
     target = target or default_linear_target
     installed = []
 
@@ -596,6 +615,30 @@ def lora_parameters(model: nn.Module) -> list:
 
 def adapter_element_count(model: nn.Module) -> int:
     return sum(parameter.numel() for parameter in lora_parameters(model))
+
+
+def adapter_state_sha256(model: nn.Module) -> str:
+    """Canonical digest of every LoRA factor, in ``named_modules`` order.
+
+    Hashes the name, dtype, shape and bytes of both factors of every adapter,
+    so the receipt can prove the initial state a run started from rather than
+    asserting that a seed was set somewhere.
+    """
+    digest = hashlib.sha256()
+    found = 0
+    for name, module in model.named_modules():
+        if not isinstance(module, LoRALinear):
+            continue
+        for part in ("lora_A", "lora_B"):
+            tensor = getattr(module, part).detach().to("cpu").contiguous()
+            digest.update(
+                f"{name}.{part}|{tensor.dtype}|{tuple(tensor.shape)}|"
+                .encode("ascii"))
+            digest.update(tensor.numpy().tobytes())
+        found += 1
+    if not found:
+        raise ValueError("the model has no LoRA modules to hash")
+    return digest.hexdigest()
 
 
 def merge_lora(model: nn.Module) -> dict:
@@ -719,6 +762,47 @@ def sft_control_loss(model, pair: PreferencePair, device: str | None = None,
     logprob, _ = continuation_logprobs(model, pair.prompt_ids, pair.chosen_ids,
                                         device, normalization)
     return -logprob
+
+
+def sft_batch_loss(model, pairs, device: str | None = None, *,
+                   weights=None, weight_normalizer: float | None = None,
+                   normalization: str = REGISTERED_NORMALIZATION
+                   ) -> tuple[torch.Tensor, dict]:
+    """Batch completion CE, optionally difficulty-weighted.
+
+    ``weights=None`` is the unweighted matched-SFT control (mean CE over the
+    batch). With per-pair ``weights`` and a positive ``weight_normalizer`` the
+    loss is ``sum(w_i * CE_i) / mean_w`` -- the same weighting mechanism the
+    preference objective uses -- so the two controls differ in the objective,
+    not in whether the difficulty weight is realized.
+    """
+    if not pairs:
+        raise ValueError("the SFT batch loss needs at least one pair")
+    stacked = torch.stack([sft_control_loss(model, pair, device, normalization)
+                           for pair in pairs])
+    chosen_tokens = sum(len(pair.chosen_ids) for pair in pairs)
+    if weights is None:
+        return stacked.mean(), {
+            "pairs": len(pairs),
+            "chosen_tokens": chosen_tokens,
+            "weighting": "uniform",
+            "mean_loss": float(stacked.detach().mean()),
+        }
+    weight_tensor = torch.tensor([float(weight) for weight in weights],
+                                 dtype=torch.float32, device=stacked.device)
+    if weight_tensor.numel() != stacked.numel():
+        raise ValueError("loss and weight tensors differ in length")
+    if weight_normalizer is None or not float(weight_normalizer) > 0.0:
+        raise ValueError("difficulty-weighted SFT needs a positive "
+                         "weight_normalizer")
+    loss = (stacked * weight_tensor).sum() / float(weight_normalizer)
+    return loss, {
+        "pairs": len(pairs),
+        "chosen_tokens": chosen_tokens,
+        "weighting": "difficulty",
+        "weight_normalizer": float(weight_normalizer),
+        "mean_loss": float(loss.detach()),
+    }
 
 
 def preference_processed_tokens(pairs) -> int:

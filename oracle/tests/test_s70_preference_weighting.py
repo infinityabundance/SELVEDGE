@@ -497,3 +497,60 @@ def test_compute_basis_ratio_is_the_analytic_value(tmp_path):
         pytest.approx(75 / 40)
     assert receipt["bases"][0]["compute"]["matched_sft"][
         "budget_tokens_for_control"] == 75 * 15
+
+
+def test_lora_init_is_seeded_and_the_digest_is_reproducible():
+    """Amendment 2: the randomly initialised adapter factors are seeded.
+
+    Pair ordering already used seed 6900, but that is a different RNG stream
+    from the one ``kaiming_uniform_`` consumes. The digest proves the initial
+    adapter state rather than asserting a seed was set somewhere.
+    """
+
+    def build(seed):
+        model = nn.Sequential(nn.Linear(4, 4), nn.Linear(4, 2))
+        preference.install_lora(model, rank=2, alpha=4, seed=seed)
+        return model
+
+    first = preference.adapter_state_sha256(build(6900))
+    second = preference.adapter_state_sha256(build(6900))
+    other = preference.adapter_state_sha256(build(6901))
+    assert first == second
+    assert first != other
+    # B starts at zero, so the adapter is the identity at initialisation; the
+    # digest still distinguishes seeds through A.
+    model = build(6900)
+    for module in model.modules():
+        if isinstance(module, preference.LoRALinear):
+            assert float(module.lora_B.detach().abs().sum()) == 0.0
+
+
+def test_difficulty_weighted_sft_control_uses_w_over_corpus_mean():
+    """Arm 4: the weighted SFT control applies w / mean_w, not uniform CE."""
+    pairs = [_pair("a", 0.1875), _pair("b", 0.25)]
+    model = TwoParamLM()
+    uniform, detail = preference.sft_batch_loss(model, pairs)
+    assert detail["weighting"] == "uniform"
+    ces = [preference.sft_control_loss(model, pair).detach()
+           for pair in pairs]
+    assert float(uniform) == pytest.approx(float(torch.stack(ces).mean()))
+
+    mean_w = 0.21875  # (0.1875 + 0.25) / 2
+    weighted, detail = preference.sft_batch_loss(
+        model, pairs, weights=[pair.weight for pair in pairs],
+        weight_normalizer=mean_w)
+    expected = sum(float(ce) * pair.weight for ce, pair in zip(ces, pairs)) \
+        / mean_w
+    assert float(weighted) == pytest.approx(expected)
+    assert detail["weighting"] == "difficulty"
+    assert float(weighted) != pytest.approx(float(uniform))
+
+    with pytest.raises(ValueError):
+        preference.sft_batch_loss(
+            model, pairs, weights=[pair.weight for pair in pairs],
+            weight_normalizer=None)
+
+
+def test_matched_sft_weighted_arm_is_registered():
+    assert "matched-sft-weighted" in launch.ARMS
+    assert "matched-sft" in launch.ARMS

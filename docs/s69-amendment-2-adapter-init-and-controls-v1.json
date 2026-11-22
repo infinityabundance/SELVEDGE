@@ -1,0 +1,142 @@
+{
+  "schema": "selvedge/s69-amendment-adapter-init-and-controls/v1",
+  "identifier": "S69-AMENDMENT-2-ADAPTER-INIT-AND-CONTROLS-V1",
+  "created_utc": "2026-11-22T03:35:00Z",
+  "registered_utc": "2026-11-22T03:35:00Z",
+  "registering_session": "S70, pre-score, operator review corrections only",
+  "status": "registered_pre_score",
+  "revision": "a68aeeebc9a07ad29e5eea01fb17df8fc53ebdb0",
+  "prose": "docs/S69-AMENDMENT-2.md",
+  "purpose": "Record four bounded pre-score corrections and one roadmap refinement found in the operator's S70 review: (1) the randomly initialised LoRA factors are seeded and their initial state is hashed into the arm receipt; (2) a difficulty-weighted SFT control arm isolates the preference objective from the weighting mechanism; (3) the sizing smoke is traced and the trace overhead is measured; (4) MATH-500 and full MATH are two evaluation scales of the same test set, not independent instruments; (5) the BREAD roadmap item is defined by a measurable decision and four corpus gaps are recorded. No objective, primary arm, hyperparameter, budget, cadence, selection rule, adoption gate or win bar changes.",
+  "amends": {
+    "registration": {
+      "path": "docs/s69-preference-from-champion-preregistration-v1.json",
+      "rule": "not edited; the primary arm, training flags, selection rule and win bar are unchanged"
+    },
+    "amendment_1": {
+      "path": "docs/S69-AMENDMENT-1.md",
+      "machine_readable": "docs/s69-amendment-1-weight-realization-v1.json",
+      "rule": "the weight-realisation rule is unchanged; only the MATH instrument wording is corrected"
+    }
+  },
+  "changes": {
+    "adapter_initialisation": {
+      "defect": "LoRALinear draws lora_A with kaiming_uniform_ from the global torch RNG; no seed was applied immediately before install_lora, and the pair-order seed 6900 is a different random.Random stream",
+      "fix": "preference.install_lora accepts seed and seeds random, numpy when importable, and torch/CUDA immediately before the factors are drawn",
+      "evidence": {
+        "function": "preference.adapter_state_sha256(model)",
+        "digest_over": "name, dtype, shape and bytes of every lora_A and lora_B in named_modules order",
+        "receipt_field": "geometry.adapter_init = {seed, sha256, basis}",
+        "smoke_digest": "db1db8d97d7d82ec3b4086334e0c894f948f11e6b6bdae712987107d8638ff77",
+        "smoke_receipts": [
+          "results/stage2/s69-preference/preference/smoke-traced/receipt-preference.json",
+          "results/stage2/s69-preference/preference/smoke-untraced/receipt-preference.json"
+        ],
+        "test": "oracle/tests/test_s70_preference_weighting.py::test_lora_init_is_seeded_and_the_digest_is_reproducible"
+      },
+      "superseded_runs": {
+        "reason": "the pre-fix receipts cannot prove their initial adapter state",
+        "preference_first_invocation": "results/stage2/s69-preference/preference/superseded-20261122T025943Z/",
+        "preference_court_rerun": "results/courts/oracle-20261122T031400Z-759e4e.json",
+        "matched_sft_stopped": "results/courts/oracle-20261122T032856Z-3259ad.json",
+        "used_for_selection": false
+      }
+    },
+    "matched_sft_weighting": {
+      "flag": "--sft-weighting uniform|difficulty",
+      "default": "uniform",
+      "arm": "matched-sft-weighted",
+      "loss": "sum_i w_i CE_i / mean_w on the chosen continuations",
+      "mean_w": "the corpus mean positive weight, the same denominator the preference objective uses",
+      "effective_set": "identical to the preference arm (drop w <= 0 before budgeting)",
+      "budget_and_cadence": "identical to the preference arm",
+      "status": "additional control arm 4; it does not change the primary win bar, the calibration-selection rule, or which arm is primary",
+      "test": "oracle/tests/test_s70_preference_weighting.py::test_difficulty_weighted_sft_control_uses_w_over_corpus_mean"
+    },
+    "trace_overhead": {
+      "defect": "the sizing smoke was untraced while the arms run with --trace-out",
+      "fix": "the sizing smoke is traced; a paired untraced smoke measures the overhead",
+      "derived_record": "results/stage2/s69-preference/trace-overhead.json",
+      "derived_record_created_utc": "2026-11-22T03:34:30Z",
+      "derived_record_revision": "a68aeeebc9a07ad29e5eea01fb17df8fc53ebdb0",
+      "traced": {
+        "court_receipt": "results/courts/oracle-20261122T033325Z-159124.json",
+        "step_ms": 639.5469188690186,
+        "peak_reserved_gib": 10.55078125,
+        "limit_basis_gib": 15.826171875
+      },
+      "untraced": {
+        "court_receipt": "results/courts/oracle-20261122T033350Z-e62755.json",
+        "step_ms": 618.2427167892456,
+        "peak_reserved_gib": 10.376953125,
+        "limit_basis_gib": 15.5654296875
+      },
+      "step_ms_ratio": 1.0344592851662098,
+      "step_ms_delta": 21.30420207977295,
+      "arm_limit_gib": 16,
+      "arm_limit_basis": "max(1.5 * traced peak_reserved, traced peak_reserved + 1) = 15.83 GiB, rounded up to 16g; SELVEDGE_CPUS=8, SELVEDGE_PIDS=1024, SELVEDGE_TMP=2g"
+    },
+    "math_instrument_interpretation": {
+      "defect": "docs/S69-AMENDMENT-1.md and its JSON called MATH-500 and the 5,000-problem full MATH two independent instruments",
+      "correction": "they are two evaluation scales of the same MATH test set; MATH-500 is a 500-problem subset of the 5,000-problem set, so their paired intervals are correlated",
+      "consequence": "requiring both intervals above zero is a resolution requirement (the larger scale reduces sampling noise; the smaller is the historical comparison), not independent replication",
+      "win_bar_changed": false,
+      "files_updated": [
+        "docs/S69-AMENDMENT-1.md",
+        "docs/s69-amendment-1-weight-realization-v1.json"
+      ]
+    },
+    "bread_refinement": {
+      "file": "docs/TODO.md",
+      "item": "C1",
+      "definition": "a decision whose intervention measurably changes downstream correctness, identified by paired do/undo continuations from the same state; wording-only divergence is explicitly rejected as a candidate",
+      "added_corpus_gaps": [
+        "adaptive K on uncertain and all-failure problems",
+        "student-generated successful alternatives as chosen-side candidates, not only teacher continuations",
+        "teacher coverage for the all-failure problems that produced no recovery pair",
+        "the recorded structural limitation that at K = 4 the weight w = p(1-p) takes only three distinct values, including zero"
+      ]
+    }
+  },
+  "unchanged_by_this_amendment": [
+    "the objective functional form: -log sigmoid(beta * [(s+ - s-) - (r+ - r-)])",
+    "mean token-length normalization of sequence log-probabilities",
+    "beta = 0.1",
+    "lr = 1e-4",
+    "grad_clip = 1.0",
+    "LoRA rank 64, alpha 32, every text-tower linear layer except the output head, base frozen",
+    "processed-token budget 2000000 forward-token positions",
+    "cadence 500000, 1000000, 2000000",
+    "batch_pairs = 1",
+    "seed 6900 and pair-order shuffled",
+    "weight-normalization corpus",
+    "the identical-effective-problem-set rule and the w <= 0 drop for the preference arm and the SFT controls",
+    "the recovery arm's matched mean positive weight",
+    "calibration-only selection: highest MATH-cal, tie-break higher GSM8K-cal then earlier cadence",
+    "the MMLU-cal retention filter and the adoption gate",
+    "the win bar: both MATH scales' paired 95% intervals above zero; GSM8K and MMLU point delta and interval lower bound not worse than -1.0",
+    "the one-shot test rule and the no-enlargement clause",
+    "the frozen reference identity (the S67 soup champion)"
+  ],
+  "provenance": {
+    "calibration_score_existed": false,
+    "test_score_existed": false,
+    "training_receipts_that_existed": [
+      "two superseded preference-arm invocations",
+      "one stopped matched-SFT invocation"
+    ],
+    "scores_used_for_selection_at_registration": false,
+    "test_split_read": false,
+    "calibration_split_read": false
+  },
+  "claims": {
+    "registered_before_any_score": true,
+    "primary_arm_unchanged": true,
+    "win_bar_unchanged": true,
+    "calibration_selection_rule_unchanged": true,
+    "adapter_initial_state_is_provable": true,
+    "matched_sft_weighting_is_an_additional_control": true,
+    "trace_overhead_measured_on_the_run_workload": true,
+    "math_scales_are_not_independent_replication": true
+  }
+}

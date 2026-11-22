@@ -155,10 +155,14 @@ Read from the receipts, not from memory:
   stamp `20261122T022911Z`).
 
 **263 positive-weight pairs and 49 recovery pairs is a small corpus.** The
-registered win bar is demanding relative to it: it requires two independent MATH
-instruments (MATH-500 and the 5,000-problem full MATH) to have paired 95%
-intervals above zero, plus no GSM8K or MMLU regression beyond the 1.0-point
-bound. At this corpus size a real improvement of the size this program would
+registered win bar is demanding relative to it: it requires paired 95% intervals
+above zero on two evaluation scales of the same MATH test set (MATH-500 and the
+5,000-problem full MATH), plus no GSM8K or MMLU regression beyond the 1.0-point
+bound. The two scales are not independent evidence: MATH-500 is a subset of the
+5,000-problem test set, so their intervals are correlated. Requiring both is a
+resolution requirement -- the larger scale reduces sampling noise while the
+smaller is the historical comparison -- not replication. The win bar itself is
+unchanged; `docs/S69-AMENDMENT-2.md` records the corrected interpretation. At this corpus size a real improvement of the size this program would
 care about can easily be indistinguishable from zero on both instruments.
 
 **No power calculation supports an expectation of clearing the bar.** None is

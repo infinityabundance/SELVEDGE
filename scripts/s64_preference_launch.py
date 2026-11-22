@@ -59,7 +59,7 @@ from frontier import preference  # noqa: E402
 
 SCHEMA = "selvedge/s64-preference-run/v1"
 GIB = float(1 << 30)
-ARMS = ("preference", "matched-sft", "recovery")
+ARMS = ("preference", "matched-sft", "matched-sft-weighted", "recovery")
 
 
 # ---------------------------------------------------------------------------
@@ -156,7 +156,8 @@ def _vram_guard(limit_gib: float) -> None:
 
 def prepare_registered_lora(model, *, rank: int = preference.REGISTERED_LORA_RANK,
                             alpha: float = preference.REGISTERED_LORA_ALPHA,
-                            expected_active_union: int | None = None) -> dict:
+                            expected_active_union: int | None = None,
+                            seed: int | None = None) -> dict:
     """Install the registered adapter on the text tower and account for it.
 
     The text tower (not the outer multimodal wrapper) is the deployed model.
@@ -171,7 +172,9 @@ def prepare_registered_lora(model, *, rank: int = preference.REGISTERED_LORA_RAN
         raise SystemExit(
             f"s64-launch: text tower is {before} elements, expected the "
             f"registered active union {expected_active_union}")
-    wrappers = preference.install_lora(text, rank=rank, alpha=alpha)
+    wrappers = preference.install_lora(text, rank=rank, alpha=alpha,
+                                      seed=seed)
+    adapter_init_sha256 = preference.adapter_state_sha256(text)
     adapter_elements = preference.adapter_element_count(model)
     if adapter_elements <= 0 or not wrappers:
         raise SystemExit("s64-launch: no LoRA modules were installed")
@@ -200,6 +203,14 @@ def prepare_registered_lora(model, *, rank: int = preference.REGISTERED_LORA_RAN
         "active_union_basis": (
             "scale * B @ A is folded into weights the base already reads; the "
             "adapter adds no deployed identity"),
+        "adapter_init": {
+            "seed": (int(seed) if seed is not None else None),
+            "sha256": adapter_init_sha256,
+            "basis": ("seed applied to random/numpy/torch immediately before "
+                      "install_lora; B is zero-initialised and A is "
+                      "kaiming-uniform, so the digest identifies the initial "
+                      "adapter state"),
+        },
     }
 
 
@@ -318,24 +329,24 @@ def pair_schedule(pairs, *, seed: int = 0, pair_order: str = "shuffled",
 
 
 def _batch_tokens(arm: str, batch) -> int:
-    if arm == "matched-sft":
+    if arm in ("matched-sft", "matched-sft-weighted"):
         return preference.sft_processed_tokens(batch)
     return preference.preference_processed_tokens(batch)
 
 
 def _batch_loss(model, arm: str, batch, beta: float, device,
-                weight_normalizer: float | None = None):
-    import torch
-
-    if arm == "matched-sft":
-        losses = torch.stack([preference.sft_control_loss(model, pair, device)
-                              for pair in batch])
-        return losses.mean(), {
-            "arm": "matched-sft",
-            "pairs": len(batch),
-            "chosen_tokens": sum(len(pair.chosen_ids) for pair in batch),
-            "loss": float(losses.detach().mean()),
-        }
+                weight_normalizer: float | None = None,
+                sft_weighting: str = "uniform"):
+    if arm in ("matched-sft", "matched-sft-weighted"):
+        if sft_weighting == "difficulty":
+            weights = [float(pair.weight) for pair in batch]
+            loss, detail = preference.sft_batch_loss(
+                model, batch, device, weights=weights,
+                weight_normalizer=weight_normalizer)
+        else:
+            loss, detail = preference.sft_batch_loss(model, batch, device)
+        detail["arm"] = arm
+        return loss, detail
     loss, detail = preference.preference_batch_loss(
         model, batch, beta, device, weight_normalizer=weight_normalizer)
     detail["arm"] = arm
@@ -365,6 +376,7 @@ def run_arm(model, pairs, *, arm: str,
             max_steps: int | None = None,
             pair_order: str = "shuffled",
             weight_normalization: str = "corpus",
+            sft_weighting: str = "uniform",
             trace_path: str | None = None) -> dict:
     """Train one arm and emit merged checkpoints at the token cadence."""
     import torch
@@ -381,6 +393,14 @@ def run_arm(model, pairs, *, arm: str,
     if weight_normalization not in ("corpus", "batch"):
         raise ValueError(
             f"unknown weight normalization {weight_normalization!r}")
+    if sft_weighting not in ("uniform", "difficulty"):
+        raise ValueError(f"unknown sft weighting {sft_weighting!r}")
+    # The arm name is the single source of truth for the SFT control's loss;
+    # the flag only confirms it and is recorded in the receipt.
+    if arm == "matched-sft-weighted":
+        sft_weighting = "difficulty"
+    elif arm == "matched-sft":
+        sft_weighting = "uniform"
 
     # The on-policy file carries p=0 rows with weight 0 next to the positive
     # pairs. A zero-weight pair contributes nothing to the preference loss but
@@ -390,7 +410,7 @@ def run_arm(model, pairs, *, arm: str,
     # is the only arm that keeps it, by construction of its own file.
     pairs_loaded = len(pairs)
     dropped_zero_weight: list[str] = []
-    if arm in ("preference", "matched-sft"):
+    if arm in ("preference", "matched-sft", "matched-sft-weighted"):
         dropped_zero_weight = sorted(pair.problem_id for pair in pairs
                                      if pair.weight <= 0)
         pairs = [pair for pair in pairs if pair.weight > 0]
@@ -404,7 +424,7 @@ def run_arm(model, pairs, *, arm: str,
 
     if budget_tokens is None:
         budget_tokens = (preference.sft_processed_tokens(pairs)
-                         if arm == "matched-sft"
+                         if arm in ("matched-sft", "matched-sft-weighted")
                          else preference.preference_processed_tokens(pairs))
     budget_tokens = int(budget_tokens)
     if budget_tokens <= 0:
@@ -412,7 +432,7 @@ def run_arm(model, pairs, *, arm: str,
 
     geometry = prepare_registered_lora(
         model, rank=rank, alpha=alpha,
-        expected_active_union=expected_active_union)
+        expected_active_union=expected_active_union, seed=seed)
     # The adapter is trained through the frozen backbone. Activation
     # checkpointing is what keeps a full-length preference pair (prompt plus
     # both continuations) inside a 16 GiB card; the flag only takes effect in
@@ -438,6 +458,10 @@ def run_arm(model, pairs, *, arm: str,
     corpus_mean_weight = preference.corpus_mean_weight(pairs)
     weight_normalizer = (corpus_mean_weight
                          if weight_normalization == "corpus" else None)
+    # The uniform SFT control carries no difficulty weight at all; its realized
+    # weight is 1.0 even though the corpus mean is still recorded.
+    weighted_arm = arm in ("preference", "recovery", "matched-sft-weighted")
+    loss_normalizer = weight_normalizer if weighted_arm else None
     telemetry = (preference.UpdateTelemetry(grad_clip=grad_clip, lr=lr)
                  if trace_path else None)
     if telemetry is not None:
@@ -457,7 +481,8 @@ def run_arm(model, pairs, *, arm: str,
         step, batch = next(schedule)
         optimizer.zero_grad(set_to_none=True)
         loss, detail = _batch_loss(model, arm, batch, beta, device,
-                                   weight_normalizer=weight_normalizer)
+                                   weight_normalizer=loss_normalizer,
+                                   sft_weighting=sft_weighting)
         loss.backward()
         pre_clip = (torch.nn.utils.clip_grad_norm_(trainable, grad_clip)
                     if grad_clip and grad_clip > 0
@@ -466,15 +491,21 @@ def run_arm(model, pairs, *, arm: str,
             pre_clip = preference.grad_norm(trainable)
         post_clip = preference.grad_norm(trainable)
         optimizer.step()
-        sampled_weights.extend(float(pair.weight) for pair in batch)
+        if arm == "matched-sft":
+            realized_weights = [1.0 for _ in batch]
+            row_mean_weight = 1.0
+        else:
+            realized_weights = [float(pair.weight) for pair in batch]
+            row_mean_weight = corpus_mean_weight
+        sampled_weights.extend(realized_weights)
         if telemetry is not None:
             telemetry.row(
                 step=step, arm=arm,
                 problem_ids=[pair.problem_id for pair in batch],
-                weights=[pair.weight for pair in batch],
+                weights=realized_weights,
                 loss=float(loss.detach()),
-                mean_weight=corpus_mean_weight,
-                weight_normalizer=weight_normalizer,
+                mean_weight=row_mean_weight,
+                weight_normalizer=loss_normalizer,
                 pre_clip_grad_norm=float(pre_clip),
                 post_clip_grad_norm=float(post_clip))
         processed += _batch_tokens(arm, batch)
@@ -534,22 +565,30 @@ def run_arm(model, pairs, *, arm: str,
         "processed_tokens": processed,
         "supervised_chosen_tokens": supervised,
         "lr": lr,
-        "beta": beta if arm != "matched-sft" else None,
+        "beta": (beta if arm not in ("matched-sft", "matched-sft-weighted")
+                 else None),
         "batch_pairs": batch_pairs,
         "grad_clip": grad_clip,
         "normalization": preference.REGISTERED_NORMALIZATION,
         "pair_order": pair_order,
         "weight_normalization": weight_normalization,
+        "sft_weighting": (sft_weighting if arm in ("matched-sft",
+                                                   "matched-sft-weighted")
+                          else None),
         "corpus_mean_weight": corpus_mean_weight,
         "weight_scale_basis": (
+            "uniform: every chosen example has weight 1.0; the control loss "
+            "carries no difficulty weight"
+            if arm == "matched-sft" else
             "corpus mean weight over the positive-weight pairs"
-            if weight_normalizer is not None else
+            if loss_normalizer is not None else
             "batch weight sum (the pre-S70 denominator; identically 1 at "
             "batch_pairs = 1, so the weight is inert)"),
         "realized_mean_weight": (
             sum(sampled_weights) / len(sampled_weights)
             if sampled_weights else None),
         "realized_mean_weight_over_mean": (
+            None if arm == "matched-sft" else
             (sum(sampled_weights) / len(sampled_weights)) / corpus_mean_weight
             if sampled_weights else None),
         "trace": trace,
@@ -607,6 +646,14 @@ def main(argv: list[str]) -> int:
                              "difficulty-proportional permutation per epoch, "
                              "which is the mechanism that makes w = p(1-p) "
                              "change realized updates under AdamW")
+    parser.add_argument("--sft-weighting", choices=("uniform", "difficulty"),
+                        default="uniform",
+                        help="the SFT control's loss: `uniform` weights every "
+                             "chosen example equally (the matched-sft arm); "
+                             "`difficulty` weights by w = p(1-p) over the "
+                             "corpus mean (the matched-sft-weighted arm). "
+                             "The arm name is authoritative; this flag is "
+                             "validated against it and recorded")
     parser.add_argument("--weight-normalization",
                         choices=("corpus", "batch"), default="corpus",
                         help="the preference-loss denominator: `corpus` "
@@ -641,7 +688,8 @@ def main(argv: list[str]) -> int:
                                 device=args.device)
         geometry = prepare_registered_lora(
             model, rank=args.rank, alpha=args.alpha,
-            expected_active_union=preference.REGISTERED_ACTIVE_UNION)
+            expected_active_union=preference.REGISTERED_ACTIVE_UNION,
+            seed=args.seed)
         if args.geometry_check_merge:
             state, merge = snapshot_merged_full_state(
                 model, expected_active_union=preference.REGISTERED_ACTIVE_UNION)
@@ -655,6 +703,13 @@ def main(argv: list[str]) -> int:
 
     if args.arm is None:
         raise SystemExit("s64-launch: --arm is required for a training run")
+    if args.arm == "matched-sft-weighted" and args.sft_weighting != "difficulty":
+        raise SystemExit("s64-launch: --arm matched-sft-weighted requires "
+                         "--sft-weighting difficulty")
+    if args.arm == "matched-sft" and args.sft_weighting != "uniform":
+        raise SystemExit("s64-launch: --arm matched-sft is the uniform control; "
+                         "use --arm matched-sft-weighted for difficulty "
+                         "weighting")
     if args.arm == "recovery":
         if not args.recovery_pairs:
             raise SystemExit("s64-launch: the recovery arm needs --recovery-pairs")
@@ -721,6 +776,7 @@ def main(argv: list[str]) -> int:
         rank=args.rank, alpha=args.alpha, max_steps=args.max_steps,
         pair_order=args.pair_order,
         weight_normalization=args.weight_normalization,
+        sft_weighting=args.sft_weighting,
         trace_path=(os.path.join(ROOT, args.trace_out)
                     if args.trace_out and not os.path.isabs(args.trace_out)
                     else args.trace_out))
@@ -762,6 +818,7 @@ def main(argv: list[str]) -> int:
             "normalization": preference.REGISTERED_NORMALIZATION,
             "pair_order": report.get("pair_order"),
             "weight_normalization": report.get("weight_normalization"),
+            "sft_weighting": report.get("sft_weighting"),
             "corpus_mean_weight": report.get("corpus_mean_weight"),
             "weight_scale_basis": report.get("weight_scale_basis"),
             "realized_mean_weight": report.get("realized_mean_weight"),
