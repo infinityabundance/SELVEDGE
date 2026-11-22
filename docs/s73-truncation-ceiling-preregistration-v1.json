@@ -93,7 +93,8 @@
   ],
   "strict_mirror_equivalence_test": "oracle/tests/test_s73_truncation.py::test_strict_and_flexible_match_the_registered_s54_scorer",
   "box_then_continued_min_nonspace": 20,
-  "classes": ["loop_degenerate", "no_box", "boxed_then_continued", "other"],
+  "classes": ["no_box", "boxed_then_continued", "loop_degenerate", "other"],
+  "classes_order": "the module's CLASSES tuple, which is the report order; it is not the decision order",
   "precedence": ["loop_degenerate", "no_box", "boxed_then_continued", "other"],
   "hash_pinned_by_test": "oracle/tests/test_s73_truncation.py::test_registered_classifier_hash_matches_the_file",
   "statement": "The classifier is frozen and hashed before any ladder run. Changing the module, the threshold or the class order requires a new registration, not an edit."

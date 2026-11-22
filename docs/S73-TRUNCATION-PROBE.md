@@ -57,32 +57,35 @@ the stored 4,096 completions of all four models. Receipts:
 `…/baseline-08b-math500.json` (`2f93a491…`), `…/qwen3-06b-math500.json`
 (`0d9980ae…`), `…/teacher-2b-math500.json` (`64baa08d…`).
 
-For the 158 soup rows truncated at 4,096:
+For the 158 soup rows truncated at 4,096, rows in the pool:
+<!-- BEGIN GENERATED: s73-soup-rows-truncated -->
+158
+<!-- END GENERATED: s73-soup-rows-truncated -->
 
-* rows in the pool:
-  <!-- BEGIN GENERATED: s73-soup-rows-truncated -->
-  158
-  <!-- END GENERATED: s73-soup-rows-truncated -->
-* `loop_degenerate`:
-  <!-- BEGIN GENERATED: s73-soup-class-loop-degenerate -->
-  42
-  <!-- END GENERATED: s73-soup-class-loop-degenerate -->
-* `no_box`:
-  <!-- BEGIN GENERATED: s73-soup-class-no-box -->
-  116
-  <!-- END GENERATED: s73-soup-class-no-box -->
-* `boxed_then_continued`:
-  <!-- BEGIN GENERATED: s73-soup-class-boxed-then-continued -->
-  0
-  <!-- END GENERATED: s73-soup-class-boxed-then-continued -->
-* `other`:
-  <!-- BEGIN GENERATED: s73-soup-class-other -->
-  0
-  <!-- END GENERATED: s73-soup-class-other -->
-* rows that already contain a correct boxed answer anywhere before the cap:
-  <!-- BEGIN GENERATED: s73-soup-truncated-correct-box-anywhere -->
-  0
-  <!-- END GENERATED: s73-soup-truncated-correct-box-anywhere -->
+`loop_degenerate`:
+<!-- BEGIN GENERATED: s73-soup-class-loop-degenerate -->
+42
+<!-- END GENERATED: s73-soup-class-loop-degenerate -->
+
+`no_box`:
+<!-- BEGIN GENERATED: s73-soup-class-no-box -->
+116
+<!-- END GENERATED: s73-soup-class-no-box -->
+
+`boxed_then_continued`:
+<!-- BEGIN GENERATED: s73-soup-class-boxed-then-continued -->
+0
+<!-- END GENERATED: s73-soup-class-boxed-then-continued -->
+
+`other`:
+<!-- BEGIN GENERATED: s73-soup-class-other -->
+0
+<!-- END GENERATED: s73-soup-class-other -->
+
+rows that already contain a correct boxed answer anywhere before the cap:
+<!-- BEGIN GENERATED: s73-soup-truncated-correct-box-anywhere -->
+0
+<!-- END GENERATED: s73-soup-truncated-correct-box-anywhere -->
 
 The same measurement for every model (counts from the same four receipts):
 

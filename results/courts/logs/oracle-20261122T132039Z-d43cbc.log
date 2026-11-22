@@ -1,0 +1,27 @@
+..............F                                                          [100%]
+=================================== FAILURES ===================================
+_______________ test_registered_classifier_hash_matches_the_file _______________
+
+    def test_registered_classifier_hash_matches_the_file():
+        if not os.path.exists(REGISTRATION):
+            pytest.skip("S73 preregistration is not present at this revision")
+        with open(REGISTRATION, "r", encoding="utf-8") as handle:
+            registration = json.load(handle)
+        registered = registration["classifier"]
+        assert registered["module"] == "oracle/frontier/truncation.py"
+        digest = hashlib.sha256(
+            open(os.path.join(ROOT, registered["module"]), "rb").read()).hexdigest()
+        assert registered["sha256"] == digest
+        assert registered["version"] == truncation.CLASSIFIER_VERSION
+        assert registered["box_then_continued_min_nonspace"] == (
+            truncation.BOX_THEN_CONTINUED_MIN_NONSPACE)
+>       assert list(registration["classifier"]["classes"]) == list(truncation.CLASSES)
+E       AssertionError: assert ['loop_degene...ued', 'other'] == ['no_box', 'b...ate', 'other']
+E         
+E         At index 0 diff: 'loop_degenerate' != 'no_box'
+E         Use -v to get more diff
+
+oracle/tests/test_s73_truncation.py:216: AssertionError
+=========================== short test summary info ============================
+FAILED oracle/tests/test_s73_truncation.py::test_registered_classifier_hash_matches_the_file
+1 failed, 14 passed in 1.63s
